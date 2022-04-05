@@ -1,4 +1,4 @@
-Wisteria Dataviz {#main-overview}
+Wisteria Dataviz
 =============================
 
 Introduction
