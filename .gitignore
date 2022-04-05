@@ -1,9 +1,7 @@
 /.vs/
 /app/
 /build/
-/src/easyexif/
 /docs/doxygen/html/
-/docs/doxygen/doxygen-awesome-css
 CMakeSettings.json
 tools/ColorCode.txt
 
