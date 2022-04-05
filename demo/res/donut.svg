@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg5245"
+   sodipodi:docname="donut.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+  <metadata
+     id="metadata5251">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs5249" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1024"
+     inkscape:window-height="705"
+     id="namedview5247"
+     showgrid="false"
+     inkscape:zoom="9.8333333"
+     inkscape:cx="-2.1864407"
+     inkscape:cy="12"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg5245" />
+  <g
+     id="g5828"
+     transform="translate(0.301,-0.046)">
+    <path
+       d="m 12,0.433 c -1.383,0 -2.719,0.233 -3.964,0.66 l 2.13,5.148 A 6.923,6.923 0 0 1 12,5.997 c 2.67,0 4.88,1.476 5.873,3.575 L 22.768,6.955 C 20.796,3.084 16.672,0.433 12,0.433 Z"
+       style="color:#000000;font-weight:400;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;overflow:visible;isolation:auto;mix-blend-mode:normal;fill:#646060;fill-opacity:0.82700004"
+       overflow="visible"
+       id="path5237"
+       inkscape:connector-curvature="0" />
+    <path
+       d="M 8.013,1.101 C 3.384,2.701 0,6.998 0,12.083 c 0,6.46 5.463,11.65 12,11.65 2.898,0 5.585,-1.02 7.678,-2.72 l -4.08,-3.865 A 6.694,6.694 0 0 1 12,18.168 c -3.645,0 -6.436,-2.75 -6.436,-6.085 0,-2.74 1.885,-5.086 4.579,-5.836 z"
+       style="color:#000000;font-weight:400;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;overflow:visible;isolation:auto;mix-blend-mode:normal;fill-opacity:0.82700004"
+       overflow="visible"
+       id="path5239"
+       inkscape:connector-curvature="0" />
+    <path
+       d="m 22.78,6.977 -4.896,2.617 c 0.356,0.762 0.552,1.605 0.552,2.489 0,2.091 -1.098,3.953 -2.817,5.051 l 4.079,3.864 C 22.315,18.865 24,15.67 24,12.083 24,10.248 23.56,8.517 22.78,6.977 Z"
+       style="color:#000000;font-weight:400;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;overflow:visible;isolation:auto;mix-blend-mode:normal;fill:#b3b3b3;fill-opacity:0.82700004"
+       overflow="visible"
+       id="path5241"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

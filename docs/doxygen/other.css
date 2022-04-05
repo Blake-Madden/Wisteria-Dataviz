@@ -1,0 +1,14 @@
+/* override tables being 100% width*/
+table.markdownTable, table.fieldtable {
+    width: auto !important;
+}
+
+/* doxygen-awesome-css inverts the colors in images for dark mode.
+   Normally, that's nice, but for our purposes we want to show examples
+   of our graphs as-is (i.e., white backgrounds, black text). So we
+   override the color inversion filter with a non-displayed effect.*/
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) div.contents center img,
+    html:not(.light-mode) div.contents table img {
+        filter: drop-shadow(0px 0px 0px #FFFFFF) !important;
+    }

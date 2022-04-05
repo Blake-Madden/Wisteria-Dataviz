@@ -1,0 +1,51 @@
+/.vs/
+/app/
+/build/
+/src/easyexif/
+/docs/doxygen/html/
+/docs/doxygen/doxygen-awesome-css
+CMakeSettings.json
+tools/ColorCode.txt
+
+# any documents
+*.docx
+*.doc
+*.ods
+*.xlsx
+*.pdf
+
+# Prerequisites
+*.d
+*.kdev4
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.mo
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.manifest
