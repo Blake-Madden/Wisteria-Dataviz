@@ -1,11 +1,10 @@
-%Wisteria Dataviz {#main-overview}
+Wisteria Dataviz {#main-overview}
 =============================
-[TOC]
 
 Introduction
 =============================
 
-%Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets). It includes features
+Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets). It includes features
 such as:
 
 - Built-in [printing](Printing.md) support
