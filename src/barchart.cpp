@@ -263,12 +263,10 @@ namespace Wisteria::Graphs
                         {
                         // if block has a customized opacity, then use that instead of the bar's opacity
                         const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            wxColour(barBlock.GetBrush().GetColour().Red(), barBlock.GetBrush().GetColour().Green(),
-                                     barBlock.GetBrush().GetColour().Blue(), bar.GetOpacity()) :
+                            ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
                             barBlock.GetBrush().GetColour();
                         const wxColour blockLightenedColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            wxColour(barBlock.GetLightenedColor().Red(), barBlock.GetLightenedColor().Green(),
-                                     barBlock.GetLightenedColor().Blue(), bar.GetOpacity()) :
+                            ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(), bar.GetOpacity()) :
                             barBlock.GetLightenedColor();
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
@@ -378,6 +376,14 @@ namespace Wisteria::Graphs
                                     blockLightenedColor,
                                     FillDirection::West));
                                 }
+                            // in case an explicit color is used for the background
+                            // and the brush is perhaps a hatch to be draw on top of it
+                            else if (barBlock.GetColor().IsOk())
+                                {
+                                box->SetBackgroundFill(
+                                    Colors::GradientFill(barBlock.GetColor()));
+                                box->GetPen().SetColour(barBlock.GetColor());
+                                }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
                             AddObject(box);
@@ -429,8 +435,8 @@ namespace Wisteria::Graphs
                             decalLabel->GetFont().GetPointSize() < wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()/2)
                             {
                             decalLabel->GetFont().SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
-                            decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->GetPen().SetColour(*wxBLACK);
+                            decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
                         const wxRect labelBox = decalLabel->GetBoundingBox(measureDC);
@@ -449,6 +455,20 @@ namespace Wisteria::Graphs
                             {
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetRight() - (labelBox.GetWidth()+leftPadding)),
                                 (barNeckRect.GetTop()+safe_divide(barNeckRect.GetHeight()-labelBox.GetHeight(), 2))));
+                            }
+                        // if drawing a color and hatch pattern, then show the decal with an outline
+                        // to make it easier to read
+                        if (bar.GetEffect() == BoxEffect::Solid &&
+                            barBlock.GetColor().IsOk() &&
+                            barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
+                            {
+                            if (decalLabel->GetLeftPadding() == 0 &&
+                                decalLabel->GetTopPadding() == 0)
+                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
+                            decalLabel->SetPadding(2, 2, 2, 2);
+                            decalLabel->GetPen().SetColour(*wxBLACK);
+                            decalLabel->SetFontColor(*wxBLACK);
+                            decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
                         // This will be added to the plot's collection of object AFTER all blocks have been added.
                         // This ensures that decals that go outside of their block are eclipsed by the next block.
@@ -534,12 +554,10 @@ namespace Wisteria::Graphs
                         {
                         // if block has a customized opacity, then use that instead of the bar's opacity
                         const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            wxColour(barBlock.GetBrush().GetColour().Red(), barBlock.GetBrush().GetColour().Green(),
-                                barBlock.GetBrush().GetColour().Blue(), bar.GetOpacity()) :
+                            ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
                             barBlock.GetBrush().GetColour();
                         const wxColour blockLightenedColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            wxColour(barBlock.GetLightenedColor().Red(), barBlock.GetLightenedColor().Green(),
-                                barBlock.GetLightenedColor().Blue(), bar.GetOpacity()) :
+                            ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(), bar.GetOpacity()) :
                             barBlock.GetLightenedColor();
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
@@ -656,6 +674,14 @@ namespace Wisteria::Graphs
                                     blockLightenedColor,
                                     FillDirection::South));
                                 }
+                            // in case an explicit color is used for the background
+                            // and the brush is perhaps a hatch to be draw on top of it
+                            else if (barBlock.GetColor().IsOk())
+                                {
+                                box->SetBackgroundFill(
+                                    Colors::GradientFill(barBlock.GetColor()));
+                                box->GetPen().SetColour(barBlock.GetColor());
+                                }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
                             AddObject(box);
@@ -732,6 +758,20 @@ namespace Wisteria::Graphs
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + safe_divide(barNeckRect.GetWidth() -
                                 labelBouningBox.GetWidth(), 2)),
                                 (barNeckRect.GetTop() + leftPadding)));
+                            }
+                        // if drawing a color and hatch pattern, then show the decal with an outline
+                        // to make it easier to read
+                        if (bar.GetEffect() == BoxEffect::Solid &&
+                            barBlock.GetColor().IsOk() &&
+                            barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
+                            {
+                            if (decalLabel->GetLeftPadding() == 0 &&
+                                decalLabel->GetTopPadding() == 0)
+                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
+                            decalLabel->SetPadding(2, 2, 2, 2);
+                            decalLabel->GetPen().SetColour(*wxBLACK);
+                            decalLabel->SetFontColor(*wxBLACK);
+                            decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
                         decals.push_back(decalLabel);
                         }
