@@ -27,62 +27,61 @@ namespace Wisteria::Graphs
          // "canvas" is a scrolled window derived object
          // that will hold the plot
          auto canvas = new Wisteria::Canvas{ this };
-         canvas->SetFixedObjectsGridSize(1, 1);
+         canvas->SetFixedObjectsGridSize(1, 2);
 
-         // just use the current year to keep this example simple
-         const auto thisYear = wxDateTime::Now().GetYear();
+         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
+         try
+            {
+            companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+                ImportInfo().
+                ContinuousColumns({ L"Completion" }).
+                DateColumns({ { L"Start" }, { L"End" } }).
+                CategoricalColumns({
+                    { L"Project" },
+                    { L"Description" },
+                    { L"Resource" }
+                    }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
 
          auto ganttChart = std::make_shared<GanttChart>(canvas);
-         ganttChart->SetFiscalYearType(GanttChart::FiscalYear::Business);
+         ganttChart->SetData(companyAcquisitionData,
+            DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
+            L"Project", L"Start", "End",
+            // these columns are optional
+            L"Resource", L"Description", L"Completion", L"Resource");
 
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Acquisition")).
-            Resource(_(L"Management")).
-            StartDate(wxDateTime(1, wxDateTime::Jul, thisYear)).
-            EndDate(wxDateTime(31, wxDateTime::Aug, thisYear)).
-            PercentFinished(100) );
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Develop Product")).
-            Resource(_(L"Development")).
-            StartDate(wxDateTime(1, wxDateTime::Sep, thisYear)).
-            EndDate(wxDateTime(25, wxDateTime::Dec, thisYear)).
-            PercentFinished(50));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Testing")).
-            Resource(_(L"QA")).
-            StartDate(wxDateTime(15, wxDateTime::Oct, thisYear)).
-            EndDate(wxDateTime(25, wxDateTime::Dec, thisYear)));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Update Help")).
-            Resource(_(L"Tech Writers")).
-            StartDate(wxDateTime(15, wxDateTime::Nov, thisYear)).
-            EndDate(wxDateTime(25, wxDateTime::Dec, thisYear)));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Terminations")).
-            Resource(_(L"Human Resources")).
-            Description(_(L"Round 1: just QA and tech writers")).
-            StartDate(wxDateTime(26, wxDateTime::Dec, thisYear)).
-            EndDate(wxDateTime(15, wxDateTime::Jan, thisYear+1)));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Product Fixes")).
-            Resource(_(L"Development")).
-            Description(_(L"Need two weeks to sell this to get a quarterly bump")).
-            StartDate(wxDateTime(26, wxDateTime::Dec, thisYear)).
-            EndDate(wxDateTime(15, wxDateTime::Mar, thisYear+1)));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Terminations")).
-            Resource(_(L"Human Resources")).
-            Description(_(L"Round 2: remaining developers")).
-            StartDate(wxDateTime(16, wxDateTime::Mar, thisYear+1)).
-            EndDate(wxDateTime(31, wxDateTime::Mar, thisYear+1)));
-         ganttChart->AddTask(GanttChart::TaskInfo(_(L"Profit")).
-            Resource(_(L"Management")).
-            StartDate(wxDateTime(25, wxDateTime::Dec, thisYear)));
+         // add deadlines
+         auto releaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+            wxDateTime(25, wxDateTime::Dec, 2022));
+         if (releaseDate)
+            {
+            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
+                releaseDate.value(), _(L"Release"),
+                ColorBrewer::GetColor(Colors::Color::TractorRed)) );
+            }
 
-         ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-            ganttChart->GetScalingAxis().GetPointFromDate(
-                wxDateTime(25, wxDateTime::Dec, thisYear)),
-            _(L"First Release")) );
-        ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-            ganttChart->GetScalingAxis().GetPointFromDate(
-                wxDateTime(15, wxDateTime::Mar, thisYear + 1)),
-            _(L"Update Release")));
+         auto updateReleaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+            wxDateTime(15, wxDateTime::Mar, 2023));
+         if (updateReleaseDate)
+            {
+            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
+                updateReleaseDate.value(),
+                _(L"Update Release"),
+                ColorBrewer::GetColor(Colors::Color::TractorRed,
+                                      Wisteria::Settings::GetTranslucencyValue())));
+            }
 
          ganttChart->SetCanvasMargins(5, 5, 5, 5);
          canvas->SetFixedObject(0, 0, ganttChart);
+         // Add a legend, showing whom is assigned to which tasks.
+         // (If not using a grouping column, then adding a legend will be unnecessary.)
+         canvas->SetFixedObject(0, 1,
+            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
         @endcode*/
     class GanttChart final : public BarChart
         {
@@ -94,15 +93,79 @@ namespace Wisteria::Graphs
             Description,                /*!< Display the description of the task.*/
             ResourceAndDescription,     /*!< Display the name description of the task.*/
             Days,                       /*!< Display the number of days in the task.*/
-            ResourceAndDays,            /*!< Display the name of the task and number of days in it.*/
-            DescriptionAndDays,         /*!< Display the description of the task and number of days in it.*/
-            ResourceDescriptionAndDays, /*!< Display the name and description of the task and number of days in it.*/
+            ResourceAndDays,            /*!< Display the name of the task and number
+                                             of days in it.*/
+            DescriptionAndDays,         /*!< Display the description of the task and
+                                             number of days in it.*/
+            ResourceDescriptionAndDays, /*!< Display the name and description of the
+                                             task and number of days in it.*/
             NoDisplay                   /*!< Don't display anything on the bar.*/
             };
 
+        /// @brief Constructor.
+        /// @param canvas The canvas that the chart is plotted on.
+        /// @param colors The color scheme to apply to the boxes.
+        ///  Leave as null to use the default theme.
+        explicit GanttChart(Wisteria::Canvas* canvas,
+            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+        /** @brief Sets the data.
+            @param data The data to use for the chart.
+            @param interval The date interval to display across the axis.
+             Note that this may affect the calculated starting and ending dates for the
+             main axis. For example, using quarters will cause the dates to start and
+             end at the beginning and end of a fiscal year.
+            @param FYType The fiscal year type, which sets the fiscal year date range
+             based on pre-defined types.
+             This parameter is only relavant if @c interval is related to fiscal years.
+            @param taskColumnName The column containing the task names.
+            @param startDateColumnName The column containing the starting dates.
+            @param endDateColumnName The column containing the ending date column.
+            @param resourceColumnName The column containing whom the tasks are assigned to.
+            @param descriptionColumnName The column containing descriptions of the tasks.
+            @param completionColumnName The column containing the percentages of the
+             tasks' completions (NaN will be treated as 0%).
+            @param groupColumnName The grouping column to use.
+             This will set the colors of the task's bars, based on their groups.
+             Note that this can be the same column as the resource or task name columns.
+            @throws std::runtime_error If any columns can't be found by name,
+             throws an exception.*/
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const DateInterval interval,
+                     const FiscalYear FYType,
+                     const wxString& taskColumnName,
+                     const wxString& startDateColumnName,
+                     const wxString& endDateColumnName,
+                     std::optional<const wxString> resourceColumnName = std::nullopt,
+                     std::optional<const wxString> descriptionColumnName = std::nullopt,
+                     std::optional<const wxString> completionColumnName = std::nullopt,
+                     std::optional<const wxString> groupColumnName = std::nullopt);
+
+        /// @returns The date intervals as they are shown along the scaling axis.
+        [[nodiscard]] DateInterval GetDateDisplayInterval() const noexcept
+            { return m_dateDisplayInterval; }
+        /// @returns The fiscal year type.
+        [[nodiscard]] FiscalYear GetFiscalYearType() const noexcept
+            { return m_fyType; }
+        /// @returns Which information is being displayed across the tasks.
+        [[nodiscard]] TaskLabelDisplay GetLabelDisplay() const noexcept
+            { return m_labelDisplay; }
+        /// @brief Sets which information to display across the tasks.
+        /// @param labelDisplay The label display type.
+        void SetLabelDisplay(const TaskLabelDisplay labelDisplay) noexcept
+            { m_labelDisplay = labelDisplay; }
+        /** @brief Builds and returns a legend using the current colors and labels.
+            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @param hint A hint about where the legend will be placed after construction.
+             This is used for defining the legend's padding, outlining, canvas proportions, etc.
+            @returns The legend for the chart. Will return null if grouping was applied to the chart.*/
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint) const;
+    private:
         /// @brief Class to construct a task.
-        /// @details This class has chainable calls which allow you to build it inside of a call to GanttChart::AddTask().
-        /// @note A task's color is controlled via the parent GanttChart's color scheme, which is specified in its constructor.
+        /// @details This class has chainable calls which allow you to build it
+        ///  inside of a call to GanttChart::AddTask().
+        /// @note A task's color is controlled via the parent GanttChart's color scheme,
+        ///  which is specified in its constructor.
         class TaskInfo
             {
             friend class GanttChart;
@@ -116,8 +179,9 @@ namespace Wisteria::Graphs
             /// @brief Sets who is carrying out the task.
             /// @param resource The resources assigned to the task.
             /// @returns A self reference.
-            /// @note Adding newlines around the resource name will make it taller and hence will make the image
-            ///  next to it larger as well (if you are displaying an image).
+            /// @note Adding newlines around the resource name will make it taller 
+            ///  and hence will make the image next to it larger as well
+            ///  (if you are displaying an image).
             /// @sa Image().
             TaskInfo& Resource(const wxString& resource)
                 {
@@ -143,8 +207,9 @@ namespace Wisteria::Graphs
             /// @brief An image to be displayed next to the resource assigned to the task.
             /// @param img The image for the task.
             /// @returns A self reference.
-            /// @note The image is scaled to the size of the resource name. Hence, adding newlines
-            ///  around the resource name to make it taller will also increase the size of the image.
+            /// @note The image is scaled to the size of the resource name.
+            ///  Hence, adding newlines around the resource name to make it taller
+            ///  will also increase the size of the image.
             /// @sa Resource().
             TaskInfo& Image(const wxImage& img)
                 {
@@ -179,12 +244,20 @@ namespace Wisteria::Graphs
                 m_percentFinished = std::clamp<uint8_t>(percentFinished, 0, 100);
                 return *this;
                 }
-            /// @brief What to display on the task's label.
+            /// @brief Sets which information to display across the task.
             /// @param labelDisplay The label display type.
             /// @returns A self reference.
             TaskInfo& LabelDisplay(const TaskLabelDisplay labelDisplay) noexcept
                 {
                 m_labelDisplay = labelDisplay;
+                return *this;
+                }
+            /// @brief The task's bar color.
+            /// @param color The color of the bar.
+            /// @returns A self reference.
+            TaskInfo& Color(const wxColour& color) noexcept
+                {
+                m_color = color;
                 return *this;
                 }
         private:
@@ -196,14 +269,8 @@ namespace Wisteria::Graphs
             wxDateTime m_end;
             uint8_t m_percentFinished{ 0 };
             TaskLabelDisplay m_labelDisplay{ TaskLabelDisplay::Days };
+            wxColour m_color{ *wxBLACK };
             };
-
-        /// @brief Constructor.
-        /// @param canvas The canvas that the chart is plotted on.
-        /// @param colors The color scheme to apply to the boxes.
-        ///  Leave as null to use an Earth tones theme.
-        explicit GanttChart(Wisteria::Canvas* canvas,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
         /** @brief Adds a task to the chart.
             @param taskInfo Information about the task.*/
         void AddTask(const TaskInfo& taskInfo)
@@ -211,47 +278,28 @@ namespace Wisteria::Graphs
             m_tasks.emplace_back(taskInfo);
             Calculate();
             }
-
-        /// @brief Sets the fiscal year date range, based on pre-defined types.
-        /// @details Use SetFiscalYearStart() to set a specific start date.
-        /// @param FY The fiscal year type.
-        /// @sa SetDateDisplayInterval().
-        void SetFiscalYearType(const FiscalYear FY)
-            { m_fyType = FY; }
-        /// @returns The fiscal year type.
-        [[nodiscard]] FiscalYear GetFiscalYearType() const noexcept
-            { return m_fyType; }
-        /** @brief Sets the date intervals that are shown along the scaling axis.
-            @details This also affects the starting and ending points of the dates.
-             For example, using quarters will cause the dates to start and end
-             at the beginning and end of a fiscal year.
-            @param interval The date interval to use.*/
-        void SetDateDisplayInterval(const DateInterval interval) noexcept
-            { m_dateDisplayInterval = interval; }
-        /// @returns The date intervals as they are shown along the scaling axis.
-        [[nodiscard]] DateInterval GetDateDisplayInterval() const noexcept
-            { return m_dateDisplayInterval; }
-
-        /// @private
         void AddTask(TaskInfo&& taskInfo)
             {
             m_tasks.emplace_back(taskInfo);
             Calculate();
             }
-    private:
         void Calculate();
         void RecalcSizes() final;
+        
         /// @brief Get the color scheme used for the boxes.
         /// @returns The color scheme used for the boxes.
         [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
             { return m_colorScheme; }
 
         std::vector<TaskInfo> m_tasks;
+        TaskLabelDisplay m_labelDisplay{ TaskLabelDisplay::Days };
 
         DateInterval m_dateDisplayInterval{ DateInterval::FiscalQuarterly };
         FiscalYear m_fyType{ FiscalYear::USBusiness };
 
         size_t m_maxDescriptionLength{ 75 };
+
+        std::map<wxString, wxColour, Data::StringCmpNoCase> m_legendLines;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         };

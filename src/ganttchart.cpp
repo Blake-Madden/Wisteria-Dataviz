@@ -18,7 +18,7 @@ namespace Wisteria::Graphs
         std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/) :
         BarChart(canvas),
         m_colorScheme(colors != nullptr ? colors :
-            std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::EarthTones()))
+            Settings::GetDefaultColorScheme())
         {
         SetBarOrientation(Orientation::Horizontal);
         GetRightYAxis().Show(false);
@@ -29,6 +29,91 @@ namespace Wisteria::Graphs
         GetBarAxis().SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         GetScalingAxis().GetGridlinePen() = wxNullPen;
+        }
+
+    //----------------------------------------------------------------
+    void GanttChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
+                             const DateInterval interval,
+                             const FiscalYear FYType,
+                             const wxString& taskColumnName,
+                             const wxString& startDateColumnName,
+                             const wxString& endDateColumnName,
+                             std::optional<const wxString> resourceColumnName /*= std::nullopt*/,
+                             std::optional<const wxString> descriptionColumnName /*= std::nullopt*/,
+                             std::optional<const wxString> completionColumnName /*= std::nullopt*/,
+                             std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+        {
+        ClearBars();
+        m_legendLines.clear();
+
+        m_dateDisplayInterval = interval;
+        m_fyType = FYType;
+
+        auto taskColumn = data->GetCategoricalColumn(taskColumnName);
+        if (taskColumn == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': task name column not found for gantt chart."),
+                taskColumnName));
+            }
+        auto startColumn = data->GetDateColumn(startDateColumnName);
+        if (startColumn == data->GetDateColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': start date column not found for gantt chart."),
+                startDateColumnName));
+            }
+        auto endColumn = data->GetDateColumn(endDateColumnName);
+        if (endColumn == data->GetDateColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': end date column not found for gantt chart."),
+                endDateColumnName));
+            }
+        // these columns are optional
+        auto resourceColumn = data->GetCategoricalColumn(resourceColumnName.value_or(wxString(L"")));
+        auto completionColumn = data->GetContinuousColumn(completionColumnName.value_or(wxString(L"")));
+        auto groupColumn = data->GetCategoricalColumn(groupColumnName.value_or(wxString(L"")));
+        auto descriptionColumn = data->GetCategoricalColumn(descriptionColumnName.value_or(wxString(L"")));
+
+        std::set<Data::GroupIdType> groupIds;
+
+        for (size_t i = 0; i < data->GetRowCount(); ++i)
+            {
+            AddTask(
+                GanttChart::TaskInfo(taskColumn->GetCategoryLabel(taskColumn->GetValue(i))).
+                Resource(
+                    (resourceColumn != data->GetCategoricalColumns().cend()) ?
+                     resourceColumn->GetCategoryLabel(resourceColumn->GetValue(i)) :
+                     wxString(L"")).
+                Description(
+                    (descriptionColumn != data->GetCategoricalColumns().cend()) ?
+                     descriptionColumn->GetCategoryLabel(descriptionColumn->GetValue(i)) :
+                     wxString(L"")).
+                StartDate(startColumn->GetValue(i)).
+                EndDate(endColumn->GetValue(i)).
+                Color(
+                    (groupColumn != data->GetCategoricalColumns().cend() ?
+                     GetColorScheme()->GetColor(groupColumn->GetValue(i)) :
+                     GetColorScheme()->GetColor(0))).
+                PercentFinished(
+                    (completionColumn != data->GetContinuousColumns().cend() ?
+                     completionColumn->GetValue(i) : 0)).
+                LabelDisplay(GetLabelDisplay()));
+            // build a list of used group IDs (used for the legend later)
+            if (groupColumn != data->GetCategoricalColumns().cend())
+                { groupIds.insert(groupColumn->GetValue(i)); }
+            }
+
+        if (groupColumn != data->GetCategoricalColumns().cend())
+            {
+            for (const auto& groupId : groupIds)
+                {
+                m_legendLines.emplace(
+                    std::make_pair(groupColumn->GetCategoryLabel(groupId),
+                                   GetColorScheme()->GetColor(groupId)));
+                }
+            }
         }
 
     //----------------------------------------------------------------
@@ -54,19 +139,28 @@ namespace Wisteria::Graphs
                     task1.m_end < task2.m_end;
                 })->m_end;
 
-        GetScalingAxis().SetRange(firstDay, lastDay,
-                                  GetDateDisplayInterval(), GetFiscalYearType());
+        if (firstDay.IsValid() && lastDay.IsValid())
+            {
+            GetScalingAxis().SetRange(firstDay, lastDay,
+                                      GetDateDisplayInterval(), GetFiscalYearType());
+            }
 
         GetTopXAxis().CopySettings(GetScalingAxis());
-        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly)
+        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly &&
+            GetTopXAxis().GetRangeDates().first.IsValid() &&
+            GetTopXAxis().GetRangeDates().second.IsValid())
             { GetTopXAxis().AddBrackets(BracketType::FiscalQuarterly); }
 
         // reverse so that bars appear in the order that the client constructed them
         GetBarAxis().ReverseScale(true);
 
-        m_debugDrawInfoLabel = wxString::Format(_DT(L"Date range: %s-%s"),
-            GetScalingAxis().GetRangeDates().first.FormatDate(),
-            GetScalingAxis().GetRangeDates().second.FormatDate());
+        if (GetScalingAxis().GetRangeDates().first.IsValid() &&
+            GetScalingAxis().GetRangeDates().second.IsValid())
+            {
+            m_debugDrawInfoLabel = wxString::Format(_DT(L"Date range: %s-%s"),
+                GetScalingAxis().GetRangeDates().first.FormatDate(),
+                GetScalingAxis().GetRangeDates().second.FormatDate());
+            }
         }
 
     //----------------------------------------------------------------
@@ -81,25 +175,34 @@ namespace Wisteria::Graphs
                 wxGCDC measureDC;
                 const GraphItems::Label axisLabel(taskInfo.m_name);
 
-                const auto dateOffset = taskInfo.m_start.GetDateOnly().Subtract(
-                    GetScalingAxis().GetRangeDates().first.GetDateOnly()).GetDays();
-                const auto daysInTask = taskInfo.m_end.GetDateOnly().Subtract(taskInfo.m_start.GetDateOnly()).GetDays() + 1;
+                const auto startPt = GetScalingAxis().GetPointFromDate(taskInfo.m_start);
+                const auto endPt = GetScalingAxis().GetPointFromDate(taskInfo.m_end);
+                wxASSERT_MSG(startPt.has_value() && endPt.has_value(),
+                    L"Valid dates not found on axis in Gantt chart?!");
+                if (!startPt.has_value() || !endPt.has_value())
+                    { continue; }
+
+                const auto daysInTask = static_cast<int>(endPt.value() - startPt.value());
                 const double daysFinished = safe_divide<double>(taskInfo.m_percentFinished, 100) * daysInTask;
                 const double daysRemaining = daysInTask-daysFinished;
                 Bar br(GetBars().size(),
                     {
                         { BarBlock(BarBlockInfo(daysFinished).
-                            Brush({ColorContrast::ShadeOrTint(GetColorScheme()->GetColor(GetBars().size()))}).
+                            Brush(wxBrush(ColorContrast::BlackOrWhiteContrast(taskInfo.m_color),
+                                          wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH)).
+                            Color(taskInfo.m_color).
                             SelectionLabel(GraphItems::Label(
-                                wxString::Format(_(L"%s\n%d days\n(%s through %s)"),
+                                wxString(wxString::Format(_(L"%s\n%d days\n(%s through %s)"),
                                 wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim(), daysInTask,
-                                taskInfo.m_start.FormatDate(), taskInfo.m_end.FormatDate())))) },
+                                taskInfo.m_start.FormatDate(), taskInfo.m_end.FormatDate())).
+                                Trim(true).Trim(false)))) },
                         { BarBlock(BarBlockInfo(daysRemaining).
-                            Brush(GetColorScheme()->GetColor(GetBars().size())).
+                            Brush(taskInfo.m_color).
                             SelectionLabel(GraphItems::Label(
-                                wxString::Format(_(L"%s\n%d days\n(%s through %s)"),
+                                wxString(wxString::Format(_(L"%s\n%d days\n(%s through %s)"),
                                 wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim(), daysInTask,
-                                taskInfo.m_start.FormatDate(), taskInfo.m_end.FormatDate())))) }
+                                taskInfo.m_start.FormatDate(), taskInfo.m_end.FormatDate())).
+                                Trim(true).Trim(false)))) }
                     },
                     wxEmptyString,
                     axisLabel, BoxEffect::Solid);
@@ -109,11 +212,11 @@ namespace Wisteria::Graphs
                 else
                     {
                     br.GetLabel().SetText(taskInfo.m_percentFinished == 100 ?
-                        _(L"Complete") :
+                        _(L"\x2713 Complete") :
                         wxString::Format(_(L"%d%% complete"), taskInfo.m_percentFinished));
                     }
                 // move bar to actual starting date
-                br.SetCustomScalingAxisStartPosition(dateOffset);
+                br.SetCustomScalingAxisStartPosition(startPt.value());
 
                 // format the decal on the bar
                 wxString decalStr;
@@ -161,7 +264,8 @@ namespace Wisteria::Graphs
 
                     const auto scaledSize = wxSize(geometry::calculate_rescale_width(
                         std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
-                                                       taskInfo.m_img.GetSize().GetHeight()), labelHeight), labelHeight);
+                                                       taskInfo.m_img.GetSize().GetHeight()),
+                        labelHeight), labelHeight);
                     wxImage img{ taskInfo.m_img };
                     img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
 
@@ -192,9 +296,10 @@ namespace Wisteria::Graphs
                     {
                         {
                         BarBlock(BarBlockInfo(daysDiff).
-                            Brush(GetColorScheme()->GetColor(GetBars().size())).
+                            Brush(taskInfo.m_color).
                             SelectionLabel(GraphItems::Label(
-                                wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).Trim())))
+                                wxString(taskInfo.m_resource + L"\n" + taskInfo.m_description).
+                                Trim(true).Trim(false))))
                         }
                     },
                     wxEmptyString,
@@ -232,7 +337,7 @@ namespace Wisteria::Graphs
 
                 arrowBar.GetBlocks().front().SetDecal(GraphItems::Label(GraphItemInfo(decalStr).
                     FontColor(ColorContrast::BlackOrWhiteContrast(
-                        GetColorScheme()->GetColor(GetBars().size())))) );
+                        taskInfo.m_color))) );
                 arrowBar.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(m_maxDescriptionLength);
                 if (taskInfo.m_img.IsOk() && taskInfo.m_name.length())
                     {
@@ -249,7 +354,7 @@ namespace Wisteria::Graphs
 
                     // Set the axis labels' padding to fit the widest image so far
                     // (or at least the min legend size).
-                    // Labels that are taller than other (because they have new lines in them)
+                    // Labels that are taller than others (because they have new lines in them)
                     // will have larger images next to them.
                     GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
                         std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
@@ -262,5 +367,45 @@ namespace Wisteria::Graphs
             }
 
         BarChart::RecalcSizes();
+        }
+
+    //----------------------------------------------------------------
+    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(const LegendCanvasPlacementHint hint) const
+        {
+        if (m_legendLines.empty())
+            { return nullptr; }
+
+        auto legend = std::make_shared<GraphItems::Label>(
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
+            Window(GetWindow()));
+        legend->SetBoxCorners(BoxCorners::Rounded);
+
+        wxString legendText;
+        size_t lineCount{ 0 };
+        for (const auto& legendLine : m_legendLines)
+            {
+            if (Settings::GetMaxLegendItemCount() == lineCount)
+                {
+                legendText.append(L"\u2026");
+                break;
+                }
+            wxString currentLabel = legendLine.first;
+            if (currentLabel.length() > Settings::GetMaxLegendTextLength())
+                {
+                currentLabel.resize(Settings::GetMaxLegendTextLength()+1);
+                currentLabel.append(L"\u2026");
+                }
+            legendText.append(currentLabel.c_str()).append(L"\n");
+                legend->GetLegendIcons().emplace_back(
+                    LegendIcon(IconShape::SquareIcon,
+                        legendLine.second,
+                        legendLine.second));
+            ++lineCount;
+            }
+        legend->SetText(legendText.Trim());
+
+        AddReferenceLinesAndAreasToLegend(legend);
+        AdjustLegendSettings(legend, hint);
+        return legend;
         }
     }
