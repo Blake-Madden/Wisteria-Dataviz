@@ -313,7 +313,7 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
             @param colors The color scheme to apply to the points.
-             Leave as null to use an Earth tones theme.*/
+             Leave as null to use the default theme.*/
         explicit PieChart(Canvas* canvas,
                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
 

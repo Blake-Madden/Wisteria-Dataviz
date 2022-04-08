@@ -127,7 +127,7 @@ namespace Wisteria::Graphs
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconShapeScheme> shapes /*= nullptr*/) :
         Graph2D(canvas), m_labelPrecision(1),
-        m_colorScheme(colors != nullptr ? colors : std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::EarthTones())),
+        m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme()),
         m_shapeScheme(shapes != nullptr ? shapes : std::make_shared<IconShapeScheme>(StandardShapes()))
         {
         GetRightYAxis().Show(false);

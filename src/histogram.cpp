@@ -68,7 +68,8 @@ namespace Wisteria::Graphs
                 // ensure IDs are valid indices into the group schemes
                 (std::find_if(m_groupColumn->GetValues().cbegin(), m_groupColumn->GetValues().cend(),
                     [this](const auto id) noexcept
-                        { return id >= GetColorScheme()->GetColors().size(); }) == m_groupColumn->GetValues().cend());
+                        { return id >= GetColorScheme()->GetColors().size(); }) ==
+                    m_groupColumn->GetValues().cend());
             }
 
         // reset everything first
@@ -137,7 +138,8 @@ namespace Wisteria::Graphs
                 (m_useGrouping ?
                     m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)) },
                 m_data->GetIdColumn().GetValue(i).wc_str() );
-            if ((GetRoundingMethod() == RoundingMethod::NoRounding) && has_fractional_part(m_continuousColumn->GetValue(i)))
+            if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
+                has_fractional_part(m_continuousColumn->GetValue(i)))
                 {
                 GetBarAxis().SetPrecision(4);
                 hasFloatingPointValue = true;
@@ -152,8 +154,9 @@ namespace Wisteria::Graphs
             return;
             }
 
-        // with (floating point) unique values, we shouldn't distribute the bars evenly (there would be huge amount of bin areas),
-        // so we will need to just show the bars and their categories as custom labels.
+        // with (floating point) unique values, we shouldn't distribute the bars evenly
+        // (there would be huge amount of bin areas), so we will need to just show the
+        // bars and their categories as custom labels.
         if (GetRoundingMethod() == RoundingMethod::NoRounding && hasFloatingPointValue)
             { ShowFullRangeOfValues(false); }
         else
@@ -173,7 +176,8 @@ namespace Wisteria::Graphs
         size_t barNumber{ 1 };
         for (const auto& blockTable : groups.get_data())
             {
-            const wxColour blockColor = (m_useGroupingColors && static_cast<size_t>(blockTable.first.m_block) < GetColorScheme()->GetColors().size()) ?
+            const wxColour blockColor = (m_useGroupingColors &&
+                static_cast<size_t>(blockTable.first.m_block) < GetColorScheme()->GetColors().size()) ?
                 GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0);
 
             wxString blockLabel{ wxString::Format(_("%s item(s)\n"),
@@ -194,23 +198,30 @@ namespace Wisteria::Graphs
             if (foundBar == GetBars().end())
                 {
                 Bar theBar(IsShowingFullRangeOfValues() ? blockTable.first.m_bin : barNumber,
-                    { BarBlock(BarBlockInfo(blockTable.second.second).Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel))) },
+                    {
+                    BarBlock(BarBlockInfo(blockTable.second.second).
+                        Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel)))
+                    },
                     wxEmptyString,
                     IsShowingFullRangeOfValues() ? GraphItems::Label(wxEmptyString) :
-                        GraphItems::Label(wxNumberFormatter::ToString(blockTable.first.m_bin, (has_fractional_part(blockTable.first.m_bin)) ? 2 : 0,
+                        GraphItems::Label(wxNumberFormatter::ToString(blockTable.first.m_bin,
+                            (has_fractional_part(blockTable.first.m_bin)) ? 2 : 0,
                             Settings::GetDefaultNumberFormat())),
                     m_barEffect, m_opacity);
                 // if observations added to the selection label, then show it as a report
                 if (blockTable.second.first.size() > 1)
                     {
-                    theBar.GetBlocks()[0].GetSelectionLabel().GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::Centered);
-                    theBar.GetBlocks()[0].GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
+                    theBar.GetBlocks()[0].GetSelectionLabel().
+                        GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::Centered);
+                    theBar.GetBlocks()[0].GetSelectionLabel().
+                        SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
                     }
                 AddBar(theBar);
                 }
             else
                 {
-                BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel))) };
+                BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).
+                    Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel))) };
                 if (blockTable.second.first.size() > 1)
                     {
                     block.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
@@ -231,9 +242,12 @@ namespace Wisteria::Graphs
         for (auto& bar : GetBars())
             {
             const double percentage = safe_divide<double>(bar.GetLength(),m_continuousColumn->GetRowCount())*100;
-            bar.GetLabel() = (bar.GetLength() == 0 || GetHistrogramBinLabelDisplay() == BinLabelDisplay::NoDisplay) ? GraphItems::Label(wxEmptyString) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinValue) ? GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat())) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinPercentage) ? GraphItems::Label(wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%") :
+            bar.GetLabel() = (bar.GetLength() == 0 || GetHistrogramBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+                GraphItems::Label(wxEmptyString) :
+                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinValue) ?
+                GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat())) :
+                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
+                GraphItems::Label(wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%") :
                 GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
                     L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)");
             }
@@ -291,8 +305,9 @@ namespace Wisteria::Graphs
                 }
             else
                 {
-                // if we are splitting the bins into neat integer ranges, then we need to adjust (pad) the min and max
-                // values so that the range is evenly divisible by the number of bins.
+                // if we are splitting the bins into neat integer ranges,
+                // then we need to adjust (pad) the min and max values so
+                // that the range is evenly divisible by the number of bins.
                 bool addHigh = true;
                 while (safe_modulus<size_t>(static_cast<size_t>(maxVal-minVal), numOfBins))
                     {
@@ -319,7 +334,8 @@ namespace Wisteria::Graphs
                 if (compare_doubles(currentVal, minVal))
                     {
                     auto foundGroup = std::find(bins[0].begin(), bins[0].end(),
-                        comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0), valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
+                        comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0),
+                            valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
                     if (foundGroup != bins[0].end())
                         {
                         ++foundGroup->second.first;
@@ -331,7 +347,8 @@ namespace Wisteria::Graphs
                         std::set<wxString, Data::StringCmpNoCase> theSet;
                         theSet.emplace(m_data->GetIdColumn().GetValue(i).c_str());
                         bins[0].emplace_back(
-                            comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0), valuesCounter(1.0, theSet)));
+                            comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0),
+                                valuesCounter(1.0, theSet)));
                         }
                     break;
                     }
@@ -339,7 +356,8 @@ namespace Wisteria::Graphs
                     compare_doubles_less_or_equal(currentVal, (minVal+(j*BinSize)+BinSize)))
                     {
                     auto foundGroup = std::find(bins[j].begin(), bins[j].end(),
-                        comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0), valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
+                        comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : 0),
+                            valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
                     if (foundGroup != bins[j].end())
                         {
                         ++foundGroup->second.first;
@@ -351,7 +369,9 @@ namespace Wisteria::Graphs
                         std::set<wxString, Data::StringCmpNoCase> theSet;
                         theSet.emplace(m_data->GetIdColumn().GetValue(i).c_str());
                         bins[j].emplace_back(
-                            comparable_first_pair((m_useGrouping ? m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)), valuesCounter(1, theSet)));
+                            comparable_first_pair((m_useGrouping ?
+                                m_groupColumn->GetValue(i) :
+                                static_cast<Data::GroupIdType>(0)), valuesCounter(1, theSet)));
                         }
                     break;
                     }
@@ -400,7 +420,8 @@ namespace Wisteria::Graphs
             double currentBarBlocksTotal{ 0 };
             for (const auto& block : bins[i])
                 {
-                const wxColour blockColor = (m_useGroupingColors && static_cast<size_t>(block.first) < GetColorScheme()->GetColors().size()) ?
+                const wxColour blockColor = (m_useGroupingColors &&
+                    static_cast<size_t>(block.first) < GetColorScheme()->GetColors().size()) ?
                     GetColorScheme()->GetColor(block.first) : GetColorScheme()->GetColor(0);
                 currentBarBlocksTotal += block.second.first;
 
@@ -414,7 +435,8 @@ namespace Wisteria::Graphs
                     block.second.second.size() > 1)
                     { blockLabel += L"..."; }
 
-                BarBlock theBlock{ BarBlock(BarBlockInfo(block.second.first).Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel)))  };
+                BarBlock theBlock{ BarBlock(BarBlockInfo(block.second.first).
+                    Brush(blockColor).SelectionLabel(GraphItems::Label(blockLabel)))  };
                 if (block.second.second.size() > 1)
                     {
                     theBlock.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
@@ -490,11 +512,14 @@ namespace Wisteria::Graphs
         if (m_data == nullptr)
             { return 0; }
 
-        double suggestedBinSize = (m_data->GetRowCount() <= 1) ? 1 : statistics::scotts_choice(m_continuousColumn->GetValues().cbegin(), m_continuousColumn->GetValues().cend());
+        double suggestedBinSize = (m_data->GetRowCount() <= 1) ? 1 :
+            statistics::scotts_choice(m_continuousColumn->GetValues().cbegin(),
+                                      m_continuousColumn->GetValues().cend());
         if (suggestedBinSize < 1.0f && (maxVal-minVal) > 5)
             { suggestedBinSize = 1.0f; }
         size_t binCount = std::ceil(safe_divide<double>((maxVal-minVal),
-            (GetBinningMethod() == BinningMethod::BinByIntegerRange) ? std::ceil(suggestedBinSize) : suggestedBinSize));
+            (GetBinningMethod() == BinningMethod::BinByIntegerRange) ?
+                std::ceil(suggestedBinSize) : suggestedBinSize));
         if (binCount == 0)
             { binCount = 1; }
         return std::min(binCount, GetMaxNumberOfBins());
@@ -535,7 +560,9 @@ namespace Wisteria::Graphs
                 legendText.append(L"\u2026");
                 break;
                 }
-            wxString currentLabel = m_useGrouping ? m_groupColumn->GetCategoryLabel(groupId) : wxString(L"");
+            wxString currentLabel = m_useGrouping ?
+                m_groupColumn->GetCategoryLabel(groupId) :
+                wxString(L"");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength())
                 {
                 currentLabel.resize(Settings::GetMaxLegendTextLength()+1);

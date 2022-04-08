@@ -249,7 +249,7 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points. Leave as null to use an Earth tones theme.
+            @param colors The color scheme to apply to the points. Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points. Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,

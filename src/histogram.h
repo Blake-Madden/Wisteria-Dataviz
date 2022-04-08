@@ -98,11 +98,11 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
-            @param colors The color scheme to apply to the points. Leave as null to use an Earth tones theme.*/
+            @param colors The color scheme to apply to the points. Leave as null to use the default theme.*/
         explicit Histogram(Wisteria::Canvas* canvas, std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
             Wisteria::Graphs::BarChart(canvas),
             m_data(nullptr),
-            m_colorScheme(colors != nullptr ? colors : std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::EarthTones()))
+            m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme())
             {
             GetBarAxis().GetGridlinePen() = wxNullPen;
             GetBarAxis().GetGridlinePen() = wxNullPen; // doesn't make sense to show these on a histogram

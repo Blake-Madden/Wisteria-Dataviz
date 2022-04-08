@@ -242,7 +242,7 @@ namespace Wisteria::Graphs
         Graph2D(canvas),
         m_pieColors(colors != nullptr ?
             colors :
-            std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::EarthTones()))
+            Settings::GetDefaultColorScheme())
         {
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
