@@ -152,17 +152,15 @@ namespace Wisteria::Graphs
                 { continue; }
             const auto wickX = lowPt.x;
             auto wick = std::make_shared<GraphItems::Lines>(
-                wxPen((m_chartType == ChartType::Ohlc) ?
-                  (ohlc.m_open <= ohlc.m_close ? m_gainBrush.GetColour() :
-                   m_lossBrush.GetColour()) :
-                  *wxBLACK), GetScaling());
+                wxPen((ohlc.m_open <= ohlc.m_close ? m_gainBrush.GetColour() :
+                   m_lossBrush.GetColour())), GetScaling());
             wick->AddLine(lowPt, hiPt);
             if (!datePos.has_value() ||
                 !GetPhyscialCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
                 !GetPhyscialCoordinates(datePos.value(), ohlc.m_close, hiPt))
                 { continue; }
 
-            // make candles as wide as possible with the given area, which
+            // make candles as wide as possible with the given area, with
             // 1 DIP padding on each side
             const auto candleSideWidth = std::max<wxCoord>(
                 std::floor((candleWidth / 2) - ScaleToScreenAndCanvas(1)), 1);

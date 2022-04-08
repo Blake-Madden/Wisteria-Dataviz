@@ -24,10 +24,7 @@ namespace Wisteria::Graphs
 
          %Data can either be displayed with candlesticks or OHLC hinges.
 
-         | Candlestick     | OHLC |
-         | :-------------- | :-------------------------------- |
-         | @image html Candlestick.svg width=90% |
-         | @image html OHLC.svg width=90% |
+         @image html CandlestickPlot.svg width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where a date column is the days, and four continuous columns
@@ -37,7 +34,7 @@ namespace Wisteria::Graphs
          | :--        | --:    | --:    | --:    | --:   |
          | 12/31/2021 | 23.352 | 23.095 | 23.39  | 23.07 |
          | 12/30/2021 | 23.06  | 22.87  | 23.155 | 22.63 |
-         | 12/29/2021 | 22.858 |23.05   | 23.185 | 22.6  |
+         | 12/29/2021 | 22.858 | 23.05  | 23.185 | 22.6  |
 
          ...
 
