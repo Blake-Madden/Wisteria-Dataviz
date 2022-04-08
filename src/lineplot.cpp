@@ -14,10 +14,10 @@ namespace Wisteria::Graphs
     {
     //-------------------------------------------
     void LinePlot::Line::SetData(std::shared_ptr<const Data::Dataset> data,
-                       const wxString& yColumnName,
-                       const wxString& xColumnName,
-                       std::optional<const wxString>& groupColumnName,
-                       const Data::GroupIdType groupId)
+                                 const wxString& yColumnName,
+                                 const wxString& xColumnName,
+                                 std::optional<const wxString>& groupColumnName,
+                                 const Data::GroupIdType groupId)
         {
         m_data = data;
         if (m_data == nullptr)
@@ -58,9 +58,9 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void LinePlot::SetData(std::shared_ptr<const Data::Dataset> data,
-        const wxString& yColumnName,
-        const wxString& xColumnName,
-        std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+                           const wxString& yColumnName,
+                           const wxString& xColumnName,
+                           std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
         m_data = data;
         if (m_data == nullptr)
@@ -255,10 +255,14 @@ namespace Wisteria::Graphs
                                         line.m_yColumn->GetValue(i),
                                         pt))
                     { continue; }
+                const wxColor ptColor = (m_colorIf ?
+                    m_colorIf(line.m_xColumn->GetValue(i),
+                              line.m_yColumn->GetValue(i)) :
+                    line.GetPen().GetColour());
                 points->AddPoint(Point2D(
                                     GraphItemInfo(line.GetData()->GetIdColumn().GetValue(i)).
                                     AnchorPoint(pt).
-                                    Brush(line.GetPen().GetColour()),
+                                    Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
                                     Settings::GetPointRadius(),
                                     GetShapeScheme()->GetShape(line.m_groupId),
                                     &GetShapeScheme()->GetImage()));

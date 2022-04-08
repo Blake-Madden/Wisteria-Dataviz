@@ -96,7 +96,7 @@ namespace Wisteria::Graphs
                                            "entered yet for last week."));
 
          // customize the X axis labels
-         for (int i = 0; i < 6; ++i)
+         for (int i = 1; i < 6; ++i)
             {
             linePlot->GetBottomXAxis().SetCustomLabel(i,
                 Label(wxString::Format(_(L"Week %i"), i)));
@@ -179,7 +179,7 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the line plot on.
             @param colors The color scheme to apply to the points.
-             Leave as null to use an Earth tones theme.
+             Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
              Leave as null to use the standard shapes.
              Set to a new shape scheme filled with IconShape::BlankIcon to not
@@ -193,7 +193,7 @@ namespace Wisteria::Graphs
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr) :
             Graph2D(canvas),
             m_colorScheme(colors != nullptr ? colors :
-                std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::EarthTones())),
+                Settings::GetDefaultColorScheme()),
             m_shapeScheme(shapes != nullptr ? shapes :
                 std::make_shared<IconShapeScheme>(StandardShapes())),
             m_linePenStyles(linePenStyles != nullptr ?
@@ -225,6 +225,28 @@ namespace Wisteria::Graphs
                              const wxString& yColumnName,
                              const wxString& xColumnName,
                              std::optional<const wxString> groupColumnName = std::nullopt);
+
+        /** @brief Sets an additional function to assign a point's color to something different
+             from the rest of its group based on a set of criteria.
+            @details This will be any @c std::function
+             (or lambda) that takes two doubles (the X and Y values) and returns a color if the
+             X and/or Y values meet a certain criteria. If the values don't meet the criteria, then
+             an uninitialized @c wxColour should be returned. If the function returns an invalid
+             @c wxColour (implying that the point didn't meet the criteria), then the parent line's
+             color will be used.
+            @param criteria The function/lambda to use as your criteria.
+            @code
+             // change the color for any point less than 60 to red to show if failing
+             linePlot->SetPointColorCriteria(
+                [](const double x, const double y)
+                    {
+                    return (y < 60.0) ?
+                        wxColour(255, 0, 0) :
+                        wxColour();
+                    });
+            @endcode*/
+        void SetPointColorCriteria(PointColorCriteria criteria)
+            { m_colorIf = criteria; }
 
         /** @brief Get the lines at the specified index.
             @param index The index of the line to get.
@@ -351,6 +373,8 @@ namespace Wisteria::Graphs
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         std::shared_ptr<IconShapeScheme> m_shapeScheme;
         std::shared_ptr<LineStyleScheme> m_linePenStyles;
+
+        PointColorCriteria m_colorIf;
         };
     }
 
