@@ -13,7 +13,7 @@ such as:
 - Mouse- and keyboard-enabled zooming
 - Data [importing](ImportingData.md) (CSV or tab-delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
-  - Includes support for continuous, categorical, and ID columns
+  - Includes support for continuous, categorical, date, and ID columns
 - Can handle [HiDPI](HiDPI.md) displays
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Microsoft Windows, if available)
 - [Image](Images.md) support, including the ability to use an image as a plot background or a stipple brush for bar charts
@@ -103,11 +103,7 @@ Business
 
 | Candlestick Plot (Wisteria::Graphs::CandlestickPlot) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/Candlestick.svg) |
-
-| OHLC Plot (Wisteria::Graphs::CandlestickPlot) |
-| :-------------------------------- |
-| ![](docs/doxygen/images/OHLC.svg) |
+| ![](docs/doxygen/images/CandlestickPlot.svg) |
 
 Statistical
 -----------------------------
