@@ -105,6 +105,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BOXPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HISTOGRAM);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_GANTT);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CANDLESTICK_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LINEPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LINEPLOT_CUSTOMIZED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART);
@@ -168,6 +169,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
     fileMenu->Append(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"))->
@@ -367,6 +370,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Histogram::IntervalDisplay::Midpoints,
             BinLabelDisplay::BinValueAndPercentage);
 
+        plot->GetTitle().SetText(_("Performance Levels"));
+
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         subframe->m_canvas->SetFixedObject(0, 1,
             plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
@@ -425,7 +430,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 1,
             linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
         }
-    // Line Plot
+    // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
         {
         subframe->SetTitle(_(L"Line Plot (Customized)"));
@@ -474,6 +479,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 }
             }
 
+        // change the color for any point less than 60 to red to show if failing
+        linePlot->SetPointColorCriteria(
+                                        [](const double x, const double y)
+                                          {
+                                          return (y < 60.0) ?
+                                              wxColour(255, 0, 0) :
+                                              wxColour();
+                                          });
+
         // add a note
         auto note = std::make_shared<Label>(
             GraphItemInfo(L"What happened this week?\nAre we sure this is correct???").
@@ -501,8 +515,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         // add a red background for failing grades
-        // (note that this will appear in the legend)
-        linePlot->AddReferenceArea(ReferenceArea(AxisType::LeftYAxis, 0, 59, _(L"Failing Grades"), *wxRED));
+        // (note that this will appear on the legend and the plot)
+        linePlot->AddReferenceArea(ReferenceArea(AxisType::LeftYAxis, 0, 59,
+                                                 _(L"Failing"), *wxRED));
 
         // add the line plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
@@ -525,7 +540,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
     else if (event.GetId() == MyApp::ID_NEW_GANTT)
         {
         subframe->SetTitle(_(L"Gantt Chart"));
-        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
 
         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
         try
@@ -546,77 +561,81 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto projectColumnName = L"Project";
-        auto resourceColumnName = L"Resource";
-        auto completionColumnName = L"Completion";
-        auto descriptionColumnName = L"Description";
-        auto startColumnName = L"Start";
-        auto endColumnName = L"End";
-        auto projectColumn = companyAcquisitionData->GetCategoricalColumn(projectColumnName);
-        if (projectColumn == companyAcquisitionData->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': project name column not found for gantt chart."),
-                projectColumnName));
-            }
-        auto resourceColumn = companyAcquisitionData->GetCategoricalColumn(resourceColumnName);
-        if (resourceColumn == companyAcquisitionData->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': resource (group) column not found for gantt chart."),
-                resourceColumnName));
-            }
-        auto startColumn = companyAcquisitionData->GetDateColumn(startColumnName);
-        if (startColumn == companyAcquisitionData->GetDateColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': start date column not found for gantt chart."),
-                startColumnName));
-            }
-        auto endColumn = companyAcquisitionData->GetDateColumn(endColumnName);
-        if (endColumn == companyAcquisitionData->GetDateColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': end date column not found for gantt chart."),
-                endColumnName));
-            }
-        // these columns are optional
-        auto completionColumn = companyAcquisitionData->GetContinuousColumn(completionColumnName);
-        std::vector<ColumnWithStringTable>::const_iterator descriptionColumn =
-            companyAcquisitionData->GetCategoricalColumn(descriptionColumnName);
+        auto ganttChart = std::make_shared<GanttChart>(subframe->m_canvas,
+            // use a different color scheme where the colors
+            // stand out more from each other
+            std::make_shared<Colors::Schemes::Decade1920s>());
+        ganttChart->SetData(companyAcquisitionData,
+            DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
+            L"Project", L"Start", "End",
+            // these columns are optional
+            L"Resource", L"Description", L"Completion", L"Resource");
 
-
-        auto ganttChart = std::make_shared<GanttChart>(subframe->m_canvas);
-        ganttChart->SetFiscalYearType(FiscalYear::USBusiness);
-
-        for (size_t i = 0; i < companyAcquisitionData->GetRowCount(); ++i)
+        // add deadlines
+        auto releaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+            wxDateTime(25, wxDateTime::Dec, 2022));
+        if (releaseDate)
             {
-            ganttChart->AddTask(
-                GanttChart::TaskInfo(projectColumn->GetCategoryLabel(projectColumn->GetValue(i))).
-                Resource(resourceColumn->GetCategoryLabel(resourceColumn->GetValue(i))).
-                Description(
-                    (descriptionColumn != companyAcquisitionData->GetCategoricalColumns().cend()) ?
-                     descriptionColumn->GetCategoryLabel(descriptionColumn->GetValue(i)) : wxString(L"")).
-                StartDate(startColumn->GetValue(i)).
-                EndDate(endColumn->GetValue(i)).
-                PercentFinished(
-                    (completionColumn != companyAcquisitionData->GetContinuousColumns().cend() ?
-                     completionColumn->GetValue(i) : 0)) );
+            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
+                releaseDate.value(), _(L"Release"),
+                ColorBrewer::GetColor(Colors::Color::TractorRed)) );
             }
 
-        /*
-
-        ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-            ganttChart->GetScalingAxis().GetPointFromDate(
-                wxDateTime(25, wxDateTime::Dec, thisYear)).value(),
-            _(L"First Release")) );
-        ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
-            ganttChart->GetScalingAxis().GetPointFromDate(
-                wxDateTime(15, wxDateTime::Mar, thisYear + 1)).value(),
-            _(L"Update Release")));*/
+        auto updateReleaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+            wxDateTime(15, wxDateTime::Mar, 2023));
+        if (updateReleaseDate)
+            {
+            ganttChart->AddReferenceLine(ReferenceLine(AxisType::BottomXAxis,
+                updateReleaseDate.value(),
+                _(L"Hotfix Release"),
+                ColorBrewer::GetColor(Colors::Color::TractorRed,
+                                      Wisteria::Settings::GetTranslucencyValue())));
+            }
 
         ganttChart->SetCanvasMargins(5, 5, 5, 5);
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
+        // add a legend, showing whom is assigned to which tasks
+        subframe->m_canvas->SetFixedObject(0, 1,
+            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+        }
+    else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
+        {
+        subframe->SetTitle(_(L"Candlestick Plot"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto silverFuturesData = std::make_shared<Data::Dataset>();
+        try
+            {
+            silverFuturesData->ImportCSV(L"datasets/Silver Futures.csv",
+                ImportInfo().
+                ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
+                DateColumns({ { L"Date" } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto candlestickChart = std::make_shared<CandlestickPlot>(subframe->m_canvas);
+        // Chart's left axis will start at zero by default so that the scale
+        // isn't misleading; you can, however, turn that off like this
+        // to better see the daily activity.
+        // This should be done before calling SetData() so that it bases
+        // axis range on the data.
+        candlestickChart->GetLeftYAxis().StartAtZero(false);
+
+        // Uncomment this to fit the entire year onto the canvas
+        // so that there isn't a scrollbar.
+        // candlestickChart->SetPointsPerDefaultCanvasSize(365);
+
+        candlestickChart->SetData(silverFuturesData,
+            L"Date", L"Open", L"High", L"Low", L"Close/Last");
+
+        candlestickChart->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
+
+        candlestickChart->SetCanvasMargins(5, 5, 5, 5);
+        subframe->m_canvas->SetFixedObject(0, 0, candlestickChart);
         }
     // Bar Chart
     else if (event.GetId() == MyApp::ID_NEW_BARCHART)
@@ -721,7 +740,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->GetBarAxis().GetTitle().GetGraphItemInfo().
             Text(L"ISSUES").Orient(Orientation::Horizontal).Padding(5, 10, 0, 0).
-            Font(wxFontInfo(10).Family(wxFontFamily::wxFONTFAMILY_TELETYPE));
+            LabelAlignment(TextAlignment::Centered);
         plot->GetBarAxis().GetTitle().SplitTextByCharacter();
 
         // align the axis labels over to the left
@@ -1045,7 +1064,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // Because the responses in the dataset were coded 1-7, we will need to
         // add meaningful labels to the dataset. The following will add stock
-        // labels to represent the respones.
+        // labels to represent the responses.
         LikertChart::SetLabels(surveyData,
             surveyData->GetCategoricalColumnNames(),
             LikertChart::CreateLabels(LikertChart::LikertSurveyQuestionFormat::SevenPoint));
@@ -1323,6 +1342,10 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize),
         _(L"Gantt Chart"));
+
+    toolBar->AddTool(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize),
+        _(L"Candlestick Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"),

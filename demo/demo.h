@@ -29,6 +29,7 @@
 #include "../src/heatmap.h"
 #include "../src/piechart.h"
 #include "../src/likertchart.h"
+#include "../src/candlestickplot.h"
 #include "../src/spacer.h"
 #include "../src/import/text_matrix.h"
 
@@ -55,6 +56,7 @@ public:
     static constexpr int ID_NEW_LIKERT_7POINT{ wxID_HIGHEST+16 };
     static constexpr int ID_NEW_MULTIPLOT{ wxID_HIGHEST+17 };
     static constexpr int ID_NEW_MULTIPLOT_COMMON_AXIS{ wxID_HIGHEST+18 };
+    static constexpr int ID_NEW_CANDLESTICK_AXIS{ wxID_HIGHEST+19 };
     };
 
 // Define a new frame
