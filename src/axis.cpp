@@ -2209,6 +2209,12 @@ namespace Wisteria::GraphItems
     void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                         const DateInterval displayInterval, const FiscalYear FYtype)
         {
+        wxASSERT_MSG(startDate.IsValid() && endDate.IsValid(),
+            L"Invalid date used for axis range!");
+        // can't do much with this range if invalid, so have to ignore it
+        if (!startDate.IsValid() || !endDate.IsValid())
+            { return; }
+
         SetFiscalYearType(FYtype);
         m_firstDay = startDate;
         m_lastDay = endDate;
@@ -2224,39 +2230,42 @@ namespace Wisteria::GraphItems
         if (GetDateDisplayInterval() != DateInterval::FiscalQuarterly)
             { m_firstDay = std::min(wxDateTime::Now(), m_firstDay); }
 
-        // adjust monthly intervals to land on the start of the months
-        if ((m_lastDay-m_firstDay).GetDays() > 120)
-            {
-            while (m_firstDay.GetDay() != 1)
-                { m_firstDay.Subtract(wxDateSpan(0,0,0,1)); }
-            while (m_lastDay.GetDay() != 1)
-                { m_lastDay.Add(wxDateSpan(0,0,0,1)); }
-            }
-        // or adjust to weeks
-        else
-            {
-            while (m_firstDay.GetWeekDay() != firstWeekDay)
-                { m_firstDay.Subtract(wxDateSpan(0,0,0,1)); }
-            while (m_lastDay.GetWeekDay() != firstWeekDay)
-                { m_lastDay.Add(wxDateSpan(0,0,0,1)); }
-            }
-
         if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly)
             {
+            wxDateTime fyEnd = m_fyQ4;
+            fyEnd.SetYear(m_firstDay.GetYear()+1);
+            fyEnd.Add(wxDateSpan(0, 3, 0, 0));
+            fyEnd.Subtract(wxDateSpan(0, 0, 0, 1));
+
             m_firstDay.SetDay(m_fyQ1.GetDay());
-            m_lastDay.SetDay(m_fyQ1.GetDay());
             // move back to the start of a fiscal year
             while (m_firstDay.GetMonth() != m_fyQ1.GetMonth())
-                { m_firstDay.Subtract(wxDateSpan(0,1,0,0)); }
-            // move to first day of next FY
-            while (m_lastDay.GetMonth() != m_fyQ1.GetMonth() ||
-                   m_lastDay.GetYear() < m_firstDay.GetYear()+1)
-                { m_lastDay.Add(wxDateSpan(0,1,0,0)); }
+                { m_firstDay.Subtract(wxDateSpan(0, 1, 0, 0)); }
+
+            // move to first day of next FY, then step back to last day of the current FY
+            if (m_lastDay < fyEnd)
+                { m_lastDay = fyEnd; }
+            }
+        // adjust monthly intervals to land on the start of the months
+        else if (GetDateDisplayInterval() == DateInterval::Monthly)
+            {
+            while (m_firstDay.GetDay() != 1)
+                { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
+            m_lastDay.SetToLastMonthDay();
+            }
+        // or adjust to weeks
+        else if (GetDateDisplayInterval() == DateInterval::Weekly)
+            {
+            while (m_firstDay.GetWeekDay() != firstWeekDay)
+                { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
+            // move to start of following week and step back
+            while (m_lastDay.GetWeekDay() != firstWeekDay)
+                { m_lastDay.Add(wxDateSpan(0, 0, 0, 1)); }
+            m_lastDay.Subtract(wxDateSpan(0, 0, 0, 1));
             }
 
-        // monthly or quarterly intervals
-        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly ||
-            GetDateDisplayInterval() == DateInterval::Monthly)
+        // quarterly intervals
+        if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly )
             {
             SetRange(0, (m_lastDay-m_firstDay).GetDays(), 0, 1, 1);
             long currentDate = 0;
@@ -2274,6 +2283,22 @@ namespace Wisteria::GraphItems
                      (dateLabel.GetMonth() == m_fyQ4.GetMonth() &&
                       dateLabel.GetDay() == m_fyQ4.GetDay())
                     ))
+                    { SetCustomLabel(currentDate,
+                                     GraphItems::Label(dateLabel.FormatDate())); }
+                dateLabel.Add(wxDateSpan(0, 0, 0, 1));
+                ++currentDate;
+                }
+            }
+        // monthly
+        if (GetDateDisplayInterval() == DateInterval::Monthly)
+            {
+            SetRange(0, (m_lastDay-m_firstDay).GetDays(), 0, 1, 1);
+            long currentDate = 0;
+            wxDateTime dateLabel = m_firstDay;
+            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+                {
+                // only show first of the months
+                if (dateLabel.GetDay() == 1)
                     { SetCustomLabel(currentDate,
                                      GraphItems::Label(dateLabel.FormatDate())); }
                 dateLabel.Add(wxDateSpan(0, 0, 0, 1));
@@ -2304,14 +2329,33 @@ namespace Wisteria::GraphItems
                 dateLabel.Add(wxDateSpan(0, 0, 1, 0));
                 }
             }
+        // daily
+        else if (GetDateDisplayInterval() == DateInterval::Daily)
+            {
+            SetRange(0, (m_lastDay - m_firstDay).GetDays(), 0, 1, 1);
+            long currentDate = 0;
+            wxDateTime dateLabel = m_firstDay;
+            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+                {
+                SetCustomLabel(currentDate,
+                               GraphItems::Label(dateLabel.FormatDate()));
+                currentDate += 7;
+                if (currentDate > (m_lastDay-m_firstDay).GetDays())
+                    { break; }
+                dateLabel.Add(wxDateSpan(0, 0, 1, 0));
+                }
+            }
 
         SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         }
 
     //--------------------------------------
-    void Axis::SetRange(const double rangeStart, const double rangeEnd,
+    void Axis::SetRange(double rangeStart, double rangeEnd,
                         uint8_t precision, bool includeExtraInterval /*= false*/)
         {
+        if (IsStartingAtZero())
+            { rangeStart = std::min<double>(0, rangeStart); }
+
         double rangeSize = (rangeEnd-rangeStart);
         double intervalSize{ 0 };
         /* these divisions purposefully avoid double precision so
