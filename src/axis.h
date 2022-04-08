@@ -478,8 +478,7 @@ namespace Wisteria::GraphItems
              Also, after calling this, GetRangeDates() will return the (possibly adjusted)
              start and end dates. GetRange(), on the other hand, will return the underlying
              axis values (which may be something like 0-365 if the date range is a year).
-            @sa GetRangeDates(), SetFiscalYearType(), SetFiscalYearStart().
-            @todo Add support for DateInterval::Daily.*/
+            @sa GetRangeDates(), SetFiscalYearType(), SetFiscalYearStart().*/
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                       const DateInterval displayInterval,
                       const FiscalYear FYtype);
@@ -750,9 +749,9 @@ namespace Wisteria::GraphItems
              and may only be relevant to when you are designing a new graph type.*/
         /// @{
 
-        /** @brief Returns the physical point of an axis value, reletive to the parent plot.
+        /** @brief Returns the physical point of an axis value, relative to the parent plot.
             @param value The axis value to search for.
-            @param[out] result The physical coordinate of where the value is, reletive to the parent plot.
+            @param[out] result The physical coordinate of where the value is, relative to the parent plot.
             @returns `true` if the physical coordinate is found (`false` when value isn't on the axis).*/
         bool GetPhysicalCoordinate(const double value, wxCoord& result) const;
         /// @}

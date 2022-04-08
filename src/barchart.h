@@ -127,7 +127,7 @@ namespace Wisteria::Graphs
          // make the left axis title more stylized
          plot->GetBarAxis().GetTitle().GetGraphItemInfo().
             Text(L"ISSUES").Orient(Orientation::Horizontal).Padding(5, 10, 0, 0).
-            Font(wxFontInfo(10).Family(wxFontFamily::wxFONTFAMILY_TELETYPE));
+            LabelAlignment(TextAlignment::Centered);
          plot->GetBarAxis().GetTitle().SplitTextByCharacter();
 
          // align the axis labels over to the left
@@ -175,6 +175,21 @@ namespace Wisteria::Graphs
                 m_brush = brush;
                 return *this;
                 }
+            /// @brief Sets the block's background color.
+            /// @details This is invalid and not used by default, as the brush is what
+            ///  is normally used. However, if this set to a valid color, then that
+            ///  color will be filled in first, and then the brush will be painted
+            ///  on top. This is useful if the brush is a pattern (e.g., hatch),
+            ///  rather than a solid color.
+            /// @note This is only used if the bar block's painting effect is solid.
+            ///  In other works, this color is ignored for fades, glossy effects, stipples, etc.
+            /// @param color The background color of the block.
+            /// @returns A self reference.
+            BarBlockInfo& Color(const wxColour color)
+                {
+                m_color = color;
+                return *this;
+                }
             /// @brief Sets the block's length.
             /// @param len The length of the bar block.
             /// @returns A self reference.
@@ -218,6 +233,7 @@ namespace Wisteria::Graphs
                 }
         private:
             wxBrush m_brush{ *wxGREEN_BRUSH };
+            wxColour m_color;
             double m_length{ 0 };
             Wisteria::GraphItems::Label m_selectionLabel;
             Wisteria::GraphItems::Label m_decal;
@@ -236,12 +252,22 @@ namespace Wisteria::Graphs
             /// @param info A chainable set of fields to assign to the bar block.
             explicit BarBlock(const BarBlockInfo& info) :
                 m_brush(info.m_brush), m_length(info.m_length), m_selectionLabel(info.m_selectionLabel),
-                m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag)
+                m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag), m_color(info.m_color)
                 {}
 
-            /// @returns The block brush.
-            [[nodiscard]] wxBrush GetBrush() const
+            /// @returns The block's brush.
+            [[nodiscard]] const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
+            /// @returns The block's background color.
+            /// @details This is invalid and not used by default, as the brush is what
+            ///  is normally used. However, if this set to a valid color, then that
+            ///  color will be filled in first, and then the brush will be painted
+            ///  on top. This is useful if the brush is a pattern (e.g., hatch),
+            ///  rather than a solid color.
+            /// @note This is only used if the bar block's painting effect is solid.
+            ///  In other works, this color is ignored for fades, glossy effects, stipples, etc.
+            [[nodiscard]] const wxColour& GetColor() const noexcept
+                { return m_color; }
             /// @returns A lightened variation of the block color.
             [[nodiscard]] wxColour GetLightenedColor() const
                 { return m_brush.GetColour().ChangeLightness(160); }
@@ -298,8 +324,12 @@ namespace Wisteria::Graphs
                 { return m_customWidth; }
         private:
             /// @brief The brush (color and pattern) of the block.
-            /// @note The bar block's opacity will override the parent bar's opacity if different from the default (i.e., fully opaque).
+            /// @note The bar block's opacity will override the parent bar's opacity
+            ///  if different from the default (i.e., fully opaque).
             wxBrush m_brush{ *wxGREEN_BRUSH };
+            /// @brief An optional background color to use in conjunction with the brush.
+            ///  Will be invalid by default, so that the brush is what is used exclusively.
+            wxColour m_color;
             /// The length of the block (i.e., how much of the scaling axis the block consumes).
             double m_length{ 0 };
             /// The label shown on the middle of the bar when it is selected by the mouse.
@@ -546,9 +576,9 @@ namespace Wisteria::Graphs
                 m_longestBarLength = 0;
                 m_lowestBarAxisPosition = std::numeric_limits<double>::max();
                 m_highestBarAxisPosition = std::numeric_limits<double>::min();
-                // Remember just whether the bar axis gridlines were on and restore that setting.
-                // This is reset in SetBarOrientation(), so try to remember how this was set from before.
-                const auto gridlinePen = GetBarAxis().GetGridlinePen();
+                // Gridlines are reset in SetBarOrientation(), so remember how this was set from before
+                // and then restore it.
+                const wxPen gridlinePen = GetBarAxis().GetGridlinePen();
                 GetLeftYAxis().Reset();
                 GetRightYAxis().Reset();
                 GetBottomXAxis().Reset();

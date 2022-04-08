@@ -226,7 +226,7 @@ namespace Wisteria
             @details For example, this will set the X axes of the plots
              (as well as stand alone axes) down a column to have the same width and positions.
             @param align `true` to align column contents.
-            @note If the grid is jagged, then the conten alignment will stop on the first
+            @note If the grid is jagged, then the content alignment will stop on the first
              row that has less columns than the top row. For example, if a canvas has three rows,
              where the first and last rows have two graphs and the second only has one graph, then
              the X axes of the first column of graphs will be aligned, but not the second column.

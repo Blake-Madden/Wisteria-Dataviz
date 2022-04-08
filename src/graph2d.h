@@ -167,27 +167,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxColour GetBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
-             This is the color of plotting area (inside the main axes), and will transparent
-             by default (so that they canvas background will show through).
-            @param color The color to paint with.
-            @param opacity How transparent/opaque the background of the plot should be.
-            @param includeLinearGradient Whether a linear gradient should be applied to the background.
-            @todo Should divide these parameters into separate functions.*/
-        void SetBackgroundColor(const wxColour& color,
-                                const uint8_t opacity = wxALPHA_OPAQUE,
-                                const bool includeLinearGradient = false)
-            {
-            m_bgColor = color;
-            m_bgOpacity = opacity;
-            m_bgColorUseLinearGradient = includeLinearGradient;
-            }
-
-        /// @returns Whether a linear gradient is being applied to the background color.
-        [[nodiscard]] bool HasLinearGradient() const noexcept
-            { return m_bgColorUseLinearGradient; }
-        /// @returns The opacity of the background of the plot area.
-        [[nodiscard]] uint8_t GetBackgroundOpacity() const noexcept
-            { return m_bgOpacity; }
+             This is the color of the plotting area (inside the main axes).
+             This is transparent by default (normally, the canvas background will show through).
+            @param color The color to paint with.*/
+        void SetBackgroundColor(const wxColour& color)
+            { m_bgColor = color; }
         /// @}
 
         /** @name Property Functions
@@ -442,10 +426,8 @@ namespace Wisteria::Graphs
 
         std::map<wxString, wxVariant> m_properties;
 
-        // background values
-        wxColour m_bgColor{ *wxWHITE };
-        uint8_t m_bgOpacity{ wxALPHA_TRANSPARENT };
-        bool m_bgColorUseLinearGradient{ false };
+        // not used by default, keep invalid
+        wxColour m_bgColor;
 
         Wisteria::Canvas* m_parentCanvas{ nullptr };
         Wisteria::GraphItems::Axis m_bottomXAxis{ AxisType::BottomXAxis };

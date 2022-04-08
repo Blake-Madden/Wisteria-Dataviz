@@ -121,26 +121,26 @@ namespace Wisteria
         Justified                /*!< Multiline text is tracked (space inserted) to make lines equal width.*/
         };
 
-    /// @brief @brief How a `Label`'s text is aligned within its user-defined bounding box, going from top-to-bottom.
+    /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from top-to-bottom.
     /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
     ///  is taller than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSize(), TextAlignment.
     enum class PageVerticalAlignment
         {
-        TopAligned,   /*!< Text is aligned to the top of the `Label`'s bounding box.*/
-        Centered,     /*!< Text is centered `Label`'s bounding box. (This is the default.)*/
-        BottomAligned /*!< Text is aligned to the bottom of the `Label`'s bounding box.*/
+        TopAligned,   /*!< Text is aligned to the top of the label's bounding box.*/
+        Centered,     /*!< Text is centered label's bounding box. (This is the default.)*/
+        BottomAligned /*!< Text is aligned to the bottom of the label's bounding box.*/
         };
 
-    /// @brief @brief How a `Label`'s text is aligned within its user-defined bounding box, going from left-to-right.
+    /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from left-to-right.
     /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
     ///  is wider than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSize(), TextAlignment.
     enum class PageHorizontalAlignment
         {
-        LeftAligned,   /*!< Text is aligned to the left of the `Label`'s bounding box. (This is the default.)*/
-        Centered,      /*!< Text is centered `Label`'s bounding box.*/
-        RightAligned   /*!< Text is aligned to the right of the `Label`'s bounding box.*/
+        LeftAligned,   /*!< Text is aligned to the left of the label's bounding box. (This is the default.)*/
+        Centered,      /*!< Text is centered label's bounding box.*/
+        RightAligned   /*!< Text is aligned to the right of the label's bounding box.*/
         };
 
     /// @brief Background visual styles to apply a label.
@@ -1264,7 +1264,7 @@ namespace Wisteria
                  (if using a minimum user-defined size).
                 @param alignment How to align the text.
                 @note This can be used to center or right align a legend horizontally
-                 if being placed on a canvas (beneaht its plot).*/
+                 if being placed on a canvas (beneath its plot).*/
             void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1672,7 +1672,7 @@ namespace Wisteria
             /// @param cached The content box to cache.
             void SetCachedContentBoundingBox(const wxRect cached) const noexcept
                 { m_cachedContentBoundingBox = cached; }
-            /// @returns The cached content bouding box.
+            /// @returns The cached content bounding box.
             [[nodiscard]] wxRect GetCachedContentBoundingBox() const noexcept
                 { return m_cachedContentBoundingBox; }
             /// @returns `true` if element is currently being dragged.
@@ -1700,7 +1700,7 @@ namespace Wisteria
                 return false;
                 }
             /// @brief Returns the rectangle (relative to the canvas) of the object's
-            ///  main conntent. This is object specific and is used by the canvas
+            ///  main content. This is object specific and is used by the canvas
             ///  when aligning objects across a row. For example, this can be used to
             ///  align the axes of multiple plots.
             /// @returns The content area.

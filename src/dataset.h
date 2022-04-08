@@ -296,13 +296,13 @@ namespace Wisteria::Data
         {
         IsoDate,             /*!< Parse using the "YYYY-MM-DD" format.*/
         IsoCombined,         /*!< Parse using the "YYYY-MM-DDTHH:MM:SS" format.*/
-        Rfc822,              /*!< Usies wxDateTime::ParseRfc822Date(), which will be
+        Rfc822,              /*!< Uses @c wxDateTime::ParseRfc822Date(), which will be
                                   "looking for a date formatted according to the RFC 822 in it."*/
-        Automatic,           /*!< Uses wxDateTime::ParseDateTime(), which "Parses the string containing
+        Automatic,           /*!< Uses @c wxDateTime::ParseDateTime(), which "Parses the string containing
                                   the date and time in free format. This function tries as hard as it can
                                   to interpret the given string as date and time."
-                                  If ParseDateTime() fails (because a time component isn't found), then
-                                  ParseDateTime() will be attempted.*/
+                                  If @c ParseDateTime() fails (because a time component isn't found), then
+                                  @c ParseDateTime() will be attempted.*/
         StrptimeFormatString /*!< Parse using a strptime()-like format string (e.g., "%Y-%m-%d").
                                   Please see the description of the ANSI C function @c strftime(3)
                                   for the syntax of the format string.*/
@@ -591,7 +591,7 @@ namespace Wisteria::Data
         /// @returns The categorical columns.
         [[nodiscard]] std::vector<ColumnWithStringTable>& GetCategoricalColumns() noexcept
             { return m_categoricalColumns; }
-        /// @returns A vector all all categorical column names.
+        /// @returns A vector of all categorical column names.
         /// @sa RemoveColumnNamesFromList().
         [[nodiscard]] std::vector<wxString> GetCategoricalColumnNames() const noexcept
             {
@@ -643,8 +643,8 @@ namespace Wisteria::Data
             return colNames;
             }
 
-        /** @brief Gets an iterator to a continous column by name.
-            @param columnName The name of the continous column to look for.
+        /** @brief Gets an iterator to a continuous column by name.
+            @param columnName The name of the continuous column to look for.
             @returns An iterator to the group column if found,
              @c GetContinuousColumns().cend() otherwise.
             @note Check the return against @c GetContinuousColumns().cend()

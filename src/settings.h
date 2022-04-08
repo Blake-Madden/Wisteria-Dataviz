@@ -54,7 +54,7 @@ namespace Wisteria
             { return m_translucencyValue; }
         /// @brief Sets the opacity value to use when making a color translucent.
         ///  Default is 100;
-        /// @param value The opaciy level (should be between 0 [transparent] to 255 [opaque]).
+        /// @param value The opacity level (should be between 0 [transparent] to 255 [opaque]).
         static void SetTranslucencyValue(const uint8_t value) noexcept
             { m_translucencyValue = std::clamp<uint8_t>(value, 0, 255); }
         /// @brief Gets the maximum number of items that can be displayed in a legend.
@@ -128,7 +128,7 @@ namespace Wisteria
             }
         /// @returns The default color scheme to use for groups with the graphs.
         [[nodiscard]] static std::shared_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
-            { return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Decade1990s()); }
+            { return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk()); }
     private:
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };
@@ -144,5 +144,7 @@ namespace Wisteria
         std::shared_ptr<Colors::Schemes::ColorScheme> m_defaultColorScheme;
         };
     }
+
+/** @}*/
 
 #endif // __WISTERIA_SETTINGS_H__

@@ -80,7 +80,7 @@ namespace lily_of_the_valley
                     { break; }
                 // otherwise, go to the start of the next line:
                 // skip the line feed if following a carriage return--
-                // this is the standard for Windows files.*/
+                // this is the standard for Windows files.
                 if (currentPos[0] == 13 && currentPos[1] == 10)
                     { currentPos += 2; }
                 else
