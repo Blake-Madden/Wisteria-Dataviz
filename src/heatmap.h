@@ -33,9 +33,9 @@ namespace Wisteria::Graphs
 
         @par %Data:
          This plot accepts a Data::Dataset where a continuous column is the data that is color mapped.
-         Also, this data series can optionally be grouped by a grouping column from the dataset. Finally, an ID/label
-         can optionally be assigned to each cell (corresponding to the data points) that is displayed when selected
-         by the client.
+         Also, this data series can optionally be grouped by a grouping column from the dataset.
+         Finally, an ID/label can optionally be assigned to each cell (corresponding to the data points)
+         that is displayed when selected by the client.
 
          | NAME   | TEST_SCORE | WEEK   |
          | :--    | --:        | :--    |
@@ -58,16 +58,18 @@ namespace Wisteria::Graphs
 
          ...
 
-         With the above dataset, the column `TEST_SCORE` will be the continuous variable, and `WEEK` can optionally
-         be used as the label/ID when a cell is selected. If we wish to separate heat maps for each group,
-         then `NAME` should be imported as the grouping variable.
+         With the above dataset, the column `TEST_SCORE` will be the continuous variable,
+         and `WEEK` can optionally be used as the label/ID when a cell is selected.
+         If you wish to separate heat maps for each group, then `NAME` should be imported
+         as the grouping variable.
 
-         Note that the data is mapped exactly in the order that it appears in the data (i.e., nothing
-         is sorted). Because this, the grouping column should be presorted and each group's values should
-         be in the order that want them to be appear in the plot.
+         Note that the data is mapped exactly in the order that it appears in the data
+         (i.e., nothing is sorted). Because this, the grouping column should be presorted
+         and each group's values should be in the order that want them to be appear in the plot.
 
-         Also note that missing data will not be plotted at all. With the above dataset, a row for the student `Joe`
-         will only have two cells (for `Week 1` and `Week 4`).
+         Also note that missing data will be shown as transparent cells with a red 'X' in the middle.
+         With the above dataset, a row for the student `Joe` will only have two valid cells
+         (for weeks 1 and 4), and two cells in the middle that are crossed out (for weeks 2 and 3).
          @par Example:
          @code
           // "this" will be a parent wxWidgets frame or dialog,
@@ -116,33 +118,46 @@ namespace Wisteria::Graphs
     public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.
-            @param colors The color scheme to apply to the points. Leave as null to use black & white.
+            @param colors The color scheme to apply to the points.
+             Leave as null to use black & white.
             @note For the color scheme, the first colors map to the lower values,
-             last colors map to the higher values. The default color scale is white (low values) to black (high values),
+             last colors map to the higher values.
+             The default color scale is white (low values) to black (high values),
              which creates a grayscale spectrum.*/
-        explicit HeatMap(Wisteria::Canvas* canvas, std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
+        explicit HeatMap(Wisteria::Canvas* canvas,
+                         std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
         /** @brief Set the display across the heatmap.
             @param data The data.
-            @param continuousColumnName The data column from the dataset to use for the heatmapping.
-            @param groupColumnName The group column to split the data into (this is optional).
-            @param groupColumnCount If grouping, the number of columns to split the grouped heatmaps into.
-             Must be between 1-5 (and will be clamped otherwise), as more than 5 columns would make the boxes too small.
+            @param continuousColumnName The data column from the dataset to use for
+             the heatmapping.
+            @param groupColumnName The group column to split the data into
+             (this is optional).
+            @param groupColumnCount If grouping, the number of columns to split
+             the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
+             as more than 5 columns would make the boxes too small.
              Also, this parameter is ignored if @c grouping is `false`.
             @warning If grouping the data, the data must be sorted ahead of time
              (given that ordering is important in a heatmap anyway).
              It is assumed that it is sorted by the value that the caller
              wants to display left to right, but then also by group. These
              groups will be drawn top-to-bottom.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name,
+             throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
             std::optional<const wxString> groupColumnName = std::nullopt,
             std::optional<size_t> groupColumnCount = std::nullopt);
-        /// @returns The group headers' prefix shown above each column when grouping is enabled.
+
+        /** @name Grouping Functions
+            @brief Functions related to how grouped cells are displayed.
+            @details These functions are only relavant if a grouping column was supplied.*/
+        /// @{
+
+        /// @returns The group headers' prefix shown above each column.
         /// @note This is only relevant if grouping is being used.
         [[nodiscard]] const wxString& GetGroupHeaderPrefix() const noexcept
             { return m_groupHeaderPrefix; }
-        /** @brief Sets the prefix of the label shown above each column when grouping is enabled.
+        /** @brief Sets the prefix of the label shown above each column.
             @param prefix The group label.
             @note This is only relevant if grouping is being used.*/
         void SetGroupHeaderPrefix(const wxString& prefix)
@@ -157,12 +172,17 @@ namespace Wisteria::Graphs
         /// @returns `true` if group column headers are being shown.
         [[nodiscard]] bool IsShowingGroupHeaders() const noexcept
             { return m_showGroupHeaders; }
+        /// @}
+
         /// @brief Builds and returns a legend using the current colors spectrum.
-        /// @details This can be then be managed by the parent canvas and placed next to the plot.
-        /// @param hint A hint about where the legend will be placed after construction. This is used
-        ///  for defining the legend's padding, outlining, canvas proportions, etc.
+        /// @details This can be then be managed by the parent canvas and
+        ///  placed next to the plot.
+        /// @param hint A hint about where the legend will be placed after construction.
+        ///  This is used for defining the legend's padding, outlining,
+        ///  canvas proportions, etc.
         /// @returns The legend for the plot.
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint) const;
     private:
         void RecalcSizes() final;
 
