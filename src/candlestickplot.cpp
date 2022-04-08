@@ -1,6 +1,7 @@
 #include "candlestickplot.h"
 
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Colors;
 
 namespace Wisteria::Graphs
     {
@@ -152,8 +153,10 @@ namespace Wisteria::Graphs
                 { continue; }
             const auto wickX = lowPt.x;
             auto wick = std::make_shared<GraphItems::Lines>(
-                wxPen((ohlc.m_open <= ohlc.m_close ? m_gainBrush.GetColour() :
-                   m_lossBrush.GetColour())), GetScaling());
+                wxPen((ohlc.m_open <= ohlc.m_close ?
+                    ColorContrast::Shade(m_gainBrush.GetColour(), .2) :
+                    ColorContrast::Shade(m_lossBrush.GetColour(), .2))),
+                    GetScaling());
             wick->AddLine(lowPt, hiPt);
             if (!datePos.has_value() ||
                 !GetPhyscialCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
