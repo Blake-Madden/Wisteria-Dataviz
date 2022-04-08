@@ -20,6 +20,7 @@ SET(WISTERIA_SRC
     src/lineplot.cpp
     src/lines.cpp
     src/piechart.cpp
+    src/candlestickplot.cpp
     src/graph2d.cpp
     src/graphitems.cpp
     src/ui/imageexportdlg.cpp

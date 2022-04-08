@@ -86,11 +86,11 @@ Basic
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/LinePlot.svg) | ![](docs/doxygen/images/LinePlotCustomized.svg) |
 
-| Pie Chart (Wisteria::Graphs::PieChart) | Pie Chart with Subgroups  (Wisteria::Graphs::PieChart) |
+| Pie Chart (Wisteria::Graphs::PieChart) | Pie Chart with Subgroups (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/PieChartSubgrouped.svg) |
 
-| Donut Chart (Wisteria::Graphs::PieChart) | Donut Chart with Subgroups  (Wisteria::Graphs::PieChart) |
+| Donut Chart (Wisteria::Graphs::PieChart) | Donut Chart with Subgroups (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/DonutChart.svg) | ![](docs/doxygen/images/DonutChartSubgrouped.svg) |
 
@@ -100,6 +100,14 @@ Business
 | Gantt Chart (Wisteria::Graphs::GanttChart) |
 | :-------------------------------- |
 | ![](docs/doxygen/images/GanttChart.svg) |
+
+| Candlestick Plot (Wisteria::Graphs::CandlestickPlot) |
+| :-------------------------------- |
+| ![](docs/doxygen/images/Candlestick.svg) |
+
+| OHLC Plot (Wisteria::Graphs::CandlestickPlot) |
+| :-------------------------------- |
+| ![](docs/doxygen/images/OHLC.svg) |
 
 Statistical
 -----------------------------
