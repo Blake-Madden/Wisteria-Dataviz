@@ -15,332 +15,326 @@
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <rect x="0" y="0" width="713" height="500" rx="0.00" shape-rendering="auto"  />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#BA969B; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M477.00 243.00 A206.00 206.00 0 0 0 135.07 88.21 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#003F5C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M481.00 243.00 A206.00 206.00 0 0 0 139.07 88.21 L275.00 243.00 z" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M477.00 243.00 A206.00 206.00 0 0 0 135.07 88.21" shape-rendering="auto" />
+  <path d="M481.00 243.00 A206.00 206.00 0 0 0 139.07 88.21" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#BA969B; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L477 243" shape-rendering="auto" />
-  <path d="M271 243 L135 88" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#003F5C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L481 243" shape-rendering="auto" />
+  <path d="M275 243 L139 88" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6E5045; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M135.07 88.21 A206.00 206.00 0 0 0 145.19 406.12 L271.00 243.00 z" shape-rendering="auto" />
-</g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M135.07 88.21 A206.00 206.00 0 0 0 145.19 406.12" shape-rendering="auto" />
-</g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6E5045; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L135 88" shape-rendering="auto" />
-  <path d="M271 243 L145 406" shape-rendering="auto" />
-</g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#CA5045; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M145.19 406.12 A206.00 206.00 0 0 0 292.97 447.83 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#2F4B7C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M139.07 88.21 A206.00 206.00 0 0 0 149.19 406.12 L275.00 243.00 z" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M145.19 406.12 A206.00 206.00 0 0 0 292.97 447.83" shape-rendering="auto" />
+  <path d="M139.07 88.21 A206.00 206.00 0 0 0 149.19 406.12" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#CA5045; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L145 406" shape-rendering="auto" />
-  <path d="M271 243 L292 447" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#2F4B7C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L139 88" shape-rendering="auto" />
+  <path d="M275 243 L149 406" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#668391; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M292.97 447.83 A206.00 206.00 0 0 0 477.00 243.00 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#665191; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M149.19 406.12 A206.00 206.00 0 0 0 296.97 447.83 L275.00 243.00 z" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M292.97 447.83 A206.00 206.00 0 0 0 477.00 243.00" shape-rendering="auto" />
+  <path d="M149.19 406.12 A206.00 206.00 0 0 0 296.97 447.83" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#668391; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L292 447" shape-rendering="auto" />
-  <path d="M271 243 L477 243" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#665191; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L149 406" shape-rendering="auto" />
+  <path d="M275 243 L296 447" shape-rendering="auto" />
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A05195; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M296.97 447.83 A206.00 206.00 0 0 0 481.00 243.00 L275.00 243.00 z" shape-rendering="auto" />
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M296.97 447.83 A206.00 206.00 0 0 0 481.00 243.00" shape-rendering="auto" />
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A05195; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L296 447" shape-rendering="auto" />
+  <path d="M275 243 L481 243" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="323.00" y="105.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 323.00 105.00)">36%</text>
+  <text x="327.00" y="105.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 327.00 105.00)">36%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="105.00" y="251.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 105.00 251.00)">28%</text>
+  <text x="109.00" y="251.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 109.00 251.00)">28%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="217.00" y="395.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 217.00 395.00)">12%</text>
+  <text x="221.00" y="395.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 221.00 395.00)">12%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="374.00" y="349.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 374.00 349.00)">23%</text>
+  <text x="378.00" y="349.00" textLength="22" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.17pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 378.00 349.00)">23%</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A7878B; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M374.00 243.00 A103.00 103.00 0 0 0 348.55 175.21 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#19526C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M378.00 243.00 A103.00 103.00 0 0 0 352.55 175.21 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M374.00 243.00 A103.00 103.00 0 0 0 348.55 175.21" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M378.00 243.00 A103.00 103.00 0 0 0 352.55 175.21" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A7878B; fill-opacity:1.00; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L374 243" shape-rendering="auto" />
-  <path d="M271 243 L348 175" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#19526C; fill-opacity:1.00; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L378 243" shape-rendering="auto" />
+  <path d="M275 243 L352 175" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#96797D; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M348.55 175.21 A103.00 103.00 0 0 0 310.04 147.68 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#30637A; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M352.55 175.21 A103.00 103.00 0 0 0 314.04 147.68 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M348.55 175.21 A103.00 103.00 0 0 0 310.04 147.68" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M352.55 175.21 A103.00 103.00 0 0 0 314.04 147.68" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#96797D; fill-opacity:1.00; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L348 175" shape-rendering="auto" />
-  <path d="M271 243 L310 147" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#30637A; fill-opacity:1.00; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L352 175" shape-rendering="auto" />
+  <path d="M275 243 L314 147" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#876C70; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M310.04 147.68 A103.00 103.00 0 0 0 214.19 157.08 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#447287; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M314.04 147.68 A103.00 103.00 0 0 0 218.19 157.08 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M310.04 147.68 A103.00 103.00 0 0 0 214.19 157.08" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M314.04 147.68 A103.00 103.00 0 0 0 218.19 157.08" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#876C70; fill-opacity:1.00; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L310 147" shape-rendering="auto" />
-  <path d="M271 243 L214 157" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#447287; fill-opacity:1.00; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L314 147" shape-rendering="auto" />
+  <path d="M275 243 L218 157" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#937A7E; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M214.19 157.08 A103.00 103.00 0 0 0 203.04 165.61 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#568093; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M218.19 157.08 A103.00 103.00 0 0 0 207.04 165.61 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M214.19 157.08 A103.00 103.00 0 0 0 203.04 165.61" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M218.19 157.08 A103.00 103.00 0 0 0 207.04 165.61" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#937A7E; fill-opacity:1.00; stroke:#6F5A5D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L214 157" shape-rendering="auto" />
-  <path d="M271 243 L203 165" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#568093; fill-opacity:1.00; stroke:#668B9D; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L218 157" shape-rendering="auto" />
+  <path d="M275 243 L207 165" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#8B736A; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M203.04 165.61 A103.00 103.00 0 0 0 191.33 177.71 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#586F96; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M207.04 165.61 A103.00 103.00 0 0 0 195.33 177.71 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M203.04 165.61 A103.00 103.00 0 0 0 191.33 177.71" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M207.04 165.61 A103.00 103.00 0 0 0 195.33 177.71" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#8B736A; fill-opacity:1.00; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L203 165" shape-rendering="auto" />
-  <path d="M271 243 L191 177" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#586F96; fill-opacity:1.00; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L207 165" shape-rendering="auto" />
+  <path d="M275 243 L195 177" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#968178; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M191.33 177.71 A103.00 103.00 0 0 0 171.68 270.30 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#687DA0; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M195.33 177.71 A103.00 103.00 0 0 0 175.68 270.30 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M191.33 177.71 A103.00 103.00 0 0 0 171.68 270.30" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M195.33 177.71 A103.00 103.00 0 0 0 175.68 270.30" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#968178; fill-opacity:1.00; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L191 177" shape-rendering="auto" />
-  <path d="M271 243 L171 270" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#687DA0; fill-opacity:1.00; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L195 177" shape-rendering="auto" />
+  <path d="M275 243 L175 270" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#87746C; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M171.68 270.30 A103.00 103.00 0 0 0 190.74 307.56 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#778AA9; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M175.68 270.30 A103.00 103.00 0 0 0 194.74 307.56 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M171.68 270.30 A103.00 103.00 0 0 0 190.74 307.56" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M175.68 270.30 A103.00 103.00 0 0 0 194.74 307.56" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#87746C; fill-opacity:1.00; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L171 270" shape-rendering="auto" />
-  <path d="M271 243 L190 307" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#778AA9; fill-opacity:1.00; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L175 270" shape-rendering="auto" />
+  <path d="M275 243 L194 307" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#93817A; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M190.74 307.56 A103.00 103.00 0 0 0 205.17 322.22 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6B7C98; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M194.74 307.56 A103.00 103.00 0 0 0 209.17 322.22 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M190.74 307.56 A103.00 103.00 0 0 0 205.17 322.22" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M194.74 307.56 A103.00 103.00 0 0 0 209.17 322.22" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#93817A; fill-opacity:1.00; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L190 307" shape-rendering="auto" />
-  <path d="M271 243 L205 322" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6B7C98; fill-opacity:1.00; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L194 307" shape-rendering="auto" />
+  <path d="M275 243 L209 322" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#84746D; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M205.17 322.22 A103.00 103.00 0 0 0 208.10 324.56 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#7989A2; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M209.17 322.22 A103.00 103.00 0 0 0 212.10 324.56 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M205.17 322.22 A103.00 103.00 0 0 0 208.10 324.56" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M209.17 322.22 A103.00 103.00 0 0 0 212.10 324.56" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#84746D; fill-opacity:1.00; stroke:#A8968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L205 322" shape-rendering="auto" />
-  <path d="M271 243 L208 324" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#7989A2; fill-opacity:1.00; stroke:#8293B0; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L209 322" shape-rendering="auto" />
+  <path d="M275 243 L212 324" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#C4C3D0; stroke-opacity:0.78;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M206 323 L129 420" shape-rendering="auto" stroke-dasharray="3.333333,2.666667"/>
+  <path d="M210 323 L133 420" shape-rendering="auto" stroke-dasharray="3.333333,2.666667"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#C4C3D0; fill-opacity:0.78; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="129 420 131 409 139 415 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+  <polygon points="133 420 135 409 143 415 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <ellipse cx="206.00" cy="323.00" rx="0.00" ry="0.00" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#8473A7; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M212.10 324.56 A103.00 103.00 0 0 0 251.56 343.30 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <ellipse cx="129.00" cy="420.00" rx="0.00" ry="0.00" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A396BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M212.10 324.56 A103.00 103.00 0 0 0 251.56 343.30" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#D4736A; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M208.10 324.56 A103.00 103.00 0 0 0 247.56 343.30 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#8473A7; fill-opacity:1.00; stroke:#A396BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L212 324" shape-rendering="auto" />
+  <path d="M275 243 L251 343" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#DF968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M208.10 324.56 A103.00 103.00 0 0 0 247.56 343.30" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#9081AF; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M251.56 343.30 A103.00 103.00 0 0 0 285.98 345.41 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#D4736A; fill-opacity:1.00; stroke:#DF968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L208 324" shape-rendering="auto" />
-  <path d="M271 243 L247 343" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A396BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M251.56 343.30 A103.00 103.00 0 0 0 285.98 345.41" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#BE675F; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M247.56 343.30 A103.00 103.00 0 0 0 281.98 345.41 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#9081AF; fill-opacity:1.00; stroke:#A396BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L251 343" shape-rendering="auto" />
+  <path d="M275 243 L285 345" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#DF968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M247.56 343.30 A103.00 103.00 0 0 0 281.98 345.41" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#B373AA; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M285.98 345.41 A103.00 103.00 0 0 0 331.42 329.17 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#BE675F; fill-opacity:1.00; stroke:#DF968F; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L247 343" shape-rendering="auto" />
-  <path d="M271 243 L281 345" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M285.98 345.41 A103.00 103.00 0 0 0 331.42 329.17" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#849BA7; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M281.98 345.41 A103.00 103.00 0 0 0 327.42 329.17 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#B373AA; fill-opacity:1.00; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L285 345" shape-rendering="auto" />
+  <path d="M275 243 L331 329" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M281.98 345.41 A103.00 103.00 0 0 0 327.42 329.17" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A16799; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M331.42 329.17 A103.00 103.00 0 0 0 375.95 263.47 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#849BA7; fill-opacity:1.00; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L281 345" shape-rendering="auto" />
-  <path d="M271 243 L327 329" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M331.42 329.17 A103.00 103.00 0 0 0 375.95 263.47" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#768B96; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M327.42 329.17 A103.00 103.00 0 0 0 371.95 263.47 L271.00 243.00 z" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A16799; fill-opacity:1.00; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L331 329" shape-rendering="auto" />
+  <path d="M275 243 L375 263" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M327.42 329.17 A103.00 103.00 0 0 0 371.95 263.47" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#AA76A3; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M375.95 263.47 A103.00 103.00 0 0 0 378.00 243.00 L275.00 243.00 z" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#768B96; fill-opacity:1.00; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L327 329" shape-rendering="auto" />
-  <path d="M271 243 L371 263" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M375.95 263.47 A103.00 103.00 0 0 0 378.00 243.00" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6A7D87; fill-opacity:1.00; stroke:#000000; stroke-opacity:0.0;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M371.95 263.47 A103.00 103.00 0 0 0 374.00 243.00 L271.00 243.00 z" shape-rendering="auto" />
-</g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.0; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M371.95 263.47 A103.00 103.00 0 0 0 374.00 243.00" shape-rendering="auto" />
-</g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6A7D87; fill-opacity:1.00; stroke:#A3B4BD; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M271 243 L371 263" shape-rendering="auto" />
-  <path d="M271 243 L374 243" shape-rendering="auto" />
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#AA76A3; fill-opacity:1.00; stroke:#C696BF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M275 243 L375 263" shape-rendering="auto" />
+  <path d="M275 243 L378 243" shape-rendering="auto" />
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="359.00" y="48.00" textLength="19" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#BA969B; fill-opacity:1.00; stroke:#BA969B; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 359.00 48.00)">Business</text>
+  <text x="363.00" y="49.00" textLength="27" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#003F5C; fill-opacity:1.00; stroke:#003F5C; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 363.00 49.00)">Business</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="18.00" y="258.00" textLength="42" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#6E5045; fill-opacity:1.00; stroke:#6E5045; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 18.00 258.00)">Computer Science</text>
+  <text x="6.00" y="261.00" textLength="58" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#2F4B7C; fill-opacity:1.00; stroke:#2F4B7C; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 6.00 261.00)">Computer Science</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="194.00" y="450.00" textLength="16" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#CA5045; fill-opacity:1.00; stroke:#CA5045; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 194.00 450.00)">English</text>
-  <text x="107.00" y="458.00" textLength="103" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#666666; fill-opacity:1.00; stroke:#666666; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 107.00 458.00)">Includes both literary and composition courses</text>
+  <text x="191.00" y="453.00" textLength="23" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#665191; fill-opacity:1.00; stroke:#665191; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 191.00 453.00)">English</text>
+  <text x="70.00" y="465.00" textLength="144" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#666666; fill-opacity:1.00; stroke:#666666; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 70.00 465.00)">Includes both literary and composition courses</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="428.00" y="389.00" textLength="17" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#668391; fill-opacity:1.00; stroke:#668391; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 428.00 389.00)">Science</text>
+  <text x="432.00" y="392.00" textLength="24" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#A05195; fill-opacity:1.00; stroke:#A05195; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 432.00 392.00)">Science</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="88.00" y="429.00" textLength="36" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:4.07pt; text-decoration: none; fill:#84746D; fill-opacity:1.00; stroke:#84746D; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 88.00 429.00)">Visual Basic.NET</text>
+  <text x="74.00" y="432.00" textLength="54" style="font-family:Segoe UI; font-weight:700; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#7989A2; fill-opacity:1.00; stroke:#7989A2; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 74.00 432.00)">Visual Basic.NET</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="311.00" y="227.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 311.00 227.00)">11%</text>
+  <text x="315.00" y="227.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 315.00 227.00)">11%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="295.00" y="203.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 295.00 203.00)">7%</text>
+  <text x="299.00" y="203.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 299.00 203.00)">7%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="258.00" y="194.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 258.00 194.00)">15%</text>
+  <text x="262.00" y="194.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 262.00 194.00)">15%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="213.00" y="234.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 213.00 234.00)">15%</text>
+  <text x="217.00" y="234.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 217.00 234.00)">15%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="219.00" y="268.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 219.00 268.00)">7%</text>
+  <text x="223.00" y="268.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 223.00 268.00)">7%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="243.00" y="292.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 243.00 292.00)">7%</text>
+  <text x="247.00" y="292.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 247.00 292.00)">7%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="262.00" y="296.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 262.00 296.00)">5%</text>
+  <text x="266.00" y="296.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 266.00 296.00)">5%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="282.00" y="293.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 282.00 293.00)">8%</text>
+  <text x="286.00" y="293.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 286.00 293.00)">8%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="306.00" y="274.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 306.00 274.00)">13%</text>
+  <text x="310.00" y="274.00" textLength="14" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 310.00 274.00)">13%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="316.00" y="250.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 316.00 250.00)">3%</text>
+  <text x="320.00" y="250.00" textLength="10" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:5.09pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 320.00 250.00)">3%</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="542.00" y="20.00" textLength="45" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 542.00 20.00)">Business</text>
-  <text x="560.00" y="37.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 37.00)"> </text>
-  <text x="560.00" y="54.00" textLength="135" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 54.00)">Business Communication</text>
-  <text x="560.00" y="71.00" textLength="79" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 71.00)">Business Ethics</text>
-  <text x="560.00" y="88.00" textLength="141" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 88.00)">Introduction to Economics</text>
-  <text x="560.00" y="105.00" textLength="77" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 105.00)">Report Writing</text>
-  <text x="542.00" y="122.00" textLength="97" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 542.00 122.00)">Computer Science</text>
-  <text x="560.00" y="139.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 139.00)"> </text>
-  <text x="560.00" y="156.00" textLength="80" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 156.00)">Advanced C++</text>
-  <text x="560.00" y="173.00" textLength="24" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 173.00)">C++</text>
-  <text x="560.00" y="190.00" textLength="39" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 190.00)">COBOL</text>
-  <text x="560.00" y="207.00" textLength="141" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 207.00)">Introduction to wxWidgets</text>
-  <text x="560.00" y="224.00" textLength="85" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 224.00)">Visual Basic.NET</text>
-  <text x="542.00" y="241.00" textLength="38" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 542.00 241.00)">English</text>
-  <text x="560.00" y="258.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 258.00)"> </text>
-  <text x="560.00" y="275.00" textLength="85" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 275.00)">Creative Writing</text>
-  <text x="560.00" y="292.00" textLength="96" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 292.00)">Western Literature</text>
-  <text x="542.00" y="309.00" textLength="40" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 542.00 309.00)">Science</text>
-  <text x="560.00" y="326.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 326.00)"> </text>
-  <text x="560.00" y="343.00" textLength="129" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 343.00)">Anatomy &amp; Physiology I</text>
-  <text x="560.00" y="360.00" textLength="105" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 360.00)">Organic Chemistry I</text>
-  <text x="560.00" y="377.00" textLength="108" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:9.11pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 560.00 377.00)">Organic Chemistry II</text>
+  <text x="555.00" y="15.00" textLength="44" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 555.00 15.00)">Business</text>
+  <text x="572.00" y="29.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 29.00)"> </text>
+  <text x="572.00" y="43.00" textLength="128" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 43.00)">Business Communication</text>
+  <text x="572.00" y="57.00" textLength="77" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 57.00)">Business Ethics</text>
+  <text x="572.00" y="71.00" textLength="136" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 71.00)">Introduction to Economics</text>
+  <text x="572.00" y="85.00" textLength="77" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 85.00)">Report Writing</text>
+  <text x="555.00" y="99.00" textLength="92" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 555.00 99.00)">Computer Science</text>
+  <text x="572.00" y="113.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 113.00)"> </text>
+  <text x="572.00" y="127.00" textLength="76" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 127.00)">Advanced C++</text>
+  <text x="572.00" y="141.00" textLength="23" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 141.00)">C++</text>
+  <text x="572.00" y="155.00" textLength="36" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 155.00)">COBOL</text>
+  <text x="572.00" y="169.00" textLength="139" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 169.00)">Introduction to wxWidgets</text>
+  <text x="572.00" y="183.00" textLength="82" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 183.00)">Visual Basic.NET</text>
+  <text x="555.00" y="197.00" textLength="38" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 555.00 197.00)">English</text>
+  <text x="572.00" y="211.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 211.00)"> </text>
+  <text x="572.00" y="225.00" textLength="83" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 225.00)">Creative Writing</text>
+  <text x="572.00" y="239.00" textLength="95" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 239.00)">Western Literature</text>
+  <text x="555.00" y="253.00" textLength="38" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 555.00 253.00)">Science</text>
+  <text x="572.00" y="267.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 267.00)"> </text>
+  <text x="572.00" y="281.00" textLength="121" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 281.00)">Anatomy &amp; Physiology I</text>
+  <text x="572.00" y="295.00" textLength="100" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 295.00)">Organic Chemistry I</text>
+  <text x="572.00" y="309.00" textLength="103" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.55pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 572.00 309.00)">Organic Chemistry II</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M544 32 L710 32" shape-rendering="auto" />
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M556 24 L704 24" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A7878B; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 49 545 53 545 45 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#19526C; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 38 558 41 558 35 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#96797D; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 66 545 70 545 62 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#30637A; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 52 558 55 558 49 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#876C70; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 83 545 87 545 79 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#447287; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 66 558 69 558 63 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#937A7E; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 100 545 104 545 96 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#568093; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 80 558 83 558 77 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M544 134 L710 134" shape-rendering="auto" />
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M556 108 L704 108" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#8B736A; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 151 545 155 545 147 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#586F96; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 122 558 125 558 119 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#968178; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 168 545 172 545 164 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#687DA0; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 136 558 139 558 133 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#87746C; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 185 545 189 545 181 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#778AA9; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 150 558 153 558 147 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#93817A; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 202 545 206 545 198 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#6B7C98; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 164 558 167 558 161 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#84746D; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 219 545 223 545 215 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#7989A2; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 178 558 181 558 175 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M544 253 L710 253" shape-rendering="auto" />
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M556 206 L704 206" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#D4736A; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 270 545 274 545 266 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#8473A7; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 220 558 223 558 217 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#BE675F; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 287 545 291 545 283 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#9081AF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 234 558 237 558 231 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M544 321 L710 321" shape-rendering="auto" />
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M556 262 L704 262" shape-rendering="auto" />
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#849BA7; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 338 545 342 545 334 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#B373AA; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 276 558 279 558 273 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#768B96; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 355 545 359 545 351 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#A16799; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 290 558 293 558 287 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#6A7D87; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <polygon points="553 372 545 376 545 368 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+<g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#AA76A3; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="564 304 558 307 558 301 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 </svg>

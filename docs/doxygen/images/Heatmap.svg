@@ -48,35 +48,47 @@
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <text x="427.00" y="115.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 427.00 115.00)">37</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A3A3A3; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="516 35 516 134 615 134 615 35 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <text x="516.00" y="115.00" textLength="100" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FF0000; fill-opacity:1.00; stroke:#FF0000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 516.00 115.00)">❌</text>
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:0.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="21 134 21 233 120 233 120 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="31.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 31.00 214.00)">59</text>
+  <text x="21.00" y="214.00" textLength="100" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FF0000; fill-opacity:1.00; stroke:#FF0000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 21.00 214.00)">❌</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#1D1D1D; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#A3A3A3; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="120 134 120 233 219 233 219 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="130.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 130.00 214.00)">91</text>
+  <text x="130.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 130.00 214.00)">59</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#1D1D1D; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="219 134 219 233 318 233 318 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="229.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 229.00 214.00)">98</text>
+  <text x="229.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 229.00 214.00)">91</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#0C0C0C; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="318 134 318 233 417 233 417 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="328.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 328.00 214.00)">95</text>
+  <text x="328.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 328.00 214.00)">98</text>
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#080808; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#0C0C0C; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="417 134 417 233 516 233 516 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="427.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 427.00 214.00)">96</text>
+  <text x="427.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 427.00 214.00)">95</text>
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#080808; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="516 134 516 233 615 233 615 134 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
+</g>
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+  <text x="526.00" y="214.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 526.00 214.00)">96</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#0C0C0C; fill-opacity:1.00; stroke:#BEBBBB; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <polygon points="21 233 21 332 120 332 120 233 " shape-rendering="auto"   style="fill-rule:evenodd;"/>
@@ -103,11 +115,11 @@
   <text x="328.00" y="313.00" textLength="78" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:55.00pt; text-decoration: none; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 328.00 313.00)">94</text>
 </g>
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
-  <text x="629.00" y="18.00" textLength="83" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 629.00 18.00)">Range of Scores</text>
-  <text x="653.00" y="32.00" textLength="12" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 653.00 32.00)">98</text>
-  <text x="653.00" y="46.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 653.00 46.00)"> </text>
-  <text x="653.00" y="60.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 653.00 60.00)"> </text>
-  <text x="653.00" y="74.00" textLength="12" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 653.00 74.00)">37</text>
+  <text x="629.00" y="15.00" textLength="83" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 629.00 15.00)">Range of Scores</text>
+  <text x="645.00" y="29.00" textLength="12" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 645.00 29.00)">98</text>
+  <text x="645.00" y="43.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 645.00 43.00)"> </text>
+  <text x="645.00" y="57.00" textLength="3" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 645.00 57.00)"> </text>
+  <text x="645.00" y="71.00" textLength="12" style="font-family:Segoe UI; font-weight:400; font-style:normal; font-size:8.22pt; text-decoration: none; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00; stroke-width:0; white-space: pre;" xml:space="preserve" transform="rotate(0.00 645.00 71.00)">37</text>
 </g>
 <g style="stroke-width:0; stroke-linecap:round; stroke-linejoin:round; fill:#000000; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <defs>
@@ -116,6 +128,6 @@
       <stop offset="100%" style="stop-color:#FFFFFF; stop-opacity:1.00"/>
     </linearGradient>
   </defs>
-  <rect x="629" y="21" width="14" height="52" fill="url(#gradient0)" shape-rendering="auto"  />
+  <rect x="629" y="18" width="14" height="52" fill="url(#gradient0)" shape-rendering="auto"  />
 </g>
 </svg>
