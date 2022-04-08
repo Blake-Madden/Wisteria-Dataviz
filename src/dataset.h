@@ -300,7 +300,9 @@ namespace Wisteria::Data
                                   "looking for a date formatted according to the RFC 822 in it."*/
         Automatic,           /*!< Uses wxDateTime::ParseDateTime(), which "Parses the string containing
                                   the date and time in free format. This function tries as hard as it can
-                                  to interpret the given string as date and time."*/
+                                  to interpret the given string as date and time."
+                                  If ParseDateTime() fails (because a time component isn't found), then
+                                  ParseDateTime() will be attempted.*/
         StrptimeFormatString /*!< Parse using a strptime()-like format string (e.g., "%Y-%m-%d").
                                   Please see the description of the ANSI C function @c strftime(3)
                                   for the syntax of the format string.*/

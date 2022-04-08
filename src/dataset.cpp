@@ -40,7 +40,8 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     wxDateTime Dataset::ConvertToDate(const wxString& input,
-                                      const DateImportMethod method, const wxString& formatStr)
+                                      const DateImportMethod method,
+                                      const wxString& formatStr)
         {
         if (input.empty())
             { return wxInvalidDateTime; }
@@ -50,7 +51,9 @@ namespace Wisteria::Data
         switch (method)
             {
         case DateImportMethod::Automatic:
-            dt.ParseDate(input, &end);
+            // try reading as date & time, and fall back to just date if that fails
+            if (!dt.ParseDateTime(input, &end))
+                { dt.ParseDate(input, &end); }
             break;
         case DateImportMethod::IsoDate:
             dt.ParseISODate(input);
@@ -59,12 +62,14 @@ namespace Wisteria::Data
             dt.ParseISOCombined(input);
             break;
         case DateImportMethod::Rfc822:
-            dt.ParseRfc822Date(input);
+            dt.ParseRfc822Date(input, &end);
             break;
         case DateImportMethod::StrptimeFormatString:
             dt.ParseFormat(input, formatStr, &end);
             break;
             }
+        if (!dt.IsValid())
+            { wxLogWarning(L"'%s': error parsing date.", input); }
         return dt;
         }
 
@@ -202,7 +207,8 @@ namespace Wisteria::Data
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
-        size_t rowCount = std::min<size_t>(preview(fileText, delimiter, false, false), rowPreviewCount+1/*header*/);
+        size_t rowCount = std::min<size_t>(preview(fileText, delimiter, false, false),
+                                           rowPreviewCount+1/*header*/);
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
@@ -227,7 +233,9 @@ namespace Wisteria::Data
                     break;
                     }
                 }
-            columnInfo.push_back(std::make_pair(preview.get_header_names().at(colIndex).c_str(), currentColumnType));
+            columnInfo.push_back(std::make_pair(
+                preview.get_header_names().at(colIndex).c_str(),
+                currentColumnType));
             }
         return columnInfo;
         }
@@ -343,8 +351,9 @@ namespace Wisteria::Data
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter);
             catColumnIndices.push_back(
                 (catColumnIter != preview.get_header_names().cend()) ?
-                std::optional<catIndexInfo>(catIndexInfo{ static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
-                                                          catColumn.m_importMethod }) :
+                std::optional<catIndexInfo>(catIndexInfo{
+                    static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
+                                        catColumn.m_importMethod }) :
                 std::nullopt);
             }
 
@@ -409,6 +418,7 @@ namespace Wisteria::Data
                     }
                 }
             currentItem.Dates(dateValues);
+
             // categoricals
             catCodes.clear();
             for (size_t i = 0; i < catColumnIndices.size(); ++i)
@@ -429,6 +439,7 @@ namespace Wisteria::Data
                     }
                 }
             currentItem.Categoricals(catCodes);
+
             // continuous columns
             continuousValues.clear();
             for (size_t i = 0; i < continuousColumnIndices.size(); ++i)
@@ -440,6 +451,7 @@ namespace Wisteria::Data
                     }
                 }
             currentItem.Continuous(continuousValues);
+
             // ID column
             if (idColumnIndex)
                 { currentItem.Id(currentRow.at(idColumnIndex.value())); }
