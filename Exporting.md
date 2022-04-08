@@ -1,4 +1,4 @@
-Exporting  {#exporting}
+Exporting
 =============================
 
 The `Wisteria::Canvas` object has export support built into it. To initiate an export operation,

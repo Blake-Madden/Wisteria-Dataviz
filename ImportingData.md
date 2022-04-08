@@ -1,6 +1,5 @@
-Importing Data {#importing-data}
+Importing Data
 =============================
-[TOC]
 
 A `Wisteria::Data::Dataset` object is available for importing data, as well as connecting the data to
 various graph types. When you import data, you can select which columns to use and specify
@@ -19,73 +18,51 @@ which include chainable calls which classify the columns. For example:
 auto BelongingData = std::make_shared<Data::Dataset>();
 BelongingData->ImportCSV(L"Sense of Belonging.csv",
     ImportInfo().
-    // Y column, then X column
+    // double value columns
     ContinuousColumns({ L"Belong", L"Year" }).
+    // categorical columns
     CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
 ```
 
-In the above example, a file names "Sense of Belonging.csv" is imported. The importer will search for
-a column named "Year" (case insensitively) and specify that column as the X data. The column named
-"Belong" will be imported as the Y data, and "Name" will be imported as the grouping column.
+In the above example, a file named "Sense of Belonging.csv" will be imported. The importer will search for columns named
+"Year" and "Belong" (case insensitively) and will load them as continuous data. Next, the column "Name" will be
+imported as the categorical (i.e., grouping) column.
 
-Categorical Columns
+Continuous Data
 =============================
 
-A special note about categorical columns is that you can import multiple ones. When importing categoricals,
-you specify each one's name and how to import it.
+Columns imported as continuous will be read as double values using `wxString::ToCDouble()`. This means that the data
+should be in C locale (i.e., US format), where '.' is the radix separator.
 
-In the following example, we import seven categorical columns that are read as integer codes.
-We also read in one categorical (`Gender`) as strings (e.g., "Male", "Female").
+Although data is imported and stored as floating point values, discrete/integer values can also be read into these columns.
 
-```cpp
-auto surveyData = std::make_shared<Data::Dataset>();
-surveyData->ImportCSV(L"Graph Library Survey.csv",
-    Data::ImportInfo().
-    CategoricalColumns(
-        {
-        { L"GENDER" },
-        { L"I am happy with my current graphics library",
-            CategoricalImportMethod::ReadAsIntegers },
-        { L"Customization is important to me",
-            CategoricalImportMethod::ReadAsIntegers },
-        { L"A simple API is important to me",
-            CategoricalImportMethod::ReadAsIntegers },
-        { L"Support for obscure graphs is important to me",
-            CategoricalImportMethod::ReadAsIntegers },
-        { L"Extensibility is important to me",
-            CategoricalImportMethod::ReadAsIntegers },
-        { LR"(Standard, "out-of-the-box" graph support is important to me)",
-            CategoricalImportMethod::ReadAsIntegers },
-        { L"Data importing features are important to me",
-            CategoricalImportMethod::ReadAsIntegers }
-        }) );
-```
+Missing data in a continuous column will be imported as NaN (`std::numeric_limits<double>::quiet_NaN(`), so `std::isnan()`
+should be used when working with imported data.
 
 Categorical and Grouping Data
 =============================
 
-The X and Y columns in a dataset are imported as double values, and the label column as strings.
-For the grouping and categorical columns, however, you can control how these are read. They can either
-be read as integer codes (which should start at 0 or 1 for most graphs), or read as strings. This allows
+For the grouping/categorical columns, you can control how these are read. They can either
+be read as integer codes (which should start at 1 for most graphs), or read as strings. This allows
 for importing a grouping column in either of these formats:
 
 | GENDER |
 | --:    |
-| 0      |
 | 1      |
+|        |
+| 2      |
+| 2      |
+| 2      |
 | 1      |
+| 2      |
 | 1      |
-| 1      |
-| 0      |
-| 1      |
-| 0      |
 
 or
 
 | GENDER |
 | --:    |
 | M      |
-| F      |
+|        |
 | F      |
 | F      |
 | F      |
@@ -114,13 +91,73 @@ yData->GetCategoricalColumn(0).GetStringTable() =
 
 Note that this step is optional, as some graphs only require integer codes for these columns (e.g., Likert charts).
 
+Missing data in a column will be coded as '0'. If using integer codes in your data, ensure that '0' is not used or
+only used to represent missing data. Also, if setting a string table to your column, be sure that the string connected
+'0' relates to missing data (e.g., "Unknown", "No response", etc.).
+
+You can import multiple categorical columns, where you can specify each one's name and how to import it.
+
+In the following example, we import seven categorical columns that are read as integer codes.
+We also read in one categorical (`Gender`) as strings (e.g., "Male", "Female").
+
+```cpp
+auto surveyData = std::make_shared<Data::Dataset>();
+surveyData->ImportCSV(L"Graph Library Survey.csv",
+    Data::ImportInfo().
+    CategoricalColumns(
+        {
+        { L"GENDER" },
+        { L"I am happy with my current graphics library",
+            CategoricalImportMethod::ReadAsIntegers },
+        { L"Customization is important to me",
+            CategoricalImportMethod::ReadAsIntegers },
+        { L"A simple API is important to me",
+            CategoricalImportMethod::ReadAsIntegers },
+        { L"Support for obscure graphs is important to me",
+            CategoricalImportMethod::ReadAsIntegers },
+        { L"Extensibility is important to me",
+            CategoricalImportMethod::ReadAsIntegers },
+        { LR"(Standard, "out-of-the-box" graph support is important to me)",
+            CategoricalImportMethod::ReadAsIntegers },
+        { L"Data importing features are important to me",
+            CategoricalImportMethod::ReadAsIntegers }
+        }) );
+```
+
+Date Data
+=============================
+
+Date column importing is highly configurable. The default is to use a combination of `wxString::ParseDateTime()`
+and `wxString::ParseDate()`, which will make an "educated guess" to determine the date string's format.
+You can, however, have more granularity over the date input formats. The following demonstrates this:
+
+```cpp
+auto surveyData = std::make_shared<Data::Dataset>();
+companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+    ImportInfo().
+    ContinuousColumns({ L"Completion" }).
+    // The default DateImportMethod::Automatic would work,
+    // but the following demonstrates how you can customize
+    // date importing.
+    DateColumns({
+        // import dates like "1979-10-31"
+        { L"Start", DateImportMethod::IsoDate },
+        // import dates like "10/31/1979"
+        { L"End", DateImportMethod::StrptimeFormatString, L"%m/%d/%Y" }
+        });
+```
+
+Missing data in a date column are imported as wxInvalidDateTime, so `wxDateTime::IsValid()` should be called when
+working with imported values. Also, any parsing errors (from malformed input) while imporing dates are logged
+(via `wxLogWarning()`).
+
 Using the Data
 =============================
 
 After importing a dataset, you pass it to a graph to use. Graphs are pre-configured to use specific
 columns from a dataset, so you only need to call a graph's `SetData()` function and it will handle the rest.
-For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's first continuous column (and optionally its group column); all other
-columns in the dataset are ignored. A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two
+For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's first continuous column (and optionally its group column);
+all other columns in the dataset are ignored. A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two
 continuous columns and a group column.
 
 Building a Dataset

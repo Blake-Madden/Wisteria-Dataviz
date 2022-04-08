@@ -1,6 +1,5 @@
-Labels {#labels-overview}
+Labels
 =============================
-[TOC]
 
 Labels are objects used to display text throughout the system. This applies to titles, axis labels, legends,
 annotations, decals, etc. Labels are self-contained text boxes that manage attributes such as:
@@ -50,9 +49,8 @@ This can be useful for Y axis titles, as demonstrated below:
 // set the left title of a plot to be written downward, letter-by-letter
 thePlot->GetLeftYAxis().GetTitle().GetGraphItemInfo().
     Text(L"ISSUES").Orient(Orientation::Horizontal).
-    // Use a fixed-width font (@c wxFONTFAMILY_TELETYPE)
-    // for the best appearance.
-    Font(wxFontInfo(10).Family(wxFontFamily::wxFONTFAMILY_TELETYPE));
+    // center the text for the best appearance
+    LabelAlignment(TextAlignment::Centered);
 thePlot->GetLeftYAxis().GetTitle().SplitTextByCharacter();
 ```
 

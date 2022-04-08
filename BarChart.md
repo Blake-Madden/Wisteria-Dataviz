@@ -1,6 +1,5 @@
-Bar Chart {#barchart-overview}
+Bar Chart
 =============================
-[TOC]
 
 Note: this overview is meant for those designing a new chart derived from the `BarChart` class.
 

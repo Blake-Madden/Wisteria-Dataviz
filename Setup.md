@@ -1,6 +1,5 @@
-Setting up the Library {#setup}
+Setting up the Library
 =============================
-[TOC]
 
 There are a few library and related wxWidgts features that can be enabled when your application starts up.
 

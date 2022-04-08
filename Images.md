@@ -1,6 +1,5 @@
-Images {#images-overview}
+Images
 =============================
-[TOC]
 
 An image that can be placed on a graph. For example, the main place these are used
 are as canvases' backgrounds and watermarks.

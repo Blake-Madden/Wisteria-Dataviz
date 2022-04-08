@@ -1,6 +1,5 @@
-Color Management  {#colors}
+Color Management
 =============================
-[TOC]
 
 Creating Colors
 =============================

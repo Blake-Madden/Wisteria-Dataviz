@@ -1,6 +1,5 @@
-Printing {#printing}
+Printing
 =============================
-[TOC]
 
 The `Wisteria::Canvas` object has print support built into it. To initiate a print (or print preview,
 under Microsoft Windows) operation, send a `wxID_PRINT` (or `wxID_PREVIEW`) event to a `Wisteria::Canvas` window.

@@ -1,4 +1,4 @@
-Building a Dataset {#building-data}
+Building a Dataset
 =============================
 
 A `Wisteria::Data::Dataset` object can be built programmatically, as well as [imported](ImportingData.md).

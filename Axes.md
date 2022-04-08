@@ -1,6 +1,5 @@
-Axes {#axes-overview}
+Axes
 =============================
-[TOC]
 
 Customizing a Plot's Axes
 =============================

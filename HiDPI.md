@@ -1,4 +1,4 @@
-High DPI Display {#hi-dpi}
+High DPI Display
 =============================
 
 %Wisteria works with either regular or high DPI displays.
