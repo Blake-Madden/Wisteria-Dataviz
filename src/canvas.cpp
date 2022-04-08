@@ -500,7 +500,10 @@ namespace Wisteria
         memDc.SelectObject(wxNullBitmap);
 
         ImageExportOptions imgOptions;
-        imgOptions.m_imageSize = wxSize(width, height);
+        // scale down size to DIPs
+        imgOptions.m_imageSize = wxSize(
+            safe_divide<double>(width, GetDPIScaleFactor()),
+            safe_divide<double>(height, GetDPIScaleFactor()));
 
         wxString ext{ fn.GetExt() };
         ImageExportDlg optionsDlg(this, Image::GetImageFileTypeFromExtension(ext),
