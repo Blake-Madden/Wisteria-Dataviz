@@ -93,12 +93,13 @@ MyFrame::MyFrame()
     InitToolBar(GetToolBar());
 
     // Accelerators
-    wxAcceleratorEntry entries[5];
+    wxAcceleratorEntry entries[6];
     entries[0].Set(wxACCEL_CTRL, L'N', wxID_NEW);
     entries[1].Set(wxACCEL_CTRL, L'X', wxID_EXIT);
     entries[2].Set(wxACCEL_CTRL, L'A', wxID_ABOUT);
     entries[3].Set(wxACCEL_CTRL, L'S', wxID_SAVE);
     entries[4].Set(wxACCEL_CTRL, L'P', wxID_PRINT);
+    entries[5].Set(wxACCEL_CTRL, L'C', wxID_COPY);
     wxAcceleratorTable accel(std::size(entries), entries);
     SetAcceleratorTable(accel);
 
@@ -126,6 +127,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
     Bind(wxEVT_MENU, &MyFrame::OnSaveWindow, this, wxID_SAVE);
     Bind(wxEVT_MENU, &MyFrame::OnPrintWindow, this, wxID_PRINT);
+    Bind(wxEVT_MENU, &MyFrame::OnCopyWindow, this, wxID_COPY);
     Bind(wxEVT_MENU, &MyFrame::OnQuit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::OnCloseAll, this, wxID_CLOSE_ALL);
     Bind(wxEVT_MENU, &MyFrame::OnCloseAll, this, wxID_CLOSE_ALL);
@@ -1270,6 +1272,15 @@ void MyFrame::OnPrintWindow(wxCommandEvent& event)
         { return; }
 
     pChild->m_canvas->OnPrint(event);
+    }
+
+void MyFrame::OnCopyWindow(wxCommandEvent& event)
+    {
+    MyChild* pChild = dynamic_cast<MyChild*>(GetActiveChild());
+    if (pChild == nullptr)
+        { return; }
+
+    pChild->m_canvas->OnCopy(event);
     }
 
 void MyFrame::OnCloseAll([[maybe_unused]] wxCommandEvent& event)

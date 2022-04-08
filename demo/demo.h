@@ -76,6 +76,7 @@ private:
     void OnClose([[maybe_unused]]wxCommandEvent& event);
     void OnSaveWindow(wxCommandEvent& event);
     void OnPrintWindow(wxCommandEvent& event);
+    void OnCopyWindow(wxCommandEvent& event);
     };
 
 class MyChild final : public wxMDIChildFrame
