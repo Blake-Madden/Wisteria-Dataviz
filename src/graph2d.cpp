@@ -22,19 +22,51 @@ namespace Wisteria::Graphs
         legend->GetLegendIcons().push_back(
             LegendIcon(IconShape::HorizontalSeparator, wxPen(*wxBLACK, 2), wxNullColour));
         wxString textLines;
-        for (const auto& refLine : GetReferenceLines())
+
+        // combine lines with the same color and label
+        std::vector<ReferenceLine> refLines{ GetReferenceLines() };
+        std::sort(refLines.begin(), refLines.end(),
+                [](const auto& left, const auto& right) noexcept
+                {
+                return (left.m_compKey.CmpNoCase(right.m_compKey) < 0);
+                });
+        refLines.erase(
+            std::unique(refLines.begin(), refLines.end(),
+                [](const auto& left, const auto& right) noexcept
+                {
+                return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                        left.m_lineColor == right.m_lineColor);
+                }),
+            refLines.end());
+        // resort by axis position and add to the legend
+        std::sort(refLines.begin(), refLines.end());
+        for (const auto& refLine : refLines)
             {
             textLines += refLine.m_label + L"\n";
             legend->GetLegendIcons().push_back(
-                LegendIcon(IconShape::SquareIcon,
+                LegendIcon(IconShape::HorizontalLineIcon,
                            wxPen(refLine.m_lineColor, 2, refLine.m_linePenStyle),
                            ColorContrast::ChangeOpacity(refLine.m_lineColor,
                                                         Settings::GetTranslucencyValue())));
             }
-        std::set<ReferenceArea> refAreas;
+
         // combine areas with the same color and label
-        for (const auto& refArea : GetReferenceAreas())
-            { refAreas.insert(refArea); }
+        std::vector<ReferenceArea> refAreas{ GetReferenceAreas() };
+        std::sort(refAreas.begin(), refAreas.end(),
+            [](const auto& left, const auto& right) noexcept
+            {
+            return (left.m_compKey.CmpNoCase(right.m_compKey) < 0);
+            });
+        refAreas.erase(
+            std::unique(refAreas.begin(), refAreas.end(),
+                [](const auto& left, const auto& right) noexcept
+                {
+                return (left.m_label.CmpNoCase(right.m_label) == 0 &&
+                        left.m_lineColor == right.m_lineColor);
+                }),
+            refAreas.end());
+        // resort by axis position and add to the legend
+        std::sort(refAreas.begin(), refAreas.end());
         for (const auto& refArea : refAreas)
             {
             textLines += refArea.m_label + L"\n";
@@ -357,29 +389,17 @@ namespace Wisteria::Graphs
         GetLeftYAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetRightYAxis().SetAxisLabelScaling(smallestLabelScaling);
 
-        // fill in the plot area's color
-        // (don't bother if none of the axes are being drawn or the color is transparent)
+        // fill in the plot area's color (if being used, by default it is transparent)
         if (GetBackgroundColor().IsOk() &&
-             GetBackgroundOpacity() != wxALPHA_TRANSPARENT &&
-            (GetBottomXAxis().IsShown() || GetTopXAxis().IsShown() ||
-             GetLeftYAxis().IsShown() || GetRightYAxis().IsShown()) )
+            GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
             {
             wxPoint boxPoints[4];
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             auto box = std::make_shared<GraphItems::Polygon>(
                                 GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN).
-                                Brush(wxBrush(wxColour(GetBackgroundColor().Red(), GetBackgroundColor().Green(),
-                                                       GetBackgroundColor().Blue(), GetBackgroundOpacity()))).
+                                Brush(wxColour(GetBackgroundColor())).
                                 Scaling(GetScaling()),
                                 boxPoints, 4);
-            if (HasLinearGradient())
-                {
-                box->SetBackgroundFill(Colors::GradientFill(
-                                   wxColour(GetBackgroundColor().Red(), GetBackgroundColor().Green(),
-                                            GetBackgroundColor().Blue(), GetBackgroundOpacity()),
-                                   wxColour(255, 255, 255, GetBackgroundOpacity()),
-                                   FillDirection::South));
-                }
             AddObject(box);
             }
 
