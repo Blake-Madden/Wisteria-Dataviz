@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
 
         /** @name Grouping Functions
             @brief Functions related to how grouped cells are displayed.
-            @details These functions are only relavant if a grouping column was supplied.*/
+            @details These functions are only relevant if a grouping column was supplied.*/
         /// @{
 
         /// @returns The group headers' prefix shown above each column.

@@ -70,6 +70,7 @@ namespace Wisteria::Graphs
                                               m_continuousColumn->GetValues().cend());
         m_range = cb.GetRange();
 
+        const wxString crossedOutSymbolForNaN{ L"\x274C" };
         if (m_useGrouping)
             {
             // see how many groups there are
@@ -97,8 +98,10 @@ namespace Wisteria::Graphs
                     currentColumn = 0;
                     currentGroupId = m_groupColumn->GetValue(i);
                     }
-                wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(), L"Invalid row when filling heatmap matrix! Data should be sorted by group before calling SetData().!");
-                wxASSERT_LEVEL_2_MSG(currentColumn < m_matrix[currentRow].size(), L"Invalid column when filling heatmap matrix!");
+                wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(),
+                    L"Invalid row when filling heatmap matrix! Data should be sorted by group before calling SetData().!");
+                wxASSERT_LEVEL_2_MSG(currentColumn < m_matrix[currentRow].size(),
+                    L"Invalid column when filling heatmap matrix!");
                 // should not happen, just do this to prevent crash if data was not sorted by value and then by
                 // group first. What's displayed if this happens is the data won't be grouped properly, but it's
                 // showing it how the client passed it in.
@@ -113,8 +116,10 @@ namespace Wisteria::Graphs
                     { break; }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
-                        Settings::GetDefaultNumberFormat());
+                    (std::isnan(m_continuousColumn->GetValue(i)) ?
+                        crossedOutSymbolForNaN :
+                        wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
+                            Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
                 m_matrix[currentRow][currentColumn].m_groupId = m_groupColumn->GetValue(i);
                 ++currentColumn;
@@ -127,7 +132,8 @@ namespace Wisteria::Graphs
             const size_t cellColumnCount = (m_continuousColumn->GetRowCount() <= 10) ?
                 10 :
                 std::ceil(std::sqrt(m_continuousColumn->GetRowCount()))*golden_ratio;
-            const size_t cellRowCount = std::ceil(safe_divide<double>(m_continuousColumn->GetRowCount(), cellColumnCount));
+            const size_t cellRowCount = std::ceil(
+                safe_divide<double>(m_continuousColumn->GetRowCount(), cellColumnCount));
 
             m_matrix.resize(cellRowCount);
             for (auto& row : m_matrix)
@@ -151,8 +157,10 @@ namespace Wisteria::Graphs
                     { break; }
                 m_matrix[currentRow][currentColumn].m_color = cellColors[i];
                 m_matrix[currentRow][currentColumn].m_valueLabel =
-                    wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
-                        Settings::GetDefaultNumberFormat());
+                    (std::isnan(m_continuousColumn->GetValue(i)) ?
+                        crossedOutSymbolForNaN :
+                        wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
+                            Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
                 // ignored, just default to zero
                 m_matrix[currentRow][currentColumn].m_groupId = 0;
@@ -172,7 +180,8 @@ namespace Wisteria::Graphs
 
         wxGCDC measureDC;
 
-        const auto maxRowsWhenGrouping = std::ceil(safe_divide<double>(m_matrix.size(), m_groupColumnCount));
+        const auto maxRowsWhenGrouping = std::ceil(
+            safe_divide<double>(m_matrix.size(), m_groupColumnCount));
 
         constexpr wxCoord labelRightPadding{ 4 };
 
@@ -216,7 +225,8 @@ namespace Wisteria::Graphs
             GraphItems::Label groupHeaderLabelTemplate(
                 GraphItemInfo(
                 wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
-                                 m_data->GetRowCount(), m_data->GetRowCount())). // largest possible range
+                                 // largest possible range
+                                 m_data->GetRowCount(), m_data->GetRowCount())).
                 Scaling(GetScaling()).Pen(wxNullPen).Window(GetWindow()).
                 Padding(0, 0, labelRightPadding, 0).
                 Font(groupHeaderLabelFont));
@@ -237,14 +247,16 @@ namespace Wisteria::Graphs
                 if (measuredSize.GetWidth() > drawArea.GetWidth())
                     {
                     groupHeaderLabelTemplate.SetText(
-                        wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(), m_data->GetRowCount(), m_data->GetRowCount()));
+                        wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(),
+                                         m_data->GetRowCount(), m_data->GetRowCount()));
                     groupHeaderLabelHeight = groupHeaderLabelTemplate.GetBoundingBox(measureDC).GetHeight();
                     groupHeaderLabelMultiline = true;
                     // readjust font size now that it is multiline and can be larger now
                     groupHeaderLabelFont.SetPointSize(std::max(GetBottomXAxis().GetFont().GetPointSize(),
                         Label::CalcFontSizeToFitBoundingBox(
                         measureDC, groupHeaderLabelFont,
-                        GraphItems::Polygon::DownScaleRect(wxRect(wxSize(groupHeaderLabelHeight, drawArea.GetWidth())), GetScaling()),
+                        GraphItems::Polygon::DownScaleRect(
+                            wxRect(wxSize(groupHeaderLabelHeight, drawArea.GetWidth())), GetScaling()),
                         groupHeaderLabelTemplate.GetText())));
                     }
                 }
@@ -317,9 +329,15 @@ namespace Wisteria::Graphs
             // then the column's cells
             for (const auto& cell : column)
                 {
-                // may be a jagged matrix or have NaN cells, so skip current cell if a null color
-                if (!cell.m_color.IsOk())
+                // if no label on cell, then that means this row is jagged and there
+                // are no more cells in it, so go to next row
+                if (cell.m_selectionLabel.empty())
                     { continue; }
+                // if NaN, then color will be bogus, so use plot's background color
+                const wxColour cellColor = cell.m_color.IsOk() ?
+                                               cell.m_color :
+                                               wxTransparentColor;
+
                 pts[0] = wxPoint(drawArea.GetTopLeft().x+(boxWidth*currentColumn),
                                  drawArea.GetTopLeft().y+(currentRow*boxWidth));
                 pts[1] = wxPoint(drawArea.GetTopLeft().x+(boxWidth*currentColumn),
@@ -331,7 +349,7 @@ namespace Wisteria::Graphs
                 // keep scaling at 1 since this is set to a specific size on the plot
                 auto box = std::make_shared<GraphItems::Polygon>(
                     GraphItems::GraphItemInfo(cell.m_selectionLabel).
-                    Pen(GetPen()).Brush(cell.m_color).Scaling(GetScaling()),
+                    Pen(GetPen()).Brush(cellColor).Scaling(GetScaling()),
                     pts, std::size(pts));
                 const wxRect boxRect(pts[0], pts[2]);
 
@@ -340,7 +358,12 @@ namespace Wisteria::Graphs
                 AddObject(std::make_shared<GraphItems::Label>(
                     GraphItemInfo(cell.m_valueLabel).Font(boxLabelFont).
                     Pen(wxNullPen).Selectable(false).
-                    FontColor(ColorContrast::BlackOrWhiteContrast(cell.m_color)).
+                    FontColor(
+                        // contrast colors, unless this cell is NaN
+                        (cell.m_color.IsOk() ?
+                            ColorContrast::BlackOrWhiteContrast(cellColor) :
+                            // if NaN, then set 'X' to red
+                            ColorContrast::ShadeOrTintIfClose(*wxRED, cellColor))).
                     Anchoring(Anchoring::Center).
                     AnchorPoint(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2),
                                         boxRect.GetTop()+(boxRect.GetHeight()/2)))) );
