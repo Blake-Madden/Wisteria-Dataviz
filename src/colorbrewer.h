@@ -1105,6 +1105,28 @@ namespace Wisteria::Colors
             std::vector<wxColour> m_colors;
             };
 
+        /** @brief An equidistant color scheme, with darker tones reminiscent
+             of a sunset.
+             \htmlonly
+             <div style='background-color:#003F5C; width:50px;'>&nbsp;</div>
+             <div style='background-color:#2F4B7C; width:50px;'>&nbsp;</div>
+             <div style='background-color:#665191; width:50px;'>&nbsp;</div>
+             <div style='background-color:#A05195; width:50px;'>&nbsp;</div>
+             <div style='background-color:#D45087; width:50px;'>&nbsp;</div>
+             <div style='background-color:#F95D6A; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FF7C43; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FFA600; width:50px;'>&nbsp;</div>
+             \endhtmlonly*/
+        class Dusk : public ColorScheme
+            {
+        public:
+            Dusk() : ColorScheme({ wxColour(L"#003F5C"), wxColour(L"#2F4B7C"),
+                                   wxColour(L"#665191"), wxColour(L"#A05195"),
+                                   wxColour(L"#D45087"), wxColour(L"#F95D6A"),
+                                   wxColour(L"#FF7C43"), wxColour(L"#FFA600") })
+                {}
+            };
+
         /** @brief An Earth tones themed color scheme.
              \htmlonly
              <div style='background-color:rgb(186,150,155); width:50px;'>&nbsp;</div>
@@ -1143,7 +1165,8 @@ namespace Wisteria::Colors
         class Decade1920s : public ColorScheme
             {
         public:
-            Decade1920s() : ColorScheme({ ColorBrewer::GetColor(Color::ChineseRed),
+            Decade1920s() : ColorScheme({
+                ColorBrewer::GetColor(Color::ChineseRed),
                 ColorBrewer::GetColor(Color::JazzAgeCoral),
                 ColorBrewer::GetColor(Color::Frostwork),
                 ColorBrewer::GetColor(Color::Alexandrite),
@@ -1168,7 +1191,8 @@ namespace Wisteria::Colors
         class Decade1940s : public ColorScheme
             {
         public:
-            Decade1940s() : ColorScheme({ ColorBrewer::GetColor(Color::VogueGreen),
+            Decade1940s() : ColorScheme({
+                ColorBrewer::GetColor(Color::VogueGreen),
                 ColorBrewer::GetColor(Color::CascadeGreen),
                 ColorBrewer::GetColor(Color::BelvedereCream),
                 ColorBrewer::GetColor(Color::CopenBlue),
@@ -1193,7 +1217,8 @@ namespace Wisteria::Colors
         class Decade1950s : public ColorScheme
             {
         public:
-            Decade1950s() : ColorScheme({ ColorBrewer::GetColor(Color::Chartreuse),
+            Decade1950s() : ColorScheme({
+                ColorBrewer::GetColor(Color::Chartreuse),
                 ColorBrewer::GetColor(Color::RadiantLilac),
                 ColorBrewer::GetColor(Color::HolidayTurquoise),
                 ColorBrewer::GetColor(Color::Appleblossom),
@@ -1217,7 +1242,8 @@ namespace Wisteria::Colors
         class Decade1960s : public ColorScheme
             {
         public:
-            Decade1960s() : ColorScheme({ ColorBrewer::GetColor(Color::Navel),
+            Decade1960s() : ColorScheme({
+                ColorBrewer::GetColor(Color::Navel),
                 ColorBrewer::GetColor(Color::Daisy),
                 ColorBrewer::GetColor(Color::ExuberantPink),
                 ColorBrewer::GetColor(Color::Frolic),
@@ -1242,7 +1268,8 @@ namespace Wisteria::Colors
         class Decade1970s : public ColorScheme
             {
         public:
-            Decade1970s() : ColorScheme({ ColorBrewer::GetColor(Color::Avocado),
+            Decade1970s() : ColorScheme({
+                ColorBrewer::GetColor(Color::Avocado),
                 ColorBrewer::GetColor(Color::AmberWave),
                 ColorBrewer::GetColor(Color::FolksyGold),
                 ColorBrewer::GetColor(Color::JuteBrown),
@@ -1267,7 +1294,8 @@ namespace Wisteria::Colors
         class Decade1980s : public ColorScheme
             {
         public:
-            Decade1980s() : ColorScheme({ ColorBrewer::GetColor(Color::DressyRose),
+            Decade1980s() : ColorScheme({
+                ColorBrewer::GetColor(Color::DressyRose),
                 ColorBrewer::GetColor(Color::CasaBlanca),
                 ColorBrewer::GetColor(Color::FavoriteJeans),
                 ColorBrewer::GetColor(Color::ColonnadeGray),
@@ -1281,36 +1309,37 @@ namespace Wisteria::Colors
              \htmlonly
              <div style='background-color:#E2B6A7; width:50px;'>&nbsp;</div>
              <div style='background-color:#CDBFB0; width:50px;'>&nbsp;</div>
+             <div style='background-color:#7B3730; width:50px;'>&nbsp;</div>
              <div style='background-color:#F0EADC; width:50px;'>&nbsp;</div>
              <div style='background-color:#CFC0AB; width:50px;'>&nbsp;</div>
              <div style='background-color:#B2AC96; width:50px;'>&nbsp;</div>
              <div style='background-color:#C0A98B; width:50px;'>&nbsp;</div>
              <div style='background-color:#CDB592; width:50px;'>&nbsp;</div>
-             <div style='background-color:#7B3730; width:50px;'>&nbsp;</div>
              <div style='background-color:#B0785C; width:50px;'>&nbsp;</div>
              \endhtmlonly*/
         class Decade1990s : public ColorScheme
             {
         public:
-            Decade1990s() : ColorScheme({ ColorBrewer::GetColor(Color::SmokySalmon),
+            Decade1990s() : ColorScheme({
+                ColorBrewer::GetColor(Color::SmokySalmon),
                 ColorBrewer::GetColor(Color::BungalowBeige),
+                ColorBrewer::GetColor(Color::Fireweed),
                 ColorBrewer::GetColor(Color::DoverWhite),
                 ColorBrewer::GetColor(Color::UrbanPutty),
                 ColorBrewer::GetColor(Color::SvelteSage),
                 ColorBrewer::GetColor(Color::BasketBeige),
                 ColorBrewer::GetColor(Color::WholeWheat),
-                ColorBrewer::GetColor(Color::Fireweed),
                 ColorBrewer::GetColor(Color::SpicedCider) })
                 {}
             };
 
         /** @brief A 2000s themed color scheme.
              \htmlonly
+             <div style='background-color:#564537; width:50px;'>&nbsp;</div>
              <div style='background-color:#BAA185; width:50px;'>&nbsp;</div>
              <div style='background-color:#D7C5AE; width:50px;'>&nbsp;</div>
              <div style='background-color:#E5E2DA; width:50px;'>&nbsp;</div>
              <div style='background-color:#88ABB4; width:50px;'>&nbsp;</div>
-             <div style='background-color:#564537; width:50px;'>&nbsp;</div>
              <div style='background-color:#CDD2CA; width:50px;'>&nbsp;</div>
              <div style='background-color:#C2CFCF; width:50px;'>&nbsp;</div>
              <div style='background-color:#B4CCC9; width:50px;'>&nbsp;</div>
@@ -1318,18 +1347,19 @@ namespace Wisteria::Colors
         class Decade2000s : public ColorScheme
             {
         public:
-            Decade2000s() : ColorScheme({ ColorBrewer::GetColor(Color::Latte),
+            Decade2000s() : ColorScheme({
+                ColorBrewer::GetColor(Color::HickorySmoke),
+                ColorBrewer::GetColor(Color::Latte),
                 ColorBrewer::GetColor(Color::KilimBeige),
                 ColorBrewer::GetColor(Color::OrigamiWhite),
                 ColorBrewer::GetColor(Color::Aquitaine),
-                ColorBrewer::GetColor(Color::HickorySmoke),
                 ColorBrewer::GetColor(Color::SeaSalt),
                 ColorBrewer::GetColor(Color::Tradewind),
                 ColorBrewer::GetColor(Color::Watery) })
                 {}
             };
 
-        /** @brief An %October themed color scheme. (This includes the traditional
+        /** @brief An %October themed color scheme, including traditional
              Halloween colors.)
              \htmlonly
              <div style='background-color:#FFA500; width:50px;'>&nbsp;</div>
@@ -1342,7 +1372,8 @@ namespace Wisteria::Colors
         class October : public ColorScheme
             {
         public:
-            October() : ColorScheme({ ColorBrewer::GetColor(Color::Orange),
+            October() : ColorScheme({
+                ColorBrewer::GetColor(Color::Orange),
                 ColorBrewer::GetColor(Color::Black),
                 ColorBrewer::GetColor(Color::Yellow),
                 ColorBrewer::GetColor(Color::Brown),
@@ -1362,7 +1393,8 @@ namespace Wisteria::Colors
         class Slytherin : public ColorScheme
             {
         public:
-            Slytherin() : ColorScheme({ ColorBrewer::GetColor(Color::Slytherin1),
+            Slytherin() : ColorScheme({
+                ColorBrewer::GetColor(Color::Slytherin1),
                 ColorBrewer::GetColor(Color::Slytherin2),
                 ColorBrewer::GetColor(Color::Slytherin3),
                 ColorBrewer::GetColor(Color::Slytherin4),
@@ -1371,8 +1403,9 @@ namespace Wisteria::Colors
             };
         }
 
+    /// @private
     /// @returns A label used for a grouping label when grouping should not actually be used.
-    /// Basically, a way to bin data without it actually creating a legend on the graph.
+    ///  Basically, a way to bin data without it actually creating a legend on the graph.
     [[nodiscard]] inline wxString NoGroupLabel()
         { return L"__NO_GROUPING__"; }
     }
