@@ -24,6 +24,7 @@
 #include <wx/string.h>
 #include <wx/uilocale.h>
 #include <wx/numformatter.h>
+#include "settings.h"
 #include "math/mathematics.h"
 
 // forward declares
@@ -98,10 +99,14 @@ namespace Wisteria
     enum class LabelFit
         {
         ScaleFontToFit,       /*!< Text's font is scaled to fit inside the parent.*/
-        SplitTextToFit,       /*!< Text is split into multiple lines to fit in the parent. May be truncated with an ellipsis if there are too many lines.*/
+        SplitTextToFit,       /*!< Text is split into multiple lines to fit in the parent.
+                                   May be truncated with an ellipsis if there are too many lines.*/
         SplitTextToFitWidth,  /*!< Text is split into multiple lines to fit in the parent's width.*/
-        DisplayAsIs,          /*!< Text is drawn from where it is anchored and is not scaled or split. May go outside of its parent.*/
-        DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is not scaled or split. May go outside of its parent. If it does go outside of parent, will draw a frame around the text.*/
+        DisplayAsIs,          /*!< Text is drawn from where it is anchored and is not scaled or split.
+                                   May go outside of its parent.*/
+        DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is not scaled or split.
+                                   May go outside of its parent. If it does go outside of parent,
+                                   will draw a frame around the text.*/
         };
 
     /// @brief How (single or multi-line) text is aligned.
@@ -141,14 +146,20 @@ namespace Wisteria
     /// @brief Background visual styles to apply a label.
     enum class LabelStyle
         {
-        NoLabelStyle,                    /*!< No extra visual style should be applied to the label, other than possible outlining.*/
+        NoLabelStyle,                    /*!< No extra visual style should be applied to the label,
+                                              other than possible outlining.*/
         IndexCard,                       /*!< Display the label as an index card.*/
         LinedPaper,                      /*!< Display the label as lined paper (lines under each text line).*/
-        LinedPaperWithMargins,           /*!< Display the label as lined paper (lines under each text line, within the margins of the label).*/
+        LinedPaperWithMargins,           /*!< Display the label as lined paper
+                                              (lines under each text line, within the margins of the label).*/
         DottedLinedPaper,                /*!< Display the label as dotted lined paper (lines under each text line).*/
-        DottedLinedPaperWithMargins,     /*!< Display the label as dotted lined paper (lines under each text line, within the margins of the label).*/
-        RightArrowLinedPaper,            /*!< Display the label as lined paper (right arrow lines under each text line). Will use the same pen as the label's text.*/
-        RightArrowLinedPaperWithMargins, /*!< Display the label as lined paper (right arrow lines under each text line, within the margins of the label). Will use the same pen as the label's text.*/
+        DottedLinedPaperWithMargins,     /*!< Display the label as dotted lined paper
+                                              (lines under each text line, within the margins of the label).*/
+        RightArrowLinedPaper,            /*!< Display the label as lined paper (right arrow lines under each text line).
+                                              Will use the same pen as the label's text.*/
+        RightArrowLinedPaperWithMargins, /*!< Display the label as lined paper
+                                              (right arrow lines under each text line, within the margins of the label).
+                                              Will use the same pen as the label's text.*/
         LABEL_STYLE_COUNT                /*!< The number of items in this enumeration.*/
         };
 
@@ -159,11 +170,17 @@ namespace Wisteria
         HorizontalLineIcon,            /*!< A horizontal line.*/
         ArrowRightIcon,                /*!< An arrow pointing right.*/
         CircleIcon,                    /*!< A circle.*/
-        ImageIcon,                     /*!< An image, shrunk down to the height of its line (legend) or point size (point).*/
-        HorizontalSeparator,           /*!< A horizontal line going across the entire legend and text area of a label. Only applicable for legends.*/
-        HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend and text area of a label. Only applicable for legends.*/
-        ImageWholeLegend,              /*!< An image which fills the entire legend. Only one should be used per legend. Only applicable for legends.*/
-        ColorGradientIcon,             /*!< A color gradient which fills the entire legend. Only applicable for legends.*/
+        ImageIcon,                     /*!< An image, shrunk down to the height of its line
+                                            (legend) or point size (point).*/
+        HorizontalSeparator,           /*!< A horizontal line going across the entire legend and text area of a label.
+                                            Only applicable for legends.*/
+        HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend and text area of a label.
+                                            Only applicable for legends.*/
+        ImageWholeLegend,              /*!< An image which fills the entire legend.
+                                            Only one should be used per legend.
+                                            Only applicable for legends.*/
+        ColorGradientIcon,             /*!< A color gradient which fills the entire legend.
+                                            Only applicable for legends.*/
         SquareIcon,                    /*!< A square.*/
         TriangleUpwardIcon,            /*!< A triangle pointing upward.*/
         TriangleDownwardIcon,          /*!< A triangle pointing downward.*/
@@ -189,9 +206,12 @@ namespace Wisteria
     ///  and canvas proportions should be used when creating a legend.
     enum class LegendCanvasPlacementHint
         {
-        EmbeddedOnGraph,    /*!< The legend will be on the plot. This will include outlining on the legend*/
-        RightOrLeftOfGraph, /*!< The legend will be on the right or left of the plot. This will set the legend's canvas width % a calculated value.*/
-        AboveOrBeneathGraph /*!< The legend will be above or below the plot. This will set the legend's canvas width % to 1.*/
+        EmbeddedOnGraph,    /*!< The legend will be on the plot.
+                                 This will include outlining on the legend*/
+        RightOrLeftOfGraph, /*!< The legend will be on the right or left of the plot.
+                                 This will set the legend's canvas width % a calculated value.*/
+        AboveOrBeneathGraph /*!< The legend will be above or below the plot.
+                                 This will set the legend's canvas width % to 1.*/
         };
 
     /// @brief Date intervals used along axes.
@@ -236,7 +256,8 @@ namespace Wisteria
     enum class AxisLabelDisplay
         {
         DisplayCustomLabelsOrValues,  /*!< Display either custom label (if available) or numeric value.*/
-        DisplayOnlyCustomLabels,      /*!< Only show as a custom label; nothing will be displayed if custom label isn't available.*/
+        DisplayOnlyCustomLabels,      /*!< Only show as a custom label;
+                                           nothing will be displayed if custom label isn't available.*/
         DisplayCustomLabelsAndValues, /*!< Display both numeric value and custom label.*/
         NoDisplay                     /*!< Do not display any label.*/
         };
@@ -245,11 +266,16 @@ namespace Wisteria
     enum class AxisLabelAlignment
         {
         AlignWithAxisLine,  /*!< The labels will be flush right against the axis line.*/
-        AlignWithBoundary,  /*!< If the labels are perpendicular against the axis and some are wider than others, then align the labels against the outer parameter of the axis area. @note Has no effect with parallel axes.*/
-        CenterOnAxisLine    /*!< The labels will be centered on the axis line. @note Has no effect on bracket labels. @todo Add support for horizontal axes.*/
+        AlignWithBoundary,  /*!< If the labels are perpendicular against the axis and some are wider
+                                 than others, then align the labels against the outer parameter of the
+                                 axis area. @note Has no effect with parallel axes.*/
+        CenterOnAxisLine    /*!< The labels will be centered on the axis line.
+                                 @note Has no effect on bracket labels.
+                                 @todo Add support for horizontal axes.*/
         };
 
-    /// @brief The type of cap (i.e., head) that an axis line displays at its ending point (right for horizontal, top for vertical).
+    /// @brief The type of cap (i.e., head) that an axis line displays at its ending point
+    ///  (right for horizontal, top for vertical).
     enum class AxisCapStyle
         {
         Arrow, /*!< The top or right end of the axis line is an arrow.*/
@@ -282,7 +308,9 @@ namespace Wisteria
     enum class BoxCorners
         {
         Straight, /*!< Straight lines meet at the corner.*/
-        Rounded   /*!< Corners are rounded. The roundedness level can be controlled via Settings::SetBoxRoundedCornerRadius().*/
+        Rounded   /*!< Corners are rounded.
+                       The roundedness level can be controlled via
+                       Settings::SetBoxRoundedCornerRadius().*/
         };
 
     /// @brief The type of label to display for a bin (i.e., a bar, pie slice, etc.).
@@ -305,26 +333,9 @@ namespace Wisteria
         ROUNDING_METHOD_COUNT  /*!< The number of rounding methods.*/
         };
 
-    // Developer Note: this is used as a bitmap, don't strongly type it.
-    /// @brief Debug settings used throughout the library.
-    ///  This is a bitmask which can be used to control multiple flags.
-    /// @note These are %Wisteria specific debugging features
-    ///  (e.g., bounding boxes being rendered). If running in debug mode,
-    ///  other debugging features (e.g., asserts) will still be in effect.
-    enum DebugSettings
-        {
-        None = 0x00,                         /*!< No %Wisteria-specific debugging should be enabled.*/
-        DrawBoundingBoxesOnSelection = 0x01, /*!< Draw a bounding box around objects when they are selected.*/
-        DrawInformationOnSelection = 0x02,   /*!< Write additional information on the screen when an object is selected
-                                                  (e.g., the scaling value).*/
-        DrawExtraInformation = 0x04,         /*!< Draw more verbose information, even when objects aren't selected.
-                                                  This is only recommended when first designing a graph.*/
-        IncludeExperimentalCode = 0x08       /*!< Run experimental code.
-                                                  Code being used to test a new graph type during the design stage should
-                                                  be wrapped in IncludeExperimentalCode blocks.
-                                                  This is a preferred replacement for "#ifdef 0" code blocks as finalized code
-                                                  can be scanned for IncludeExperimentalCode and removed.*/
-        };
+    /// @brief Criteria lamba to return a color if a point's
+    ///  X and/or Y values meet a certain set of criteria.
+    using PointColorCriteria = std::function<wxColour(double x, double y)>;
 
     /// @brief Item to draw on a legend.
     /// @details This can include shapes, images, or blanks for the shape
@@ -341,7 +352,8 @@ namespace Wisteria
                 L"Color gradient legend created with only one color!");
             }
         /** @brief Constructs legend icon.
-            @param icon The type of image icon shape to use. Must be either ImageIcon or ImageWholeLegend.
+            @param icon The type of image icon shape to use.
+             Must be either ImageIcon or ImageWholeLegend.
             @param img The image to draw as an icon.*/
         LegendIcon(const IconShape icon, const wxImage& img) :
             m_shape(icon), m_img(img)
@@ -364,7 +376,8 @@ namespace Wisteria
         wxPen m_pen;                               /*!< The pen to draw with.*/
         wxBrush m_brush;                           /*!< The brush to paint with.*/
         wxImage m_img;                             /*!< The image to draw (if shape is set to ImageIcon).*/
-        std::vector<wxColour> m_colors;            /*!< The color gradient to draw (if shape is set to ColorGradientIcon).*/
+        std::vector<wxColour> m_colors;            /*!< The color gradient to draw
+                                                        (if shape is set to ColorGradientIcon).*/
 
         /// @returns The width that should be used for legend icons.
         /// @warning This is only the pixel size, caller must scale for screen DPI and canvas scaling.
@@ -397,11 +410,12 @@ namespace Wisteria
             { return m_shapes; }
         /** @returns The shape from a given index.
             @param index The index into the shape list to return. If index is outside
-             number of shapes, then it will recycle (i.e., wrap around). For example, if there are 2 shapes,
-             index 1 will return 1; however, index 2 will wrap around and return shape 0 and
+             number of shapes, then it will recycle (i.e., wrap around).
+             For example, if there are 2 shapes, index 1 will return 1;
+             however, index 2 will wrap around and return shape 0 and
              index 3 will return shape 1.*/
         [[nodiscard]] IconShape GetShape(const size_t index) const
-            { return m_shapes.at(index%m_shapes.size()); }
+            { return m_shapes.at(index % m_shapes.size()); }
         /** @brief Adds a shape to the scheme.
             @param shape The shape to add.*/
         void AddShape(const IconShape shape)
@@ -505,107 +519,6 @@ namespace Wisteria
             { wxPenStyle::wxPENSTYLE_LAST_HATCH, LineStyle::Arrows }
             })
             {}
-        };
-
-    /// @brief Class for managing global library settings.
-    class Settings
-        {
-    public:
-        /// @returns The default point radius.
-        [[nodiscard]] static size_t GetPointRadius() noexcept
-            { return m_pointRadius; }
-        /// @brief Sets the default point radius.
-        /// @param radius The default point radius.
-        void SetPointRadius(const size_t radius) noexcept
-            { m_pointRadius = radius; }
-        /// @returns The opacity value to use when making a color translucent.
-        [[nodiscard]] static uint8_t GetTranslucencyValue() noexcept
-            { return m_translucencyValue; }
-        /// @brief Sets the opacity value to use when making a color translucent.
-        ///  Default is 100;
-        /// @param value The opaciy level (should be between 0 [transparent] to 255 [opaque]).
-        static void SetTranslucencyValue(const uint8_t value) noexcept
-            { m_translucencyValue = std::clamp<uint8_t>(value, 0, 255); }
-        /// @brief Gets the maximum number of items that can be displayed in a legend.
-        /// @returns The maximum number of items that can be displayed in a legend.
-        [[nodiscard]] static uint8_t GetMaxLegendItemCount() noexcept
-            { return m_maxLegendItems; }
-        /// @brief Sets the maximum number of items that can be displayed in a legend.
-        /// @details If there are more items in the legend, then an ellipsis will be shown.
-        ///  The default number of items is 20.
-        /// @param maxItems The maximum number of items that can be displayed in a legend.
-        static void SetMaxLegendItemCount(const uint8_t maxItems) noexcept
-            { m_maxLegendItems = maxItems; }
-        /// @brief Gets the maximum text length for legend labels.
-        /// @returns The maximum text length.
-        [[nodiscard]] static size_t GetMaxLegendTextLength() noexcept
-            { return m_maxLegendTextLength; }
-        /// @brief Sets the radius of the rounded corner, which is used when using rounded
-        ///  corners for labels, box plots, etc.
-        /// @param roundedCornerRadius The rounded corner radius.
-        static void SetBoxRoundedCornerRadius(const double roundedCornerRadius) noexcept
-            { m_roundedCornerRadius = roundedCornerRadius; }
-        /// @returns The radius of the rounded corner, which is used when using rounded
-        ///  corners for labels, box plots, etc.
-        [[nodiscard]] static double GetBoxRoundedCornerRadius() noexcept
-            { return m_roundedCornerRadius; }
-        /// @brief Sets the maximum text length for legend labels.
-        /// @details The default length is 32.
-        /// @details If a label is longer than this,
-        ///  then it will be truncated with an ellipsis at the end.
-        /// @param length The maximum text length.
-        static void SetMaxLegendTextLength(const size_t length) noexcept
-            {
-            wxASSERT_LEVEL_2_MSG(length > 0, L"Max legend label lengths should be at least 1!");
-            m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
-            }
-        /// @brief Enables or disables a debug flag.
-        /// @param flag Which debug flag to enable.
-        /// @param enable Whether to enable or disable the flag.
-        /// @note DebugSettings::DrawBoundingBoxesOnSelection is enabled by default
-        ///  if @c wxDEBUG_LEVEL is set to 2; otherwise, all flags are disabled.
-        static void EnableDebugFlag(const int flag, const bool enable) noexcept
-            {
-            if (enable)
-                { m_debugSettings |= flag; }
-            else
-                { m_debugSettings &= ~flag; }
-            }
-        /// @brief Turns off all debugging flags (specific to %Wisteria).
-        static void DisableAllDebugFlags() noexcept
-            { m_debugSettings = 0; }
-        /// @brief Turns on all debugging flags (specific to %Wisteria).
-        static void EnableAllDebugFlags() noexcept
-            {
-            m_debugSettings = DebugSettings::DrawBoundingBoxesOnSelection|
-                              DebugSettings::DrawInformationOnSelection|
-                              DebugSettings::DrawExtraInformation|
-                              DebugSettings::IncludeExperimentalCode;
-            }
-        /// @brief Determines if a debug flag is enabled.
-        /// @param flag The flag to check for.
-        /// @returns `true` if the given flag is enabled.
-        [[nodiscard]] static bool IsDebugFlagEnabled(const int flag) noexcept
-            { return (m_debugSettings & flag) == flag; }
-        /// @returns No trailing zeroes and thousands separator format
-        ///  for calls to @c wxNumberFormatter::ToString().
-        [[nodiscard]] static auto GetDefaultNumberFormat() noexcept
-            {
-            return wxNumberFormatter::Style::Style_WithThousandsSep |
-                   wxNumberFormatter::Style::Style_NoTrailingZeroes;
-            }
-    private:
-        inline static uint8_t m_translucencyValue{ 100 };
-        inline static uint8_t m_maxLegendItems{ 20 };
-        inline static size_t m_maxLegendTextLength{ 32 };
-        inline static size_t m_pointRadius{ 4 };
-        inline static double m_roundedCornerRadius{ 5 };
-        inline static int m_debugSettings
-#if wxDEBUG_LEVEL >= 2
-        { DebugSettings::DrawBoundingBoxesOnSelection };
-#else
-        { DebugSettings::None };
-#endif
         };
 
     namespace Colors
@@ -888,8 +801,8 @@ namespace Wisteria
             /** @brief Sets the orientation of the text (if a label).
                 @param orientation The orientation of the text.
                 @returns A self reference.
-                @note Label objects also have a Label::Tilt() function to tilt the text, using
-                 its initial orientation as its basis.*/
+                @note Label objects also have a Label::Tilt() function to tilt the text,
+                 using its initial orientation as its basis.*/
             GraphItemInfo& Orient(const Orientation orientation) noexcept
                 {
                 m_orientation = orientation;
@@ -1093,7 +1006,8 @@ namespace Wisteria
                 { return m_itemInfo.m_freeFloating; }
             /** @brief Sets whether the object should be shown.
                 @param show Whether to show the object or not.
-                @note When this is set to `false`, GetBoundingBox() will generally return an invalid `wxRect`.*/
+                @note When this is set to `false`, GetBoundingBox() will generally return
+                 an invalid `wxRect`.*/
             void Show(const bool show = true) noexcept
                 { m_itemInfo.m_show = show; }
             /// @returns Whether this object is being displayed or not.
@@ -1174,8 +1088,8 @@ namespace Wisteria
                 m_itemInfo.m_freeFloating = freeFloat;
                 InvalidateCachedBoundingBox();
                 }
-            /** @returns The element, rendered to a bitmap. The image will be the size of the bounding
-                 box. The area around the polygon will be set to transparent pixels.
+            /** @returns The element, rendered to a bitmap. The image will be the size of the
+                 bounding box. The area around the polygon will be set to transparent pixels.
                 @note This is used for dragging when an object is free floating.*/
             [[nodiscard]] virtual wxBitmap ToBitmap() const;
             /** @brief Moves the element by the specified x and y values.
@@ -1185,10 +1099,12 @@ namespace Wisteria
             /// @returns The rectangle on the canvas where the element would fit in.
             [[nodiscard]] virtual wxRect GetBoundingBox() const = 0;
             /** @brief Override this to set the rectangular area of the object.
-                @param rect The rectangle to bound the object to. This is relative to the parent canvas.
-                @param parentScaling The scaling of the parent drawing this element. Usually is not used, but may be
-                 used for objects to have a consistent scaling size.
-                @note Derived variations should call InvalidateCachedBoundingBox() and SetCachedBoundingBox().*/
+                @param rect The rectangle to bound the object to.
+                 This is relative to the parent canvas.
+                @param parentScaling The scaling of the parent drawing this element.
+                 Usually is not used, but may be used for objects to have a consistent scaling size.
+                @note Derived variations should call InvalidateCachedBoundingBox() and
+                 SetCachedBoundingBox().*/
             virtual void SetBoundingBox(const wxRect& rect, const double parentScaling) = 0;
 
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
@@ -1205,12 +1121,12 @@ namespace Wisteria
 
             /** @brief Controls the anchoring of this item on its parent.
                 @details When an item is drawn, its anchoring indicates what its point is referencing.
-                 For example, if an item is anchored to its center, then the item's point refers to its center
-                 and it will be drawn on its parent based on that.
+                 For example, if an item is anchored to its center, then the item's point refers to
+                 its center and it will be drawn on its parent based on that.
                 @details This can be useful for lining up multiple labels a certain way (e.g., left aligned).
                 @param placement The method for how the point controls the anchoring of this object.
-                @note This will have no effect on objects with more than one point (e.g., Axes::Axis, Points2D).
-                 This mostly related to objects such as Label and Image.*/
+                @note This will have no effect on objects with more than one point
+                 (e.g., Axes::Axis, Points2D). This mostly related to objects such as Label and Image.*/
             void SetAnchoring(const Wisteria::Anchoring placement)
                 {
                 m_itemInfo.m_anchoring = placement;
@@ -1332,21 +1248,23 @@ namespace Wisteria
             /** @brief If a Label, sets the vertical alignment of the tex
                  (if using a minimum user-defined size).
                 @param alignment How to align the text.
-                @note This can be used to center or bottom align a legend vertically if being placed
-                 on a canvas (next to its plot).*/
+                @note This can be used to center or bottom align a legend vertically
+                 if being placed on a canvas (next to its plot).*/
             void SetPageVerticalAlignment(const PageVerticalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_pageVerticalAlignment = alignment;
                 }
 
-            /** @returns If a Label, the horizontal alignment of the text (if using a minimum user-defined size).*/
+            /** @returns If a Label, the horizontal alignment of the text
+                 (if using a minimum user-defined size).*/
             [[nodiscard]] const PageHorizontalAlignment& GetPageHorizontalAlignment() const noexcept
                 { return m_itemInfo.m_pageHorizontalAlignment; }
-            /** @brief If a Label, sets the horizontal alignment of the text (if using a minimum user-defined size).
+            /** @brief If a Label, sets the horizontal alignment of the text
+                 (if using a minimum user-defined size).
                 @param alignment How to align the text.
-                @note This can be used to center or right align a legend horizontally if being placed
-                 on a canvas (beneaht its plot).*/
+                @note This can be used to center or right align a legend horizontally
+                 if being placed on a canvas (beneaht its plot).*/
             void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1365,7 +1283,8 @@ namespace Wisteria
                 }
 
             /** @returns If a Label, the collection of icons (optionally) being drawn.
-                @note Call SetLeftPadding() to make space for these icons (with a minimum of 16 pixels).*/
+                @note Call SetLeftPadding() to make space for these icons
+                 (with a minimum of 16 pixels).*/
             [[nodiscard]] std::vector<LegendIcon>& GetLegendIcons() noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1374,7 +1293,8 @@ namespace Wisteria
             /** @returns If a Label being used as a legend, `true` if icons have been added to it.
                  This is useful if trying to determine if legend padding is needed for a Label.
                 @note This takes into account blank icons and separators that don't require
-                 padding to be drawn, so this is more accurate than calling @c GetLegendIcons().size().*/
+                 padding to be drawn, so this is more accurate than calling
+                 @c GetLegendIcons().size().*/
             [[nodiscard]] bool HasLegendIcons() const noexcept
                 {
                 for (const auto& icon : GetLegendIcons())
@@ -1434,8 +1354,10 @@ namespace Wisteria
                 @param right The right padding.
                 @param bottom The bottom padding.
                 @param left The left padding.
-                @note This will only affect Label and Axis; will be ignored by other object types.*/
-            virtual void SetPadding(const wxCoord top, const wxCoord right, const wxCoord bottom, const wxCoord left) noexcept
+                @note This will only affect Label and Axis;
+                 will be ignored by other object types.*/
+            virtual void SetPadding(const wxCoord top, const wxCoord right,
+                                    const wxCoord bottom, const wxCoord left) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_topPadding = top;
@@ -1449,7 +1371,8 @@ namespace Wisteria
                 { return m_itemInfo.m_rightPadding; }
             /** @brief Sets the right padding of the object.
                 @param padding The padding size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a pixel value that the framework will scale to
+                 the screen for you.*/
             virtual void SetRightPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1461,7 +1384,8 @@ namespace Wisteria
                 { return m_itemInfo.m_leftPadding; }
             /** @brief Sets the left padding of the object.
                 @param padding The padding size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a pixel value that the framework will scale to
+                 the screen for you.*/
             virtual void SetLeftPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1473,7 +1397,8 @@ namespace Wisteria
                 { return m_itemInfo.m_bottomPadding; }
             /** @brief Sets the bottom padding of the object.
                 @param padding The padding size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a pixel value that the framework will scale to
+                 the screen for you.*/
             virtual void SetBottomPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1485,7 +1410,8 @@ namespace Wisteria
                 { return m_itemInfo.m_topPadding; }
             /** @brief Sets the top padding of the object.
                 @param padding The padding size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a pixel value that the framework will scale
+                 to the screen for you.*/
             virtual void SetTopPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1517,25 +1443,29 @@ namespace Wisteria
                 { return m_itemInfo.m_brush; }
 
             /** @name Canvas Functions
-                @brief Functions related to how this object is placed, resized, and padded when inserted
-                 into the grid of a multi-item canvas (i.e., a Label being used as a legend next to a plot).*/
+                @brief Functions related to how this object is placed, resized,
+                 and padded when inserted into the grid of a multi-item canvas
+                 (i.e., a Label being used as a legend next to a plot).*/
             /// @{
 
-            /// @returns The parent window (usually a Canvas) for this item, which is used for its DPI scale factor.
+            /// @returns The parent window (usually a Canvas) for this item,
+            ///  which is used for its DPI scale factor.
             [[nodiscard]] const wxWindow* GetWindow() const noexcept
                 { return m_itemInfo.m_parentCanvas; }
-            /// @brief Sets the parent window (usually a Canvas) for this item, which is used for its DPI scale factor.
+            /// @brief Sets the parent window (usually a Canvas) for this item,
+            ///  which is used for its DPI scale factor.
             /// @param window The parent window.
             virtual void SetWindow(const wxWindow* window) noexcept
                 { m_itemInfo.m_parentCanvas = window; }
 
-            /** @brief Sets the margins for this object when being used as separate grid in a multi-item canvas,
-                 starting at 12 o'clock and going clockwise.
+            /** @brief Sets the margins for this object when being used as separate
+                 grid in a multi-item canvas, starting at 12 o'clock and going clockwise.
                 @param top The top margin.
                 @param right The right margin.
                 @param bottom The bottom margin.
                 @param left The left margin.
-                @note This will have no effect unless it is the only object in a canvas's grid.*/
+                @note This will have no effect unless it is the only object in a
+                 canvas's grid.*/
             void SetCanvasMargins(const wxCoord top, const wxCoord right,
                                   const wxCoord bottom, const wxCoord left) noexcept
                 {
@@ -1625,11 +1555,13 @@ namespace Wisteria
                 { m_itemInfo.m_isOk = isOk; }
 
             /** @brief Sets the alignment of the object, relative to something else (e.g., its parent).
-                @details This is handled by the caller and can have different meanings based on its context, may
-                 not be applicable to most objects (or even labels). For example, this is used for canvas titles, but not axis labels.
+                @details This is handled by the caller and can have different meanings based on its context,
+                 may not be applicable to most objects (or even labels). For example, this is used for
+                 canvas titles, but not axis labels.
 
                  Refer to any given object's documentation for how this feature is used.
-                @param align How to align the text, relative to whatever the caller is placing it against.*/
+                @param align How to align the text, relative to whatever the caller is
+                 placing it against.*/
             void SetRelativeAlignment(const RelativeAlignment align)
                 {
                 m_itemInfo.m_relativeAlignment = align;
@@ -1665,15 +1597,20 @@ namespace Wisteria
         protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
-                @returns The bounding box that the element was drawn with. If the element is not being displayed,
-                 then an invalid @c wxRect will usually be returned.*/
+                @returns The bounding box that the element was drawn with.
+                 If the element is not being displayed, then an invalid @c wxRect
+                 will usually be returned.*/
             virtual wxRect Draw(wxDC& dc) const = 0;
-            /** @brief Draws the element's label (if it has one) in the middle of the element if it is selected.
+            /** @brief Draws the element's label (if it has one) in the middle of the
+                 element if it is selected.
                 @param dc The canvas to draw the element on.
                 @param scaling The scaling to draw the text with.
-                 This may be different from the scaling used by the element itself, depending on what the scaling is of the caller.
-                @param boundingBox An optional bounding box to attempt to constrain the selection label to.*/
-            virtual void DrawSelectionLabel(wxDC& dc, const double scaling, const wxRect boundingBox = wxRect()) const;
+                 This may be different from the scaling used by the element itself,
+                 depending on what the scaling is of the caller.
+                @param boundingBox An optional bounding box to attempt to constrain
+                 the selection label to.*/
+            virtual void DrawSelectionLabel(wxDC& dc, const double scaling,
+                                            const wxRect boundingBox = wxRect()) const;
             /** @brief Recompute coordinates and sizes within this object.
                 @details This is usually done after a scaling update.
                 @note Derived classes need to override this to perform subitem sizing logic.*/
@@ -1688,8 +1625,9 @@ namespace Wisteria
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The scaled value.
-            /// @warning This should be used to rescale pixel values used for line widths and point sizes.
-            ///  It should NOT be used with font point sizes because DPI scaling is handled by the OS for those.
+            /// @warning This should be used to rescale pixel values used for line
+            ///  widths and point sizes. It should NOT be used with font point sizes
+            ///  because DPI scaling is handled by the OS for those.
             ///  Instead, font sizes should only be scaled to the canvas's scaling.
             [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
                 { return value*GetScaling() * GetDPIScaleFactor(); }
@@ -1698,16 +1636,16 @@ namespace Wisteria
             /// @returns The scaled size.
             [[nodiscard]] wxSize ScaleToScreenAndCanvas(const wxSize sz) const
                 { return sz * GetScaling() * GetDPIScaleFactor(); }
-            /// @brief Takes a pixel value that has been scaled from the screen DPI and parent canvas scaling
-            ///  and converts it back to its base DIP.
+            /// @brief Takes a pixel value that has been scaled from the screen DPI
+            ///  and parent canvas scaling and converts it back to its base DIP.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The downscaled value.
             [[nodiscard]] double DownscaleFromScreenAndCanvas(const double value) const noexcept
                 { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
             /** @brief Resets the cached bounding box to empty.
-                @note Derived classes should call this in their setter functions that may affect
-                 the bounding box as well. This also resets the cached content bounding box
-                 (only some objects like Label use this).*/
+                @note Derived classes should call this in their setter functions
+                 that may affect the bounding box as well. This also resets the cached
+                 content bounding box (only some objects like Label use this).*/
             void InvalidateCachedBoundingBox()
                 { m_cachedBoundingBox = m_cachedContentBoundingBox = wxRect(); }
             /** @brief Saves the bounding box information, which can be later retrieved from
@@ -1729,8 +1667,8 @@ namespace Wisteria
                  setting/moving function that may affect the bounding box calculations of the object.*/
             [[nodiscard]] wxRect GetCachedBoundingBox() const noexcept
                 { return m_cachedBoundingBox; }
-            /// @brief Caches the content bounding box, which may be different from the overall bounding box.
-            ///  This is only used by some objects, such as Label.
+            /// @brief Caches the content bounding box, which may be different
+            ///  from the overall bounding box. This is only used by some objects, such as Label.
             /// @param cached The content box to cache.
             void SetCachedContentBoundingBox(const wxRect cached) const noexcept
                 { m_cachedContentBoundingBox = cached; }
@@ -1839,13 +1777,14 @@ namespace Wisteria
                 { SetAnchorPoint(pt); }
             /** @brief Constructor.
                 @param itemInfo Base information for the plot object.
-                 Should include the center point and optionally the scaling, brush color, and selection label.
-                @param radius The radius of the point. This is a DIP value that will be scaled by the object's
-                 scaling and parent window's DPI scale factor.
+                 Should include the center point and optionally the scaling, brush color, and
+                 selection label.
+                @param radius The radius of the point. This is a DIP value that will be scaled
+                 by the object's scaling and parent window's DPI scale factor.
                 @param shape The shape of the point.
                 @param img An image to use for the point if point is using IconShape::ImageIcon.
-                @warning Some icon shapes (ImageWholeLegend, ColorGradientIcon) are not applicable here
-                 and will be drawn as a circle instead if used.*/
+                @warning Some icon shapes (ImageWholeLegend, ColorGradientIcon) are not
+                 applicable here and will be drawn as a circle instead if used.*/
             Point2D(const GraphItems::GraphItemInfo& itemInfo,
                     const size_t radius,
                     const IconShape& shape = IconShape::CircleIcon,
@@ -2011,8 +1950,8 @@ namespace Wisteria
                  Default is an empty rect, which will cause this parameter to be ignored.*/
             void DrawSelectionLabel(wxDC& dc, const double scaling,
                                     const wxRect boundingBox = wxRect()) const final;
-            /** @warning Should not be called. Points should be explicitly set at specific coordinates,
-                 and cannot be scaled to fit in an arbitrary bounding box.
+            /** @warning Should not be called. Points should be explicitly set at
+                 specific coordinates, and cannot be scaled to fit in an arbitrary bounding box.
                  This is only included to fulfill the interface contract.
                 @param rect This parameter is ignored.
                 @param parentScaling This parameter is ignored.*/
@@ -2084,10 +2023,12 @@ namespace Wisteria
             </svg>
             @endhtmlonly
 
-            By setting the scaling, the polygon will stretch itself so that its size adjusts to the canvas's scaling if free floating.
+            By setting the scaling, the polygon will stretch itself so that its size adjusts
+            to the canvas's scaling if free floating.
 
             If bound to a canvas or plot (the norm), then scaling will only affect the pen width.
-            When canvas bound, the points of the polygon exclusively control where and how large the polygon is drawn.*/
+            When canvas bound, the points of the polygon exclusively control where and how large
+            the polygon is drawn.*/
         class Polygon final : public GraphItemBase
             {
             friend class Graphs::Graph2D;
@@ -2141,8 +2082,8 @@ namespace Wisteria
                  brush and you need a specific color to show underneath it
                  (other than what is on the underlying DC).
                 @param fill The color information (a single color or gradient) of the polygon's canvas.
-                @note If this is not specified, then whatever is being drawn under the polygon will appear under it
-                 (this would be the usual behavior).
+                @note If this is not specified, then whatever is being drawn under the
+                 polygon will appear under it (this would be the usual behavior).
                 @sa GetBrush().*/
             void SetBackgroundFill(const Colors::GradientFill& fill) noexcept
                 { m_backgroundFill = fill; }
@@ -2171,21 +2112,24 @@ namespace Wisteria
                 @param polygon The polygon's points.
                 @param N The number of points in the polygon.
                 @returns Whether the point is inside of the polygon.*/
-            [[nodiscard]] static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N);
+            [[nodiscard]] static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon,
+                                                      const int N);
             /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
-                @details The line is drawn with the current pen and the arrowhead is filled with the current brush.
-                 Adapted from code by Adrian McCarthy.
+                @details The line is drawn with the current pen and the arrowhead is filled
+                 with the current brush. Adapted from code by Adrian McCarthy.
                 @param dc The device context to draw on.
                 @param pt1 The starting point of the line.
                 @param pt2 The ending point of the line (and where the arrowhead will be pointing at).
                 @param arrowHeadSize The width and height of the arrowhead.*/
-            static void DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2, const wxSize arrowHeadSize);
+            static void DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
+                                  const wxSize arrowHeadSize);
             /** @brief Shrinks a rectangle by a given scaling.
                 @param theRect The rectangle to downscale.
-                @param scaling Scale factor to scale it down. For example, 2 will downscale the rectangle to
-                 half its original size.
+                @param scaling Scale factor to scale it down. For example, 2 will
+                 downscale the rectangle to half its original size.
                 @returns The downscaled rectangle.*/
-            [[nodiscard]] inline static wxRect DownScaleRect(const wxRect& theRect, const double scaling)
+            [[nodiscard]] inline static wxRect DownScaleRect(const wxRect& theRect,
+                                                             const double scaling)
                 {
                 return wxRect(
                     wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
@@ -2201,7 +2145,8 @@ namespace Wisteria
                 @param N The number of points in the polygon.
                 @returns The rectangle that the polygon would need to fit in.
                 @todo needs unit testing*/
-            [[nodiscard]] static wxRect GetPolygonBoundingBox(const wxPoint* polygon, const size_t N);
+            [[nodiscard]] static wxRect GetPolygonBoundingBox(const wxPoint* polygon,
+                                                              const size_t N);
             /** @brief Determines the bounding box that a polygon requires to fit inside of.
                 @param polygon The polygon's points.
                 @returns The rectangle that the polygon would need to fit in.
@@ -2211,7 +2156,8 @@ namespace Wisteria
             /** @brief Converts a pair of doubles to a @c wxPoint.
                 @param coordPair The two double values representing a point.
                 @returns The double values as a @c wxPoint.*/
-            [[nodiscard]] static wxPoint PairToPoint(const std::pair<double, double>& coordPair) noexcept
+            [[nodiscard]] static wxPoint PairToPoint(const std::pair<double,
+                                                     double>& coordPair) noexcept
                 { return wxPoint(coordPair.first, coordPair.second); }
             /// @}
         private:

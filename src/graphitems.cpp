@@ -653,7 +653,10 @@ namespace Wisteria::GraphItems
                     if (m_points[i].IsOk() && m_points[i+1].IsOk())
                         {
                         if (GetLineStyle() == LineStyle::Lines)
-                            { dc.DrawLine(m_points[i].GetAnchorPoint(), m_points[i+1].GetAnchorPoint()); }
+                            {
+                            dc.DrawLine(m_points[i].GetAnchorPoint(),
+                                        m_points[i+1].GetAnchorPoint());
+                            }
                         else if (GetLineStyle() == LineStyle::Arrows)
                             {
                             Polygon::DrawArrow(dc, m_points[i].GetAnchorPoint(),
