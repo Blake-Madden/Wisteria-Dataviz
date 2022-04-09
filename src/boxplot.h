@@ -62,7 +62,8 @@ namespace Wisteria::Graphs
          plot->ShowAllPoints(true);
 
          canvas->SetFixedObject(0, 0, plot);
-         canvas->SetFixedObject(0, 1, plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+         canvas->SetFixedObject(0, 1, plot->CreateLegend(
+                                LegendCanvasPlacementHint::RightOrLeftOfGraph));
         @endcode
         @todo Add notch support.*/
     class BoxPlot final : public Graph2D
@@ -101,10 +102,12 @@ namespace Wisteria::Graphs
             /// @returns The upper side of the box.
             [[nodiscard]] double GetUpperControlLimit() const noexcept
                 { return m_upperControlLimit; }
-            /// @returns The value of the lower whisker (non-outlier range). Any value lower than this is an outlier.
+            /// @returns The value of the lower whisker (non-outlier range).
+            //  Any value lower than this is an outlier.
             [[nodiscard]] double GetLowerWhisker() const noexcept
                 { return m_lowerWhisker; }
-            /// @returns The value of the upper whisker (non-outlier range). Any value larger than this is an outlier.
+            /// @returns The value of the upper whisker (non-outlier range).
+            ///  Any value larger than this is an outlier.
             [[nodiscard]] double GetUpperWhisker() const noexcept
                 { return m_upperWhisker; }
             /// @}
@@ -195,18 +198,21 @@ namespace Wisteria::Graphs
             /// @brief Functions relating to connecting the box to the parent plot.
             /// @{
 
-            /// @returns The position on the X axis (on the parent plot) that the box is aligned with.
+            /// @returns The position on the X axis (on the parent plot) that the box
+            //   is aligned with.
             [[nodiscard]] double GetXAxisPosition() const noexcept
                 { return m_xAxisPosition; }
             /** @brief Sets where the box should be aligned on the X axis.
                 @param position The position on the X axis to place the box.
-                @note The parent box plot will manage this value, you do not need to call them when creating a box.*/
+                @note The parent box plot will manage this value, you do not need to call
+                 them when creating a box.*/
             void SetXAxisPosition(const double position) noexcept
                 { m_xAxisPosition = position; }
             /// @}
 
             /// @returns The percentile coefficient.
-            /// @note To change this, call SetData() with the new coefficient and it will recalculate everything.
+            /// @note To change this, call SetData() with the new coefficient and it will
+            ///  recalculate everything.
             [[nodiscard]] double GetPercentileCoefficient() const noexcept
                 { return m_percentileCoefficient; }
             /// @brief Calculates the outlier and box ranges.
@@ -320,10 +326,11 @@ namespace Wisteria::Graphs
              @sa IncludedOverlayingLegend().
              @note By default, this legend will be created and laid on top of the plot if a single box plot.
 
-              For multi-group plots, the legend will use colored boxes if the color scheme is using more than
-              one column (meaning that the boxes are different colors). If the boxes are all the same color,
-              then the groups' point shapes are used on legend instead.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
+              For multi-group plots, the legend will use colored boxes if the color scheme is
+              using more than one column (meaning that the boxes are different colors).
+              If the boxes are all the same color, then the groups' point shapes are used on legend instead.*/
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint) const;
         /// @}
 
         /// @name Box Effect Functions
@@ -395,6 +402,13 @@ namespace Wisteria::Graphs
                 { box.ShowAllPoints(display); }
             m_showAllPoints = display;
             }
+
+        /// @returns Access to the brush used to draw the outliers.
+        [[nodiscard]] wxBrush& GetOutlierPointsBrush() noexcept
+            { return m_outlierPointsBrush; }
+        /// @returns Access to the brush used to draw the points.
+        [[nodiscard]] wxBrush& GetPointsBrush() noexcept
+            { return m_pointsBrush; }
         /// @}
 
         /// @private
@@ -403,8 +417,9 @@ namespace Wisteria::Graphs
     private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
-            @note If only one box is on the plot, then no labels will be shown on the bottom X axis (even if a custom label is provided
-             for where the box is). To override this, call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
+            @note If only one box is on the plot, then no labels will be shown on the bottom X axis
+             (even if a custom label is provided for where the box is). To override this,
+             call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes() final;
 
@@ -434,6 +449,10 @@ namespace Wisteria::Graphs
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         std::shared_ptr<IconShapeScheme> m_shapeScheme;
+        wxBrush m_outlierPointsBrush{
+            Colors::ColorBrewer::GetColor(Colors::Color::Red) };
+        wxBrush m_pointsBrush{
+            Colors::ColorBrewer::GetColor(Colors::Color::CarolinaBlue) };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
