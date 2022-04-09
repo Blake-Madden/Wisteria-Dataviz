@@ -28,7 +28,7 @@ namespace Wisteria::Graphs
          | Regular   | Stylized |
          | :-------------- | :-------------------------------- |
          | @image html BarChart.svg width=90% | @image html BarChartStylized.svg width=90% |
-         | @image html BarChartImage.svg width=90% |
+         | @image html BarChartImage.svg width=90% | |
 
         @par Example:
         @code
@@ -41,27 +41,27 @@ namespace Wisteria::Graphs
 
          plot->AddBar(BarChart::Bar(1,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
             },
-            _(""), Label(_("Bugs")), BoxEffect::Solid) );
+            _(L""), Label(_(L"Bugs")), BoxEffect::Solid) );
 
          plot->AddBar(BarChart::Bar(2,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(""), Label(_("Pending feature requests")), BoxEffect::Solid));
+            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
          plot->AddBar(BarChart::Bar(3,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(""), Label(_("Unfinished help topics")), BoxEffect::Solid));
+            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
          plot->AddBar(BarChart::Bar(4,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(""), Label(_("Missing unit tests")), BoxEffect::Solid));
+            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -84,12 +84,12 @@ namespace Wisteria::Graphs
 
          plot->AddBar(BarChart::Bar(1,
             {
-                // this bar will have two sections to it, where a red section
-                // refers to the more critical bugs
-                BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-                BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
+            // this bar will have two sections to it, where a red section
+            // refers to the more critical bugs
+            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(""), Label(_("Bugs")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Bugs")), BoxEffect::Glassy,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2) );
@@ -99,24 +99,24 @@ namespace Wisteria::Graphs
          // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
          plot->AddBar(BarChart::Bar(2.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(""), Label(_("Pending feature requests")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Glassy,
             // this bar will be translucent
             75, 1));
 
          plot->AddBar(BarChart::Bar(3.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(""), Label(_("Unfinished help topics")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
          plot->AddBar(BarChart::Bar(4.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(""), Label(_("Missing unit tests")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
          // only show the labels on the axis
@@ -132,7 +132,8 @@ namespace Wisteria::Graphs
          plot->GetBarAxis().GetTitle().SplitTextByCharacter();
 
          // align the axis labels over to the left
-         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
+         plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(
+            AxisLabelAlignment::AlignWithBoundary);
 
          canvas->SetFixedObject(0, 0, plot);
         @endcode
@@ -305,13 +306,14 @@ namespace Wisteria::Graphs
                 { return m_length; }
             /// @brief Sets the custom width of the block.
             /// @details This will be used first when drawing the block. If invalid, then the parent bar's
-            ///  custom width will be used. If that is invalid, then bars and blocks will have their widths calculated
-            ///  by the plot (the default).
+            ///  custom width will be used. If that is invalid, then bars and blocks will have their widths
+            ///  calculated by the plot (the default).
             /// @param width The width of the block (in terms of units along the bar axis).
-            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the block will consume 25% of the width of the axis
-            ///  (regardless of how wide the other bars are).
-            /// @note You can mix and match custom-width at the bar and bar block levels, although that normally wouldn't be recommend.
-            ///  Prefer just setting custom widths at the bar level, unless you have a special need.
+            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the block will
+            ///  consume 25% of the width of the axis (regardless of how wide the other bars are).
+            /// @note You can mix and match custom-width at the bar and bar block levels,
+            ///  although that normally wouldn't be recommend. Prefer just setting custom widths at the bar level,
+            ///  unless you have a special need.
             void SetCustomWidth(const std::optional<double> width) noexcept
                 {
                 m_customWidth = width;
@@ -320,7 +322,7 @@ namespace Wisteria::Graphs
                 }
             /** @brief The custom width used for the block along the bar axis.
                 @details Not normally used, usually the custom width is handled on the bar level.
-                @returns The custom width (will be std::nullopt if invalid).*/
+                @returns The custom width (will be @c std::nullopt if invalid).*/
             [[nodiscard]] std::optional<double> GetCustomWidth() const noexcept
                 { return m_customWidth; }
         private:
@@ -357,7 +359,8 @@ namespace Wisteria::Graphs
             /** @brief Constructor.
                 @param axisPosition The position on the parent axis to anchor this bar.
                 @param blocks The blocks used to build the bar.
-                @param barLabel The label shown on top of the bar (useful for showing the item count in the bar, for example).
+                @param barLabel The label shown on top of the bar
+                 (useful for showing the item count in the bar, for example).
                 @param axisLabel The label to display beneath the bar on the parent axis.
                 @param effect The effect to display on the bar (e.g., a color gradient).
                 @param opacity The opacity of the bar.
@@ -419,7 +422,8 @@ namespace Wisteria::Graphs
             [[nodiscard]] Wisteria::GraphItems::Label& GetAxisLabel() noexcept
                 { return m_axisLabel; }
 
-            /// @brief Gets/sets the label shown on top (or to the right) of the bar (useful for showing the item count in the bar, for example).
+            /// @brief Gets/sets the label shown on top (or to the right) of the bar
+            ///  (useful for showing the item count in the bar, for example).
             /// @returns The bar label.
             [[nodiscard]] Wisteria::GraphItems::Label& GetLabel() noexcept
                 { return m_barLabel; }
@@ -438,10 +442,10 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the custom width of the bar.
             /// @param width The width of the bar (in terms of units along the bar axis).
-            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the bar will consume 25% of the width of the axis
-            ///  (regardless of how wide the other bars are).
-            /// @note You can mix and match custom-width and auto-fitted bars in the same barchart; just don't set the custom width
-            ///  for bars that you wish to be auto-fitted.
+            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the bar will
+            ///  consume 25% of the width of the axis (regardless of how wide the other bars are).
+            /// @note You can mix and match custom-width and auto-fitted bars in the same barchart;
+            ///  just don't set the custom width for bars that you wish to be auto-fitted.
             void SetCustomWidth(const std::optional<double> width) noexcept
                 {
                 m_customWidth = width;
@@ -450,9 +454,9 @@ namespace Wisteria::Graphs
                     { m_customWidth = std::nullopt; }
                 }
             /** @brief The custom width used for the bar along the bar axis.
-                @details Not normally used, this is usually meant for situations where the bars must fit together a very specific
-                 way (e.g., ranges on a histogram).
-                @returns The custom width (will be std::nullopt if invalid).*/
+                @details Not normally used, this is usually meant for situations where the
+                 bars must fit together a very specific way (e.g., ranges on a histogram).
+                @returns The custom width (will be @c std::nullopt if invalid).*/
             [[nodiscard]] std::optional<double> GetCustomWidth() const noexcept
                 { return m_customWidth; }
             /// @}
@@ -466,8 +470,8 @@ namespace Wisteria::Graphs
 
             /** @brief Adds a block to the bar along the scaling axis (i.e., how "tall" the bar is).
                 @param block The to add to the bar.
-                @note If calling this, be sure to adjust the range of the scaling axis if need be. Normally,
-                 it's preferred to let AddBar() handle this.*/
+                @note If calling this, be sure to adjust the range of the scaling axis if need be.
+                 Normally, it's preferred to let AddBar() handle this.*/
             void AddBlock(const BarBlock& block) noexcept
                 {
                 m_blocks.emplace_back(block);
@@ -484,7 +488,8 @@ namespace Wisteria::Graphs
                 { return m_blocks; }
             /** @brief Searches for a block in the bar with the provided tag.
                 @param tag The tag to look for.
-                @returns An iterator to the first block with the given tag, or `GetBlocks().end()` if not found.*/
+                @returns An iterator to the first block with the given tag,
+                 or `GetBlocks().end()` if not found.*/
             std::vector<BarBlock>::iterator FindBlock(const wxString& tag) noexcept
                 {
                 return std::find_if(GetBlocks().begin(), GetBlocks().end(),
@@ -516,7 +521,8 @@ namespace Wisteria::Graphs
 
                  As an example, if a bar's length is 40 and you specify its axis start position as 80,
                  then it will start at 80 and end at 120. (And 0-79 will be a blank spot in the bar.)
-                @param position The position to start drawing the bar. Set this to NaN (the default) to disable this.*/
+                @param position The position to start drawing the bar. Set this to NaN (the default)
+                 to disable this.*/
             void SetCustomScalingAxisStartPosition(const std::optional<double> position)
                 {
                 m_customScalingStartPosition = position;
@@ -543,9 +549,12 @@ namespace Wisteria::Graphs
             BarShape m_barShape{ BarShape::Rectangle };
             Wisteria::GraphItems::Label m_axisLabel;
             Wisteria::GraphItems::Label m_barLabel;
-            double m_length{ 0 }; // cached from bar blocks
-            std::optional<double> m_customWidth{ std::nullopt }; // only used if a bar must be a specific width
-            std::optional<double> m_customScalingStartPosition{ std::nullopt }; // only used if a bar must somewhere other than the start of the scaling axis
+            // cached from bar blocks
+            double m_length{ 0 };
+            // only used if a bar must be a specific width
+            std::optional<double> m_customWidth{ std::nullopt };
+            // only used if a bar must somewhere other than the start of the scaling axis
+            std::optional<double> m_customScalingStartPosition{ std::nullopt };
             double m_axisPosition{ 0 };
             };
 
@@ -607,10 +616,12 @@ namespace Wisteria::Graphs
         /// @returns The axis with the scaling, which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
             { return (GetBarOrientation() == Orientation::Vertical) ? GetLeftYAxis() : GetBottomXAxis(); }
-        /// @returns The axis with the scaling (opposite side), which is the axis perpendicular to the axis with the bars on it.
+        /// @returns The axis with the scaling (opposite side),
+        ///  which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] Wisteria::GraphItems::Axis& GetReverseScalingAxis() noexcept
             { return (GetBarOrientation() == Orientation::Vertical) ? GetRightYAxis() : GetTopXAxis(); }
-        /// @returns The axis with the scaling (opposite side), which is the axis perpendicular to the axis with the bars on it.
+        /// @returns The axis with the scaling (opposite side),
+        ///  which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] const Wisteria::GraphItems::Axis& GetReverseScalingAxis() const noexcept
             { return (GetBarOrientation() == Orientation::Vertical) ? GetRightYAxis() : GetTopXAxis(); }
         /// @returns The axis that the bars are being spread across.
@@ -634,7 +645,8 @@ namespace Wisteria::Graphs
 
         /// @brief Sorts the bars (based on bar size).
         /// @param sortMethod How to sort the bars.
-        /// @param direction SortAscending to sort smallest to largest, going upward or left to right. SortDescending to sort largest to smallest.
+        /// @param direction SortAscending to sort smallest to largest, going upward or left to right.
+        ///  SortDescending to sort largest to smallest.
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
         /// @returns `true` if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept
@@ -648,8 +660,8 @@ namespace Wisteria::Graphs
             { m_sortDirection = direction; }
         /// @brief Sets the bar axis so that it can be sorted (based on bar size or axis label).
         /// @param sortable Whether the bars should be sortable.
-        /// @note This needs to turn off bar axis reversal and only use custom labels on the bar axis. When sorting
-        ///  the bars, it only makes sense if the bars are categories/observations with text labels.
+        /// @note This needs to turn off bar axis reversal and only use custom labels on the bar axis.
+        ///  When sorting the bars, it only makes sense if the bars are categories/observations with text labels.
         void SetSortable(const bool sortable)
             {
             m_isSortable = sortable;
@@ -706,8 +718,9 @@ namespace Wisteria::Graphs
         ///  Using the number of bars to calculate the widths may be inaccurate if there are missing bars along the bar axis,
         ///  so this (by default) will use the number of axis labels that would appear under each place that a bar would go.
         ///  (Note that the outer labels are not counted, just the labels under the bars.)
-        /// @note The default behaviour assumes that labels are appearing beneath the middle of each bar (instead of cutpoints, like in histograms),
-        ///  so override this if relying on bar axis labels won't work. This should be overridden if bar axis labelling is being done in a different
+        /// @note The default behaviour assumes that labels are appearing beneath the middle of each bar
+        ///  (instead of cutpoints, like in histograms), so override this if relying on bar axis labels won't work.
+        ///  This should be overridden if bar axis labelling is being done in a different
         ///  way, or if bars are being stacked on top of each other or other interesting situations.
         [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
             { return GetBarAxis().GetAxisPoints().size()-2; }

@@ -36,7 +36,7 @@ bool MyApp::OnInit()
 
     wxInitAllImageHandlers();
 
-    // run this to draw additional debug information
+    // enable this to draw additional debug information:
     // Wisteria::Settings::EnableAllDebugFlags();
 
     MyFrame* frame = new MyFrame;
@@ -52,7 +52,7 @@ bool MyApp::OnInit()
 // Define my frame constructor
 MyFrame::MyFrame()
        : wxMDIParentFrame(nullptr, wxID_ANY, _(L"Wisteria Demo"),
-                          wxDefaultPosition, wxSize(500, 400))
+                          wxDefaultPosition, wxSize(750, 500))
     {
     SetSize(FromDIP(wxSize(750, 500)));
 
@@ -245,7 +245,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             quarterlyPerformanceData->ImportCSV(L"datasets/Performance Reviews.csv",
                 ImportInfo().ContinuousColumns({ L"Perf" }).
-                CategoricalColumns({ { L"Quarter", CategoricalImportMethod::ReadAsStrings} }));
+                CategoricalColumns({ { L"Quarter", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -339,7 +339,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // use group and put all of the students' heatmaps into one column
         plot->SetData(testScoresData, L"TEST_SCORE", L"Name", 1);
         // say "Students" at the top instead of "Groups"
-        plot->SetGroupHeaderPrefix(_("Students"));
+        plot->SetGroupHeaderPrefix(_(L"Students"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
@@ -375,7 +375,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Histogram::IntervalDisplay::Midpoints,
             BinLabelDisplay::BinValueAndPercentage);
 
-        plot->GetTitle().SetText(_("Performance Levels"));
+        plot->GetTitle().SetText(_(L"Performance Levels"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         subframe->m_canvas->SetFixedObject(0, 1,
@@ -495,7 +495,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add a note
         auto note = std::make_shared<Label>(
-            GraphItemInfo(L"What happened this week?\nAre we sure this is correct???").
+            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
             Pen(*wxLIGHT_GREY).
             FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
@@ -532,7 +532,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, legend);
 
-        // to add another legend under the graph, right-aligned:
+        // to add another right-aligned legend under the graph, uncomment the following:
 
         // subframe->m_canvas->SetFixedObjectsGridSize(2, 2);
         // legend = linePlot->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph);
@@ -656,27 +656,27 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->AddBar(BarChart::Bar(1,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
             },
-            _(""), Label(_("Bugs")), BoxEffect::Solid) );
+            _(L""), Label(_(L"Bugs")), BoxEffect::Solid) );
 
         plot->AddBar(BarChart::Bar(2,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(""), Label(_("Pending feature requests")), BoxEffect::Solid));
+            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(3,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(""), Label(_("Unfinished help topics")), BoxEffect::Solid));
+            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(4,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(""), Label(_("Missing unit tests")), BoxEffect::Solid));
+            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -702,12 +702,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->AddBar(BarChart::Bar(1,
             {
-                // this bar will have two sections to it, where a red section
-                // refers to the more critical bugs
-                BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-                BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
+            // this bar will have two sections to it, where a red section
+            // refers to the more critical bugs
+            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(""), Label(_("Bugs")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Bugs")), BoxEffect::Glassy,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -717,24 +717,24 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
         plot->AddBar(BarChart::Bar(2.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(""), Label(_("Pending feature requests")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Glassy,
             // this bar will be translucent
             75, 1));
 
         plot->AddBar(BarChart::Bar(3.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(""), Label(_("Unfinished help topics")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(""), Label(_("Missing unit tests")), BoxEffect::Glassy,
+            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
@@ -775,12 +775,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->AddBar(BarChart::Bar(1,
             {
-                // this bar will have two sections to it, where a red section
-                // refers to the more critical bugs
-                BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
-                BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
+            // this bar will have two sections to it, where a red section
+            // refers to the more critical bugs
+            BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+            BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(""), Label(_("Bugs")), BoxEffect::CommonImage,
+            _(L""), Label(_(L"Bugs")), BoxEffect::CommonImage,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -790,23 +790,23 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
         plot->AddBar(BarChart::Bar(2.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(""), Label(_("Pending feature requests")), BoxEffect::CommonImage,
+            _(L""), Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(3.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(""), Label(_("Unfinished help topics")), BoxEffect::CommonImage,
+            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
-                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+            BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(""), Label(_("Missing unit tests")), BoxEffect::CommonImage,
+            _(L""), Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis

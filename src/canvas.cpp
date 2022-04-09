@@ -266,8 +266,8 @@ namespace Wisteria
             // just show a message if a real error occurred. They may have just cancelled.
             if (printer.GetLastError() == wxPRINTER_ERROR)
                 {
-                wxMessageBox(_("An error occurred while printing.\nYour default printer may not be set correctly."),
-                             _("Print"), wxOK|wxICON_WARNING);
+                wxMessageBox(_(L"An error occurred while printing.\nYour default printer may not be set correctly."),
+                             _(L"Print"), wxOK|wxICON_WARNING);
                 }
             }
         if (m_printData)
@@ -318,14 +318,14 @@ namespace Wisteria
         if (!preview->IsOk())
             {
             wxDELETE(preview); wxDELETE(dc); wxDELETE(dc2);
-            wxMessageBox(_("An error occurred while previewing.\n"
-                           "Your default printer may not be set correctly."),
-                         _("Print Preview"), wxOK|wxICON_WARNING);
+            wxMessageBox(_(L"An error occurred while previewing.\n"
+                            "Your default printer may not be set correctly."),
+                         _(L"Print Preview"), wxOK|wxICON_WARNING);
             return;
             }
         int x{0}, y{0}, width{0}, height{0};
         wxClientDisplayRect(&x, &y, &width, &height);
-        wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _("Print Preview"),
+        wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"LPrint Preview"),
                                                    wxDefaultPosition, wxSize(width, height));
 
         frame->Centre(wxBOTH);
@@ -388,35 +388,35 @@ namespace Wisteria
         const wxString closeTag(L"</span><br />");
         wxArrayString choices, descriptions;
         choices.Add(L"PNG");
-            descriptions.Add(openTag + _("Portable Network Graphic") + closeTag +
-                _("A lossless-compressed image format. "
-                  "The image can be compressed to a smaller size without any loss of quality."));
+            descriptions.Add(openTag + _(L"Portable Network Graphic") + closeTag +
+                _(L"A lossless-compressed image format. "
+                   "The image can be compressed to a smaller size without any loss of quality."));
         choices.Add(L"JPG");
-            descriptions.Add(openTag + _("Joint Photographic Experts Group") + closeTag +
-                _("A lossy-compressed image format. Some image quality may be lost, "
-                  "compared to other formats such as PNG."));
+            descriptions.Add(openTag + _(L"Joint Photographic Experts Group") + closeTag +
+                _(L"A lossy-compressed image format. Some image quality may be lost, "
+                   "compared to other formats such as PNG."));
         choices.Add(L"BMP");
-            descriptions.Add(openTag + _("Bitmap") + closeTag +
-                _("An uncompressed raster (i.e., pixel based) image format."));
+            descriptions.Add(openTag + _(L"Bitmap") + closeTag +
+                _(L"An uncompressed raster (i.e., pixel based) image format."));
         choices.Add(L"TIFF");
-            descriptions.Add(openTag + _("Tagged Image File Format") + closeTag +
-                _("This format can either be compressed or uncompressed "
-                  "and offers both lossy and lossless compression. "
-                  "This format is generally preferred for desktop publishing."));
+            descriptions.Add(openTag + _(L"Tagged Image File Format") + closeTag +
+                _(L"This format can either be compressed or uncompressed "
+                   "and offers both lossy and lossless compression. "
+                   "This format is generally preferred for desktop publishing."));
         choices.Add(L"TARGA");
-            descriptions.Add(openTag + _("Truevision Advanced Raster Graphics Adapter") + closeTag +
-                _("A raster (i.e., pixel based) image format."));
+            descriptions.Add(openTag + _(L"Truevision Advanced Raster Graphics Adapter") + closeTag +
+                _(L"A raster (i.e., pixel based) image format."));
         choices.Add(L"GIF");
-            descriptions.Add(openTag + _("Graphics Interchange Format") + closeTag +
-                _("A raster (i.e., pixel based) image format. "
-                  "Note that this image format is limited to 256 colors."));
+            descriptions.Add(openTag + _(L"Graphics Interchange Format") + closeTag +
+                _(L"A raster (i.e., pixel based) image format. "
+                   "Note that this image format is limited to 256 colors."));
         choices.Add(L"SVG");
-            descriptions.Add(openTag + _("Scalable Vector Graphics") + closeTag +
-                _("A format that uses vector (rather than raster) drawing. "
-                  "Vector-based images can be scaled to much larger sizes, "
-                  "without the loss of quality that raster images would experience."));
-        RadioBoxDlg exportTypesDlg(this, _("Select Image Format"), wxEmptyString,
-            _("Image formats:"), _("Export Image"),
+            descriptions.Add(openTag + _(L"Scalable Vector Graphics") + closeTag +
+                _(L"A format that uses vector (rather than raster) drawing. "
+                   "Vector-based images can be scaled to much larger sizes, "
+                   "without the loss of quality that raster images would experience."));
+        RadioBoxDlg exportTypesDlg(this, _(L"Select Image Format"), wxEmptyString,
+            _(L"Image formats:"), _(L"Export Image"),
             choices, descriptions);
         if (exportTypesDlg.ShowModal() != wxID_OK)
             { return; }
@@ -447,7 +447,7 @@ namespace Wisteria
         default:
             fileFilter = L"PNG (*.png)|*.png";
             };
-        wxFileDialog dialog(this, _("Save Image"), wxEmptyString, GetLabel(), fileFilter,
+        wxFileDialog dialog(this, _(L"Save Image"), wxEmptyString, GetLabel(), fileFilter,
                 wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
         if (dialog.ShowModal() != wxID_OK)
@@ -608,8 +608,8 @@ namespace Wisteria
 
             if (!img.SaveFile(filePath.GetFullPath(), imageType))
                 {
-                wxMessageBox(wxString::Format(_("Failed to save image\n(%s)."), filePath.GetFullPath()),
-                    _("Save Error"), wxOK|wxICON_EXCLAMATION);
+                wxMessageBox(wxString::Format(_(L"Failed to save image\n(%s)."), filePath.GetFullPath()),
+                    _(L"Save Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }
             return true;
