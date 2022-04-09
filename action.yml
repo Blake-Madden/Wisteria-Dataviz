@@ -2,4 +2,4 @@
   uses: mattnotmitt/doxygen-action@1.9.3
   with:
     doxyfile-path: 'docs/doxygen/Doxyfile'
-    enable-latex: true
+    enable-latex: true 
