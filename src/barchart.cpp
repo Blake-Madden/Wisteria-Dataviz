@@ -277,7 +277,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
-                                Pen(wxNullPen).Scaling(1).ShowLabelWhenSelected(true).
+                                Pen(wxNullPen).ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
                                     wxSize(barLength, barWidth),
@@ -569,7 +569,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
-                                Pen(wxNullPen).Scaling(1).ShowLabelWhenSelected(true).
+                                Pen(wxNullPen).ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
                                     wxSize(barWidth, barLength), Orientation::Vertical,
