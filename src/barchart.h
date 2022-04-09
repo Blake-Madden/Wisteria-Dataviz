@@ -28,7 +28,10 @@ namespace Wisteria::Graphs
          | Regular   | Stylized |
          | :-------------- | :-------------------------------- |
          | @image html BarChart.svg width=90% | @image html BarChartStylized.svg width=90% |
-         | @image html BarChartImage.svg width=90% | |
+
+         | Image Background   |
+         | :-------------- |
+         | @image html BarChartImage.svg width=90% |
 
         @par Example:
         @code

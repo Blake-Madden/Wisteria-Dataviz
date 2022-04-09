@@ -81,6 +81,9 @@ Basic
 | Bar Chart (Wisteria::Graphs::BarChart) | Stylized Bar Chart (Wisteria::Graphs::BarChart) |
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/BarChartStylized.svg) |
+
+| Image-based Bar Chart (Wisteria::Graphs::BarChart) |
+| :-------------------------------- |
 | ![](docs/doxygen/images/BarChartImage.svg) |
 
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
