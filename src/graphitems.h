@@ -301,6 +301,7 @@ namespace Wisteria
         FadeFromTopToBottom,                       /*!< Color gradient, top-to-bottom.*/
         FadeFromRightToLeft = FadeFromTopToBottom, /*!< Color gradient, right-to-left.*/
         Stipple,                                   /*!< Fill with repeating images.*/
+        CommonImage,                               /*!< A subimage of a larger image shared by all boxes.*/
         EFFECTS_COUNTS                             /*!< The number of bar effects options.*/
         };
 

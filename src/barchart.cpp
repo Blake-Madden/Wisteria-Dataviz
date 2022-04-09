@@ -271,7 +271,22 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::Stipple && GetStippleBrush() && GetStippleBrush()->IsOk() )
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetBarsImage())
+                            {
+                             auto barImage = std::make_shared<Image>(
+                                GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                Pen(m_imageOutlineColor).
+                                ShowLabelWhenSelected(true).
+                                AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                                GetBarsImage()->GetSubImage(barRect));
+                            barImage->SetOpacity(bar.GetOpacity());
+                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            AddObject(barImage);
+                            }
+                        else if (bar.GetEffect() == BoxEffect::Stipple &&
+                                 GetStippleBrush() && GetStippleBrush()->IsOk() )
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
@@ -307,6 +322,7 @@ namespace Wisteria::Graphs
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
                             AddObject(barImage);
                             }
+                        // color-filled bar
                         else
                             {
                             std::shared_ptr<GraphItems::Polygon> box;
@@ -563,7 +579,22 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::Stipple && GetStippleBrush() && GetStippleBrush()->IsOk() )
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetBarsImage())
+                            {
+                            auto barImage = std::make_shared<Image>(
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
+                                Pen(m_imageOutlineColor).
+                                ShowLabelWhenSelected(true).
+                                AnchorPoint(wxPoint(lineXStart, lineYEnd)),
+                                GetBarsImage()->GetSubImage(barRect));
+                            barImage->SetOpacity(bar.GetOpacity());
+                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
+                                ShadowType::RightSideShadow : ShadowType::NoShadow);
+                            AddObject(barImage);
+                            }
+                        else if (bar.GetEffect() == BoxEffect::Stipple &&
+                                 GetStippleBrush() && GetStippleBrush()->IsOk() )
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
@@ -608,7 +639,8 @@ namespace Wisteria::Graphs
                                 // polygons don't support drop shadows, so need to manually add a shadow as another polygon
                                 if ((GetShadowType() != ShadowType::NoShadow) && (barBlock.GetLength() > rangeStart))
                                     {
-                                    // in case this bar is way too small because of the scaling then don't bother with the shadow
+                                    // in case this bar is way too small because of the scaling,
+                                    // then don't bother with the shadow
                                     if (barRect.GetHeight() > scaledShadowOffset)
                                         {
                                         wxPoint shadowPts[4];

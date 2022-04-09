@@ -57,6 +57,7 @@ public:
     static constexpr int ID_NEW_MULTIPLOT{ wxID_HIGHEST+17 };
     static constexpr int ID_NEW_MULTIPLOT_COMMON_AXIS{ wxID_HIGHEST+18 };
     static constexpr int ID_NEW_CANDLESTICK_AXIS{ wxID_HIGHEST+19 };
+    static constexpr int ID_NEW_BARCHART_IMAGE{ wxID_HIGHEST+20 };
     };
 
 // Define a new frame

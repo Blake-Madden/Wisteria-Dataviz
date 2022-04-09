@@ -28,6 +28,7 @@ namespace Wisteria::Graphs
          | Regular   | Stylized |
          | :-------------- | :-------------------------------- |
          | @image html BarChart.svg width=90% | @image html BarChartStylized.svg width=90% |
+         | @image html BarChartImage.svg width=90% |
 
         @par Example:
         @code
@@ -660,9 +661,9 @@ namespace Wisteria::Graphs
             }
         /// @}
 
-        /// @name Visual Effect Functions
+        /// @name Label Functions
         /// @brief Functions relating to how labels and shadows are drawn.
-        /// @note Additional visual effects are controlled at the Bar level.
+        /// @note Visual effects are controlled at the Bar level.
         /// @{
 
         /** @brief Sets whether to include spaces between the bars when drawn.
@@ -679,6 +680,17 @@ namespace Wisteria::Graphs
             { m_includeBarLabels = includeLabels; }
         /// @}
 
+        /// @brief Sets a common image to be drawn just within the bar areas.
+        /// @param barsImage The image to draw across the bars.
+        /// @param outlineColor The outline color of the bars.
+        /// @note This effect will only apply to bars using the @c CommonImage effect. 
+        void SetCommonBarImage(std::shared_ptr<const wxImage> barsImage,
+                               const wxColour& outlineColor) noexcept
+            {
+            m_barsImage = barsImage;
+            m_imageOutlineColor = outlineColor;
+            }
+
         /// @returns The maximum number of bars displayed before the parent canvas is forced to be made taller
         ///  (which will make this chart easier to read).
         [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
@@ -687,6 +699,9 @@ namespace Wisteria::Graphs
             @param barsPerDefaultCanvasSize The number bars to display before requiring the canvas to be made taller.*/
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
     protected:
+        /// @returns The image drawn across all bars.
+        [[nodiscard]] const std::shared_ptr<const wxImage>& GetBarsImage() const noexcept
+            { return m_barsImage; }
         /// @returns The number of slots that can hold a bar. This is used for calculating the width of the bars.
         ///  Using the number of bars to calculate the widths may be inaccurate if there are missing bars along the bar axis,
         ///  so this (by default) will use the number of axis labels that would appear under each place that a bar would go.
@@ -716,6 +731,8 @@ namespace Wisteria::Graphs
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
         size_t m_barsPerDefaultCanvasSize{ 500 };
         Orientation m_barOrientation{ Orientation::Vertical };
+        std::shared_ptr<const wxImage> m_barsImage{ nullptr };
+        wxColour m_imageOutlineColor{ *wxBLACK };
         };
     }
 

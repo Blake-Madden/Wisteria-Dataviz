@@ -16,7 +16,7 @@ such as:
   - Includes support for continuous, categorical, date, and ID columns
 - Can handle [HiDPI](HiDPI.md) displays
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Microsoft Windows, if available)
-- [Image](Images.md) support, including the ability to use an image as a plot background or a stipple brush for bar charts
+- [Image](Images.md) support, including the ability to use images for plot and bar backgrounds
 - Effects for boxes and bars, including transparency, a glossy look, stipple brushes, and color fades
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
@@ -81,6 +81,7 @@ Basic
 | Bar Chart (Wisteria::Graphs::BarChart) | Stylized Bar Chart (Wisteria::Graphs::BarChart) |
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/BarChartStylized.svg) |
+| ![](docs/doxygen/images/BarChartImage.svg) |
 
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------------------------- | :-------------------------------- |

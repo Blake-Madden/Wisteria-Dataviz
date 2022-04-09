@@ -111,6 +111,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LINEPLOT_CUSTOMIZED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART_STYLIZED);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART_IMAGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART);
@@ -145,6 +146,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"))->
@@ -752,6 +755,76 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Bar Chart (common image)
+    else if (event.GetId() == MyApp::ID_NEW_BARCHART_IMAGE)
+        {
+        subframe->SetTitle(_(L"Bar Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto plot = std::make_shared<BarChart>(subframe->m_canvas);
+
+        // make it a horizontal barchart
+        plot->SetBarOrientation(Orientation::Horizontal);
+
+        plot->SetCommonBarImage(std::make_shared<wxImage>(
+            // Photo by ThisisEngineering RAEng on Unsplash
+            GraphItems::Image::LoadImageWithCorrection(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
+            *wxWHITE);
+
+        auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
+
+        plot->AddBar(BarChart::Bar(1,
+            {
+                // this bar will have two sections to it, where a red section
+                // refers to the more critical bugs
+                BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
+                BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
+            },
+            _(""), Label(_("Bugs")), BoxEffect::CommonImage,
+            // we will make the width of the bar twice as wide as the others
+            // to show how important it is
+            wxALPHA_OPAQUE, 2));
+
+        // Note that because the first bar has an unusual width, this will offset
+        // the positions of the following bars. Therefore, we need to place them
+        // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
+        plot->AddBar(BarChart::Bar(2.5,
+            {
+                BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
+            },
+            _(""), Label(_("Pending feature requests")), BoxEffect::CommonImage,
+            wxALPHA_OPAQUE, 1));
+
+        plot->AddBar(BarChart::Bar(3.5,
+            {
+                BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
+            },
+            _(""), Label(_("Unfinished help topics")), BoxEffect::CommonImage,
+            wxALPHA_OPAQUE, 1));
+
+        plot->AddBar(BarChart::Bar(4.5,
+            {
+                BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
+            },
+            _(""), Label(_("Missing unit tests")), BoxEffect::CommonImage,
+            wxALPHA_OPAQUE, 1));
+
+        // only show the labels on the axis
+        plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+        // force the custom labels set at points like 2.5 to be shown
+        const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
+        plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1, 0.5, 1);
+
+        plot->GetBarAxis().GetTitle().GetGraphItemInfo().
+            Text(L"ISSUES").Padding(5, 10, 0, 0);
+
+        // align the axis labels over to the left
+        plot->GetBarAxis().SetPerpendicularLabelAxisAlignment(AxisLabelAlignment::AlignWithBoundary);
+
+        plot->SetCanvasMargins(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
     // Pie Chart
     else if (event.GetId() == MyApp::ID_NEW_PIECHART)
         {
@@ -1312,6 +1385,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize),
         _(L"Bar Chart (Stylized)"));
+    toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
+        _(L"Bar Chart (Commom Image)"));
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
