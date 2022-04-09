@@ -1,4 +1,3 @@
 uses: mattnotmitt/doxygen-action@v1.9.2
 with:
-    working-directory: 'submodule/'
     doxyfile-path: 'docs/doxygen/Doxyfile'
