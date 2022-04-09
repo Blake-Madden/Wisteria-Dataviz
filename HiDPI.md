@@ -1,7 +1,7 @@
 High DPI Display
 =============================
 
-%Wisteria works with either regular or high DPI displays.
+Wisteria works with either regular or high DPI displays.
 
 If designing your own graph, you will need to set the window for any object that you add to it.
 This window will generally be the `Canvas` that the object's plot is being rendered on. For any

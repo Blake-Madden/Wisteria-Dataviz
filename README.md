@@ -158,7 +158,7 @@ git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
 Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) for how to build wxWidgets.
 
-Next, get and build %Wisteria:
+Next, get and build Wisteria:
 
 ```
 git clone https://github.com/Blake-Madden/Wisteria.git --recurse-submodules
