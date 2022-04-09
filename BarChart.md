@@ -98,7 +98,7 @@ plot->AddBar(BarChart::Bar(1,
             ChildAlignment(RelativeAlignment::FlushLeft))).
             Tag(L"DECAL_BLOCK")),
     },
-    _(""), Label(_("Company Finances")), BarChart::BarEffect::Glassy) );
+    _(""), Label(_(L"Company Finances")), BarChart::BarEffect::Glassy) );
 ```
 
 These blocks can later be searched for and customized. In the following example, we customize

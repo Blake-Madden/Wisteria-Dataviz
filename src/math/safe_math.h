@@ -14,7 +14,7 @@
 #include <cmath>
 #include <cassert>
 
-//DIVISION OPERATIONS
+// DIVISION OPERATIONS
 //-------------------
 
 /// @brief Modulus operation that checks for modulus by zero or into zero (returns zero for those situations).
@@ -56,7 +56,7 @@ template<typename T>
     return ldiv(static_cast<long>(dividend), static_cast<long>(divisor));
     }
 
-//DOUBLE OPERATIONS
+// FLOATING-POINT OPERATIONS
 //-----------------
 
 /** @brief Compares two double values (given the specified precision).
@@ -119,7 +119,7 @@ public:
         { return compare_doubles_less(left, right); }
     };
 
-//INTEGER OPERATIONS
+// INTEGER OPERATIONS
 //------------------
 
 /// @brief Converts an integral type to a boolean. Compilers complain about directly assigning
@@ -132,7 +132,7 @@ template<typename T>
 
 /// @brief Converts a boolean to integer (e.g., `true` = 1, `false` = 0).
 /// @param boolVal The boolean value to review.
-/// @returns 1 if @c boolVal is `true`, 0 if `false``.
+/// @returns 1 if @c boolVal is `true`, 0 if `false`.
 [[nodiscard]] constexpr int bool_to_int(const bool boolVal) noexcept
     { return (boolVal ? 1 : 0); }
 

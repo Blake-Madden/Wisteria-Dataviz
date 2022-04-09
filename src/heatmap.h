@@ -33,7 +33,7 @@ namespace Wisteria::Graphs
 
         @par %Data:
          This plot accepts a Data::Dataset where a continuous column is the data that is color mapped.
-         Also, this data series can optionally be grouped by a grouping column from the dataset.
+         Also, this data series can optionally be grouped by a categorical column from the dataset.
          Finally, an ID/label can optionally be assigned to each cell (corresponding to the data points)
          that is displayed when selected by the client.
 

@@ -25,7 +25,7 @@ namespace Wisteria::Graphs
 
         @par %Data:
          This plot accepts a Data::Dataset, where a continuous column is the Y values
-         (i.e., the dependent measurements) and the second continuous column is the X values.
+         (i.e., the dependent measurements) and another continuous column is the X values.
          A grouping column can optionally be used to create separate lines for different groups
          in the data.
         @par Example:

@@ -278,7 +278,7 @@ template<typename T>
         (std::floor(x+0.5f));
     }
 
-/** @brief Rounds a double value to a specified precision (e.g., "5.16" -> "5.2").
+/** @brief Rounds a double value to a specified precision (e.g., 5.16 -> 5.2).
     @param x Value to round.
     @param decimalPlace The decimal place to round down to. 10 is the
      tenths place, 100 the hundredths place, etc.
@@ -292,7 +292,7 @@ template<typename T>
     return safe_divide<double>(fpart, decimalPlace)+ipart;
     }
 
-/** @brief Truncates a double value down to a specified precision (e.g., "5.16" -> "5.1").
+/** @brief Truncates a double value down to a specified precision (e.g., 5.16 -> 5.1).
     @param x Value to truncated.
     @param decimalPlace The decimal place to truncate down to. 10 is the
      tenths place, 100 the hundredths place, etc.
@@ -461,7 +461,8 @@ namespace geometry
     [[nodiscard]] inline double calculate_rescale_height(const std::pair<double,double> size,
                                                          const double newWidth) noexcept
         {
-        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newWidth >= 0) && "size value cannot be negative");
+        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newWidth >= 0) &&
+            "size value cannot be negative");
         if (size.first < 0 || size.second < 0 || newWidth < 0)
             { return 0; }
         return (newWidth<=0) ? 0 : (size.second*safe_divide<double>(newWidth,size.first));
@@ -478,7 +479,8 @@ namespace geometry
     [[nodiscard]] inline double calculate_rescale_width(const std::pair<double,double> size,
                                                         const double newHeight) noexcept
         {
-        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newHeight >= 0) && "size value cannot be negative");
+        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newHeight >= 0) &&
+            "size value cannot be negative");
         if (size.first < 0 || size.second < 0 || newHeight < 0)
             { return 0; }
         return (newHeight<=0) ? 0: (size.first*safe_divide<double>(newHeight,size.second));
@@ -508,7 +510,8 @@ namespace geometry
         // original width is larger, so scale down by width
         else if (size.first > boundingSize.first && size.second <= boundingSize.second)
             { return std::make_pair(boundingSize.first, calculate_rescale_height(size, boundingSize.first)); }
-        // original width and height are both larger, but width is more proportionally larger, so scale down by that
+        // original width and height are both larger,
+        // but width is more proportionally larger, so scale down by that
         else if (size.first > boundingSize.first && size.second > boundingSize.second &&
             (size.first-boundingSize.first) > (size.second-boundingSize.second))
             {
@@ -518,7 +521,8 @@ namespace geometry
             // the scale it down to the bounding box
             return calculate_downscaled_size(adjustedSize, boundingSize);
             }
-        // otherwise, original width and height are both larger, but height is more proportionally larger, so scale down by that
+        // otherwise, original width and height are both larger,
+        // but height is more proportionally larger, so scale down by that
         else
             {
             const auto adjustedSize = std::make_pair(calculate_rescale_width(size, boundingSize.second),

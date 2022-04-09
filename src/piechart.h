@@ -126,7 +126,7 @@ namespace Wisteria::Graphs
          This plot accepts a Data::Dataset where a continuous column is the measurement,
          and a grouping column is the groups that the continuous values are aggregated into.
          Optionally, a second grouping column can be used to create subgroups within the main slices
-         of the pie. These subgroups are shown along an inner ring, lined up against the respective
+         of the pie. These subgroups are shown along an inner ring, lined up against their parent
          group slices in the outer ring.
 
          Below is an example where the continuous is `Enrollment`, the main grouping column is `College`,

@@ -21,6 +21,22 @@ namespace Wisteria::Graphs
         @details These are useful for project management.
         @image html GanttChart.svg width=90%
 
+        @par %Data:
+         This plot accepts a Data::Dataset where one categorical column is the task name and two date columns
+         represent the start and end dates. Optionally, categorical columns can specify a description for the
+         task, as well whom the task is assigned to. Finally, an optional continuous column can specify
+         the percent of how complete the task is.
+
+         | Task            | Start      | End        | Description          | Resource    | Completion |
+         | :--             | --:        | --:        | :--                  | :--         | --:        |
+         | Acquisition     | 2022-07-01 | 8/31/2022  |                      | Management  | 100        |
+         | Develop Product | 2022-09-01 | 12/25/2022 |                      | Development | 50         |
+         | Testing         | 2022-10-15 | 12/25/2022 | Maybe outsource this | QA          |            |
+
+         Note that if the start date is missing data, then the starting point of the task will be whatever
+         the earliest date along the bottom axis. Likewise, if the end date is missing data, then the task
+         will be drawn as an arrow, stretching to the end of the bottom axis.
+
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog,
@@ -37,7 +53,7 @@ namespace Wisteria::Graphs
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({ { L"Start" }, { L"End" } }).
                 CategoricalColumns({
-                    { L"Project" },
+                    { L"Task" },
                     { L"Description" },
                     { L"Resource" }
                     }));
@@ -51,7 +67,7 @@ namespace Wisteria::Graphs
          auto ganttChart = std::make_shared<GanttChart>(canvas);
          ganttChart->SetData(companyAcquisitionData,
             DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
-            L"Project", L"Start", "End",
+            L"Task", L"Start", "End",
             // these columns are optional
             L"Resource", L"Description", L"Completion", L"Resource");
 

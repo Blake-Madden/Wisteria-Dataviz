@@ -25,10 +25,10 @@ namespace Wisteria::Graphs
          over the subsequent semesters.
         @image html WCurve.svg width=90%
         @par %Data:
-         This plot accepts a Data::Dataset where the first continuous column (i.e., Y) is the dependent measurement,
-         the second continuous column (i.e., X) is the time interval,
-         and the grouping column is the observation's name or ID. Below is an example where X is 'YEAR,'
-         Y is 'BELONG,' and group is 'NAME.'
+         This plot accepts a Data::Dataset where one continuous column (i.e., Y) is the dependent measurement,
+         another continuous column (i.e., X) is the time interval,
+         and a categorical column is the observation's name or ID. Below is an example where X is @c YEAR,
+         Y is @c BELONG, and group is @c NAME.
 
          | YEAR | BELONG | NAME   |
          | --:  | --:    | :--    |
@@ -47,7 +47,7 @@ namespace Wisteria::Graphs
 
          ...
 
-         Regarding the X (second continuous) column, the values should start at 1 and usually go up
+         Regarding the X column, the values should start at 1 and usually go up
          to 4 (going up to 10 is supported). This represents the semester/year/period that the measurement
          was recorded for the observation.
         @par Example:
@@ -77,21 +77,23 @@ namespace Wisteria::Graphs
          WCurve->SetData(BelongingData);
 
          // add a title
-         WCurve->GetTopXAxis().GetTitle().SetText(_(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE"));
+         WCurve->GetTopXAxis().GetTitle().SetText(
+            _(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE"));
          WCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
 
-         // add a custom story-telling note at the bottom corner
+         // add a story-telling note at the bottom corner
          auto storyNote = std::make_shared<Label>(
              GraphItemInfo(_(L"Frank reported that he experienced a"
                 " \u201Cdownward spiral\u201D during his first year on campus.")).
              Anchoring(Anchoring::BottomLeftCorner).
              FontBackgroundColor(ColorBrewer::GetColor(Color::Canary)).
-             LabelAlign(TextAlignment::Justified).
+             LabelAlignment(TextAlignment::RaggedRight).
              LabelStyling(LabelStyle::DottedLinedPaper).Padding(4, 4, 4, 4));
          storyNote->GetFont().MakeSmaller();
          storyNote->SplitTextToFitLength(25);
 
-         WCurve->AddEmbeddedObject(storyNote, wxPoint(4, WCurve->GetLeftYAxis().GetRange().first));
+         WCurve->AddEmbeddedObject(storyNote,
+                                   wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));
 
          // add the plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, WCurve);
@@ -99,41 +101,52 @@ namespace Wisteria::Graphs
             WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
         @endcode
         @par Citation:
-         This graphic is adapted from the article "Are We Listening? Using Student Stories as a Framework
-         for Persistence" by Monica C. Grau and MaryAnn Swain.
+         This graphic is adapted from the article "Are We Listening? Using Student Stories as a
+         Framework for Persistence" by Monica C. Grau and MaryAnn Swain.
     */
     class WCurvePlot final : public LinePlot
         {
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points. Leave as null to use the default theme.
-            @param shapes The shape scheme to use for the points. Leave as null to not show points.
-             Set to a new shape scheme filled with IconShape::BlankIcon to not show markers for certain lines/groups.
-            @param linePenStyles The line styles to use for the lines. The default is a mixed series of pen styles and arrow lines.
-             Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT to not show any lines.*/
+            @param colors The color scheme to apply to the points.
+             Leave as null to use the default theme.
+            @param shapes The shape scheme to use for the points.
+             Leave as null to not show points.
+             Set to a new shape scheme filled with IconShape::BlankIcon to not show
+             markers for certain lines/groups.
+            @param linePenStyles The line styles to use for the lines.
+             The default is a mixed series of pen styles and arrow lines.
+             Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT
+             to not show any lines.*/
         explicit WCurvePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<IconShapeScheme> shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr);
         /** @brief Sets the data.
-            @details Along with the X and Y points, separate lines will be created based on the grouping column in
-             the data. The group ID assigned to each line will also select which color, marker shape, and line style to use.
+            @details Along with the X and Y points, separate lines will be created based on
+             the grouping column in the data. The group ID assigned to each line will also
+             select which color, marker shape, and line style to use.
             @param data The data to use for the plot.
-            @param yColumnName The Y column data.
-            @param xColumnName The X column data.
-            @param groupColumnName The grouping column to use. This is required and cannot be @c std::nullopt.
-            @note To add missing points to the data so that a gap in the line will appear, set the point in question
-             to NaN (@c std::numeric_limits<double>::quiet_NaN()).
+            @param yColumnName The Y column data, which represents the sentiment values.
+            @param xColumnName The X column data, which represents the time interval value
+             (e.g., which semester the score was recorded).
+            @param groupColumnName The grouping column to use.
+             This is required and cannot be @c std::nullopt.
+            @note To add missing points to the data so that a gap in the line will appear,
+             set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
             @warning The data points are drawn in the order that they appear in the dataset.
              The plot will make no effort to sort the data or ensure that it is.
-             This is by design in case you need a line series to go backwards in certain spots (e.g., a downward spiral).
+             This is by design in case you need a line series to go backwards in certain spots
+             (e.g., a downward spiral).
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& yColumnName,
             const wxString& xColumnName,
             std::optional<const wxString> groupColumnName) final;
-        /// @brief Sets the label for the major time intervals used in the data collection (e.g., "semester" or "year").
+        /// @brief Sets the label for the major time intervals used in the data collection
+        ///  (e.g., "semester" or "year").
+        ///  This is drawn on the top axis labels.
         /// @param label The time interval label.
         void SetTimeIntervalLabel(const wxString& label)
             {

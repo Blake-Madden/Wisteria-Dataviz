@@ -42,7 +42,7 @@ such as:
   - Graphs can be embedded side-by-side on the same (scrollable) canvas
   - Includes support for setting a common axis for all graphs across a row or down a column
   - The size proportions of the rows and columns within the canvas can be customized
-- Annotations support; story-telling notes can be added to a plot with an arrow pointing to a specific data point
+- Annotations support; story-telling notes can be added to a plot with an arrow pointing to specific data points
 - Text boxes that can be drawn vertically or horizontally
 - Selectable objects; for example, selecting a bar on a bar chart can show a custom label
 - Locale-sensitive number formatting (based on `wxUILocale`'s settings)

@@ -555,7 +555,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({ { L"Start" }, { L"End" } }).
                 CategoricalColumns({
-                    { L"Project" },
+                    { L"Task" },
                     { L"Description" },
                     { L"Resource" }
                     }));
@@ -572,7 +572,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             std::make_shared<Colors::Schemes::Decade1920s>());
         ganttChart->SetData(companyAcquisitionData,
             DateInterval::FiscalQuarterly, FiscalYear::USBusiness,
-            L"Project", L"Start", "End",
+            L"Task", L"Start", "End",
             // these columns are optional
             L"Resource", L"Description", L"Completion", L"Resource");
 
@@ -1017,14 +1017,31 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
-        auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas);
+        auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas,
+            std::make_shared<Colors::Schemes::EarthTones>());
         // add padding around the plot
         WCurve->SetCanvasMargins(5, 5, 5, 5);
 
         // set the data and use the grouping column from the dataset to create separate lines
         WCurve->SetData(wcurveData, L"Belong", L"Year", L"Name");
-        WCurve->GetTopXAxis().GetTitle().SetText(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE");
+        WCurve->GetTopXAxis().GetTitle().SetText(
+            _(L"THE TRANSITION OF FOUR STUDENTS USING THE W-CURVE"));
         WCurve->GetTopXAxis().GetTitle().SetBottomPadding(5);
+
+        // Uncomment this to add a story-telling note at the bottom corner:
+
+        /* auto storyNote = std::make_shared<Label>(
+            GraphItemInfo(_(L"Frank reported that he experienced a"
+                " \u201Cdownward spiral\u201D during his first year on campus.")).
+            Anchoring(Anchoring::BottomLeftCorner).
+            FontBackgroundColor(ColorBrewer::GetColor(Color::Canary)).
+            LabelAlignment(TextAlignment::RaggedRight).
+            LabelStyling(LabelStyle::DottedLinedPaper).Padding(4, 4, 4, 4));
+        storyNote->GetFont().MakeSmaller();
+        storyNote->SplitTextToFitLength(25);
+
+        WCurve->AddEmbeddedObject(storyNote,
+            wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));*/
 
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, WCurve);
