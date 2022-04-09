@@ -700,7 +700,7 @@ namespace Wisteria::Graphs
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
     protected:
         /// @returns The image drawn across all bars.
-        [[nodiscard]] const std::shared_ptr<const wxImage>& GetBarsImage() const noexcept
+        [[nodiscard]] const std::shared_ptr<const wxImage>& GetCommonBarsImage() const noexcept
             { return m_barsImage; }
         /// @returns The number of slots that can hold a bar. This is used for calculating the width of the bars.
         ///  Using the number of bars to calculate the widths may be inaccurate if there are missing bars along the bar axis,

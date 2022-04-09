@@ -271,14 +271,13 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetBarsImage())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
                             {
                              auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
                                 Pen(m_imageOutlineColor).
-                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                GetBarsImage()->GetSubImage(barRect));
+                                GetCommonBarsImage()->GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
@@ -292,7 +291,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
-                                Pen(wxNullPen).ShowLabelWhenSelected(true).
+                                Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
                                     wxSize(barLength, barWidth),
@@ -312,7 +311,6 @@ namespace Wisteria::Graphs
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
                                 Pen(ColorContrast::BlackOrWhiteContrast(blockColor)).
-                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateGlassEffect(wxSize(barLength, barWidth),
                                     blockColor, Orientation::Vertical));
@@ -579,14 +577,13 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetBarsImage())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
                             {
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
                                 Pen(m_imageOutlineColor).
-                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                GetBarsImage()->GetSubImage(barRect));
+                                GetCommonBarsImage()->GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
@@ -600,7 +597,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
-                                Pen(wxNullPen).ShowLabelWhenSelected(true).
+                                Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
                                     wxSize(barWidth, barLength), Orientation::Vertical,
@@ -620,7 +617,6 @@ namespace Wisteria::Graphs
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
                                 Pen(ColorContrast::BlackOrWhiteContrast(blockColor)).
-                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateGlassEffect(wxSize(barWidth, barLength),
                                     blockColor, Orientation::Horizontal));

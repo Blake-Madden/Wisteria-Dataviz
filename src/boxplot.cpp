@@ -334,7 +334,19 @@ namespace Wisteria::Graphs
                             static_cast<int>(box.GetPercentileCoefficient()*100),
                             box.GetLowerControlLimit(), box.GetMiddlePoint());
                 // draw the box
-                if (box.GetBoxEffect() == BoxEffect::Stipple &&
+                if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage())
+                    {
+                    auto boxImage = std::make_shared<Image>(
+                        GraphItemInfo(boxLabel).Pen(m_imageOutlineColor).
+                        AnchorPoint(box.m_boxRect.GetLeftTop()),
+                        GetCommonBoxImage()->GetSubImage(box.m_boxRect));
+                    boxImage->SetOpacity(box.GetOpacity());
+                    boxImage->SetAnchoring(Anchoring::TopLeftCorner);
+                    boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
+                    boxImage->SetShadowType(GetShadowType());
+                    AddObject(boxImage);
+                    }
+                else if (box.GetBoxEffect() == BoxEffect::Stipple &&
                     GetStippleBrush() && GetStippleBrush()->IsOk() )
                     {
                     auto boxImage = std::make_shared<Image>(

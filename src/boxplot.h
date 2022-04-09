@@ -364,6 +364,17 @@ namespace Wisteria::Graphs
             m_boxEffect = boxEffect;
             }
 
+        /// @brief Sets a common image to be drawn just within the box areas.
+        /// @param boxesImage The image to draw across the boxes.
+        /// @param outlineColor The outline color of the boxes.
+        /// @note This effect will only apply to bars using the @c CommonImage effect. 
+        void SetCommonBoxImage(std::shared_ptr<const wxImage> boxesImage,
+                               const wxColour& outlineColor) noexcept
+            {
+            m_boxesImage = boxesImage;
+            m_imageOutlineColor = outlineColor;
+            }
+
         /// @returns How the corners of the boxes are drawn.
         [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
             { return m_boxCorners; }
@@ -415,6 +426,9 @@ namespace Wisteria::Graphs
         [[nodiscard]] const BoxAndWhisker& GetBox(const size_t index) const
             { return m_boxes[index]; }
     private:
+        /// @returns The image drawn across all bars.
+        [[nodiscard]] const std::shared_ptr<const wxImage>& GetCommonBoxImage() const noexcept
+            { return m_boxesImage; }
         /** @brief Adds a box to the plot.
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom X axis
@@ -458,6 +472,8 @@ namespace Wisteria::Graphs
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
+        std::shared_ptr<const wxImage> m_boxesImage{ nullptr };
+        wxColour m_imageOutlineColor{ *wxBLACK };
         };
     }
 
