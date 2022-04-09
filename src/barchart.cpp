@@ -293,10 +293,11 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Glassy)
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with 3D bar effect.");
+                                                 L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
-                                Pen(wxPen(wxColour(0,0,0,255))).Scaling(1).ShowLabelWhenSelected(true).
+                                Pen(ColorContrast::BlackOrWhiteContrast(blockColor)).
+                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateGlassEffect(wxSize(barLength, barWidth),
                                     blockColor, Orientation::Vertical));
@@ -584,10 +585,11 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Glassy)
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with 3D bar effect.");
+                                                 L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
-                                Pen(wxPen(wxColour(0, 0, 0, 255))).Scaling(1).ShowLabelWhenSelected(true).
+                                Pen(ColorContrast::BlackOrWhiteContrast(blockColor)).
+                                ShowLabelWhenSelected(true).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateGlassEffect(wxSize(barWidth, barLength),
                                     blockColor, Orientation::Horizontal));
@@ -741,22 +743,22 @@ namespace Wisteria::Graphs
                         const wxRect labelBouningBox = decalLabel->GetBoundingBox(measureDC);
                         if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
                             {
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + safe_divide(barNeckRect.GetWidth() -
-                                labelBouningBox.GetWidth(), 2)),
+                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
+                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
                                 (barNeckRect.GetBottom() - leftPadding)));
                             }
                         else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
                             {
                             decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + safe_divide(barNeckRect.GetWidth() -
-                                labelBouningBox.GetWidth(), 2)),
+                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
+                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
                                 (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() - labelBouningBox.GetHeight(), 2))));
                             }
                         else // flush top
                             {
                             decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + safe_divide(barNeckRect.GetWidth() -
-                                labelBouningBox.GetWidth(), 2)),
+                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
+                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
                                 (barNeckRect.GetTop() + leftPadding)));
                             }
                         // if drawing a color and hatch pattern, then show the decal with an outline
@@ -767,7 +769,7 @@ namespace Wisteria::Graphs
                             {
                             if (decalLabel->GetLeftPadding() == 0 &&
                                 decalLabel->GetTopPadding() == 0)
-                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
+                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), - ScaleToScreenAndCanvas(2)); }
                             decalLabel->SetPadding(2, 2, 2, 2);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
@@ -793,7 +795,7 @@ namespace Wisteria::Graphs
         // draw the bar labels
         if (IsShowingBarLabels())
             {
-            for (const auto& bar : m_bars)
+            for (const auto& bar : GetBars())
                 {
                 auto label = std::make_shared<GraphItems::Label>(bar.GetLabel());
                 label->SetScaling(GetScaling());
