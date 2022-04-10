@@ -28,7 +28,7 @@ namespace Wisteria::UI
     class VariableSelectDlg final : public wxDialog
         {
     public:
-        //  Developer note: tThis is used as a bitmask, so can't be strongly typed.
+        /// @internal This is used as a bitmask, so can't be strongly typed.
         /// @brief The type of variables that can be selected.
         /// @details These are bitmask values that can be ORed together.
         enum VariableSelections
@@ -36,8 +36,19 @@ namespace Wisteria::UI
             NoVariables = 0,              /*!< Nothing to select.*/
             XVariable = 0x0010,           /*!< Select an X variable.*/
             YVariable = 0x0020,           /*!< Select a Y variable.*/
-            GroupingVariable = 0x0040,    /*!< Select a grouping variable.*/
+            GroupingVariables = 0x0040,   /*!< Select a grouping variable.*/
             CategoricalVariables = 0x0080 /*!< Select categorical variable(s).*/
+            };
+
+        /// @internal This is used as a bitmask, so can't be strongly typed.
+        /// @brief Which variable styles are single selection.
+        /// @details These are bitmask values that can be ORed together.
+        /// @note X and Y areas are always single selection by design, regardless
+        ///  of any values specified here.
+        enum SingleSelectionTypes
+            {
+            NoSingleSelection,  /*!< Nothing is single selection.*/
+            Grouping            /*!< Grouping variable area is single selection.*/
             };
 
         /** @brief Constructor.
@@ -45,16 +56,19 @@ namespace Wisteria::UI
             @param columnInfo The list of columns (and their respective data types) to choose from.
              This will usually be the result from a call to Dataset::ReadColumnInfo().
             @param varTypes Which type of variables the user can select.
+            @param SingleSelectionTypes Which variable groups should be single selection.
             @param id The dialog's ID.
             @param caption The caption for the dialog.
             @param pos The dialog's position on the screen.
             @param size The default size of the dialog.
             @param style The dialog's style.*/
         VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-                   VariableSelections varTypes, wxWindowID id = wxID_ANY,
-                   const wxString& caption = _("Select Variables"),
-                   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                   long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
+                          VariableSelections varTypes,
+                          SingleSelectionTypes singleSelTypes = SingleSelectionTypes::NoSingleSelection,
+                          wxWindowID id = wxID_ANY,
+                          const wxString& caption = _("Select Variables"),
+                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                          long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
         /// @private
         VariableSelectDlg() = delete;
         /// @private
@@ -108,9 +122,12 @@ namespace Wisteria::UI
         /// @returns The grouping variable that the user selected.
         ///  Will be an empty string is nothing was selected.
         [[nodiscard]] wxString GetGroupingVariable() const
-            { return m_groupVarList->GetItemCount() ? m_groupVarList->GetItemText(0, 0) : wxString(L""); };
+            {
+            return m_groupVarList->GetItemCount() ?
+                m_groupVarList->GetItemText(0, 0) : wxString(L"");
+            };
     private:
-        void CreateControls(VariableSelections varTypes);
+        void CreateControls(VariableSelections varTypes, SingleSelectionTypes singleSelTypes);
         /// @brief Moves the selected variables in one list to another.
         /// @param list The list to move items from.
         /// @param otherList The sub list to move the variables into.

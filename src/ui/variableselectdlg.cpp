@@ -12,7 +12,9 @@ using namespace Wisteria;
 using namespace Wisteria::UI;
 
 VariableSelectDlg::VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-                       VariableSelections varTypes, wxWindowID id /*= wxID_ANY*/,
+                       VariableSelections varTypes,
+                       SingleSelectionTypes singleSelTypes /*= SingleSelectionTypes::NoSingleSelection*/,
+                       wxWindowID id /*= wxID_ANY*/,
                        const wxString& caption /*= _("Set Opacity")*/,
                        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
@@ -21,7 +23,7 @@ VariableSelectDlg::VariableSelectDlg(wxWindow* parent, const Data::Dataset::Colu
     SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
 
-    CreateControls(varTypes);
+    CreateControls(varTypes, singleSelTypes);
 
     // when items are selected in any list, enable the buttons
     Bind(wxEVT_LIST_ITEM_SELECTED,
@@ -151,7 +153,9 @@ void VariableSelectDlg::MoveSelectedVariables(wxListView* list, wxListView* othe
         if (otherList->GetItemCount() ||
             list->GetSelectedItemCount() > 1)
             {
-            wxMessageBox(_(L"Only one variable is allowed in this list."), _("Invalid Variable Selection"), wxOK|wxICON_WARNING|wxCENTRE);
+            wxMessageBox(_(L"Only one variable is allowed in this list."),
+                         _("Invalid Variable Selection"),
+                         wxOK|wxICON_WARNING|wxCENTRE);
             return;
             }
         }
@@ -201,17 +205,19 @@ std::vector<wxString> VariableSelectDlg::GetCategoricalVariables() const
     };
 
 //-------------------------------------------------------------
-void VariableSelectDlg::CreateControls(VariableSelections varTypes)
+void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelectionTypes singleSelTypes)
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-    wxGridBagSizer* varsSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder());
+    wxGridBagSizer* varsSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
+                                                   wxSizerFlags::GetDefaultBorder());
     mainSizer->Add(varsSizer,
         wxSizerFlags(1).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     // fill the main list of variables
     varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables")),
         wxGBPosition(0, 0), wxGBSpan(1, 1), wxEXPAND|wxALL);
-    m_varList = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_NO_HEADER);
+    m_varList = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                               wxLC_REPORT|wxLC_NO_HEADER);
     m_varList->InsertColumn(0, wxEmptyString);
     for (const auto& [name, type] : m_columnInfo)
         { m_varList->InsertItem(m_varList->GetItemCount(), name); }
@@ -250,29 +256,35 @@ void VariableSelectDlg::CreateControls(VariableSelections varTypes)
         return list;
         };
 
-    // x
+    // X
     if (varTypes & XVariable)
         {
         m_xVarList =
-            addVarControls(ID_X_VAR_LABEL, ID_X_VAR_ADD, ID_X_VAR_REMOVE, _(L"X Variable:"), wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
+            addVarControls(ID_X_VAR_LABEL, ID_X_VAR_ADD, ID_X_VAR_REMOVE, _(L"X Variable:"),
+                wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
         }
-    // y
+    // Y
     if (varTypes & YVariable)
         {
         m_yVarList =
-            addVarControls(ID_Y_VAR_LABEL, ID_Y_VAR_ADD, ID_Y_VAR_REMOVE, _(L"Y Variable:"), wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
+            addVarControls(ID_Y_VAR_LABEL, ID_Y_VAR_ADD, ID_Y_VAR_REMOVE, _(L"Y Variable:"),
+                wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
         }
     // categoricals
     if (varTypes & CategoricalVariables)
         {
         m_categoricalVarList =
-            addVarControls(ID_CAT_VARS_LABEL, ID_CAT_VARS_ADD, ID_CAT_VARS_REMOVE, _(L"Categorical Variables:"), wxLC_REPORT|wxLC_NO_HEADER);
+            addVarControls(ID_CAT_VARS_LABEL, ID_CAT_VARS_ADD, ID_CAT_VARS_REMOVE, _(L"Categorical Variables:"),
+                wxLC_REPORT|wxLC_NO_HEADER);
         }
     // grouping
-    if (varTypes & GroupingVariable)
+    if (varTypes & GroupingVariables)
         {
+        const long style = (singleSelTypes & SingleSelectionTypes::Grouping) ?
+            (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
         m_groupVarList =
-            addVarControls(ID_GROUP_VAR_LABEL, ID_GROUP_VAR_ADD, ID_GROUP_VAR_REMOVE, _("Grouping Variable:"), wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
+            addVarControls(ID_GROUP_VAR_LABEL, ID_GROUP_VAR_ADD, ID_GROUP_VAR_REMOVE,
+                _("Grouping Variable:"), style);
         }
 
     // make list columns growable, but not button columns
