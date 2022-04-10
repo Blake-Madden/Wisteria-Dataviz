@@ -48,7 +48,8 @@ namespace Wisteria::UI
         enum SingleSelectionTypes
             {
             NoSingleSelection,  /*!< Nothing is single selection.*/
-            Grouping            /*!< Grouping variable area is single selection.*/
+            Categorical,        /*!< Categorical variables area is single selection.*/
+            Grouping            /*!< Grouping variables area is single selection.*/
             };
 
         /** @brief Constructor.
@@ -56,7 +57,7 @@ namespace Wisteria::UI
             @param columnInfo The list of columns (and their respective data types) to choose from.
              This will usually be the result from a call to Dataset::ReadColumnInfo().
             @param varTypes Which type of variables the user can select.
-            @param SingleSelectionTypes Which variable groups should be single selection.
+            @param singleSelTypes Which variable groups should be single selection.
             @param id The dialog's ID.
             @param caption The caption for the dialog.
             @param pos The dialog's position on the screen.

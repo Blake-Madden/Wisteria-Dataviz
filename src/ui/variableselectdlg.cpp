@@ -273,18 +273,20 @@ void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelect
     // categoricals
     if (varTypes & CategoricalVariables)
         {
+        const long style = (singleSelTypes & SingleSelectionTypes::Categorical) ?
+            (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
         m_categoricalVarList =
-            addVarControls(ID_CAT_VARS_LABEL, ID_CAT_VARS_ADD, ID_CAT_VARS_REMOVE, _(L"Categorical Variables:"),
-                wxLC_REPORT|wxLC_NO_HEADER);
+            addVarControls(ID_CAT_VARS_LABEL, ID_CAT_VARS_ADD, ID_CAT_VARS_REMOVE,
+                _(L"Categorical Variables:"), style);
         }
-    // grouping
+    // groupings
     if (varTypes & GroupingVariables)
         {
         const long style = (singleSelTypes & SingleSelectionTypes::Grouping) ?
             (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
         m_groupVarList =
             addVarControls(ID_GROUP_VAR_LABEL, ID_GROUP_VAR_ADD, ID_GROUP_VAR_REMOVE,
-                _("Grouping Variable:"), style);
+                _("Grouping Variables:"), style);
         }
 
     // make list columns growable, but not button columns
