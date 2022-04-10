@@ -370,8 +370,14 @@ namespace Wisteria::Graphs
                                 }
 
                             wxASSERT_LEVEL_2(box);
-                            // if block's color is similar to the plot's background color, then draw a contrasting pen around it
-                            if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
+                            
+                            // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
+                            if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
+                                (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
+                                { box->GetPen().SetColour(wxTransparentColour); }
+                            // if block's color is similar to the plot's background color,
+                            // then draw a contrasting pen around it
+                            else if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
                                 { box->GetPen().SetColour(ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour())); }
                             else
                                 { box->GetPen().SetColour(barBlock.GetBrush().GetColour()); }
@@ -679,9 +685,13 @@ namespace Wisteria::Graphs
                                 }
 
                             wxASSERT_LEVEL_2(box);
+                            // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
+                            if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
+                                (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
+                                { box->GetPen().SetColour(wxTransparentColour); }
                             // if block's color is similar to the plot's background color,
                             // then draw a contrasting pen around it
-                            if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
+                            else if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
                                 {
                                 box->GetPen().SetColour(
                                     ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour()));
@@ -797,7 +807,7 @@ namespace Wisteria::Graphs
                             {
                             if (decalLabel->GetLeftPadding() == 0 &&
                                 decalLabel->GetTopPadding() == 0)
-                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), - ScaleToScreenAndCanvas(2)); }
+                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
                             decalLabel->SetPadding(2, 2, 2, 2);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
