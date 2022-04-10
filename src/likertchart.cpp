@@ -1017,6 +1017,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_negativeBlockSize-question.m_negativeRate).Show(false)),
               // negative block
               BarBlock(BarBlockInfo(question.m_negativeRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negativeRate > 0) ? wxNumberFormatter::ToString(question.m_negativeRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                     Font(GetBarAxis().GetFont()).
@@ -1024,6 +1025,7 @@ namespace Wisteria::Graphs
                     ChildAlignment(RelativeAlignment::FlushRight)))),
               // positive block
               BarBlock(BarBlockInfo(question.m_positiveRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positiveRate > 0) ? wxNumberFormatter::ToString(question.m_positiveRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1033,6 +1035,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_positiveBlockSize-question.m_positiveRate).Show(false)),
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ? wxNumberFormatter::ToString(question.m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1042,6 +1045,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1134,6 +1138,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_negativeBlockSize-(category->m_negativeRate)).Show(false) ),
                   // negative block
                   BarBlock(BarBlockInfo(category->m_negativeRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negativeRate > 0) ? wxNumberFormatter::ToString(category->m_negativeRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1141,6 +1146,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // positive block
                   BarBlock(BarBlockInfo(category->m_positiveRate).Brush(GetPositiveColor()).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positiveRate > 0) ? wxNumberFormatter::ToString(category->m_positiveRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1150,6 +1156,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_positiveBlockSize-(category->m_positiveRate)).Show(false)),
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ? wxNumberFormatter::ToString(category->m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1159,6 +1166,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize-category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1201,6 +1209,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_negativeBlockSize-(question.m_negative1Rate+question.m_negative2Rate)).Show(false)),
               // strong negative block
               BarBlock(BarBlockInfo(question.m_negative1Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetNegativeColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative1Rate > 0) ? wxNumberFormatter::ToString(question.m_negative1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1208,6 +1217,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushRight))) ),
               // negative block
               BarBlock(BarBlockInfo(question.m_negative2Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative2Rate > 0) ? wxNumberFormatter::ToString(question.m_negative2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1215,6 +1225,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushRight))) ),
               // positive block
               BarBlock(BarBlockInfo(question.m_positive1Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetPositiveColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive1Rate > 0) ? wxNumberFormatter::ToString(question.m_positive1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1222,6 +1233,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushLeft))) ),
               // strong positive block
               BarBlock(BarBlockInfo(question.m_positive2Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive2Rate > 0) ? wxNumberFormatter::ToString(question.m_positive2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1232,6 +1244,7 @@ namespace Wisteria::Graphs
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
                 Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ? wxNumberFormatter::ToString(question.m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
                       FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor())).
@@ -1240,6 +1253,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1325,6 +1339,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_negativeBlockSize-(category->m_negative1Rate+ category->m_negative2Rate)).Show(false)),
                   // strong negative block
                   BarBlock(BarBlockInfo(category->m_negative1Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetNegativeColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative1Rate > 0) ? wxNumberFormatter::ToString(category->m_negative1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1332,6 +1347,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // negative block
                   BarBlock(BarBlockInfo(category->m_negative2Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative2Rate > 0) ? wxNumberFormatter::ToString(category->m_negative2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1339,6 +1355,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // positive block
                   BarBlock(BarBlockInfo(category->m_positive1Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetPositiveColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive1Rate > 0) ? wxNumberFormatter::ToString(category->m_positive1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1346,6 +1363,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushLeft))) ),
                   // strong positive block
                   BarBlock(BarBlockInfo(category->m_positive2Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive2Rate > 0) ? wxNumberFormatter::ToString(category->m_positive2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1355,6 +1373,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_positiveBlockSize-(category->m_positive1Rate+ category->m_positive2Rate)).Show(false)),
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ? wxNumberFormatter::ToString(category->m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1364,6 +1383,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize - category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1406,6 +1426,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_negativeBlockSize-(question.m_negative1Rate+question.m_negative2Rate+question.m_negative3Rate)).Show(false)),
               // strong negative block
               BarBlock(BarBlockInfo(question.m_negative1Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetNegativeColor(), .40f)).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative1Rate > 0) ? wxNumberFormatter::ToString(question.m_negative1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1413,6 +1434,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushRight))) ),
               // negative block
               BarBlock(BarBlockInfo(question.m_negative2Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetNegativeColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative2Rate > 0) ? wxNumberFormatter::ToString(question.m_negative2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1420,6 +1442,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushRight))) ),
               // somewhat negative block
               BarBlock(BarBlockInfo(question.m_negative3Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative3Rate > 0) ? wxNumberFormatter::ToString(question.m_negative3Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1427,6 +1450,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushRight))) ),
               // somewhat positive block
               BarBlock(BarBlockInfo(question.m_positive1Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive1Rate > 0) ? wxNumberFormatter::ToString(question.m_positive1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1434,6 +1458,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushLeft))) ),
               // positive block
               BarBlock(BarBlockInfo(question.m_positive2Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetPositiveColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive2Rate > 0) ? wxNumberFormatter::ToString(question.m_positive2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1441,6 +1466,7 @@ namespace Wisteria::Graphs
                       ChildAlignment(RelativeAlignment::FlushLeft))) ),
               // strong positive block
               BarBlock(BarBlockInfo(question.m_positive3Rate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive3Rate > 0) ? wxNumberFormatter::ToString(question.m_positive3Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1450,6 +1476,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_positiveBlockSize-(question.m_positive1Rate+question.m_positive2Rate+question.m_positive3Rate)).Show(false)),
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ? wxNumberFormatter::ToString(question.m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1459,6 +1486,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1545,6 +1573,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_negativeBlockSize-(category->m_negative1Rate+category->m_negative2Rate+category->m_negative3Rate)).Show(false)),
                   // strong negative block
                   BarBlock(BarBlockInfo(category->m_negative1Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetNegativeColor(), .40f)).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative1Rate > 0) ? wxNumberFormatter::ToString(category->m_negative1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1552,6 +1581,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // negative block
                   BarBlock(BarBlockInfo(category->m_negative2Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetNegativeColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative2Rate > 0) ? wxNumberFormatter::ToString(category->m_negative2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1559,6 +1589,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // somewhat negative block
                   BarBlock(BarBlockInfo(category->m_negative3Rate).
+                      OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative3Rate > 0) ? wxNumberFormatter::ToString(category->m_negative3Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1566,6 +1597,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // somewhat positive block
                   BarBlock(BarBlockInfo(category->m_positive1Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive1Rate > 0) ? wxNumberFormatter::ToString(category->m_positive1Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1573,6 +1605,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushLeft))) ),
                   // positive block
                   BarBlock(BarBlockInfo(category->m_positive2Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetPositiveColor())).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive2Rate > 0) ? wxNumberFormatter::ToString(category->m_positive2Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1580,6 +1613,7 @@ namespace Wisteria::Graphs
                           ChildAlignment(RelativeAlignment::FlushLeft))) ),
                   // strong positive block
                   BarBlock(BarBlockInfo(category->m_positive3Rate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive3Rate > 0) ? wxNumberFormatter::ToString(category->m_positive3Rate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1589,6 +1623,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_positiveBlockSize-(category->m_positive1Rate+category->m_positive2Rate+category->m_positive3Rate)).Show(false)),
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ? wxNumberFormatter::ToString(category->m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1598,6 +1633,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize - category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
