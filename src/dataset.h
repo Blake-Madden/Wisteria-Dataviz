@@ -464,7 +464,7 @@ namespace Wisteria::Data
         using ColumnPreviewInfo = std::vector<std::pair<wxString, ColumnImportType>>;
 
         /// @brief Removes all data from the dataset.
-        ///  All continuous, categorical, and date columns will be removed,
+        /// @details All continuous, categorical, and date columns will be removed,
         ///  and the ID column will be cleared.
         void Clear() noexcept
             {
@@ -721,6 +721,8 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types,
             @returns A vector of column names and their respective data types.
+             This can be especially useful for determining whether a categorical column
+             should be imported as strings or codes (i.e., discrete numbers).
             @throws std::runtime_error If the file can't be read, throws an exception.*/
         [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                               const wchar_t delimiter,

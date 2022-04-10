@@ -227,6 +227,12 @@ namespace Wisteria::Data
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
+                wxLogNull nl;
+                if (currentCell.length() && ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
+                    {
+                    currentColumnType = ColumnImportType::Date;
+                    break;
+                    }
                 if (currentCell.length() && std::isnan(ConvertToDouble(currentCell)))
                     {
                     currentColumnType = ColumnImportType::String;
