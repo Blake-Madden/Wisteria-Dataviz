@@ -79,10 +79,10 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::SetLabels(std::shared_ptr<Data::Dataset>& data,
-                                std::vector<wxString>& categoricalColumns,
+                                std::vector<wxString>& questionColumns,
                                 const Data::ColumnWithStringTable::StringTableType& codes)
         {
-        for (auto& catColumnName : categoricalColumns)
+        for (auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -97,35 +97,35 @@ namespace Wisteria::Graphs
     //-----------------------------------
     LikertChart::LikertSurveyQuestionFormat LikertChart::Simplify(
         std::shared_ptr<Data::Dataset>& data,
-        std::vector<wxString>& categoricalColumns,
+        std::vector<wxString>& questionColumns,
         LikertSurveyQuestionFormat currentFormat)
         {
         // 7 -> 3
         if (currentFormat == LikertSurveyQuestionFormat::SevenPoint ||
             currentFormat == LikertSurveyQuestionFormat::SevenPointCategorized)
             {
-            Collapse7PointsTo3(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
+            Collapse7PointsTo3(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
             return (IsCategorized(currentFormat) ? LikertSurveyQuestionFormat::ThreePointCategorized : LikertSurveyQuestionFormat::ThreePoint);
             }
         // 6 -> 2
         else if (currentFormat == LikertSurveyQuestionFormat::SixPoint ||
             currentFormat == LikertSurveyQuestionFormat::SixPointCategorized)
             {
-            Collapse6PointsTo2(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
+            Collapse6PointsTo2(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
             return (IsCategorized(currentFormat) ? LikertSurveyQuestionFormat::TwoPointCategorized : LikertSurveyQuestionFormat::TwoPoint);
             }
         // 5 -> 3
         else if (currentFormat == LikertSurveyQuestionFormat::FivePoint ||
             currentFormat == LikertSurveyQuestionFormat::FivePointCategorized)
             {
-            Collapse5PointsTo3(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
+            Collapse5PointsTo3(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
             return (IsCategorized(currentFormat) ? LikertSurveyQuestionFormat::ThreePointCategorized : LikertSurveyQuestionFormat::ThreePoint);
             }
         // 4 -> 2
         else if (currentFormat == LikertSurveyQuestionFormat::FourPoint ||
             currentFormat == LikertSurveyQuestionFormat::FourPointCategorized)
             {
-            Collapse4PointsTo2(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
+            Collapse4PointsTo2(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
             return (IsCategorized(currentFormat) ? LikertSurveyQuestionFormat::TwoPointCategorized : LikertSurveyQuestionFormat::TwoPoint);
             }
         // 3 and 2 are already as simple as they are going to get,
@@ -133,25 +133,25 @@ namespace Wisteria::Graphs
         else if (currentFormat == LikertSurveyQuestionFormat::ThreePoint ||
             currentFormat == LikertSurveyQuestionFormat::ThreePointCategorized)
             {
-            SetLabels(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
+            SetLabels(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::ThreePoint));
             }
         else if (currentFormat == LikertSurveyQuestionFormat::TwoPoint ||
             currentFormat == LikertSurveyQuestionFormat::TwoPointCategorized)
             {
-            SetLabels(data, categoricalColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
+            SetLabels(data, questionColumns, CreateLabels(LikertSurveyQuestionFormat::TwoPoint));
             }
         return currentFormat;
         }
 
     //-----------------------------------
     void LikertChart::Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& categoricalColumns,
+                                         std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
         wxASSERT_LEVEL_2_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0, L"String table should start at zero!");
         wxASSERT_LEVEL_2_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 2, L"String table should end at 2!");
-        for (const auto& catColumnName : categoricalColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -173,13 +173,13 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& categoricalColumns,
+                                         std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
         wxASSERT_LEVEL_2_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0, L"String table should start at zero!");
         wxASSERT_LEVEL_2_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 2, L"String table should end at 2!");
-        for (const auto& catColumnName : categoricalColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -203,13 +203,13 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& categoricalColumns,
+                                         std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
         wxASSERT_LEVEL_2_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0, L"String table should start at zero!");
         wxASSERT_LEVEL_2_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3, L"String table should end at 3!");
-        for (const auto& catColumnName : categoricalColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -233,13 +233,13 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& categoricalColumns,
+                                         std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
         wxASSERT_LEVEL_2_MSG(std::min_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 0, L"String table should start at zero!");
         wxASSERT_LEVEL_2_MSG(std::max_element(condensedCodes.cbegin(), condensedCodes.cend())->first == 3, L"String table should end at 3!");
-        for (const auto& catColumnName : categoricalColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -333,11 +333,11 @@ namespace Wisteria::Graphs
     //-----------------------------------
     LikertChart::LikertSurveyQuestionFormat LikertChart::DeduceScale(
         const std::shared_ptr<Data::Dataset>& data,
-        std::vector<wxString>& categoricalColumns,
+        std::vector<wxString>& questionColumns,
         std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
         Data::GroupIdType maxVal{ 0 };
-        for (const auto& catColumnName : categoricalColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().cend())
@@ -569,7 +569,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void LikertChart::SetData(std::shared_ptr<const Data::Dataset> data,
-        std::vector<wxString>& categoricalColumns,
+        std::vector<wxString>& questionColumns,
         std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
         m_positive1Label.clear();
@@ -594,8 +594,8 @@ namespace Wisteria::Graphs
             { m_surveyType = MakeFormatUncategorized(m_surveyType); }
 
         // go in reverse order so that the first to last questions go from top-to-bottom
-        for (auto questionIter = categoricalColumns.crbegin();
-             questionIter != categoricalColumns.crend();
+        for (auto questionIter = questionColumns.crbegin();
+             questionIter != questionColumns.crend();
              ++questionIter)
             {
             auto categoricalColumn = data->GetCategoricalColumn(*questionIter);
@@ -1081,7 +1081,7 @@ namespace Wisteria::Graphs
                     LabelFitting(LabelFit::SplitTextToFit).
                     FontColor(*wxBLACK).
                     ChildAlignment(RelativeAlignment::FlushLeft))).
-                    Tag(GetQuestionBlockLabel())),
+                Tag(GetQuestionBlockLabel())),
               // overall response count
                 BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).

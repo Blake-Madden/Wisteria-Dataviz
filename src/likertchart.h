@@ -463,7 +463,7 @@ namespace Wisteria::Graphs
 
              Note that missing responses in the categorical columns can either be blank or coded as zero.
             @param data %Data containing the responses.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param groupColumnName The (optional) group column.
             @sa SetLabels().
             @note Grouping is used if the chart type is categorized (see GetSurveyType()).
@@ -472,18 +472,18 @@ namespace Wisteria::Graphs
              and prior to calling this function.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
-            std::vector<wxString>& categoricalColumns,
+            std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);
 
         /** @brief Sets a common string table to the specified categorical columns (i.e., questions) in a dataset.
             @details This should be called after calling SetData().
             @param data The dataset to edit.
-            @param categoricalColumns The vector of categorical columns to edit.
+            @param questionColumns The vector of categorical columns to edit.
             @param codes The string table to use. This should at least start at 0 (no response) and then go
              from 1 to the highest level of the point scale of the chart.
             @sa CreateLabels().*/
         static void SetLabels(std::shared_ptr<Data::Dataset>& data,
-                              std::vector<wxString>& categoricalColumns,
+                              std::vector<wxString>& questionColumns,
                               const Data::ColumnWithStringTable::StringTableType& codes);
 
         /** @brief Creates a stock list of labels to use for a particular Likert scale.
@@ -496,7 +496,7 @@ namespace Wisteria::Graphs
         /** @brief Determines which type of scale (e.g., 1-5) the data is using.
             @details Call this prior to constructing a LikertChart object to help deduce what type of scale to use.
             @param data The dataset to review.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param groupColumnName The (optional) grouping column to help deduce if this scale could be categorized.
             @note This will look at the categorical columns in the dataset to deduce the most appropriate scale.
              Also, if the grouping column has more than one unique code in it, then something like
@@ -509,7 +509,7 @@ namespace Wisteria::Graphs
              Also, this will throw an exception if any response is higher than 7.*/
         [[nodiscard]] static LikertSurveyQuestionFormat DeduceScale(
             const std::shared_ptr<Data::Dataset>& data,
-            std::vector<wxString>& categoricalColumns,
+            std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);
         /** @brief Determines if a format is categorized (i.e., using a grouping variable).
             @param format The format to review.
@@ -523,14 +523,14 @@ namespace Wisteria::Graphs
              This interface is the preferred way to simplify the data, as it will call the proper @c CollapseXPointsToX() and
              CreateLabels() based on the specified type.
             @param data The dataset to simplify/collapse.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param currentFormat The questions' Likert scale.
             @returns The questions' new Likert scale (should be passed to the chart's constructor).
             @note If the data's scale is already 3- or 2-point, then the data will stay the same but the
              question (i.e., categorical) columns' string tables will be reset to use the respective stock labels.
             @sa Collapse6PointsTo2(), Collapse4PointsTo2(), Collapse7PointsTo3(), Collapse5PointsTo3(), CreateLabels().*/
         [[nodiscard]] static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
-            std::vector<wxString>& categoricalColumns,
+            std::vector<wxString>& questionColumns,
             LikertSurveyQuestionFormat currentFormat);
         /** @brief Converts a 4-point scale dataset to 2-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
@@ -539,7 +539,7 @@ namespace Wisteria::Graphs
 
             @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
             @param data The dataset to collapse.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param condensedCodes The simplified string table to use. This should include values 0-2
              and their respective labels (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
@@ -553,7 +553,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& categoricalColumns,
+                                       std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 6-point scale dataset to 2-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
@@ -562,7 +562,7 @@ namespace Wisteria::Graphs
 
             @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
             @param data The dataset to collapse.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param condensedCodes The simplified string table to use. This should include values 0-2
              and their respective labels (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
@@ -576,7 +576,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& categoricalColumns,
+                                       std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
 
         /** @brief Converts a 5-point scale dataset to 3-point.
@@ -586,7 +586,7 @@ namespace Wisteria::Graphs
 
             @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
             @param data The dataset to collapse.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param condensedCodes The simplified string table to use. This should include values 0-3
              and their respective labels (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
@@ -601,7 +601,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& categoricalColumns,
+                                       std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 7-point scale dataset to 3-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
@@ -610,7 +610,7 @@ namespace Wisteria::Graphs
 
             @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
             @param data The dataset to collapse.
-            @param categoricalColumns The vector of categorical columns to use as questions.
+            @param questionColumns The vector of categorical columns to use as questions.
             @param condensedCodes The simplified string table to use. This should include values 0-3
              and their respective labels (no response, negative, neutral, positive).
             @warning This will overwrite all string tables in the dataset.
@@ -625,7 +625,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& categoricalColumns,
+                                       std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /// @}
 
