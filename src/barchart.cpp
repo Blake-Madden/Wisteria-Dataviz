@@ -371,8 +371,10 @@ namespace Wisteria::Graphs
 
                             wxASSERT_LEVEL_2(box);
                             
+                            if (barBlock.GetOutlinePen().IsOk())
+                                { box->GetPen() = barBlock.GetOutlinePen(); }
                             // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
-                            if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
+                            else if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
                                 (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
                                 { box->GetPen().SetColour(wxTransparentColour); }
                             // if block's color is similar to the plot's background color,
@@ -685,8 +687,10 @@ namespace Wisteria::Graphs
                                 }
 
                             wxASSERT_LEVEL_2(box);
+                            if (barBlock.GetOutlinePen().IsOk())
+                                { box->GetPen() = barBlock.GetOutlinePen(); }
                             // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
-                            if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
+                            else if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
                                 (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
                                 { box->GetPen().SetColour(wxTransparentColour); }
                             // if block's color is similar to the plot's background color,

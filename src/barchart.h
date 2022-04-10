@@ -195,6 +195,15 @@ namespace Wisteria::Graphs
                 m_color = color;
                 return *this;
                 }
+            /// @brief Explicitly sets the outline of the bar block.
+            /// @note If this is not set, then the parent bar chart will deduce the
+            ///  best outline color.
+            /// @returns A self reference.
+            BarBlockInfo& OutlinePen(const wxPen pen)
+                {
+                m_outlinePen = pen;
+                return *this;
+                }
             /// @brief Sets the block's length.
             /// @param len The length of the bar block.
             /// @returns A self reference.
@@ -238,6 +247,7 @@ namespace Wisteria::Graphs
                 }
         private:
             wxBrush m_brush{ *wxGREEN_BRUSH };
+            wxPen m_outlinePen{ wxNullPen };
             wxColour m_color;
             double m_length{ 0 };
             Wisteria::GraphItems::Label m_selectionLabel;
@@ -257,12 +267,16 @@ namespace Wisteria::Graphs
             /// @param info A chainable set of fields to assign to the bar block.
             explicit BarBlock(const BarBlockInfo& info) :
                 m_brush(info.m_brush), m_length(info.m_length), m_selectionLabel(info.m_selectionLabel),
-                m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag), m_color(info.m_color)
+                m_decal(info.m_decal), m_show(info.m_show), m_tag(info.m_tag), m_color(info.m_color),
+                m_outlinePen(info.m_outlinePen)
                 {}
 
             /// @returns The block's brush.
             [[nodiscard]] const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
+            /// @returns The block's outline pen.
+            [[nodiscard]] const wxPen& GetOutlinePen() const noexcept
+                { return m_outlinePen; }
             /// @returns The block's background color.
             /// @details This is invalid and not used by default, as the brush is what
             ///  is normally used. However, if this set to a valid color, then that
@@ -333,6 +347,9 @@ namespace Wisteria::Graphs
             /// @note The bar block's opacity will override the parent bar's opacity
             ///  if different from the default (i.e., fully opaque).
             wxBrush m_brush{ *wxGREEN_BRUSH };
+            /// @brief Explicitly sets the outline of the block. Normally, the
+            ///  parent chart will determine the best outline color.
+            wxPen m_outlinePen{ wxNullPen };
             /// @brief An optional background color to use in conjunction with the brush.
             ///  Will be invalid by default, so that the brush is what is used exclusively.
             wxColour m_color;
