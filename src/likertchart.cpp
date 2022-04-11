@@ -1088,19 +1088,20 @@ namespace Wisteria::Graphs
                        Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                OutlinePen(ColorContrast::ShadeOrTint(
+                           ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                       wxNumberFormatter::ToString(question.m_naRate, 0,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                       wxString()).
-                      Font(GetBarAxis().GetFont()).
-                      FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                      LabelFitting(
-                        (ColorContrast::IsLight(GetNAColor()) &&
-                         ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                            LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
-                      ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                Font(GetBarAxis().GetFont()).
+                FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                LabelFitting(
+                (ColorContrast::IsLight(GetNAColor()) &&
+                    ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                    LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
+                ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
                L"", Label(), BoxEffect::Solid);
 
@@ -1244,19 +1245,20 @@ namespace Wisteria::Graphs
                       Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                    OutlinePen(ColorContrast::ShadeOrTint(
+                        ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                             wxString()).
-                          Font(GetBarAxis().GetFont()).
-                          FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                          LabelFitting(
-                            (ColorContrast::IsLight(GetNAColor()) &&
-                             ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
-                                LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
-                          ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                    Font(GetBarAxis().GetFont()).
+                    FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                    LabelFitting(
+                    (ColorContrast::IsLight(GetNAColor()) &&
+                        ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                        LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
+                    ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
                    L"", Label(), BoxEffect::Solid);
 
@@ -1365,15 +1367,16 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                OutlinePen(ColorContrast::ShadeOrTint(
+                    ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                         wxNumberFormatter::ToString(question.m_naRate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                         wxString()).
-                      Font(GetBarAxis().GetFont()).
-                      FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                      ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                Font(GetBarAxis().GetFont()).
+                FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
                L"", Label(), BoxEffect::Solid);
 
@@ -1524,15 +1527,16 @@ namespace Wisteria::Graphs
                       Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                    OutlinePen(ColorContrast::ShadeOrTint(
+                           ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                             wxString()).
-                          Font(GetBarAxis().GetFont()).
-                          FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                          ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                    Font(GetBarAxis().GetFont()).
+                    FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                    ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
                    L"", Label(), BoxEffect::Solid);
 
@@ -1665,15 +1669,16 @@ namespace Wisteria::Graphs
                   Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                OutlinePen(ColorContrast::ShadeOrTint(
+                      ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                         wxNumberFormatter::ToString(question.m_naRate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                         wxString()).
-                      Font(GetBarAxis().GetFont()).
-                      FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                      ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                Font(GetBarAxis().GetFont()).
+                FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
                L"", Label(), BoxEffect::Solid);
 
@@ -1851,15 +1856,16 @@ namespace Wisteria::Graphs
                       Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                    OutlinePen(ColorContrast::ShadeOrTint(
+                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                             wxString()).
-                          Font(GetBarAxis().GetFont()).
-                          FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
-                          ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
+                    Font(GetBarAxis().GetFont()).
+                    FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                    ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
                    L"", Label(), BoxEffect::Solid);
 
