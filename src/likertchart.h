@@ -468,8 +468,8 @@ namespace Wisteria::Graphs
             @sa SetLabels().
             @note Grouping is used if the chart type is categorized (see GetSurveyType()).
             @warning The string tables in the categorical columns need to be synchronized prior to calling this. In other works,
-             ensure that the columns use the same string and integral code assignments. This should be done after the data is imported
-             and prior to calling this function.
+             ensure that the columns use the same string and integral code assignments.
+             This should be done after the data is imported and prior to calling this function.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             std::vector<wxString>& questionColumns,
@@ -516,117 +516,35 @@ namespace Wisteria::Graphs
             @returns `true` if the specified format is categorized.*/
         [[nodiscard]] static bool IsCategorized(const LikertSurveyQuestionFormat format) noexcept;
 
-        /** @brief Collapses the data into the simplest scale (either 3- or 2-point, depending on where there is a neutral level).
+        /** @brief Collapses the data into the simplest scale (either 3- or 2-point, depending on whether there is a neutral level).
             @details This will also set the string tables for the responses to the simpler scale, although SetLabels() can be called
              afterwards if you wish to customize these labels further.
 
-             This interface is the preferred way to simplify the data, as it will call the proper @c CollapseXPointsToX() and
-             CreateLabels() based on the specified type.
+             For 4-point scales, this collapses all negative levels to 1 and all positive levels to 2.
+             This assumes that all categorical columns (i.e., questions) are coded 0-4
+             (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
+
+             For 5-point scales, this collapses all negative levels to 1 and all positive levels to 3.
+             This assumes that all categorical columns (i.e., questions) are coded 0-5
+             (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
+
+             This 6-point scales, this collapses all negative levels to 1 and all positive levels to 2.
+             This assumes that all categorical columns (i.e., questions) are coded 0-6
+             (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
+
+             For 7-point scales, this collapses all negative levels to 1 and all positive levels to 3.
+             This assumes that all categorical columns (i.e., questions) are coded 0-7
+             (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
+
             @param data The dataset to simplify/collapse.
             @param questionColumns The vector of categorical columns to use as questions.
             @param currentFormat The questions' Likert scale.
             @returns The questions' new Likert scale (should be passed to the chart's constructor).
             @note If the data's scale is already 3- or 2-point, then the data will stay the same but the
-             question (i.e., categorical) columns' string tables will be reset to use the respective stock labels.
-            @sa Collapse6PointsTo2(), Collapse4PointsTo2(), Collapse7PointsTo3(), Collapse5PointsTo3(), CreateLabels().*/
+             question (i.e., categorical) columns' string tables will be reset to use the respective stock labels.*/
         [[nodiscard]] static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
             std::vector<wxString>& questionColumns,
             LikertSurveyQuestionFormat currentFormat);
-        /** @brief Converts a 4-point scale dataset to 2-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
-             This assumes that all categorical columns (i.e., questions) are coded 0-4
-             (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
-
-            @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
-            @param data The dataset to collapse.
-            @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-2
-             and their respective labels (no response, negative, neutral, positive).
-            @warning This will overwrite all string tables in the dataset.
-            @par Example:
-            @code
-            LikertChart::Collapse4PointsTo2(data,
-                {
-                    { 0, L"No response" },
-                    { 1, L"Disagree" },
-                    { 2, L"Agree" }
-                });
-            @endcode*/
-        static void Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
-        /** @brief Converts a 6-point scale dataset to 2-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
-             This assumes that all categorical columns (i.e., questions) are coded 0-6
-             (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
-
-            @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
-            @param data The dataset to collapse.
-            @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-2
-             and their respective labels (no response, negative, neutral, positive).
-            @warning This will overwrite all string tables in the dataset.
-            @par Example:
-            @code
-            LikertChart::Collapse6PointsTo2(data,
-                {
-                    { 0, L"No response" },
-                    { 1, L"Disagree" },
-                    { 2, L"Agree" }
-                });
-            @endcode*/
-        static void Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
-
-        /** @brief Converts a 5-point scale dataset to 3-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
-             This assumes that all categorical columns (i.e., questions) are coded 0-5
-             (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
-
-            @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
-            @param data The dataset to collapse.
-            @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-3
-             and their respective labels (no response, negative, neutral, positive).
-            @warning This will overwrite all string tables in the dataset.
-            @par Example:
-            @code
-            LikertChart::Collapse7PointsTo3(data,
-                {
-                    { 0, L"No response" },
-                    { 1, L"Disagree" },
-                    { 2, L"Neutral" },
-                    { 3, L"Agree" }
-                });
-            @endcode*/
-        static void Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
-        /** @brief Converts a 7-point scale dataset to 3-point.
-            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
-             This assumes that all categorical columns (i.e., questions) are coded 0-7
-             (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
-
-            @note Prefer using Simplify() instead of this function, as it will work for any Likert scale type.
-            @param data The dataset to collapse.
-            @param questionColumns The vector of categorical columns to use as questions.
-            @param condensedCodes The simplified string table to use. This should include values 0-3
-             and their respective labels (no response, negative, neutral, positive).
-            @warning This will overwrite all string tables in the dataset.
-            @par Example:
-            @code
-            LikertChart::Collapse7PointsTo3(data,
-                {
-                    { 0, L"No response" },
-                    { 1, L"Disagree" },
-                    { 2, L"Neutral" },
-                    { 3, L"Agree" }
-                });
-            @endcode*/
-        static void Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
-                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /// @}
 
         /// @name Chart Type Functions
@@ -746,17 +664,20 @@ namespace Wisteria::Graphs
         /// @}
 
         /// @brief A bracket going from one question to another.
-        struct QuestionBracket
+        struct QuestionsBracket
             {
+            /// @brief The first question to start the bracket at.
             wxString m_question1;
+            /// @brief The second question to end the bracket at.
             wxString m_question2;
+            /// @brief The label for the bracket.
             wxString m_title;
             };
 
         /// @brief Adds a bracket to a group of questions.
         /// @param qBracket The bracket information, include the start and end questions
         ///  and the bracket title.
-        void AddQuestionsBracket(const QuestionBracket& qBracket)
+        void AddQuestionsBracket(const QuestionsBracket& qBracket)
             { m_questionBrackets.push_back(qBracket); }
 
         /// @brief Builds and returns a legend using the current colors and labels.
@@ -766,9 +687,101 @@ namespace Wisteria::Graphs
         /// @returns The legend for the chart.
         /// @note Be sure to set the labels in the dataset prior to calling SetData() if you plan
         ///  create a legend. Refer to SetLabels(), CreateLabels(), and Simplify() for details.
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+                                                         const LegendCanvasPlacementHint hint) const;
     private:
+        /// @brief Draws the brackets connected to questions.
         void AddQuestionBrackets();
+        /** @brief Converts a 4-point scale dataset to 2-point.
+            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
+             This assumes that all categorical columns (i.e., questions) are coded 0-4
+             (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
+
+            @param data The dataset to collapse.
+            @param questionColumns The vector of categorical columns to use as questions.
+            @param condensedCodes The simplified string table to use. This should include values 0-2
+             and their respective labels (no response, negative, neutral, positive).
+            @warning This will overwrite all string tables in the dataset.
+            @par Example:
+            @code
+            LikertChart::Collapse4PointsTo2(data,
+                {
+                    { 0, L"No response" },
+                    { 1, L"Disagree" },
+                    { 2, L"Agree" }
+                });
+            @endcode*/
+        static void Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
+                                       std::vector<wxString>& questionColumns,
+                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        /** @brief Converts a 5-point scale dataset to 3-point.
+            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
+             This assumes that all categorical columns (i.e., questions) are coded 0-5
+             (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
+
+            @param data The dataset to collapse.
+            @param questionColumns The vector of categorical columns to use as questions.
+            @param condensedCodes The simplified string table to use. This should include values 0-3
+             and their respective labels (no response, negative, neutral, positive).
+            @warning This will overwrite all string tables in the dataset.
+            @par Example:
+            @code
+            LikertChart::Collapse7PointsTo3(data,
+                {
+                    { 0, L"No response" },
+                    { 1, L"Disagree" },
+                    { 2, L"Neutral" },
+                    { 3, L"Agree" }
+                });
+            @endcode*/
+        static void Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
+                                       std::vector<wxString>& questionColumns,
+                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        /** @brief Converts a 6-point scale dataset to 2-point.
+            @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
+             This assumes that all categorical columns (i.e., questions) are coded 0-6
+             (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
+
+            @param data The dataset to collapse.
+            @param questionColumns The vector of categorical columns to use as questions.
+            @param condensedCodes The simplified string table to use. This should include values 0-2
+             and their respective labels (no response, negative, neutral, positive).
+            @warning This will overwrite all string tables in the dataset.
+            @par Example:
+            @code
+            LikertChart::Collapse6PointsTo2(data,
+                {
+                    { 0, L"No response" },
+                    { 1, L"Disagree" },
+                    { 2, L"Agree" }
+                });
+            @endcode*/
+        static void Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
+                                       std::vector<wxString>& questionColumns,
+                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
+        /** @brief Converts a 7-point scale dataset to 3-point.
+            @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
+             This assumes that all categorical columns (i.e., questions) are coded 0-7
+             (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
+
+            @param data The dataset to collapse.
+            @param questionColumns The vector of categorical columns to use as questions.
+            @param condensedCodes The simplified string table to use. This should include values 0-3
+             and their respective labels (no response, negative, neutral, positive).
+            @warning This will overwrite all string tables in the dataset.
+            @par Example:
+            @code
+            LikertChart::Collapse7PointsTo3(data,
+                {
+                    { 0, L"No response" },
+                    { 1, L"Disagree" },
+                    { 2, L"Neutral" },
+                    { 3, L"Agree" }
+                });
+            @endcode*/
+        static void Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
+                                       std::vector<wxString>& questionColumns,
+                                       const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Gets the categorized version of survey format
              (e.g., ThreePoint -> ThreePointCategorized).
             @returns The categorized version of survey format.
@@ -881,7 +894,8 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the positive response label at a given point.
         /// @param label The label to display.
-        /// @param point The point of positivity (e.g., 1 will be the weakest positive point [closest one to neutral],
+        /// @param point The point of positivity
+        ///  (e.g., 1 will be the weakest positive point [closest one to neutral],
         ///  3 will be the strongest positive).
         /// @note This label will be shown in the legend and also (possibly) as a section header.
         void SetPositiveLabel(const wxString& label, const size_t point)
@@ -932,14 +946,17 @@ namespace Wisteria::Graphs
         /// @param question The survey question.
         /// @param groups The group values column.
         /// @param responses The responses.
-        void AddSurveyQuestion(const wxString& question, const Data::ColumnWithStringTable& groups, const Data::ColumnWithStringTable& responses);
+        void AddSurveyQuestion(const wxString& question,
+                               const Data::ColumnWithStringTable& groups,
+                               const Data::ColumnWithStringTable& responses);
 
         /// @brief Add a three-point (e.g., agree, disagree, or neutral) Likert response.
         /// @param response The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         /// (i.e., the first response will be one at the bottom [at the axes' origin]).
         void AddSurveyQuestion(const LikertThreePointSurveyQuestion& response);
-        /// @brief Add a three-point (e.g., agree, disagree, or neutral) Likert question with categorical responses.
+        /// @brief Add a three-point (e.g., agree, disagree, or neutral)
+        ///  Likert question with categorical responses.
         /// @param response The question and its categorized breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         /// (i.e., the first response will be one at the bottom [at the axes' origin]).
@@ -950,7 +967,8 @@ namespace Wisteria::Graphs
         /// @note These survey items will be stacked in the order that you call this function
         ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
         void AddSurveyQuestion(const LikertFivePointSurveyQuestion& response);
-        /// @brief Add a five-point (e.g., agree, disagree, or neutral) Likert question with categorical responses.
+        /// @brief Add a five-point (e.g., agree, disagree, or neutral)
+        ///  Likert question with categorical responses.
         /// @param response The question and its categorized breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
@@ -961,7 +979,8 @@ namespace Wisteria::Graphs
         /// @note These survey items will be stacked in the order that you call this function
         ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
         void AddSurveyQuestion(const LikertSevenPointSurveyQuestion& response);
-        /// @brief Add a seven-point (e.g., agree, disagree, or neutral) Likert response with categorical responses.
+        /// @brief Add a seven-point (e.g., agree, disagree, or neutral)
+        ///  Likert response with categorical responses.
         /// @param response The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
         ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
@@ -1043,7 +1062,7 @@ namespace Wisteria::Graphs
 
         LikertSurveyQuestionFormat m_surveyType{ LikertSurveyQuestionFormat::ThreePoint };
 
-        std::vector<QuestionBracket> m_questionBrackets;
+        std::vector<QuestionsBracket> m_questionBrackets;
         };
     }
 

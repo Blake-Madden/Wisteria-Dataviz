@@ -28,9 +28,9 @@ namespace Wisteria::UI
     class VariableSelectDlg final : public wxDialog
         {
     public:
-        /// @internal This is used as a bitmask, so can't be strongly typed.
         /// @brief The type of variables that can be selected.
         /// @details These are bitmask values that can be ORed together.
+        /// /// @internal This is used as a bitmask, so can't be strongly typed.
         enum VariableSelections
             {
             NoVariables = 0,              /*!< Nothing to select.*/
@@ -40,11 +40,11 @@ namespace Wisteria::UI
             CategoricalVariables = 0x0080 /*!< Select categorical variable(s).*/
             };
 
-        /// @internal This is used as a bitmask, so can't be strongly typed.
         /// @brief Which variable styles are single selection.
         /// @details These are bitmask values that can be ORed together.
         /// @note X and Y areas are always single selection by design, regardless
         ///  of any values specified here.
+        /// @internal This is used as a bitmask, so can't be strongly typed.
         enum SingleSelectionTypes
             {
             NoSingleSelection,  /*!< Nothing is single selection.*/

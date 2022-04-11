@@ -196,6 +196,7 @@ namespace Wisteria::Graphs
                 return *this;
                 }
             /// @brief Explicitly sets the outline of the bar block.
+            /// @param pen The pen to use for outlining.
             /// @note If this is not set, then the parent bar chart will deduce the
             ///  best outline color.
             /// @returns A self reference.

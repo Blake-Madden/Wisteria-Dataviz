@@ -992,10 +992,12 @@ namespace Wisteria::Colors
         [[nodiscard]] static wxColour ChangeOpacity(wxColour color, const uint8_t opacity)
             { return wxColor(color.Red(), color.Green(), color.Blue(), opacity); }
         /// @brief Determines whether a color is dark (i.e., luminance is less than 50%).
+        /// @param color The color to review.
         /// @returns `true` if the color's luminance is less than 50%.
         [[nodiscard]] static bool IsDark(const wxColour& color)
             { return (color.GetLuminance() < .5f); }
         /// @brief Determines whether a color is light (i.e., luminance is >= 50%).
+        /// @param color The color to review.
         /// @returns `true` if the color's luminance is >= 50%.
         [[nodiscard]] static bool IsLight(const wxColour& color)
             { return !IsDark(color); }
