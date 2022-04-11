@@ -745,6 +745,20 @@ namespace Wisteria::Graphs
             { return m_adjustBarWidthsToRespondentSize; }
         /// @}
 
+        /// @brief A bracket going from one question to another.
+        struct QuestionBracket
+            {
+            wxString m_question1;
+            wxString m_question2;
+            wxString m_title;
+            };
+
+        /// @brief Adds a bracket to a group of questions.
+        /// @param qBracket The bracket information, include the start and end questions
+        ///  and the bracket title.
+        void AddQuestionsBracket(const QuestionBracket& qBracket)
+            { m_questionBrackets.push_back(qBracket); }
+
         /// @brief Builds and returns a legend using the current colors and labels.
         /// @details This can be then be managed by the parent canvas and placed next to the plot.
         /// @param hint A hint about where the legend will be placed after construction. This is used
@@ -754,6 +768,7 @@ namespace Wisteria::Graphs
         ///  create a legend. Refer to SetLabels(), CreateLabels(), and Simplify() for details.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
     private:
+        void AddQuestionBrackets();
         /** @brief Gets the categorized version of survey format
              (e.g., ThreePoint -> ThreePointCategorized).
             @returns The categorized version of survey format.
@@ -1026,6 +1041,8 @@ namespace Wisteria::Graphs
         wxString m_nullString{ L"" };
 
         LikertSurveyQuestionFormat m_surveyType{ LikertSurveyQuestionFormat::ThreePoint };
+
+        std::vector<QuestionBracket> m_questionBrackets;
         };
     }
 

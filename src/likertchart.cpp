@@ -1045,7 +1045,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(*wxTRANSPARENT_PEN).
+                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1166,7 +1166,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize-category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(*wxTRANSPARENT_PEN).
+                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1253,7 +1253,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(*wxTRANSPARENT_PEN).
+                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1383,7 +1383,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize - category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(*wxTRANSPARENT_PEN).
+                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1486,7 +1486,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
               // NA block
               BarBlock(BarBlockInfo(question.m_naRate).
-                OutlinePen(*wxTRANSPARENT_PEN).
+                OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                 Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
@@ -1633,7 +1633,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(m_neutralBlockSize - category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
                   // NA block
                   BarBlock(BarBlockInfo(category->m_naRate).
-                    OutlinePen(*wxTRANSPARENT_PEN).
+                    OutlinePen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                     Brush(GetNAColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
@@ -1647,6 +1647,36 @@ namespace Wisteria::Graphs
                 { currentBar.SetCustomWidth(safe_divide<double>(category->m_responses, maxCategoryResponese)); }
             SetBarBlockFullWidth(currentBar, GetCategoryBlockLabel());
             AddBar(currentBar);
+            }
+        }
+
+    //----------------------------------------------------------------
+    void LikertChart::AddQuestionBrackets()
+        {
+        GetLeftYAxis().ClearBrackets();
+        for (const auto& bracket : m_questionBrackets)
+            {
+            const auto firstBar = std::find_if(GetBars().cbegin(), GetBars().cend(),
+                [&](const auto& bar)
+                {
+                return (bar.GetBlocks().size() &&
+                    bar.GetBlocks().at(0).GetDecal().GetText().CmpNoCase(bracket.m_question1) == 0);
+                });
+            const auto secondBar = std::find_if(GetBars().cbegin(), GetBars().cend(),
+                [&](const auto& bar)
+                {
+                return (bar.GetBlocks().size() &&
+                    bar.GetBlocks().at(0).GetDecal().GetText().CmpNoCase(bracket.m_question2) == 0);
+                });
+
+            if (firstBar != GetBars().cend() &&
+                secondBar != GetBars().cend())
+                {
+                GetLeftYAxis().AddBracket(Axis::AxisBracket(
+                    firstBar->GetAxisPosition(), secondBar->GetAxisPosition(),
+                    safe_divide(firstBar->GetAxisPosition() + secondBar->GetAxisPosition(), 2.0),
+                    bracket.m_title));
+                }
             }
         }
 
@@ -1721,11 +1751,11 @@ namespace Wisteria::Graphs
             neutralDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
-                neutralDividerLine.GetHeader().SetText(GetNeutralLabel());
+                neutralDividerLine.GetHeader().SetText(GetNeutralLabel() + L"\U0001F816");
                 neutralDividerLine.GetHeader().GetFont().MakeBold();
                 neutralDividerLine.GetHeader().SetFontColor(ColorContrast::Shade(GetNeutralColor()));
                 neutralDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
-                neutralDividerLine.GetHeader().SetRightPadding(5);
+                neutralDividerLine.GetHeader().SetLeftPadding(5);
                 neutralDividerLine.GetHeader().GetPen() = wxNullPen;
                 }
             AddCustomAxis(neutralDividerLine);
@@ -1758,11 +1788,11 @@ namespace Wisteria::Graphs
             naDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
-                naDividerLine.GetHeader().SetText(GetNoResponseHeader());
-                naDividerLine.GetHeader().GetFont().MakeBold();
-                naDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
-                naDividerLine.GetHeader().SetRightPadding(5);
-                naDividerLine.GetHeader().GetPen() = wxNullPen;
+                naDividerLine.GetFooter().SetText(GetNoResponseHeader() + L"\U0001F816");
+                naDividerLine.GetFooter().GetFont().MakeBold();
+                naDividerLine.GetFooter().SetRelativeAlignment(RelativeAlignment::FlushLeft);
+                naDividerLine.GetFooter().SetLeftPadding(5);
+                naDividerLine.GetFooter().GetPen() = wxNullPen;
                 }
             AddCustomAxis(naDividerLine);
             }
@@ -1792,7 +1822,7 @@ namespace Wisteria::Graphs
         agreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
-            agreeDividerLine.GetHeader().SetText(GetPositiveHeader());
+            agreeDividerLine.GetHeader().SetText(GetPositiveHeader() + L"\U0001F816");
             agreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushLeft);
             agreeDividerLine.GetHeader().GetPen() = wxNullPen;
             agreeDividerLine.GetHeader().GetFont().MakeBold();
@@ -1808,7 +1838,7 @@ namespace Wisteria::Graphs
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
-            disagreeDividerLine.GetHeader().SetText(GetNegativeHeader());
+            disagreeDividerLine.GetHeader().SetText(L"\U0001F814 " + GetNegativeHeader());
             disagreeDividerLine.GetHeader().SetRelativeAlignment(RelativeAlignment::FlushRight);
             disagreeDividerLine.GetHeader().GetPen() = wxNullPen;
             disagreeDividerLine.GetHeader().GetFont().MakeBold();
@@ -1899,5 +1929,11 @@ namespace Wisteria::Graphs
                 wxPoint(bottomNAX, GetLeftYAxis().GetTopPoint().y));
             }
         AddObject(sectionDividerLines);
+
+        AddQuestionBrackets();
+        // make a little smaller as these could be rather lengthy
+        // and consume a lot of real estate
+        for (auto& bracket : GetLeftYAxis().GetBrackets())
+            { bracket.GetLabel().GetFont().MakeSmaller(); }
         }
     }
