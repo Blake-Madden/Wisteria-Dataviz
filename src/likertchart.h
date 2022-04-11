@@ -433,14 +433,14 @@ namespace Wisteria::Graphs
         /// @param negativeColor The negative color (set to @c wxNullColour to use the default color).
         /// @param positiveColor The positive color (set to @c wxNullColour to use the default color).
         /// @param neutralColor The neutral color (set to @c wxNullColour to use the default color).
-        /// @param naColor The non-responses color (set to @c wxNullColour to use the default color).
+        /// @param noResponseColor The non-responses color (set to @c wxNullColour to use the default color).
         /// @note If the Likert scale has more than three levels, the extended levels of positive and negative responses (e.g., "strongly agree")
         ///  will be shades or tints of the base color. For example, if negative is set to red, then other levels of negative will be tinted versions of red.
         LikertChart(Wisteria::Canvas* canvas, const LikertSurveyQuestionFormat type,
                     const wxColour negativeColor = wxNullColour,
                     const wxColour positiveColor = wxNullColour,
                     const wxColour neutralColor = wxNullColour,
-                    const wxColour naColor = wxNullColour);
+                    const wxColour noResponseColor = wxNullColour);
 
         /// @name Data Functions
         /// @brief Functions relating to managing the chart's data.
@@ -804,18 +804,19 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxColour GetNeutralColor() const noexcept
             { return m_neutralColor; }
 
-        /// @brief Sets the color for the NA bars.
+        /// @brief Sets the color for the no-response bars.
         /// @param color The color to use.
-        void SetNAColor(const wxColour color)
+        void SetNoResponseColor(const wxColour color)
             {
             if (color.IsOk())
-                { m_naColor = color; }
+                { m_noResponseColor = color; }
             }
-        /// @returns The color used for the neutral bars.
-        [[nodiscard]] wxColour GetNAColor() const noexcept
-            { return m_naColor; }
+        /// @returns The color used for the no-response bars.
+        [[nodiscard]] wxColour GetNoResponseColor() const noexcept
+            { return m_noResponseColor; }
 
-        /// @brief Sets the color for the weakest positive point (higher points will be shades of this color).
+        /// @brief Sets the color for the weakest positive point
+        ///  (higher points will be shades of this color).
         /// @param color The color to use.
         void SetPositiveColor(const wxColour color)
             {
@@ -827,8 +828,8 @@ namespace Wisteria::Graphs
             { return m_positiveColor; }
 
         /// @returns The positive response label at a given point.
-        /// @param point The positive point label to return. Values should be 1-3, going from
-        ///  the weakest positive response to the strongest.
+        /// @param point The positive point label to return.
+        ///  Values should be 1-3, going from the weakest positive response to the strongest.
         [[nodiscard]] const wxString& GetPositiveLabel(const size_t point) const noexcept
             {
             wxASSERT_LEVEL_2_MSG(point >= 1 && point <= 3, "Incorrect point specified for label!");
@@ -1023,7 +1024,7 @@ namespace Wisteria::Graphs
         wxColour m_negativeColor{ Colors::ColorBrewer::GetColor(Colors::Color::Orange) };
         wxColour m_positiveColor{ Colors::ColorBrewer::GetColor(Colors::Color::Cerulean) };
         wxColour m_neutralColor{ Colors::ColorBrewer::GetColor(Colors::Color::LavenderMist) };
-        wxColour m_naColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
+        wxColour m_noResponseColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
         // labels displayed on the legend
         wxString m_neutralLabel;
