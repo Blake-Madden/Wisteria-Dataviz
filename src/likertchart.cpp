@@ -1022,6 +1022,11 @@ namespace Wisteria::Graphs
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negativeRate > 0) ? wxNumberFormatter::ToString(question.m_negativeRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                     Font(GetBarAxis().GetFont()).
                     FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor())).
+                    // if block and background are light, then don't auto-frame;
+                    // this will make it so that an outlining won't obscure smaller blocks
+                    LabelFitting(
+                        (ColorContrast::IsLight(GetNegativeColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                            LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                     ChildAlignment(RelativeAlignment::FlushRight)))),
               // positive block
               BarBlock(BarBlockInfo(question.m_positiveRate).
@@ -1030,6 +1035,9 @@ namespace Wisteria::Graphs
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positiveRate > 0) ? wxNumberFormatter::ToString(question.m_positiveRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
                       FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor())).
+                      LabelFitting(
+                        (ColorContrast::IsLight(GetPositiveColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                            LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                       ChildAlignment(RelativeAlignment::FlushLeft)))),
               // block after positive
               BarBlock(BarBlockInfo(m_positiveBlockSize-question.m_positiveRate).Show(false)),
@@ -1040,6 +1048,9 @@ namespace Wisteria::Graphs
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ? wxNumberFormatter::ToString(question.m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
                       FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor())).
+                      LabelFitting(
+                        (ColorContrast::IsLight(GetNeutralColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                            LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                       ChildAlignment(RelativeAlignment::FlushLeft))).Tag(GetNeutralBlockLabel())),
               // block after neutral
               BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
@@ -1050,6 +1061,9 @@ namespace Wisteria::Graphs
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ? wxNumberFormatter::ToString(question.m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                       Font(GetBarAxis().GetFont()).
                       FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                      LabelFitting(
+                        (ColorContrast::IsLight(GetNAColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                            LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                       ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
                L"", Label(), BoxEffect::Solid);
@@ -1143,6 +1157,9 @@ namespace Wisteria::Graphs
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negativeRate > 0) ? wxNumberFormatter::ToString(category->m_negativeRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
                           FontColor(ColorContrast::BlackOrWhiteContrast(GetNegativeColor())).
+                          LabelFitting(
+                            (ColorContrast::IsLight(GetNegativeColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                           ChildAlignment(RelativeAlignment::FlushRight))) ),
                   // positive block
                   BarBlock(BarBlockInfo(category->m_positiveRate).Brush(GetPositiveColor()).
@@ -1151,6 +1168,9 @@ namespace Wisteria::Graphs
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positiveRate > 0) ? wxNumberFormatter::ToString(category->m_positiveRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
                           FontColor(ColorContrast::BlackOrWhiteContrast(GetPositiveColor())).
+                          LabelFitting(
+                            (ColorContrast::IsLight(GetPositiveColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                           ChildAlignment(RelativeAlignment::FlushLeft))) ),
                   // block after positive
                   BarBlock(BarBlockInfo(m_positiveBlockSize-(category->m_positiveRate)).Show(false)),
@@ -1161,6 +1181,9 @@ namespace Wisteria::Graphs
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ? wxNumberFormatter::ToString(category->m_neutralRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
                           FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor())).
+                          LabelFitting(
+                            (ColorContrast::IsLight(GetNeutralColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                           ChildAlignment(RelativeAlignment::FlushLeft))).Tag(GetNeutralBlockLabel())),
                   // block after neutral
                   BarBlock(BarBlockInfo(m_neutralBlockSize-category->m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
@@ -1171,6 +1194,9 @@ namespace Wisteria::Graphs
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ? wxNumberFormatter::ToString(category->m_naRate, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)+L"%" : wxString()).
                           Font(GetBarAxis().GetFont()).
                           FontColor(ColorContrast::BlackOrWhiteContrast(GetNAColor())).
+                          LabelFitting(
+                            (ColorContrast::IsLight(GetNAColor()) && ColorContrast::IsLight(GetPlotOrCanvasColor())) ?
+                                LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                           ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
                    L"", Label(), BoxEffect::Solid);

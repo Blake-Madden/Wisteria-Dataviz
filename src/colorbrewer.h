@@ -991,6 +991,14 @@ namespace Wisteria::Colors
         /// @param opacity The opacity to use for the new color.
         [[nodiscard]] static wxColour ChangeOpacity(wxColour color, const uint8_t opacity)
             { return wxColor(color.Red(), color.Green(), color.Blue(), opacity); }
+        /// @brief Determines whether a color is dark (i.e., luminance is less than 50%).
+        /// @returns `true` if the color's luminance is less than 50%.
+        [[nodiscard]] static bool IsDark(const wxColour& color)
+            { return (color.GetLuminance() < .5f); }
+        /// @brief Determines whether a color is light (i.e., luminance is >= 50%).
+        /// @returns `true` if the color's luminance is >= 50%.
+        [[nodiscard]] static bool IsLight(const wxColour& color)
+            { return !IsDark(color); }
         /// @returns A darkened version of a color.
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
@@ -1011,7 +1019,7 @@ namespace Wisteria::Colors
         [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
                                                   const double shadeValue = .20f)
             {
-            return ((color.GetLuminance() < .5f) ?
+            return (IsDark(color) ?
                 color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeValue*100), 0, 100)) :
                 color.ChangeLightness(100 - std::clamp(static_cast<int>(shadeValue*100), 0, 100)));
             }
@@ -1020,7 +1028,7 @@ namespace Wisteria::Colors
         /// @param color The color to contrast against to see if white or black should go on it.
         /// @returns Black or white; whichever contrasts better against @c color.
         [[nodiscard]] static wxColour BlackOrWhiteContrast(const wxColour& color)
-            { return ((color.GetLuminance() < .5f) ? *wxWHITE : *wxBLACK); }
+            { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
         /// @returns `true` if two colors' luminance values are close.
         /// @param color1 First color to compare.
         /// @param color2 Second color to compare.
@@ -1038,7 +1046,7 @@ namespace Wisteria::Colors
         ///  If @c mainColor is close to this, then it will be shaded.
         /// @returns If @c mainColor is close to @c secondaryColor,
         ///  then returns a shaded version of @c mainColor; otherwise,
-        ///   returns the original @c mainColor.
+        ///  returns the original @c mainColor.
         [[nodiscard]] static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
                                                          const wxColour& secondaryColor)
             {
