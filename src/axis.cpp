@@ -1180,18 +1180,28 @@ namespace Wisteria::GraphItems
         // draw the brackets
         for (const auto& bracket : GetBrackets())
             {
-            auto scaledPen = bracket.GetLinePen();
+            wxPen scaledPen = bracket.GetLinePen();
             if (scaledPen.IsOk())
                 { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
             wxDCPenChanger penCh(dc, scaledPen);
 
+            // if not showing labels, don't include the space between the lines and the
+            // non-existant labels when positioning the brackets
+            const auto spaceAreasNeeded = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                1 : 2;
+
             if (GetAxisType() == AxisType::LeftYAxis)
                 {
-                auto labelWidth = GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
-                labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
-                connectionX -= (labelWidth + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
-                connectionXDoubleSided += (labelWidth + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
+
+                auto labelWidth = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                    0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
+                labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
+                
+                connectionX -= (labelWidth + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
+                connectionXDoubleSided += (labelWidth + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
                 wxCoord position1(0), position2(0), position3(0);
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1268,11 +1278,14 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::RightYAxis)
                 {
-                auto labelWidth = GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
+                auto labelWidth = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                    0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
-                connectionX += (labelWidth + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
-                connectionXDoubleSided -= (labelWidth + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
+                connectionX += (labelWidth + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
+                connectionXDoubleSided -= (labelWidth + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
                 wxCoord position1(0), position2(0), position3(0);
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1347,11 +1360,14 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::BottomXAxis)
                 {
-                auto labelHeight = GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
+                auto labelHeight = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                    0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
                 labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
                 long connectionY = GetTopPoint().y, connectionYDoubleSided = GetTopPoint().y;
-                connectionY += (labelHeight + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*2));
-                connectionYDoubleSided -= (labelHeight + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*2));
+                connectionY += (labelHeight + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*spaceAreasNeeded));
+                connectionYDoubleSided -= (labelHeight + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*spaceAreasNeeded));
 
                 wxCoord position1(0), position2(0), position3(0);
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
@@ -1426,12 +1442,15 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::TopXAxis)
                 {
-                auto labelHeight = GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
+                auto labelHeight = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                    0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
                 labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
                 auto connectionY = GetTopPoint().y;
                 auto connectionYDoubleSided = GetTopPoint().y;
-                connectionY -= (labelHeight + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
-                connectionYDoubleSided += (labelHeight + CalcTickMarkOuterWidth() + (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*2));
+                connectionY -= (labelHeight + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
+                connectionYDoubleSided += (labelHeight + CalcTickMarkOuterWidth() +
+                    (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
                 wxCoord position1(0), position2(0), position3(0);
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
