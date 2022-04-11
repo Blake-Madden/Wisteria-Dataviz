@@ -213,6 +213,7 @@ namespace Wisteria::Graphs
                 m_naRate = round(safe_divide<double>(naCount, m_responses)*100);
                 }
             /// @private
+            /// @note This is using locale-sensitive sorting.
             [[nodiscard]] bool operator<(const LikertThreePointSurveyQuestion& that) const
                 {
                 return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
@@ -442,10 +443,6 @@ namespace Wisteria::Graphs
                     const wxColour neutralColor = wxNullColour,
                     const wxColour noResponseColor = wxNullColour);
 
-        /// @name Data Functions
-        /// @brief Functions relating to managing the chart's data.
-        /// @{
-
         /** @brief Adds questions (and their responses) to the chart.
             @details The data is analyzed as such:
              - A question (and respective responses) are constructed from each categorical column specified.
@@ -511,10 +508,6 @@ namespace Wisteria::Graphs
             const std::shared_ptr<Data::Dataset>& data,
             std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);
-        /** @brief Determines if a format is categorized (i.e., using a grouping variable).
-            @param format The format to review.
-            @returns `true` if the specified format is categorized.*/
-        [[nodiscard]] static bool IsCategorized(const LikertSurveyQuestionFormat format) noexcept;
 
         /** @brief Collapses the data into the simplest scale (either 3- or 2-point, depending on whether there is a neutral level).
             @details This will also set the string tables for the responses to the simpler scale, although SetLabels() can be called
@@ -545,7 +538,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
             std::vector<wxString>& questionColumns,
             LikertSurveyQuestionFormat currentFormat);
-        /// @}
 
         /// @name Chart Type Functions
         /// @brief Functions relating to the chart's design (e.g., point scale, whether responses are grouped).
@@ -690,6 +682,10 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
                                                          const LegendCanvasPlacementHint hint) const;
     private:
+        /** @brief Determines if a format is categorized (i.e., using a grouping variable).
+            @param format The format to review.
+            @returns `true` if the specified format is categorized.*/
+        [[nodiscard]] static bool IsCategorized(const LikertSurveyQuestionFormat format) noexcept;
         /// @brief Draws the brackets connected to questions.
         void AddQuestionBrackets();
         /** @brief Converts a 4-point scale dataset to 2-point.
