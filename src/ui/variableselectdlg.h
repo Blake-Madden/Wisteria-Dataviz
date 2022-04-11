@@ -20,6 +20,7 @@
 #include <wx/gbsizer.h>
 #include <wx/stattext.h>
 #include <wx/artprov.h>
+#include <wx/wupdlock.h>
 #include "../dataset.h"
 
 namespace Wisteria::UI

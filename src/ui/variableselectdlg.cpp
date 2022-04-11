@@ -160,6 +160,7 @@ void VariableSelectDlg::MoveSelectedVariables(wxListView* list, wxListView* othe
             }
         }
     const auto selStrings = GetSelectedVariables(list);
+    wxWindowUpdateLocker noUpdates(otherList);
     for (const auto& str : selStrings)
         { otherList->InsertItem(otherList->GetItemCount(), str); }
     otherList->SetColumnWidth(0, wxLIST_AUTOSIZE);
@@ -184,6 +185,7 @@ std::vector<wxString> VariableSelectDlg::GetSelectedVariables(wxListView* list)
 //-------------------------------------------------------------
 void VariableSelectDlg::RemoveSelectedVariables(wxListView* list)
     {
+    wxWindowUpdateLocker noUpdates(list);
     long item{ wxNOT_FOUND };
     for (;;)
         {
