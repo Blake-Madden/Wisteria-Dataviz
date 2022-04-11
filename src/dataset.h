@@ -24,6 +24,7 @@
 #include <wx/file.h>
 #include <wx/datetime.h>
 #include <wx/uilocale.h>
+#include <wx/filename.h>
 #include "import/text_matrix.h"
 #include "import/text_preview.h"
 #include "debug/debug_assert.h"
@@ -463,6 +464,10 @@ namespace Wisteria::Data
         ///  for selecting variables before importing a dataset.
         using ColumnPreviewInfo = std::vector<std::pair<wxString, ColumnImportType>>;
 
+        /// @returns The name of the dataset.
+        [[nodiscard]] const wxString& GetName() const noexcept
+            { return m_name; }
+
         /// @brief Removes all data from the dataset.
         /// @details All continuous, categorical, and date columns will be removed,
         ///  and the ID column will be cleared.
@@ -787,6 +792,9 @@ namespace Wisteria::Data
         [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
                                                       const DateImportMethod method,
                                                       const wxString& formatStr);
+
+        wxString m_name;
+
         // actual data
         Column<wxString> m_idColumn{ L"IDS" };
         std::vector<Column<wxDateTime>> m_dateColumns;

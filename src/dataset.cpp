@@ -264,6 +264,9 @@ namespace Wisteria::Data
                                      wxSysErrorMsg(fl.GetLastError())));
             }
         fileText.Trim(true).Trim(false);
+
+        m_name = wxFileName(filePath).GetName();
+
         std::vector<std::vector<wxString>> dataStrings;
 
         lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
