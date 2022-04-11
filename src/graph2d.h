@@ -168,10 +168,18 @@ namespace Wisteria::Graphs
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
              This is the color of the plotting area (inside the main axes).
-             This is transparent by default (normally, the canvas background will show through).
+             This is invalid by default (normally, the canvas background will show through).
             @param color The color to paint with.*/
         void SetBackgroundColor(const wxColour& color)
             { m_bgColor = color; }
+
+        /// @returns The plot background color, if it is valid and not transparent;
+        ///  otherwise, returns the canvas's background.
+        [[nodiscard]] wxColour GetPlotOrCanvasColor() const noexcept
+            {
+            return (m_bgColor.IsOk() && m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
+                m_bgColor : GetCanvas()->GetBackgroundColor();
+            }
         /// @}
 
         /** @name Property Functions
