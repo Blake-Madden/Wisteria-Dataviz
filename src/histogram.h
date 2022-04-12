@@ -129,7 +129,7 @@ namespace Wisteria::Graphs
              is shown at the bottom of the bar.
             @param showFullRangeOfValues `true` if a place for each bin is included on the axis, even if they have no items.
              This specifies whether the axis should display each step (even if no bin is associated with a step) or
-             if it should display steps that have categories on them. Setting this to `false` will put all of the bars
+             if it should only display steps that have categories on them. Setting this to `false` will put all the bars
              together, but might have an uneven step size on the axis and fit lines won't be able to be drawn.
              This is only used if you are categorizing by unique (non-integer) values.
             @param startBinsValue The value to start the first bin
@@ -137,20 +137,22 @@ namespace Wisteria::Graphs
              If no values fall into a bin starting at this position, then an empty slot for it will still be included on the bar axis.
              This will ensure that the bar axis begins from the position that you requested here.
              Set this to @c std::nullopt (the default) for the chart to set the starting point based solely on the data.
-            @param maxBinCount The maximum number of bins to create when binning the data.
-             If binning by unique values and the number of unique values exceeds this, then the
+            @param binCountRanges A pair representing the suggested bin count
+             (if binning into ranges) and the maximum number of bins.
+             For the latter, if binning by unique values and the number of unique values exceeds this, then the
              range-based mode will be used for the binning.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt,
+                     const std::optional<const wxString> groupColumnName = std::nullopt,
                      const BinningMethod bMethod = BinningMethod::BinByIntegerRange,
                      const RoundingMethod rounding = RoundingMethod::NoRounding,
                      const IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue,
                      const bool showFullRangeOfValues = true,
                      const std::optional<double> startBinsValue = std::nullopt,
-                     const size_t maxBinCount = 255);
+                     const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges =
+                        std::make_pair(std::nullopt, std::nullopt));
 
         /** @brief Gets the number of bins/cells in the histogram with data in them.
             @note This refers to the number of cells with data in them, not the number
@@ -259,20 +261,24 @@ namespace Wisteria::Graphs
             { return m_startBinsValue; }
         /// @returns The number of unique values.
         [[nodiscard]] size_t CalcUniqueValuesCount() const;
-         /** @brief Creates a bin for each unique value in the data.
-             If the number of categories exceeds the maximum number of categories,
+        /** @brief Creates a bin for each unique value in the data.
+            @param binCount If there are too many categories and sorting needs to be switched
+             to ranges, then this is an optional number of bins to use.
+            @details If the number of categories exceeds the maximum number of categories,
              then it will implicitly switch to equal-ranges mode.*/
-        void SortIntoUniqueValues();
+        void SortIntoUniqueValues(const std::optional<size_t> binCount);
         /** @brief Bins the data into a specific number of categories.
-            This is recommended if you have a lot of data and want to break data into categories.*/
-        void SortIntoRanges();
-        /// Call this when sorting data (in case it needs to be rounded). If rounding is turned off then this simply returns the same value.
+            @param binCount An optional number of bins to use.
+            @details This is recommended if you have a lot of data and want to break data into categories.*/
+        void SortIntoRanges(const std::optional<size_t> binCount);
+        /// @brief Call this when sorting data (in case it needs to be rounded).
+        ///  If rounding is turned off then this simply returns the same value.
         [[nodiscard]] double ConvertToSortableValue(const double& value) const;
 
         [[nodiscard]] wxString GetCustomBarLabelOrValue(const double& value, const size_t precision = 0);
 
-        /// @brief Calculates the number of bins to use based on the range of data.
-        [[nodiscard]] size_t CalcNumberOfBins(const double minVal, const double maxVal) const;
+        /// @brief Calculates the number of bins to use based on the data.
+        [[nodiscard]] size_t CalcNumberOfBins() const;
 
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;

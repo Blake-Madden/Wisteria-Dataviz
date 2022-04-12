@@ -17,14 +17,15 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Histogram::SetData(std::shared_ptr<const Data::Dataset> data,
                             const wxString& continuousColumnName,
-                            std::optional<const wxString> groupColumnName /*= std::nullopt*/,
+                            const std::optional<const wxString> groupColumnName /*= std::nullopt*/,
                             const BinningMethod bMethod /*= BinningMethod::BinByIntegerRange*/,
                             const RoundingMethod rounding /*= RoundingMethod::NoRounding*/,
                             const IntervalDisplay iDisplay /*= IntervalDisplay::Cutpoints*/,
                             const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/,
                             const bool showFullRangeOfValues /*= true*/,
                             const std::optional<double> startBinsValue /*= std::nullopt*/,
-                            const size_t maxBinCount /*= 255*/)
+                            const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges
+                                /*= std::make_pair(std::nullopt, std::nullopt)*/)
         {
         m_data = data;
         m_useGrouping = groupColumnName.has_value();
@@ -35,7 +36,8 @@ namespace Wisteria::Graphs
         m_binLabelDisplay = blDisplay;
         m_displayFullRangeOfValues = showFullRangeOfValues;
         m_startBinsValue = startBinsValue;
-        m_maxBinCount = std::min(maxBinCount, m_maxBinCount);
+        if (binCountRanges.second)
+            { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
         // garbage, so reset and bail
         if (m_data == nullptr)
@@ -88,9 +90,9 @@ namespace Wisteria::Graphs
             { SetBinningMethod(BinningMethod::BinUniqueValues); }
 
         if (GetBinningMethod() == BinningMethod::BinUniqueValues)
-            { SortIntoUniqueValues(); }
+            { SortIntoUniqueValues(binCountRanges.first); }
         else
-            { SortIntoRanges(); }
+            { SortIntoRanges(binCountRanges.first); }
 
         GetBarAxis().ShowOuterLabels(false);
         }
@@ -121,7 +123,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Histogram::SortIntoUniqueValues()
+    void Histogram::SortIntoUniqueValues(const std::optional<size_t> binCount)
         {
         if (m_data == nullptr)
             { return; }
@@ -150,7 +152,7 @@ namespace Wisteria::Graphs
             {
             if (!hasFloatingPointValue)
                 { SetBinningMethod(BinningMethod::BinByIntegerRange); }
-            SortIntoRanges();
+            SortIntoRanges(binCount);
             return;
             }
 
@@ -257,7 +259,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Histogram::SortIntoRanges()
+    void Histogram::SortIntoRanges(const std::optional<size_t> binCount)
         {
         if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return; }
@@ -284,7 +286,8 @@ namespace Wisteria::Graphs
 
         if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
             { minVal = std::min(minVal, GetBinsStart().value()); }
-        const size_t numOfBins = CalcNumberOfBins(minVal, maxVal);
+        const size_t numOfBins = binCount.has_value() ? binCount.value() :
+                                 std::min(CalcNumberOfBins(), GetMaxNumberOfBins());
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
             minVal = std::floor(static_cast<double>(minVal));
@@ -509,22 +512,32 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    size_t Histogram::CalcNumberOfBins(const double minVal, const double maxVal) const
+    size_t Histogram::CalcNumberOfBins() const
         {
         if (m_data == nullptr)
             { return 0; }
 
-        double suggestedBinSize = (m_data->GetRowCount() <= 1) ? 1 :
-            statistics::scotts_choice(m_continuousColumn->GetValues().cbegin(),
-                                      m_continuousColumn->GetValues().cend());
-        if (suggestedBinSize < 1.0f && (maxVal-minVal) > 5)
-            { suggestedBinSize = 1.0f; }
-        size_t binCount = std::ceil(safe_divide<double>((maxVal-minVal),
-            (GetBinningMethod() == BinningMethod::BinByIntegerRange) ?
-                std::ceil(suggestedBinSize) : suggestedBinSize));
-        if (binCount == 0)
-            { binCount = 1; }
-        return std::min(binCount, GetMaxNumberOfBins());
+        if (m_data->GetRowCount() <= 1)
+            { return 1; }
+        // Sturges
+        else if (m_data->GetRowCount() < 200)
+            {
+            return std::ceil(std::log2(m_data->GetRowCount())) + 1;
+            }
+        // Scott
+        else
+            {
+            const auto minVal = *std::min_element(
+                m_continuousColumn->GetValues().cbegin(),
+                m_continuousColumn->GetValues().cend());
+            const auto maxVal = *std::max_element(
+                m_continuousColumn->GetValues().cbegin(),
+                m_continuousColumn->GetValues().cend());
+            const auto sd = statistics::standard_deviation(m_continuousColumn->GetValues().cbegin(),
+                m_continuousColumn->GetValues().cend(), true);
+            return safe_divide(maxVal - minVal,
+                3.5 * safe_divide(sd, std::cbrt(m_data->GetRowCount())) );
+            }
         }
 
     //----------------------------------------------------------------

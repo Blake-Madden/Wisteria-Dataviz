@@ -417,20 +417,6 @@ namespace statistics
         double ue{ 0 };
         };
 
-    /// @todo needs to be validated and unit tested
-    /// @brief Determines the bin (category) size from a given range. This is usually used for histogram categorization.
-    /// @param begin The beginning of the data.
-    /// @param end The end of the data.
-    /// @returns The calculated bin size.
-    template<typename T>
-    [[nodiscard]] inline double scotts_choice(const T begin, const T end)
-        {
-        if ((end-begin) < 2)
-            { throw std::invalid_argument("Not enough observations for Scott's choice."); }
-        return safe_divide<double>(standard_deviation(begin, end, true),
-                                   std::pow((end-begin), .33f));
-        }
-
     /** @returns The normalized (i.e., within the 0-1 range) value for a number compared to the specified range.
         @param range_min The start of the range to normalize the value to.
         @param range_max The end of the range to normalize the value to.
