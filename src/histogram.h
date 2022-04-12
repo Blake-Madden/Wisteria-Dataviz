@@ -111,6 +111,7 @@ namespace Wisteria::Graphs
             GetRightYAxis().Show(false);
             GetTopXAxis().Show(false);
             }
+
         /** @brief Sets the data.
             @param data The data to use for the histogram.
             @param continuousColumnName The column from the dataset to sort into bins.
@@ -131,11 +132,12 @@ namespace Wisteria::Graphs
              if it should display steps that have categories on them. Setting this to `false` will put all of the bars
              together, but might have an uneven step size on the axis and fit lines won't be able to be drawn.
              This is only used if you are categorizing by unique (non-integer) values.
-            @param startBinsValue The value to start the first bin (either the start of the first bin's range or the first bin's value).
+            @param startBinsValue The value to start the first bin
+             (either the start of the first bin's range or the first bin's value).
              If no values fall into a bin starting at this position, then an empty slot for it will still be included on the bar axis.
-             This will ensure that the bar axis begins from the position that you requested here. Set this to NaN for the chart to set the starting
-             point based solely on the data.
-            @param maxBarCount The maximum number of bins to create when binning the data.
+             This will ensure that the bar axis begins from the position that you requested here.
+             Set this to @c std::nullopt (the default) for the chart to set the starting point based solely on the data.
+            @param maxBinCount The maximum number of bins to create when binning the data.
              If binning by unique values and the number of unique values exceeds this, then the
              range-based mode will be used for the binning.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
@@ -147,16 +149,17 @@ namespace Wisteria::Graphs
                      const IntervalDisplay iDisplay = IntervalDisplay::Cutpoints,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue,
                      const bool showFullRangeOfValues = true,
-                     const double startBinsValue = std::numeric_limits<double>::quiet_NaN(),
-                     const size_t maxBarCount = 255);
+                     const std::optional<double> startBinsValue = std::nullopt,
+                     const size_t maxBinCount = 255);
 
-        /** @brief Gets the number of bins in the graph.
-            @note This refers to the number of categories with data in them, not the number of ticks on the bar axis or number of bars.
-             If there are possible categories between some bins because of where their values fall,
-             then any empty categories are not counted here.
+        /** @brief Gets the number of bins/cells in the histogram with data in them.
+            @note This refers to the number of cells with data in them, not the number
+             slots along the axis that a cell/bar could appear.
+             If there are possible slots between some bins because of where their values fall,
+             then any of these empty categories are not counted here.
              Also note that SetData() needs to be called first so that this can be calculated.
-            @returns The number of bins in the graph.*/
-        [[nodiscard]] size_t GetBinCount() const noexcept
+            @returns The number of bins in the histogram with values in them.*/
+        [[nodiscard]] size_t GetBinsWithValuesCount() const noexcept
             { return m_binCount; }
 
         /// @name %Bar Display Functions
@@ -175,8 +178,8 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction. This is used
-              for defining the legend's padding, outlining, canvas proportions, etc.
+            @param hint A hint about where the legend will be placed after construction.
+             This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
 
@@ -186,7 +189,10 @@ namespace Wisteria::Graphs
         /// @returns Whether the columns (bins) can be sorted.
         /// @sa GetSortDirection(), SetSortDirection(), SetSortable(), SortBars().
         [[nodiscard]] bool IsSortable() const noexcept final
-            { return BarChart::IsSortable() && GetBinningMethod() == BinningMethod::BinUniqueValues && !IsShowingFullRangeOfValues(); }
+            {
+            return BarChart::IsSortable() &&
+                   GetBinningMethod() == BinningMethod::BinUniqueValues &&
+                   !IsShowingFullRangeOfValues(); }
     private:
         /// @brief Get the color scheme used for the points.
         /// @returns The color scheme used for the points.
@@ -249,16 +255,17 @@ namespace Wisteria::Graphs
             { return m_binLabelDisplay; }
         /// @returns Where the first bin starts.
         /// @note This is NaN by default, which will instruct the bins to start at where the data begins.
-        [[nodiscard]] double GetBinsStart() const noexcept
+        [[nodiscard]] std::optional<double> GetBinsStart() const noexcept
             { return m_startBinsValue; }
         /// @returns The number of unique values.
-        [[nodiscard]] size_t GetUniqueValueCount() const;
-         /** Creates a bin for each unique value in the data. If the number of categories exceeds the
-             maximum number of categories, then it will implicitly switch to equal-ranges mode.*/
-        void SortByUniqueValues();
-        /** Bins the data into a specific number of categories. This is recommended if
-            you have a lot of data and want to break data into categories.*/
-        void SortByEqualRanges();
+        [[nodiscard]] size_t CalcUniqueValuesCount() const;
+         /** @brief Creates a bin for each unique value in the data.
+             If the number of categories exceeds the maximum number of categories,
+             then it will implicitly switch to equal-ranges mode.*/
+        void SortIntoUniqueValues();
+        /** @brief Bins the data into a specific number of categories.
+            This is recommended if you have a lot of data and want to break data into categories.*/
+        void SortIntoRanges();
         /// Call this when sorting data (in case it needs to be rounded). If rounding is turned off then this simply returns the same value.
         [[nodiscard]] double ConvertToSortableValue(const double& value) const;
 
@@ -281,7 +288,7 @@ namespace Wisteria::Graphs
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_barEffect{ BoxEffect::Glassy };
-        double m_startBinsValue{ std::numeric_limits<double>::quiet_NaN() };
+        std::optional<double> m_startBinsValue{ std::nullopt };
         bool m_useGroupingColors{ false };
         bool m_useGrouping{ false };
         std::set<Data::GroupIdType> m_groupIds;

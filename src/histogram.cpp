@@ -23,8 +23,8 @@ namespace Wisteria::Graphs
                             const IntervalDisplay iDisplay /*= IntervalDisplay::Cutpoints*/,
                             const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/,
                             const bool showFullRangeOfValues /*= true*/,
-                            const double startBinsValue /*= std::numeric_limits<double>::quiet_NaN()*/,
-                            const size_t maxBarCount /*= 255*/)
+                            const std::optional<double> startBinsValue /*= std::nullopt*/,
+                            const size_t maxBinCount /*= 255*/)
         {
         m_data = data;
         m_useGrouping = groupColumnName.has_value();
@@ -35,7 +35,7 @@ namespace Wisteria::Graphs
         m_binLabelDisplay = blDisplay;
         m_displayFullRangeOfValues = showFullRangeOfValues;
         m_startBinsValue = startBinsValue;
-        m_maxBinCount = std::min(maxBarCount, m_maxBinCount);
+        m_maxBinCount = std::min(maxBinCount, m_maxBinCount);
 
         // garbage, so reset and bail
         if (m_data == nullptr)
@@ -84,13 +84,13 @@ namespace Wisteria::Graphs
             }
 
         // if 4 or less unique values, might as well use unique values instead of ranges
-        if (GetUniqueValueCount() <= 4)
+        if (CalcUniqueValuesCount() <= 4)
             { SetBinningMethod(BinningMethod::BinUniqueValues); }
 
         if (GetBinningMethod() == BinningMethod::BinUniqueValues)
-            { SortByUniqueValues(); }
+            { SortIntoUniqueValues(); }
         else
-            { SortByEqualRanges(); }
+            { SortIntoRanges(); }
 
         GetBarAxis().ShowOuterLabels(false);
         }
@@ -109,7 +109,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    size_t Histogram::GetUniqueValueCount() const
+    size_t Histogram::CalcUniqueValuesCount() const
         {
         if (m_data == nullptr)
             { return 0; }
@@ -121,7 +121,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Histogram::SortByUniqueValues()
+    void Histogram::SortIntoUniqueValues()
         {
         if (m_data == nullptr)
             { return; }
@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
             {
             if (!hasFloatingPointValue)
                 { SetBinningMethod(BinningMethod::BinByIntegerRange); }
-            SortByEqualRanges();
+            SortIntoRanges();
             return;
             }
 
@@ -164,10 +164,12 @@ namespace Wisteria::Graphs
 
         // add an empty bar at position 1 if there isn't one there already
         // and caller wants the axis to start at a specific point
-        if (!std::isnan(GetBinsStart()) && IsShowingFullRangeOfValues() &&
-            groups.get_data().find(BinBlock{ GetBinsStart(), 0 }) == groups.get_data().end())
+        if (GetBinsStart() &&
+            !std::isnan(GetBinsStart().value()) &&
+            IsShowingFullRangeOfValues() &&
+            groups.get_data().find(BinBlock{ GetBinsStart().value(), 0 }) == groups.get_data().end())
             {
-            Bar theBar(GetBinsStart(), { BarBlock(BarBlockInfo().Brush(GetColorScheme()->GetColor(0))) },
+            Bar theBar(GetBinsStart().value(), { BarBlock(BarBlockInfo().Brush(GetColorScheme()->GetColor(0))) },
                 wxString(wxEmptyString),
                 GraphItems::Label(wxEmptyString), m_barEffect, m_opacity);
             AddBar(theBar);
@@ -255,7 +257,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Histogram::SortByEqualRanges()
+    void Histogram::SortIntoRanges()
         {
         if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return; }
@@ -278,10 +280,10 @@ namespace Wisteria::Graphs
            even distribution.*/
         const bool isLowestValueBeingAdjusted = (std::floor(static_cast<double>(minVal)) == ConvertToSortableValue(minVal)) &&
                                                  !compare_doubles(ConvertToSortableValue(minVal), 0) &&
-                                                 (std::isnan(GetBinsStart()) || minVal < GetBinsStart());
+                                                 (!GetBinsStart() || minVal < GetBinsStart().value());
 
-        if (!std::isnan(GetBinsStart()))
-            { minVal = std::min(minVal, GetBinsStart()); }
+        if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
+            { minVal = std::min(minVal, GetBinsStart().value()); }
         const size_t numOfBins = CalcNumberOfBins(minVal, maxVal);
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
@@ -298,7 +300,7 @@ namespace Wisteria::Graphs
             maxVal = std::ceil(static_cast<double>(maxVal));
 
             // if starting at forced position, then only pad beyond max value if creating neat intervals
-            if (!std::isnan(GetBinsStart()))
+            if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
                 {
                 while (safe_modulus<size_t>(static_cast<size_t>(maxVal-minVal), numOfBins))
                     { ++maxVal; }
@@ -494,8 +496,8 @@ namespace Wisteria::Graphs
             /* Remove any leading bins that do not have anything in them (might happen if the range
                had to be expanded to create neat intervals).*/
             if (!firstBinWithValuesFound && barValue <= 0 &&
-                // If bins are forced to start at a certain place, then allow these leading empty bars.
-                (std::isnan(GetBinsStart()) || theBar.GetAxisPosition() < GetBinsStart()))
+                // if bins are not forced to start at a certain place, then allow these leading empty bars
+                (!GetBinsStart() || theBar.GetAxisPosition() < GetBinsStart().value()))
                 { continue; }
             else
                 { firstBinWithValuesFound = true; }
