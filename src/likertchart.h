@@ -456,7 +456,7 @@ namespace Wisteria::Graphs
              This will split the question row into smaller rows, one for each category.
              An example of this would be demographic labels for the respondents.
              The values in the categorical columns should be coded as 1-7 (or depending on how high the scale is) and should be imported
-             using CategoricalImportMethod::ReadAsIntegers. Then, you should assign your string table to these columns via SetLabels().
+             using @c CategoricalImportMethod::ReadAsIntegers. Then, you should assign your string table to these columns via SetLabels().
 
              Note that missing responses in the categorical columns can either be blank or coded as zero.
             @param data %Data containing the responses.
@@ -513,19 +513,16 @@ namespace Wisteria::Graphs
             @details This will also set the string tables for the responses to the simpler scale, although SetLabels() can be called
              afterwards if you wish to customize these labels further.
 
-             For 4-point scales, this collapses all negative levels to 1 and all positive levels to 2.
+             - For 4-point scales, this collapses all negative levels to 1 and all positive levels to 2.
              This assumes that all categorical columns (i.e., questions) are coded 0-4
              (0 = no response, 1-2 = negative levels, and 3-4 = positive levels).
-
-             For 5-point scales, this collapses all negative levels to 1 and all positive levels to 3.
+             - For 5-point scales, this collapses all negative levels to 1 and all positive levels to 3.
              This assumes that all categorical columns (i.e., questions) are coded 0-5
              (0 = no response, 1-2 = negative levels, 3 = neutral, and 4-5 = positive levels).
-
-             This 6-point scales, this collapses all negative levels to 1 and all positive levels to 2.
+             - This 6-point scales, this collapses all negative levels to 1 and all positive levels to 2.
              This assumes that all categorical columns (i.e., questions) are coded 0-6
              (0 = no response, 1-3 = negative levels, and 4-6 = positive levels).
-
-             For 7-point scales, this collapses all negative levels to 1 and all positive levels to 3.
+             - For 7-point scales, this collapses all negative levels to 1 and all positive levels to 3.
              This assumes that all categorical columns (i.e., questions) are coded 0-7
              (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
 

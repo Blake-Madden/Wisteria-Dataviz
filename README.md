@@ -73,30 +73,18 @@ specifying which columns to include and how to classify them
 Graph Types
 =============================
 
-The following graph are included:
+Some of the graphs included are:
 
 Basic
 -----------------------------
 
-| Bar Chart (Wisteria::Graphs::BarChart) | Stylized Bar Chart (Wisteria::Graphs::BarChart) |
+| Bar Chart (Wisteria::Graphs::BarChart) | Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/BarChartStylized.svg) |
+| ![](docs/doxygen/images/BarChart.svg) | ![](docs/doxygen/images/LinePlot.svg) |
 
-| Image-based Bar Chart (Wisteria::Graphs::BarChart) |
-| :-------------------------------- |
-| ![](docs/doxygen/images/BarChartImage.svg) |
-
-| Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
+| Pie Chart (Wisteria::Graphs::PieChart) | Donut Chart (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/LinePlot.svg) | ![](docs/doxygen/images/LinePlotCustomized.svg) |
-
-| Pie Chart (Wisteria::Graphs::PieChart) | Pie Chart with Subgroups (Wisteria::Graphs::PieChart) |
-| :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/PieChartSubgrouped.svg) |
-
-| Donut Chart (Wisteria::Graphs::PieChart) | Donut Chart with Subgroups (Wisteria::Graphs::PieChart) |
-| :-------------------------------- | :-------------------------------- |
-| ![](docs/doxygen/images/DonutChart.svg) | ![](docs/doxygen/images/DonutChartSubgrouped.svg) |
+| ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/DonutChart.svg) |
 
 Business
 -----------------------------
@@ -112,13 +100,9 @@ Business
 Statistical
 -----------------------------
 
-| Histogram (Wisteria::Graphs::Histogram) | Grouped Histogram (Wisteria::Graphs::Histogram) |
+| Histogram (Wisteria::Graphs::Histogram) | Box Plot (Wisteria::Graphs::BoxPlot) |
 | :-------------- | :-------------- |
-| ![](docs/doxygen/images/Histogram.svg) | ![](docs/doxygen/images/GroupedHistogram.svg) |
-
-| Box Plot (Wisteria::Graphs::BoxPlot) | Grouped Box Plot (Wisteria::Graphs::BoxPlot) |
-| :-------------- | :-------------------------------- |
-| ![](docs/doxygen/images/BoxPlot.svg) | ![](docs/doxygen/images/GroupedBoxPlot.svg) |
+| ![](docs/doxygen/images/Histogram.svg) | ![](docs/doxygen/images/BoxPlot.svg) |
 
 | Heat Map (Wisteria::Graphs::HeatMap) | Grouped Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
@@ -127,9 +111,9 @@ Statistical
 Survey Data
 -----------------------------
 
-| 3-Point Likert Chart (Wisteria::Graphs::LikertChart) | 7-Point Likert Chart (Wisteria::Graphs::LikertChart) |
-| :-------------- | :-------------- |
-| ![](docs/doxygen/images/Likert3Point.svg) | ![](docs/doxygen/images/Likert7Point.svg) |
+| 3-Point Likert Chart (Wisteria::Graphs::LikertChart) |
+| :-------------- |
+| ![](docs/doxygen/images/Likert3Point.svg) |
 
 Social Sciences
 -----------------------------
@@ -138,12 +122,7 @@ Social Sciences
 | :-------------- |
 | ![](docs/doxygen/images/WCurve.svg) |
 
-Multi-plot Layouts
------------------------------
-
-| Multiple Plots | Multiple Plots with a Common Axis |
-| :-------------- | :-------------- |
-| ![](docs/doxygen/images/MultiPlot.svg) | ![](docs/doxygen/images/MultiPlotCommonAxis.svg) |
+See more in the [graphs gallery](Gallery.md).
 
 Building
 =============================
