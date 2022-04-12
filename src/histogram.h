@@ -131,7 +131,7 @@ namespace Wisteria::Graphs
              This specifies whether the axis should display each step (even if no bin is associated with a step) or
              if it should only display steps that have categories on them. Setting this to `false` will put all the bars
              together, but might have an uneven step size on the axis and fit lines won't be able to be drawn.
-             This is only used if you are categorizing by unique (non-integer) values.
+             This is only used if you are categorizing by unique values.
             @param startBinsValue The value to start the first bin
              (either the start of the first bin's range or the first bin's value).
              If no values fall into a bin starting at this position, then an empty slot for it will still be included on the bar axis.
