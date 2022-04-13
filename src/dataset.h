@@ -170,16 +170,17 @@ namespace Wisteria::Data
         /// @private
         [[nodiscard]] const StringTableType& GetStringTable() const noexcept
             { return m_stringTable; }
-        /** @brief Gets the label from the string table given the numeric code.
-            @returns The label from the string table, or empty string if not found.
+        /** @brief Gets the label from the string table given the numeric code,
+             or the code formatted as a string if not found.
+            @returns The label from the string table, or the code as a string if not found.
             @param code The ID to look up.*/
-        [[nodiscard]] const wxString& GetCategoryLabel(const size_t code) const
+        [[nodiscard]] wxString GetCategoryLabel(const GroupIdType code) const
             {
             const auto foundLabel = m_stringTable.find(code);
             if (foundLabel != m_stringTable.cend())
                 { return foundLabel->second; }
             else
-                { return m_nullString; }
+                { return std::to_wstring(code); }
             }
     private:
         /// @brief Removes all data and clears the string table.
@@ -190,9 +191,6 @@ namespace Wisteria::Data
             }
 
         StringTableType m_stringTable;
-        // simple optimization so that GetCategoryLabel() can return a const reference
-        // and avoid constructing a temp string.
-        const wxString m_nullString{ L"" };
         };
 
     /** @brief Class for filling a row in a dataset.
