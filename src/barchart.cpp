@@ -310,7 +310,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
-                                Pen(ColorBrewer::GetColor(Colors::Color::LavenderGray)).
+                                Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateGlassEffect(wxSize(barLength, barWidth),
                                     blockColor, Orientation::Vertical));
@@ -624,7 +624,7 @@ namespace Wisteria::Graphs
                                                  L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
-                                Pen(ColorBrewer::GetColor(Colors::Color::LavenderGray)).
+                                Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateGlassEffect(wxSize(barWidth, barLength),
                                     blockColor, Orientation::Horizontal));
