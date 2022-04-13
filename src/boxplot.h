@@ -255,8 +255,10 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points. Leave as null to use the default theme.
-            @param shapes The shape scheme to use for the points. Leave as null to use the standard shapes.*/
+            @param colors The color scheme to apply to the points.
+             Leave as null to use a light blue (recycled for all groups).
+            @param shapes The shape scheme to use for the points.
+             Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<IconShapeScheme> shapes = nullptr);
@@ -428,13 +430,6 @@ namespace Wisteria::Graphs
                 { box.ShowAllPoints(display); }
             m_showAllPoints = display;
             }
-
-        /// @returns Access to the brush used to draw the outliers.
-        [[nodiscard]] wxBrush& GetOutlierPointsBrush() noexcept
-            { return m_outlierPointsBrush; }
-        /// @returns Access to the brush used to draw the points.
-        [[nodiscard]] wxBrush& GetPointsBrush() noexcept
-            { return m_pointsBrush; }
         /// @}
 
         /// @private
@@ -478,10 +473,7 @@ namespace Wisteria::Graphs
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         std::shared_ptr<IconShapeScheme> m_shapeScheme;
-        wxBrush m_outlierPointsBrush{
-            Colors::ColorBrewer::GetColor(Colors::Color::Red) };
-        wxBrush m_pointsBrush{
-            Colors::ColorBrewer::GetColor(Colors::Color::CarolinaBlue) };
+
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
         wxColour m_boxColour{ Colors::ColorBrewer::GetColor(Colors::Color::BelvedereCream) };

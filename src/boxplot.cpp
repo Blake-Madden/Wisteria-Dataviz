@@ -127,7 +127,10 @@ namespace Wisteria::Graphs
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconShapeScheme> shapes /*= nullptr*/) :
         Graph2D(canvas), m_labelPrecision(1),
-        m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme()),
+        m_colorScheme(colors != nullptr ? colors :
+            std::make_shared<Colors::Schemes::ColorScheme>
+                 (Colors::Schemes::ColorScheme{
+                     ColorBrewer::GetColor(Colors::Color::CarolinaBlue) })),
         m_shapeScheme(shapes != nullptr ? shapes : std::make_shared<IconShapeScheme>(StandardShapes()))
         {
         GetRightYAxis().Show(false);
@@ -447,11 +450,6 @@ namespace Wisteria::Graphs
             // draw the points (grouped)
             box.m_jitter.SetJitterWidth(box.m_boxRect.GetWidth());
 
-            const auto pointOutline =
-                wxColour(ColorContrast::BlackOrWhiteContrast(GetPointsBrush().GetColour()));
-            const auto outlierOutline = 
-                wxColour(ColorContrast::BlackOrWhiteContrast(GetOutlierPointsBrush().GetColour()));
-
             wxPoint pt;
             auto outliers = std::make_shared<GraphItems::Points2D>(wxNullPen);
             outliers->SetScaling(GetScaling());
@@ -461,6 +459,8 @@ namespace Wisteria::Graphs
             dataPoints->SetWindow(GetWindow());
             for (size_t i = 0; i < box.GetData()->GetRowCount(); ++i)
                 {
+                const auto pointOutline =
+                    wxColour(ColorContrast::BlackOrWhiteContrast(GetColorScheme()->GetColor(0)));
                 // skip value if from a different group
                 if (box.m_useGrouping &&
                     box.m_groupColumn->GetValue(i) != box.m_groupId)
@@ -478,17 +478,17 @@ namespace Wisteria::Graphs
                         {
                         outliers->AddPoint(Point2D(
                             GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).AnchorPoint(pt).
-                            Brush(GetOutlierPointsBrush()).Pen(outlierOutline),
+                            Brush(GetColorScheme()->GetColor(0)).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            GetShapeScheme()->GetShape(box.m_groupId)));
+                            GetShapeScheme()->GetShape(0)));
                         }
                     else
                         {
                         dataPoints->AddPoint(Point2D(
                             GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).AnchorPoint(pt).
-                            Brush(GetPointsBrush()).Pen(pointOutline),
+                            Brush(GetColorScheme()->GetColor(0)).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            GetShapeScheme()->GetShape(box.m_groupId)));
+                            GetShapeScheme()->GetShape(0)));
                         }
                     }
                 }
