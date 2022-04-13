@@ -53,7 +53,8 @@ namespace Wisteria::Graphs
              BinLabelDisplay::BinValueAndPercentage);
 
          canvas->SetFixedObject(0, 0, plot);
-         canvas->SetFixedObject(0, 1, plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+         canvas->SetFixedObject(0, 1, plot->CreateLegend(
+            LegendCanvasPlacementHint::RightOrLeftOfGraph));
         @endcode
 
         @todo Needs fit lines.*/
@@ -74,10 +75,11 @@ namespace Wisteria::Graphs
         /// @brief How the bars are being positioned on the axis.
         enum class IntervalDisplay
             {
-            Cutpoints,            /*!< In range mode, places the bars in between axis lines so that the range of the
-                                       bins are shown on the sides of the bars.*/
+            Cutpoints,            /*!< In range mode, places the bars in between axis lines so that
+                                       the range of the bins are shown on the sides of the bars.*/
             Midpoints,            /*!< Places the bars on top of the axis lines
-                                       so that a custom bin range label (for integer range mode) or a midpoint label (non-integer mode)
+                                       so that a custom bin range label (for integer range mode)
+                                       or a midpoint label (non-integer mode)
                                        is shown at the bottom of the bar.*/
             INTERVAL_METHOD_COUNT /*!< The number of ways to interval display methods.*/
             };
@@ -98,8 +100,10 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
-            @param colors The color scheme to apply to the points. Leave as null to use the default theme.*/
-        explicit Histogram(Wisteria::Canvas* canvas, std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
+            @param colors The color scheme to apply to the points.
+             Leave as null to use the default theme.*/
+        explicit Histogram(Wisteria::Canvas* canvas,
+                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
             Wisteria::Graphs::BarChart(canvas),
             m_data(nullptr),
             m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme())
@@ -296,7 +300,7 @@ namespace Wisteria::Graphs
         bool m_displayFullRangeOfValues{ true };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         uint8_t m_opacity{ wxALPHA_OPAQUE };
-        BoxEffect m_barEffect{ BoxEffect::Glassy };
+        BoxEffect m_barEffect{ BoxEffect::Solid };
         std::optional<double> m_startBinsValue{ std::nullopt };
         bool m_useGroupingColors{ false };
         bool m_useGrouping{ false };
