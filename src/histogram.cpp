@@ -556,7 +556,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(
+        const LegendCanvasPlacementHint hint, const bool includeHeader) const
         {
         if (m_data == nullptr)
             { return nullptr; }
@@ -587,6 +588,12 @@ namespace Wisteria::Graphs
             legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::SquareIcon, *wxBLACK,
                         GetColorScheme()->GetColor(groupId)));
+            }
+        if (includeHeader)
+            {
+            legendText.Prepend(
+                wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
+            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());
 

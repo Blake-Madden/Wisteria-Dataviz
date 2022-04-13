@@ -182,8 +182,11 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.
              This is used for defining the legend's padding, outlining, canvas proportions, etc.
+            @param includeHeader `true` to show the grouping column name as the header.
             @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(const LegendCanvasPlacementHint hint) const;
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint,
+            const bool includeHeader) const;
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if we are showing unique values for the categories (i.e., not ranges)

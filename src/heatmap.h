@@ -180,6 +180,7 @@ namespace Wisteria::Graphs
         /// @param hint A hint about where the legend will be placed after construction.
         ///  This is used for defining the legend's padding, outlining,
         ///  canvas proportions, etc.
+        /// @param includeHeader `true` to show the continuous column name as the header.
         /// @returns The legend for the plot.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
