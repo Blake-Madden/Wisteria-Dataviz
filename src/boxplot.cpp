@@ -186,7 +186,7 @@ namespace Wisteria::Graphs
                 { groups.insert(groupId); }
             for (const auto& group : groups)
                 {
-                BoxAndWhisker box(GetColorScheme()->GetColor(group), GetBoxEffect(),
+                BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
                 box.SetData(data, continuousColumnName, groupColumnName, group, percentileCoefficient);
                 AddBox(box);
@@ -194,7 +194,7 @@ namespace Wisteria::Graphs
             }
         else
             {
-            BoxAndWhisker box(GetColorScheme()->GetColor(0), GetBoxEffect(),
+            BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                               GetBoxCorners(), GetOpacity());
             box.SetData(data, continuousColumnName, std::nullopt, 0, percentileCoefficient);
             AddBox(box);

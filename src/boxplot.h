@@ -367,6 +367,18 @@ namespace Wisteria::Graphs
             m_boxEffect = boxEffect;
             }
 
+        /// @returns The default color of the boxes.
+        [[nodiscard]] wxColour GetBoxColor() const noexcept
+            { return m_boxColour; }
+        /** @brief Sets the default color of the boxes.
+            @param color The color to use.*/
+        void SetBoxColor(const wxColour color) noexcept
+            {
+            for (auto& box : m_boxes)
+                { box.SetBoxColor(color); }
+            m_boxColour = color;
+            }
+
         /// @brief Sets a common image to be drawn just within the box areas.
         /// @param boxesImage The image to draw across the boxes.
         /// @param outlineColor The outline color of the boxes.
@@ -472,6 +484,7 @@ namespace Wisteria::Graphs
             Colors::ColorBrewer::GetColor(Colors::Color::CarolinaBlue) };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
+        wxColour m_boxColour{ Colors::ColorBrewer::GetColor(Colors::Color::BelvedereCream) };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
