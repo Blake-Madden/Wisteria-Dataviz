@@ -401,7 +401,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(
+                                       const LegendCanvasPlacementHint hint,
+                                       const bool includeHeader) const
         {
         if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return nullptr; }
@@ -414,10 +416,9 @@ namespace Wisteria::Graphs
             m_continuousColumn->GetValues().cend());
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo(
-            _(L"Heat map") +
             // add spaces on the empty lines to work around SVG exporting
             // stripping out the blank lines
-            wxString::Format(L"\n%s\n \n \n%s",
+            wxString::Format(L"%s\n \n \n%s",
             wxNumberFormatter::ToString(maxValue, 6,
                 Settings::GetDefaultNumberFormat()),
             wxNumberFormatter::ToString(minValue, 6,
@@ -426,7 +427,12 @@ namespace Wisteria::Graphs
             Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft).
             Window(GetWindow()));
         legend->SetBoxCorners(BoxCorners::Rounded);
-        legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
+        if (includeHeader)
+            {
+            legend->SetText(
+                wxString::Format(L"%s\n", m_continuousColumn->GetTitle()) + legend->GetText());
+            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
+            }
         legend->GetLegendIcons().emplace_back(LegendIcon(m_reversedColorSpectrum));
 
         AddReferenceLinesAndAreasToLegend(legend);
