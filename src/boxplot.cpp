@@ -182,6 +182,7 @@ namespace Wisteria::Graphs
                 _(L"'%s': continuous column not found for box plot."), continuousColumnName));
             }
 
+        std::vector<BoxAndWhisker> boxes;
         if (m_groupColumn != m_data->GetCategoricalColumns().cend())
             {
             std::set<Data::GroupIdType> groups;
@@ -192,7 +193,7 @@ namespace Wisteria::Graphs
                 BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
                 box.SetData(data, continuousColumnName, groupColumnName, group, percentileCoefficient);
-                AddBox(box);
+                boxes.push_back(box);
                 }
             }
         else
@@ -200,8 +201,12 @@ namespace Wisteria::Graphs
             BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                               GetBoxCorners(), GetOpacity());
             box.SetData(data, continuousColumnName, std::nullopt, 0, percentileCoefficient);
-            AddBox(box);
+            boxes.push_back(box);
             }
+
+        std::sort(boxes.begin(), boxes.end());
+        for (const auto& box : boxes)
+            { AddBox(box); }
         }
 
     //----------------------------------------------------------------

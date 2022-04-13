@@ -169,6 +169,14 @@ namespace Wisteria::Graphs
             void ShowAllPoints(const bool display = true) noexcept
                 { m_showAllPoints = display; }
             /// @}
+
+            /// @private
+            [[nodiscard]] bool operator<(const BoxAndWhisker& that) const noexcept
+                {
+                return wxUILocale::GetCurrent().CompareStrings(
+                    m_groupColumn->GetCategoryLabel(m_groupId),
+                    that.m_groupColumn->GetCategoryLabel(that.m_groupId), wxCompare_CaseInsensitive) < 0;
+                }
         private:
             /// @name Data Functions
             /// @brief Functions relating to setting up the data and how the statistics are calculated.
