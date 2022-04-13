@@ -381,8 +381,11 @@ namespace Wisteria::Graphs
                             // then draw a contrasting pen around it
                             else if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
                                 { box->GetPen().SetColour(ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour())); }
-                            else
+                            else if (m_includeSpacesBetweenBars)
                                 { box->GetPen().SetColour(barBlock.GetBrush().GetColour()); }
+                            // if no spaces between bars, then draw black outline
+                            else
+                                { box->GetPen().SetColour(*wxBLACK); }
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -700,8 +703,11 @@ namespace Wisteria::Graphs
                                 box->GetPen().SetColour(
                                     ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour()));
                                 }
-                            else
+                            else if (m_includeSpacesBetweenBars)
                                 { box->GetPen().SetColour(barBlock.GetBrush().GetColour()); }
+                            // if no spaces between bars, then draw black outline
+                            else
+                                { box->GetPen().SetColour(*wxBLACK); }
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
