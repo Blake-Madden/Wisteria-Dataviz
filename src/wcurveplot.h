@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
          // add the plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, WCurve);
          canvas->SetFixedObject(0, 1,
-            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
         @endcode
         @par Citation:
          This graphic is adapted from the article "Are We Listening? Using Student Stories as a

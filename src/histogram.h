@@ -54,7 +54,8 @@ namespace Wisteria::Graphs
 
          canvas->SetFixedObject(0, 0, plot);
          canvas->SetFixedObject(0, 1, plot->CreateLegend(
-            LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            LegendCanvasPlacementHint::RightOrLeftOfGraph,
+            true));
         @endcode
 
         @todo Needs fit lines.*/
@@ -167,6 +168,10 @@ namespace Wisteria::Graphs
             @returns The number of bins in the histogram with values in them.*/
         [[nodiscard]] size_t GetBinsWithValuesCount() const noexcept
             { return m_binCount; }
+
+        /// @returns The number of groups found during the last call to SetData().
+        [[nodiscard]] size_t GetGroupCount() const noexcept
+            { return m_groupIds.size(); }
 
         /// @name %Bar Display Functions
         /// @brief Functions relating to the visual display of the bars.

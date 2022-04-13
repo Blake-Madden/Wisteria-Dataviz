@@ -97,7 +97,7 @@ namespace Wisteria::Graphs
          // Add a legend, showing whom is assigned to which tasks.
          // (If not using a grouping column, then adding a legend will be unnecessary.)
          canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
         @endcode*/
     class GanttChart final : public BarChart
         {
@@ -173,9 +173,11 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.
              This is used for defining the legend's padding, outlining, canvas proportions, etc.
+            @param includeHeader `true` to show the group column name as the header.
             @returns The legend for the chart. Will return null if grouping was applied to the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint) const;
+            const LegendCanvasPlacementHint hint,
+            const bool includeHeader) const;
     private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
@@ -316,6 +318,7 @@ namespace Wisteria::Graphs
         size_t m_maxDescriptionLength{ 75 };
 
         std::map<wxString, wxColour, Data::StringCmpNoCase> m_legendLines;
+        wxString m_legendTitle;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         };

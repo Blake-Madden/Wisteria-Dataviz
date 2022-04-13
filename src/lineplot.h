@@ -69,11 +69,13 @@ namespace Wisteria::Graphs
             {
             if (line.GetText().CmpNoCase(L"Male") == 0)
                 {
-                line.GetPen().SetColour(ColorBrewer::GetColor(Colors::Color::CelestialBlue));
+                line.GetPen().SetColour(
+                    ColorBrewer::GetColor(Colors::Color::CelestialBlue));
                 }
             else
                 {
-                line.GetPen().SetColour(ColorBrewer::GetColor(Colors::Color::PinkSherbet));
+                line.GetPen().SetColour(
+                    ColorBrewer::GetColor(Colors::Color::PinkSherbet));
                 }
             }
 
@@ -105,7 +107,8 @@ namespace Wisteria::Graphs
          // add the line plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, linePlot);
          canvas->SetFixedObject(0, 1, linePlot->CreateLegend(
-                                          LegendCanvasPlacementHint::RightOrLeftOfGraph));
+                                          LegendCanvasPlacementHint::RightOrLeftOfGraph,
+                                          true));
         @endcode
     */
     class LinePlot : public Graph2D
@@ -117,7 +120,8 @@ namespace Wisteria::Graphs
             friend class LinePlot;
         public:
             /// @name Line Display Functions
-            /// @brief Functions relating to the visual display of the line connecting the points.
+            /// @brief Functions relating to the visual display of the line
+            ///  connecting the points.
             /// @{
 
             /// @returns The line pen. This can be customized to change the pattern,
@@ -295,8 +299,8 @@ namespace Wisteria::Graphs
             @details Adjusting this is useful for when you have a large number of points and the
              display looks too condensed. Increasing this value will widen the plot, allowing for
              more space to spread the points out. The default is 100 points.
-            @param pointsPerDefaultCanvasSize The number points to display before requiring the canvas
-             to be made wider.*/
+            @param pointsPerDefaultCanvasSize The number points to display before requiring the
+             canvas to be made wider.*/
         void SetPointsPerDefaultCanvasSize(const size_t pointsPerDefaultCanvasSize)
             {
             m_pointsPerDefaultCanvasSize = pointsPerDefaultCanvasSize;
@@ -306,11 +310,13 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction. This is used
-              for defining the legend's padding, outlining, canvas proportions, etc.
+            @param hint A hint about where the legend will be placed after construction.
+              This is used for defining the legend's padding, outlining, canvas proportions, etc.
+            @param includeHeader `true` to show the group column name as the header.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-                                                        const LegendCanvasPlacementHint hint) const;
+                                                         const LegendCanvasPlacementHint hint,
+                                                         const bool includeHeader) const;
     protected:
         /// @returns The plot's dataset.
         [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept

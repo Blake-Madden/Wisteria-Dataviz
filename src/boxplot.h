@@ -63,7 +63,7 @@ namespace Wisteria::Graphs
 
          canvas->SetFixedObject(0, 0, plot);
          canvas->SetFixedObject(0, 1, plot->CreateLegend(
-                                LegendCanvasPlacementHint::RightOrLeftOfGraph));
+                                LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         @endcode
         @todo Add notch support.*/
     class BoxPlot final : public Graph2D
@@ -322,6 +322,8 @@ namespace Wisteria::Graphs
              @details This can be then be managed by the parent canvas and placed next to the plot.
              @param hint A hint about where the legend will be placed after construction. This is used
               for defining the legend's padding, outlining, canvas proportions, etc.
+             @param includeHeader `true` to show the group column name as the header.
+              This is only relevant if the boxes are being grouped; will be ignored otherwise.
              @returns The legend for the plot.
              @sa IncludedOverlayingLegend().
              @note By default, this legend will be created and laid on top of the plot if a single box plot.
@@ -330,7 +332,8 @@ namespace Wisteria::Graphs
               using more than one column (meaning that the boxes are different colors).
               If the boxes are all the same color, then the groups' point shapes are used on legend instead.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint) const;
+            const LegendCanvasPlacementHint hint,
+            const bool includeHeader) const;
         /// @}
 
         /// @name Box Effect Functions

@@ -154,6 +154,10 @@ namespace Wisteria::Graphs
         GetRightYAxis().Reset();
         GetBottomXAxis().Reset();
         GetTopXAxis().Reset();
+        // sets titles from variables
+        if (groupColumnName)
+            { GetBottomXAxis().GetTitle().SetText(groupColumnName.value()); }
+        GetLeftYAxis().GetTitle().SetText(continuousColumnName);
         // AddBox() will turn on label display again if we have more than one box
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
@@ -571,7 +575,7 @@ namespace Wisteria::Graphs
         // draw the legend on top of the plot is a single-box plot and was requested
         if (GetBoxCount() == 1 && IsOverlayingLegend())
             {
-            auto legend = BoxPlot::CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph);
+            auto legend = BoxPlot::CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
             legend->SetAnchorPoint(wxPoint(GetPlotAreaBoundingBox().GetX()+GetPlotAreaBoundingBox().GetWidth(),
                                            GetPlotAreaBoundingBox().GetY()+GetPlotAreaBoundingBox().GetHeight()));
             legend->SetAnchoring(Anchoring::BottomRightCorner);
@@ -580,7 +584,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
+        const LegendCanvasPlacementHint hint,
+        const bool includeHeader) const
         {
         if (m_data == nullptr)
             { return nullptr; }
@@ -634,6 +640,11 @@ namespace Wisteria::Graphs
                         LegendIcon(GetShapeScheme()->GetShape(box.m_groupId),
                                    *wxBLACK, *wxBLACK));
                     }
+                }
+            if (includeHeader)
+                {
+                legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
+                legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
                 }
             legend->SetText(legendText.Trim());
             }

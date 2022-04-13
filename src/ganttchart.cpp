@@ -45,6 +45,7 @@ namespace Wisteria::Graphs
         {
         ClearBars();
         m_legendLines.clear();
+        m_legendTitle.clear();
 
         m_dateDisplayInterval = interval;
         m_fyType = FYType;
@@ -107,6 +108,7 @@ namespace Wisteria::Graphs
 
         if (groupColumn != data->GetCategoricalColumns().cend())
             {
+            m_legendTitle = groupColumn->GetTitle();
             for (const auto& groupId : groupIds)
                 {
                 m_legendLines.emplace(
@@ -370,7 +372,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(
+        const LegendCanvasPlacementHint hint, const bool includeHeader) const
         {
         if (m_legendLines.empty())
             { return nullptr; }
@@ -401,6 +404,11 @@ namespace Wisteria::Graphs
                         legendLine.second,
                         legendLine.second));
             ++lineCount;
+            }
+        if (includeHeader)
+            {
+            legendText.Prepend(wxString::Format(L"%s\n", m_legendTitle));
+            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());
 

@@ -1079,7 +1079,10 @@ namespace Wisteria
             row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             { return; }
-        object->SetWindow(this); // used for DPI scaling
+        if (object)
+            {
+            object->SetWindow(this); // used for DPI scaling
+            }
         GetFixedObjects().at(row).at(column) = object;
         // how much of the canvas is being consumed by the row
         // that this item was just added to
@@ -1100,7 +1103,7 @@ namespace Wisteria
                 }
             // a large object and there are other large objects, then
             // resize everything to fit
-            else if (object->GetCanvasWidthProportion() > .5)
+            else if (object && object->GetCanvasWidthProportion() > .5)
                 {
                 const double trimPercent{ safe_divide<double>(totalDiff,
                                             (GetFixedObjects().at(row).size())) };

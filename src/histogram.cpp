@@ -95,6 +95,10 @@ namespace Wisteria::Graphs
             { SortIntoRanges(binCountRanges.first); }
 
         GetBarAxis().ShowOuterLabels(false);
+
+        // set axis labels
+        GetBottomXAxis().GetTitle().SetText(m_continuousColumn->GetTitle());
+        GetLeftYAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
     //----------------------------------------------------------------
@@ -559,7 +563,7 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(
         const LegendCanvasPlacementHint hint, const bool includeHeader) const
         {
-        if (m_data == nullptr)
+        if (m_data == nullptr || GetGroupCount() == 0)
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(

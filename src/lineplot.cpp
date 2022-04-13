@@ -90,6 +90,8 @@ namespace Wisteria::Graphs
         GetRightYAxis().Reset();
         GetBottomXAxis().Reset();
         GetTopXAxis().Reset();
+        GetBottomXAxis().GetTitle().SetText(xColumnName);
+        GetLeftYAxis().GetTitle().SetText(yColumnName);
 
         if (m_useGrouping)
             {
@@ -272,7 +274,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(
+        const LegendCanvasPlacementHint hint, const bool includeHeader) const
         {
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
@@ -315,6 +318,11 @@ namespace Wisteria::Graphs
                         line.GetPen().GetColour()));
                 }
             ++lineCount;
+            }
+        if (includeHeader)
+            {
+            legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
+            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());
 

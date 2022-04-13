@@ -28,11 +28,9 @@ namespace Wisteria::Graphs
                         { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Arrows }
                         }))
         {
-        GetBottomXAxis().GetTitle().SetText(_(L"TIME"));
         GetBottomXAxis().SetCapStyle(AxisCapStyle::Arrow);
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
-        GetLeftYAxis().GetTitle().SetText(_(L"Level of control, satisfaction, and effectiveness"));
         GetLeftYAxis().SetCapStyle(AxisCapStyle::Arrow);
         GetLeftYAxis().GetGridlinePen() = wxNullPen;
         GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
@@ -66,6 +64,9 @@ namespace Wisteria::Graphs
         GetTopXAxis().SetParallelLabelAlignment(RelativeAlignment::FlushLeft);
         GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         GetTopXAxis().GetAxisLinePen() = wxNullPen;
+
+        GetBottomXAxis().GetTitle().SetText(_(L"TIME"));
+        GetLeftYAxis().GetTitle().SetText(_(L"Level of control, satisfaction, and effectiveness"));
 
         ResetTimeLabels();
         }
