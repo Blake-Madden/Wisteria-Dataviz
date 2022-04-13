@@ -301,7 +301,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph) };
+        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true) };
         legend->SetLine(0, _(L"Range of Scores"));
         // after changing legend's text, recalculate how much of the
         // canvas it should consume
@@ -343,9 +343,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph) };
-        legend->SetLine(0, _(L"Range of Scores"));
-        legend->SetCanvasWidthProportion(subframe->m_canvas->CalcMinWidthProportion(legend));
+        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true) };
         subframe->m_canvas->SetFixedObject(0, 1, legend);
         }
     // Histogram
@@ -353,12 +351,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Histogram"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
-        auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
+        auto mtcarsData = std::make_shared<Data::Dataset>();
         try
             {
-            quarterlyPerformanceData->ImportCSV(L"datasets/Performance Reviews.csv",
-                ImportInfo().ContinuousColumns({ L"Perf" }).
-                CategoricalColumns({ { L"Quarter", CategoricalImportMethod::ReadAsStrings } }));
+            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+                ImportInfo().
+                ContinuousColumns({ L"mpg" }).
+                CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
@@ -368,18 +367,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto plot = std::make_shared<Histogram>(subframe->m_canvas);
 
-        plot->SetData(quarterlyPerformanceData, L"PERF",
-            L"QUARTER",
-            Histogram::BinningMethod::BinUniqueValues,
-            RoundingMethod::NoRounding,
-            Histogram::IntervalDisplay::Midpoints,
-            BinLabelDisplay::BinValueAndPercentage);
+        plot->SetData(mtcarsData, L"mpg", L"gear",
+                      Histogram::BinningMethod::BinByIntegerRange,
+                      RoundingMethod::NoRounding,
+                      Histogram::IntervalDisplay::Cutpoints,
+                      BinLabelDisplay::BinValueAndPercentage,
+                      true, std::nullopt,
+                      // specify 5 bins
+                      std::make_pair(5, std::nullopt));
 
-        plot->GetTitle().SetText(_(L"Performance Levels"));
+        plot->GetBottomXAxis().GetTitle().SetText(_(L"Miles per Gallon"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         }
     // Line Plot
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT)
