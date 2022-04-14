@@ -140,6 +140,10 @@ namespace Wisteria::Graphs
 
          canvas->SetFixedObject(0, 0, plot);
         @endcode
+
+        @note If you want to create a bar chart that aggregates the counts of discrete values
+         from a vector, then histrograms after a dataset interface to do this. Refer to the
+         @c BinUniqueValues binning method in the Histogram documentation to learn more.
     */
     class BarChart : public Graph2D
         {

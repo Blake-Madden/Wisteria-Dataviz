@@ -35,27 +35,87 @@ namespace Wisteria::Graphs
          // "this" will be a parent wxWidgets frame or dialog, "canvas"
          // is a scrolled window derived object that will hold the box plot
          auto canvas = new Wisteria::Canvas(this);
-         canvas->SetFixedObjectsGridSize(1, 2);
+         auto mtcarsData = std::make_shared<Data::Dataset>();
+         try
+            {
+            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+                ImportInfo().
+                ContinuousColumns({ L"mpg" }).
+                CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
 
-         // import the dataset (this is available in the "datasets" folder)
-         auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
-         quarterlyPerformanceData->ImportCSV(L"Performance Reviews.csv",
-            ImportInfo().ContinuousColumns({ L"PERF" }).
-            CategoricalColumns({ { L"QUARTER", CategoricalImportMethod::ReadAsStrings } }));
+         auto plot = std::make_shared<Histogram>(canvas,
+            std::make_shared<Colors::Schemes::Decade1980s>());
+
+         plot->SetData(mtcarsData, L"mpg", 
+                      // grouping variable, we won't use one here
+                      std::nullopt,
+                      // make the ranges neat integers
+                      Histogram::BinningMethod::BinByIntegerRange,
+                      // don't round the data
+                      RoundingMethod::NoRounding,
+                      // show labels at the edges of the bars, showing the ranges
+                      Histogram::IntervalDisplay::Cutpoints,
+                      // show the counts and percentages above the bars
+                      BinLabelDisplay::BinValueAndPercentage,
+                      // not used with range binning
+                      true,
+                      // don't request a specify bin start
+                      std::nullopt,
+                      // explicitly request 5 bins
+                      std::make_pair(5, std::nullopt));
+
+         canvas->SetFixedObject(0, 0, plot);
+        // add a legend if grouping (in this case, we aren't)
+        if (plot->GetGroupCount() > 0)
+            {
+            canvas->SetFixedObject(0, 1,
+                plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+            }
+        @endcode
+
+        @par Discrete Categories Example:
+         The following will create a bin for each unique discrete value in the data.
+         Basically, this is like creating a bar chart showing the aggregated counts of
+         the discrete values from a variable.
+        @code
+         auto canvas = new Wisteria::Canvas(this);
+         auto mpgData = std::make_shared<Data::Dataset>();
+         try
+            {
+            mpgData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().
+                ContinuousColumns({ L"cyl" }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
 
          auto plot = std::make_shared<Histogram>(canvas);
 
-         plot->SetData(quarterlyPerformanceData, L"PERF",
-             L"QUARTER",
-             Histogram::BinningMethod::BinUniqueValues,
-             RoundingMethod::NoRounding,
-             Histogram::IntervalDisplay::Midpoints,
-             BinLabelDisplay::BinValueAndPercentage);
+         plot->SetData(mpgData, L"cyl",
+                      std::nullopt,
+                      // don't create range-based bins;
+                      // instead, create one for each unique value.
+                      Histogram::BinningMethod::BinUniqueValues,
+                      // If the data is floating point, you can tell it to
+                      // to be rounded here when categorizing it into discrete bins.
+                      // In this case, the data is already discrete, so no rounding needed.
+                      RoundingMethod::NoRounding,
+                      // since we aren't using ranges, show labels under the middle of the bins.
+                      Histogram::IntervalDisplay::Midpoints,
+                      BinLabelDisplay::BinValue,
+                      // pass in false to remove the empty '7' bin
+                      true);
 
          canvas->SetFixedObject(0, 0, plot);
-         canvas->SetFixedObject(0, 1, plot->CreateLegend(
-            LegendCanvasPlacementHint::RightOrLeftOfGraph,
-            true));
         @endcode
 
         @todo Needs fit lines.*/

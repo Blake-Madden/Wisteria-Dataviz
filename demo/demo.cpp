@@ -105,6 +105,7 @@ MyFrame::MyFrame()
 
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BOXPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HISTOGRAM);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_GANTT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CANDLESTICK_AXIS);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LINEPLOT);
@@ -157,6 +158,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/donut-subgrouped.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize));
@@ -366,22 +369,67 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             std::make_shared<Colors::Schemes::Decade1980s>());
 
         plot->SetData(mtcarsData, L"mpg", 
+                      // grouping variable, we won't use one here
                       std::nullopt,
+                      // make the ranges neat integers
                       Histogram::BinningMethod::BinByIntegerRange,
+                      // don't round the data
                       RoundingMethod::NoRounding,
+                      // show labels at the edges of the bars, showing the ranges
                       Histogram::IntervalDisplay::Cutpoints,
+                      // show the counts and percentages above the bars
                       BinLabelDisplay::BinValueAndPercentage,
-                      true, std::nullopt,
+                      // not used with range binning
+                      true,
+                      // don't request a specify bin start
+                      std::nullopt,
                       // explicitly request 5 bins
                       std::make_pair(5, std::nullopt));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
-        // add a legend if grouping
+        // add a legend if grouping (in this case, we aren't)
         if (plot->GetGroupCount() > 0)
             {
             subframe->m_canvas->SetFixedObject(0, 1,
                 plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
             }
+        }
+    // Histogram (discrete categories from a grouping variable get their own bars)
+    else if (event.GetId() == MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES)
+        {
+        subframe->SetTitle(_(L"Histogram (Discrete Category Counts)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        auto mpgData = std::make_shared<Data::Dataset>();
+        try
+            {
+            mpgData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().
+                ContinuousColumns({ L"cyl" }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<Histogram>(subframe->m_canvas);
+
+        plot->SetData(mpgData, L"cyl",
+                      std::nullopt,
+                      // don't create range-based bins;
+                      // instead, create one for each unique value.
+                      Histogram::BinningMethod::BinUniqueValues,
+                      // If the data is floating point, you can tell it to
+                      // to be rounded here when categorizing it into discrete bins.
+                      // In this case, the data is already discrete, so no rounding needed.
+                      RoundingMethod::NoRounding,
+                      // since we aren't using ranges, show labels under the middle of the bins.
+                      Histogram::IntervalDisplay::Midpoints,
+                      BinLabelDisplay::BinValue,
+                      // pass in false to remove the empty '7' bin
+                      true);
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
     // Line Plot
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT)
@@ -1433,6 +1481,10 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
         _(L"Histogram"));
+
+    toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
+        _(L"Histogram (Discrete Category Counts)"));
 
     toolBar->AddTool(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize),
