@@ -120,12 +120,7 @@ namespace Wisteria::Graphs
     BoxPlot::BoxPlot(Canvas* canvas,
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconShapeScheme> shapes /*= nullptr*/) :
-        Graph2D(canvas), m_labelPrecision(1),
-        m_colorScheme(colors != nullptr ? colors :
-            std::make_shared<Colors::Schemes::ColorScheme>
-                 (Colors::Schemes::ColorScheme{
-                     ColorBrewer::GetColor(Colors::Color::CarolinaBlue) })),
-        m_shapeScheme(shapes != nullptr ? shapes : std::make_shared<IconShapeScheme>(StandardShapes()))
+        Graph2D(canvas)
         {
         GetRightYAxis().Show(false);
         if (GetTopXAxis().GetAxisLinePen().IsOk())
@@ -458,7 +453,7 @@ namespace Wisteria::Graphs
             for (size_t i = 0; i < box.GetData()->GetRowCount(); ++i)
                 {
                 const auto pointOutline =
-                    wxColour(ColorContrast::BlackOrWhiteContrast(GetColorScheme()->GetColor(0)));
+                    wxColour(GetPointColor());
                 // skip value if from a different group
                 if (box.m_useGrouping &&
                     box.m_groupColumn->GetValue(i) != box.m_groupId)
@@ -476,17 +471,17 @@ namespace Wisteria::Graphs
                         {
                         outliers->AddPoint(Point2D(
                             GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).AnchorPoint(pt).
-                            Brush(GetColorScheme()->GetColor(0)).Pen(pointOutline),
+                            Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            GetShapeScheme()->GetShape(0)));
+                            IconShape::CircleIcon));
                         }
                     else
                         {
                         dataPoints->AddPoint(Point2D(
                             GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).AnchorPoint(pt).
-                            Brush(GetColorScheme()->GetColor(0)).Pen(pointOutline),
+                            Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            GetShapeScheme()->GetShape(0)));
+                            IconShape::CircleIcon));
                         }
                     }
                 }

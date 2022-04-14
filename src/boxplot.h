@@ -45,17 +45,14 @@ namespace Wisteria::Graphs
          canvas->SetFixedObjectsGridSize(1, 1);
 
          // import the dataset (this is available in the "datasets" folder)
-         auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
-         quarterlyPerformanceData->ImportCSV(L"mpg.csv",
+         auto mpgData = std::make_shared<Data::Dataset>();
+         mpgData->ImportCSV(L"mpg.csv",
             ImportInfo().ContinuousColumns({ L"hwy" }).
             CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
-         auto plot = std::make_shared<BoxPlot>(canvas,
-            // use a non-default color scheme
-            std::make_shared<Colors::Schemes::October>());
+         auto plot = std::make_shared<BoxPlot>(canvas);
 
-         plot->SetData(quarterlyPerformanceData, L"hwy", L"class", 25);
-         // customize a box's appearance
-         plot->GetBox(1).SetBoxEffect(BoxEffect::Glassy);
+         plot->SetData(mpgData, L"hwy", L"class");
+
          // Show all points (not just outliers).
          // The points within the boxes and whiskers will be
          // bee swarm jittering to visualize the distribution.
@@ -421,6 +418,14 @@ namespace Wisteria::Graphs
                 { box.ShowAllPoints(display); }
             m_showAllPoints = display;
             }
+
+        /// @returns The default color of the points.
+        [[nodiscard]] wxColour GetPointColor() const noexcept
+            { return m_pointColour; }
+        /** @brief Sets the default color of the points.
+            @param color The color to use.*/
+        void SetPointColor(const wxColour color) noexcept
+            { m_pointColour = color; }
         /// @}
 
         /// @private
@@ -438,22 +443,6 @@ namespace Wisteria::Graphs
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes() final;
 
-        /// @brief Get the shape scheme used for the points.
-        /// @returns The shape scheme used for the points.
-        [[nodiscard]] std::shared_ptr<IconShapeScheme>& GetShapeScheme() noexcept
-            { return m_shapeScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<IconShapeScheme>& GetShapeScheme() const noexcept
-            { return m_shapeScheme; }
-
-        /// @brief Get the color scheme used for the points.
-        /// @returns The color scheme used for the points.
-        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
-            { return m_colorScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
-
         std::vector<BoxAndWhisker> m_boxes;
         bool m_overlayLegend{ true };
         uint8_t m_labelPrecision{ 1 };
@@ -462,12 +451,10 @@ namespace Wisteria::Graphs
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
 
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        std::shared_ptr<IconShapeScheme> m_shapeScheme;
-
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
         wxColour m_boxColour{ Colors::ColorBrewer::GetColor(Colors::Color::BelvedereCream) };
+        wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CarolinaBlue) };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };

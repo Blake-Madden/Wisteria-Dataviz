@@ -240,10 +240,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         {
         subframe->SetTitle(_(L"Box Plot"));
         subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
-        auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
+        auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            quarterlyPerformanceData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(L"datasets/mpg.csv",
                 ImportInfo().ContinuousColumns({ L"hwy" }).
                 CategoricalColumns({
                     { L"class", CategoricalImportMethod::ReadAsStrings },
@@ -256,7 +256,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(quarterlyPerformanceData, L"hwy", L"class");
+        plot->SetData(mpgData, L"hwy", L"class");
 
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
