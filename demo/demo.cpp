@@ -245,7 +245,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             quarterlyPerformanceData->ImportCSV(L"datasets/mpg.csv",
                 ImportInfo().ContinuousColumns({ L"hwy" }).
-                CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
+                CategoricalColumns({
+                    { L"class", CategoricalImportMethod::ReadAsStrings },
+                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -254,9 +256,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(quarterlyPerformanceData, L"hwy", L"class", 25);
-        // customize a box's appearance
-        plot->GetBox(1).SetBoxEffect(BoxEffect::Glassy);
+        plot->SetData(quarterlyPerformanceData, L"hwy", L"class");
+
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
         // bee-swarm jittering to visualize the distribution.
@@ -1309,7 +1310,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // create a box plot with the same data
         auto boxPlot = std::make_shared<BoxPlot>(subframe->m_canvas, colors);
 
-        boxPlot->SetData(spellingData, L"AVG_GRADE", std::nullopt, 25);
+        boxPlot->SetData(spellingData, L"AVG_GRADE", std::nullopt);
 
         // customize the box appearance
         boxPlot->SetBoxCorners(BoxCorners::Rounded);

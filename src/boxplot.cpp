@@ -18,13 +18,8 @@ namespace Wisteria::Graphs
     void BoxPlot::BoxAndWhisker::SetData(std::shared_ptr<const Data::Dataset> data,
                                          const wxString& continuousColumnName,
                                          std::optional<const wxString> groupColumnName,
-                                         const Data::GroupIdType groupId,
-                                         uint8_t percentileCoefficient)
+                                         const Data::GroupIdType groupId)
         {
-        if (percentileCoefficient <= 1 ||
-            percentileCoefficient >= 49)
-            { percentileCoefficient = 25; }
-        m_percentileCoefficient = safe_divide<double>(percentileCoefficient, 100);
         m_data = data;
         // If ignoring grouping column, then set the group ID to the default 0 value.
         // If the parent plot needs to access this ID for shape and color scheme info,
@@ -94,8 +89,7 @@ namespace Wisteria::Graphs
             }
 
         std::sort(std::execution::par, dest.begin(), dest.end());
-        statistics::percentiles_presorted(dest.begin(), dest.end(), GetPercentileCoefficient(),
-                                          1.0f-GetPercentileCoefficient(),
+        statistics::quartiles_presorted(dest.begin(), dest.end(),
             m_lowerControlLimit, m_upperControlLimit);
         const double outlierRange = 1.5*(m_upperControlLimit-m_lowerControlLimit);
         m_lowerWhisker = m_lowerControlLimit-outlierRange;
@@ -119,7 +113,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        m_middlePoint = statistics::median_presorted<double>(dest.cbegin(), dest.cend());
+        m_middlePoint = statistics::median_presorted(dest.cbegin(), dest.cend());
         }
 
     //----------------------------------------------------------------
@@ -148,8 +142,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
-                         std::optional<const wxString> groupColumnName /*= std::nullopt*/,
-                         uint8_t percentileCoefficient /*= 25*/)
+                         std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
         m_data = data;
         m_boxes.clear();
@@ -192,7 +185,7 @@ namespace Wisteria::Graphs
                 {
                 BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
-                box.SetData(data, continuousColumnName, groupColumnName, group, percentileCoefficient);
+                box.SetData(data, continuousColumnName, groupColumnName, group);
                 boxes.push_back(box);
                 }
             }
@@ -200,7 +193,7 @@ namespace Wisteria::Graphs
             {
             BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
                               GetBoxCorners(), GetOpacity());
-            box.SetData(data, continuousColumnName, std::nullopt, 0, percentileCoefficient);
+            box.SetData(data, continuousColumnName, std::nullopt, 0);
             boxes.push_back(box);
             }
 
@@ -340,11 +333,11 @@ namespace Wisteria::Graphs
             if (box.GetData()->GetRowCount() > 1)
                 {
                 const wxString boxLabel =
-                    wxString::Format(_("%dth Percentile: %.3f\n%dth Percentile: %.3f\nMedian: %.3f"),
-                            static_cast<int>(100-(box.GetPercentileCoefficient()*100)),
-                            box.GetUpperControlLimit(),
-                            static_cast<int>(box.GetPercentileCoefficient()*100),
-                            box.GetLowerControlLimit(), box.GetMiddlePoint());
+                    wxString::Format(_("75th Percentile: %.3f\n"
+                                       "Median: %.3f\n"
+                                       "25th Percentile: %.3f"),
+                            box.GetUpperControlLimit(), box.GetMiddlePoint(),
+                            box.GetLowerControlLimit());
                 // draw the box
                 if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage())
                     {
@@ -599,12 +592,12 @@ namespace Wisteria::Graphs
             GraphItemInfo().Pen(wxNullPen).Window(GetWindow()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetGraphItemInfo().Text(
-                wxString::Format(_(L"Median: %.3f\n%dth Percentile: %.3f\n"
-                                    "%dth Percentile: %.3f\nNon-outlier Range: %.3f-%.3f"),
-                    GetBox(0).GetMiddlePoint(),
-                    static_cast<int>(100-(GetBox(0).GetPercentileCoefficient()*100)),
+                wxString::Format(_(L"75th Percentile: %.3f\n"
+                                    "Median: %.3f\n"
+                                    "25th Percentile: %.3f\n"
+                                    "Non-outlier Range: %.3f-%.3f"),
                     GetBox(0).GetUpperControlLimit(),
-                    static_cast<int>((GetBox(0).GetPercentileCoefficient()*100)),
+                    GetBox(0).GetMiddlePoint(),
                     GetBox(0).GetLowerControlLimit(),
                     GetBox(0).GetLowerWhisker(), GetBox(0).GetUpperWhisker()));
 

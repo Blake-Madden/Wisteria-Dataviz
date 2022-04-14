@@ -187,13 +187,11 @@ namespace Wisteria::Graphs
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
                 @param groupId The group ID for this box. Data points from @c data will only be used for
                  his box if their group ID is @c groupId. Has no effect if @c useGrouping if `false`.
-                @param percentileCoefficient The percentile coefficient to use.
                 @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName,
-                         const Data::GroupIdType groupId,
-                         uint8_t percentileCoefficient);
+                         const Data::GroupIdType groupId);
 
             /** @returns The data connected to the box.*/
             [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
@@ -216,11 +214,6 @@ namespace Wisteria::Graphs
                 { m_xAxisPosition = position; }
             /// @}
 
-            /// @returns The percentile coefficient.
-            /// @note To change this, call SetData() with the new coefficient and it will
-            ///  recalculate everything.
-            [[nodiscard]] double GetPercentileCoefficient() const noexcept
-                { return m_percentileCoefficient; }
             /// @brief Calculates the outlier and box ranges.
             void Calculate();
 
@@ -248,7 +241,6 @@ namespace Wisteria::Graphs
             double m_upperControlLimit{ 0 };
             double m_lowerWhisker{ 0 };
             double m_upperWhisker{ 0 };
-            double m_percentileCoefficient{ .25f };
 
             // drawing coordinates used by parent BoxPlot
             wxPoint m_lowerOutlierRangeCoordinate;
@@ -278,12 +270,10 @@ namespace Wisteria::Graphs
             @param data The data to use for the plot.
             @param continuousColumnName The column from the dataset to analyze.
             @param groupColumnName The group column to split the data into (this is optional).
-            @param percentileCoefficient The percentile coefficient to use.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt,
-                     uint8_t percentileCoefficient = 25);
+                     std::optional<const wxString> groupColumnName = std::nullopt);
 
         /// @name Box Functions
         /// @brief Functions relating to the boxes.
