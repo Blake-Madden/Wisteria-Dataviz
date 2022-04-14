@@ -580,7 +580,7 @@ namespace Wisteria::Graphs
         // draw the legend on top of the plot is a single-box plot and was requested
         if (GetBoxCount() == 1 && IsOverlayingLegend())
             {
-            auto legend = BoxPlot::CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
+            auto legend = BoxPlot::CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph);
             legend->SetAnchorPoint(wxPoint(GetPlotAreaBoundingBox().GetX()+GetPlotAreaBoundingBox().GetWidth(),
                                            GetPlotAreaBoundingBox().GetY()+GetPlotAreaBoundingBox().GetHeight()));
             legend->SetAnchoring(Anchoring::BottomRightCorner);

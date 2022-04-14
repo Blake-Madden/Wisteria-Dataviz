@@ -239,34 +239,30 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
     if (event.GetId() == MyApp::ID_NEW_BOXPLOT)
         {
         subframe->SetTitle(_(L"Box Plot"));
-        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
         auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
         try
             {
-            quarterlyPerformanceData->ImportCSV(L"datasets/Performance Reviews.csv",
-                ImportInfo().ContinuousColumns({ L"Perf" }).
-                CategoricalColumns({ { L"Quarter", CategoricalImportMethod::ReadAsStrings } }));
+            quarterlyPerformanceData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().ContinuousColumns({ L"hwy" }).
+                CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
             wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
-        auto plot = std::make_shared<BoxPlot>(subframe->m_canvas,
-            // use a non-default color scheme
-            std::make_shared<Colors::Schemes::October>());
+        auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(quarterlyPerformanceData, L"Perf", L"Quarter", 25);
+        plot->SetData(quarterlyPerformanceData, L"hwy", L"class", 25);
         // customize a box's appearance
         plot->GetBox(1).SetBoxEffect(BoxEffect::Glassy);
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
-        // bee swarm jittering to visualize the distribution.
+        // bee-swarm jittering to visualize the distribution.
         plot->ShowAllPoints(true);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
-        subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
         }
     // Heatmap
     else if (event.GetId() == MyApp::ID_NEW_HEATMAP)
@@ -365,22 +361,26 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(subframe->m_canvas);
+        auto plot = std::make_shared<Histogram>(subframe->m_canvas,
+            std::make_shared<Colors::Schemes::Decade1980s>());
 
-        plot->SetData(mtcarsData, L"mpg", L"gear",
+        plot->SetData(mtcarsData, L"mpg", 
+                      std::nullopt,
                       Histogram::BinningMethod::BinByIntegerRange,
                       RoundingMethod::NoRounding,
                       Histogram::IntervalDisplay::Cutpoints,
                       BinLabelDisplay::BinValueAndPercentage,
                       true, std::nullopt,
-                      // specify 5 bins
+                      // explicitly request 5 bins
                       std::make_pair(5, std::nullopt));
 
-        plot->GetBottomXAxis().GetTitle().SetText(_(L"Miles per Gallon"));
-
         subframe->m_canvas->SetFixedObject(0, 0, plot);
-        subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+        // add a legend if grouping
+        if (plot->GetGroupCount() > 0)
+            {
+            subframe->m_canvas->SetFixedObject(0, 1,
+                plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+            }
         }
     // Line Plot
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT)
@@ -421,8 +421,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add some titles
         linePlot->GetTitle().SetText(_(L"Average Grades"));
-        linePlot->GetSubtitle().SetText(_(L"Average grades taken from\nlast 5 weeks' spelling tests."));
-        linePlot->GetCaption().SetText(_(L"Note: not all grades have been\nentered yet for last week."));
+        linePlot->GetSubtitle().SetText(_(L"Average grades taken from\n"
+                                           "last 5 weeks' spelling tests."));
+        linePlot->GetCaption().SetText(_(L"Note: not all grades have been\n"
+                                          "entered yet for last week."));
+        // remove default titles
+        linePlot->GetBottomXAxis().GetTitle().SetText(L"");
+        linePlot->GetLeftYAxis().GetTitle().SetText(L"");
 
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
@@ -434,7 +439,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
         subframe->m_canvas->SetFixedObject(0, 1,
-            linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         }
     // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
@@ -512,6 +517,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                                            "last 5 weeks' spelling tests."));
         linePlot->GetCaption().SetText(_(L"Note: not all grades have been\n"
                                           "entered yet for last week."));
+        // remove default titles
+        linePlot->GetBottomXAxis().GetTitle().SetText(L"");
+        linePlot->GetLeftYAxis().GetTitle().SetText(L"");
 
         // customize the X axis labels
         for (int i = 1; i < 6; ++i)
@@ -529,7 +537,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // add a legend to the side and center it vertically
-        auto legend = linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph);
+        auto legend = linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false);
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, legend);
 
@@ -602,7 +610,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
         // add a legend, showing whom is assigned to which tasks
         subframe->m_canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
         {
@@ -1047,7 +1055,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, WCurve);
         subframe->m_canvas->SetFixedObject(0, 1,
-            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
         }
     // Likert (3-Point)
     else if (event.GetId() == MyApp::ID_NEW_LIKERT_3POINT)
@@ -1289,7 +1297,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // instead of adding the legend to the canvas, place it on top
         // of the line plot
-        auto lineLegend = linePlot->CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph);
+        auto lineLegend = linePlot->CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
         linePlot->AddEmbeddedObject(lineLegend,
             wxPoint(linePlot->GetBottomXAxis().GetRange().second,

@@ -46,14 +46,14 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
-         quarterlyPerformanceData->ImportCSV(L"Performance Reviews.csv",
-            ImportInfo().ContinuousColumns({ L"PERF" }).
-            CategoricalColumns({ { L"QUARTER", CategoricalImportMethod::ReadAsStrings } }));
+         quarterlyPerformanceData->ImportCSV(L"mpg.csv",
+            ImportInfo().ContinuousColumns({ L"hwy" }).
+            CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
          auto plot = std::make_shared<BoxPlot>(canvas,
             // use a non-default color scheme
             std::make_shared<Colors::Schemes::October>());
 
-         plot->SetData(quarterlyPerformanceData, L"PERF, L"QUARTER", 25);
+         plot->SetData(quarterlyPerformanceData, L"hwy", L"class", 25);
          // customize a box's appearance
          plot->GetBox(1).SetBoxEffect(BoxEffect::Glassy);
          // Show all points (not just outliers).

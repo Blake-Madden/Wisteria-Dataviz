@@ -216,7 +216,8 @@ namespace Wisteria::Graphs
             /// @note This is using locale-sensitive sorting.
             [[nodiscard]] bool operator<(const LikertThreePointSurveyQuestion& that) const
                 {
-                return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
+                return (wxUILocale::GetCurrent().CompareStrings(
+                    m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
                 }
         private:
             wxString m_question;
@@ -229,9 +230,11 @@ namespace Wisteria::Graphs
 
         /** @brief A three-point (e.g., disagree, neutral, or agree) Likert question,
              but also includes a categorical breakdown.
-            @details This will be the question, how many responses it got, and the number of responses at each point/level
-             for each category (all under the main question).
-            @note The neutral and non-response categories are optional. If all responses entered have 0 for either of these categories,
+            @details This will be the question, how many responses it got,
+             and the number of responses at each point/level for each category
+             (all under the main question).
+            @note The neutral and non-response categories are optional.
+             If all responses entered have 0 for either of these categories,
              then their respective sections won't appear on the chart.*/
         class LikertCategorizedThreePointSurveyQuestion
             {
@@ -289,7 +292,8 @@ namespace Wisteria::Graphs
             /// @private
             [[nodiscard]] bool operator<(const LikertFivePointSurveyQuestion& that) const
                 {
-                return (wxUILocale::GetCurrent().CompareStrings(m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
+                return (wxUILocale::GetCurrent().CompareStrings(
+                    m_question, that.m_question, wxCompare_CaseInsensitive) < 0);
                 }
         private:
             wxString m_question;
@@ -509,9 +513,10 @@ namespace Wisteria::Graphs
             std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);
 
-        /** @brief Collapses the data into the simplest scale (either 3- or 2-point, depending on whether there is a neutral level).
-            @details This will also set the string tables for the responses to the simpler scale, although SetLabels() can be called
-             afterwards if you wish to customize these labels further.
+        /** @brief Collapses the data into the simplest scale
+             (either 3- or 2-point, depending on whether there is a neutral level).
+            @details This will also set the string tables for the responses to the simpler scale,
+             although SetLabels() can be called afterwards if you wish to customize these labels further.
 
              - For 4-point scales, this collapses all negative levels to 1 and all positive levels to 2.
              This assumes that all categorical columns (i.e., questions) are coded 0-4
@@ -562,7 +567,8 @@ namespace Wisteria::Graphs
                     GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized) ? 7 :7;
             }
 
-        /// @brief Gets whether the chart type is categorized (i.e., responses are split into groups for each question).
+        /// @brief Gets whether the chart type is categorized
+        ///  (i.e., responses are split into groups for each question).
         /// @returns Whether the responses are categorized.
         [[nodiscard]] bool IsCategorized() const noexcept
             {
