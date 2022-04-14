@@ -590,69 +590,23 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
-        const LegendCanvasPlacementHint hint,
-        const bool includeHeader) const
+        const LegendCanvasPlacementHint hint) const
         {
-        if (m_data == nullptr)
+        if (m_data == nullptr || GetBoxCount() != 1)
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Pen(wxNullPen).Window(GetWindow()));
         legend->SetBoxCorners(BoxCorners::Rounded);
-
-        if (GetBoxCount() == 1)
-            {
-            legend->GetGraphItemInfo().Text(
-                    wxString::Format(_(L"Median: %.3f\n%dth Percentile: %.3f\n"
-                                        "%dth Percentile: %.3f\nNon-outlier Range: %.3f-%.3f"),
-                        GetBox(0).GetMiddlePoint(),
-                        static_cast<int>(100-(GetBox(0).GetPercentileCoefficient()*100)),
-                        GetBox(0).GetUpperControlLimit(),
-                        static_cast<int>((GetBox(0).GetPercentileCoefficient()*100)),
-                        GetBox(0).GetLowerControlLimit(),
-                        GetBox(0).GetLowerWhisker(), GetBox(0).GetUpperWhisker()));
-            }
-        else
-            {
-            legend->GetGraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth());
-            wxString legendText;
-            size_t lineCount{ 0 };
-            for (const auto& box : m_boxes)
-                {
-                if (Settings::GetMaxLegendItemCount() == lineCount)
-                    {
-                    legendText.append(L"\u2026");
-                    break;
-                    }
-                wxString currentLabel = (box.m_useGrouping ?
-                    box.m_groupColumn->GetCategoryLabel(box.m_groupId) :
-                    wxString(L""));
-                if (currentLabel.length() > Settings::GetMaxLegendTextLength())
-                    {
-                    currentLabel.resize(Settings::GetMaxLegendTextLength()+1);
-                    currentLabel.append(L"\u2026");
-                    }
-                legendText.append(currentLabel.c_str()).append(L"\n");
-                if (GetColorScheme()->GetColors().size() > 1)
-                    {
-                    legend->GetLegendIcons().emplace_back(
-                        LegendIcon(IconShape::BoxPlotIcon, *wxBLACK,
-                            GetColorScheme()->GetColor(box.m_groupId)));
-                    }
-                else
-                    {
-                    legend->GetLegendIcons().emplace_back(
-                        LegendIcon(GetShapeScheme()->GetShape(box.m_groupId),
-                                   *wxBLACK, *wxBLACK));
-                    }
-                }
-            if (includeHeader)
-                {
-                legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
-                legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
-                }
-            legend->SetText(legendText.Trim());
-            }
+        legend->GetGraphItemInfo().Text(
+                wxString::Format(_(L"Median: %.3f\n%dth Percentile: %.3f\n"
+                                    "%dth Percentile: %.3f\nNon-outlier Range: %.3f-%.3f"),
+                    GetBox(0).GetMiddlePoint(),
+                    static_cast<int>(100-(GetBox(0).GetPercentileCoefficient()*100)),
+                    GetBox(0).GetUpperControlLimit(),
+                    static_cast<int>((GetBox(0).GetPercentileCoefficient()*100)),
+                    GetBox(0).GetLowerControlLimit(),
+                    GetBox(0).GetLowerWhisker(), GetBox(0).GetUpperWhisker()));
 
         AddReferenceLinesAndAreasToLegend(legend);
         AdjustLegendSettings(legend, hint);

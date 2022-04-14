@@ -42,7 +42,7 @@ namespace Wisteria::Graphs
          // "this" will be a parent wxWidgets frame or dialog, "canvas"
          // is a scrolled window derived object that will hold the box plot
          auto canvas = new Wisteria::Canvas(this);
-         canvas->SetFixedObjectsGridSize(1, 2);
+         canvas->SetFixedObjectsGridSize(1, 1);
 
          // import the dataset (this is available in the "datasets" folder)
          auto quarterlyPerformanceData = std::make_shared<Data::Dataset>();
@@ -62,8 +62,6 @@ namespace Wisteria::Graphs
          plot->ShowAllPoints(true);
 
          canvas->SetFixedObject(0, 0, plot);
-         canvas->SetFixedObject(0, 1, plot->CreateLegend(
-                                LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         @endcode
         @todo Add notch support.*/
     class BoxPlot final : public Graph2D
@@ -328,22 +326,17 @@ namespace Wisteria::Graphs
             @note This only applies when a displaying single-series box.*/
         void IncludedOverlayingLegend(const bool overlay) noexcept
             { m_overlayLegend = overlay; }
-        /** @brief Builds and returns a legend using the current colors and labels.
+        /** @brief Builds and returns a legend for single-box plots, showing the various statistics.
              @details This can be then be managed by the parent canvas and placed next to the plot.
              @param hint A hint about where the legend will be placed after construction. This is used
               for defining the legend's padding, outlining, canvas proportions, etc.
-             @param includeHeader `true` to show the group column name as the header.
-              This is only relevant if the boxes are being grouped; will be ignored otherwise.
              @returns The legend for the plot.
              @sa IncludedOverlayingLegend().
              @note By default, this legend will be created and laid on top of the plot if a single box plot.
 
-              For multi-group plots, the legend will use colored boxes if the color scheme is
-              using more than one column (meaning that the boxes are different colors).
-              If the boxes are all the same color, then the groups' point shapes are used on legend instead.*/
+              For multi-group plots, null will be returned.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader) const;
+            const LegendCanvasPlacementHint hint) const;
         /// @}
 
         /// @name Box Effect Functions
