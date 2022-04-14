@@ -126,8 +126,8 @@ namespace statistics
     /** @returns The median value from the specified range (assumes data is already sorted).
         @param begin The beginning of the data range.
         @param end The end of the data range.*/
-    template<typename T, typename ptr_typeT>
-    [[nodiscard]] inline T median_presorted(const ptr_typeT begin, const ptr_typeT end)
+    template<typename ptr_typeT>
+    [[nodiscard]] inline double median_presorted(const ptr_typeT begin, const ptr_typeT end)
         {
         const size_t sizeN = (end-begin);
         if (sizeN == 1)
@@ -253,46 +253,32 @@ namespace statistics
                                     (N-1)*(N-2)*(N-3)*std::pow(standard_deviation(begin,end,is_sample),4));
         }
 
-    /** @brief Calculates the percentiles from the specified range using the
-         Empirical distribution function with averaging method.
+    /** @brief Calculates the 25th and 75th percentiles from the specified range using the
+         Tukey hinges method. Median is taken from lower and upper halves if N is even.
+         If N is odd, then overall median is included in both the lower and upper half and
+         median is taken from those halves. This is that method that R appears to do.
         @param begin The beginning of the data range.
         @param end The end of the data range.
-        @param lower_percentile The lower percentile (e.g., ".25f" is the 25th percentile).
-        @param upper_percentile The upper percentile (e.g., ".75f" is the 75th percentile).
-        @param[out] lower_percentile_value The calculated lower percentile.
-        @param[out] upper_percentile_value The calculated upper percentile.
-        @note Data must be sorted beforehand.
-        @note Percentile values passed in here should be between 0.0 and 1.0 (pass in .25f and .75f to get the quartiles).*/
+        @param[out] lower_quartile_value The calculated lower quartile.
+        @param[out] upper_quartile_value The calculated upper quartile.
+        @note Data must be sorted beforehand.*/
     template<typename T>
-    void percentiles_presorted(const T begin, const T end,
-                               const double lower_percentile, const double upper_percentile,
-                               double& lower_percentile_value,
-                               double& upper_percentile_value)
+    inline void quartiles_presorted(const T begin, const T end,
+                                    double& lower_quartile_value,
+                                    double& upper_quartile_value)
         {
         const size_t N = std::distance(begin, end);
         if (N == 0)
-            { throw std::invalid_argument("No observations in percentiles calculation."); }
+            { throw std::invalid_argument("No observations in quartiles calculation."); }
 
-        const double q1 = (N*lower_percentile);
-        double ifpart = 0, fpart = 0;
-        size_t ipart = 0;
-        fpart = std::modf(q1, &ifpart);
-        ipart = static_cast<size_t>(ifpart);
-
-        //if integral, then just return the data value at q1
-        if (fpart == 0)
-            { lower_percentile_value = (begin[ipart-1]+begin[ipart])/2; }
-        else
-            { lower_percentile_value = begin[ipart]; }
-
-        const double q3 = (N*upper_percentile);
-        fpart = std::modf(q3, &ifpart);
-        ipart = static_cast<size_t>(ifpart);
-        //if integral, then just return the data value at q1
-        if (fpart == 0)
-            { upper_percentile_value = (begin[ipart-1]+begin[ipart])/2; }
-        else
-            { upper_percentile_value = begin[ipart]; }
+        const auto middlePosition = std::ceil(safe_divide<double>(N, 2));
+        // make sure we are splitting data into even halves
+        assert(std::distance(begin, begin+middlePosition) ==
+               std::distance(begin+middlePosition-(is_even(N) ? 0 : 1), end));
+        // lower half (will include the median point if N is odd)
+        lower_quartile_value = median_presorted(begin, begin+middlePosition);
+        // upper half (will step back to include median point if N is odd)
+        upper_quartile_value = median_presorted(begin+middlePosition-(is_even(N) ? 0 : 1), end);
         }
 
     /** @brief Calculates the outlier and extreme ranges for a given range.
@@ -310,7 +296,7 @@ namespace statistics
         double& lower_extreme_boundary,
         double& upper_extreme_boundary) noexcept
         {
-        const double OUTLIER_COEFFICIENT = 1.5;
+        constxpr double OUTLIER_COEFFICIENT = 1.5;
         lower_outlier_boundary = LBV - OUTLIER_COEFFICIENT*(UBV - LBV);
         upper_outlier_boundary = UBV + OUTLIER_COEFFICIENT*(UBV - LBV);
         lower_extreme_boundary = LBV - 2*OUTLIER_COEFFICIENT*(UBV - LBV);
@@ -374,10 +360,9 @@ namespace statistics
             std::copy(std::execution::par, begin, end, m_temp_buffer.begin() );
             std::sort(std::execution::par, m_temp_buffer.begin(), m_temp_buffer.end() );
             // calculate the quartile ranges
-            statistics::percentiles_presorted(
+            statistics::quartiles_presorted(
                 m_temp_buffer.begin(),
                 m_temp_buffer.end(),
-                .25f, .75f,
                 lq, uq);
             // calculate the outliers and extremes
             statistics::outlier_extreme_ranges<double>(
