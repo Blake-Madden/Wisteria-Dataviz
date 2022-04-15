@@ -89,7 +89,7 @@ namespace Wisteria::Graphs
             }
 
         std::sort(std::execution::par, dest.begin(), dest.end());
-        statistics::quartiles_presorted(dest.begin(), dest.end(),
+        statistics::quartiles_presorted(dest,
             m_lowerControlLimit, m_upperControlLimit);
         const double outlierRange = 1.5*(m_upperControlLimit-m_lowerControlLimit);
         m_lowerWhisker = m_lowerControlLimit-outlierRange;
@@ -148,7 +148,6 @@ namespace Wisteria::Graphs
         // sets titles from variables
         if (groupColumnName)
             { GetBottomXAxis().GetTitle().SetText(groupColumnName.value()); }
-        GetLeftYAxis().GetTitle().SetText(continuousColumnName);
         // AddBox() will turn on label display again if we have more than one box
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 

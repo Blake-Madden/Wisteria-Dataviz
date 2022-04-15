@@ -152,7 +152,7 @@ namespace statistics
         {
         std::vector<T> dest(begin, end);
         std::sort(std::execution::par, dest.begin(), dest.end());
-        return median_presorted<T, decltype(dest.cbegin())>(dest.cbegin(), dest.cend());
+        return median_presorted<decltype(dest.cbegin())>(dest.cbegin(), dest.cend());
         }
 
     /** @returns The sum of squares/cubes/etc. from the specified range.
@@ -262,23 +262,22 @@ namespace statistics
         @param[out] lower_quartile_value The calculated lower quartile.
         @param[out] upper_quartile_value The calculated upper quartile.
         @note Data must be sorted beforehand.*/
-    template<typename T>
-    inline void quartiles_presorted(const T begin, const T end,
+    inline void quartiles_presorted(const std::vector<double>& data,
                                     double& lower_quartile_value,
                                     double& upper_quartile_value)
         {
-        const size_t N = std::distance(begin, end);
+        const size_t N = data.size();
         if (N == 0)
             { throw std::invalid_argument("No observations in quartiles calculation."); }
 
-        const auto middlePosition = std::ceil(safe_divide<double>(N, 2));
+        const auto middlePosition = static_cast<size_t>(std::ceil(safe_divide<double>(N, 2)));
         // make sure we are splitting data into even halves
-        assert(std::distance(begin, begin+middlePosition) ==
-               std::distance(begin+middlePosition-(is_even(N) ? 0 : 1), end));
+        assert(std::distance(data.cbegin(), data.cbegin()+middlePosition) ==
+               std::distance(data.cbegin()+middlePosition-(is_even(N) ? 0 : 1), data.cend()));
         // lower half (will include the median point if N is odd)
-        lower_quartile_value = median_presorted(begin, begin+middlePosition);
+        lower_quartile_value = median_presorted(data.cbegin(), data.cbegin()+middlePosition);
         // upper half (will step back to include median point if N is odd)
-        upper_quartile_value = median_presorted(begin+middlePosition-(is_even(N) ? 0 : 1), end);
+        upper_quartile_value = median_presorted(data.cbegin()+middlePosition-(is_even(N) ? 0 : 1), data.cend());
         }
 
     /** @brief Calculates the outlier and extreme ranges for a given range.
@@ -296,7 +295,7 @@ namespace statistics
         double& lower_extreme_boundary,
         double& upper_extreme_boundary) noexcept
         {
-        constxpr double OUTLIER_COEFFICIENT = 1.5;
+        constexpr double OUTLIER_COEFFICIENT = 1.5;
         lower_outlier_boundary = LBV - OUTLIER_COEFFICIENT*(UBV - LBV);
         upper_outlier_boundary = UBV + OUTLIER_COEFFICIENT*(UBV - LBV);
         lower_extreme_boundary = LBV - 2*OUTLIER_COEFFICIENT*(UBV - LBV);
@@ -361,8 +360,7 @@ namespace statistics
             std::sort(std::execution::par, m_temp_buffer.begin(), m_temp_buffer.end() );
             // calculate the quartile ranges
             statistics::quartiles_presorted(
-                m_temp_buffer.begin(),
-                m_temp_buffer.end(),
+                m_temp_buffer,
                 lq, uq);
             // calculate the outliers and extremes
             statistics::outlier_extreme_ranges<double>(
