@@ -99,10 +99,11 @@ namespace Wisteria
                     (dcHeight - ((maxY-(headerFooterUsedHeight+(2*marginY))) *
                         std::min(scaleX,scaleY))), 2);
 
-                wxBitmap previewImg(dcWidth, dcHeight);
+                wxBitmap previewImg;
+                previewImg.CreateWithDIPSize(
+                    wxSize(m_canvas->ToDIP(dcWidth), m_canvas->ToDIP(dcHeight)),
+                    m_canvas->GetDPIScaleFactor());
                 wxMemoryDC memDc(previewImg);
-                // workaround for wxWidgets BR #22130
-                memDc.GetImpl()->SetWindow(m_canvas);
                 memDc.Clear();
 #ifdef __WXMSW__
                 // use Direct2D for rendering
@@ -348,11 +349,13 @@ namespace Wisteria
         if (wxTheClipboard->Open())
             {
             // new bitmap to be used by memory DC
-            wxBitmap canvasBitmap(GetCanvasRect().GetWidth(), GetCanvasRect().GetHeight());
+            wxBitmap canvasBitmap;
+            canvasBitmap.CreateWithDIPSize(
+                wxSize(ToDIP(GetCanvasRect().GetWidth()),
+                       ToDIP(GetCanvasRect().GetHeight())),
+                GetDPIScaleFactor());
             wxMemoryDC memDc(canvasBitmap);
             memDc.Clear();
-            // workaround for wxWidgets BR #22130
-            memDc.GetImpl()->SetWindow(this);
 #ifdef __WXMSW__
             wxGraphicsContext* context{ nullptr };
             auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
@@ -487,12 +490,13 @@ namespace Wisteria
 
         wxFileName fn(filePath);
 
-        // create a preview image
-        const wxCoord width = GetCanvasRect().GetWidth();
-        const wxCoord height = GetCanvasRect().GetHeight();
+        // create a preview image (scale down size if on HiDPI)
+        const wxCoord width = ToDIP(GetCanvasRect().GetWidth());
+        const wxCoord height = ToDIP(GetCanvasRect().GetHeight());
 
         // new bitmap to be used by preview image
-        wxBitmap previewImg(width, height);
+        wxBitmap previewImg;
+        previewImg.CreateWithDIPSize(wxSize(width, height), GetDPIScaleFactor());
         wxMemoryDC memDc(previewImg);
         memDc.Clear();
         wxGCDC gcdc(memDc);
@@ -500,10 +504,7 @@ namespace Wisteria
         memDc.SelectObject(wxNullBitmap);
 
         ImageExportOptions imgOptions;
-        // scale down size to DIPs
-        imgOptions.m_imageSize = wxSize(
-            safe_divide<double>(width, GetDPIScaleFactor()),
-            safe_divide<double>(height, GetDPIScaleFactor()));
+        imgOptions.m_imageSize = wxSize(width, height);
 
         wxString ext{ fn.GetExt() };
         ImageExportDlg optionsDlg(this, Image::GetImageFileTypeFromExtension(ext),
@@ -535,8 +536,13 @@ namespace Wisteria
 
         if (filePath.GetExt().CmpNoCase(L"svg") == 0)
             {
-            wxSVGFileDC svg(filePath.GetFullPath(), width, height);
-            svg.SetUserScale(safe_divide<double>(width, originalWidth), safe_divide<double>(height, originalHeight));
+            // wxWidgets BR #22130 fixed font scaling for wxMemoryDC, but not
+            // wxSVGFileDC, so need to get that fixed. Note that setting
+            // the DC's window to "this" doesn't workaround it either.
+            wxSVGFileDC svg(filePath.GetFullPath(),
+                width, height, 72.0, GetLabel());
+            svg.SetUserScale(safe_divide<double>(width, originalWidth),
+                             safe_divide<double>(height, originalHeight));
             svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler());
             OnDraw(svg);
             return true;
@@ -547,11 +553,11 @@ namespace Wisteria
             const wxBitmapType imageType = Image::GetImageFileTypeFromExtension(ext);
 
             // new bitmap to be used by memory DC
-            wxBitmap exportFile(width, height);
-            Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
+            wxBitmap exportFile;
+            exportFile.CreateWithDIPSize(
+                wxSize(width, height),
+                GetDPIScaleFactor());
             wxMemoryDC memDc(exportFile);
-            // workaround for wxWidgets BR #22130
-            memDc.GetImpl()->SetWindow(this);
             memDc.Clear();
 #ifdef __WXMSW__
             wxGraphicsContext* context{ nullptr };
@@ -562,21 +568,15 @@ namespace Wisteria
             if (context)
                 {
                 wxGCDC gcdc(context);
-                // adjust the user scaling to fit the canvas to the specified image size
-                gcdc.SetUserScale(safe_divide<double>(width, originalWidth), safe_divide<double>(height, originalHeight));
                 OnDraw(gcdc);
                 }
             else
                 {
                 wxGCDC gcdc(memDc);
-                // adjust the user scaling to fit the canvas to the specified image size
-                gcdc.SetUserScale(safe_divide<double>(width, originalWidth), safe_divide<double>(height, originalHeight));
                 OnDraw(gcdc);
                 }
 #else
             wxGCDC gcdc(memDc);
-            // adjust the user scaling to fit the canvas to the specified image size
-            gcdc.SetUserScale(safe_divide<double>(width, originalWidth), safe_divide<double>(height, originalHeight));
             OnDraw(gcdc);
 #endif
             // unlock the image from the DC
