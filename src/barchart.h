@@ -431,9 +431,17 @@ namespace Wisteria::Graphs
             /// @returns The opacity of the bar.
             [[nodiscard]] uint8_t GetOpacity() const noexcept
                 { return m_opacity; }
+            /// @brief Sets the box's opacity.
+            /// @param opacity The opacity to apply.
+            void SetOpacity(const uint8_t opacity) noexcept
+                { m_opacity = opacity; }
             /// @returns The effect drawn across the bar.
             [[nodiscard]] BoxEffect GetEffect() const noexcept
                 { return m_barEffect; }
+            /// @brief Sets the effect drawn across the bar.
+            /// @param effect The box effect to use.
+            void SetEffect(const BoxEffect effect) noexcept
+                { m_barEffect = effect; }
             /** @returns The shape of the bar.
                 @note Image-based bar effects and drop shadows will only work with rectangular shapes.
                 @todo Add support for drop shadows for arrows.
@@ -635,6 +643,28 @@ namespace Wisteria::Graphs
                 GetBarAxis().GetGridlinePen() = gridlinePen;
                 }
             }
+        /// @returns The opacity of the bar.
+        [[nodiscard]] uint8_t GetBarOpacity() const noexcept
+            { return m_barOopacity; }
+        /// @brief Sets the bar opacity.
+        /// @param opacity The level of opacity to use.
+        void SetBarOpacity(const uint8_t opacity) noexcept
+            {
+            m_barOopacity = opacity;
+            for (auto& bar : GetBars())
+                { bar.SetOpacity(opacity); }
+            }
+        /// @returns The effect drawn across the bar.
+        [[nodiscard]] BoxEffect GetBarEffect() const noexcept
+            { return m_barEffect; }
+        /// @brief Sets the bar effect.
+        /// @param effect The bar effect to apply.
+        void SetBarEffect(const BoxEffect effect) noexcept
+            {
+            m_barEffect = effect;
+            for (auto& bar : GetBars())
+                { bar.SetEffect(effect); }
+            }
         /// @returns Direct access to the bars.
         /// @note If changing the length of the bar directly, then you will need
         ///  to adjust the scaling axis as well.
@@ -807,6 +837,8 @@ namespace Wisteria::Graphs
         virtual void UpdateCanvasForBars();
     private:
         std::vector<Bar> m_bars;
+        uint8_t m_barOopacity{ wxALPHA_OPAQUE };
+        BoxEffect m_barEffect{ BoxEffect::Solid };
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
         double m_highestBarAxisPosition{ std::numeric_limits<double>::min() };

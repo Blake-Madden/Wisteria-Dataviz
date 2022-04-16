@@ -282,7 +282,7 @@ namespace Wisteria::Graphs
                         if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
                             {
                              auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 GetCommonBarsImage()->GetSubImage(barRect));
@@ -298,7 +298,7 @@ namespace Wisteria::Graphs
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
@@ -317,7 +317,7 @@ namespace Wisteria::Graphs
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 Image::CreateGlassEffect(wxSize(barLength, barWidth),
@@ -354,7 +354,8 @@ namespace Wisteria::Graphs
                                             shadowPts, std::size(shadowPts)));
                                         }
                                     }
-                                box = std::make_shared<GraphItems::Polygon>(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
+                                box = std::make_shared<GraphItems::Polygon>(
+                                    GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
                                 }
@@ -372,7 +373,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[5] = barNeckRect.GetBottomRight();
                                 arrowPoints[6] = barNeckRect.GetBottomLeft();
                                 box = std::make_shared<GraphItems::Polygon>(
-                                    GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                    GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
                                 }
@@ -599,7 +600,7 @@ namespace Wisteria::Graphs
                         if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
                             {
                             auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 GetCommonBarsImage()->GetSubImage(barRect));
@@ -615,7 +616,7 @@ namespace Wisteria::Graphs
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
@@ -634,7 +635,7 @@ namespace Wisteria::Graphs
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
                                                  L"Non-rectangular shapes not currently supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo()).
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 Image::CreateGlassEffect(wxSize(barWidth, barLength),
@@ -670,7 +671,7 @@ namespace Wisteria::Graphs
                                     }
 
                                 box = std::make_shared<GraphItems::Polygon>(
-                                    GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                    GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
                                 }
@@ -691,7 +692,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[5] = barNeckRect.GetTopRight();
                                 arrowPoints[6] = barNeckRect.GetBottomRight();
                                 box = std::make_shared<GraphItems::Polygon>(
-                                    GraphItemInfo(GraphItemInfo(barBlock.GetSelectionLabel().GetGraphItemInfo())).
+                                    GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).
                                     Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
