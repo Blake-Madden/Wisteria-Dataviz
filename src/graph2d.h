@@ -163,7 +163,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] const std::shared_ptr<const wxImage>& GetStippleBrush() const noexcept
             { return m_stipple; }
 
-        /// @returns The background color of the plot.
+        /// @returns The background color of the plotting area
+        ///  (i.e., the area inside the X and Y axes).
+        /// @note By default, this color is invalid and not used, which will allow the parent canvas's
+        ///  background to show through. To see which color is actually being shown in the plotting
+        ///  area, call GetPlotOrCanvasColor().
         [[nodiscard]] wxColour GetBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
