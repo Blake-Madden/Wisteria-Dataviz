@@ -1103,7 +1103,7 @@ namespace Wisteria::Graphs
                     LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), BoxEffect::Solid);
+               L"", Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         // Scale bars down to 90% so that we have spaces between bars.
@@ -1148,7 +1148,7 @@ namespace Wisteria::Graphs
                     Font(GetBarAxis().GetFont()).
                     FontColor(*wxBLACK).
                     ChildAlignment(RelativeAlignment::FlushRight))).Show(IsShowingResponseCounts())) },
-            wxEmptyString, Label(), BoxEffect::Solid);
+            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_threePointCategories.size());
         AddBar(questionBar);
@@ -1260,7 +1260,7 @@ namespace Wisteria::Graphs
                         LabelFit::DisplayAsIs : LabelFit::DisplayAsIsAutoFrame).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), BoxEffect::Solid);
+                   L"", Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
@@ -1378,7 +1378,7 @@ namespace Wisteria::Graphs
                 FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), BoxEffect::Solid);
+               L"", Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
@@ -1419,7 +1419,7 @@ namespace Wisteria::Graphs
                     Font(GetBarAxis().GetFont()).
                     FontColor(*wxBLACK).
                     ChildAlignment(RelativeAlignment::FlushRight))).Show(IsShowingResponseCounts())) },
-            wxEmptyString, Label(), BoxEffect::Solid);
+            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_fivePointCategories.size());
         AddBar(questionBar);
@@ -1538,7 +1538,7 @@ namespace Wisteria::Graphs
                     FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), BoxEffect::Solid);
+                   L"", Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())
@@ -1680,7 +1680,7 @@ namespace Wisteria::Graphs
                 FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                 ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                // empty info for the bar itself
-               L"", Label(), BoxEffect::Solid);
+               L"", Label(), GetBarEffect(), GetBarOpacity());
 
         ++m_responseBarCount;
         if (IsSettingBarSizesToRespondentSize())
@@ -1721,7 +1721,7 @@ namespace Wisteria::Graphs
                         Font(GetBarAxis().GetFont()).
                         FontColor(*wxBLACK).
                         ChildAlignment(RelativeAlignment::FlushRight))).Show(IsShowingResponseCounts()) ) },
-            wxEmptyString, Label(), BoxEffect::Solid);
+            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_sevenPointCategories.size());
         AddBar(questionBar);
@@ -1867,7 +1867,7 @@ namespace Wisteria::Graphs
                     FontColor(ColorContrast::BlackOrWhiteContrast(GetNoResponseColor())).
                     ChildAlignment(RelativeAlignment::FlushLeft))).Tag(L"NA_BLOCK")) },
                    // empty info for the bar itself
-                   L"", Label(), BoxEffect::Solid);
+                   L"", Label(), GetBarEffect(), GetBarOpacity());
 
             ++m_responseBarCount;
             if (IsSettingBarSizesToRespondentSize())

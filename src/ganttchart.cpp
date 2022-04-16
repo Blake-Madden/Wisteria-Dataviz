@@ -207,7 +207,7 @@ namespace Wisteria::Graphs
                                 Trim(true).Trim(false)))) }
                     },
                     wxEmptyString,
-                    axisLabel, BoxEffect::Solid);
+                    axisLabel, GetBarEffect(), GetBarOpacity());
                 // remove "completed" bar block if nothing is actually completed
                 if (taskInfo.m_percentFinished == 0)
                     { br.GetBlocks().erase(br.GetBlocks().begin()); }
@@ -305,7 +305,7 @@ namespace Wisteria::Graphs
                         }
                     },
                     wxEmptyString,
-                    GraphItems::Label(axisLabel), BoxEffect::Solid);
+                    GraphItems::Label(axisLabel), GetBarEffect(), GetBarOpacity());
                 arrowBar.SetCustomScalingAxisStartPosition(startPoint);
                 arrowBar.SetShape(BarShape::Arrow);
 
