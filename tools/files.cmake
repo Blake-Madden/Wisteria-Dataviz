@@ -6,6 +6,7 @@ SET(WISTERIA_SRC
     src/barchart.cpp
     src/boxplot.cpp
     src/canvas.cpp
+    src/categoricalbarchart.cpp
     src/colorbrewer.cpp
     src/dataset.cpp
     src/debug/debug_profile.cpp

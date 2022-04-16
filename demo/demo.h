@@ -30,6 +30,7 @@
 #include "../src/piechart.h"
 #include "../src/likertchart.h"
 #include "../src/candlestickplot.h"
+#include "../src/categoricalbarchart.h"
 #include "../src/spacer.h"
 #include "../src/import/text_matrix.h"
 
@@ -59,6 +60,8 @@ public:
     static constexpr int ID_NEW_CANDLESTICK_AXIS{ wxID_HIGHEST+19 };
     static constexpr int ID_NEW_BARCHART_IMAGE{ wxID_HIGHEST+20 };
     static constexpr int ID_NEW_HISTOGRAM_UNIQUE_VALUES{ wxID_HIGHEST+21 };
+    static constexpr int ID_NEW_CATEGORICAL_BARCHART{ wxID_HIGHEST+22 };
+    static constexpr int ID_NEW_CATEGORICAL_BARCHART_GROUPED{ wxID_HIGHEST+23 };
     };
 
 // Define a new frame

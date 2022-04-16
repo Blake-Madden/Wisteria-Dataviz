@@ -113,6 +113,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART_STYLIZED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART_IMAGE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CATEGORICAL_BARCHART);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART);
@@ -149,6 +151,10 @@ wxMenuBar* MyFrame::CreateMainMenubar()
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"))->
@@ -259,7 +265,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
 
-        plot->SetData(mpgData, L"hwy", L"class");
+        plot->SetData(mpgData,
+                      L"hwy",
+                      // leave this as std::nullopt to not create grouped boxes
+                      L"class");
 
         // Show all points (not just outliers).
         // The points within the boxes and whiskers will be
@@ -412,7 +421,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto plot = std::make_shared<Histogram>(subframe->m_canvas);
+        auto plot = std::make_shared<Histogram>(subframe->m_canvas,
+            std::make_shared<Colors::Schemes::Decade1980s>());
 
         plot->SetData(mpgData, L"cyl",
                       std::nullopt,
@@ -882,6 +892,68 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
+    // Bar Chart, using the a dataset interface to aggregate labels
+    else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART)
+        {
+        subframe->SetTitle(_(L"Bar Chart (Categorical Data)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        auto mpgData = std::make_shared<Data::Dataset>();
+        try
+            {
+            mpgData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
+                    { L"model", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
+            std::make_shared<Colors::Schemes::Decade1980s>());
+
+        plot->SetData(mpgData, L"manufacturer");
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
+    // Bar Chart, using the a dataset interface to aggregate labels,
+    // along with a grouping column
+    else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED)
+        {
+        subframe->SetTitle(_(L"Bar Chart (Categorical Data, Grouped)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 2);
+        auto mpgData = std::make_shared<Data::Dataset>();
+        try
+            {
+            mpgData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
+                    { L"class", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
+            std::make_shared<Colors::Schemes::Decade1980s>());
+
+        plot->SetData(mpgData, L"manufacturer", L"class");
+        plot->SetBarOpacity(220);
+        plot->SetBarEffect(BoxEffect::Glassy);
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+
+        subframe->m_canvas->SetFixedObject(0, 1,
+            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         }
     // Pie Chart
     else if (event.GetId() == MyApp::ID_NEW_PIECHART)
@@ -1463,6 +1535,12 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
         _(L"Bar Chart (Commom Image)"));
+    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+        _(L"Bar Chart (Categorical Data)"));
+    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+        _(L"Bar Chart (Categorical Data, Grouped)"));
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
