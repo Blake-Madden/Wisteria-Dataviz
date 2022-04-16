@@ -255,6 +255,7 @@ namespace Wisteria::Graphs
             { return m_binCount; }
 
         /// @returns The number of groups found during the last call to SetData().
+        ///  This is only relevant if using a grouping variable.
         [[nodiscard]] size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
 
@@ -265,7 +266,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the bar opacity.
         /// @param opacity The level of opacity to use.
         void SetBarOpacity(const uint8_t opacity) noexcept
-            { m_opacity = opacity; }
+            { m_barOopacity = opacity; }
         /// @brief Sets the bar effect.
         /// @param effect The bar effect to apply.
         void SetBarEffect(const BoxEffect effect) noexcept
@@ -397,10 +398,9 @@ namespace Wisteria::Graphs
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        uint8_t m_opacity{ wxALPHA_OPAQUE };
+        uint8_t m_barOopacity{ wxALPHA_OPAQUE };
         BoxEffect m_barEffect{ BoxEffect::Solid };
         std::optional<double> m_startBinsValue{ std::nullopt };
-        bool m_useGroupingColors{ false };
         bool m_useGrouping{ false };
         std::set<Data::GroupIdType> m_groupIds;
 

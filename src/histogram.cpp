@@ -65,13 +65,6 @@ namespace Wisteria::Graphs
             {
             std::for_each(m_groupColumn->GetValues().cbegin(), m_groupColumn->GetValues().cend(),
                 [this](const auto id) { m_groupIds.insert(id); });
-            m_useGroupingColors = m_groupIds.size() > 1 &&
-                m_groupIds.size() < GetColorScheme()->GetColors().size() &&
-                // ensure IDs are valid indices into the group schemes
-                (std::find_if(m_groupColumn->GetValues().cbegin(), m_groupColumn->GetValues().cend(),
-                    [this](const auto id) noexcept
-                        { return id >= GetColorScheme()->GetColors().size(); }) ==
-                    m_groupColumn->GetValues().cend());
             }
 
         // reset everything first
@@ -177,14 +170,14 @@ namespace Wisteria::Graphs
             {
             Bar theBar(GetBinsStart().value(), { BarBlock(BarBlockInfo().Brush(GetColorScheme()->GetColor(0))) },
                 wxString(wxEmptyString),
-                GraphItems::Label(wxEmptyString), m_barEffect, m_opacity);
+                GraphItems::Label(wxEmptyString), m_barEffect, m_barOopacity);
             AddBar(theBar);
             }
         // add the bars (block-by-block)
         size_t barNumber{ 1 };
         for (const auto& blockTable : groups.get_data())
             {
-            const wxColour blockColor = (m_useGroupingColors &&
+            const wxColour blockColor = (m_useGrouping &&
                 static_cast<size_t>(blockTable.first.m_block) < GetColorScheme()->GetColors().size()) ?
                 GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0);
 
@@ -215,7 +208,7 @@ namespace Wisteria::Graphs
                         GraphItems::Label(wxNumberFormatter::ToString(blockTable.first.m_bin,
                             (has_fractional_part(blockTable.first.m_bin)) ? 2 : 0,
                             Settings::GetDefaultNumberFormat())),
-                    m_barEffect, m_opacity);
+                    m_barEffect, m_barOopacity);
                 // if observations added to the selection label, then show it as a report
                 if (blockTable.second.first.size() > 1)
                     {
@@ -423,14 +416,14 @@ namespace Wisteria::Graphs
             Bar theBar(startingBarAxisPosition+(i*BinSize),
                 std::vector<BarBlock>(),
                 wxEmptyString, GraphItems::Label(),
-                m_barEffect, m_opacity,
+                m_barEffect, m_barOopacity,
                 (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? BinSize : 0);
 
             // build the bar from its blocks (i.e., subgroups)
             double currentBarBlocksTotal{ 0 };
             for (const auto& block : bins[i])
                 {
-                const wxColour blockColor = (m_useGroupingColors &&
+                const wxColour blockColor = (m_useGrouping &&
                     static_cast<size_t>(block.first) < GetColorScheme()->GetColors().size()) ?
                     GetColorScheme()->GetColor(block.first) : GetColorScheme()->GetColor(0);
                 currentBarBlocksTotal += block.second.first;
