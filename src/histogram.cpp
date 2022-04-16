@@ -97,8 +97,8 @@ namespace Wisteria::Graphs
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
-        GetBottomXAxis().GetTitle().SetText(m_continuousColumn->GetTitle());
-        GetLeftYAxis().GetTitle().SetText(_(L"Frequency"));
+        GetBarAxis().GetTitle().SetText(m_continuousColumn->GetTitle());
+        GetScalingAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
     //----------------------------------------------------------------
@@ -250,11 +250,11 @@ namespace Wisteria::Graphs
         for (auto& bar : GetBars())
             {
             const double percentage = safe_divide<double>(bar.GetLength(),m_continuousColumn->GetRowCount())*100;
-            bar.GetLabel() = (bar.GetLength() == 0 || GetHistrogramBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+            bar.GetLabel() = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
                 GraphItems::Label(wxEmptyString) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinValue) ?
+                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat())) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
+                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                 GraphItems::Label(wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%") :
                 GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
                     L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)");
@@ -457,9 +457,9 @@ namespace Wisteria::Graphs
 
             const double barValue = currentBarBlocksTotal;
             const double percentage = safe_divide<double>(barValue,total)*100;
-            const wxString barLabel = (barValue == 0 || GetHistrogramBinLabelDisplay() == BinLabelDisplay::NoDisplay) ? wxString(wxEmptyString) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinValue) ? wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
-                (GetHistrogramBinLabelDisplay() == BinLabelDisplay::BinPercentage) ? wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+            const wxString barLabel = (barValue == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ? wxString(wxEmptyString) :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ? wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ? wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                 wxNumberFormatter::ToString(barValue, 0,
                     Settings::GetDefaultNumberFormat()) +
                     L" (" +

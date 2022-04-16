@@ -229,7 +229,9 @@ namespace Wisteria::Graphs
              (if binning into ranges) and the maximum number of bins.
              For the latter, if binning by unique values and the number of
              unique values exceeds this, then the range-based mode will be used for the binning.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.
+            @note Observation names are pulled from the dataset's ID column and the first few are
+             implicitly added to the bins' selection label.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
                      const std::optional<const wxString> groupColumnName = std::nullopt,
@@ -333,9 +335,12 @@ namespace Wisteria::Graphs
         void SetIntervalDisplay(const IntervalDisplay display) noexcept
             { m_intervalDisplay = display; }
 
+        /// @returns The type of labels being shown on the bars.
+        [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
+            { return m_binLabelDisplay; }
         /// @brief Sets which type of labels to display for the bars.
         /// @param display The bin label display to use.
-        void SetHistrogramBinLabelDisplay(const BinLabelDisplay display) noexcept
+        void SetBinLabelDisplay(const BinLabelDisplay display) noexcept
             { m_binLabelDisplay = display; }
         /// @returns `true` if a place for each bin is included on the axis,
         ///  even if they have no items.
@@ -352,9 +357,6 @@ namespace Wisteria::Graphs
         /// @sa SetIntervalDisplay().
         [[nodiscard]] IntervalDisplay GetIntervalDisplay() const noexcept
             { return m_intervalDisplay; }
-        /// @returns The type of labels being shown on the bars.
-        [[nodiscard]] BinLabelDisplay GetHistrogramBinLabelDisplay() const noexcept
-            { return m_binLabelDisplay; }
         /// @returns Where the first bin starts.
         /// @note This is NaN by default, which will instruct the bins to
         ///  start at where the data begins.
