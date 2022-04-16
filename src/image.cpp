@@ -520,15 +520,22 @@ namespace Wisteria::GraphItems
             }
 
         // draw the outline
+        wxPoint pts[5];
+        GraphItems::Polygon::GetRectPoints(GetBoundingBox(), pts);
+        pts[4] = pts[0]; // close the square
         if (GetPen().IsOk())
             {
             wxPen scaledPen(GetPen());
             scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
-            wxDCPenChanger pc(dc, IsSelected() ? wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
-            wxPoint pts[5];
-            GraphItems::Polygon::GetRectPoints(GetBoundingBox(), pts);
-            pts[4] = pts[0]; // close the square
-            dc.DrawLines(5, pts);
+            wxDCPenChanger pc(dc, IsSelected() ?
+                wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
+            dc.DrawLines(std::size(pts), pts);
+            }
+        // just draw selection outline if regular pen isn't in use
+        else if (IsSelected())
+            {
+            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            dc.DrawLines(std::size(pts), pts);
             }
 
         return GetBoundingBox();
