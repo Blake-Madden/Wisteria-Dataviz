@@ -204,12 +204,12 @@ namespace Wisteria::Graphs
              supposed to be lined up in a range.
             @param rounding The rounding method to use for binning floating-point numbers.
             @param iDisplay The interval display to use.
-            @param blDisplay Which type of labels to display for the bars.
              In range mode, set this to cutpoints to place the bars in between axis lines so
              that the range of the bins are shown on the sides of the bars.
              Set this to midpoints to place the bars on top of the axis lines
              so that a custom bin range label (for integer range mode) or a midpoint label
              (non-integer mode) is shown at the bottom of the bar.
+            @param blDisplay Which type of labels to display for the bars.
             @param showFullRangeOfValues `true` if a place for each bin is included on the axis,
              even if they have no items.
              This specifies whether the axis should display each step
