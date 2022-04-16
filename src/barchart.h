@@ -705,11 +705,11 @@ namespace Wisteria::Graphs
         /// @brief Functions relating to sorting the bars.
         /// @{
 
-        /// @brief Sorts the bars (based on bar size).
+        /// @brief Sorts the bars (based on bar size or axis label).
         /// @param sortMethod How to sort the bars.
-        /// @param direction SortAscending to sort smallest to largest,
-        ///  going upward or left to right.
-        ///  SortDescending to sort largest to smallest.
+        /// @param direction SortAscending to sort smallest-to-largest (A-Z),
+        ///  going top-to-bottom or left-to-right.
+        ///  SortDescending to sort largest-to-smallest (A-Z).
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
         /// @returns `true` if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept

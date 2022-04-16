@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
                             const Wisteria::SortDirection direction)
         {
         wxASSERT_LEVEL_2_MSG(IsSortable(),
-                             L"Must call SetSortable() before sorting a bar chart.");
+                             L"Bars are not sortable. Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort)
             { return; }
@@ -126,7 +126,11 @@ namespace Wisteria::Graphs
                     right.GetAxisLabel().GetText(), wxCompare_CaseInsensitive) < 0;
                 });
             }
-        if (direction == SortDirection::SortAscending)
+        // Because we start at the origin, descending when horizontal goes the opposite way internally.
+        // When it's displayed, descending it will be shown the going largest-to-smallest as one
+        // would expect.
+        if ((direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Vertical) ||
+            (direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Horizontal))
             {
             for (auto pos = m_bars.begin();
                 pos != m_bars.end();
