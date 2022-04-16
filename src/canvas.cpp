@@ -1242,7 +1242,7 @@ namespace Wisteria
             wxDCFontChanger fc(dc, m_watermarkFont);
             DrawWatermarkLabel(dc, GetCanvasRect(),
                 WaterMark{ GetWatermark(),
-                ColorBrewer::GetColor(Color::Red, 125),
+                ColorBrewer::GetColor(Color::Red, Settings::GetTranslucencyValue()),
                 WatermarkDirection::Diagonal } );
             }
         }
@@ -1261,7 +1261,8 @@ namespace Wisteria
         wxString watermark = m_watermark;
         watermark.Replace(L"@[DATE]", wxDateTime().Now().FormatDate());
         watermark.Replace(L"@[TIME]", wxDateTime().Now().FormatTime());
-        watermark.Replace(L"@[DATETIME]", wxDateTime().Now().FormatDate() + L" " + wxDateTime().Now().FormatTime());
+        watermark.Replace(L"@[DATETIME]", wxDateTime().Now().FormatDate() + L" " +
+            wxDateTime().Now().FormatTime());
         return watermark;
         }
 
@@ -1275,9 +1276,12 @@ namespace Wisteria
             {
             m_watermarkImg.SetBestSize(wxSize(ScaleToScreenAndCanvas(100),
                                               ScaleToScreenAndCanvas(100)));
-            m_watermarkImg.SetOpacity(200);
+            // make logo image mildly translucent
+            // (twice as opaque as the system translucency).
+            m_watermarkImg.SetOpacity(Settings::GetTranslucencyValue()*2);
             m_watermarkImg.SetAnchoring(Anchoring::BottomRightCorner);
-            m_watermarkImg.SetAnchorPoint(wxPoint(GetCanvasRect().GetWidth(), GetCanvasRect().GetHeight()));
+            m_watermarkImg.SetAnchorPoint(wxPoint(GetCanvasRect().GetWidth(),
+                                                  GetCanvasRect().GetHeight()));
             m_watermarkImg.Draw(dc);
             }
         }
@@ -1313,14 +1317,15 @@ namespace Wisteria
 
                 std::negate<double> neg;
                 dc.DrawRotatedText(watermark.m_label,
-                    (drawingRect.GetWidth()/2) - (widthOfWatermark/2),
-                    (drawingRect.GetHeight()/2) - (heightOfWatermark/2),
+                    (drawingRect.GetWidth()/2) - static_cast<wxCoord>(widthOfWatermark/2),
+                    (drawingRect.GetHeight()/2) - static_cast<wxCoord>(heightOfWatermark/2),
                     neg(angle));
                 }
             else
                 {
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Label::CalcFontSizeToFitBoundingBox(dc, labelFont, drawingRect, watermark.m_label));
+                labelFont.SetPointSize(
+                    Label::CalcFontSizeToFitBoundingBox(dc, labelFont, drawingRect, watermark.m_label));
                 labelFont.MakeBold();
                 wxDCFontChanger fc(dc, labelFont);
 
