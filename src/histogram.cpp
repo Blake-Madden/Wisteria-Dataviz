@@ -127,7 +127,7 @@ namespace Wisteria::Graphs
 
         // calculate how many observations are in each group
         multi_value_frequency_map<BinBlock, wxString, std::less<BinBlock>, Data::StringCmpNoCase> groups;
-        groups.set_values_list_max_size(MAX_OBS_IN_LABEL);
+        groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
         bool hasFloatingPointValue{ false };
 
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
@@ -342,7 +342,7 @@ namespace Wisteria::Graphs
                     if (foundGroup != bins[0].end())
                         {
                         ++foundGroup->second.first;
-                        if (foundGroup->second.second.size() < MAX_OBS_IN_LABEL)
+                        if (foundGroup->second.second.size() < Settings::GetMaxObservationInBin())
                             { foundGroup->second.second.emplace(m_data->GetIdColumn().GetValue(i)); }
                         }
                     else
@@ -364,7 +364,7 @@ namespace Wisteria::Graphs
                     if (foundGroup != bins[j].end())
                         {
                         ++foundGroup->second.first;
-                        if (foundGroup->second.second.size() < MAX_OBS_IN_LABEL)
+                        if (foundGroup->second.second.size() < Settings::GetMaxObservationInBin())
                             { foundGroup->second.second.emplace(m_data->GetIdColumn().GetValue(i)); }
                         }
                     else

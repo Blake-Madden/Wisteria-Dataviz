@@ -387,8 +387,6 @@ namespace Wisteria::Graphs
         std::optional<double> m_startBinsValue{ std::nullopt };
         bool m_useGrouping{ false };
         std::set<Data::GroupIdType> m_groupIds;
-
-        static constexpr size_t MAX_OBS_IN_LABEL{ 25 };
         };
     }
 

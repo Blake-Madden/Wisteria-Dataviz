@@ -71,6 +71,12 @@ namespace Wisteria
         /// @returns The maximum text length.
         [[nodiscard]] static size_t GetMaxLegendTextLength() noexcept
             { return m_maxLegendTextLength; }
+
+        /// @brief Gets the maximum number of observations to show as a label in a bin.
+        /// @returns The maximum number of observations to show in a bin label.
+        [[nodiscard]] static size_t GetMaxObservationInBin() noexcept
+            { return m_maxObservationsInBin; }
+ 
         /// @brief Sets the radius of the rounded corner, which is used when using rounded
         ///  corners for labels, box plots, etc.
         /// @param roundedCornerRadius The rounded corner radius.
@@ -135,6 +141,7 @@ namespace Wisteria
         inline static size_t m_maxLegendTextLength{ 32 };
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
+        inline static size_t m_maxObservationsInBin{ 25 };
         inline static int m_debugSettings
 #if wxDEBUG_LEVEL >= 2
         { DebugSettings::DrawBoundingBoxesOnSelection };
