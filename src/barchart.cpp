@@ -119,8 +119,12 @@ namespace Wisteria::Graphs
         else
             {
             std::sort(m_bars.begin(), m_bars.end(),
-                [](const Bar& a, const Bar& b)
-                    { return a.GetAxisLabel().GetText() < b.GetAxisLabel().GetText(); });
+                [](const Bar& left, const Bar& right)
+                {
+                return wxUILocale::GetCurrent().CompareStrings(
+                    left.GetAxisLabel().GetText(),
+                    right.GetAxisLabel().GetText(), wxCompare_CaseInsensitive) < 0;
+                });
             }
         if (direction == SortDirection::SortAscending)
             {
