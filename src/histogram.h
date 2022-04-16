@@ -259,20 +259,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
 
-        /// @name %Bar Display Functions
-        /// @brief Functions relating to the visual display of the bars.
-        /// @{
-
-        /// @brief Sets the bar opacity.
-        /// @param opacity The level of opacity to use.
-        void SetBarOpacity(const uint8_t opacity) noexcept
-            { m_barOopacity = opacity; }
-        /// @brief Sets the bar effect.
-        /// @param effect The bar effect to apply.
-        void SetBarEffect(const BoxEffect effect) noexcept
-            { m_barEffect = effect; }
-        /// @}
-
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.
@@ -398,8 +384,6 @@ namespace Wisteria::Graphs
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        uint8_t m_barOopacity{ wxALPHA_OPAQUE };
-        BoxEffect m_barEffect{ BoxEffect::Solid };
         std::optional<double> m_startBinsValue{ std::nullopt };
         bool m_useGrouping{ false };
         std::set<Data::GroupIdType> m_groupIds;

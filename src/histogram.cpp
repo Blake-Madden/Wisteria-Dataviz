@@ -170,7 +170,7 @@ namespace Wisteria::Graphs
             {
             Bar theBar(GetBinsStart().value(), { BarBlock(BarBlockInfo().Brush(GetColorScheme()->GetColor(0))) },
                 wxString(wxEmptyString),
-                GraphItems::Label(wxEmptyString), m_barEffect, m_barOopacity);
+                GraphItems::Label(wxEmptyString), GetBarEffect(), GetBarOpacity());
             AddBar(theBar);
             }
         // add the bars (block-by-block)
@@ -208,7 +208,7 @@ namespace Wisteria::Graphs
                         GraphItems::Label(wxNumberFormatter::ToString(blockTable.first.m_bin,
                             (has_fractional_part(blockTable.first.m_bin)) ? 2 : 0,
                             Settings::GetDefaultNumberFormat())),
-                    m_barEffect, m_barOopacity);
+                    GetBarEffect(), GetBarOpacity());
                 // if observations added to the selection label, then show it as a report
                 if (blockTable.second.first.size() > 1)
                     {
@@ -416,7 +416,7 @@ namespace Wisteria::Graphs
             Bar theBar(startingBarAxisPosition+(i*BinSize),
                 std::vector<BarBlock>(),
                 wxEmptyString, GraphItems::Label(),
-                m_barEffect, m_barOopacity,
+                GetBarEffect(), GetBarOpacity(),
                 (GetIntervalDisplay() == IntervalDisplay::Cutpoints) ? BinSize : 0);
 
             // build the bar from its blocks (i.e., subgroups)
