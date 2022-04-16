@@ -250,14 +250,15 @@ namespace Wisteria::Graphs
         for (auto& bar : GetBars())
             {
             const double percentage = safe_divide<double>(bar.GetLength(),m_continuousColumn->GetRowCount())*100;
-            bar.GetLabel() = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                GraphItems::Label(wxEmptyString) :
+            const wxString labelStr = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+                wxString(wxEmptyString) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat())) :
+                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                GraphItems::Label(wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%") :
-                GraphItems::Label(wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
-                    L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)");
+                wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
+                L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)";
+            bar.GetLabel().SetText(labelStr);
             }
         m_binCount = groups.get_data().size();
         }
