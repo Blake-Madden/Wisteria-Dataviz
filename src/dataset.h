@@ -520,6 +520,25 @@ namespace Wisteria::Data
             m_categoricalColumns.resize(m_categoricalColumns.size()+1);
             m_categoricalColumns.back().SetTitle(columnName);
             }
+        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
+            @param columnName The name of the column.
+            @param stringTable A string table to assign to the column.
+            @note AddRow() will implicitly add a categorical column if
+             defined in the row info, but this can explicitly ensure a
+             categorical column is always available. This can be useful
+             if you plan to call Reserve() prior to calling AddRow(),
+             or if you need to assume a categorical column is available even
+             if AddRow() never adds any values to it.*/
+        void AddCategoricalColumn(const wxString& columnName,
+                                  const ColumnWithStringTable::StringTableType& stringTable)
+            {
+            wxASSERT_MSG(columnName.length(),
+                L"Column name is empty in call to AddCategoricalColumn()!");
+            m_categoricalColumns.resize(m_categoricalColumns.size()+1);
+            m_categoricalColumns.back().SetTitle(columnName);
+            m_categoricalColumns.back().GetStringTable() = stringTable;
+            }
+        
         /** @brief Adds a new date column.
             @param columnName The name of the column.
             @note AddRow() will implicitly add a date column if
