@@ -257,8 +257,7 @@ namespace statistics
          Tukey hinges method. Median is taken from lower and upper halves if N is even.
          If N is odd, then overall median is included in both the lower and upper half and
          median is taken from those halves. This is that method that R appears to do.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param[out] lower_quartile_value The calculated lower quartile.
         @param[out] upper_quartile_value The calculated upper quartile.
         @note Data must be sorted beforehand.*/

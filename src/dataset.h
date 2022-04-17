@@ -138,7 +138,7 @@ namespace Wisteria::Data
         };
 
     /// @brief The integral type used for looking up a label from a grouping column's string table.
-    /// @details Grouping column string tables are maps that consist of a GroupIdType
+    /// @details Grouping column string tables are maps that consist of a @c GroupIdType
     ///  as its lookup key and a string as its value.
     using GroupIdType = uint64_t;
 
@@ -150,8 +150,7 @@ namespace Wisteria::Data
         {
         friend class Dataset;
     public:
-        /// @private
-        /// The string table type.
+        /// The string table type (i.e., an integer key and string value).
         using StringTableType = std::map<GroupIdType, wxString>;
 
         /** @brief Constructor.
@@ -194,7 +193,7 @@ namespace Wisteria::Data
         };
 
     /** @brief Class for filling a row in a dataset.
-        @details This can be used to chain multiple fields together in a call to AddRow():
+        @details This can be used to chain multiple fields together in a call to @c AddRow():
         @code
          dataset.AddRow(DataInfo().Continuous({ 4, 120 }).Group(1));
         @endcode*/
@@ -229,7 +228,7 @@ namespace Wisteria::Data
 
              As an example:
 
-             `info().Continuous({ 3.1, 5.5})`
+             `info().Continuous({ 3.1, 5.5 })`
 
              This will result in 3.1 being set for the first continuous column
              and 5.5 for the second continuous column.
@@ -253,7 +252,7 @@ namespace Wisteria::Data
 
              `info().Date({ dt1, dt2})`
 
-             Will result in dt1 being used for the first date column and dt2
+             Will result in @c dt1 being used for the first date column and @c dt2
              for the second date column.
             @param dateValues The values to fill the date columns with.
             @returns A self reference.*/
@@ -268,8 +267,8 @@ namespace Wisteria::Data
             m_dateColumns = std::move(dateValues);
             return *this;
             }
-        /** @brief Sets the id/name of the point.
-            @param id The value for the id.
+        /** @brief Sets the ID/name of the point.
+            @param id The value for the ID.
             @returns A self reference.*/
         RowInfo& Id(const wxString& id)
             {
@@ -444,7 +443,7 @@ namespace Wisteria::Data
 
     /** @brief %Dataset interface for graphs.
         @details Contains columns for continuous data, categoricals, groupings,
-         and observation names/IDs.*/
+         dates, and observation names/IDs.*/
     class Dataset
         {
     public:
@@ -506,7 +505,7 @@ namespace Wisteria::Data
             m_continuousColumns.resize(m_continuousColumns.size()+1);
             m_continuousColumns.back().SetTitle(columnName);
             }
-        /** @brief Adds a new categorical column.
+        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
             @note AddRow() will implicitly add a categorical column if
              defined in the row info, but this can explicitly ensure a
@@ -564,9 +563,9 @@ namespace Wisteria::Data
 
         /** @brief Gets an iterator to a categorical column by name.
             @param columnName The name of the categorical column to look for.
-            @returns An iterator to the group column if found,
-             @c GetCategoricalColumns().cend() otherwise.
-            @note Check the return against @c GetCategoricalColumns().cend()
+            @returns An iterator to the categorical column if found,
+             `GetCategoricalColumns().cend()` otherwise.
+            @note Check the return against `GetCategoricalColumns().cend()`
              to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetCategoricalColumn(const wxString& columnName) const noexcept
             {
@@ -577,9 +576,9 @@ namespace Wisteria::Data
             }
         /** @brief Gets an iterator to a categorical column by name.
             @param columnName The name of the categorical column to look for.
-            @returns An iterator to the group column if found,
-             @c GetCategoricalColumns().end() otherwise.
-            @note Check the return against @c GetCategoricalColumns().end()
+            @returns An iterator to the categorical column if found,
+             `GetCategoricalColumns().end()` otherwise.
+            @note Check the return against `GetCategoricalColumns().end()`
              to confirm that the column was found prior to using it.*/
         [[nodiscard]] auto GetCategoricalColumn(const wxString& columnName) noexcept
             {
@@ -607,8 +606,8 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a date column by name.
             @param columnName The name of the date column to look for.
             @returns An iterator to the group column if found,
-             @c GetDateColumns().cend() otherwise.
-            @note Check the return against @c GetDateColumns().cend()
+             `GetDateColumns().cend()` otherwise.
+            @note Check the return against `GetDateColumns().cend()`
              to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetDateColumn(const wxString& columnName) const noexcept
             {
@@ -620,8 +619,8 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a date column by name.
             @param columnName The name of the date column to look for.
             @returns An iterator to the group column if found,
-             @c GetDateColumns().end() otherwise.
-            @note Check the return against @c GetDateColumns().end()
+             `GetDateColumns().end()` otherwise.
+            @note Check the return against `GetDateColumns().end()`
              to confirm that the column was found prior to using it.*/
         [[nodiscard]] auto GetDateColumn(const wxString& columnName) noexcept
             {
@@ -649,8 +648,8 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a continuous column by name.
             @param columnName The name of the continuous column to look for.
             @returns An iterator to the group column if found,
-             @c GetContinuousColumns().cend() otherwise.
-            @note Check the return against @c GetContinuousColumns().cend()
+             `GetContinuousColumns().cend()` otherwise.
+            @note Check the return against `GetContinuousColumns().cend()`
              to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetContinuousColumn(const wxString& columnName) const noexcept
             {
