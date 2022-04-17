@@ -13,8 +13,6 @@
 #define __WISTERIA_LIKERT_H__
 
 #include "barchart.h"
-#include "colorbrewer.h"
-#include "dataset.h"
 
 namespace Wisteria::Graphs
     {

@@ -8,7 +8,7 @@ SET(WISTERIA_SRC
     src/canvas.cpp
     src/categoricalbarchart.cpp
     src/colorbrewer.cpp
-    src/dataset.cpp
+    src/data/dataset.cpp
     src/debug/debug_profile.cpp
     src/easyexif/demo.cpp
     src/easyexif/exif.cpp

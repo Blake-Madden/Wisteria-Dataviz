@@ -25,9 +25,9 @@
 #include <wx/datetime.h>
 #include <wx/uilocale.h>
 #include <wx/filename.h>
-#include "import/text_matrix.h"
-#include "import/text_preview.h"
-#include "debug/debug_assert.h"
+#include "../import/text_matrix.h"
+#include "../import/text_preview.h"
+#include "../debug/debug_assert.h"
 
 /** @brief %Data management classes for graphs.*/
 namespace Wisteria::Data

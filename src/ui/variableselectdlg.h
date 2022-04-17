@@ -21,7 +21,7 @@
 #include <wx/stattext.h>
 #include <wx/artprov.h>
 #include <wx/wupdlock.h>
-#include "../dataset.h"
+#include "../data/dataset.h"
 
 namespace Wisteria::UI
     {

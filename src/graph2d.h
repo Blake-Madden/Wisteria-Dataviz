@@ -14,7 +14,7 @@
 
 #include "canvas.h"
 #include "colorbrewer.h"
-#include "dataset.h"
+#include "data/dataset.h"
 #include "axis.h"
 #include "lines.h"
 
