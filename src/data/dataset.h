@@ -504,6 +504,8 @@ namespace Wisteria::Data
                 L"Column name is empty in call to AddContinuousColumn()!");
             m_continuousColumns.resize(m_continuousColumns.size()+1);
             m_continuousColumns.back().SetTitle(columnName);
+            m_continuousColumns.back().Resize(GetRowCount(),
+                                              std::numeric_limits<double>::quiet_NaN());
             }
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
@@ -553,6 +555,7 @@ namespace Wisteria::Data
                 L"Date name is empty in call to AddDateColumn()!");
             m_dateColumns.resize(m_dateColumns.size()+1);
             m_dateColumns.back().SetTitle(columnName);
+            m_dateColumns.back().Resize(GetRowCount(), wxInvalidDateTime);
             }
         /** @brief Adds a single data point.
             @details This is a lower-level method for manually filling a dataset;
@@ -770,8 +773,8 @@ namespace Wisteria::Data
             @details This is a shortcut for ImportText(), using commas as the column separator.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
-            @warning Will throw an exception if the file is not found or if
-             referenced columns aren't found in the file.*/
+            @throws std::runtime_error If the file can't be read or named columns aren't found,
+             throws an exception.*/
         void ImportCSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
