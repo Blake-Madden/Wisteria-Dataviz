@@ -282,9 +282,9 @@ namespace Wisteria::Data
             return *this;
             }
     private:
-        std::vector<GroupIdType> m_categoryValues{ 0 };
-        std::vector<double> m_continuousValues{ std::numeric_limits<double>::quiet_NaN() };
-        std::vector<wxDateTime> m_dateColumns{ wxInvalidDateTime };
+        std::vector<GroupIdType> m_categoryValues;
+        std::vector<double> m_continuousValues;
+        std::vector<wxDateTime> m_dateColumns;
         wxString m_id;
         };
 
