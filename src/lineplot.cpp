@@ -34,22 +34,19 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for line plot"), groupColumnName.value()));
-            return;
+                _(L"'%s': group column not found for line plot."), groupColumnName.value()));
             }
         m_yColumn = m_data->GetContinuousColumn(yColumnName);
         if (m_yColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': Y column not found for line plot"), yColumnName));
-            return;
+                _(L"'%s': Y column not found for line plot."), yColumnName));
             }
         m_xColumn = m_data->GetContinuousColumn(xColumnName);
         if (m_yColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': X column not found for line plot"), xColumnName));
-            return;
+                _(L"'%s': X column not found for line plot."), xColumnName));
             }
 
         m_label = (groupColumnName.has_value() ?
