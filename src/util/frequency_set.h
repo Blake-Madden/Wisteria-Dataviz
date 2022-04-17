@@ -60,7 +60,7 @@ private:
     map_type m_table;
     };
 
-/// Same as a frequency_set, expect it also enables the caller to
+/// @brief Same as a frequency_set, expect it also enables the caller to
 /// increment a second frequency count based on a criterion.
 template <typename T, typename TCompare = std::less<T>>
 class double_frequency_set
@@ -222,13 +222,15 @@ public:
     /** @brief Inserts a pair of items into the map.
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
-        @param frequencyIncrement the amount to increase the frequency count for the item. Would normally be 1.
+        @param frequencyIncrement the amount to increase the frequency count for the item.
+         Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
          If a key is already in the map, then that key's count is incremented.
-         If the second value is different from the same key's current values,
-         then that value is added to a list of values connected to that key.*/
-    const_iterator insert(const T1& value1, const T2& value2, const size_t frequencyIncrement = 1)
+         If the second value isn't in the key's current values,
+         then that value is added to the list of values connected to that key.*/
+    const_iterator insert(const T1& value1, const T2& value2,
+                          const size_t frequencyIncrement = 1)
         {
         auto [index_iter, inserted] =
             m_table.try_emplace(value1,
@@ -246,12 +248,13 @@ public:
     /** @brief Inserts a pair of items into the map.
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
-        @param frequencyIncrement the amount to increase the frequency count for the item. Would normally be 1.
+        @param frequencyIncrement the amount to increase the frequency count for the item.
+         Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
          If a key is already in the map, then that key's count is incremented.
-         If the second value is different from the same key's current values,
-         then that value is added to a list of values connected to that key.*/
+         If the second value isn't in the key's current values,
+         then that value is added to the list of values connected to that key.*/
     const_iterator insert(T1&& value1, T2&& value2, const size_t frequencyIncrement = 1)
         {
         auto [index_iter, inserted] =
@@ -268,15 +271,19 @@ public:
         return index_iter;
         }
     /** @brief Insert an already constructed item with its values and counts loaded.
-        @details This would normally be used if needing to update an item, where you would have to copy, edit, delete, and then insert the copy back in.
+        @details This would normally be used if needing to update an item,
+         where you would have to copy, edit, delete, and then insert the copy back in.
         @param value The value to insert.
-        @returns A (const) iterator and flag indicating whether the value was inserted (will be `false` if value was already in the map).*/
+        @returns A (const) iterator and flag indicating whether the value was inserted
+         (will be `false` if value was already in the map).*/
     [[nodiscard]] std::pair<const_iterator, bool> insert(const value_type& value)
         { return m_table.try_emplace(value); }
     /** @brief Insert an already constructed item with its values and counts loaded.
-        @details This would normally be used if needing to update an item, where you would have to copy, edit, delete, and then insert the copy back in.
+        @details This would normally be used if needing to update an item,
+         where you would have to copy, edit, delete, and then insert the copy back in.
         @param value The value to insert.
-        @returns A (const) iterator and flag indicating whether the value was inserted (will be `false` if value was already in the map).*/
+        @returns A (const) iterator and flag indicating whether the value was inserted
+         (will be `false` if value was already in the map).*/
     [[nodiscard]] std::pair<const_iterator, bool> insert(value_type&& value)
         { return m_table.try_emplace(value); }
     /// @returns The map of pairs and their respective frequency counts.
@@ -292,10 +299,11 @@ public:
         { return m_table.erase(position); }
     /** @brief Sets the maximum number of values that each key can have.
         @details By default, there is no size limitation.
-        @param size The maximum number of values that each key can have. The value -1 will allow keys to contain
-         any number of values (the default).
-        @note It is more optimal to call this prior to any calls to insert(). Otherwise, any existing items
-         in the map will need to have their respective value lists resized.*/
+        @param size The maximum number of values that each key can have.
+         The value -1 will allow keys to contain any number of values (the default).
+        @note It is more optimal to call this prior to any calls to insert().
+         Otherwise, any existing items in the map will need to have their respective
+         value lists resized.*/
     void set_values_list_max_size(const size_t size)
         {
         if (size != static_cast<size_t>(-1) && get_data().size())
