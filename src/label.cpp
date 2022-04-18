@@ -848,7 +848,7 @@ namespace Wisteria::GraphItems
                                                 legendArea.GetHeight() - yOffset -
                                                              ScaleToScreenAndCanvas(GetTopPadding()) -
                                                              ScaleToScreenAndCanvas(GetBottomPadding())));
-                            wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first ,downScaledSize.second,
+                            wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first,downScaledSize.second,
                                                                      wxIMAGE_QUALITY_HIGH);
                             dc.DrawBitmap(wxBitmap(scaledImg),
                                 legendArea.GetTopLeft() +

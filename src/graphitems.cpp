@@ -34,7 +34,8 @@ namespace Wisteria::GraphItems
                 Padding(2, 2, 2, 2).FontBackgroundColor(*wxWHITE).
                 Anchoring(Anchoring::Center).
                 AnchorPoint(ItemBoundingBox.GetTopLeft() +
-                            wxPoint(ItemBoundingBox.GetWidth()/2, ItemBoundingBox.GetHeight()/2)));
+                            wxPoint(ItemBoundingBox.GetWidth()/2,
+                            ItemBoundingBox.GetHeight()/2)));
             const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
             // if going out of the bottom of the bounding box then move it up to fit
             if (!boundingBox.IsEmpty() && selectionLabelBox.GetBottom() > boundingBox.GetBottom())
@@ -130,7 +131,7 @@ namespace Wisteria::GraphItems
 
         // check all rays
         for (int i = 1; i <= N; ++i)
-        {
+            {
             // point is a vertex
             if (p == p1) return bound;
 
@@ -139,32 +140,32 @@ namespace Wisteria::GraphItems
 
             // ray is outside of our interests
             if (p.y < std::min(p1.y, p2.y) || p.y > std::max(p1.y, p2.y))
-            {
+                {
                 // next ray left point
                 p1 = p2; continue;
-            }
+                }
 
             // ray is crossing over by the algorithm (common part of)
             if (p.y > std::min(p1.y, p2.y) && p.y < std::max(p1.y, p2.y))
-            {
+                {
                 // x is before of ray
                 if (p.x <= std::max(p1.x, p2.x))
-                {
+                    {
                     // overlies on a horizontal ray
                     if (p1.y == p2.y && p.x >= std::min(p1.x, p2.x)) return bound;
 
                     // ray is vertical
                     if (p1.x == p2.x)
-                    {
+                        {
                         // overlies on a ray
                         if (p1.x == p.x) return bound;
                         // before ray
                         else ++__count;
-                    }
+                        }
 
                     // cross point on the left side
                     else
-                    {
+                        {
                         // cross point of x
                         const auto xinters = ((p.y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y)) + p1.x;
 
@@ -173,33 +174,33 @@ namespace Wisteria::GraphItems
 
                         // before ray
                         if (p.x < xinters) ++__count;
+                        }
                     }
                 }
-            }
             // special case when ray is crossing through the vertex
             else
-            {
+                {
                 // p crossing over p2
                 if (p.y == p2.y && p.x <= p2.x)
-                {
+                    {
                     // next vertex
                     const wxPoint& p3 = polygon[(i+1) % N];
 
                     // p.y lies between p1.y & p3.y
                     if (p.y >= std::min(p1.y, p3.y) && p.y <= std::max(p1.y, p3.y))
-                    {
+                        {
                         ++__count;
-                    }
+                        }
                     else
-                    {
+                        {
                         __count += 2;
+                        }
                     }
                 }
-            }
 
             // next ray left point
             p1 = p2;
-        }
+            }
 
         // EVEN
         if (__count % 2 == 0) return false;
@@ -300,7 +301,8 @@ namespace Wisteria::GraphItems
 
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-        wxDCPenChanger pc(dc, IsSelected() ? wxPen(*wxBLACK,2*scaledPen.GetWidth(),wxPENSTYLE_DOT) : scaledPen);
+        wxDCPenChanger pc(dc, IsSelected() ?
+            wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
 
         // using a color fill (possibly a gradient)
         if (GetBackgroundFill().IsOk())
@@ -309,7 +311,8 @@ namespace Wisteria::GraphItems
             if (GetBackgroundFill().IsGradient())
                 {
                 // Optimized for rectangle.
-                // Also, this enables the draw commands of the gradient to be translated into SVG properly.
+                // Also, this enables the draw commands of the gradient to be
+                // translated into SVG properly.
                 if (GetShape() == PolygonShape::Rectangle)
                     {
                     const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
@@ -340,8 +343,10 @@ namespace Wisteria::GraphItems
                             switch (GetBackgroundFill().GetDirection())
                                 {
                             case FillDirection::East:
-                                start = boundingBox.GetTopLeft()+wxPoint(0,(boundingBox.GetHeight()/2));
-                                stop = boundingBox.GetTopRight()+wxPoint(0,(boundingBox.GetHeight()/2));
+                                start = boundingBox.GetTopLeft() +
+                                        wxPoint(0,(boundingBox.GetHeight()/2));
+                                stop = boundingBox.GetTopRight() +
+                                        wxPoint(0,(boundingBox.GetHeight()/2));
                                 break;
                             case FillDirection::West:
                                 start = boundingBox.GetTopRight()+wxPoint(0,(boundingBox.GetHeight()/2));
@@ -381,7 +386,8 @@ namespace Wisteria::GraphItems
                                      GetSelectionBrush() : GetBrush());
             if (GetShape() == PolygonShape::Spline)
                 { dc.DrawSpline(m_scaledPoints.size(), &m_scaledPoints[0]); }
-            else if (GetShape() == PolygonShape::Rectangle && GetBoxCorners() == BoxCorners::Rounded)
+            else if (GetShape() == PolygonShape::Rectangle &&
+                     GetBoxCorners() == BoxCorners::Rounded)
                 { dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius()); }
             else
                 { dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]); }
@@ -409,7 +415,8 @@ namespace Wisteria::GraphItems
         }
 
     //------------------------------------------------------
-    void Polygon::DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2, const wxSize arrowHeadSize)
+    void Polygon::DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
+                            const wxSize arrowHeadSize)
 	    {
         wxASSERT_MSG(arrowHeadSize.IsFullySpecified(), L"Arrowhead size not fully specified.");
         if (!arrowHeadSize.IsFullySpecified())
@@ -437,8 +444,9 @@ namespace Wisteria::GraphItems
                 std::round(pt2.y - arrowHeadSize.GetHeight()*uy - halfWidth * vy)) }
 		    };
 
-        // The end of the line should be going underneath the head by just one pixel, so that it doesn't poke out
-        // under the point of the arrowhead. Note that this only works if pointing perfectly left or right; otherwise,
+        // The end of the line should be going underneath the head by just one pixel,
+        // so that it doesn't poke out under the point of the arrowhead.
+        // Note that this only works if pointing perfectly left or right; otherwise,
         // we just have to connect the end of the line to the end of the arrowhead.
         const wxCoord xAdjustment = (pt1.y == pt2.y && pt1.x <= pt2.x) ?
                                         (-(arrowHeadSize.GetWidth())+1) :
@@ -448,8 +456,8 @@ namespace Wisteria::GraphItems
 	    dc.DrawLine(pt1, wxPoint(pt2.x+xAdjustment, pt2.y));
         // fill the arrowhead with the same color as the line
         wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
-        // need to turn off the pen because a thicker pen will cause an odd-looking effect
-        // when the two lines converge at the tip of the arrowhead
+        // need to turn off the pen because a thicker pen will cause an odd-looking
+        // effect when the two lines converge at the tip of the arrowhead
         wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
 	    dc.DrawPolygon(arrowHead.size(), &arrowHead[0]);
 	    }
@@ -668,12 +676,14 @@ namespace Wisteria::GraphItems
                 }
             }
         const bool areAllPointsSelected = (!m_singlePointSelection && IsSelected());
-        wxPen scaledPen(areAllPointsSelected ? wxPen(*wxBLACK,GetPen().GetWidth(),wxPENSTYLE_DOT) : *wxBLACK_PEN);
+        wxPen scaledPen(areAllPointsSelected ?
+            wxPen(*wxBLACK,GetPen().GetWidth(),wxPENSTYLE_DOT) : *wxBLACK_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
         wxDCPenChanger pc(dc, scaledPen);
         for (const auto& point : m_points)
             {
-            if (!areAllPointsSelected /*if all points selected, then the current pen is the selected one already*/ &&
+            /*if all points selected, then the current pen is the selected one already*/
+            if (!areAllPointsSelected &&
                 point.IsSelected())
                 {
                 wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
@@ -805,9 +815,9 @@ namespace Wisteria::GraphItems
                     if (m_iconImage && m_iconImage->IsOk())
                         {
                         const auto downScaledSize = geometry::calculate_downscaled_size(
-                                        std::make_pair<double, double>(m_iconImage->GetWidth(), m_iconImage->GetHeight()),
-                                        std::make_pair<double, double>(boundingBox.GetWidth(), boundingBox.GetHeight()));
-                        const wxImage scaledImg = m_iconImage->Scale(downScaledSize.first ,downScaledSize.second, wxIMAGE_QUALITY_HIGH);
+                            std::make_pair<double, double>(m_iconImage->GetWidth(), m_iconImage->GetHeight()),
+                            std::make_pair<double, double>(boundingBox.GetWidth(), boundingBox.GetHeight()));
+                        const wxImage scaledImg = m_iconImage->Scale(downScaledSize.first, downScaledSize.second, wxIMAGE_QUALITY_HIGH);
                         dc.DrawBitmap(wxBitmap(scaledImg), boundingBox.GetTopLeft());
                         }
                     break;
