@@ -492,12 +492,9 @@ namespace Wisteria::Data
             }
         /** @brief Adds a new continuous column.
             @param columnName The name of the column.
-            @note AddRow() will implicitly add a continuous column if
-             defined in the row info, but this can explicitly ensure a
-             continuous column is always available. This can be useful
-             if you plan to call Reserve() prior to calling AddRow(),
-             or if you need to assume a continuous column is available even
-             if AddRow() never adds any values to it.*/
+            @note It is recommended to call this prior to AddRow();
+             otherwise, that function will rely on creating new columns
+             with more generic names.*/
         void AddContinuousColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
@@ -509,43 +506,24 @@ namespace Wisteria::Data
             }
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
-            @note AddRow() will implicitly add a categorical column if
-             defined in the row info, but this can explicitly ensure a
-             categorical column is always available. This can be useful
-             if you plan to call Reserve() prior to calling AddRow(),
-             or if you need to assume a categorical column is available even
-             if AddRow() never adds any values to it.*/
-        void AddCategoricalColumn(const wxString& columnName)
-            {
-            wxASSERT_MSG(columnName.length(),
-                L"Column name is empty in call to AddCategoricalColumn()!");
-            m_categoricalColumns.resize(m_categoricalColumns.size()+1);
-            m_categoricalColumns.back().SetTitle(columnName);
-            }
+            @note It is recommended to call this prior to AddRow();
+             otherwise, that function will rely on creating new columns
+             with more generic names.*/
+        void AddCategoricalColumn(const wxString& columnName);
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
             @param stringTable A string table to assign to the column.
-            @note AddRow() will implicitly add a categorical column if
-             defined in the row info, but this can explicitly ensure a
-             categorical column is always available. This can be useful
-             if you plan to call Reserve() prior to calling AddRow(),
-             or if you need to assume a categorical column is available even
-             if AddRow() never adds any values to it.*/
+            @note It is recommended to call this prior to AddRow();
+             otherwise, that function will rely on creating new columns
+             with more generic names.*/
         void AddCategoricalColumn(const wxString& columnName,
-                                  const ColumnWithStringTable::StringTableType& stringTable)
-            {
-            wxASSERT_MSG(columnName.length(),
-                L"Column name is empty in call to AddCategoricalColumn()!");
-            m_categoricalColumns.resize(m_categoricalColumns.size()+1);
-            m_categoricalColumns.back().SetTitle(columnName);
-            m_categoricalColumns.back().GetStringTable() = stringTable;
-            }
+            const ColumnWithStringTable::StringTableType& stringTable);
         
         /** @brief Adds a new date column.
             @param columnName The name of the column.
-            @note AddRow() will implicitly add a date column if
-             defined in the row info, but this can explicitly ensure a
-             date column is always available. This can be useful
+            @note It is recommended to call this prior to AddRow();
+             otherwise, that function will rely on creating new columns
+             with more generic names.*/
              if you plan to call Reserve() prior to calling AddRow(),
              or if you need to assume a date column is available even
              if AddRow() never adds any values to it.*/
@@ -562,9 +540,13 @@ namespace Wisteria::Data
              prefer the `ImportXXX()` family of functions for a simpler interface.
             @param dataInfo The data to fill the row with.
             @warning All calls to this function should use a RowInfo with
-             the same columns throughout it; otherwise, the columns will
-             have different lengths. Generally, this should be called in a loop,
-             where the RowInfo is constructed with the same set of columns each time.*/
+             the same columns throughout it, in the same order; otherwise, the columns will
+             have different lengths or data will be out of order.
+             Generally, this should be called in a loop,
+             where the RowInfo is constructed with the same set of columns each time.
+             Also, it is recommended to add columns prior to calling this
+             (e.e., call AddDateColumn()); otherwise, this function will create any
+             necessary columns with generically generated names.*/
         void AddRow(const RowInfo& dataInfo);
         /** @brief During import, sets the column names to the names
              that the client specified.

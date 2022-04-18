@@ -176,6 +176,63 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::AddCategoricalColumn(const wxString& columnName)
+        {
+        wxASSERT_MSG(columnName.length(),
+            L"Column name is empty in call to AddCategoricalColumn()!");
+        m_categoricalColumns.resize(m_categoricalColumns.size()+1);
+        m_categoricalColumns.back().SetTitle(columnName);
+        // add a string table with an empty value and fill the data with that
+        // if there are existing rows in the data
+        if (GetRowCount())
+            {
+            m_categoricalColumns.back().GetStringTable().
+                insert(std::make_pair(0, wxString()));
+            m_categoricalColumns.back().Resize(GetRowCount(), 0);
+            }
+        }
+
+    //----------------------------------------------
+    void Dataset::AddCategoricalColumn(const wxString& columnName,
+        const ColumnWithStringTable::StringTableType& stringTable)
+        {
+        wxASSERT_MSG(columnName.length(),
+            L"Column name is empty in call to AddCategoricalColumn()!");
+        m_categoricalColumns.resize(m_categoricalColumns.size()+1);
+        m_categoricalColumns.back().SetTitle(columnName);
+        m_categoricalColumns.back().GetStringTable() = stringTable;
+        // if we have existing rows and need to fill this column
+        if (GetRowCount())
+            {
+            if (stringTable.size() == 0)
+                {
+                m_categoricalColumns.back().GetStringTable().
+                    insert(std::make_pair(0, wxString()));
+                m_categoricalColumns.back().Resize(GetRowCount(), 0);
+                }
+            else
+                {
+                // find the key with an empty string connected to it and fill
+                // the new rows with that key
+                for (const auto& [key, value] : stringTable)
+                    {
+                    if (value.empty())
+                        {
+                        m_categoricalColumns.back().Resize(GetRowCount(), key);
+                        return;
+                        }
+                    }
+                // no empty string in string table, so add one (with an ID one
+                // higher than the last one) and fill the existing rows with that
+                const auto& [lastKey, lastValue] = *stringTable.crbegin();
+                m_categoricalColumns.back().GetStringTable().
+                    insert(std::make_pair(lastKey+1, wxString()));
+                m_categoricalColumns.back().Resize(GetRowCount(), lastKey+1);
+                }
+            }
+        }
+
+    //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath, const wchar_t delimiter,
                                                        const size_t rowPreviewCount /*= 100*/)
         {
@@ -470,6 +527,7 @@ namespace Wisteria::Data
         // (just applies for columns using CategoricalImportMethod::ReadAsStrings)
         for (size_t i = 0; i < categoricalVars.size(); ++i)
             {
+            GetCategoricalColumn(i).GetStringTable().clear();
             for (const auto& item : categoricalVars.at(i).GetStrings())
                 {
                 GetCategoricalColumn(i).GetStringTable().insert(
