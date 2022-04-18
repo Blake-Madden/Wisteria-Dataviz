@@ -525,9 +525,6 @@ namespace Wisteria::Data
             @note It is recommended to call this prior to AddRow();
              otherwise, that function will rely on creating new columns
              with more generic names.*/
-             if you plan to call Reserve() prior to calling AddRow(),
-             or if you need to assume a date column is available even
-             if AddRow() never adds any values to it.*/
         void AddDateColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),

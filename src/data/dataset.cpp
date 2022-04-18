@@ -76,20 +76,42 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::AddRow(const RowInfo& dataInfo)
         {
-        m_idColumn.AddValue(dataInfo.m_id);
+        // add new columns if included in row info but not previously defined
+
         // dates
         if (m_dateColumns.size() < dataInfo.m_dateColumns.size())
-            { m_dateColumns.resize(dataInfo.m_dateColumns.size()); }
+            {
+            const auto columnsToAdd = dataInfo.m_dateColumns.size() - m_dateColumns.size();
+            // try to add a descriptive and unique name as best as we can
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddDateColumn(wxString::Format(L"[DATE%zu]", i+1)); }
+            }
+        // continuous
+        if (m_continuousColumns.size() < dataInfo.m_continuousValues.size())
+            {
+            const auto columnsToAdd = dataInfo.m_continuousValues.size() - m_continuousColumns.size();
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i+1)); }
+            }
+        // categoricals
+        if (m_categoricalColumns.size() < dataInfo.m_categoryValues.size())
+            {
+            const auto columnsToAdd = dataInfo.m_categoryValues.size() - m_categoricalColumns.size();
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i+1)); }
+            }
+
+        // fill the values
+
+        // ID
+        m_idColumn.AddValue(dataInfo.m_id);
+        // dates
         for (size_t i = 0; i < dataInfo.m_dateColumns.size(); ++i)
             { m_dateColumns.at(i).AddValue(dataInfo.m_dateColumns.at(i)); }
         // categoricals
-        if (m_categoricalColumns.size() < dataInfo.m_categoryValues.size())
-            { m_categoricalColumns.resize(dataInfo.m_categoryValues.size()); }
         for (size_t i = 0; i < dataInfo.m_categoryValues.size(); ++i)
             { m_categoricalColumns.at(i).AddValue(dataInfo.m_categoryValues.at(i)); }
         // continuous columns
-        if (m_continuousColumns.size() < dataInfo.m_continuousValues.size())
-            { m_continuousColumns.resize(dataInfo.m_continuousValues.size()); }
         for (size_t i = 0; i < dataInfo.m_continuousValues.size(); ++i)
             { m_continuousColumns.at(i).AddValue(dataInfo.m_continuousValues.at(i)); }
         }
@@ -167,21 +189,40 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::SetColumnNames(const ImportInfo& info)
         {
+        // add new columns if included in row info but not previously defined
+
+        // dates
+        if (m_dateColumns.size() < info.m_dateColumns.size())
+            {
+            const auto columnsToAdd = info.m_dateColumns.size() - m_dateColumns.size();
+            // temporary placeholder name
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddDateColumn(wxString::Format(L"[DATE%zu]", i+1)); }
+            }
+        // continuous
+        if (m_continuousColumns.size() < info.m_continuousColumns.size())
+            {
+            const auto columnsToAdd = info.m_continuousColumns.size() - m_continuousColumns.size();
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddContinuousColumn(wxString::Format(L"[CONTINUOUS%zu]", i+1)); }
+            }
+        // categoricals
+        if (m_categoricalColumns.size() < info.m_categoricalColumns.size())
+            {
+            const auto columnsToAdd = info.m_categoricalColumns.size() - m_categoricalColumns.size();
+            for (size_t i = 0; i < columnsToAdd; ++i)
+                { AddCategoricalColumn(wxString::Format(L"[CATEGORICAL%zu]", i+1)); }
+            }
+
         if (info.m_idColumn.length())
             { GetIdColumn().SetTitle(info.m_idColumn); }
         // date columns
-        if (m_dateColumns.size() < info.m_dateColumns.size())
-            { m_dateColumns.resize(info.m_dateColumns.size()); }
         for (size_t i = 0; i < info.m_dateColumns.size(); ++i)
             { GetDateColumn(i).SetTitle(info.m_dateColumns.at(i).m_columnName); }
         // categorical columns
-        if (m_categoricalColumns.size() < info.m_categoricalColumns.size())
-            { m_categoricalColumns.resize(info.m_categoricalColumns.size()); }
         for (size_t i = 0; i < info.m_categoricalColumns.size(); ++i)
             { GetCategoricalColumn(i).SetTitle(info.m_categoricalColumns.at(i).m_columnName); }
         // continuous
-        if (m_continuousColumns.size() < info.m_continuousColumns.size())
-            { m_continuousColumns.resize(info.m_continuousColumns.size()); }
         for (size_t i = 0; i < info.m_continuousColumns.size(); ++i)
             { GetContinuousColumn(i).SetTitle(info.m_continuousColumns.at(i)); }
         }
