@@ -154,6 +154,17 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    bool Dataset::HasValidIdData() const
+        {
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if (GetIdColumn().GetValue(i).length())
+                { return true; }
+            }
+        return false;
+        }
+
+    //----------------------------------------------
     void Dataset::SetColumnNames(const ImportInfo& info)
         {
         if (info.m_idColumn.length())
@@ -301,6 +312,90 @@ namespace Wisteria::Data
                 currentColumnType));
             }
         return columnInfo;
+        }
+
+    //----------------------------------------------
+    void Dataset::ExportText(const wxString& filePath,
+                             const wchar_t delimiter, const bool quoteColumns) const
+        {
+        const auto wrapText = [&](const wxString& val)
+            {
+            if (quoteColumns)
+                {
+                // convert double quotes in val to two double quotes,
+                // then wrap text with double quotes
+                wxString escapedText = val;
+                escapedText.Replace(L"\"", L"\"\"", true);
+                return wxString(L"\"" + escapedText + L"\"");
+                }
+            else
+                { return val; }
+            };
+        // combines column names as a delimited string
+        const auto concatColNames = [&](const auto& cols)
+            {
+            wxString colNames;
+            for (const auto& catCol : cols)
+                {
+                colNames.append(wrapText(catCol.GetTitle())).
+                    append(1, delimiter);
+                }
+            colNames.RemoveLast();
+            return colNames;
+            };
+        wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetTitle()) : wxString();
+        wxString continuousColumnNames = concatColNames(GetContinuousColumns());
+        wxString catColumnNames = concatColNames(GetCategoricalColumns());
+        wxString dataColumnNames = concatColNames(GetDateColumns());
+        wxString colNames = (idName.length() ? idName + delimiter : wxString()) +
+            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString()) +
+            (catColumnNames.length() ? catColumnNames + delimiter : wxString()) +
+            (dataColumnNames.length() ? dataColumnNames + delimiter : wxString());
+        if (colNames.length() && colNames.Last() == delimiter)
+            { colNames.RemoveLast();}
+        
+        wxString fileContent = colNames + L'\n';
+
+        // write the data
+        wxString currentRow;
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            currentRow.clear();
+            // ID
+            if (HasValidIdData())
+                { currentRow.append(wrapText(GetIdColumn().GetValue(i))).append(1, delimiter); }
+            // continuous
+            for (const auto& col : GetContinuousColumns())
+                {
+                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString() :
+                                  wxNumberFormatter::ToString(col.GetValue(i), 6,
+                                      wxNumberFormatter::Style::Style_NoTrailingZeroes))).
+                           append(1, delimiter);
+                }
+            // categoricals
+            for (const auto& col : GetCategoricalColumns())
+                {
+                currentRow.append(wrapText(col.GetCategoryLabel(col.GetValue(i)))).
+                           append(1, delimiter);
+                }
+            // dates
+            for (const auto& col : GetDateColumns())
+                {
+                currentRow.append(
+                           wrapText(col.GetValue(i).IsValid() ? col.GetValue(i).FormatISOCombined() : wxString())).
+                           append(1, delimiter);
+                }
+            if (currentRow.length() && currentRow.Last() == delimiter)
+                { currentRow.RemoveLast();}
+            fileContent.append(currentRow).append(1, L'\n');
+            }
+
+        wxFile fl(filePath, wxFile::write);
+        if (!fl.IsOpened() || !fl.Write(fileContent))
+            {
+            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
+                                     wxSysErrorMsg(fl.GetLastError())));
+            }
         }
 
     //----------------------------------------------

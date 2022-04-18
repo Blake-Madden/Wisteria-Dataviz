@@ -25,6 +25,7 @@
 #include <wx/datetime.h>
 #include <wx/uilocale.h>
 #include <wx/filename.h>
+#include <wx/numformatter.h>
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
 #include "../debug/debug_assert.h"
@@ -722,6 +723,10 @@ namespace Wisteria::Data
             const std::optional<wxString>& groupColumn,
             const GroupIdType groupId) const;
 
+        /** @brief Determines if there are any valid IDs in the ID column.
+            @returns `true` if there are any ID values in the ID column.*/
+        [[nodiscard]] bool HasValidIdData() const;
+
         /** @brief Reads the column names from a file and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
             @param filePath The path to the data file.
@@ -757,7 +762,7 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
              throws an exception.*/
-        void ImportCSV(const wxString& filePath, const ImportInfo& info)
+        void ImportCsv(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
             @details This is a shortcut for ImportText(), using tabs as the column separator.
@@ -765,8 +770,31 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
              throws an exception.*/
-        void ImportTSV(const wxString& filePath, const ImportInfo& info)
+        void ImportTsv(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
+        /** @brief Exports the dataset to a text file.
+            @details Continuous columns are exported with six-point precision and date
+             columns are exported in ISO date & time format.
+            @param filePath The file path to save to.
+            @param delimiter The delimiter to save with.
+            @param quoteColumns Whether the columns should be quoted.
+            @throws std::runtime_error If the file can't be written to.*/
+        void ExportText(const wxString& filePath,
+                        const wchar_t delimiter,
+                        const bool quoteColumns) const;
+        /** @brief Exports the dataset to as a tab-delimited text file.
+            @details This is a shortcut for ExportText(), using tabs as the column separator.
+            @param filePath The file path to save to.
+            @throws std::runtime_error If the file can't be written to.*/
+        void ExportTsv(const wxString& filePath) const
+            { ExportText(filePath, L'\t', false); }
+        /** @brief Exports the dataset to as a comma-delimited text file.
+            @details This is a shortcut for ExportText(),
+             using commas as the column separator and quoting the columns.
+            @param filePath The file path to save to.
+            @throws std::runtime_error If the file can't be written to.*/
+        void ExportCsv(const wxString& filePath) const
+            { ExportText(filePath, L'\,', true); }
     private:
         /// @returns The specified continuous column.
         /// @param column The index into the list of continuous columns.
