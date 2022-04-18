@@ -177,9 +177,8 @@ namespace Wisteria::Graphs
         size_t barNumber{ 1 };
         for (const auto& blockTable : groups.get_data())
             {
-            const wxColour blockColor = (m_useGrouping &&
-                static_cast<size_t>(blockTable.first.m_block) < GetColorScheme()->GetColors().size()) ?
-                GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0);
+            const wxColour blockColor = (m_useGrouping ?
+                GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0));
 
             wxString blockLabel{ wxString::Format(_("%s item(s)\n"),
                 wxNumberFormatter::ToString(blockTable.second.second, 0,
@@ -423,9 +422,8 @@ namespace Wisteria::Graphs
             double currentBarBlocksTotal{ 0 };
             for (const auto& block : bins[i])
                 {
-                const wxColour blockColor = (m_useGrouping &&
-                    static_cast<size_t>(block.first) < GetColorScheme()->GetColors().size()) ?
-                    GetColorScheme()->GetColor(block.first) : GetColorScheme()->GetColor(0);
+                const wxColour blockColor = (m_useGrouping ?
+                    GetColorScheme()->GetColor(block.first) : GetColorScheme()->GetColor(0));
                 currentBarBlocksTotal += block.second.first;
 
                 wxString blockLabel{ wxString::Format(_("%s item(s)\n"),

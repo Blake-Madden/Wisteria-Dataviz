@@ -95,9 +95,8 @@ namespace Wisteria::Graphs
         // add the bars (block-by-block)
         for (const auto& blockTable : groups.get_data())
             {
-            const wxColour blockColor = (m_useGrouping &&
-                static_cast<size_t>(blockTable.first.m_block) < GetColorScheme()->GetColors().size()) ?
-                GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0);
+            const wxColour blockColor = (m_useGrouping ?
+                GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0));
 
             wxString blockLabelText{ wxString::Format(_("%s item(s)\n"),
                 wxNumberFormatter::ToString(blockTable.second.second, 0,
