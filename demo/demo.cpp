@@ -252,7 +252,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCsv(L"datasets/mpg.csv",
                 ImportInfo().ContinuousColumns({ L"hwy" }).
                 CategoricalColumns({
                     { L"class", CategoricalImportMethod::ReadAsStrings },
@@ -285,7 +285,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCsv(L"datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week"));
@@ -325,7 +325,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCsv(L"datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week").
@@ -363,7 +363,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mtcarsData = std::make_shared<Data::Dataset>();
         try
             {
-            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+            mtcarsData->ImportCsv(L"datasets/mtcars.csv",
                 ImportInfo().
                 ContinuousColumns({ L"mpg" }).
                 CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
@@ -411,7 +411,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCsv(L"datasets/mpg.csv",
                 ImportInfo().
                 ContinuousColumns({ L"cyl" }));
             }
@@ -449,7 +449,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(L"datasets/Spelling Grades.csv",
+            linePlotData->ImportCsv(L"datasets/Spelling Grades.csv",
                 ImportInfo().
                 // first the Y column, then the X
                 ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
@@ -508,7 +508,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(L"datasets/Spelling Grades.csv",
+            linePlotData->ImportCsv(L"datasets/Spelling Grades.csv",
                 ImportInfo().
                 // first the Y column, then the X
                 ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
@@ -618,7 +618,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
         try
             {
-            companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+            companyAcquisitionData->ImportCsv(L"datasets/Company Acquisition.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({ { L"Start" }, { L"End" } }).
@@ -679,7 +679,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto silverFuturesData = std::make_shared<Data::Dataset>();
         try
             {
-            silverFuturesData->ImportCSV(L"datasets/Silver Futures.csv",
+            silverFuturesData->ImportCsv(L"datasets/Silver Futures.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
                 DateColumns({ { L"Date" } }));
@@ -901,7 +901,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCsv(L"datasets/mpg.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
@@ -930,7 +930,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCsv(L"datasets/mpg.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
@@ -963,7 +963,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCsv(L"datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -997,7 +997,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCsv(L"datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1035,7 +1035,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCsv(L"datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1083,7 +1083,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCsv(L"datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1137,7 +1137,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wcurveData = std::make_shared<Data::Dataset>();
         try
             {
-            wcurveData->ImportCSV(L"datasets/Sense of Belonging.csv",
+            wcurveData->ImportCsv(L"datasets/Sense of Belonging.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Year", L"Belong" }).
                 CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
@@ -1188,7 +1188,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(L"datasets/Graph Library Survey.csv",
+            surveyData->ImportCsv(L"datasets/Graph Library Survey.csv",
                 Data::ImportInfo().
                 CategoricalColumns(
                     {
@@ -1258,7 +1258,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(L"datasets/Graph Library Survey.csv",
+            surveyData->ImportCsv(L"datasets/Graph Library Survey.csv",
                 Data::ImportInfo().
                 CategoricalColumns(
                     {
@@ -1307,7 +1307,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCsv(L"datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1384,7 +1384,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto spellingData = std::make_shared<Data::Dataset>();
         try
             {
-            spellingData->ImportCSV(L"datasets/Spelling Grades.csv",
+            spellingData->ImportCsv(L"datasets/Spelling Grades.csv",
                 ImportInfo().
                 // different order, first the X column, then the Y
                 ContinuousColumns({ L"Week", L"AVG_GRADE" }).
