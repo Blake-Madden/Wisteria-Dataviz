@@ -9,6 +9,7 @@ SET(WISTERIA_SRC
     src/categoricalbarchart.cpp
     src/colorbrewer.cpp
     src/data/dataset.cpp
+    src/data/textclassifier.cpp
     src/debug/debug_profile.cpp
     src/easyexif/demo.cpp
     src/easyexif/exif.cpp
