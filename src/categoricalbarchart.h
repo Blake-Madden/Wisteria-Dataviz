@@ -19,16 +19,16 @@ namespace Wisteria::Graphs
     {
     /** @brief %Bar chart that aggregates the frequency of a categorical column's labels.
     
-        Bars can either be plotted as a regular bar or split into (stacked) groups.
+         Bars can either be plotted as a regular bar or split into (stacked) groups.
         
-        | Regular   | Grouped
-        | :-------------- | :--------------------------------
-        | @image html CatagorizedBarChart.svg width=90% | @image html GroupedCatagorizedBarChart.svg width=90%
+         | Regular   | Grouped
+         | :-------------- | :--------------------------------
+         | @image html CatagorizedBarChart.svg width=90% | @image html GroupedCatagorizedBarChart.svg width=90%
 
         @par Data:
-          This plot accepts a Data::Dataset, where a categorical column
-          is label-based data to be aggregated. A grouping column can optionally be used to
-          create separate blocks within the bars.
+         This plot accepts a Data::Dataset, where a categorical column
+         is label-based data to be aggregated. A grouping column can optionally be used to
+         create separate blocks within the bars.
           
         @note If you want to create a bar chart that aggregates the counts of discrete values
          from a continuous variable, then histograms offer this ability. Refer to the

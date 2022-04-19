@@ -151,7 +151,7 @@ namespace Wisteria::Data
         {
         friend class Dataset;
     public:
-        /// The string table type (i.e., an integer key and string value).
+        /// @brief The string table type (i.e., an integer key and string value).
         using StringTableType = std::map<GroupIdType, wxString>;
 
         /** @brief Constructor.
@@ -181,6 +181,31 @@ namespace Wisteria::Data
                 { return foundLabel->second; }
             else
                 { return std::to_wstring(code); }
+            }
+        /// @returns The key value from a string table that's represents missing data
+        ///  (i.e., empty string), or @c std::nullopt if not found.
+        /// @param stringTable The string table to reivew.
+        [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
+            const StringTableType& stringTable)
+            {
+            for (const auto& [key, value] : stringTable)
+                {
+                if (value.empty())
+                    { return key; }
+                }
+            return std::nullopt;
+            }
+        /** @returns The next group ID that can be inserted into a string table.
+            @param stringTable The string table to reivew.*/
+        [[nodiscard]] static GroupIdType GetNextKey(const StringTableType& stringTable)
+            {
+            if (stringTable.size())
+                {
+                const auto& [key, value] = *stringTable.crbegin();
+                return key;
+                }
+            else
+                { return 0; }
             }
     private:
         /// @brief Removes all data and clears the string table.
@@ -791,7 +816,7 @@ namespace Wisteria::Data
             @param filePath The file path to save to.
             @throws std::runtime_error If the file can't be written to.*/
         void ExportCsv(const wxString& filePath) const
-            { ExportText(filePath, L'\,', true); }
+            { ExportText(filePath, L',', true); }
     private:
         /// @returns The specified continuous column.
         /// @param column The index into the list of continuous columns.
