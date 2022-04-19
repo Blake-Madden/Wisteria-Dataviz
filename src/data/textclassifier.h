@@ -21,10 +21,11 @@ namespace Wisteria::Data
     /** @brief Classifies the items from a text column into categories, based on a
          series of pre-defined categories and their respective regular expressions.
 
-         Every item of text is compared against each regex connected with a list of
-         categories; any matches will then associate the item with that category.
+         Every text item is compared against each regex connected with a list of
+         categories (and optional sub-categories); any matches will then associate
+         the text with that category.
          
-         This is useful for classifying survey free-form comments into categories,
+         This is useful for classifying free-form comments from a survey into categories,
          and then taking a frequency count of those categories.
 
          @par Usage:
@@ -32,20 +33,24 @@ namespace Wisteria::Data
          The first step is to load a dataset with the categories and the regular
          expressions used to classify text into them:
          
-         | CATEGORY        | PATTERN                            | 
-         | :--             | :--                                |
-         | Facilities      | (?i)stadium                        |
-         | Facilities      | (?i)\\bparking                     |
-         | Athletics       | (?i)(foot\|basket\|base\|soft)ball |
-         | Athletics       | (?i)stadium                        |
-         | Food & Beverage | (?i)\\bfood\\b                     |
-         | Food & Beverage | (?i)pretzel                        |
+         | CATEGORY        | SUBCATEGORY | PATTERN                            | 
+         | :--             |             | :--                                |
+         | Facilities      |             | (?i)stadium                        |
+         | Facilities      | Parking Lot | (?i)\\bparking                     |
+         | Athletics       |             | (?i)(foot\|basket\|base\|soft)ball |
+         | Athletics       |             | (?i)stadium                        |
+         | Food & Beverage |             | (?i)\\bfood\\b                     |
+         | Food & Beverage |             | (?i)pretzel                        |
 
          This will build a classifier with the categories `Facilities`, `Athletics`, and
          `Food & Beverage`. Each of these categories will have their own set of regexes.
+
          For example, any text that matches `(?i)stadium ` or `(?i)(basket|base|soft)ball`
          will be classified as `Athletics`. Likewise, that same text will additionally be classified
          as `Facilities` because that category also as the regex `(?i)stadium`.
+
+         As another example, any text matching `(?i)\bparking` will be classified into
+         `Facilities` along with the sub-category `Parking Lot`.
 
          @note The regex supported by this class is PCRE syntax described at
          https://www.pcre.org/current/doc/html/pcre2syntax.html.
@@ -61,13 +66,13 @@ namespace Wisteria::Data
 
          This will result in two datasets; one with the comments categorized:
 
-         | COMMENTS                                                          | CATEGORY        |
-         | :--                                                               | :--             |
-         | I love the football games. The stadium needs some repairs though. | Facilities      |
-         | I love the football games. The stadium needs some repairs though. | Athletics       |
-         | The parking lot is hard to find.                                  | Facilities      |
-         | Wish they had hot pretzels at the softball games.                 | Athletics       |
-         | Wish they had hot pretzels at the softball games.                 | Food & Beverage |
+         | COMMENTS                                                          | CATEGORY        | SUBCATEGORY |
+         | :--                                                               | :--             |             |
+         | I love the football games. The stadium needs some repairs though. | Facilities      |             |
+         | I love the football games. The stadium needs some repairs though. | Athletics       |             |
+         | The parking lot is hard to find.                                  | Facilities      | Parking Lot |
+         | Wish they had hot pretzels at the softball games.                 | Athletics       |             |
+         | Wish they had hot pretzels at the softball games.                 | Food & Beverage |             |
 
          And one with the uncategorized comments:
 
@@ -85,14 +90,20 @@ namespace Wisteria::Data
              Note that the same categories can be used throughout the file, with different
              regular expressions next to them. This allows for using numerous regexes to
              classify text into the same category.
+            @param subCategoryColumnName The name of the column with sub-categories in it.
+             (The category column next to this column represents the parent category for
+             these values). If an entry in this column is empty, then strings classified
+             by the parent regular expression will generically fall into the parent category
+             (with no sub-category). Set this to @c std::nullopt to not use sub-categories.
             @param patternsColumnName The name of the column with the regular expression in it.
             @note Any invalid regular expressions loaded from the file will be logged using
              @c wxLogWarning().
             @throws std::runtime_error If the file can't be read or named columns aren't found,
              throws an exception.*/
         void SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
-                               const wxString categoryColumnName,
-                               const wxString patternsColumnName);
+                               const wxString& categoryColumnName,
+                               const std::optional<wxString>& subCategoryColumnName,
+                               const wxString& patternsColumnName);
         /** @brief Classifies a column of text values into previously defined categories
              that rely on regular expression pattern matching.
             @param contentData The dataset with the text to be classified.
@@ -110,13 +121,15 @@ namespace Wisteria::Data
         std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
                         ClassifyData(
                             std::shared_ptr<const Data::Dataset> contentData,
-                            const wxString contentColumnName);
+                            const wxString& contentColumnName);
     private:
         // wxRegEx cannot be copy constructed by design, so use shared pointers instead
-        multi_value_frequency_map<Data::GroupIdType,
+        multi_value_frequency_map<std::pair<Data::GroupIdType, Data::GroupIdType>,
                                   std::shared_ptr<wxRegEx>> m_categoryPatternsMap;
         wxString m_categoryColumnName;
+        std::optional<wxString> m_subCategoryColumnName;
         ColumnWithStringTable::StringTableType m_categoriesStringTable;
+        ColumnWithStringTable::StringTableType m_subCategoriesStringTable;
         };
     }
 

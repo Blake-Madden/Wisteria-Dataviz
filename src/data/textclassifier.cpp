@@ -4,38 +4,62 @@ namespace Wisteria::Data
     {
     //----------------------------------------------------------------
     void TextClassifier::SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
-        const wxString categoryColumnName,
-        const wxString patternsColumnName)
+        const wxString& categoryColumnName,
+        const std::optional<wxString>& subCategoryColumnName,
+        const wxString& patternsColumnName)
         {
         // reset
         m_categoryPatternsMap.clear();
         m_categoryColumnName.clear();
+        m_subCategoryColumnName = std::nullopt;
 
         auto categoryCol = classifierData->GetCategoricalColumn(categoryColumnName);
         if (categoryCol == classifierData->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': category column not found for text classifier."), categoryColumnName));
+                _(L"'%s': category column not found for text classifier."),
+                categoryColumnName));
+            }
+        auto subCategoryCol = (subCategoryColumnName.has_value() ?
+            classifierData->GetCategoricalColumn(subCategoryColumnName.value()) :
+            classifierData->GetCategoricalColumns().cend());
+        if (subCategoryColumnName &&
+            subCategoryCol == classifierData->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': sub-category column not found for text classifier."),
+                subCategoryColumnName.value()));
             }
         auto patternCol = classifierData->GetCategoricalColumn(patternsColumnName);
         if (patternCol == classifierData->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': patterns column not found for text classifier."), patternsColumnName));
+                _(L"'%s': patterns column not found for text classifier."),
+                patternsColumnName));
             }
 
         // used later when classifying a dataset
         m_categoryColumnName = categoryColumnName;
+        m_subCategoryColumnName = subCategoryColumnName;
         m_categoriesStringTable = categoryCol->GetStringTable();
+        m_subCategoriesStringTable = (subCategoryColumnName ?
+            subCategoryCol->GetStringTable() :
+            ColumnWithStringTable::StringTableType());
+        auto subCatMDCode = ColumnWithStringTable::FindMissingDataCode(m_subCategoriesStringTable);
+        if (!subCatMDCode)
+            { subCatMDCode = ColumnWithStringTable::GetNextKey(m_subCategoriesStringTable); }
 
         // build a map of unique categories and all the regexes connected to them.
         for (size_t i = 0; i < classifierData->GetRowCount(); ++i)
             {
             // make sure the regex is OK before loading it for later
-            wxRegEx re(patternCol->GetCategoryLabel(patternCol->GetValue(i)));
-            if (re.IsValid())
+            const auto reValue = patternCol->GetCategoryLabel(patternCol->GetValue(i));
+            wxRegEx re(reValue);
+            if (reValue.length() && re.IsValid())
                 {
-                m_categoryPatternsMap.insert(categoryCol->GetValue(i),
+                m_categoryPatternsMap.insert(
+                    std::make_pair(categoryCol->GetValue(i),
+                        (subCategoryColumnName ? subCategoryCol->GetValue(i) : subCatMDCode.value())),
                     std::make_shared<wxRegEx>(patternCol->GetCategoryLabel(patternCol->GetValue(i))));
                 }
             else
@@ -51,7 +75,7 @@ namespace Wisteria::Data
     std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
         TextClassifier::ClassifyData(
                     std::shared_ptr<const Data::Dataset> contentData,
-                    const wxString contentColumnName)
+                    const wxString& contentColumnName)
         {
         // nothing patterns or categories loaded from previous call to SetClassifierData()?
         if (m_categoryPatternsMap.get_data().size() == 0)
@@ -61,13 +85,19 @@ namespace Wisteria::Data
         if (contentColumn == contentData->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': content column not found in dataset being classified."), contentColumnName));
+                _(L"'%s': content column not found in dataset being classified."),
+                contentColumnName));
             }
 
         // output will be the comments and categories that they matched against
         auto classifiedData = std::make_shared<Data::Dataset>();
         classifiedData->AddCategoricalColumn(contentColumnName, contentColumn->GetStringTable());
         classifiedData->AddCategoricalColumn(m_categoryColumnName, m_categoriesStringTable);
+        if (m_subCategoryColumnName)
+            {
+            classifiedData->AddCategoricalColumn(
+                m_subCategoryColumnName.value(), m_subCategoriesStringTable);
+            }
 
         auto unclassifiedData = std::make_shared<Data::Dataset>();
         unclassifiedData->AddCategoricalColumn(contentColumnName, contentColumn->GetStringTable());
@@ -95,8 +125,16 @@ namespace Wisteria::Data
                 // category ID next to it
                 if (categoryRegexMatched)
                     {
-                    classifiedData->AddRow(Data::RowInfo().Categoricals(
-                        { contentColumn->GetValue(i) , id }));
+                    if (m_subCategoryColumnName)
+                        {
+                        classifiedData->AddRow(Data::RowInfo().Categoricals(
+                            { contentColumn->GetValue(i), id.first, id.second }));
+                        }
+                    else
+                        {
+                        classifiedData->AddRow(Data::RowInfo().Categoricals(
+                            { contentColumn->GetValue(i), id.first }));
+                        }
                     }
                 }
             if (!matchedAnyCategory)
