@@ -30,7 +30,7 @@ canvas->SetBackgroundImage(
     );
 ```
 
-As another example, an image file can be loaded, have an effect applied to it, then
+As another example, an image file can be loaded, have an effect applied to it, and then
 set as a canvas' watermark:
 
 ```cpp

@@ -11,13 +11,13 @@ such as:
 - Built-in copy support
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
 - Mouse- and keyboard-enabled zooming
-- Data [importing](ImportingData.md) (CSV or tab-delimited files) support
+- Data [importing](ImportingData.md) and exporting (CSV or tab-delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date, and ID columns
-- Can handle [HiDPI](HiDPI.md) displays
+- [HiDPI](HiDPI.md) display support
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Microsoft Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds
-- Effects for boxes and bars, including transparency, a glossy look, stipple brushes, and color fades
+- Effects for boxes and bars, including transparency, a glassy look, stipple brushes, and color fades
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
 - Customizable [axes](Axes.md)
@@ -129,7 +129,7 @@ Building
 
 NOTE: A C++17 compatible compiler is required.
 
-First, you will need to get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) (3.1.6 or higher is required):
+First, you will need to get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) (3.1.7 or higher is required):
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
@@ -190,4 +190,4 @@ variable there.
 Dependencies
 =============================
 
-[wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.1.6
+[wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.1.7

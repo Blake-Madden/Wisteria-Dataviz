@@ -62,7 +62,7 @@ plot->AddBar(BarChart::Bar(1,
         // set its color to orange
         Brush(Colors::ColorBrewer::GetColor(Colors::Color::Orange)).
         // add a decal, which is a label displayed across the block
-        Decal(Label(PlotItemInfo(wxString::Format(L"$(%s)",
+        Decal(Label(GraphItemInfo(wxString::Format(L"$(%s)",
             wxNumberFormatter::ToString(liabilitiesAmount,0,
                 wxNumberFormatter::Style::Style_NoTrailingZeroes |
                 wxNumberFormatter::Style::Style_WithThousandsSep))).
@@ -76,7 +76,7 @@ plot->AddBar(BarChart::Bar(1,
     BarChart::BarBlock(
         BarChart::BarBlockInfo(assetsAmount/axisScaleDivisor).
         Brush(Colors::ColorBrewer::GetColor(Colors::Color::LavenderMist)).
-        Decal(Label(PlotItemInfo(wxString::Format(L"$%s",
+        Decal(Label(GraphItemInfo(wxString::Format(L"$%s",
             wxNumberFormatter::ToString(assetsAmount,0,
                 wxNumberFormatter::Style::Style_NoTrailingZeroes |
                 wxNumberFormatter::Style::Style_WithThousandsSep))).
@@ -90,7 +90,7 @@ plot->AddBar(BarChart::Bar(1,
     BarChart::BarBlock(
         BarChart::BarBlockInfo(2).
         Brush(Colors::ColorBrewer::GetColor(Colors::Color::LightGray)).
-        Decal(Label(PlotItemInfo(_(L"Liabilities & Assets comparison")).
+        Decal(Label(GraphItemInfo(_(L"Liabilities & Assets comparison")).
             Font(plot->GetBarAxis().GetFont()).
                 // this can control how to fit the decal inside of the block
                 LabelFitting(LabelFit::SplitTextToFit).

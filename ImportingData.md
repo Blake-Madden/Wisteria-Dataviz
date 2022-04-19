@@ -154,11 +154,9 @@ working with imported values. Also, any parsing errors (from malformed input) wh
 Using the Data
 =============================
 
-After importing a dataset, you pass it to a graph to use. Graphs are pre-configured to use specific
-columns from a dataset, so you only need to call a graph's `SetData()` function and it will handle the rest.
-For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's first continuous column (and optionally its group column);
-all other columns in the dataset are ignored. A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two
-continuous columns and a group column.
+After importing a dataset, you then pass it to a graph's `SetData()` function and specify which columns to use.
+For example, a `Wisteria::Graphs::BoxPlot` will use a dataset's continuous column (and optionally a group column).
+A `Wisteria::Graphs::WCurvePlot` will, on the other hand, requires two continuous columns and a group column.
 
 Building a Dataset
 =============================

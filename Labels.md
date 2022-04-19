@@ -21,7 +21,7 @@ annotations, decals, etc. Labels are self-contained text boxes that manage attri
 
 They can be displayed horizontally or vertically (via `Label::SetTextOrientation()`), and support multiline text.
 
-A `Label` is edited mostly through its `GetGraphItemInfo()` method. This returns its `PlotItemInfo`, which can edit
+A `Label` is edited mostly through its `GetGraphItemInfo()` method. This returns its `GraphItemInfo`, which can edit
 multiple fields through chainable property calls. For example, the following will set a right axis title's font color,
 font background color, outline, and text all in one call:
 
@@ -80,7 +80,7 @@ alignment of a Label can also be controlled via `Label::GetGraphItemInfo().SetPa
 
 ```cpp
 Label groupHeader(
-        PlotItemInfo(
+        GraphItemInfo(
         L"My Section Header").
         Scaling(GetScaling()).
         Window(GetWindow()).
@@ -148,7 +148,7 @@ This feature can be useful when creating a legend (see below).
 Constraining a Label within an Area
 =============================
 
-To ensure that a label fits within a given area, use `CalculateFontSizeToFitBoundingBox()` to find the proper font size
+To ensure that a label fits within a given area, use `CalcFontSizeToFitBoundingBox()` to find the proper font size
 to make the label fit.
 
 Adding an Annotation
@@ -161,7 +161,7 @@ intersection of 3 (the X axis value) and 59 (the Y axis values):
 
 ```cpp
 auto note = std::make_shared<Label>(
-    PlotItemInfo(L"What happened this week?\nAre we sure this is correct???").
+    GraphItemInfo(L"What happened this week?\nAre we sure this is correct???").
     Pen(*wxLIGHT_GREY).
     FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
     Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
@@ -188,7 +188,7 @@ Labels can also be used to construct a legend.
 ```cpp
 auto legend = std::make_shared<GraphItems::Label>(
     // set the legend's text (newlines start a new legend item)
-    PlotItemInfo(_(L"Items:\nFirst item\nSecond Item")).
+    GraphItemInfo(_(L"Items:\nFirst item\nSecond Item")).
     // don't show an outline around the legend
     Pen(wxNullPen).
     // add space for the icons
@@ -204,10 +204,10 @@ legend->GetLegendIcons().emplace_back(
         *wxBLACK));
 
 // "canvas" is the parent canvas that this legend will be added to.
-// Canvas::CalculateMinWidthProportion() calculates the percent of the canvas
+// Canvas::CalcMinWidthProportion() calculates the percent of the canvas
 // that the legend will need, and passing this value to SetCanvasWidthProportion()
 // will tell the canvas later what this size is.
-legend->SetCanvasWidthProportion(canvas->CalculateMinWidthProportion(legend));
+legend->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(legend));
 ```
 
 Note that the text for a legend is one string, where each newline indicates a new item in the legend.
@@ -222,7 +222,7 @@ canvas->SetFixedObjectsGridSize(1, 2);
 canvas->SetFixedObject(0, 0, graph);
 
 // calculate its required width and add it
-legend->SetCanvasWidthProportion(canvas->CalculateMinWidthProportion(legend));
+legend->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(legend));
 canvas->SetFixedObject(0, 1, legend);
 ```
 
@@ -237,10 +237,10 @@ Likewise, a legend beneath or above its graph can be horizontally centered or ri
 via `SetPageHorizontalAlignment()`.
 
 Most graph types have built-in functions to construct a legend, which can be edited prior to moving
-into a canvas. If edits are made to the returned legend, be sure to call `Canvas::CalculateMinWidthProportion()`
+into a canvas. If edits are made to the returned legend, be sure to call `Canvas::CalcMinWidthProportion()`
 (see above) to recalculate its best fit before adding it to a canvas.
 
-Uniform Widths {#uniform-widths}
+Uniform Widths
 =============================
 
 To set a group of labels to a uniform width, call `Label::SetMinimumUserSize()` for each label, passing

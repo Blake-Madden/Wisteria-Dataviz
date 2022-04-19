@@ -10,7 +10,7 @@ when you construct it:
 
 ```cpp
 Label groupHeader(
-        PlotItemInfo(
+        GraphItemInfo(
         L"My Section Header").
         // set the label's scaling to the plot's
         // scaling, which relates to the size or
