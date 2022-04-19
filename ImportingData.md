@@ -9,8 +9,8 @@ the X data, another a grouping column, etc. Then you would pass the dataset to a
 
 Importing
 =============================
-Datasets can be imported from tab- or comma-delimited text files via `Wisteria::Data::Dataset::ImportCSV()` or
-`Wisteria::Data::Dataset::ImportTSV()`. During this import, you indicate which columns to include and how
+Datasets can be imported from tab- or comma-delimited text files via `Wisteria::Data::Dataset::ImportCsv()` or
+`Wisteria::Data::Dataset::ImportTsv()`. During this import, you indicate which columns to include and how
 they should be used by your graphs. This variable selection is done through the `Wisteria::Data::ImportInfo` class,
 which include chainable calls which classify the columns. For example:
 
@@ -49,7 +49,7 @@ for importing a grouping column in either of these formats:
 | GENDER |
 | --:    |
 | 1      |
-|        |
+| &nbsp; |
 | 2      |
 | 2      |
 | 2      |
@@ -62,7 +62,7 @@ or
 | GENDER |
 | --:    |
 | M      |
-|        |
+| &nbsp; |
 | F      |
 | F      |
 | F      |

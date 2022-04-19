@@ -23,7 +23,7 @@ Label groupHeader(
 
 Note that the DPI scaling that a plot item uses (based on the parent window) differs from the
 general scaling of the object (via `GetScaling()`, `SetScaling()`, and the `Scaling()` property when
-being constructed). An items scaling relates scaling of the plot's size, which changes as the window
+being constructed). An item's scaling relates scaling of the plot's size, which changes as the window
 is resized or zoomed into. An item's scaling can be set to the plot's scaling, but it can also
 be set to something else (gernally 1.0) if the size it is constructed with should not be scaled to the
 window.

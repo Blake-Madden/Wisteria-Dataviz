@@ -12,7 +12,7 @@ Basic
 | :-------------------------------- |
 | ![](docs/doxygen/images/BarChartImage.svg) |
 
-| Categorized Bar Chart (Wisteria::Graphs::CategorizedBarChart) | Categorized, Grouped Bar Chart (Wisteria::Graphs::CategorizedBarChart) |
+| Categorized Bar Chart (Wisteria::Graphs::CategoricalBarChart) | Categorized, Grouped Bar Chart (Wisteria::Graphs::CategoricalBarChart) |
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/CatagorizedBarChart.svg) | ![](docs/doxygen/images/GroupedCatagorizedBarChart.svg) |
 
