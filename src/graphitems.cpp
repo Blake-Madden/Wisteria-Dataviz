@@ -15,10 +15,10 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     double GraphItemBase::GetDPIScaleFactor() const noexcept
         {
-        wxASSERT_LEVEL_2_MSG(m_itemInfo.m_parentCanvas,
-                             L"Plot item should have a parent canvas connected to it for proper DPI scaling.");
-        return ((m_itemInfo.m_parentCanvas != nullptr) ?
-                 m_itemInfo.m_parentCanvas->GetDPIScaleFactor() : 1);
+        wxASSERT_LEVEL_2_MSG(m_itemInfo.m_dpiScaleFactor.has_value(),
+                             L"Graph item should have a proper DPI scaling.");
+        return (m_itemInfo.m_dpiScaleFactor.has_value() ?
+                m_itemInfo.m_dpiScaleFactor.value() : 1);
         }
 
     //-------------------------------------------
@@ -30,7 +30,7 @@ namespace Wisteria::GraphItems
             const wxRect ItemBoundingBox(GetBoundingBox());
             GraphItems::Label selectionLabel(GraphItemInfo(GetGraphItemInfo()).
                 Scaling(scaling).Pen(*wxBLACK_PEN).
-                Window(GetWindow()).
+                DPIScaling(GetDPIScaleFactor()).
                 Padding(2, 2, 2, 2).FontBackgroundColor(*wxWHITE).
                 Anchoring(Anchoring::Center).
                 AnchorPoint(ItemBoundingBox.GetTopLeft() +
@@ -490,7 +490,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Points2D::AddPoint(Point2D pt)
         {
-        pt.SetWindow(GetWindow());
+        pt.SetDPIScaleFactor(GetDPIScaleFactor());
         pt.SetScaling(GetScaling());
         const wxRect ptBoundingBox = pt.GetBoundingBox();
         m_points.push_back(pt);
@@ -546,7 +546,7 @@ namespace Wisteria::GraphItems
                 const wxRect ItemBoundingBox(point.GetBoundingBox());
                 GraphItems::Label selectionLabel(
                     GraphItemInfo(point.GetText()).Scaling(scaling).Pen(*wxBLACK_PEN).
-                    Window(GetWindow()).
+                    DPIScaling(GetDPIScaleFactor()).
                     Padding(2, 2, 2, 2).FontBackgroundColor(*wxWHITE).
                     AnchorPoint(ItemBoundingBox.GetTopLeft()+wxPoint(ItemBoundingBox.GetWidth()/2,
                                 ItemBoundingBox.GetHeight()/2)));

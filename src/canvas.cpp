@@ -624,6 +624,7 @@ namespace Wisteria
         : wxScrolledWindow(parent, itemId, pos, size,
                            flags|wxBORDER_NONE|wxVSCROLL|wxHSCROLL|wxFULL_REPAINT_ON_RESIZE)
         {
+        m_dpiScaleFactor = GetDPIScaleFactor();
         m_watermarkFont.MakeBold();
         m_canvasMinWidth = GetDefaultCanvasWidth();
         m_canvasMinHeight = GetDefaultCanvasHeight();
@@ -685,7 +686,7 @@ namespace Wisteria
         // add the left titles
         for (auto& title : m_leftTitles)
             {
-            title.SetWindow(this);
+            title.SetDPIScaleFactor(m_dpiScaleFactor);
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
@@ -722,7 +723,7 @@ namespace Wisteria
         // add the right titles
         for (auto& title : m_rightTitles)
             {
-            title.SetWindow(this);
+            title.SetDPIScaleFactor(m_dpiScaleFactor);;
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomRightCorner ||
@@ -759,7 +760,7 @@ namespace Wisteria
         // add the top titles
         for (auto& title : m_topTitles)
             {
-            title.SetWindow(this);
+            title.SetDPIScaleFactor(m_dpiScaleFactor);;
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
                 title.GetAnchoring() == Anchoring::BottomRightCorner) ? title.GetBoundingBox(measureDC).GetHeight() :
@@ -793,7 +794,7 @@ namespace Wisteria
         // add the bottom titles
         for (auto& title : m_bottomTitles)
             {
-            title.SetWindow(this);
+            title.SetDPIScaleFactor(m_dpiScaleFactor);;
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                 title.GetAnchoring() == Anchoring::TopRightCorner) ? title.GetBoundingBox(measureDC).GetHeight() :
@@ -865,7 +866,7 @@ namespace Wisteria
         fixedObjectRect.SetWidth(fixedObjectRect.GetWidth()-(leftBorder+rightBorder));
         fixedObjectRect.SetHeight(fixedObjectRect.GetHeight()-(topBorder+bottomBorder));
 
-        // reset all objects' canvas alignments
+        // reset all objects' canvas alignments and DPI scaling
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
             fixedObjectsRowPos != GetFixedObjects().end();
             ++fixedObjectsRowPos)
@@ -880,6 +881,7 @@ namespace Wisteria
                     (*objectsPos)->SetContentBottom(std::nullopt);
                     (*objectsPos)->SetContentLeft(std::nullopt);
                     (*objectsPos)->SetContentRight(std::nullopt);
+                    (*objectsPos)->SetDPIScaleFactor(m_dpiScaleFactor);
                     }
                 }
             }
@@ -1080,9 +1082,7 @@ namespace Wisteria
             column >= GetFixedObjects().at(0).size())
             { return; }
         if (object)
-            {
-            object->SetWindow(this); // used for DPI scaling
-            }
+            { object->SetDPIScaleFactor(m_dpiScaleFactor); }
         GetFixedObjects().at(row).at(column) = object;
         // how much of the canvas is being consumed by the row
         // that this item was just added to
@@ -1175,6 +1175,10 @@ namespace Wisteria
     //-------------------------------------------
     void Canvas::OnDraw(wxDC& dc)
         {
+        m_dpiScaleFactor = dc.GetDPIScaleFactor();
+
+        CalcAllSizes();
+
         dc.Clear();
         // fill in the background color with a linear gradient (if there is a user defined color)
         if (m_bgColorUseLinearGradient && GetBackgroundColor().IsOk())
@@ -1189,14 +1193,14 @@ namespace Wisteria
         // fill in the background image (if there is one)
         if (GetBackgroundImage().IsOk() && m_bgOpacity != wxALPHA_TRANSPARENT)
             {
-            GetBackgroundImage().SetWindow(this);
+            GetBackgroundImage().SetDPIScaleFactor(m_dpiScaleFactor);;
             GetBackgroundImage().SetAnchoring(Anchoring::Center);
             GetBackgroundImage().SetAnchorPoint(
                 wxPoint(GetCanvasRect().GetLeft() + safe_divide(GetCanvasRect().GetWidth(), 2),
                         GetCanvasRect().GetTop() + safe_divide(GetCanvasRect().GetHeight(), 2)));
             // we clip the image a little so that it fits the area better
             GetBackgroundImage().SetBestSize(GetCanvasRect().GetSize() +
-                                             wxSize(100*GetDPIScaleFactor(), 100*GetDPIScaleFactor()));
+                                             wxSize(100*m_dpiScaleFactor, 100*m_dpiScaleFactor));
             GetBackgroundImage().SetOpacity(m_bgOpacity);
             GetBackgroundImage().Draw(dc);
             }

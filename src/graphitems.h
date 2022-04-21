@@ -682,14 +682,6 @@ namespace Wisteria
                 m_showLabelWhenSelected = showLabelWhenSelected;
                 return *this;
                 }
-            /// @brief Sets the parent window (usually a Canvas), which is used for DPI scaling.
-            /// @param canvas The item's parent canvas.
-            /// @returns A self reference.
-            GraphItemInfo& Window(const wxWindow* canvas)
-                {
-                m_parentCanvas = canvas;
-                return *this;
-                }
             /** @brief Sets the margins for this object when being used as separate grid
                  in a multi-item canvas, starting at 12 o'clock and going clockwise.
                 @param top The top margin.
@@ -778,6 +770,14 @@ namespace Wisteria
             GraphItemInfo& Scaling(const double scaling)
                 {
                 m_scaling = scaling;
+                return *this;
+                }
+            /// @brief Sets the DPI scaling.
+            /// @param scaling The object's DPI scaling.
+            /// @returns A self reference.
+            GraphItemInfo& DPIScaling(const double scaling)
+                {
+                m_dpiScaleFactor = scaling;
                 return *this;
                 }
             /// @brief Sets the anchor point.
@@ -917,7 +917,6 @@ namespace Wisteria
             wxCoord m_leftCanvasMargin{ 0 };
             wxCoord m_topCanvasMargin{ 0 };
             wxCoord m_bottomCanvasMargin{ 0 };
-            const wxWindow* m_parentCanvas{ nullptr };
             // labels and drawing
             wxPen m_pen{ *wxBLACK_PEN };
             wxBrush m_brush{ *wxWHITE_BRUSH };
@@ -949,6 +948,7 @@ namespace Wisteria
             wxPoint m_point{ 0, 0 };
             // scaling
             double m_scaling{ 1 };
+            std::optional<double> m_dpiScaleFactor{ std::nullopt };
             };
 
         /// @brief Abstract class for elements that can be drawn on a canvas.
@@ -999,7 +999,22 @@ namespace Wisteria
                 @sa SetScaling().*/
             [[nodiscard]] double GetScaling() const noexcept
                 { return m_itemInfo.m_scaling; }
-            /// @returns The item's parent's (i.e., Canvas) DPI scale factor.
+            /** @brief Sets the DPI scaling of the element.
+                @details This will affect the thickness of the object's outline.
+                 Also, for objects with a center point (Image, Label, Point2D),
+                 this will affect the size of the object.
+                @param scaling The scaling factor.*/
+            virtual void SetDPIScaleFactor(const double scaling)
+                {
+                wxASSERT_LEVEL_2_MSG(scaling > 0,
+                                     L"DPI Scaling in canvas object is less than or equal to zero?!");
+                if (scaling <= 0)
+                    { return; }
+                m_itemInfo.m_dpiScaleFactor = scaling;
+                InvalidateCachedBoundingBox();
+                }
+            /** @returns The DPI scaling of the element.
+                @sa SetScaling().*/
             [[nodiscard]] double GetDPIScaleFactor() const noexcept;
             /// @returns `true` if the object is not reset to specific coordinates on the canvas
             ///  and has to have its position adjusted as the canvas gets rescaled.
@@ -1448,16 +1463,6 @@ namespace Wisteria
                  and padded when inserted into the grid of a multi-item canvas
                  (i.e., a Label being used as a legend next to a plot).*/
             /// @{
-
-            /// @returns The parent window (usually a Canvas) for this item,
-            ///  which is used for its DPI scale factor.
-            [[nodiscard]] const wxWindow* GetWindow() const noexcept
-                { return m_itemInfo.m_parentCanvas; }
-            /// @brief Sets the parent window (usually a Canvas) for this item,
-            ///  which is used for its DPI scale factor.
-            /// @param window The parent window.
-            virtual void SetWindow(const wxWindow* window) noexcept
-                { m_itemInfo.m_parentCanvas = window; }
 
             /** @brief Sets the margins for this object when being used as separate
                  grid in a multi-item canvas, starting at 12 o'clock and going clockwise.
@@ -1922,11 +1927,11 @@ namespace Wisteria
             /// @brief Sets the parent window (usually a Canvas) for this item,
             ///  which is used for its DPI scale factor.
             /// @param window The parent window.
-            void SetWindow(const wxWindow* window) noexcept final
+            void SetDPIScaleFactor(const double scaling) noexcept final
                 {
-                GraphItemBase::SetWindow(window);
+                GraphItemBase::SetDPIScaleFactor(scaling);
                 for (auto& point : m_points)
-                    { point.SetWindow(window); }
+                    { point.SetDPIScaleFactor(scaling); }
                 }
         private:
             /** @brief Sets whether the points are selected.

@@ -151,7 +151,7 @@ namespace Wisteria::UI
         dc.Clear();
         if (m_img.IsOk())
             {
-            m_img.SetWindow(this);
+            m_img.SetDPIScaleFactor(GetDPIScaleFactor());
             m_img.SetOpacity(GetOpacity());
             m_img.SetAnchoring(Anchoring::TopLeftCorner);
             m_img.SetAnchorPoint(

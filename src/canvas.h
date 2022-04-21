@@ -134,7 +134,7 @@ namespace Wisteria
         void SetWatermarkLogo(const GraphItems::Image& watermark) noexcept
             {
             m_watermarkImg = watermark;
-            m_watermarkImg.SetWindow(this);
+            m_watermarkImg.SetDPIScaleFactor(m_dpiScaleFactor);
             }
         /// @}
 
@@ -158,10 +158,10 @@ namespace Wisteria
            { m_canvasMinHeight = minHeight; }
         /// @returns The default minimum width used for canvas. Can be overridden by SetCanvasMinWidth().
         [[nodiscard]] int GetDefaultCanvasWidth() const
-            { return FromDIP(wxSize(700,500)).GetWidth(); }
+            { return wxSize(700,500).GetWidth() * m_dpiScaleFactor; }
         /// @returns The default minimum height used for canvas. Can be overridden by SetCanvasMinHeight().
         [[nodiscard]] int GetDefaultCanvasHeight() const
-            { return FromDIP(wxSize(700,500)).GetHeight(); }
+            { return wxSize(700,500).GetHeight() * m_dpiScaleFactor; }
         /// @returns The diagonal length of the canvas using the Pythagorean theorem.
         [[nodiscard]] long GetCanvasDiagonal() const
             {
@@ -169,13 +169,13 @@ namespace Wisteria
                     (static_cast<double>(GetCanvasRect().GetWidth()) * GetCanvasRect().GetWidth()) +
                     (static_cast<double>(GetCanvasRect().GetHeight()) * GetCanvasRect().GetHeight())));
             }
-        /** @brief Calculates the minimum percent of the canvas an items should consume when at 1.0 scaling.
+        /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @note This should be passed to the items SetCanvasWidthProportion() method prior to adding to the canvas.*/
         [[nodiscard]] double CalcMinWidthProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item) const
             { return safe_divide<double>(item->GetBoundingBox().GetWidth(), GetCanvasMinWidth()); }
-        /** @brief Calculates the minimum percent of the canvas an items should consume when at 1.0 scaling.
+        /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @note This can be passed to the canvas's SetRowProportion() method.*/
@@ -504,6 +504,7 @@ namespace Wisteria
 
         static constexpr double ZOOM_FACTOR{ 1.5 };
         int m_zoomLevel{ 0 };
+        double m_dpiScaleFactor{ 1.0 };
 
         wxRect m_rect;
         // The minimum width of the canvas.
