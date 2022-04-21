@@ -224,10 +224,10 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void LinePlot::RecalcSizes()
+    void LinePlot::RecalcSizes(wxDC& dc)
         {
         // clear everything, update axes mirroring or whatever if requested by client
-        Graph2D::RecalcSizes();
+        Graph2D::RecalcSizes(dc);
 
         for (auto& line : m_lines)
             {

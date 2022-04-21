@@ -302,7 +302,7 @@ namespace Wisteria::Graphs
             Calculate();
             }
         void Calculate();
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
         
         /// @brief Get the color scheme used for the boxes.
         /// @returns The color scheme used for the boxes.

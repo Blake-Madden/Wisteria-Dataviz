@@ -366,7 +366,7 @@ namespace Wisteria
         /// @brief Calculates the sizes of all objects on the canvas.
         /// @details Call this if customizations have been made to a subobject (e.g., a plot) and you
         ///  wish to refresh the content.
-        void CalcAllSizes();
+        void CalcAllSizes(wxDC& dc);
         /** @brief The scaling of the size of the canvas compared to the default minimum size.
             @details This is used to see how much fonts and lines need to be increased to match the screen size.
             @returns The scaling.*/

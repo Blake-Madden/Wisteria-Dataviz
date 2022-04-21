@@ -471,7 +471,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] const Wisteria::GraphItems::Label& GetDonutHoleLabel() const noexcept
             { return m_donutHoleLabel; }
     private:
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
 
         /// @brief Get the color scheme used for the slices.
         /// @returns The color scheme used for the slices.

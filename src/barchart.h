@@ -837,7 +837,7 @@ namespace Wisteria::Graphs
             { return GetBarAxis().GetAxisPoints().size()-2; }
         /// @brief Recalculates the layout of the elements on the plot.
         ///  Call this after adding all of your bars.
-        void RecalcSizes() override;
+        void RecalcSizes(wxDC& dc) override;
         /** @brief Recalculates the scaling axis based on the size and positioning on a given bar.
             @param bar The bar to review.*/
         void UpdateScalingAxisFromBar(const Bar& bar);

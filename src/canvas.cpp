@@ -632,7 +632,8 @@ namespace Wisteria
         SetBackgroundColour(*wxWHITE);
         SetScrollbars(10, 10, 0, 0);
         SetVirtualSize(size);
-        CalcAllSizes();
+        wxMemoryDC measureDC;
+        CalcAllSizes(measureDC);
 
         Bind(wxEVT_MENU,
             [this]([[maybe_unused]] wxCommandEvent&)
@@ -832,12 +833,13 @@ namespace Wisteria
         if (m_zoomLevel <= 0)
             {
             m_rect = GetClientRect();
-            CalcAllSizes();
+            wxMemoryDC measureDC;
+            CalcAllSizes(measureDC);
             SetVirtualSize(GetCanvasRect().GetSize());
             }
         }
 
-    void Canvas::CalcAllSizes()
+    void Canvas::CalcAllSizes(wxDC& dc)
         {
         wxASSERT_MSG(
             (std::accumulate(m_rowProportions.cbegin(), m_rowProportions.cend(), 0.0)) <= 1,
@@ -854,11 +856,10 @@ namespace Wisteria
 
         // calculate the left/right margins around the canvas and construct the titles
         GetTitles().clear();
-        wxGCDC measureDC;
-        const long leftBorder = CalcLeftTitles(measureDC, titleSpacingWidth);
-        const long topBorder = CalcTopTitles(measureDC, titleSpacingWidth);
-        const long bottomBorder = CalcBottomTitles(measureDC, titleSpacingWidth);
-        const long rightBorder = CalcRightTitles(measureDC, titleSpacingWidth);
+        const long leftBorder = CalcLeftTitles(dc, titleSpacingWidth);
+        const long topBorder = CalcTopTitles(dc, titleSpacingWidth);
+        const long bottomBorder = CalcBottomTitles(dc, titleSpacingWidth);
+        const long rightBorder = CalcRightTitles(dc, titleSpacingWidth);
 
         wxRect fixedObjectRect = GetCanvasRect();
         fixedObjectRect.x += leftBorder;
@@ -924,7 +925,7 @@ namespace Wisteria
                     objectsPos->SetBoundingBox(boundingRect, GetScaling());
                     currentXPos += nonPaddedBoundingRect.GetWidth();
 
-                    objectsPos->RecalcSizes();
+                    objectsPos->RecalcSizes(dc);
                     }
                 }
             if (IsRowContentAligned())
@@ -955,7 +956,7 @@ namespace Wisteria
                                 {
                                 objectsPos->SetContentTop(topPt);
                                 objectsPos->SetContentBottom(bottomPt);
-                                objectsPos->RecalcSizes();
+                                objectsPos->RecalcSizes(dc);
                                 }
                             }
                         }
@@ -1009,7 +1010,7 @@ namespace Wisteria
                                 {
                                 objectPos->SetContentLeft(leftPt);
                                 objectPos->SetContentRight(rightPt);
-                                objectPos->RecalcSizes();
+                                objectPos->RecalcSizes(dc);
                                 }
                             }
                         }
@@ -1177,7 +1178,7 @@ namespace Wisteria
         {
         m_dpiScaleFactor = dc.GetDPIScaleFactor();
 
-        CalcAllSizes();
+        CalcAllSizes(dc);
 
         dc.Clear();
         // fill in the background color with a linear gradient (if there is a user defined color)
@@ -1609,7 +1610,8 @@ namespace Wisteria
         ++m_zoomLevel;
         m_rect.SetWidth(GetCanvasRect().GetWidth()*ZOOM_FACTOR);
         m_rect.SetHeight(GetCanvasRect().GetHeight()*ZOOM_FACTOR);
-        CalcAllSizes();
+        wxMemoryDC measureDC;
+        CalcAllSizes(measureDC);
         SetVirtualSize(GetCanvasRect().GetSize());
         Refresh();
         Update();
@@ -1624,7 +1626,8 @@ namespace Wisteria
         --m_zoomLevel;
         m_rect.SetWidth(GetCanvasRect().GetWidth()/ZOOM_FACTOR);
         m_rect.SetHeight(GetCanvasRect().GetHeight()/ZOOM_FACTOR);
-        CalcAllSizes();
+        wxMemoryDC measureDC;
+        CalcAllSizes(measureDC);
         SetVirtualSize(GetCanvasRect().GetSize());
         Refresh();
         Update();
@@ -1638,7 +1641,8 @@ namespace Wisteria
             { return; }
         m_zoomLevel = 0;
         m_rect = GetClientRect();
-        CalcAllSizes();
+        wxMemoryDC measureDC;
+        CalcAllSizes(measureDC);
         SetVirtualSize(GetCanvasRect().GetSize());
         Refresh();
         Update();

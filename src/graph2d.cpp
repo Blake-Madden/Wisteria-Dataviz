@@ -318,7 +318,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Graph2D::RecalcSizes()
+    void Graph2D::RecalcSizes(wxDC& dc)
         {
         m_plotObjects.clear();
 
@@ -351,9 +351,8 @@ namespace Wisteria::Graphs
 
         // ...but now, see if any axis needs to be stacked and adjust everything again (if needed)
         bool stackingChanged = false;
-        wxGCDC measureDC;
 
-        const bool shouldStackLeftY = GetLeftYAxis().ShouldLabelsBeStackedToFit(measureDC);
+        const bool shouldStackLeftY = GetLeftYAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetLeftYAxis().IsShown() &&
             ((GetLeftYAxis().IsStackingLabels() && !shouldStackLeftY) ||
             (!GetLeftYAxis().IsStackingLabels() && shouldStackLeftY)) )
@@ -362,7 +361,7 @@ namespace Wisteria::Graphs
             stackingChanged = true;
             }
 
-        const bool shouldStackRightY = GetRightYAxis().ShouldLabelsBeStackedToFit(measureDC);
+        const bool shouldStackRightY = GetRightYAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetRightYAxis().IsShown() &&
             ((GetRightYAxis().IsStackingLabels() && !shouldStackRightY) ||
             (!GetRightYAxis().IsStackingLabels() && shouldStackRightY)) )
@@ -371,7 +370,7 @@ namespace Wisteria::Graphs
             stackingChanged = true;
             }
 
-        const bool shouldStackBottomX = GetBottomXAxis().ShouldLabelsBeStackedToFit(measureDC);
+        const bool shouldStackBottomX = GetBottomXAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetBottomXAxis().IsShown() &&
             ((GetBottomXAxis().IsStackingLabels() && !shouldStackBottomX) ||
             (!GetBottomXAxis().IsStackingLabels() && shouldStackBottomX)) )
@@ -380,7 +379,7 @@ namespace Wisteria::Graphs
             stackingChanged = true;
             }
 
-        const bool shouldStackTopX = GetTopXAxis().ShouldLabelsBeStackedToFit(measureDC);
+        const bool shouldStackTopX = GetTopXAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetTopXAxis().IsShown() &&
             ((GetTopXAxis().IsStackingLabels() && !shouldStackTopX) ||
             (!GetTopXAxis().IsStackingLabels() && shouldStackTopX)) )
@@ -396,10 +395,10 @@ namespace Wisteria::Graphs
         // Use a consistent font scaling for the four main axes, using the smallest one.
         // Note that the fonts will only be made smaller (not larger) across the axes, so
         // no need to readjust the plot areas again.
-        const double bottomXLabelScaling = GetBottomXAxis().CalcBestScalingToFitLabels(measureDC);
-        const double topXLabelScaling = GetTopXAxis().CalcBestScalingToFitLabels(measureDC);
-        const double leftYLabelScaling = GetLeftYAxis().CalcBestScalingToFitLabels(measureDC);
-        const double rightYLabelScaling = GetRightYAxis().CalcBestScalingToFitLabels(measureDC);
+        const double bottomXLabelScaling = GetBottomXAxis().CalcBestScalingToFitLabels(dc);
+        const double topXLabelScaling = GetTopXAxis().CalcBestScalingToFitLabels(dc);
+        const double leftYLabelScaling = GetLeftYAxis().CalcBestScalingToFitLabels(dc);
+        const double rightYLabelScaling = GetRightYAxis().CalcBestScalingToFitLabels(dc);
 
         const double smallestLabelScaling = std::min({ bottomXLabelScaling, topXLabelScaling,
                                                        leftYLabelScaling, rightYLabelScaling });
@@ -477,7 +476,7 @@ namespace Wisteria::Graphs
                 title->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox().GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing()) +
-                            (title->GetBoundingBox(measureDC).GetHeight()/2);
+                            (title->GetBoundingBox(dc).GetHeight()/2);
                 topPt.x += GetBoundingBox().GetWidth()/2;
                 title->SetAnchorPoint(topPt);
                 AddObject(title);
@@ -496,7 +495,7 @@ namespace Wisteria::Graphs
         if (GetSubtitle().GetText().length())
             {
             const auto titleSpacing = (GetTitle().GetText().length() ?
-                GetTitle().GetBoundingBox(measureDC).GetHeight() +
+                GetTitle().GetBoundingBox(dc).GetHeight() +
                 ScaleToScreenAndCanvas(GetTitle().GetLineSpacing()) :
                 0);
             auto subtitle = std::make_shared<GraphItems::Label>(GetSubtitle());
@@ -513,7 +512,7 @@ namespace Wisteria::Graphs
                 subtitle->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox().GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) +
-                               (subtitle->GetBoundingBox(measureDC).GetHeight()/2)+titleSpacing;
+                               (subtitle->GetBoundingBox(dc).GetHeight()/2)+titleSpacing;
                 topPt.x += GetBoundingBox().GetWidth()/2;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
@@ -545,7 +544,7 @@ namespace Wisteria::Graphs
                 caption->SetAnchoring(Anchoring::Center);
                 auto bottomPt = GetBoundingBox().GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing()) +
-                               (caption->GetBoundingBox(measureDC).GetHeight()/2);
+                               (caption->GetBoundingBox(dc).GetHeight()/2);
                 bottomPt.x += GetBoundingBox().GetWidth()/2;
                 caption->SetAnchorPoint(bottomPt);
                 AddObject(caption);

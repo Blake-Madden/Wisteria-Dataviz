@@ -338,7 +338,7 @@ namespace Wisteria::Graphs
             @param line The line to add.*/
         void AddLine(const Line& line);
         /// @brief Recalculates the size of embedded objects on the plot.
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
         /// @brief Get the shape scheme used for the points.
         /// @returns The shape scheme used for the points.
         [[nodiscard]] const std::shared_ptr<IconShapeScheme>& GetShapeScheme() const noexcept

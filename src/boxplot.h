@@ -440,7 +440,7 @@ namespace Wisteria::Graphs
              (even if a custom label is provided for where the box is). To override this,
              call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
         void AddBox(const BoxAndWhisker& box);
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
 
         std::vector<BoxAndWhisker> m_boxes;
         bool m_overlayLegend{ true };

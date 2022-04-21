@@ -159,12 +159,13 @@ namespace Wisteria::Graphs
                 GetBarAxis().GetDisplayInterval());
             }
         GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
-        GetCanvas()->CalcAllSizes();
+        wxMemoryDC measureDC;
+        GetCanvas()->CalcAllSizes(measureDC);
         }
 
-    void BarChart::RecalcSizes()
+    void BarChart::RecalcSizes(wxDC& dc)
         {
-        Graph2D::RecalcSizes();
+        Graph2D::RecalcSizes(dc);
 
         // if no bars then just draw a blank 10x10 grid
         if (GetBars().size() == 0)
@@ -183,7 +184,6 @@ namespace Wisteria::Graphs
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
 
         // draw the bars
-        wxGCDC measureDC;
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
         for (auto& bar : m_bars)
             {
@@ -435,17 +435,17 @@ namespace Wisteria::Graphs
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                             { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
-                            { decalLabel->SplitTextToFitBoundingBox(measureDC, decalRect.GetSize()); }
+                            { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
                             {
                             decalLabel->SplitTextToFitBoundingBox(
-                                measureDC, wxSize(decalRect.GetWidth(),
+                                dc, wxSize(decalRect.GetWidth(),
                                 std::numeric_limits<int>::max()));
                             }
                         // if drawing as-is, then draw a box around the label if it's larger than the parent block
                         else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
                             {
-                            const auto actualDecalRect = decalLabel->GetBoundingBox(measureDC);
+                            const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
                             // allow a little wiggle room
                             if (actualDecalRect.GetWidth()-ScaleToScreenAndCanvas(1) > decalRect.GetWidth() ||
                                 actualDecalRect.GetHeight()-ScaleToScreenAndCanvas(1) > decalRect.GetHeight())
@@ -473,7 +473,7 @@ namespace Wisteria::Graphs
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
-                        const wxRect labelBox = decalLabel->GetBoundingBox(measureDC);
+                        const wxRect labelBox = decalLabel->GetBoundingBox(dc);
                         if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                             {
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + leftPadding),
@@ -511,7 +511,7 @@ namespace Wisteria::Graphs
                     // calculate the positions of the bar labels
                     // (will be drawn later so that the bars don't overlap them)
                     bar.GetLabel().SetScaling(GetScaling());
-                    textWidth = bar.GetLabel().GetBoundingBox(measureDC).GetWidth();
+                    textWidth = bar.GetLabel().GetBoundingBox(dc).GetWidth();
                     bar.GetLabel().SetAnchorPoint(wxPoint(middlePointOfBar.x+labelSpacingFromLine+(textWidth/2), middlePointOfBar.y));
                     }
                 else
@@ -761,17 +761,17 @@ namespace Wisteria::Graphs
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                             { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
-                            { decalLabel->SplitTextToFitBoundingBox(measureDC, decalRect.GetSize()); }
+                            { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
                             {
                             decalLabel->SplitTextToFitBoundingBox(
-                                measureDC, wxSize(decalRect.GetWidth(),
+                                dc, wxSize(decalRect.GetWidth(),
                                 std::numeric_limits<int>::max()));
                             }
                         // if drawing as-is, then draw a box around the label if it's larger than the parent block
                         else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
                             {
-                            const auto actualDecalRect = decalLabel->GetBoundingBox(measureDC);
+                            const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
                             if (actualDecalRect.GetWidth() - ScaleToScreenAndCanvas(1) > decalRect.GetWidth() ||
                                 actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) > decalRect.GetHeight())
                                 {
@@ -798,7 +798,7 @@ namespace Wisteria::Graphs
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
-                        const wxRect labelBouningBox = decalLabel->GetBoundingBox(measureDC);
+                        const wxRect labelBouningBox = decalLabel->GetBoundingBox(dc);
                         if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
                             {
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
@@ -839,7 +839,7 @@ namespace Wisteria::Graphs
                     // (will be drawn later so that the bars don't overlap them)
                     bar.GetLabel().SetScaling(GetScaling());
                     bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-                    textHeight = bar.GetLabel().GetBoundingBox(measureDC).GetHeight();
+                    textHeight = bar.GetLabel().GetBoundingBox(dc).GetHeight();
                     bar.GetLabel().SetAnchorPoint(wxPoint(middlePointOfBar.x,
                                                           middlePointOfBar.y - (labelSpacingFromLine+(textHeight/2))));
                     }

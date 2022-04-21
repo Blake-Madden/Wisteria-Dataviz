@@ -1620,7 +1620,7 @@ namespace Wisteria
             /** @brief Recompute coordinates and sizes within this object.
                 @details This is usually done after a scaling update.
                 @note Derived classes need to override this to perform subitem sizing logic.*/
-            virtual void RecalcSizes() {}
+            virtual void RecalcSizes(wxDC& dc) {}
             /// @brief Clears all selected items.
             /// @note Derived classes need to override this to unselect all subitems.
             virtual void ClearSelections()

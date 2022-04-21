@@ -933,7 +933,7 @@ namespace Wisteria::Graphs
         /// Updates the canvas size based on the bar count. This override handles extra bars
         /// needing to be added for categorized plots.
         void UpdateCanvasForBars() final;
-        void RecalcSizes();
+        void RecalcSizes(wxDC& dc) final;
 
         /// @brief Adds a question and its respective responses.
         /// @param question The survey question.

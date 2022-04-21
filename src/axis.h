@@ -1083,7 +1083,7 @@ namespace Wisteria::GraphItems
             { return m_dateDisplayInterval; }
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
         ///  used by canvas to set the axis to a common size with plots next to it.
-        void RecalcSizes() final
+        void RecalcSizes(wxDC& dc) final
             {
             if (IsVertical() && GetContentTop() && GetContentBottom())
                 {

@@ -166,7 +166,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void GanttChart::RecalcSizes()
+    void GanttChart::RecalcSizes(wxDC& dc)
         {
         ClearBars(false);
 
@@ -174,7 +174,7 @@ namespace Wisteria::Graphs
             {
             if (taskInfo.m_start.IsValid() && taskInfo.m_end.IsValid())
                 {
-                wxGCDC measureDC;
+
                 const GraphItems::Label axisLabel(taskInfo.m_name);
 
                 const auto startPt = GetScalingAxis().GetPointFromDate(taskInfo.m_start);
@@ -262,7 +262,7 @@ namespace Wisteria::Graphs
                     {
                     // see how tall the name label is and scale the image to that size
                     br.GetAxisLabel().SetScaling(GetScaling());
-                    const auto labelHeight = br.GetAxisLabel().GetBoundingBox(measureDC).GetHeight();
+                    const auto labelHeight = br.GetAxisLabel().GetBoundingBox(dc).GetHeight();
 
                     const auto scaledSize = wxSize(geometry::calculate_rescale_width(
                         std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
@@ -286,7 +286,6 @@ namespace Wisteria::Graphs
             else
                 {
                 const GraphItems::Label axisLabel(taskInfo.m_name);
-                wxGCDC measureDC;
 
                 const auto startPoint = GetScalingAxis().GetPointFromDate(taskInfo.m_start);
                 const auto endPoint = GetScalingAxis().GetPointFromDate(taskInfo.m_end);
@@ -345,7 +344,7 @@ namespace Wisteria::Graphs
                     {
                     // see how tall the name label is and scale the image to that size
                     arrowBar.GetAxisLabel().SetScaling(GetScaling());
-                    const auto labelHeight = arrowBar.GetAxisLabel().GetBoundingBox(measureDC).GetHeight();
+                    const auto labelHeight = arrowBar.GetAxisLabel().GetBoundingBox(dc).GetHeight();
 
                     const auto scaledSize = wxSize(geometry::calculate_rescale_width(
                         std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
@@ -368,7 +367,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        BarChart::RecalcSizes();
+        BarChart::RecalcSizes(dc);
         }
 
     //----------------------------------------------------------------

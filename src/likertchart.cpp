@@ -1908,7 +1908,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void LikertChart::RecalcSizes()
+    void LikertChart::RecalcSizes(wxDC& dc)
         {
         ClearBars();
         m_responseBarCount = 0;
@@ -2137,7 +2137,7 @@ namespace Wisteria::Graphs
             AddCustomAxis(dividerHorizontalBar);
             }
 
-        BarChart::RecalcSizes();
+        BarChart::RecalcSizes(dc);
 
         // overlay dashed dividing lines between sections
         auto sectionDividerLines = std::make_shared<GraphItems::Lines>(

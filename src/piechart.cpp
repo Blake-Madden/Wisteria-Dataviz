@@ -378,17 +378,16 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::RecalcSizes()
+    void PieChart::RecalcSizes(wxDC& dc)
         {
-        Graph2D::RecalcSizes();
+        Graph2D::RecalcSizes(dc);
 
         // get a square inside of the drawing area for the pie
         wxRect drawArea = GetPlotAreaBoundingBox();
         // add space to the top and bottom to fit a label
-        wxGCDC measureDc;
         const auto labelBox = Label(GraphItemInfo(L"Aq\nAq").
             DPIScaling(GetDPIScaleFactor()).
-            Pen(wxNullPen).Scaling(GetScaling())).GetBoundingBox(measureDc);
+            Pen(wxNullPen).Scaling(GetScaling())).GetBoundingBox(dc);
         drawArea.SetHeight(drawArea.GetHeight() - labelBox.GetHeight()*2);
         drawArea.SetY(labelBox.GetHeight());
         const auto widthDifference = (drawArea.GetWidth() - drawArea.GetHeight());
@@ -414,7 +413,7 @@ namespace Wisteria::Graphs
                 Polygon::GetRectPoints(GetPlotAreaBoundingBox(), &plotAreaPts[0]);
                 for (;;)
                     {
-                    auto labelBox = outerLabel->GetBoundingBox(measureDc);
+                    auto labelBox = outerLabel->GetBoundingBox(dc);
                     if (Polygon::IsInsidePolygon(
                             labelBox.GetTopLeft(), &plotAreaPts[0], plotAreaPts.size()) &&
                         Polygon::IsInsidePolygon(
@@ -478,7 +477,7 @@ namespace Wisteria::Graphs
             AddObject(pSlice);
             if (GetOuterPie().at(i).m_showText)
                 {
-                auto outerLabel = pSlice->CreateOuterLabel(measureDc, drawArea);
+                auto outerLabel = pSlice->CreateOuterLabel(dc, drawArea);
                 outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
                 adjustOuterLabelFont(outerLabel);
                 }
@@ -490,7 +489,7 @@ namespace Wisteria::Graphs
             sliceProportion = (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0) +
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
-            auto middleLabel = pSlice->CreateMiddleLabel(measureDc, sliceProportion,
+            auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
                                                                 GetOuterPieMidPointLabelDisplay());
             if (middleLabel != nullptr)
                 {
@@ -573,7 +572,7 @@ namespace Wisteria::Graphs
 
             if (GetInnerPie().at(i).m_showText)
                 {
-                auto outerLabel = pSlice->CreateOuterLabel(measureDc, outerDrawArea);
+                auto outerLabel = pSlice->CreateOuterLabel(dc, outerDrawArea);
                 outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
                 adjustOuterLabelFont(outerLabel);
 
@@ -592,7 +591,7 @@ namespace Wisteria::Graphs
                 AddObject(connectionLine);
                 }
 
-            auto middleLabel = pSlice->CreateMiddleLabel(measureDc,
+            auto middleLabel = pSlice->CreateMiddleLabel(dc,
                 // take into account the hole consuming a larger % of the inner
                 // area compared to the full pie area
                 safe_divide(1 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,

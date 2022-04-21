@@ -124,9 +124,9 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void CandlestickPlot::RecalcSizes()
+    void CandlestickPlot::RecalcSizes(wxDC& dc)
         {
-        Graph2D::RecalcSizes();
+        Graph2D::RecalcSizes(dc);
 
         const auto candleWidth = std::floor(safe_divide<double>(
             GetPlotAreaBoundingBox().GetWidth(), GetBottomXAxis().GetAxisPointsCount()));

@@ -186,7 +186,7 @@ namespace Wisteria::Graphs
             const LegendCanvasPlacementHint hint,
             const bool includeHeader) const;
     private:
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
 
         struct HeatCell
             {

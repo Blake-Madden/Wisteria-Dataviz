@@ -254,12 +254,12 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void BoxPlot::RecalcSizes()
+    void BoxPlot::RecalcSizes(wxDC& dc)
         {
         if (m_data == nullptr)
             { return; }
 
-        Graph2D::RecalcSizes();
+        Graph2D::RecalcSizes(dc);
         // get how much space we have for all the boxes
         const wxCoord boxWidth = (GetPlotAreaBoundingBox().GetWidth()/(m_boxes.size()+3)) -
                                   ScaleToScreenAndCanvas(10);

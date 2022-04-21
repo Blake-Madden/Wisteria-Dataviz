@@ -168,7 +168,7 @@ namespace Wisteria::Graphs
             const wxString& openColumnName, const wxString& highColumnName,
             const wxString& lowColumnName, const wxString& closeColumnName);
         /// @brief Recalculates the size of embedded objects on the plot.
-        void RecalcSizes() final;
+        void RecalcSizes(wxDC& dc) final;
 
         void UpdateCanvasForPoints()
             {

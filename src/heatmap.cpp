@@ -170,15 +170,13 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void HeatMap::RecalcSizes()
+    void HeatMap::RecalcSizes(wxDC& dc)
         {
         // if no data then bail
         if (m_data == nullptr || m_data->GetRowCount() == 0 || m_matrix.size() == 0)
             { return; }
 
-        Graph2D::RecalcSizes();
-
-        wxGCDC measureDC;
+        Graph2D::RecalcSizes(dc);
 
         const auto maxRowsWhenGrouping = std::ceil(
             safe_divide<double>(m_matrix.size(), m_groupColumnCount));
@@ -234,7 +232,7 @@ namespace Wisteria::Graphs
             // try to keep the axis font size, but use smaller font if necessary
             groupHeaderLabelFont.SetPointSize(std::min(groupHeaderLabelFont.GetPointSize(),
                 Label::CalcFontSizeToFitBoundingBox(
-                measureDC, groupHeaderLabelFont,
+                    dc, groupHeaderLabelFont,
                 drawArea/*really just needing the width measurement*/,
                 groupHeaderLabelTemplate.GetText())) );
 
@@ -242,7 +240,7 @@ namespace Wisteria::Graphs
             if (IsShowingGroupHeaders())
                 {
                 groupHeaderLabelTemplate.GetFont() = groupHeaderLabelFont;
-                const auto measuredSize = groupHeaderLabelTemplate.GetBoundingBox(measureDC);
+                const auto measuredSize = groupHeaderLabelTemplate.GetBoundingBox(dc);
                 groupHeaderLabelHeight = measuredSize.GetHeight();
                 // still too wide, so make it multiline
                 if (measuredSize.GetWidth() > drawArea.GetWidth())
@@ -250,12 +248,12 @@ namespace Wisteria::Graphs
                     groupHeaderLabelTemplate.SetText(
                         wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(),
                                          m_data->GetRowCount(), m_data->GetRowCount()));
-                    groupHeaderLabelHeight = groupHeaderLabelTemplate.GetBoundingBox(measureDC).GetHeight();
+                    groupHeaderLabelHeight = groupHeaderLabelTemplate.GetBoundingBox(dc).GetHeight();
                     groupHeaderLabelMultiline = true;
                     // readjust font size now that it is multiline and can be larger now
                     groupHeaderLabelFont.SetPointSize(std::max(GetBottomXAxis().GetFont().GetPointSize(),
                         Label::CalcFontSizeToFitBoundingBox(
-                        measureDC, groupHeaderLabelFont,
+                            dc, groupHeaderLabelFont,
                         GraphItems::Polygon::DownScaleRect(
                             wxRect(wxSize(groupHeaderLabelHeight, drawArea.GetWidth())), GetScaling()),
                         groupHeaderLabelTemplate.GetText())));
@@ -283,14 +281,14 @@ namespace Wisteria::Graphs
         wxFont groupLabelFont{ GetBottomXAxis().GetFont() };
         groupLabelFont.SetPointSize(// fit font as best possible
             Label::CalcFontSizeToFitBoundingBox(
-                measureDC, groupLabelFont,
+                dc, groupLabelFont,
                 wxSize(widestLabelWidth-ScaleToScreenAndCanvas(labelRightPadding), boxWidth),
                 widestStr));
         // and the labels on the boxes
         wxFont boxLabelFont{ GetBottomXAxis().GetFont() };
         boxLabelFont.SetPointSize(// fit font as best possible
             Label::CalcFontSizeToFitBoundingBox(
-                measureDC, boxLabelFont,
+                dc, boxLabelFont,
                 wxSize(boxWidth, boxWidth),
                 wxNumberFormatter::ToString(m_range.second /* largest value in the range*/, 1,
                     Settings::GetDefaultNumberFormat())));

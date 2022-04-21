@@ -335,7 +335,7 @@ namespace Wisteria::Graphs
              for a plot. All plots should override this.
             @note The base version of this should be called first in derived overrides
              so that the axis and gridlines are drawn.*/
-        void RecalcSizes() override;
+        void RecalcSizes(wxDC& dc) override;
 
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
