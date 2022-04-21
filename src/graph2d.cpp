@@ -108,7 +108,7 @@ namespace Wisteria::Graphs
     Graph2D::Graph2D(Canvas* canvas)
         {
         wxASSERT_MSG(canvas, L"Cannot use a null canvas with a plot!");
-        SetDPIScaleFactor(canvas->GetDPIScaleFactor());
+        SetDPIScaleFactor(canvas ? canvas->GetDPIScaleFactor() : 1);
         SetCanvas(canvas);
  
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
@@ -191,7 +191,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Graph2D::AdjustPlotArea()
+    void Graph2D::AdjustPlotArea(wxDC& dc)
         {
         // sets the physical points for the axes
         const auto adjustAxesPoints = [this]()
@@ -256,17 +256,16 @@ namespace Wisteria::Graphs
         adjustAxesPoints();
 
         long leftAxisOverhang(0), rightAxisOverhang(0), topAxisOverhang(0), bottomAxisOverhang(0);
-        wxGCDC measureDC;
-        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang, topAxisOverhang, bottomAxisOverhang, measureDC);
+        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang, topAxisOverhang, bottomAxisOverhang, dc);
 
         m_calculatedLeftPadding = std::max<long>(leftAxisOverhang,
-                                                 GetLeftYAxis().GetProtrudingBoundingBox(measureDC).GetWidth());
+                                                 GetLeftYAxis().GetProtrudingBoundingBox(dc).GetWidth());
         m_calculatedRightPadding = std::max<long>(rightAxisOverhang,
-                                                  GetRightYAxis().GetProtrudingBoundingBox(measureDC).GetWidth());
+                                                  GetRightYAxis().GetProtrudingBoundingBox(dc).GetWidth());
         m_calculatedBottomPadding = std::max<long>(bottomAxisOverhang,
-                                                   GetBottomXAxis().GetProtrudingBoundingBox(measureDC).GetHeight());
+                                                   GetBottomXAxis().GetProtrudingBoundingBox(dc).GetHeight());
         m_calculatedTopPadding = std::max<long>(topAxisOverhang,
-                                                GetTopXAxis().GetProtrudingBoundingBox(measureDC).GetHeight());
+                                                GetTopXAxis().GetProtrudingBoundingBox(dc).GetHeight());
 
         // shrink the plot area to fit so that the axes outer area fit in the drawing area
         m_plotRect.x += m_calculatedLeftPadding;
@@ -277,15 +276,15 @@ namespace Wisteria::Graphs
         // make space for the titles
         if (GetTitle().GetText().length())
             {
-            m_plotRect.y += GetTitle().GetBoundingBox(measureDC).GetHeight();
+            m_plotRect.y += GetTitle().GetBoundingBox(dc).GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  GetTitle().GetBoundingBox(measureDC).GetHeight());
+                                  GetTitle().GetBoundingBox(dc).GetHeight());
             }
         if (GetSubtitle().GetText().length())
             {
-            m_plotRect.y += GetSubtitle().GetBoundingBox(measureDC).GetHeight();
+            m_plotRect.y += GetSubtitle().GetBoundingBox(dc).GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  GetSubtitle().GetBoundingBox(measureDC).GetHeight());
+                                  GetSubtitle().GetBoundingBox(dc).GetHeight());
             }
         // if both titles, then we need a space above and below them and one between.
         // if only one of the titles, then just a space above and below it.
@@ -300,7 +299,7 @@ namespace Wisteria::Graphs
         if (GetCaption().GetText().length())
             {
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  (GetCaption().GetBoundingBox(measureDC).GetHeight()+
+                                  (GetCaption().GetBoundingBox(dc).GetHeight()+
                                    (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing()*2))));
             }
 
@@ -347,7 +346,7 @@ namespace Wisteria::Graphs
         if (IsYAxisMirrored())
             { GetRightYAxis().CopySettings(GetLeftYAxis()); }
 
-        AdjustPlotArea();
+        AdjustPlotArea(dc);
 
         // ...but now, see if any axis needs to be stacked and adjust everything again (if needed)
         bool stackingChanged = false;
@@ -390,7 +389,7 @@ namespace Wisteria::Graphs
 
         // adjust plot margins again in case stacking was changed
         if (stackingChanged)
-            { AdjustPlotArea(); }
+            { AdjustPlotArea(dc); }
 
         // Use a consistent font scaling for the four main axes, using the smallest one.
         // Note that the fonts will only be made smaller (not larger) across the axes, so

@@ -423,7 +423,7 @@ namespace Wisteria::Graphs
         /// @brief Calculates how much space is needed around the plot to fit everything
         ///  (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
         ///  recalculates the axes' points' positions.
-        void AdjustPlotArea();
+        void AdjustPlotArea(wxDC& dc);
 
         wxRect m_rect;
         wxRect m_plotRect;
