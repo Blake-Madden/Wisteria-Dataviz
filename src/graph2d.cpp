@@ -108,25 +108,42 @@ namespace Wisteria::Graphs
     Graph2D::Graph2D(Canvas* canvas)
         {
         wxASSERT_MSG(canvas, L"Cannot use a null canvas with a plot!");
-        SetWindow(canvas);
+        SetDPIScaleFactor(canvas->GetDPIScaleFactor());
         SetCanvas(canvas);
-        // set axes' DPI information
-        GetLeftYAxis().SetWindow(GetCanvas());
-        GetRightYAxis().SetWindow(GetCanvas());
-        GetBottomXAxis().SetWindow(GetCanvas());
-        GetTopXAxis().SetWindow(GetCanvas());
-
-        GetTitle().SetWindow(GetCanvas());
+ 
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
 
-        GetSubtitle().SetWindow(GetCanvas());
         GetSubtitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetSubtitle().GetFont().MakeSmaller();
 
-        GetCaption().SetWindow(GetCanvas());
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().MakeSmaller();
         GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
+        }
+
+    //----------------------------------------------------------------
+    void Graph2D::SetDPIScaleFactor(const double scaling)
+        {
+        GraphItemBase::SetDPIScaleFactor(scaling);
+        // set axes' DPI information
+        GetLeftYAxis().SetDPIScaleFactor(scaling);
+        GetRightYAxis().SetDPIScaleFactor(scaling);
+        GetBottomXAxis().SetDPIScaleFactor(scaling);
+        GetTopXAxis().SetDPIScaleFactor(scaling);
+        for (auto& customAxis : GetCustomAxes())
+            { customAxis.SetDPIScaleFactor(scaling); }
+
+        GetTitle().SetDPIScaleFactor(scaling);
+        GetSubtitle().SetDPIScaleFactor(scaling);
+        GetCaption().SetDPIScaleFactor(scaling);
+
+        for (auto& object : m_plotObjects)
+            { object->SetDPIScaleFactor(scaling); }
+        for (auto& object : m_embeddedObjects)
+            {
+            if (object.m_object != nullptr)
+                { object.m_object->SetDPIScaleFactor(scaling); }
+            }
         }
 
     //----------------------------------------------------------------
@@ -304,6 +321,8 @@ namespace Wisteria::Graphs
     void Graph2D::RecalcSizes()
         {
         m_plotObjects.clear();
+
+        SetDPIScaleFactor(GetDPIScaleFactor());
 
         GetTopXAxis().SetScaling(GetScaling());
         GetBottomXAxis().SetScaling(GetScaling());
@@ -683,7 +702,7 @@ namespace Wisteria::Graphs
                     Lines ln(wxPen(*wxBLACK, 2, wxPenStyle::wxPENSTYLE_SHORT_DASH), GetScaling());
                     ln.AddLine(anchorPt, interestPt);
                     ln.SetLineStyle(LineStyle::Arrows);
-                    ln.SetWindow(GetCanvas());
+                    ln.SetDPIScaleFactor(GetDPIScaleFactor());
                     ln.Draw(dc);
                     }
                 }
@@ -739,7 +758,7 @@ namespace Wisteria::Graphs
                         AnchorPoint(wxPoint(GetBoundingBox().GetTopRight().x - ScaleToScreenAndCanvas(5),
                                             GetBoundingBox().GetTop() + ScaleToScreenAndCanvas(25))).
                         Anchoring(Anchoring::TopRightCorner).FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).Window(GetWindow()).
+                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2,2,2,2));
                     rulerLabel.SetMinimumUserSize(90, std::nullopt);
                     rulerLabel.Draw(dc);
@@ -784,7 +803,7 @@ namespace Wisteria::Graphs
                             m_debugDrawInfoLabel)).
                         AnchorPoint(GetBoundingBox().GetBottomRight()).
                         Anchoring(Anchoring::BottomRightCorner).FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).Window(GetWindow()).
+                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
                 infoLabel.Draw(dc);
                 }

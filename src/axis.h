@@ -257,7 +257,7 @@ namespace Wisteria::GraphItems
             /** @returns The width of the bracket (including longest label and bracket lines).
                 @param measureDC A graphics context to use for measuring the bracket.
                 @param canvas The bracket's parent canvas to use for DPI scaling.*/
-            [[nodiscard]] wxCoord CalcWidth(wxDC& measureDC, const wxWindow* canvas) const;
+            [[nodiscard]] wxCoord CalcWidth(wxDC& measureDC, const double dpiScaling) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.
@@ -396,13 +396,15 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the parent canvas for the axis, as well as for its persistent subobjects.
             @param canvas The parent canvas.*/
-        void SetWindow(const wxWindow* canvas) noexcept final
+        void SetDPIScaleFactor(const double scaling) final
             {
-            GraphItemBase::SetWindow(canvas);
-            m_title.SetWindow(canvas);
-            m_header.SetWindow(canvas);
-            m_footer.SetWindow(canvas);
-            m_invalidLabel.SetWindow(canvas);
+            GraphItemBase::SetDPIScaleFactor(scaling);
+            m_title.SetDPIScaleFactor(scaling);
+            m_header.SetDPIScaleFactor(scaling);
+            m_footer.SetDPIScaleFactor(scaling);
+            m_invalidLabel.SetDPIScaleFactor(scaling);
+            m_widestLabel.SetDPIScaleFactor(scaling);
+            m_tallestLabel.SetDPIScaleFactor(scaling);
             }
 
         /// @brief Which parts of the axis should be reset when Reset() is called.

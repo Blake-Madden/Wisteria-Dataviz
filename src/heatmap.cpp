@@ -194,7 +194,7 @@ namespace Wisteria::Graphs
 
         // find the width of the longest group label
         GraphItems::Label measuringLabel(GraphItemInfo().Scaling(GetScaling()).
-            Pen(wxNullPen).Window(GetWindow()));
+            Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()));
         wxCoord widestLabelWidth{ 0 };
         wxString widestStr;
         if (m_useGrouping)
@@ -227,7 +227,8 @@ namespace Wisteria::Graphs
                 wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
                                  // largest possible range
                                  m_data->GetRowCount(), m_data->GetRowCount())).
-                Scaling(GetScaling()).Pen(wxNullPen).Window(GetWindow()).
+                Scaling(GetScaling()).Pen(wxNullPen).
+                DPIScaling(GetDPIScaleFactor()).
                 Padding(0, 0, labelRightPadding, 0).
                 Font(groupHeaderLabelFont));
             // try to keep the axis font size, but use smaller font if necessary
@@ -424,8 +425,8 @@ namespace Wisteria::Graphs
             wxNumberFormatter::ToString(minValue, 6,
                 Settings::GetDefaultNumberFormat()))).
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidth()*1.5).
-            Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft).
-            Window(GetWindow()));
+            DPIScaling(GetDPIScaleFactor()).
+            Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft));
         legend->SetBoxCorners(BoxCorners::Rounded);
         if (includeHeader)
             {

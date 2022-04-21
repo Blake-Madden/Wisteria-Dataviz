@@ -845,6 +845,17 @@ namespace Wisteria::Graphs
         ///  The default behaviour is to compare the number of bars to GetBarsPerDefaultCanvasSize(),
         ///  but you can override this function.
         virtual void UpdateCanvasForBars();
+        /** @brief Sets the parent canvas for the axis, as well as for its persistent subobjects.
+            @param canvas The parent canvas.*/
+        void SetDPIScaleFactor(const double scaling) override
+            {
+            Graph2D::SetDPIScaleFactor(scaling);
+            for (auto& bar : m_bars)
+                {
+                bar.m_barLabel.SetDPIScaleFactor(scaling);
+                bar.m_axisLabel.SetDPIScaleFactor(scaling);
+                }
+            }
     private:
         std::vector<Bar> m_bars;
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };

@@ -380,7 +380,7 @@ namespace Wisteria::Graphs
 
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
-            Window(GetWindow()));
+            DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
 
         wxString legendText;

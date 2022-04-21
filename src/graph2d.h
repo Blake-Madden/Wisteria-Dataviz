@@ -50,8 +50,8 @@ namespace Wisteria::Graphs
             {
             if (object != nullptr)
                 {
+                object->SetDPIScaleFactor(GetDPIScaleFactor());
                 m_embeddedObjects.push_back({ object, pt, interestPts });
-                m_embeddedObjects.back().m_object->SetWindow(GetCanvas());
                 }
             }
 
@@ -127,7 +127,6 @@ namespace Wisteria::Graphs
             @param axis The custom axis to add.*/
         void AddCustomAxis(Wisteria::GraphItems::Axis& axis)
             {
-            axis.SetWindow(GetWindow());
             m_customAxes.push_back(axis);
             }
 
@@ -284,10 +283,11 @@ namespace Wisteria::Graphs
             {
             if (object != nullptr)
                 {
-                object->SetWindow(GetCanvas());
+                object->SetDPIScaleFactor(GetDPIScaleFactor());
                 m_plotObjects.push_back(object);
                 }
             }
+        void SetDPIScaleFactor(const double scaling) override;
 
         /** @brief Draws the plot.
             @param dc The DC to draw to.

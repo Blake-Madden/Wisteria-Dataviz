@@ -54,8 +54,6 @@ namespace Wisteria::Graphs
     //-----------------------------------
     void BarChart::AddBar(Bar bar, const bool adjustScalingAxis /*= true*/)
         {
-        bar.m_barLabel.SetWindow(GetWindow());
-        bar.m_axisLabel.SetWindow(GetWindow());
         m_bars.push_back(bar);
 
         const auto customWidth = bar.GetCustomWidth().has_value() ?
@@ -431,7 +429,8 @@ namespace Wisteria::Graphs
                         wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Window(GetWindow());
+                        decalLabel->GetGraphItemInfo().Scaling(GetScaling()).
+                            Pen(wxNullPen).DPIScaling(GetDPIScaleFactor());
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                             { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
@@ -755,7 +754,9 @@ namespace Wisteria::Graphs
                         decalRect.SetHeight(decalRect.GetHeight()-leftPadding);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Window(GetWindow());
+                        decalLabel->GetGraphItemInfo().
+                            Scaling(GetScaling()).Pen(wxNullPen).
+                            DPIScaling(GetDPIScaleFactor());
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
                             { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
@@ -837,7 +838,7 @@ namespace Wisteria::Graphs
                     // calculate the positions of the bar labels
                     // (will be drawn later so that the bars don't overlap them)
                     bar.GetLabel().SetScaling(GetScaling());
-                    bar.GetLabel().SetWindow(GetWindow());
+                    bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
                     textHeight = bar.GetLabel().GetBoundingBox(measureDC).GetHeight();
                     bar.GetLabel().SetAnchorPoint(wxPoint(middlePointOfBar.x,
                                                           middlePointOfBar.y - (labelSpacingFromLine+(textHeight/2))));

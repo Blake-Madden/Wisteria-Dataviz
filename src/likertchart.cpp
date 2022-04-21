@@ -410,7 +410,7 @@ namespace Wisteria::Graphs
         auto legend = std::make_shared<GraphItems::Label>(GraphItemInfo().
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidth()).
             LabelAlignment(TextAlignment::FlushLeft).
-            Window(GetWindow()));
+            DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
 
         // fill in the legend

@@ -476,10 +476,10 @@ namespace Wisteria::Graphs
             wxPoint pt;
             auto outliers = std::make_shared<GraphItems::Points2D>(wxNullPen);
             outliers->SetScaling(GetScaling());
-            outliers->SetWindow(GetWindow());
+            outliers->SetDPIScaleFactor(GetDPIScaleFactor());
             auto dataPoints = std::make_shared<GraphItems::Points2D>(wxNullPen);
             dataPoints->SetScaling(GetScaling());
-            dataPoints->SetWindow(GetWindow());
+            dataPoints->SetDPIScaleFactor(GetDPIScaleFactor());
             for (size_t i = 0; i < box.GetData()->GetRowCount(); ++i)
                 {
                 const auto pointOutline =
@@ -631,7 +631,8 @@ namespace Wisteria::Graphs
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Pen(wxNullPen).Window(GetWindow()));
+            GraphItemInfo().Pen(wxNullPen).
+            DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetGraphItemInfo().Text(
                 wxString::Format(_(L"75th Percentile: %.3f\n"

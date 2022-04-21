@@ -1364,7 +1364,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             _(L"NOTE\n"
                "Should we consider dropping VB.NET from the catalog?\n"
                "Enrollment has been really low the last few years.")).
-            Window(subframe->m_canvas).Padding(4, 4, 4, 4).
+            Padding(4, 4, 4, 4).
             Scaling(2).Pen(wxNullPen));
         note->GetHeaderInfo().Enable(true).FontColor(*wxBLUE).GetFont().MakeBold();
         subframe->m_canvas->SetFixedObject(1, 0, note);
@@ -1447,7 +1447,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // create a common axis, also copied from the line plot's
         // left axis
         auto commonAxis = std::make_shared<Axis>(AxisType::RightYAxis);
-        commonAxis->SetWindow(subframe->m_canvas);
+        commonAxis->SetDPIScaleFactor(subframe->m_canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(linePlot->GetLeftYAxis());
         // Get the canvas size of the axis and add it to the canvas.
         // Note that we need to multiple the calculated size by two because

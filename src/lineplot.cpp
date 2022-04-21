@@ -233,7 +233,7 @@ namespace Wisteria::Graphs
             {
             auto points = std::make_shared<GraphItems::Points2D>(line.GetPen());
             points->SetScaling(GetScaling());
-            points->SetWindow(GetWindow());
+            points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(line.GetStyle());
             points->Reserve(line.GetData()->GetRowCount());
             wxPoint pt;
@@ -276,7 +276,7 @@ namespace Wisteria::Graphs
         {
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
-            Window(GetWindow()));
+            DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
 
         const bool showingMarkers = (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
