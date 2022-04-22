@@ -74,7 +74,7 @@ theChart->GetCaption().GetGraphItemInfo().
 theChart->GetCaption().SplitTextToFitLength(20);
 ```
 
-If using a minimum user-defined size (see [Uniform Widths](#uniform-widths) below), then the vertical
+If using a minimum user-defined size (see "Uniform Widths" below), then the vertical
 alignment of a Label can also be controlled via `Label::GetGraphItemInfo().SetPageAlignment()`
 (or the `LabelPageAlignment` property when being constructed).
 
@@ -83,7 +83,9 @@ Label groupHeader(
         GraphItemInfo(
         L"My Section Header").
         Scaling(GetScaling()).
-        Window(GetWindow()).
+        // call this if being constructed inside of a graph's
+        // size calculation function
+        DPIScaling(GetDPIScaleFactor()).
         // bottom align text within its (minimum-sized bouding box)
         LabelPageVerticalAlignment(PageVerticalAlignment::BottomAligned));
 // At least 200 pixels (not DIPs) tall.

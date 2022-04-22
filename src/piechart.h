@@ -77,7 +77,7 @@ namespace Wisteria::GraphItems
     private:
         wxRect Draw(wxDC& dc) const final;
 
-        bool HitTest(const wxPoint pt) const final
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());

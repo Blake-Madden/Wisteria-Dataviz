@@ -544,7 +544,12 @@ namespace Wisteria
             svg.SetUserScale(safe_divide<double>(width, originalWidth),
                              safe_divide<double>(height, originalHeight));
             svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler());
+            // rescale everything to the SVG DC's scaling
+            CalcAllSizes(svg);
             OnDraw(svg);
+            // readjust the measurements to the canvas's DC
+            wxGCDC gdc(this);
+            CalcAllSizes(gdc);
             return true;
             }
         else
@@ -926,6 +931,7 @@ namespace Wisteria
                     currentXPos += nonPaddedBoundingRect.GetWidth();
 
                     objectsPos->RecalcSizes(dc);
+                    objectsPos->UpdateSelectedItems();
                     }
                 }
             if (IsRowContentAligned())
@@ -957,6 +963,7 @@ namespace Wisteria
                                 objectsPos->SetContentTop(topPt);
                                 objectsPos->SetContentBottom(bottomPt);
                                 objectsPos->RecalcSizes(dc);
+                                objectsPos->UpdateSelectedItems();
                                 }
                             }
                         }
@@ -1011,6 +1018,7 @@ namespace Wisteria
                                 objectPos->SetContentLeft(leftPt);
                                 objectPos->SetContentRight(rightPt);
                                 objectPos->RecalcSizes(dc);
+                                objectPos->UpdateSelectedItems();
                                 }
                             }
                         }
@@ -1177,8 +1185,6 @@ namespace Wisteria
     void Canvas::OnDraw(wxDC& dc)
         {
         m_dpiScaleFactor = dc.GetDPIScaleFactor();
-
-        CalcAllSizes(dc);
 
         dc.Clear();
         // fill in the background color with a linear gradient (if there is a user defined color)
@@ -1353,6 +1359,8 @@ namespace Wisteria
                                &unscrolledPosition.x, &unscrolledPosition.y);
         const wxCoord refreshPadding = ScaleToScreenAndCanvas(10);
 
+        wxGCDC gdc(this);
+
         if (event.LeftDown())
             {
             wxASSERT_LEVEL_2_MSG(currentlyDraggedShape == nullptr,
@@ -1381,7 +1389,7 @@ namespace Wisteria
                     }
                 }
             //see if a movable object is being selected.
-            if (auto movableObjectsPos = FindFreeFloatingObject(unscrolledPosition);
+            if (auto movableObjectsPos = FindFreeFloatingObject(unscrolledPosition, gdc);
                 movableObjectsPos != GetFreeFloatingObjects().rend())
                 {
                 //We tentatively start dragging, but wait for
@@ -1412,7 +1420,7 @@ namespace Wisteria
                      fixedObjectsPos != fixedObjectsRowPos->end();
                      ++fixedObjectsPos)
                     {
-                    if ((*fixedObjectsPos) && (*fixedObjectsPos)->SelectObjectAtPoint(unscrolledPosition))
+                    if ((*fixedObjectsPos) && (*fixedObjectsPos)->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
                         Refresh(true);
                         Update();
@@ -1423,7 +1431,7 @@ namespace Wisteria
                 }
             for (const auto& title : GetTitles())
                 {
-                if (title != nullptr && title->SelectObjectAtPoint(unscrolledPosition))
+                if (title != nullptr && title->SelectObjectAtPoint(unscrolledPosition, gdc))
                     {
                     Refresh(true);
                     Update();
@@ -1649,13 +1657,14 @@ namespace Wisteria
         }
 
     //------------------------------------------------------
-    std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator Canvas::FindFreeFloatingObject(const wxPoint& pt)
+    std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator
+        Canvas::FindFreeFloatingObject(const wxPoint& pt, wxDC& dc)
         {
         for (auto shapePos = GetFreeFloatingObjects().rbegin();
              shapePos != GetFreeFloatingObjects().rend();
              ++shapePos)
             {
-            if ((*shapePos)->HitTest(pt))
+            if ((*shapePos)->HitTest(pt, dc))
                 { return shapePos; }
             }
         return GetFreeFloatingObjects().rend();

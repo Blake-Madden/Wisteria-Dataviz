@@ -37,9 +37,10 @@ namespace Wisteria::GraphItems
                 }
             }
         /** @returns `true` if the given point is inside of the spacer.
-            @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt) const final
-            { return GetBoundingBox().Contains(pt); }
+            @param pt The point to check.
+            @param dc The DC to measure content with.*/
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+            { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
@@ -47,6 +48,7 @@ namespace Wisteria::GraphItems
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
         /** @brief Bounds the spacer to the given rectangle.
             @param rect The rectangle to bound the spacer to.
+            @param dc The DC to measure content with.
             @param parentScaling This parameter is ignored.*/
         void SetBoundingBox(const wxRect& rect,
                             [[maybe_unused]] wxDC& dc,

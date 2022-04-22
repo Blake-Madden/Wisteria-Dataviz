@@ -198,7 +198,7 @@ namespace Wisteria
             @param rows The number of rows to use.
             @param columns The number of columns to use.
             @note Contents currently in the grid will be preserved, unless @c rows or @c columns
-             is smaller than the current size.
+             is smaller than the current size.\n
              Call ClearFixedObjects() if you need to clear the current contents.*/
         void SetFixedObjectsGridSize(const size_t rows, const size_t columns);
         /// @returns The size of the fixed object grid (number of rows x columns).
@@ -370,6 +370,7 @@ namespace Wisteria
         /// @}
 
         /// @brief Calculates the sizes of all objects on the canvas.
+        /// @param dc The DC to measure content with.
         /// @details Call this if customizations have been made to a subobject (e.g., a plot) and you
         ///  wish to refresh the content.
         void CalcAllSizes(wxDC& dc);
@@ -395,7 +396,8 @@ namespace Wisteria
             }
 
         /** @brief Sets the resources to use for the export dialog.
-            @details These are set by the parent application to connect icons and help topics to the export dialog.
+            @details These are set by the parent application to connect icons and
+             help topics to the export dialog.
             @param helpProjectPath The path to the help file.
             @param topicPath The path to the topic in the help file.*/
         void SetExportResources(const wxString& helpProjectPath, const wxString& topicPath)
@@ -414,9 +416,12 @@ namespace Wisteria
         /// @brief Information for drawing a watermark across a canvas.
         struct WaterMark
             {
-            wxString m_label;                                               /*!< The text.*/
-            wxColour m_color{ wxColour(255,0,0,125) };                      /*!< The text color.*/
-            WatermarkDirection m_direction{ WatermarkDirection::Diagonal }; /*!< The direction that the text is drawn.*/
+            /** @brief The text.*/
+            wxString m_label;
+            /** @brief The text color.*/
+            wxColour m_color{ wxColour(255,0,0,125) };
+            /// @brief The direction that the text is drawn.
+            WatermarkDirection m_direction{ WatermarkDirection::Diagonal };
             };
 
         /** @brief Draws a watermark label across a canvas.
@@ -469,7 +474,8 @@ namespace Wisteria
 
         /// @returns The top-level floating (i.e., not anchored) object on the canvas located at @c pt.
         /// @param pt The point to look at.
-        [[nodiscard]] std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator FindFreeFloatingObject(const wxPoint& pt);
+        [[nodiscard]] std::vector<std::shared_ptr<GraphItems::GraphItemBase>>::reverse_iterator
+            FindFreeFloatingObject(const wxPoint& pt, wxDC& dc);
 
         enum class DragMode
             {

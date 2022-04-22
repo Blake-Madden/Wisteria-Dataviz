@@ -836,7 +836,8 @@ namespace Wisteria::Graphs
         [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
             { return GetBarAxis().GetAxisPoints().size()-2; }
         /// @brief Recalculates the layout of the elements on the plot.
-        ///  Call this after adding all of your bars.
+        /// @details Call this after adding all of your bars.
+        /// @param dc The DC to measure content with.
         void RecalcSizes(wxDC& dc) override;
         /** @brief Recalculates the scaling axis based on the size and positioning on a given bar.
             @param bar The bar to review.*/
@@ -845,8 +846,8 @@ namespace Wisteria::Graphs
         ///  The default behaviour is to compare the number of bars to GetBarsPerDefaultCanvasSize(),
         ///  but you can override this function.
         virtual void UpdateCanvasForBars();
-        /** @brief Sets the parent canvas for the axis, as well as for its persistent subobjects.
-            @param canvas The parent canvas.*/
+        /** @brief Sets the DPI scaling.
+            @param scaling The DPI scaling.*/
         void SetDPIScaleFactor(const double scaling) override
             {
             Graph2D::SetDPIScaleFactor(scaling);

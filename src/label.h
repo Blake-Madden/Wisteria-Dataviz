@@ -160,6 +160,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
+            @param dc The DC to measure content with.
             @param parentScaling The parent's scaling (only used if IsUsingParentScalingOnBoudingAdjustment() is `true`).
             @note The scaling of the label will be adjusted (height-wise if vertical, length-wise if horizontal) to this box,
              and will also be anchored (length-wise if vertical, height-wise if horizontal) within this box.
@@ -249,8 +250,8 @@ namespace Wisteria::GraphItems
             }
         /** @returns `true` if the given point is inside of the label.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt) const final
-            { return GetCachedBoundingBox().Contains(pt); }
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+            { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Draws a vertical multi-line text string at the specified point, using the current text font,
              and the current text foreground and background colours.
             @param dc The device context to draw to.

@@ -260,7 +260,7 @@ namespace Wisteria::GraphItems
         { return GetPolygonBoundingBox(&m_scaledPoints[0], m_scaledPoints.size()); }
 
     //-------------------------------------------
-    bool Polygon::HitTest(const wxPoint pt) const
+    bool Polygon::HitTest(const wxPoint pt, wxDC& dc) const
         { return IsInsidePolygon(pt, &m_scaledPoints[0], m_scaledPoints.size()); }
 
     //-------------------------------------------
@@ -491,8 +491,52 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    void Points2D::SetSelected(const bool selected)
+        {
+        GraphItemBase::SetSelected(selected);
+        
+        if (m_singlePointSelection)
+            {
+            // re-select selected items if necessary
+            // (this is needed if the parent graph needed to recreate this collection)
+            if (selected)
+                {
+                for (auto& pt : m_points)
+                    {
+                    if (GetSelectedIds().find(pt.GetId()) != GetSelectedIds().cend())
+                        { pt.SetSelected(true); }
+                    }
+                }
+            if (m_lastHitPointIndex < GetPoints().size())
+                {
+                // toggle selection on individual point
+                m_points[m_lastHitPointIndex].SetSelected(!m_points[m_lastHitPointIndex].IsSelected());
+                // update list of selected items
+                // (based on whether this is newly selected or just unselected)
+                if (m_points[m_lastHitPointIndex].IsSelected())
+                    { GetSelectedIds().insert(m_points[m_lastHitPointIndex].GetId()); }
+                else
+                    {
+                    auto unselectedItem = GetSelectedIds().find(m_points[m_lastHitPointIndex].GetId());
+                    if (unselectedItem != GetSelectedIds().end())
+                        { GetSelectedIds().erase(unselectedItem); }
+                    // if last point was unselected, then mark the entire collection as unselected
+                    if (!GetSelectedIds().size())
+                        { GraphItemBase::SetSelected(false); }
+                    }
+                }
+            }
+        else
+            {
+            for (auto& point : m_points)
+                { point.SetSelected(selected); }
+            }
+        }
+
+    //-------------------------------------------
     void Points2D::AddPoint(Point2D pt)
         {
+        pt.SetId(m_currentAssignedId++);
         pt.SetDPIScaleFactor(GetDPIScaleFactor());
         pt.SetScaling(GetScaling());
         const wxRect ptBoundingBox = pt.GetBoundingBox();
@@ -525,11 +569,11 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    bool Points2D::HitTest(const wxPoint pt) const
+    bool Points2D::HitTest(const wxPoint pt, wxDC& dc) const
         {
         for (auto pointsPos = GetPoints().cbegin(); pointsPos != GetPoints().cend(); ++pointsPos)
             {
-            if (pointsPos->HitTest(pt))
+            if (pointsPos->HitTest(pt, dc))
                 {
                 m_lastHitPointIndex = pointsPos-GetPoints().cbegin();
                 return true;

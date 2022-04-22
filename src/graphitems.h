@@ -909,6 +909,7 @@ namespace Wisteria
             bool m_showLabelWhenSelected{ true };
             // ID
             long m_id{ wxID_ANY };
+            std::set<long> m_selectedIds; // possible subitems
             // parent canvas info
             double m_canvasWidthProportion{ 1.0 };
             std::optional<double> m_canvasHeightProportion{ std::nullopt };
@@ -981,10 +982,10 @@ namespace Wisteria
 
             /** @brief Sets the scaling of the element.
                 @details This will affect the thickness of the object's outline.
-                 Also, for objects with a center point (Image, Label, Point2D),
+                 Also, for objects with a center point (@c Image, @c Label, @c Point2D),
                  this will affect the size of the object.
                 @param scaling The scaling factor.
-                @note Objects with more than a single point (e.g., Axis) will
+                @note Objects with more than a single point (e.g., @c Axis) will
                  maintain its size and position; scaling will not affect it.*/
             virtual void SetScaling(const double scaling)
                 {
@@ -1001,7 +1002,7 @@ namespace Wisteria
                 { return m_itemInfo.m_scaling; }
             /** @brief Sets the DPI scaling of the element.
                 @details This will affect the thickness of the object's outline.
-                 Also, for objects with a center point (Image, Label, Point2D),
+                 Also, for objects with a center point (@c Image, @c Label, @c Point2D),
                  this will affect the size of the object.
                 @param scaling The scaling factor.*/
             virtual void SetDPIScaleFactor(const double scaling)
@@ -1023,7 +1024,7 @@ namespace Wisteria
             /** @brief Sets whether the object should be shown.
                 @param show Whether to show the object or not.
                 @note When this is set to `false`, GetBoundingBox() will generally return
-                 an invalid `wxRect`.*/
+                 an invalid @c wxRect.*/
             void Show(const bool show = true) noexcept
                 { m_itemInfo.m_show = show; }
             /// @returns Whether this object is being displayed or not.
@@ -1035,7 +1036,7 @@ namespace Wisteria
                 { return 2; }
             /// @returns The color to draw the shadow of the object.
             [[nodiscard]] static wxColour GetShadowColour()
-                { return wxColour(84,84,84,175); }
+                { return wxColour(84, 84, 84, 175); }
 
             /** @brief Sets the point where the box will be anchored.
                 @note Call SetAnchoring() to control what this point means in relation
@@ -1088,7 +1089,7 @@ namespace Wisteria
 
             /** @brief Gets/sets the painting brush used for when the object is selected.
                 @returns The painting brush used to fill in the object.
-                @sa SetBackgroundFill().*/
+                @sa For polygon objects, Polygon::SetBackgroundFill().*/
             [[nodiscard]] wxBrush& GetSelectionBrush() noexcept
                 { return m_itemInfo.m_selectionBrush; }
             /// @}
@@ -1096,7 +1097,7 @@ namespace Wisteria
             /** @brief Sets whether the object should be moved as the canvas scaling is changed.
                 @details In other words, the object is not connected to coordinates on the canvas,
                  but rather sits arbitrarily on the canvas and has to have its coordinates adjusted
-                 as the canvas gets rescaled.
+                 as the canvas gets rescaled.\n
                  This is meant for movable objects on a canvas that a client can manually move.
                 @param freeFloat Whether the object should be free floating.*/
             virtual void SetFreeFloating(const bool freeFloat)
@@ -1115,10 +1116,12 @@ namespace Wisteria
             /// @returns The rectangle on the canvas where the element would fit in.
             [[nodiscard]] virtual wxRect GetBoundingBox() const = 0;
             /// @returns The rectangle on the canvas where the element would fit in.
+            /// @param dc The DC to measure content with.
             [[nodiscard]] virtual wxRect GetBoundingBox(wxDC& dc) const = 0;
             /** @brief Override this to set the rectangular area of the object.
                 @param rect The rectangle to bound the object to.
                  This is relative to the parent canvas.
+                @param dc The DC to measure content with.
                 @param parentScaling The scaling of the parent drawing this element.
                  Usually is not used, but may be used for objects to have a consistent scaling size.
                 @note Derived variations should call InvalidateCachedBoundingBox() and
@@ -1128,7 +1131,7 @@ namespace Wisteria
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
                 @details This is a convenient way to chain multiple attribute updates.
                 @code
-                label->GetGraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Text(L"Number of obs.");
+                 label->GetGraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Text(L"Number of obs.");
                 @endcode
                 @returns The base attributes.*/
             [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo() noexcept
@@ -1138,13 +1141,13 @@ namespace Wisteria
                 }
 
             /** @brief Controls the anchoring of this item on its parent.
-                @details When an item is drawn, its anchoring indicates what its point is referencing.
+                @details When an item is drawn, its anchoring indicates what its point is referencing.\n
                  For example, if an item is anchored to its center, then the item's point refers to
                  its center and it will be drawn on its parent based on that.
                 @details This can be useful for lining up multiple labels a certain way (e.g., left aligned).
                 @param placement The method for how the point controls the anchoring of this object.
                 @note This will have no effect on objects with more than one point
-                 (e.g., Axes::Axis, Points2D). This mostly related to objects such as Label and Image.*/
+                 (e.g., @c Axes::Axis, @c Points2D). This mostly related to objects such as Label and Image.*/
             void SetAnchoring(const Wisteria::Anchoring placement)
                 {
                 m_itemInfo.m_anchoring = placement;
@@ -1158,9 +1161,9 @@ namespace Wisteria
 
             /** @brief Sets which type of shadow is being drawn under the object
                 @param shadow The type of shadow to display.
-                @note For some objects, shadow will always be displayed as RightSideShadow
-                 (unless set to NoShadow); otherwise, it would look odd.
-                 Set to NoShadow to turn off shadows.*/
+                @note For some objects, shadow will always be displayed as @c RightSideShadow
+                 (unless set to @c NoShadow); otherwise, it would look odd.
+                 Set to @c NoShadow to turn off shadows.*/
             void SetShadowType(const ShadowType shadow) noexcept
                 { m_itemInfo.m_shadowType = shadow; }
             /** @returns Which type of shadow is being drawn under the object.*/
@@ -1169,7 +1172,7 @@ namespace Wisteria
 
             /** @name Text Functions
                 @brief Functions related to text display.
-                 This applies when the object is a Label. This also applies to the label displayed
+                @details This applies when the object is a Label. This also applies to the label displayed
                  when this item is selected.*/
             /// @{
 
@@ -1278,7 +1281,7 @@ namespace Wisteria
                  (if using a minimum user-defined size).*/
             [[nodiscard]] const PageHorizontalAlignment& GetPageHorizontalAlignment() const noexcept
                 { return m_itemInfo.m_pageHorizontalAlignment; }
-            /** @brief If a Label, sets the horizontal alignment of the text
+            /** @brief If a @c Label, sets the horizontal alignment of the text
                  (if using a minimum user-defined size).
                 @param alignment How to align the text.
                 @note This can be used to center or right align a legend horizontally
@@ -1292,7 +1295,7 @@ namespace Wisteria
             /// @returns The visual style of the label.
             [[nodiscard]] const LabelStyle& GetLabelStyle() const noexcept
                  { return m_itemInfo.m_labelStyle; }
-            /** @brief If a Label, sets the visual style of the label.
+            /** @brief If a @c Label, sets the visual style of the label.
                 @param style The visual style to use.*/
             void SetLabelStyle(const LabelStyle style) noexcept
                 {
@@ -1300,7 +1303,7 @@ namespace Wisteria
                 m_itemInfo.m_labelStyle = style;
                 }
 
-            /** @returns If a Label, the collection of icons (optionally) being drawn.
+            /** @returns If a @c Label, the collection of icons (optionally) being drawn.
                 @note Call SetLeftPadding() to make space for these icons
                  (with a minimum of 16 pixels).*/
             [[nodiscard]] std::vector<LegendIcon>& GetLegendIcons() noexcept
@@ -1308,11 +1311,11 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 return m_itemInfo.m_legendIcons;
                 }
-            /** @returns If a Label being used as a legend, `true` if icons have been added to it.
+            /** @returns If a @c Label being used as a legend, `true` if icons have been added to it.
                  This is useful if trying to determine if legend padding is needed for a Label.
                 @note This takes into account blank icons and separators that don't require
                  padding to be drawn, so this is more accurate than calling
-                 @c GetLegendIcons().size().*/
+                 `GetLegendIcons().size()`.*/
             [[nodiscard]] bool HasLegendIcons() const noexcept
                 {
                 for (const auto& icon : GetLegendIcons())
@@ -1326,8 +1329,8 @@ namespace Wisteria
                 }
 
             /** @brief Gets the minimum width for the item's bounding box that the client has requested.
-                 This is currently only relevant to Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSize().
+                 This is currently only relevant to @c Label objects.
+                @note By default this is optional until the client calls SetMinimumUserSize().\n
                  This is the minimum size that the client has requested, which may or may not be
                  the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSize(), GetMinimumUserHeight().
@@ -1336,7 +1339,7 @@ namespace Wisteria
                 { return m_itemInfo.m_minimumUserWidth; }
             /** @brief Gets the minimum height for the item's bounding box that the client has requested.
                  This is currently only relevant to Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSize().
+                @note By default this is optional until the client calls SetMinimumUserSize().\n
                  This is the minimum size that the client has requested, which may or may not
                  be the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSize(), GetMinimumUserWidth().
@@ -1444,6 +1447,10 @@ namespace Wisteria
             /// @returns The element's identifier value.
             [[nodiscard]] long GetId() const noexcept
                 { return m_itemInfo.m_id; }
+            /// @returns The list of selected subitem IDs.
+            ///  This is only relevant for objects with subitems.
+            [[nodiscard]] std::set<long>& GetSelectedIds() noexcept
+                { return m_itemInfo.m_selectedIds; }
 
             /** @brief Gets/sets the pen used for outlining.
                 @returns The pen used for outlining.
@@ -1456,7 +1463,7 @@ namespace Wisteria
 
             /** @brief Gets/sets the painting brush.
                 @returns The painting brush used to fill in the object.
-                @sa SetBackgroundFill().*/
+                @sa For polygon objects, Polygon::SetBackgroundFill().*/
             [[nodiscard]] wxBrush& GetBrush() noexcept
                 { return m_itemInfo.m_brush; }
 
@@ -1620,16 +1627,23 @@ namespace Wisteria
             virtual void DrawSelectionLabel(wxDC& dc, const double scaling,
                                             const wxRect boundingBox = wxRect()) const;
             /** @brief Recompute coordinates and sizes within this object.
+                @param dc The DC used for measuring.
                 @details This is usually done after a scaling update.
                 @note Derived classes need to override this to perform subitem sizing logic.*/
             virtual void RecalcSizes(wxDC& dc) {}
+            /** @brief Reselect subitems if the object's subitems need to be re-created.
+                @details This is called by the framework and does not need to be called
+                 in client code. Just define it in derived classes, if applicable.
+                @note Derived classes should override this if they contain subitems.*/
+            virtual void UpdateSelectedItems() {}
             /// @brief Clears all selected items.
             /// @note Derived classes need to override this to unselect all subitems.
             virtual void ClearSelections()
                 { SetSelected(false); }
             /** @returns `true` if the given point is inside of this element.
-                @param pt The point to check.*/
-            [[nodiscard]] virtual bool HitTest(const wxPoint pt) const = 0;
+                @param pt The point to check.
+                @param dc The DC used for measuring. Not all objects use this parameter.*/
+            [[nodiscard]] virtual bool HitTest(const wxPoint pt, wxDC& dc) const = 0;
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The scaled value.
@@ -1652,8 +1666,9 @@ namespace Wisteria
                 { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
             /** @brief Resets the cached bounding box to empty.
                 @note Derived classes should call this in their setter functions
-                 that may affect the bounding box as well. This also resets the cached
-                 content bounding box (only some objects like Label use this).*/
+                 that may affect the bounding box as well.\n
+                 This also resets the cached content bounding box
+                 (only some objects like Label use this).*/
             void InvalidateCachedBoundingBox()
                 { m_cachedBoundingBox = m_cachedContentBoundingBox = wxRect(); }
             /** @brief Saves the bounding box information, which can be later retrieved from
@@ -1670,7 +1685,7 @@ namespace Wisteria
             /** @returns The bounding box calculated from the last call to GetBoundingBox()
                 ( which derived classes should implement ).
                 @note Before using this, verify that it is not empty
-                 (InvalidateCachedBoundingBox() will set it to empty).
+                 (InvalidateCachedBoundingBox() will set it to empty).\n
                  Also, derived classes are responsible for calling InvalidateCachedBoundingBox() in any
                  setting/moving function that may affect the bounding box calculations of the object.*/
             [[nodiscard]] wxRect GetCachedBoundingBox() const noexcept
@@ -1693,14 +1708,15 @@ namespace Wisteria
             /** @brief Override this for selecting subitems at a given point.
                  This implementation will select the entire object if @c pt is inside of the object.
                 @param pt The point to hit test.
+                @param dc The DC used for measuring. Not all objects use this parameter.
                 @returns `true` if something was selected at the given point.
                 @note This will toggle the selection of an object. If it was selected before,
                  then it will become unselected.*/
-            virtual bool SelectObjectAtPoint(const wxPoint& pt)
+            virtual bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
                 {
                 if (!IsSelectable())
                     { return false; }
-                if (HitTest(pt))
+                if (HitTest(pt, dc))
                     {
                     SetSelected(!IsSelected());
                     return true;
@@ -1708,7 +1724,8 @@ namespace Wisteria
                 return false;
                 }
             /// @brief Returns the rectangle (relative to the canvas) of the object's
-            ///  main content. This is object specific and is used by the canvas
+            ///  main content.
+            /// @details This is object specific and is used by the canvas
             ///  when aligning objects across a row. For example, this can be used to
             ///  align the axes of multiple plots.
             /// @returns The content area.
@@ -1815,8 +1832,8 @@ namespace Wisteria
                 @note This does a hit test within a bounding box of the point, not the point itself.
                  So it may return `true` if slightly at the corner outside of the point.
                 @param pt The point to check.*/
-            [[nodiscard]] bool HitTest(const wxPoint pt) const final
-                { return GetBoundingBox().Contains(pt); }
+            [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+                { return GetBoundingBox(dc).Contains(pt); }
             /** @brief Draws the point.
                 @param dc The canvas to draw the point on.
                 @returns The box that the point is being drawn in.*/
@@ -1930,9 +1947,8 @@ namespace Wisteria
                 for (auto& point : m_points)
                     { point.SetScaling(scaling); }
                 }
-            /// @brief Sets the parent window (usually a Canvas) for this item,
-            ///  which is used for its DPI scale factor.
-            /// @param window The parent window.
+            /// @brief Sets the DPI scale factor.
+            /// @param scaling The DPI scaling.
             void SetDPIScaleFactor(const double scaling) noexcept final
                 {
                 GraphItemBase::SetDPIScaleFactor(scaling);
@@ -1942,18 +1958,8 @@ namespace Wisteria
         private:
             /** @brief Sets whether the points are selected.
                 @param selected Whether the last hit point
-                (or all points if there was no previous hit) should be selected.*/
-            void SetSelected(const bool selected) override
-                {
-                GraphItemBase::SetSelected(selected);
-                if (m_singlePointSelection && m_lastHitPointIndex < GetPoints().size())
-                    { m_points[m_lastHitPointIndex].SetSelected(selected); }
-                else
-                    {
-                    for (auto& point : m_points)
-                        { point.SetSelected(selected); }
-                    }
-                }
+                 (or all points if there was no previous hit) should be selected.*/
+            void SetSelected(const bool selected) override;
             /** @brief Draws the selected points' labels.
                 @param dc The DC to render with.
                 @param scaling The scaling to draw the text with. This may be different from
@@ -2006,7 +2012,7 @@ namespace Wisteria
                 }
             /** @returns `true` if the given point is inside any of the points in this collection.
                 @param pt The point to check.*/
-            [[nodiscard]] bool HitTest(const wxPoint pt) const final;
+            [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
             std::vector<Point2D> m_points;
             mutable std::vector<Point2D>::size_type m_lastHitPointIndex
                 { static_cast<std::vector<Point2D>::size_type>(-1) };
@@ -2016,6 +2022,8 @@ namespace Wisteria
             wxRect m_boundingBox{ wxPoint(wxDefaultCoord, wxDefaultCoord), wxSize(0, 0) };
             bool m_singlePointSelection{ true };
             LineStyle m_lineStyle{ LineStyle::Lines };
+
+            long m_currentAssignedId{ 0 };
             };
 
         /**@brief A polygon that can be drawn on a canvas.
@@ -2180,7 +2188,7 @@ namespace Wisteria
         private:
             /** @returns `true` if the given point is inside of this polygon.
                 @param pt The point to check.*/
-            [[nodiscard]] bool HitTest(const wxPoint pt) const final;
+            [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
             /** @brief Draws the polygon.
                 @param dc The canvas to draw the point on.
                 @returns The box that the polygon is being drawn within.*/

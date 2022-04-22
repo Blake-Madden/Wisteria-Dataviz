@@ -36,20 +36,20 @@ namespace Wisteria::Graphs
         /** @brief Embeds an object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
             @param pt The X and Y coordinates of the object. These coordinates are relative to the
-             plot's X and Y axes, not physical coordinates on the canvas.
-
-             Note that if one (or both) of the axes are date-based, you can call GetPointFromDate()
+             plot's X and Y axes, not physical coordinates on the canvas.\n
+             Note that if one (or both) of the axes are date-based, you can call @c GetPointFromDate()
              to find its point to use here.
             @param interestPts An optional collection of points on the plot to draw a line from this
              object's anchor point to. For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on top of the plot.
-             An example would be inserting a Label as a sticky note.*/
+             An example would be inserting a @c Label as a sticky note.*/
         void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
                                const wxPoint pt,
                                const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
             {
             if (object != nullptr)
                 {
+                object->SetId(m_currentAssignedId++);
                 object->SetDPIScaleFactor(GetDPIScaleFactor());
                 m_embeddedObjects.push_back({ object, pt, interestPts });
                 }
@@ -61,7 +61,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets/gets the plot's title.
             @note The title's relative alignment controls where the title is aligned against the plot.
-            Its display info controls its font, color, and other formatting settings.
+             Its display info controls its font, color, and other formatting settings.
             @returns The title.*/
         [[nodiscard]] GraphItems::Label& GetTitle() noexcept
             { return m_title; }
@@ -138,7 +138,7 @@ namespace Wisteria::Graphs
             { m_referenceLines.push_back(refLine); }
 
         /** @brief Adds a reference area to draw across the graph.
-            @details The parent axis and starting points are specified in the composite ReferenceLines,
+            @details The parent axis and starting points are specified in the composite reference lines,
              and the graph will set the length of the lines to be the full length of the parallel axis for you.
             @param refArea The reference area to add.
             @note Duplicate reference areas will be combined into one on the legend;
@@ -271,18 +271,18 @@ namespace Wisteria::Graphs
         /// @returns A non-const version of the parent canvas.
         /// @details This should be used in derived classes when needing to call
         ///  `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeight()`.
-        ///  Otherwise, use `GetWindow()`.
         [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
             { return m_parentCanvas; }
         /** @brief Adds an object (e.g., a polygon) to the plot to be rendered.
             @param object The object to add to the plot.
-            @note The canvas of `object` is set to the plot's, but its scaling
+            @note The canvas of @c object is set to the plot's, but its scaling
              is preserved as objects may be using the parent's scaling or a different
              one, depending on how it was constructed.*/
         void AddObject(std::shared_ptr<GraphItems::GraphItemBase> object)
             {
             if (object != nullptr)
                 {
+                object->SetId(m_currentAssignedId++);
                 object->SetDPIScaleFactor(GetDPIScaleFactor());
                 m_plotObjects.push_back(object);
                 }
@@ -337,9 +337,12 @@ namespace Wisteria::Graphs
         /** @brief Override this to perform plotting logic.
             @details The is the main interface for constructing the layout and object positioning
              for a plot. All plots should override this.
+            @param dc The DC to measure content with.
             @note The base version of this should be called first in derived overrides
              so that the axis and gridlines are drawn.*/
         void RecalcSizes(wxDC& dc) override;
+
+        void UpdateSelectedItems() final;
 
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
@@ -412,7 +415,7 @@ namespace Wisteria::Graphs
             }
         /** @returns `true` if @c pt is inside of plot area.
             @param pt The point to see that is in the plot.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt) const final
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox().Contains(pt); }
         /** @brief Selects the object at the given point (relative to the parent canvas),
              if there is an object at that point.
@@ -420,7 +423,7 @@ namespace Wisteria::Graphs
             @returns `true` if something was selected at the given point.
             @note This will toggle the selection of an object, if it was selected before
              then it will become unselected.*/
-        [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt) final;
+        [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
         /// @brief Calculates how much outer axis labels and headers go outside of the
         ///  axes' widths and heights (used to adjust the margins of the plot area).
         void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin, long& bottomMargin,
@@ -462,6 +465,9 @@ namespace Wisteria::Graphs
         long m_calculatedRightPadding{ 0 };
         long m_calculatedBottomPadding{ 0 };
         long m_calculatedLeftPadding{ 0 };
+
+        long m_currentAssignedId{ 0 };
+        std::map<long, std::set<long>> m_selectedItemsWithSubitems;
         };
     }
 

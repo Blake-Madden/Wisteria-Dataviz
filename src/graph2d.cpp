@@ -319,8 +319,26 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Graph2D::UpdateSelectedItems()
+        {
+        for (auto& object : m_plotObjects)
+            {
+            if (GetSelectedIds().find(object->GetId()) != GetSelectedIds().cend())
+                {
+                // if applicable, set the object's subitems' selections from before
+                auto foundItem = m_selectedItemsWithSubitems.find(object->GetId());
+                if (foundItem != m_selectedItemsWithSubitems.cend())
+                    { object->GetSelectedIds() = foundItem->second; }
+                // and reset its previous selection state
+                object->SetSelected(true);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Graph2D::RecalcSizes(wxDC& dc)
         {
+        m_currentAssignedId = 0;
         m_plotObjects.clear();
 
         SetDPIScaleFactor(GetDPIScaleFactor());
@@ -812,34 +830,82 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    bool Graph2D::SelectObjectAtPoint(const wxPoint& pt)
+    bool Graph2D::SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
         {
         if (!IsSelectable())
             { return false; }
-        // items are added to a plot FILO (i.e., painter's algorithm),
-        // so go backwards so that we select the items on top
-        for (auto plotObject = m_plotObjects.rbegin();
-             plotObject != m_plotObjects.rend();
-             ++plotObject)
+        // if CTRL isn't held down, then unselect everything
+        if (!wxGetMouseState().ControlDown())
             {
-            if ((*plotObject)->IsSelectable() && (*plotObject)->HitTest(pt))
+            GetSelectedIds().clear();
+            m_selectedItemsWithSubitems.clear();
+            for (auto& plotObject : m_plotObjects)
                 {
-                (*plotObject)->SetSelected(!(*plotObject)->IsSelected());
-                return true;
+                plotObject->SetSelected(false);
+                plotObject->GetSelectedIds().clear();
+                }
+            for (auto& plotObject : m_embeddedObjects)
+                {
+                plotObject.m_object->SetSelected(false);
+                plotObject.m_object->GetSelectedIds().clear();
                 }
             }
+        // items are added to a plot FILO (i.e., painter's algorithm),
+        // so go backwards so that we select the items on top
+
+        // the embedded objects, added by client, that would be sitting
+        // on top of everything else
         for (auto plotObject = m_embeddedObjects.rbegin();
              plotObject != m_embeddedObjects.rend();
              ++plotObject)
             {
-            if ((*plotObject).m_object->IsSelectable() && (*plotObject).m_object->HitTest(pt))
+            if ((*plotObject).m_object->IsSelectable() && (*plotObject).m_object->HitTest(pt, dc))
                 {
                 (*plotObject).m_object->SetSelected(!(*plotObject).m_object->IsSelected());
                 return true;
                 }
             }
+        // the standard graph objects (addded via AddObject())
+        for (auto plotObject = m_plotObjects.rbegin();
+             plotObject != m_plotObjects.rend();
+             ++plotObject)
+            {
+            if ((*plotObject)->IsSelectable() && (*plotObject)->HitTest(pt, dc))
+                {
+                // toggle selection (or if it has subitems, then set it to selected
+                // and let it perform its own selection logic)
+                (*plotObject)->SetSelected(
+                    (*plotObject)->GetSelectedIds().size() ? true :
+                    !(*plotObject)->IsSelected());
+                // update list of selected items
+                // (based on whether this is newly selected or just unselected)
+                if ((*plotObject)->IsSelected())
+                    {
+                    GetSelectedIds().insert((*plotObject)->GetId());
+                    // if object has subitems, then record that for when we
+                    // need to reselect items after recreating managed objects
+                    if ((*plotObject)->GetSelectedIds().size())
+                        {
+                        m_selectedItemsWithSubitems.insert_or_assign(
+                            (*plotObject)->GetId(), (*plotObject)->GetSelectedIds());
+                        }
+                    }
+                else
+                    {
+                    // update our selection info if the object (an possibly, its subobjects)
+                    // were deselected
+                    auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
+                    if (unselectedItem != GetSelectedIds().end())
+                        { GetSelectedIds().erase(unselectedItem); }
+                    auto unselectedItemWithSubitems = m_selectedItemsWithSubitems.find((*plotObject)->GetId());
+                    if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
+                        { m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems); }
+                    }
+                return true;
+                }
+            }
         // no items selected, so see if we at least clicked inside of the plot area
-        if (HitTest(pt))
+        if (HitTest(pt, dc))
             {
             SetSelected(true);
             return true;

@@ -394,8 +394,8 @@ namespace Wisteria::GraphItems
         /// @private
         Axis() = delete;
 
-        /** @brief Sets the parent canvas for the axis, as well as for its persistent subobjects.
-            @param canvas The parent canvas.*/
+        /** @brief Sets the DPI scaling for the axis.
+            @param scaling The DPI scaling to use.*/
         void SetDPIScaleFactor(const double scaling) final
             {
             GraphItemBase::SetDPIScaleFactor(scaling);
@@ -411,7 +411,9 @@ namespace Wisteria::GraphItems
         enum class AxisResetLevel
             {
             CosmeticSettings,    /*!< @brief Resets the fonts, lines, and colors.*/
-            RangeAndLabelValues, /*!< @brief Resets the calculated range information and axis labels. This is useful if you need to call SetRange() multiple times and want to ensure that all custom labels are cleared first.*/
+            RangeAndLabelValues, /*!< @brief Resets the calculated range information and axis labels.\n
+                                      This is useful if you need to call SetRange() multiple times and
+                                      want to ensure that all custom labels are cleared first.*/
             Brackets,            /*!< @brief Removes the brackets.*/
             TitleHeaderFooter,   /*!< @brief Removes the title, header, and footer.*/
             AllSettings          /*!< @brief Resets all settings, calculated range information, and axis labels.*/
@@ -460,7 +462,7 @@ namespace Wisteria::GraphItems
                       const size_t displayInterval = 1);
         /** @brief This sets the axis if you are not sure what the interval size should be.
             @details This function will come up with an intelligent interval size for you.
-             It will also adjust the range to make them "neat".
+             It will also adjust the range to make them "neat."
             @param rangeStart The start of the range.
             @param rangeEnd The end of the range.
             @param precision The floating-point precision to show on the axis labels.
@@ -616,7 +618,7 @@ namespace Wisteria::GraphItems
         ///  flush left against the edge of the axis area, or centered on the axis line itself.
         /// @param alignment How to align the labels against the axis.
         /// @note Has no effect if axis labels are parallel to the axis. Also, the double-sided option
-        ///  will be ignored if this is set to CenterOnAxisLine.
+        ///  will be ignored if this is set to @c CenterOnAxisLine.
         /// @todo Not currently implemented for horizontal axes.
         void SetPerpendicularLabelAxisAlignment(const AxisLabelAlignment alignment) noexcept
             { m_axisLabelAlignment = alignment; }
@@ -845,7 +847,7 @@ namespace Wisteria::GraphItems
             @details This is a label that appears at the far outside of the axis, drawn parallel to it.
              Relative alignment can control where the title is aligned against the axis
              (the default is to align it centered to the axis line).
-            @note The title manages its own font. The customize this font, call GetTitle().GetLabelDisplayInfo().
+            @note The title manages its own font. The customize this font, call `GetTitle().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]] Label& GetTitle() noexcept
@@ -863,7 +865,7 @@ namespace Wisteria::GraphItems
              (the default is to align it centered to the axis line).
 
              For Y axes, relative alignment controls where the footer is aligned horizontally against the top of the axis.
-            @note The header manages its own font. The customize this font, call GetHeader().GetLabelDisplayInfo().
+            @note The header manages its own font. The customize this font, call `GetHeader().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]] Label& GetHeader() noexcept
@@ -876,7 +878,7 @@ namespace Wisteria::GraphItems
              (the default is to align it centered to the axis line).
 
              For Y axes, relative alignment controls where the footer is aligned horizontally against the bottom of the axis.
-            @note The footer manages its own font. The customize this font, call GetFooter().GetLabelDisplayInfo().
+            @note The footer manages its own font. The customize this font, call `GetFooter().GetLabelDisplayInfo()`.
             @sa SetRelativeAlignment().
             @returns The footer of the axis.*/
         [[nodiscard]] Label& GetFooter() noexcept
@@ -894,7 +896,7 @@ namespace Wisteria::GraphItems
         /** @brief Adds a series of brackets, based on the specified bracket type.
             @param bracketType The type of bracket series to add.
             @note If using fiscal year related brackets, you can specify how to define the fiscal
-             year's dates via SetFiscalYearType() or SetFiscalYearStart().*/
+             year's dates via @c SetFiscalYearType() or @c SetFiscalYearStart().*/
         void AddBrackets(const BracketType bracketType);
         /// @brief Removes all the brackets.
         void ClearBrackets() noexcept
@@ -942,22 +944,24 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the physical y position on the canvas.
             @param y The physical y position to place the axis.
-            @note This is used by the framework (e.g., Graph2D) for layout and should not be called in client code.
+            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be called in client code.
              Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an axis
              relative to the main axes.*/
         void SetPhysicalCustomYPosition(const double y) noexcept
             { m_physicalCustomYPosition = y; }
-        /// @returns The physical y position on the canvas of the axis. (Should only be used if using custom positioning along a parent axis.)
+        /// @returns The physical y position on the canvas of the axis.
+        ///  (Should only be used if using custom positioning along a parent axis.)
         [[nodiscard]] double GetPhysicalCustomYPosition() const noexcept
             { return m_physicalCustomYPosition; }
         /** @brief Sets the physical x position on the canvas.
             @param x The physical x position to place the axis.
-            @note This is used by the framework (e.g., Graph2D) for layout and should not be called in client code.
+            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be called in client code.
              Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an axis
              relative to the main axes.*/
         void SetPhysicalCustomXPosition(const double x) noexcept
             { m_physicalCustomXPosition = x; }
-        /// @returns The physical x position on the canvas of the axis. (Should only be used if using custom positioning along a parent axis.)
+        /// @returns The physical x position on the canvas of the axis.
+        ///  (Should only be used if using custom positioning along a parent axis.)
         [[nodiscard]] double GetPhysicalCustomXPosition() const noexcept
             { return m_physicalCustomXPosition; }
         /// @}
@@ -1193,8 +1197,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& dc) const;
         /** @returns `true` if the given point is inside of this point.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt) const final
-            { return GetCachedBoundingBox().Contains(pt); }
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+            { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/

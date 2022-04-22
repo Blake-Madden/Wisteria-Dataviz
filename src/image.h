@@ -266,8 +266,8 @@ namespace Wisteria::GraphItems
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
         /** @returns `true` if the given point is inside of the image.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt) const noexcept final
-            { return GetBoundingBox().Contains(pt); }
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
+            { return GetBoundingBox(dc).Contains(pt); }
         /// @brief Helper for calling calculate_downscaled_size().
         /// @param sz The size to convert.
         /// @returns The wxSize object, wrapped into a std::pair.
