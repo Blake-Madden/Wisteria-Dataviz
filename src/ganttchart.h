@@ -177,7 +177,7 @@ namespace Wisteria::Graphs
             @returns The legend for the chart. Will return null if grouping was applied to the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader) const;
+            const bool includeHeader);
     private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it

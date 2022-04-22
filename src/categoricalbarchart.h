@@ -114,7 +114,7 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader) const;
+            const bool includeHeader);
     private:
         struct CatBarBlock
             {

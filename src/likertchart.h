@@ -681,7 +681,7 @@ namespace Wisteria::Graphs
         /// @note Be sure to set the labels in the dataset prior to calling SetData() if you plan
         ///  create a legend. Refer to SetLabels(), CreateLabels(), and Simplify() for details.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-                                                         const LegendCanvasPlacementHint hint) const;
+                                                         const LegendCanvasPlacementHint hint);
     private:
         /** @brief Determines if a format is categorized (i.e., using a grouping variable).
             @param format The format to review.

@@ -165,7 +165,7 @@ namespace Wisteria::GraphItems
              and will also be anchored (length-wise if vertical, height-wise if horizontal) within this box.
              If the label isn't wide/tall enough to fill the bounding box, then it will be anchored.
              Call SetAnchoring() to control how it is anchored.*/
-        void SetBoundingBox(const wxRect& rect, const double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
@@ -250,7 +250,7 @@ namespace Wisteria::GraphItems
         /** @returns `true` if the given point is inside of the label.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt) const final
-            { return GetBoundingBox().Contains(pt); }
+            { return GetCachedBoundingBox().Contains(pt); }
         /** @brief Draws a vertical multi-line text string at the specified point, using the current text font,
              and the current text foreground and background colours.
             @param dc The device context to draw to.
@@ -263,10 +263,13 @@ namespace Wisteria::GraphItems
             @param pt The point to draw the text. This coordinate refers to the top-left corner of the rectangle bounding the string.
             @param leftOffset The padding to put on the left of each line.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt, wxCoord leftOffset) const;
-        /** @returns The rectangle on the canvas where the label would fit in.
-            @note If needing to measure multiple labels on the same graphics context,
-             then use the other version of this function with the same wxDC.*/
-        [[nodiscard]] wxRect GetBoundingBox() const final;
+        /// @private
+        [[deprecated("Only call Label::GetBoundingBox() version that takes a wxDC!")]]
+        [[nodiscard]] wxRect GetBoundingBox() const final
+            {
+            wxFAIL_MSG(L"Only call Label::GetBoundingBox() version that takes a wxDC!");
+            return GetCachedBoundingBox();
+            }
         /// @brief Figures out how many characters are in the longest line of text (takes multiline labels into account).
         void CalcLongestLineLength();
         /** @brief Retrieves The physical size of label (including outlined bounding box if the pen is valid).

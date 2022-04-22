@@ -405,7 +405,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendCanvasPlacementHint hint) const
+    std::shared_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendCanvasPlacementHint hint)
         {
         auto legend = std::make_shared<GraphItems::Label>(GraphItemInfo().
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidth()).

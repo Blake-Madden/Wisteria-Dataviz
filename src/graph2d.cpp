@@ -81,7 +81,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void Graph2D::AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
-                                       const LegendCanvasPlacementHint hint) const
+                                       const LegendCanvasPlacementHint hint)
         {
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
@@ -148,7 +148,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void Graph2D::GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin,
-                                  long& bottomMargin, wxDC& measureDC) const
+                                  long& bottomMargin, wxDC& dc) const
         {
         leftMargin = rightMargin = topMargin = bottomMargin = 0;
         std::vector<long> topMarginVals, bottomMarginVals, leftMarginVals, rightMarginVals;
@@ -164,15 +164,15 @@ namespace Wisteria::Graphs
             rightMarginVals.emplace_back(gutter.GetRight() - GetBottomXAxis().GetRightPoint().x);
             };
 
-        addGutterDifferences(GetLeftYAxis().GetBoundingBox(measureDC));
-        addGutterDifferences(GetRightYAxis().GetBoundingBox(measureDC));
-        addGutterDifferences(GetBottomXAxis().GetBoundingBox(measureDC));
-        addGutterDifferences(GetTopXAxis().GetBoundingBox(measureDC));
+        addGutterDifferences(GetLeftYAxis().GetBoundingBox(dc));
+        addGutterDifferences(GetRightYAxis().GetBoundingBox(dc));
+        addGutterDifferences(GetBottomXAxis().GetBoundingBox(dc));
+        addGutterDifferences(GetTopXAxis().GetBoundingBox(dc));
 
         // Adjust for any custom axes also.
         // Note that we are only interested in how much the custom axes overhang the main.
         for (const auto& customAxis : GetCustomAxes())
-            { addGutterDifferences(customAxis.GetBoundingBox(measureDC)); }
+            { addGutterDifferences(customAxis.GetBoundingBox(dc)); }
 
         topMargin = *std::max_element(topMarginVals.cbegin(), topMarginVals.cend());
         bottomMargin = *std::max_element(bottomMarginVals.cbegin(), bottomMarginVals.cend());
@@ -194,16 +194,16 @@ namespace Wisteria::Graphs
     void Graph2D::AdjustPlotArea(wxDC& dc)
         {
         // sets the physical points for the axes
-        const auto adjustAxesPoints = [this]()
+        const auto adjustAxesPoints = [&dc, this]()
             {
             GetBottomXAxis().SetPoints(GetPlotAreaBoundingBox().GetLeftBottom(),
-                                       GetPlotAreaBoundingBox().GetRightBottom());
+                                       GetPlotAreaBoundingBox().GetRightBottom(), dc);
             GetTopXAxis().SetPoints(GetPlotAreaBoundingBox().GetTopLeft(),
-                                    GetPlotAreaBoundingBox().GetTopRight());
+                                    GetPlotAreaBoundingBox().GetTopRight(), dc);
             GetLeftYAxis().SetPoints(GetPlotAreaBoundingBox().GetTopLeft(),
-                                     GetPlotAreaBoundingBox().GetLeftBottom());
+                                     GetPlotAreaBoundingBox().GetLeftBottom(), dc);
             GetRightYAxis().SetPoints(GetPlotAreaBoundingBox().GetRightTop(),
-                                      GetPlotAreaBoundingBox().GetRightBottom());
+                                      GetPlotAreaBoundingBox().GetRightBottom(), dc);
             wxCoord yStartCoordinate(0), yEndCoordinate(0), xStartCoordinate(0), xEndCoordinate(0);
             const auto [rangeYStart, rangeYEnd] = GetLeftYAxis().GetRange();
             const auto [rangeXStart, rangeXEnd] = GetBottomXAxis().GetRange();
@@ -229,7 +229,8 @@ namespace Wisteria::Graphs
                                 {
                                 customAxis.SetPoints(
                                     wxPoint(customAxis.GetPhysicalCustomXPosition(), customAxis.GetPhysicalCustomYPosition()),
-                                    wxPoint(customAxis.GetPhysicalCustomXPosition(), yStartCoordinateOffsetted));
+                                    wxPoint(customAxis.GetPhysicalCustomXPosition(), yStartCoordinateOffsetted),
+                                    dc);
                                 }
                             }
                         else
@@ -243,7 +244,8 @@ namespace Wisteria::Graphs
                                 {
                                 customAxis.SetPoints(
                                     wxPoint(xStartCoordinateOffsetted, customAxis.GetPhysicalCustomYPosition()),
-                                    wxPoint(customAxis.GetPhysicalCustomXPosition(), customAxis.GetPhysicalCustomYPosition()));
+                                    wxPoint(customAxis.GetPhysicalCustomXPosition(), customAxis.GetPhysicalCustomYPosition()),
+                                    dc);
                                 }
                             }
                         }

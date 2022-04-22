@@ -23,7 +23,7 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     void GraphItemBase::DrawSelectionLabel(wxDC& dc, const double scaling,
-                                          const wxRect boundingBox /*= wxRect()*/) const
+                                           const wxRect boundingBox /*= wxRect()*/) const
         {
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
             {
@@ -86,6 +86,7 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     void Polygon::SetBoundingBox([[maybe_unused]] const wxRect& rect,
+                                 [[maybe_unused]] wxDC& dc,
                                  [[maybe_unused]] const double parentScaling)
         {
         wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
@@ -470,7 +471,9 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Point2D::SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling)
+    void Point2D::SetBoundingBox(const wxRect& rect,
+                                 [[maybe_unused]] wxDC& dc,
+                                 [[maybe_unused]] const double parentScaling)
         {
         wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
                              L"SetBoundingBox() should only be called on fixed objects!");

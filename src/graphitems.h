@@ -1114,6 +1114,8 @@ namespace Wisteria
             virtual void Offset(const int xToMove, const int yToMove) = 0;
             /// @returns The rectangle on the canvas where the element would fit in.
             [[nodiscard]] virtual wxRect GetBoundingBox() const = 0;
+            /// @returns The rectangle on the canvas where the element would fit in.
+            [[nodiscard]] virtual wxRect GetBoundingBox(wxDC& dc) const = 0;
             /** @brief Override this to set the rectangular area of the object.
                 @param rect The rectangle to bound the object to.
                  This is relative to the parent canvas.
@@ -1121,7 +1123,7 @@ namespace Wisteria
                  Usually is not used, but may be used for objects to have a consistent scaling size.
                 @note Derived variations should call InvalidateCachedBoundingBox() and
                  SetCachedBoundingBox().*/
-            virtual void SetBoundingBox(const wxRect& rect, const double parentScaling) = 0;
+            virtual void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) = 0;
 
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
                 @details This is a convenient way to chain multiple attribute updates.
@@ -1823,6 +1825,10 @@ namespace Wisteria
             [[nodiscard]] bool IsOk() const noexcept
                 { return GetAnchorPoint().IsFullySpecified(); }
             /// @returns The rectangle on the canvas where the point would fit in.
+            /// @param dc Measurement DC, which is not used in this implementation.
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+                { return GetBoundingBox(); }
+            /// @returns The rectangle on the canvas where the point would fit in.
             [[nodiscard]] wxRect GetBoundingBox() const final
                 {
                 if (!IsOk())
@@ -1848,7 +1854,7 @@ namespace Wisteria
                 @param rect The rectangle to bound the point to.
                 @param parentScaling This parameter is ignored.
                 @note The scaling of the point will be adjusted to this box.*/
-            void SetBoundingBox(const wxRect& rect,
+            void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                 [[maybe_unused]] const double parentScaling) final;
 
             IconShape m_shape{ IconShape::CircleIcon };
@@ -1963,6 +1969,7 @@ namespace Wisteria
                 @param parentScaling This parameter is ignored.*/
             [[deprecated("Not implemented")]]
             void SetBoundingBox([[maybe_unused]] const wxRect& rect,
+                                [[maybe_unused]] wxDC& dc,
                                 [[maybe_unused]] const double parentScaling) final
                 { wxFAIL_MSG(L"SetBoundingBox() not supported for Points2D objects."
                               "Points should be explicitly set at specific coordinates, "
@@ -1971,6 +1978,10 @@ namespace Wisteria
                 @param dc The device context to draw to.
                 @returns The area that the points are being drawn in.*/
             wxRect Draw(wxDC& dc) const final;
+            /// @returns The rectangle on the canvas where the point would fit in.
+            /// @param dc Measurement DC, which is not used in this implementation.
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+                { return GetBoundingBox(); }
             /// @returns The rectangle on the canvas where all the points would fit.
             [[nodiscard]] wxRect GetBoundingBox() const final
                 {
@@ -2174,6 +2185,10 @@ namespace Wisteria
                 @param dc The canvas to draw the point on.
                 @returns The box that the polygon is being drawn within.*/
             wxRect Draw(wxDC& dc) const final;
+            /// @returns The rectangle on the canvas where the point would fit in.
+            /// @param dc Measurement DC, which is not used in this implementation.
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+                { return GetBoundingBox(); }
             /// @returns The rectangle on the canvas where the element would fit in.
             [[nodiscard]] wxRect GetBoundingBox() const final;
             /** @brief Moves the polygon by the specified x and y values.
@@ -2185,6 +2200,7 @@ namespace Wisteria
                 @param parentScaling This parameter is not used in this implementation.
                 @todo Add support for this; not currently implemented.*/
             void SetBoundingBox([[maybe_unused]] const wxRect& rect,
+                                [[maybe_unused]] wxDC& dc,
                                 [[maybe_unused]] const double parentScaling) final;
             /** @returns A rectangle from four points.
                 @param points The four points to construct the rectangle.

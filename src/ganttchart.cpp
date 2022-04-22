@@ -372,7 +372,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader) const
+        const LegendCanvasPlacementHint hint, const bool includeHeader)
         {
         if (m_legendLines.empty())
             { return nullptr; }

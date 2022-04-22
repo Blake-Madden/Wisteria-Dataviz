@@ -71,6 +71,10 @@ namespace Wisteria::GraphItems
             @param dc The device context to draw to.
             @returns The area that the points are being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
+        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+            { return GetBoundingBox(); }
         /// @returns The rectangle on the canvas where all the lines would fit.
         [[nodiscard]] wxRect GetBoundingBox() const final;
         /** @returns `true` if the given point is inside any of the points in this collection.
@@ -80,6 +84,7 @@ namespace Wisteria::GraphItems
              required by base class and is not relevant to this object.*/
         [[deprecated("Not implemented")]]
         void SetBoundingBox([[maybe_unused]] const wxRect& rect,
+                            [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final
             { wxFAIL_MSG(L"SetBoundingBox() not supported for Lines objects. "
                           "Points should be explicitly set at specific coordinates, "

@@ -255,9 +255,9 @@ namespace Wisteria::GraphItems
                 { return m_linePen; }
         private:
             /** @returns The width of the bracket (including longest label and bracket lines).
-                @param measureDC A graphics context to use for measuring the bracket.
+                @param dc A graphics context to use for measuring the bracket.
                 @param canvas The bracket's parent canvas to use for DPI scaling.*/
-            [[nodiscard]] wxCoord CalcWidth(wxDC& measureDC, const double dpiScaling) const;
+            [[nodiscard]] wxCoord CalcWidth(wxDC& dc, const double dpiScaling) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.
@@ -597,8 +597,8 @@ namespace Wisteria::GraphItems
         /// @param suggestedMaxLengthPerLine The length that each line of the labels should be shortened to.
         void SetLabelLineLength(const size_t suggestedMaxLengthPerLine);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.
-        /// @param measureDC The DC to measure the text with.
-        [[nodiscard]] bool ShouldLabelsBeStackedToFit(wxDC& measureDC) const;
+        /// @param dc The DC to measure the text with.
+        [[nodiscard]] bool ShouldLabelsBeStackedToFit(wxDC& dc) const;
         /// @returns `true` if the specified value as a label associated to it. This checks for both generated labels and custom labels.
         /// @param value The axis value to check.
         [[nodiscard]] bool PointHasLabel(const double value) const;
@@ -1092,7 +1092,7 @@ namespace Wisteria::GraphItems
 
                 auto bottomPt = GetTopPoint();
                 bottomPt.y = GetContentBottom().value();
-                SetPoints(topPt, bottomPt);
+                SetPoints(topPt, bottomPt, dc);
                 }
             else if (IsHorizontal() && GetContentLeft() && GetContentRight())
                 {
@@ -1101,11 +1101,11 @@ namespace Wisteria::GraphItems
 
                 auto rightPt = GetRightPoint();
                 rightPt.x = GetContentRight().value();
-                SetPoints(leftPt, rightPt);
+                SetPoints(leftPt, rightPt, dc);
                 }
             else
                 {
-                SetPoints(GetPoints().first, GetPoints().second);
+                SetPoints(GetPoints().first, GetPoints().second, dc);
                 }
             }
 
@@ -1168,32 +1168,33 @@ namespace Wisteria::GraphItems
 
         /// @brief For horizontal axes, gets the first and last displayed labels and adjusts
         ///  the axis's corners to fit the labels' overhangs.
-        void CalcHorizontalLabelOverhang(wxDC &measureDC, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
+        void CalcHorizontalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
         /// @brief For vertical axes, gets the first and last displayed labels and adjusts
         ///  the axis's corners to fit the labels' overhangs.
-        void CalcVerticalLabelOverhang(wxDC &measureDC, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
+        void CalcVerticalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
 
         /// @brief Draws the axis onto the graphics context dc.
         /// @param dc The DC to draw on.
         /// @returns The bounding box that the axis was drawn in.
         [[nodiscard]] wxRect Draw(wxDC& dc) const final;
         /** @returns The rectangle that the axis would fit in.*/
+        [[deprecated("Only call Axis::GetBoundingBox() version that takes a wxDC!")]]
         [[nodiscard]] wxRect GetBoundingBox() const final
             {
-            wxGCDC measureDC;
-            return GetBoundingBox(measureDC);
+            wxFAIL_MSG(L"Only call Axis::GetBoundingBox() version that takes a wxDC!");
+            return GetCachedBoundingBox();
             }
         /** @returns The rectangle that the axis would fit in.
-            @param measureDC The DC to measure with.
+            @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with the same DC.*/
-        [[nodiscard]] wxRect GetBoundingBox(wxDC& measureDC) const;
+        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
         /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
-            @param measureDC The DC to measure with.*/
-        [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& measureDC) const;
+            @param dc The DC to measure with.*/
+        [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& dc) const;
         /** @returns `true` if the given point is inside of this point.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt) const final
-            { return GetBoundingBox().Contains(pt); }
+            { return GetCachedBoundingBox().Contains(pt); }
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
@@ -1207,7 +1208,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the physical start and end points of the axis (relative to the parent canvas).
             @param pt1 The first point.
             @param pt2 The second point.*/
-        void SetPoints(const wxPoint pt1, const wxPoint pt2);
+        void SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc);
         /// @returns The top physical (relative to the parent canvas) point of the axis line (for vertical axes).
         /// @note This is always the top-most point vertically, regardless of whether the axis is reversed.
         [[nodiscard]] wxPoint GetTopPoint() const
@@ -1253,10 +1254,10 @@ namespace Wisteria::GraphItems
         [[nodiscard]] wxCoord GetSpacingBetweenLabelsAndLine() const noexcept
             { return 5; }
         /// @returns The widest label;
-        [[nodiscard]] Label GetWidestTextLabel(wxDC& measureDC) const;
+        [[nodiscard]] Label GetWidestTextLabel(wxDC& dc) const;
         /** @returns The tallest label.
             @note This takes multi-line labels into account.*/
-        [[nodiscard]] Label GetTallestTextLabel(wxDC& measureDC) const;
+        [[nodiscard]] Label GetTallestTextLabel(wxDC& dc) const;
 
         /** @returns The displayed string connected to the specified point on the axis.
              Which label is returned depends on whether custom labels are being used and what's
@@ -1265,7 +1266,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] Label GetDisplayableValue(const AxisPoint& pt) const;
 
         /// @returns How much space is needed to fit the brackets.
-        [[nodiscard]] wxCoord CalcBracketsWidth(wxDC& measureDC) const;
+        [[nodiscard]] wxCoord CalcBracketsWidth(wxDC& dc) const;
         /// @returns Whether the given axis position will display something.
         /// @note Relying on AxisPoint::IsShown() is not adequate because we
         ///  need to take into account if the point doesn't have a custom label
@@ -1273,10 +1274,11 @@ namespace Wisteria::GraphItems
         [[nodiscard]] bool IsPointDisplayingLabel(const AxisPoint& point) const;
         /// @returns The best (smallest) scaling so that the labels don't overlap.
         /// @warning This should be called after SetPoints() is called so that the physical width of the axis is valid.
-        double CalcBestScalingToFitLabels(wxDC& measureDC);
+        double CalcBestScalingToFitLabels(wxDC& dc);
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
-        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) final;
         /// @returns The physical (relative to the parent canvas) starting and ending points for the axis.
         [[nodiscard]] const std::pair<wxPoint,wxPoint>& GetPoints() const noexcept
             { return m_points; }

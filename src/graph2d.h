@@ -258,7 +258,7 @@ namespace Wisteria::Graphs
             @param[in,out] legend The legend to adjust.
             @param hint A hint about where the legend will be placed.*/
         void AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
-                                  const LegendCanvasPlacementHint hint) const;
+                                  const LegendCanvasPlacementHint hint);
         /** @brief Adds information about any reference lines/areas in the graph onto the legend.
             @details This will be a separate section added to the bottom of the legend,
              with a separator line above it.
@@ -293,6 +293,10 @@ namespace Wisteria::Graphs
             @param dc The DC to draw to.
             @returns The bounding box of the plot.*/
         wxRect Draw(wxDC& dc) const override;
+        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+            { return GetBoundingBox(); }
         /// @returns The rectangular area of the entire plot (plotting area and axis labels [brackets, etc]).
         ///  This is relative to its parent canvas.
         [[nodiscard]] wxRect GetBoundingBox() const noexcept final
@@ -356,6 +360,7 @@ namespace Wisteria::Graphs
             @param rect The rectangle to bound the entire plot to. This is relative to its parent canvas.
             @param parentScaling This parameter is ignored.*/
         void SetBoundingBox(const wxRect& rect,
+                            [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) noexcept final
             { m_rect = rect; }
         /** @brief Moves the points by the specified x and y values.
@@ -419,7 +424,7 @@ namespace Wisteria::Graphs
         /// @brief Calculates how much outer axis labels and headers go outside of the
         ///  axes' widths and heights (used to adjust the margins of the plot area).
         void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin, long& bottomMargin,
-                             wxDC& measureDC) const;
+                             wxDC& dc) const;
         /// @brief Calculates how much space is needed around the plot to fit everything
         ///  (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
         ///  recalculates the axes' points' positions.

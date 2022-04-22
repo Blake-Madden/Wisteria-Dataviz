@@ -245,6 +245,10 @@ namespace Wisteria::GraphItems
             @param dc The wxDC to render onto.
             @returns The box that the image is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
+        /// @returns The rectangle on the canvas where the point would fit in.
+            /// @param dc Measurement DC, which is not used in this implementation.
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+                { return GetBoundingBox(); }
         /// @returns The rectangle on the canvas where the image would fit in.
         [[nodiscard]] wxRect GetBoundingBox() const final;
         /** @brief Bounds the image to the given rectangle.
@@ -253,7 +257,8 @@ namespace Wisteria::GraphItems
             @note The size of the image will be adjusted (height-wise first, then length-wise if necessary) to this box.
              If the image isn't wide enough to fill the bounding box, then it will be anchored within the specified rectangle.
              Call SetAnchoring() to control how it is anchored. SetScaling() must be called prior to calling this to ensure proper resizing calculations.*/
-        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) final;
         /** @brief Moves the item by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/

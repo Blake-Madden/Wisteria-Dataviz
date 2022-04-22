@@ -48,7 +48,9 @@ namespace Wisteria::GraphItems
         /** @brief Bounds the spacer to the given rectangle.
             @param rect The rectangle to bound the spacer to.
             @param parentScaling This parameter is ignored.*/
-        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling) final
+        void SetBoundingBox(const wxRect& rect,
+                            [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) final
             {
             wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
                                  L"SetBoundingBox() should only be called on fixed objects!");
@@ -57,6 +59,10 @@ namespace Wisteria::GraphItems
             SetAnchorPoint(rect.GetTopLeft());
             m_size = rect.GetSize()*safe_divide<double>(1.0f, GetScaling());
             }
+        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+            { return GetBoundingBox(); }
         /// @returns The rectangle on the canvas where the spacer would fit in.
         [[nodiscard]] wxRect GetBoundingBox() const final
             {

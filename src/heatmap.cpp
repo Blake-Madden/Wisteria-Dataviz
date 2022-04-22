@@ -200,9 +200,9 @@ namespace Wisteria::Graphs
             for (const auto& [id, strVal] : m_groupColumn->GetStringTable())
                 {
                 measuringLabel.SetText(strVal);
-                if (widestLabelWidth < measuringLabel.GetBoundingBox().GetWidth())
+                if (widestLabelWidth < measuringLabel.GetBoundingBox(dc).GetWidth())
                     { widestStr = strVal; }
-                widestLabelWidth = std::max(measuringLabel.GetBoundingBox().GetWidth(), widestLabelWidth);
+                widestLabelWidth = std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), widestLabelWidth);
                 }
             }
         const bool hasGroupLabels{ m_useGrouping && m_groupColumn->GetStringTable().size() };
@@ -402,7 +402,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(
                                        const LegendCanvasPlacementHint hint,
-                                       const bool includeHeader) const
+                                       const bool includeHeader)
         {
         if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return nullptr; }

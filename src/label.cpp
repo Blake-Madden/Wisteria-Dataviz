@@ -91,7 +91,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Label::SetBoundingBox(const wxRect& rect, const double parentScaling)
+    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling)
         {
         InvalidateCachedBoundingBox();
 
@@ -113,11 +113,11 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { SetAnchorPoint(rect.GetBottomRight()); }
         const double adjustedLengthSize = (GetTextOrientation() == Orientation::Horizontal) ?
-            safe_divide<double>(rect.GetWidth(), GetBoundingBox().GetWidth()) :
-            safe_divide<double>(rect.GetHeight(), GetBoundingBox().GetHeight());
+            safe_divide<double>(rect.GetWidth(), GetBoundingBox(dc).GetWidth()) :
+            safe_divide<double>(rect.GetHeight(), GetBoundingBox(dc).GetHeight());
         const double adjustedScaleHeightSize = (GetTextOrientation() == Orientation::Horizontal) ?
-            safe_divide<double>(rect.GetHeight(), GetBoundingBox().GetHeight()) :
-            safe_divide<double>(rect.GetWidth(), GetBoundingBox().GetWidth());
+            safe_divide<double>(rect.GetHeight(), GetBoundingBox(dc).GetHeight()) :
+            safe_divide<double>(rect.GetWidth(), GetBoundingBox(dc).GetWidth());
         const double adjustedBestFit = std::min(adjustedLengthSize, adjustedScaleHeightSize);
         if (adjustedBestFit > 0)
             {
@@ -132,9 +132,8 @@ namespace Wisteria::GraphItems
         // used for page alignment
         SetMinimumUserSize(rect.GetWidth(), rect.GetHeight());
 
-        wxGCDC measureDc;
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
-        GetSize(measureDc, measuredWidth, measuredHeight);
+        GetSize(dc, measuredWidth, measuredHeight);
         SetCachedContentBoundingBox(wxRect(wxPoint(rect.GetTopLeft()),
             wxSize(measuredWidth, measuredHeight)));
         // if there is a minimum height that is taller than the text, then center
@@ -205,16 +204,6 @@ namespace Wisteria::GraphItems
         contentRect.x += CalcPageHorizontalOffset();
         SetCachedContentBoundingBox(contentRect);
         return boundingBox;
-        }
-
-    //-------------------------------------------
-    wxRect Label::GetBoundingBox() const
-        {
-        if (!GetCachedBoundingBox().IsEmpty())
-            { return GetCachedBoundingBox(); }
-
-        wxGCDC measureDC;
-        return GetBoundingBox(measureDC);
         }
 
     //-------------------------------------------

@@ -173,14 +173,20 @@ namespace Wisteria
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @note This should be passed to the items SetCanvasWidthProportion() method prior to adding to the canvas.*/
-        [[nodiscard]] double CalcMinWidthProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item) const
-            { return safe_divide<double>(item->GetBoundingBox().GetWidth(), GetCanvasMinWidth()); }
+        [[nodiscard]] double CalcMinWidthProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+            {
+            wxGCDC gdc(this);
+            return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(), GetCanvasMinWidth());
+            }
         /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @note This can be passed to the canvas's SetRowProportion() method.*/
-        [[nodiscard]] double CalcMinHeightProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item) const
-            { return safe_divide<double>(item->GetBoundingBox().GetHeight(), GetCanvasMinHeight()); }
+        [[nodiscard]] double CalcMinHeightProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+            {
+            wxGCDC gdc(this);
+            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(), GetCanvasMinHeight());
+            }
         /// @}
 
         /** @name Layout Functions
@@ -442,24 +448,24 @@ namespace Wisteria
             { return m_bgImage; }
         /** @brief Draws the left titles.
             @returns How much of the left margin of the plot those title take up.
-            @param measureDC DC to measure with.
+            @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the left margin.*/
-        [[nodiscard]] long CalcLeftTitles(wxDC& measureDC, const long spacingWidth);
+        [[nodiscard]] long CalcLeftTitles(wxDC& dc, const long spacingWidth);
         /** @brief Draws the right titles.
             @returns How much of the right margin of the plot those title take up.
-            @param measureDC DC to measure with.
+            @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the right margin.*/
-        [[nodiscard]] long CalcRightTitles(wxDC& measureDC, const long spacingWidth);
+        [[nodiscard]] long CalcRightTitles(wxDC& dc, const long spacingWidth);
         /** @brief Draws the top titles.
             @returns How much of the top margin of the plot those title take up.
-            @param measureDC DC to measure with.
+            @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the top margin.*/
-        [[nodiscard]] long CalcTopTitles(wxDC& measureDC, const long spacingWidth);
+        [[nodiscard]] long CalcTopTitles(wxDC& dc, const long spacingWidth);
         /** @brief Draws the bottom titles.
             @returns How much of the bottom margin of the plot those title take up.
-            @param measureDC DC to measure with.
+            @param dc DC to measure with.
             @param spacingWidth How much padding should be used for the bottom margin.*/
-        [[nodiscard]] long CalcBottomTitles(wxDC& measureDC, const long spacingWidth);
+        [[nodiscard]] long CalcBottomTitles(wxDC& dc, const long spacingWidth);
 
         /// @returns The top-level floating (i.e., not anchored) object on the canvas located at @c pt.
         /// @param pt The point to look at.

@@ -267,7 +267,7 @@ namespace Wisteria::Graphs
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader) const;
+            const bool includeHeader);
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if your are showing unique values for the categories

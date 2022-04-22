@@ -325,7 +325,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling)
+    void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                               [[maybe_unused]] const double parentScaling)
         {
         wxASSERT_LEVEL_2_MSG(!IsFreeFloating(), L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())

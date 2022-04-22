@@ -102,36 +102,37 @@ namespace Wisteria::GraphItems
             }
         }
 
-    void Axis::SetBoundingBox(const wxRect& rect, [[maybe_unused]] const double parentScaling)
+    void Axis::SetBoundingBox(const wxRect& rect,
+                              [[maybe_unused]] wxDC& dc,
+                              [[maybe_unused]] const double parentScaling)
         {
         wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
                              L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             { return; }
         SetScaling(parentScaling);
-        wxGCDC measureDC;
 
         GetHeader().SetScaling(GetScaling());
         GetFooter().SetScaling(GetScaling());
 
-        const wxRect boundingBox = GetBoundingBox();
-        const wxRect protrudingBox = GetProtrudingBoundingBox(measureDC);
+        const wxRect boundingBox = GetBoundingBox(dc);
+        const wxRect protrudingBox = GetProtrudingBoundingBox(dc);
 
-        const auto calculateVerticalLabelOverhang = [this, &measureDC]()
+        const auto calculateVerticalLabelOverhang = [this, &dc]()
             {
             const wxPoint topLeftCornerOriginal{ GetTopPoint() }, bottomRightCornerOriginal{ GetBottomPoint() };
             wxPoint topLeftCorner{ GetTopPoint() }, bottomRightCorner{ GetBottomPoint() };
-            CalcVerticalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
             const wxCoord protrudingLabelTopPadding = topLeftCornerOriginal.y - topLeftCorner.y;
             const wxCoord protrudingLabelBottomPadding = bottomRightCorner.y - bottomRightCornerOriginal.y;
             return std::make_pair(protrudingLabelTopPadding, protrudingLabelBottomPadding);
             };
 
-        const auto calculateHorizontalLabelOverhang = [this, &measureDC]()
+        const auto calculateHorizontalLabelOverhang = [this, &dc]()
             {
             const wxPoint topLeftCornerOriginal{ GetLeftPoint() }, bottomRightCornerOriginal{ GetRightPoint() };
             wxPoint topLeftCorner{ GetLeftPoint() }, bottomRightCorner{ GetRightPoint() };
-            CalcHorizontalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
             const wxCoord protrudingLabelLeftPadding = topLeftCornerOriginal.x - topLeftCorner.x;
             const wxCoord protrudingLabelRightPadding = bottomRightCorner.x - bottomRightCornerOriginal.x;
             return std::make_pair(protrudingLabelLeftPadding, protrudingLabelRightPadding);
@@ -142,33 +143,36 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelTopPadding, protrudingLabelBottomPadding] = calculateVerticalLabelOverhang();
 
             wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(measureDC).GetSize().GetHeight() +
+                GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelTopPadding :
                 protrudingLabelTopPadding;
             const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelBottomPadding :
                 protrudingLabelBottomPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+protrudingBox.GetWidth(),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+protrudingBox.GetWidth(),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+protrudingBox.GetWidth(),
+                                  rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+((rect.GetWidth()/2)),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
+                                  rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+(rect.GetWidth()-(boundingBox.GetWidth()-protrudingBox.GetWidth())),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+(rect.GetWidth()-(boundingBox.GetWidth()-protrudingBox.GetWidth())),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+(rect.GetWidth()-(boundingBox.GetWidth()-protrudingBox.GetWidth())),
+                                  rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             }
         else if (GetAxisType() == AxisType::RightYAxis)
@@ -176,11 +180,11 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelTopPadding, protrudingLabelBottomPadding] = calculateVerticalLabelOverhang();
 
             wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(measureDC).GetSize().GetHeight() +
+                GetHeader().GetBoundingBox(dc).GetSize().GetHeight() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelTopPadding :
                 protrudingLabelTopPadding;
             const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelBottomPadding :
                 protrudingLabelBottomPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
@@ -188,21 +192,24 @@ namespace Wisteria::GraphItems
                 SetPoints(wxPoint(rect.GetTopLeft().x+(boundingBox.GetWidth()-protrudingBox.GetWidth()),
                                     rect.GetTopLeft().y+headerPadding),
                             wxPoint(rect.GetBottomLeft().x+(boundingBox.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                    rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+((rect.GetWidth()/2)),
                                     rect.GetTopLeft().y+headerPadding),
                             wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                    rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+(rect.GetWidth()-protrudingBox.GetWidth()),
                                     rect.GetTopLeft().y+headerPadding),
                             wxPoint(rect.GetBottomLeft().x+(rect.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetBottomLeft().y-footerPadding));
+                                    rect.GetBottomLeft().y-footerPadding),
+                          dc);
                 }
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
@@ -210,11 +217,11 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelLeftPadding, protrudingLabelRightPadding] = calculateHorizontalLabelOverhang();
 
             const wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelRightPadding :
                 protrudingLabelRightPadding;
             const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelLeftPadding :
                 protrudingLabelLeftPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
@@ -222,21 +229,24 @@ namespace Wisteria::GraphItems
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
                             wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())));
+                                    rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetTopLeft().y+((rect.GetHeight()/2))),
                             wxPoint(rect.GetRight()-headerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))));
+                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() ==Anchoring:: BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetBottom()-protrudingBox.GetHeight()),
                             wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetBottom()-protrudingBox.GetHeight()));
+                                    rect.GetBottom()-protrudingBox.GetHeight()),
+                          dc);
                 }
             }
         else if (GetAxisType() == AxisType::TopXAxis)
@@ -244,11 +254,11 @@ namespace Wisteria::GraphItems
             const auto [protrudingLabelLeftPadding, protrudingLabelRightPadding] = calculateHorizontalLabelOverhang();
 
             const wxCoord headerPadding = GetHeader().GetText().length() ?
-                GetHeader().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetHeader().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelRightPadding :
                 protrudingLabelRightPadding;
             const wxCoord footerPadding = GetFooter().GetText().length() ?
-                GetFooter().GetBoundingBox(measureDC).GetSize().GetWidth() +
+                GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelLeftPadding :
                 protrudingLabelLeftPadding;
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
@@ -256,28 +266,31 @@ namespace Wisteria::GraphItems
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetTop()+protrudingBox.GetHeight()),
                             wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetTop()+protrudingBox.GetHeight()));
+                                    rect.GetTop()+protrudingBox.GetHeight()),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetTopLeft().y+((rect.GetHeight()/2))),
                             wxPoint(rect.GetRight()-headerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))));
+                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                          dc);
                 }
             else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
                                     rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
                             wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())) );
+                                    rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                          dc);
                 }
             }
         }
 
-    wxRect Axis::GetProtrudingBoundingBox(wxDC& measureDC) const
+    wxRect Axis::GetProtrudingBoundingBox(wxDC& dc) const
         {
-        wxRect boudingBox = GetBoundingBox(measureDC);
+        wxRect boudingBox = GetBoundingBox(dc);
         if (GetAxisType() == AxisType::LeftYAxis)
             { boudingBox.SetRight(GetTopPoint().x); }
         else if (GetAxisType() == AxisType::RightYAxis)
@@ -298,7 +311,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Axis::CalcHorizontalLabelOverhang(wxDC &measureDC, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
+    void Axis::CalcHorizontalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
         {
         // the first (far most left) axis label
         const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
@@ -309,14 +322,14 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
-                    { topLeftCorner.x -= firstLabel.GetBoundingBox(measureDC).GetWidth()-spaceToStart; }
+                    { topLeftCorner.x -= firstLabel.GetBoundingBox(dc).GetWidth()-spaceToStart; }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { topLeftCorner.x -= (firstLabel.GetBoundingBox(measureDC).GetWidth()/2)-spaceToStart; }
+                    { topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToStart; }
                 // FlushLeft needs no space on the left outer side
                 }
             else
                 {
-                topLeftCorner.x -= (firstLabel.GetBoundingBox(measureDC).GetHeight()/2)-spaceToStart;
+                topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToStart;
                 }
             }
         // the last (far most right) axis label
@@ -328,20 +341,20 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
-                    { bottomRightCorner.x += lastLabel.GetBoundingBox(measureDC).GetWidth()-spaceToEnd; }
+                    { bottomRightCorner.x += lastLabel.GetBoundingBox(dc).GetWidth()-spaceToEnd; }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { bottomRightCorner.x += (lastLabel.GetBoundingBox(measureDC).GetWidth()/2)-spaceToEnd; }
+                    { bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToEnd; }
                 // FlushRight needs no space on the right outer side
                 }
             else
                 {
-                bottomRightCorner.x += (lastLabel.GetBoundingBox(measureDC).GetHeight()/2)-spaceToEnd;
+                bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToEnd;
                 }
             }
         }
 
     //-------------------------------------------
-    void Axis::CalcVerticalLabelOverhang(wxDC &measureDC, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
+    void Axis::CalcVerticalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
         {
         // the first (far most bottom) axis label
         const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
@@ -352,14 +365,14 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
-                    { bottomRightCorner.y += firstLabel.GetBoundingBox(measureDC).GetWidth()-spaceToStart; }
+                    { bottomRightCorner.y += firstLabel.GetBoundingBox(dc).GetWidth()-spaceToStart; }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { bottomRightCorner.y += (firstLabel.GetBoundingBox(measureDC).GetWidth()/2)-spaceToStart; }
+                    { bottomRightCorner.y += (firstLabel.GetBoundingBox(dc).GetWidth()/2)-spaceToStart; }
                 // FlushTop needs no space on the upper outside
                 }
             else
                 {
-                bottomRightCorner.y += (firstLabel.GetBoundingBox(measureDC).GetHeight()/2)-spaceToStart;
+                bottomRightCorner.y += (firstLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToStart;
                 }
             }
         // the last (far most top) axis label
@@ -371,22 +384,22 @@ namespace Wisteria::GraphItems
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushTop)
-                    { topLeftCorner.y -= lastLabel.GetBoundingBox(measureDC).GetWidth(); }
+                    { topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth(); }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
-                    { topLeftCorner.y -= lastLabel.GetBoundingBox(measureDC).GetWidth()/2; }
+                    { topLeftCorner.y -= lastLabel.GetBoundingBox(dc).GetWidth()/2; }
                 // FlushBottom needs no space on the lower outer side
                 }
             else
                 {
-                topLeftCorner.y -= (lastLabel.GetBoundingBox(measureDC).GetHeight()/2)-spaceToEnd;
+                topLeftCorner.y -= (lastLabel.GetBoundingBox(dc).GetHeight()/2)-spaceToEnd;
                 }
             }
         }
 
     //-------------------------------------------
-    wxRect Axis::GetBoundingBox(wxDC& measureDC) const
+    wxRect Axis::GetBoundingBox(wxDC& dc) const
         {
-        const auto textMeasurement = [this, &measureDC]()
+        const auto textMeasurement = [this, &dc]()
             {
             if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
                 { return 0; }
@@ -394,14 +407,14 @@ namespace Wisteria::GraphItems
                 {
                 if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
                     {
-                    return GetWidestTextLabel(measureDC).GetBoundingBox(measureDC).GetWidth();
+                    return GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                     }
                 else
                     {
                     // if using blocked backgrounds on the axis labels, then account for
                     // the padding above and below the label that that would add
-                    auto tallestLabel{ GetTallestTextLabel(measureDC) };
-                    auto tallestLabelHeight = tallestLabel.GetBoundingBox(measureDC).GetHeight();
+                    auto tallestLabel{ GetTallestTextLabel(dc) };
+                    auto tallestLabelHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
                     if (GetFontBackgroundColor().IsOk())
                         { tallestLabelHeight += std::max(2, GetTopPadding()+GetBottomPadding()); }
                     return tallestLabelHeight;
@@ -424,19 +437,19 @@ namespace Wisteria::GraphItems
             if (HasDoubleSidedAxisLabels() && (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
                 { bottomRightCorner.x += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
-            CalcVerticalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.x -= CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { bottomRightCorner.x += CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    { bottomRightCorner.x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
             if (GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                topLeftCorner.x -= title.GetBoundingBox(measureDC).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.x -= title.GetBoundingBox(dc).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
                 }
             }
@@ -460,19 +473,19 @@ namespace Wisteria::GraphItems
             if (HasDoubleSidedAxisLabels() && (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
                 { topLeftCorner.x -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
-            CalcVerticalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.x += CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { topLeftCorner.x -= CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    { topLeftCorner.x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
             if (GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                bottomRightCorner.x += title.GetBoundingBox(measureDC).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.x += title.GetBoundingBox(dc).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
                 }
             }
@@ -484,19 +497,19 @@ namespace Wisteria::GraphItems
             if (HasDoubleSidedAxisLabels())
                 { topLeftCorner.y -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
-            CalcHorizontalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.y += CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { topLeftCorner.y -= CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    { topLeftCorner.y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
             if (GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                bottomRightCorner.y += title.GetBoundingBox(measureDC).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.y += title.GetBoundingBox(dc).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
                 }
             }
@@ -508,19 +521,19 @@ namespace Wisteria::GraphItems
             if (HasDoubleSidedAxisLabels())
                 { bottomRightCorner.y += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
-            CalcHorizontalLabelOverhang(measureDC, topLeftCorner, bottomRightCorner);
+            CalcHorizontalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.y -= CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { bottomRightCorner.y += CalcBracketsWidth(measureDC)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    { bottomRightCorner.y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
             if (GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                topLeftCorner.y -= title.GetBoundingBox(measureDC).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.y -= title.GetBoundingBox(dc).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
                 }
             }
@@ -529,13 +542,13 @@ namespace Wisteria::GraphItems
         // so simple vertical vs. horizontal logic is fine here)
         if (IsVertical())
             {
-            const auto adjustMarginForHeaderOrFooter = [this, &measureDC, &bottomRightCorner, &topLeftCorner]
+            const auto adjustMarginForHeaderOrFooter = [this, &dc, &bottomRightCorner, &topLeftCorner]
                 (Label label, const bool isHeader)
                 {
                 label.SetAnchorPoint(isHeader ? GetTopPoint() : GetBottomPoint());
                 label.SetScaling(GetScaling());
                 label.SetAnchoring(Anchoring::Center);
-                wxRect labelBox = label.GetBoundingBox(measureDC);
+                wxRect labelBox = label.GetBoundingBox(dc);
                 if (isHeader)
                     {
                     topLeftCorner.y -= labelBox.GetSize().GetHeight() + ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -564,13 +577,13 @@ namespace Wisteria::GraphItems
             }
         else if (IsHorizontal())
             {
-            const auto adjustMarginForHeaderOrFooter = [this, &measureDC, &bottomRightCorner, &topLeftCorner]
+            const auto adjustMarginForHeaderOrFooter = [this, &dc, &bottomRightCorner, &topLeftCorner]
                 (Label label, const bool isHeader)
                 {
                 label.SetAnchorPoint(isHeader ? GetRightPoint() : GetLeftPoint());
                 label.SetScaling(GetScaling());
                 label.SetAnchoring(Anchoring::Center);
-                wxRect labelBox = label.GetBoundingBox(measureDC);
+                wxRect labelBox = label.GetBoundingBox(dc);
                 if (isHeader)
                     {
                     // push over the x to fit the header
@@ -737,7 +750,7 @@ namespace Wisteria::GraphItems
         if (!IsShown())
             { return wxRect(); }
 
-        const wxRect axisRect = GetBoundingBox();
+        const wxRect axisRect = GetBoundingBox(dc);
 
         wxPen axisPen(GetAxisLinePen());
         if (GetAxisLinePen().IsOk())
@@ -2045,7 +2058,7 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    double Axis::CalcBestScalingToFitLabels(wxDC& measureDC)
+    double Axis::CalcBestScalingToFitLabels(wxDC& dc)
         {
         // no labels?
         if (GetAxisPointsCount() == 0)
@@ -2068,20 +2081,20 @@ namespace Wisteria::GraphItems
 
         if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
             {
-            auto longestLabel{ GetWidestTextLabel(measureDC) };
-            auto longestWidth = longestLabel.GetBoundingBox(measureDC).GetWidth();
+            auto longestLabel{ GetWidestTextLabel(dc) };
+            auto longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
 
             while (currentScaling > 1.0 && longestWidth > m_maxLabelWidth)
                 {
                 currentScaling -= 0.1;
                 longestLabel.SetScaling(currentScaling);
-                longestWidth = longestLabel.GetBoundingBox(measureDC).GetWidth();
+                longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
                 }
             }
         else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
             {
-            auto tallestLabel = GetTallestTextLabel(measureDC);
-            auto tallestHeight = tallestLabel.GetBoundingBox(measureDC).GetHeight();
+            auto tallestLabel = GetTallestTextLabel(dc);
+            auto tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
 
             // 1.0 will be the lowest scaling that we would recommend. Even if that continues to cause overlaps,
             // we don't want to suggest a scaling smaller than the default that the parent is probably using.
@@ -2089,7 +2102,7 @@ namespace Wisteria::GraphItems
                 {
                 currentScaling -= .1;
                 tallestLabel.SetScaling(currentScaling);
-                tallestHeight = tallestLabel.GetBoundingBox(measureDC).GetHeight();
+                tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
                 }
             }
         else
@@ -2104,7 +2117,7 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    bool Axis::ShouldLabelsBeStackedToFit(wxDC& measureDC) const
+    bool Axis::ShouldLabelsBeStackedToFit(wxDC& dc) const
         {
         wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
         wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
@@ -2165,7 +2178,7 @@ namespace Wisteria::GraphItems
                 {
                 axisLabel.SetText(GetDisplayableValue(*pos).GetText());
                 const wxSize labelSize =
-                    axisLabel.GetBoundingBox(measureDC).GetSize();
+                    axisLabel.GetBoundingBox(dc).GetSize();
                 wxCoord axisTextWidth = isMeasuringByHeight ?
                                         labelSize.GetHeight() : labelSize.GetWidth();
                 // with the first and last labels, the outer halves
@@ -2665,7 +2678,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    Label Axis::GetTallestTextLabel(wxDC& measureDC) const
+    Label Axis::GetTallestTextLabel(wxDC& dc) const
         {
         m_tallestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
         // use cached calculation from previous call if labels haven't changed
@@ -2694,7 +2707,7 @@ namespace Wisteria::GraphItems
                 {
                 currentLabel.SetText(GetDisplayableValue(axisPt).GetText());
                 const wxCoord textHeight =
-                    currentLabel.GetBoundingBox(measureDC).GetSize().GetHeight();
+                    currentLabel.GetBoundingBox(dc).GetSize().GetHeight();
                 if (textHeight > tallestLabelHeight)
                     {
                     tallestAxisLabel = currentLabel;
@@ -2708,7 +2721,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    Label Axis::GetWidestTextLabel(wxDC& measureDC) const
+    Label Axis::GetWidestTextLabel(wxDC& dc) const
         {
         m_widestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
         // use cached calculation from previous call if labels haven't changed
@@ -2736,7 +2749,7 @@ namespace Wisteria::GraphItems
             if (IsPointDisplayingLabel(axisPt))
                 {
                 currentLabel.SetText(GetDisplayableValue(axisPt).GetText());
-                const auto textWidth = currentLabel.GetBoundingBox(measureDC).GetWidth();
+                const auto textWidth = currentLabel.GetBoundingBox(dc).GetWidth();
                 if (textWidth > longestLabelWidth)
                     {
                     longestAxisLabel = currentLabel;
@@ -2918,12 +2931,12 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Axis::CalcBracketsWidth(wxDC& measureDC) const
+    wxCoord Axis::CalcBracketsWidth(wxDC& dc) const
         {
         wxCoord spacing(0);
         for (const auto& bracket : GetBrackets())
             {
-            spacing = std::max(bracket.CalcWidth(measureDC, GetDPIScaleFactor()), spacing);
+            spacing = std::max(bracket.CalcWidth(dc, GetDPIScaleFactor()), spacing);
             }
         return spacing;
         }
@@ -3003,7 +3016,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Axis::SetPoints(const wxPoint pt1, const wxPoint pt2)
+    void Axis::SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc)
         {
         // make the higher point be the first one if a vertical axis
         // (this assumption needs to be made for later calculations)
@@ -3037,16 +3050,15 @@ namespace Wisteria::GraphItems
 
         CalcLabelPositions();
         CalcTickMarkPositions();
-        wxGCDC measureDC;
-        CalcBestScalingToFitLabels(measureDC);
+        CalcBestScalingToFitLabels(dc);
         }
 
     //-------------------------------------------
-    wxCoord Axis::AxisBracket::CalcWidth(wxDC& measureDC, const double dpiScaling) const
+    wxCoord Axis::AxisBracket::CalcWidth(wxDC& dc, const double dpiScaling) const
         {
         auto theLabel{ GetLabel() };
         theLabel.SetDPIScaleFactor(dpiScaling);
-        const wxSize labelSize = theLabel.GetBoundingBox(measureDC).GetSize();
+        const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
         wxCoord size = GetLineSpacing() * theLabel.GetScaling() * dpiScaling;
         size += (GetOrientation() == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
         return size;

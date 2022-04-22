@@ -40,25 +40,25 @@ namespace Wisteria::GraphItems
         /** @brief Creates a label to display in the middle of the slice.
              This is usually a raw count of observations in the slice, or its percentage of the
              overall pie.
-            @param measureDC The device context to measure the Label with.
+            @param dc The device context to measure the Label with.
             @param pieProportion The proportion of the pie area that this slice's ring consumes.
             @param labelDisplay What to display in the label.
             @returns The label, which will already be anchored to the middle of the slice.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
-                          wxDC& measureDC, const double pieProportion, const BinLabelDisplay labelDisplay);
+                          wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay);
         /** @brief Creates a label to display at the outer ring of the pie.
              This is usually the group label of the slice.
-            @param measureDC The device context to measure the Label with.
+            @param dc The device context to measure the Label with.
             @returns The label, which will already be anchored to the middle of the slices's outer ring.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(wxDC& measureDC);
+        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(wxDC& dc);
         /** @brief Creates a label to display at the outer ring of the pie.
              This is usually the group label of the slice.
-            @param measureDC The device context to measure the Label with.
+            @param dc The device context to measure the Label with.
             @param pieArea A different pie area from what the slice is currently using. This is useful
              for inner ring slices that need its outer labels to be outside the parent ring.
             @returns The label, which will already be anchored to the middle of the slices's outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
-                          wxDC& measureDC, const wxRect& pieArea);
+                          wxDC& dc, const wxRect& pieArea);
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
         ///  For example, `.5` would be an arc in the middle of the pie, and `1` would be the outer
@@ -83,12 +83,17 @@ namespace Wisteria::GraphItems
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
             }
 
+        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+            { return GetBoundingBox(); }
+
         wxRect GetBoundingBox() const final
             { return Polygon::GetPolygonBoundingBox(GetPolygon()); }
 
         // obligatory virtual interfaces that aren't implemented
         [[deprecated("Not implemented")]]
-        void SetBoundingBox(const wxRect&, const double) final
+        void SetBoundingBox(const wxRect&, wxDC& dc, const double) final
             { wxFAIL_MSG("Not implemented for PieSlice"); }
         [[deprecated("Not implemented")]]
         void Offset(const int, const int) final
@@ -450,7 +455,7 @@ namespace Wisteria::Graphs
              This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateOuterPieLegend(
-            const LegendCanvasPlacementHint hint) const;
+            const LegendCanvasPlacementHint hint);
 
         /** @brief Builds and returns a legend for the inner pie (if a dual data series).
             @details This can be then be managed by the parent canvas and placed next to the plot.
@@ -458,7 +463,7 @@ namespace Wisteria::Graphs
              This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateInnerPieLegend(
-            const LegendCanvasPlacementHint hint) const;
+            const LegendCanvasPlacementHint hint);
         /// @}
 
         /// @private

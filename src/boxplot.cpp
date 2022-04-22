@@ -625,7 +625,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
-        const LegendCanvasPlacementHint hint) const
+        const LegendCanvasPlacementHint hint)
         {
         if (m_data == nullptr || GetBoxCount() != 1)
             { return nullptr; }

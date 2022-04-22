@@ -433,7 +433,7 @@ namespace Wisteria::Graphs
                             Pen(wxNullPen).DPIScaling(GetDPIScaleFactor());
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
-                            { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
+                            { decalLabel->SetBoundingBox(decalRect, dc, GetScaling()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
                             { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
@@ -759,7 +759,7 @@ namespace Wisteria::Graphs
                             DPIScaling(GetDPIScaleFactor());
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
-                            { decalLabel->SetBoundingBox(decalRect, GetScaling()); }
+                            { decalLabel->SetBoundingBox(decalRect, dc, GetScaling()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
                             { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
@@ -827,7 +827,10 @@ namespace Wisteria::Graphs
                             {
                             if (decalLabel->GetLeftPadding() == 0 &&
                                 decalLabel->GetTopPadding() == 0)
-                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
+                                {
+                                decalLabel->Offset(ScaleToScreenAndCanvas(2),
+                                                  -ScaleToScreenAndCanvas(2));
+                                }
                             decalLabel->SetPadding(2, 2, 2, 2);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
@@ -840,8 +843,10 @@ namespace Wisteria::Graphs
                     bar.GetLabel().SetScaling(GetScaling());
                     bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
                     textHeight = bar.GetLabel().GetBoundingBox(dc).GetHeight();
-                    bar.GetLabel().SetAnchorPoint(wxPoint(middlePointOfBar.x,
-                                                          middlePointOfBar.y - (labelSpacingFromLine+(textHeight/2))));
+                    bar.GetLabel().SetAnchorPoint(
+                        wxPoint(middlePointOfBar.x,
+                                middlePointOfBar.y -
+                                (labelSpacingFromLine+(textHeight/2))));
                     }
                 }
             }

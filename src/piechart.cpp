@@ -15,7 +15,7 @@ using namespace Wisteria::Colors;
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateMiddleLabel(wxDC& measureDC,
+    std::shared_ptr<Label> PieSlice::CreateMiddleLabel(wxDC& dc,
                                                        const double pieProportion,
                                                        const BinLabelDisplay labelDisplay)
         {
@@ -58,7 +58,7 @@ namespace Wisteria::GraphItems
         bool middleLabelIsTooSmall{ false };
         for (;;)
             {
-            auto labelBox = pieLabel->GetBoundingBox(measureDC);
+            auto labelBox = pieLabel->GetBoundingBox(dc);
             if (Polygon::IsInsidePolygon(
                     labelBox.GetTopLeft(), &points[0], points.size()) &&
                 Polygon::IsInsidePolygon(
@@ -87,11 +87,11 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& measureDC)
-        { return CreateOuterLabel(measureDC, m_pieArea); }
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& dc)
+        { return CreateOuterLabel(dc, m_pieArea); }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& measureDC, const wxRect& pieArea)
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& dc, const wxRect& pieArea)
         {
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(1.0, pieArea);
@@ -659,7 +659,7 @@ namespace Wisteria::Graphs
                 donutHoleLabel->SetBoundingBox(
                     wxRect(donutHoleLabelCorner,
                            wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
-                    GetScaling());
+                    dc, GetScaling());
                 AddObject(donutHoleLabel);
                 }
             }
@@ -667,7 +667,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> PieChart::CreateInnerPieLegend(
-        const LegendCanvasPlacementHint hint) const
+        const LegendCanvasPlacementHint hint)
         {
         wxASSERT_MSG(GetInnerPie().size() > 1,
                      L"Inner ring of pie chart empty, cannot create legend!");
@@ -746,7 +746,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> PieChart::CreateOuterPieLegend(
-        const LegendCanvasPlacementHint hint) const
+        const LegendCanvasPlacementHint hint)
         {
         wxASSERT_MSG(GetOuterPie().size() > 1,
                      L"Outer ring of pie chart empty, cannot create legend!");

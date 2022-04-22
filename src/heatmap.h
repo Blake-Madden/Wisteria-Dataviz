@@ -184,7 +184,7 @@ namespace Wisteria::Graphs
         /// @returns The legend for the plot.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader) const;
+            const bool includeHeader);
     private:
         void RecalcSizes(wxDC& dc) final;
 

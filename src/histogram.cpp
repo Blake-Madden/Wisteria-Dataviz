@@ -553,7 +553,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader) const
+        const LegendCanvasPlacementHint hint, const bool includeHeader)
         {
         if (m_data == nullptr || GetGroupCount() == 0)
             { return nullptr; }

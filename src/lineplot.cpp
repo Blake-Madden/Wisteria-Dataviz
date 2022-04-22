@@ -272,7 +272,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader) const
+        const LegendCanvasPlacementHint hint, const bool includeHeader)
         {
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).

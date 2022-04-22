@@ -322,7 +322,7 @@ namespace Wisteria::Graphs
 
               For multi-group plots, null will be returned.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint) const;
+            const LegendCanvasPlacementHint hint);
         /// @}
 
         /// @name Box Effect Functions
