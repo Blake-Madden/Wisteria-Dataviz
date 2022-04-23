@@ -430,7 +430,7 @@ namespace Wisteria::Graphs
         if (GetBackgroundColor().IsOk() &&
             GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
             {
-            wxPoint boxPoints[4]{ 0 };
+            wxPoint boxPoints[4]{ {0, 0} };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             auto box = std::make_shared<GraphItems::Polygon>(
                                 GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN).
