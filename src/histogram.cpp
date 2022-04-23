@@ -27,9 +27,13 @@ namespace Wisteria::Graphs
                             const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges
                                 /*= std::make_pair(std::nullopt, std::nullopt)*/)
         {
+        if (data == nullptr)
+            { return; }
+
         m_data = data;
         m_useGrouping = groupColumnName.has_value();
         m_groupIds.clear();
+        GetSelectedIds().clear();
         m_binningMethod = bMethod;
         m_roundingMethod = rounding;
         m_intervalDisplay = iDisplay;

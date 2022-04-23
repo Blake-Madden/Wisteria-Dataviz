@@ -265,6 +265,7 @@ namespace Wisteria::Graphs
             { return; }
 
         m_data = data;
+        GetSelectedIds().clear();
         m_groupColumn1 = m_data->GetCategoricalColumn(groupColumn1Name);
         if (m_groupColumn1 == m_data->GetCategoricalColumns().cend())
             {

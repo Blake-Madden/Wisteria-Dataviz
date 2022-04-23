@@ -13,6 +13,8 @@ namespace Wisteria::Graphs
         {
         if (data == nullptr)
             { return; }
+
+        GetSelectedIds().clear();
     
         auto dateColumn = data->GetDateColumn(dateColumnName);
         if (dateColumn == data->GetDateColumns().cend())

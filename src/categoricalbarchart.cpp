@@ -20,9 +20,13 @@ namespace Wisteria::Graphs
                             const std::optional<const wxString> groupColumnName /*= std::nullopt*/,
                             const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/)
         {
+        if (data == nullptr)
+            { return; }
+
         m_data = data;
         m_useGrouping = groupColumnName.has_value();
         m_groupIds.clear();
+        GetSelectedIds().clear();
         m_binLabelDisplay = blDisplay;
 
         // garbage, so reset and bail

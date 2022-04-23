@@ -34,7 +34,11 @@ namespace Wisteria::Graphs
         std::optional<const wxString> groupColumnName /*= std::nullopt*/,
         std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
+        if (data == nullptr)
+            { return; }
+
         m_data = data;
+        GetSelectedIds().clear();
         m_useGrouping = groupColumnName.has_value();
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());

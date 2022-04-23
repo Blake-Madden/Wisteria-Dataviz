@@ -145,8 +145,12 @@ namespace Wisteria::Graphs
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
+        if (data == nullptr)
+            { return; }
+
         m_data = data;
         m_boxes.clear();
+        GetSelectedIds().clear();
         GetLeftYAxis().Reset();
         GetRightYAxis().Reset();
         GetBottomXAxis().Reset();

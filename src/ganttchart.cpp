@@ -43,7 +43,11 @@ namespace Wisteria::Graphs
                              std::optional<const wxString> completionColumnName /*= std::nullopt*/,
                              std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
+        if (data == nullptr)
+            { return; }
+
         ClearBars();
+        GetSelectedIds().clear();
         m_legendLines.clear();
         m_legendTitle.clear();
 

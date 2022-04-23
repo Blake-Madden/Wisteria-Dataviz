@@ -572,6 +572,10 @@ namespace Wisteria::Graphs
         std::vector<wxString>& questionColumns,
         std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
+        if (data == nullptr)
+            { return; }
+
+        GetSelectedIds().clear();
         m_positive1Label.clear();
         m_positive2Label.clear();;
         m_positive3Label.clear();

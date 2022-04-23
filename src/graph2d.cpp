@@ -430,18 +430,20 @@ namespace Wisteria::Graphs
         if (GetBackgroundColor().IsOk() &&
             GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
             {
-            wxPoint boxPoints[4];
+            wxPoint boxPoints[4]{ 0 };
             GraphItems::Polygon::GetRectPoints(GetPlotAreaBoundingBox(), boxPoints);
             auto box = std::make_shared<GraphItems::Polygon>(
                                 GraphItems::GraphItemInfo().Pen(*wxBLACK_PEN).
                                 Brush(wxColour(GetBackgroundColor())).
                                 Scaling(GetScaling()),
-                                boxPoints, 4);
+                                boxPoints, std::size(boxPoints));
             AddObject(box);
             }
 
         // draw the X axis grid lines
-        if (GetBottomXAxis().IsShown() && GetBottomXAxis().GetGridlinePen().IsOk() && GetBottomXAxis().GetAxisPointsCount() > 2)
+        if (GetBottomXAxis().IsShown() &&
+            GetBottomXAxis().GetGridlinePen().IsOk() &&
+            GetBottomXAxis().GetAxisPointsCount() > 2)
             {
             auto xAxisLines = std::make_shared<Wisteria::GraphItems::Lines>(GetBottomXAxis().GetGridlinePen(), GetScaling());
             for (auto pos = GetBottomXAxis().GetAxisPoints().cbegin()+1;
@@ -456,7 +458,9 @@ namespace Wisteria::Graphs
             }
 
         // draw the Y axis grid lines
-        if (GetLeftYAxis().IsShown() && GetLeftYAxis().GetGridlinePen().IsOk() && GetLeftYAxis().GetAxisPointsCount() > 2)
+        if (GetLeftYAxis().IsShown() &&
+            GetLeftYAxis().GetGridlinePen().IsOk() &&
+            GetLeftYAxis().GetAxisPointsCount() > 2)
             {
             auto yAxisLines = std::make_shared<Wisteria::GraphItems::Lines>(GetLeftYAxis().GetGridlinePen(), GetScaling());
             for (auto pos = GetLeftYAxis().GetAxisPoints().cbegin()+1;
