@@ -29,44 +29,58 @@ namespace Wisteria::UI
     class VariableSelectDlg final : public wxDialog
         {
     public:
-        /// @brief The type of variables that can be selected.
-        /// @details These are bitmask values that can be ORed together.
-        /// /// @internal This is used as a bitmask, so can't be strongly typed.
-        enum VariableSelections
+        /// @brief Definition for a variable list for a user to select.
+        /// @details Examples of this could be a list of categoricals, a single grouping variable,
+        ///  an X variable, etc.
+        class VariableListInfo
             {
-            NoVariables = 0,              /*!< Nothing to select.*/
-            XVariable = 0x0010,           /*!< Select an X variable.*/
-            YVariable = 0x0020,           /*!< Select a Y variable.*/
-            GroupingVariables = 0x0040,   /*!< Select a grouping variable.*/
-            CategoricalVariables = 0x0080 /*!< Select categorical variable(s).*/
-            };
-
-        /// @brief Which variable styles are single selection.
-        /// @details These are bitmask values that can be ORed together.
-        /// @note X and Y areas are always single selection by design, regardless
-        ///  of any values specified here.
-        /// @internal This is used as a bitmask, so can't be strongly typed.
-        enum SingleSelectionTypes
-            {
-            NoSingleSelection,  /*!< Nothing is single selection.*/
-            Categorical,        /*!< Categorical variables area is single selection.*/
-            Grouping            /*!< Grouping variables area is single selection.*/
+            friend class VariableSelectDlg;
+        public:
+            /// @brief Sets the list's label.
+            /// @param name The label to display above the variable list.
+            /// @returns A self reference.
+            VariableListInfo& Label(const wxString& label)
+                {
+                m_label = label;
+                return *this;
+                }
+            /// @brief Sets whether the list can hold multiple variables or just one.
+            /// @details The default is for the list to allow multiple variables.
+            /// @param singleSelection @c true to only allow one variable to be
+            ///  selected for this list.
+            /// @returns A self reference.
+            VariableListInfo& SingleSelection(const bool singleSelection)
+                {
+                m_singleSelection = singleSelection;
+                return *this;
+                }
+            /// @brief Sets whether a variable must be selected for this list.
+            /// @details The default is for the list to be required.
+            /// @param required @c true to force the user to select a variable for this list.
+            /// @returns A self reference.
+            VariableListInfo& Required(const bool required)
+                {
+                m_required = required;
+                return *this;
+                }
+        private:
+            wxString m_label;
+            bool m_singleSelection{ false };
+            bool m_required{ true };
             };
 
         /** @brief Constructor.
             @param parent The dialog's parent.
             @param columnInfo The list of columns (and their respective data types) to choose from.
              This will usually be the result from a call to Dataset::ReadColumnInfo().
-            @param varTypes Which type of variables the user can select.
-            @param singleSelTypes Which variable groups should be single selection.
+            @param varInfo Definitions for the variable lists that the user can specify.
             @param id The dialog's ID.
             @param caption The caption for the dialog.
             @param pos The dialog's position on the screen.
             @param size The default size of the dialog.
             @param style The dialog's style.*/
         VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-                          VariableSelections varTypes,
-                          SingleSelectionTypes singleSelTypes = SingleSelectionTypes::NoSingleSelection,
+                          const std::vector<VariableListInfo>& varInfo,
                           wxWindowID id = wxID_ANY,
                           const wxString& caption = _("Select Variables"),
                           const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -78,58 +92,27 @@ namespace Wisteria::UI
         /// @private
         VariableSelectDlg& operator=(const VariableSelectDlg&) = delete;
 
-        /** @brief Sets the display label for the X variable.
-            @param label The label to show.*/
-        void SetXVariableLabel(const wxString& label)
-            {
-            auto labelCtrl = FindWindowById(ID_X_VAR_LABEL);
-            if (labelCtrl != nullptr)
-                { labelCtrl->SetLabel(label+L":"); }
-            }
-        /** @brief Sets the display label for the Y variable.
-            @param label The label to show.*/
-        void SetYVariableLabel(const wxString& label)
-            {
-            auto labelCtrl = FindWindowById(ID_Y_VAR_LABEL);
-            if (labelCtrl != nullptr)
-                { labelCtrl->SetLabel(label+L":"); }
-            }
-        /** @brief Sets the display label for the categorical variables.
-            @param label The label to show.*/
-        void SetCategoricalVariablesLabel(const wxString& label)
-            {
-            auto labelCtrl = FindWindowById(ID_CAT_VARS_LABEL);
-            if (labelCtrl != nullptr)
-                { labelCtrl->SetLabel(label+L":"); }
-            }
-        /** @brief Sets the display label for the grouping variable.
-            @param label The label to show.*/
-        void SetGroupingVariableLabel(const wxString& label)
-            {
-            auto labelCtrl = FindWindowById(ID_GROUP_VAR_LABEL);
-            if (labelCtrl != nullptr)
-                { labelCtrl->SetLabel(label+L":"); }
-            }
-
-        /// @returns The X variable that the user selected.
-        ///  Will be an empty string is nothing was selected.
-        [[nodiscard]] wxString GetXVariable() const
-            { return m_xVarList->GetItemCount() ? m_xVarList->GetItemText(0, 0) : wxString(L""); };
-        /// @returns The Y variable that the user selected.
-        ///  Will be an empty string is nothing was selected.
-        [[nodiscard]] wxString GetYVariable() const
-            { return m_yVarList->GetItemCount() ? m_yVarList->GetItemText(0, 0) : wxString(L""); };
-        /// @returns The categorical variables that the user selected.
-        [[nodiscard]] std::vector<wxString> GetCategoricalVariables() const;
-        /// @returns The grouping variable that the user selected.
-        ///  Will be an empty string is nothing was selected.
-        [[nodiscard]] wxString GetGroupingVariable() const
-            {
-            return m_groupVarList->GetItemCount() ?
-                m_groupVarList->GetItemText(0, 0) : wxString(L"");
-            };
+        /// @brief Gets the variables that a user has moved into a given list.
+        /// @detais The list is accessed by index, in the order that the variable definitions
+        ///  were passed to the constructor. For example, if the VariableListInfo passed to the
+        ///  constructor included a continuous and grouping set of variable lists (in that order),
+        ///  then `1` will return the variables in the grouping list.
+        /// @param listIndex The index of the client-defined variable list.
+        /// @returns A list of the variable names that the user has selected for a given list.
+        std::vector<wxString> VariableSelectDlg::GetSelectedVariables(const size_t listIndex) const;
     private:
-        void CreateControls(VariableSelections varTypes, SingleSelectionTypes singleSelTypes);
+        struct VariableList
+            {
+            wxString m_label;
+            int m_addId{ wxID_ANY };
+            int m_removeId{ wxID_ANY };
+            bool m_singleSelection{ false };
+            wxListView* m_list{ nullptr };
+            bool m_required{ false };
+            };
+
+        bool Validate();
+        void CreateControls(const std::vector<VariableListInfo>& varInfo);
         /// @brief Moves the selected variables in one list to another.
         /// @param list The list to move items from.
         /// @param otherList The sub list to move the variables into.
@@ -144,29 +127,9 @@ namespace Wisteria::UI
         /// @brief Enables/disables buttons as needed.
         void UpdateButtonStates();
 
-        static constexpr int ID_X_VAR_LABEL = wxID_HIGHEST + 1;
-        static constexpr int ID_X_VAR_ADD = wxID_HIGHEST + 2;
-        static constexpr int ID_X_VAR_REMOVE = wxID_HIGHEST + 3;
-
-        static constexpr int ID_Y_VAR_LABEL = wxID_HIGHEST + 4;
-        static constexpr int ID_Y_VAR_ADD = wxID_HIGHEST + 5;
-        static constexpr int ID_Y_VAR_REMOVE = wxID_HIGHEST + 6;
-
-        static constexpr int ID_CAT_VARS_LABEL = wxID_HIGHEST + 7;
-        static constexpr int ID_CAT_VARS_ADD = wxID_HIGHEST + 8;
-        static constexpr int ID_CAT_VARS_REMOVE = wxID_HIGHEST + 9;
-
-        static constexpr int ID_GROUP_VAR_LABEL = wxID_HIGHEST + 10;
-        static constexpr int ID_GROUP_VAR_ADD = wxID_HIGHEST + 11;
-        static constexpr int ID_GROUP_VAR_REMOVE = wxID_HIGHEST + 12;
         Data::Dataset::ColumnPreviewInfo m_columnInfo;
-
-        wxListView* m_varList{ nullptr };
-
-        wxListView* m_xVarList{ nullptr };
-        wxListView* m_yVarList{ nullptr };
-        wxListView* m_groupVarList{ nullptr };
-        wxListView* m_categoricalVarList{ nullptr };
+        wxListView* m_mainVarlist{ nullptr };
+        std::vector<VariableList> m_varLists;
         };
     }
 

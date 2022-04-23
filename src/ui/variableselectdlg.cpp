@@ -12,93 +12,17 @@ using namespace Wisteria;
 using namespace Wisteria::UI;
 
 VariableSelectDlg::VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
-                       VariableSelections varTypes,
-                       SingleSelectionTypes singleSelTypes /*= SingleSelectionTypes::NoSingleSelection*/,
+                       const std::vector<VariableListInfo>& varInfo,
                        wxWindowID id /*= wxID_ANY*/,
                        const wxString& caption /*= _("Set Opacity")*/,
                        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
-                       m_columnInfo(columnInfo)
+                    m_columnInfo(columnInfo)
     {
     SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
 
-    CreateControls(varTypes, singleSelTypes);
-
-    // when items are selected in any list, enable the buttons
-    Bind(wxEVT_LIST_ITEM_SELECTED,
-        [this](wxCommandEvent&)
-            {
-            UpdateButtonStates();
-            },
-        wxID_ANY);
-    Bind(wxEVT_LIST_ITEM_DESELECTED,
-        [this](wxCommandEvent&)
-        {
-            UpdateButtonStates();
-        },
-        wxID_ANY);
-
-    // Add and Remove buttons
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_varList, m_xVarList);
-            UpdateButtonStates();
-            },
-        ID_X_VAR_ADD);
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_xVarList, m_varList);
-            UpdateButtonStates();
-            },
-        ID_X_VAR_REMOVE);
-
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_varList, m_yVarList);
-            UpdateButtonStates();
-            },
-        ID_Y_VAR_ADD);
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_yVarList, m_varList);
-            UpdateButtonStates();
-            },
-        ID_Y_VAR_REMOVE);
-
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_varList, m_categoricalVarList);
-            UpdateButtonStates();
-            },
-        ID_CAT_VARS_ADD);
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_categoricalVarList, m_varList);
-            UpdateButtonStates();
-            },
-        ID_CAT_VARS_REMOVE);
-
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_varList, m_groupVarList);
-            UpdateButtonStates();
-            },
-        ID_GROUP_VAR_ADD);
-    Bind(wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-            {
-            MoveSelectedVariables(m_groupVarList, m_varList);
-            UpdateButtonStates();
-            },
-        ID_GROUP_VAR_REMOVE);
+    CreateControls(varInfo);
 
     Centre();
     }
@@ -106,37 +30,17 @@ VariableSelectDlg::VariableSelectDlg(wxWindow* parent, const Data::Dataset::Colu
 //-------------------------------------------------------------
 void VariableSelectDlg::UpdateButtonStates()
     {
-    // X buttons
-    auto* button = FindWindowById(ID_X_VAR_REMOVE);
-    if (button)
-        { button->Enable(m_xVarList->GetSelectedItemCount()); }
-    button = FindWindowById(ID_X_VAR_ADD);
-    if (button)
-        { button->Enable(m_varList->GetSelectedItemCount()); }
-
-    // Y buttons
-    button = FindWindowById(ID_Y_VAR_REMOVE);
-    if (button)
-        { button->Enable(m_yVarList->GetSelectedItemCount()); }
-    button = FindWindowById(ID_Y_VAR_ADD);
-    if (button)
-        { button->Enable(m_varList->GetSelectedItemCount()); }
-
-    // categorical buttons
-    button = FindWindowById(ID_CAT_VARS_REMOVE);
-    if (button)
-        { button->Enable(m_categoricalVarList->GetSelectedItemCount()); }
-    button = FindWindowById(ID_CAT_VARS_ADD);
-    if (button)
-        { button->Enable(m_varList->GetSelectedItemCount()); }
-
-    // group buttons
-    button = FindWindowById(ID_GROUP_VAR_REMOVE);
-    if (button)
-        { button->Enable(m_groupVarList->GetSelectedItemCount()); }
-    button = FindWindowById(ID_GROUP_VAR_ADD);
-    if (button)
-        { button->Enable(m_varList->GetSelectedItemCount()); }
+    // enable/disable the Add/Remove
+    for (const auto& varList : m_varLists)
+        {
+        wxASSERT_MSG(m_mainVarlist, L"Main variable list not created!");
+        auto* button = FindWindowById(varList.m_removeId);
+        if (button && m_mainVarlist)
+            { button->Enable(varList.m_list->GetSelectedItemCount()); }
+        button = FindWindowById(varList.m_addId);
+        if (button && m_mainVarlist)
+            { button->Enable(m_mainVarlist->GetSelectedItemCount()); }
+        }
     }
 
 //-------------------------------------------------------------
@@ -197,17 +101,23 @@ void VariableSelectDlg::RemoveSelectedVariables(wxListView* list)
     }
 
 //-------------------------------------------------------------
-std::vector<wxString> VariableSelectDlg::GetCategoricalVariables() const
+std::vector<wxString> VariableSelectDlg::GetSelectedVariables(const size_t listIndex) const
     {
+    if (listIndex >= m_varLists.size())
+        {
+        wxFAIL_MSG(L"Invalid index specified for variable list!");
+        return std::vector<wxString>();
+        }
+    const auto& varList = m_varLists[listIndex];
     std::vector<wxString> strings;
-    strings.reserve(m_categoricalVarList->GetItemCount());
-    for (auto i = 0; i < m_categoricalVarList->GetItemCount(); ++i)
-        { strings.emplace_back(m_categoricalVarList->GetItemText(i)); }
+    strings.reserve(varList.m_list->GetItemCount());
+    for (auto i = 0; i < varList.m_list->GetItemCount(); ++i)
+        { strings.emplace_back(varList.m_list->GetItemText(i)); }
     return strings;
     };
 
 //-------------------------------------------------------------
-void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelectionTypes singleSelTypes)
+void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varInfo)
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxGridBagSizer* varsSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
@@ -218,19 +128,19 @@ void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelect
     // fill the main list of variables
     varsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"Variables")),
         wxGBPosition(0, 0), wxGBSpan(1, 1), wxEXPAND|wxALL);
-    m_varList = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+    m_mainVarlist = new wxListView(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                wxLC_REPORT|wxLC_NO_HEADER);
-    m_varList->InsertColumn(0, wxEmptyString);
+    m_mainVarlist->InsertColumn(0, wxEmptyString);
     for (const auto& [name, type] : m_columnInfo)
-        { m_varList->InsertItem(m_varList->GetItemCount(), name); }
-    m_varList->SetColumnWidth(0, wxLIST_AUTOSIZE);
-    varsSizer->Add(m_varList, wxGBPosition(1, 0), wxGBSpan(3, 1), wxEXPAND|wxALL);
+        { m_mainVarlist->InsertItem(m_mainVarlist->GetItemCount(), name); }
+    m_mainVarlist->SetColumnWidth(0, wxLIST_AUTOSIZE);
+    varsSizer->Add(m_mainVarlist, wxGBPosition(1, 0), wxGBSpan(3, 1), wxEXPAND|wxALL);
 
     // set up the variable groups on the right side
     int currentButtonRow{ 1 };
     int currentLabelRow{ 0 };
     int currentListRow{ 1 };
-    const auto addVarControls = [&](const auto labelId, const auto addId, const auto removeId,
+    const auto addVarControls = [&](const auto addId, const auto removeId,
                                     const wxString& label, const long listStyle)
         {
         auto buttonSz = new wxBoxSizer(wxVERTICAL);
@@ -246,7 +156,7 @@ void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelect
             { varsSizer->AddGrowableRow(currentButtonRow); }
         currentButtonRow += 2;
 
-        varsSizer->Add(new wxStaticText(this, labelId, label),
+        varsSizer->Add(new wxStaticText(this, wxID_STATIC, label),
             wxGBPosition(currentLabelRow, 2), wxGBSpan(1, 1), wxEXPAND|wxALL);
         currentLabelRow += 2;
 
@@ -258,47 +168,85 @@ void VariableSelectDlg::CreateControls(VariableSelections varTypes, SingleSelect
         return list;
         };
 
-    // X
-    if (varTypes & XVariable)
+    int currentId{ wxID_HIGHEST };
+
+    // create the user-defined variable lists on the right
+    for (const auto& var : varInfo)
         {
-        m_xVarList =
-            addVarControls(ID_X_VAR_LABEL, ID_X_VAR_ADD, ID_X_VAR_REMOVE, _(L"X Variable:"),
-                wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
-        }
-    // Y
-    if (varTypes & YVariable)
-        {
-        m_yVarList =
-            addVarControls(ID_Y_VAR_LABEL, ID_Y_VAR_ADD, ID_Y_VAR_REMOVE, _(L"Y Variable:"),
-                wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL);
-        }
-    // categoricals
-    if (varTypes & CategoricalVariables)
-        {
-        const long style = (singleSelTypes & SingleSelectionTypes::Categorical) ?
+        VariableList currentList;
+        currentList.m_label = var.m_label;
+        currentList.m_addId = ++currentId;
+        currentList.m_removeId = ++currentId;
+        currentList.m_required = var.m_required;
+        currentList.m_singleSelection = var.m_singleSelection;
+
+        const long style = currentList.m_singleSelection ?
             (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
-        m_categoricalVarList =
-            addVarControls(ID_CAT_VARS_LABEL, ID_CAT_VARS_ADD, ID_CAT_VARS_REMOVE,
-                _(L"Categorical Variables:"), style);
-        }
-    // groupings
-    if (varTypes & GroupingVariables)
-        {
-        const long style = (singleSelTypes & SingleSelectionTypes::Grouping) ?
-            (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
-        m_groupVarList =
-            addVarControls(ID_GROUP_VAR_LABEL, ID_GROUP_VAR_ADD, ID_GROUP_VAR_REMOVE,
-                _("Grouping Variables:"), style);
+        currentList.m_list = addVarControls(currentList.m_addId, currentList.m_removeId, currentList.m_label, style);
+        m_varLists.push_back(currentList);
         }
 
     // make list columns growable, but not button columns
     varsSizer->AddGrowableCol(0);
     varsSizer->AddGrowableCol(2);
 
-    UpdateButtonStates();
-
     mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL),
         wxSizerFlags(0).Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     SetSizerAndFit(mainSizer);
+
+    // when items are selected in any list, enable the buttons
+    Bind(wxEVT_LIST_ITEM_SELECTED,
+        [this](wxCommandEvent&)
+            {
+            UpdateButtonStates();
+            },
+        wxID_ANY);
+    Bind(wxEVT_LIST_ITEM_DESELECTED,
+        [this](wxCommandEvent&)
+            {
+            UpdateButtonStates();
+            },
+        wxID_ANY);
+
+    // connect the Add & Remove button events
+    for (const auto& varList : m_varLists)
+        {
+        wxASSERT_MSG(varList.m_list, L"User-defined list not created!");
+        Bind(wxEVT_BUTTON,
+            [&, this](wxCommandEvent&)
+                {
+                MoveSelectedVariables(m_mainVarlist, varList.m_list);
+                UpdateButtonStates();
+                },
+            varList.m_addId);
+        Bind(wxEVT_BUTTON,
+            [&, this](wxCommandEvent&)
+                {
+                MoveSelectedVariables(varList.m_list, m_mainVarlist);
+                UpdateButtonStates();
+                },
+            varList.m_removeId);
+        }
+
+    UpdateButtonStates();
+    }
+
+//-------------------------------------------------------------
+bool VariableSelectDlg::Validate()
+    {
+    // make sure any variable lists set to required have something selected
+    for (const auto& varList : m_varLists)
+        {
+        if (varList.m_required &&
+            varList.m_list &&
+            varList.m_list->GetItemCount() == 0)
+            {
+            wxMessageBox(
+                wxString::Format(_(L"Variable(s) must be selected for the %s list."), varList.m_label),
+                _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
+            return false;
+            }
+        }
+    return true;
     }
