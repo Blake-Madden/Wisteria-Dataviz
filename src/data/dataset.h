@@ -26,6 +26,7 @@
 #include <wx/uilocale.h>
 #include <wx/filename.h>
 #include <wx/numformatter.h>
+#include <wx/regex.h>
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
 #include "../debug/debug_assert.h"
@@ -368,6 +369,10 @@ namespace Wisteria::Data
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             };
 
+        /// @brief Map of regular expressions and their replacement strings.
+        /// @internal Needs to be shared pointers because wxRegEx has private CTOR.
+        using RegExMap = std::map<std::shared_ptr<wxRegEx>, wxString>;
+
         /** @brief Sets the names of the input columns to import for the date columns.
 
              As an example:
@@ -460,11 +465,45 @@ namespace Wisteria::Data
             m_idColumn = std::move(colName);
             return *this;
             }
+        /** @brief Sets a map of regular expressions to look for in imported text
+             (i.e., categorical) columns and what to replace them with.
+            @details This is useful for recoding values to missing data or fixing
+             misspellings in the input data.
+            @par Example:
+            @code
+             auto commentsData = std::make_shared<Data::Dataset>();
+             commentsData->ImportCSV(L"Comments.csv",
+                Data::ImportInfo().CategoricalColumns({
+                    { L"Comments", CategoricalImportMethod::ReadAsStrings }
+                    }).
+                ReplacementStrings({
+                    // replace cells that contain only something like
+                    // 'NA' or 'n/a'
+                    { std::make_shared<wxRegEx>(L"^[nN][/]?[aA]$"), L"" },
+                    // replace 'foot ball' with 'football'
+                    { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
+                    }));
+            @endcode
+            @param replaceStrings The map of regular expressions to match against
+             and what to replace them with.
+            @returns A self reference.*/
+        ImportInfo& ReplacementStrings(const RegExMap& replaceStrings)
+            {
+            m_textImportReplacements = replaceStrings;
+            return *this;
+            }
+        /// @private
+        ImportInfo& ReplacementStrings(RegExMap&& replaceStrings)
+            {
+            m_textImportReplacements = std::move(replaceStrings);
+            return *this;
+            }
     private:
         std::vector<DateImportInfo> m_dateColumns;
         std::vector<CategoricalImportInfo> m_categoricalColumns;
         std::vector<wxString> m_continuousColumns;
         wxString m_idColumn;
+        RegExMap m_textImportReplacements;
         };
 
     /** @brief %Dataset interface for graphs.

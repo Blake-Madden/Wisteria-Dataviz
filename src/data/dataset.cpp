@@ -69,7 +69,7 @@ namespace Wisteria::Data
             break;
             }
         if (!dt.IsValid())
-            { wxLogWarning(L"'%s': error parsing date.", input); }
+            { wxLogWarning(_(L"'%s': error parsing date."), input); }
         return dt;
         }
 
@@ -574,6 +574,18 @@ namespace Wisteria::Data
                 std::nullopt);
             }
 
+        // performs user-provided text replacement commands
+        const auto replaceStrings = [&](const wxString& str)
+            {
+            wxString alteredStr{ str };
+            for (const auto& [re, replacement] : info.m_textImportReplacements)
+                {
+                if (re && re->IsValid())
+                    { re->ReplaceAll(&alteredStr, replacement); }
+                }
+            return alteredStr;
+            };
+
         // setup the string tables
         struct StringTableBuilder
             {
@@ -631,7 +643,7 @@ namespace Wisteria::Data
                         {
                         catCodes.emplace_back(
                             categoricalVars.at(i).LoadCode(
-                                currentRow.at(catColumnIndices.at(i).value().m_index)));
+                                replaceStrings(currentRow.at(catColumnIndices.at(i).value().m_index))) );
                         }
                     else
                         {

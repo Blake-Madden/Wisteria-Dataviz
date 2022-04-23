@@ -151,6 +151,31 @@ Missing data in a date column are imported as wxInvalidDateTime, so `wxDateTime:
 working with imported values. Also, any parsing errors (from malformed input) while imporing dates are logged
 (via `wxLogWarning()`).
 
+Recoding during Import
+=============================
+
+Text columns can have regular expression replacements applied to them during import. The `ImportInfo` parameter
+to the various `ImportXXX()` methods accepts a map of regex pattern and their respective replacements, which
+is performed on each categorical column as the data is read.
+
+This can be useful for recoding values to missing data (e.g., "N/A") or correcting misspellings.
+The following demonstrates this feature:
+
+```cpp
+auto commentsData = std::make_shared<Data::Dataset>();
+commentsData->ImportCSV(L"Comments.csv",
+    Data::ImportInfo().CategoricalColumns({
+        { L"Comments", CategoricalImportMethod::ReadAsStrings }
+        }).
+    ReplacementStrings({
+        // replace cells that contain only something like
+        // 'NA' or 'n/a'
+        { std::make_shared<wxRegEx>(L"^[nN][/]?[aA]$"), L"" },
+        // replace 'foot ball' with 'football'
+        { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
+        }));
+```
+
 Using the Data
 =============================
 
