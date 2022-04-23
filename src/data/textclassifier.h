@@ -30,19 +30,21 @@ namespace Wisteria::Data
          @par Usage:
 
           The first step is to load a dataset with the categories and the regular
-          expressions used to classify text into them:
+          expressions used to classify text:
          
-          | CATEGORY        | SUBCATEGORY | PATTERN                            | 
-          | :--             |             | :--                                |
-          | Facilities      |             | (?i)stadium                        |
-          | Facilities      | Parking Lot | (?i)\\bparking                     |
-          | Athletics       |             | (?i)(foot\|basket\|base\|soft)ball |
-          | Athletics       |             | (?i)stadium                        |
-          | Food & Beverage |             | (?i)\\bfood\\b                     |
-          | Food & Beverage |             | (?i)pretzel                        |
+          | CATEGORY        | SUBCATEGORY | PATTERN                            | NEGATE_PATTERN |
+          | :--             |             | :--                                |                |
+          | Facilities      |             | (?i)stadium                        |                |
+          | Facilities      | Parking Lot | (?i)\\bparking                     |                |
+          | Athletics       |             | (?i)(foot\|basket\|base\|soft)ball |                |
+          | Athletics       |             | (?i)stadium                        |                |
+          | Food & Beverage |             | (?i)\\bfood\\b                     |                |
+          | Food & Beverage |             | (?i)pretzel                        |                |
+          | Programs        | CompSci     | (?i)software                       |                |     
+          | Programs        | Engineering | (?i)engineer                       | (?i)software   |
 
-          This will build a classifier with the categories `Facilities`, `Athletics`, and
-          `Food & Beverage`. Each of these categories will have their own set of regexes.
+          This will build a classifier with the categories `Facilities`, `Athletics`,
+          `Food & Beverage`, and `Programs`. Each of these categories will have their own set of regexes.
 
           For example, any text that matches `(?i)stadium ` or `(?i)(basket|base|soft)ball`
           will be classified as `Athletics`. Likewise, that same text will additionally be classified
@@ -50,6 +52,10 @@ namespace Wisteria::Data
 
           As another example, any text matching `(?i)\bparking` will be classified into
           `Facilities` along with the sub-category `Parking Lot`.
+
+          Finally, matches can be negated with an optional negation column. In the above example,
+          any comment that contains `(?i)engineer` will be classified into `Programs` and the sub-category
+          `Engineering` **unless** it also contains `(?i)software`.
 
          @note The regex supported by this class is PCRE syntax described at
           https://www.pcre.org/current/doc/html/pcre2syntax.html.
@@ -62,6 +68,8 @@ namespace Wisteria::Data
           | The parking lot is hard to find.                                  |
           | Wish they had hot pretzels at the softball games.                 |
           | The printer is always broken in the library :(                    |
+          | A class for engineering (software development) would be nice.     |
+          | The chemical engineering classes are too tough.                   |
 
           This will result in two datasets; one with the comments categorized:
 
@@ -72,6 +80,8 @@ namespace Wisteria::Data
           | The parking lot is hard to find.                                  | Facilities      | Parking Lot |
           | Wish they had hot pretzels at the softball games.                 | Athletics       |             |
           | Wish they had hot pretzels at the softball games.                 | Food & Beverage |             |
+          | A class for engineering (software development) would be nice.     | Programs        | CompSci     |
+          | The chemical engineering classes are too tough                    | Programs        | Engineering |
 
           And one with the uncategorized comments:
 
@@ -95,6 +105,9 @@ namespace Wisteria::Data
              by the parent regular expression will generically fall into the parent category
              (with no sub-category). Set this to @c std::nullopt to not use sub-categories.
             @param patternsColumnName The name of the column with the regular expression in it.
+            @param negationPatternsColumnName The (optinal) name of the columnn with a negating
+             regular expression in it. This is used to negate any match found with the
+             @c patternsColumnName column.
             @note Any invalid regular expressions loaded from the file will be logged using
              @c wxLogWarning().
             @throws std::runtime_error If the file can't be read or named columns aren't found,
@@ -102,7 +115,8 @@ namespace Wisteria::Data
         void SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
                                const wxString& categoryColumnName,
                                const std::optional<wxString>& subCategoryColumnName,
-                               const wxString& patternsColumnName);
+                               const wxString& patternsColumnName,
+                               const std::optional<wxString>& negationPatternsColumnName);
         /** @brief Classifies a column of text values into previously defined categories
              that rely on regular expression pattern matching.
             @param contentData The dataset with the text to be classified.
@@ -122,9 +136,11 @@ namespace Wisteria::Data
                             std::shared_ptr<const Data::Dataset> contentData,
                             const wxString& contentColumnName);
     private:
+        using IdPair = std::pair<Data::GroupIdType, Data::GroupIdType>;
         // wxRegEx cannot be copy constructed by design, so use shared pointers instead
-        multi_value_frequency_map<std::pair<Data::GroupIdType, Data::GroupIdType>,
-                                  std::shared_ptr<wxRegEx>> m_categoryPatternsMap;
+        using RegExPair = std::pair<std::shared_ptr<wxRegEx>, std::shared_ptr<wxRegEx>>;
+
+        multi_value_frequency_map<IdPair, RegExPair> m_categoryPatternsMap;
         wxString m_categoryColumnName;
         std::optional<wxString> m_subCategoryColumnName;
         ColumnWithStringTable::StringTableType m_categoriesStringTable;

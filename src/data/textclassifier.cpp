@@ -6,7 +6,8 @@ namespace Wisteria::Data
     void TextClassifier::SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
         const wxString& categoryColumnName,
         const std::optional<wxString>& subCategoryColumnName,
-        const wxString& patternsColumnName)
+        const wxString& patternsColumnName,
+        const std::optional<wxString>& negationPatternsColumnName)
         {
         // reset
         m_categoryPatternsMap.clear();
@@ -37,6 +38,9 @@ namespace Wisteria::Data
                 _(L"'%s': patterns column not found for text classifier."),
                 patternsColumnName));
             }
+        auto negationPatternCol = (negationPatternsColumnName.has_value() ?
+            classifierData->GetCategoricalColumn(negationPatternsColumnName.value()) :
+            classifierData->GetCategoricalColumns().cend());
 
         // used later when classifying a dataset
         m_categoryColumnName = categoryColumnName;
@@ -53,19 +57,30 @@ namespace Wisteria::Data
         for (size_t i = 0; i < classifierData->GetRowCount(); ++i)
             {
             // make sure the regex is OK before loading it for later
-            const auto reValue = patternCol->GetCategoryLabel(patternCol->GetValue(i));
+            const wxString reValue = patternCol->GetCategoryLabel(patternCol->GetValue(i));
             wxRegEx re(reValue);
+
+            const wxString negatingReValue =
+                (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
+                negationPatternCol->GetCategoryLabel(negationPatternCol->GetValue(i)) :
+                wxString();
+
             if (reValue.length() && re.IsValid())
                 {
                 m_categoryPatternsMap.insert(
                     std::make_pair(categoryCol->GetValue(i),
                         (subCategoryColumnName ? subCategoryCol->GetValue(i) : subCatMDCode.value())),
-                    std::make_shared<wxRegEx>(patternCol->GetCategoryLabel(patternCol->GetValue(i))));
+                    std::make_pair(std::make_shared<wxRegEx>(reValue),
+                        // empty string can be seen as valid, so an unitialized wxRegEx
+                        // if there is no string
+                        negatingReValue.length() ?
+                        std::make_shared<wxRegEx>(negatingReValue) :
+                        std::make_shared<wxRegEx>()));
                 }
             else
                 {
                 wxLogWarning(_(L"'%s': regular expression syntax error for category '%s.'"),
-                             patternCol->GetCategoryLabel(patternCol->GetValue(i)),
+                             reValue,
                              categoryCol->GetCategoryLabel(categoryCol->GetValue(i)));
                 }
             }
@@ -113,8 +128,11 @@ namespace Wisteria::Data
                 bool categoryRegexMatched{ false };
                 for (const auto& re : regexes.first)
                     {
-                    if (re->IsValid() &&
-                        re->Matches(contentColumn->GetCategoryLabel(contentColumn->GetValue(i))))
+                    if (re.first->IsValid() &&
+                        re.first->Matches(contentColumn->GetCategoryLabel(contentColumn->GetValue(i))) &&
+                        // either no negating regex or it doesn't match it
+                        (!re.second->IsValid() ||
+                         !re.second->Matches(contentColumn->GetCategoryLabel(contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;
                         matchedAnyCategory = true;
