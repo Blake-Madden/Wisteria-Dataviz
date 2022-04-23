@@ -64,7 +64,7 @@ namespace Wisteria::Data
                 }
             else
                 {
-                wxLogWarning("'%s': regular expression syntax error for category '%s.'",
+                wxLogWarning(_(L"'%s': regular expression syntax error for category '%s.'"),
                              patternCol->GetCategoryLabel(patternCol->GetValue(i)),
                              categoryCol->GetCategoryLabel(categoryCol->GetValue(i)));
                 }
@@ -101,6 +101,7 @@ namespace Wisteria::Data
 
         auto unclassifiedData = std::make_shared<Data::Dataset>();
         unclassifiedData->AddCategoricalColumn(contentColumnName, contentColumn->GetStringTable());
+        const auto mdCode = ColumnWithStringTable::FindMissingDataCode(contentColumn->GetStringTable());
 
         for (size_t i = 0; i < contentData->GetRowCount(); ++i)
             {
@@ -139,8 +140,12 @@ namespace Wisteria::Data
                 }
             if (!matchedAnyCategory)
                 {
-                unclassifiedData->AddRow(Data::RowInfo().Categoricals(
-                    { contentColumn->GetValue(i) }));
+                // don't write out empty comments
+                if (contentColumn->GetValue(i) != mdCode)
+                    {
+                    unclassifiedData->AddRow(Data::RowInfo().Categoricals(
+                        { contentColumn->GetValue(i) }));
+                    }
                 }
             }
 
