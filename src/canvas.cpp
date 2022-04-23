@@ -631,8 +631,8 @@ namespace Wisteria
         {
         m_dpiScaleFactor = GetDPIScaleFactor();
         m_watermarkFont.MakeBold();
-        m_canvasMinWidth = GetDefaultCanvasWidth();
-        m_canvasMinHeight = GetDefaultCanvasHeight();
+        SetCanvasMinWidth(GetDefaultCanvasWidth());
+        SetCanvasMinHeight(GetDefaultCanvasHeight());
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetBackgroundColour(*wxWHITE);
         SetScrollbars(10, 10, 0, 0);

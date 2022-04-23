@@ -141,18 +141,18 @@ namespace Wisteria
 
         /// @returns The minimum width that the canvas can be, it will be forced to be this wide even as its parent is resized.
         [[nodiscard]] int GetCanvasMinWidth() const noexcept
-            { return m_canvasMinWidth; }
+            { return m_canvasMinSize.GetWidth(); }
         /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
             @param minWidth The minimum width to use.*/
         void SetCanvasMinWidth(const int minWidth) noexcept
-           { m_canvasMinWidth = minWidth; }
+           { m_canvasMinSize.SetWidth(minWidth); }
         /// @returns The minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
         [[nodiscard]] int GetCanvasMinHeight() const noexcept
-           { return m_canvasMinHeight; }
+           { return m_canvasMinSize.GetHeight(); }
         /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
         void SetCanvasMinHeight(const int minHeight) noexcept
-           { m_canvasMinHeight = minHeight; }
+           { m_canvasMinSize.SetHeight(minHeight); }
         /// @returns The default minimum width used for canvas. Can be overridden by SetCanvasMinWidth().
         [[nodiscard]] int GetDefaultCanvasWidth() const
             { return wxSize(700,500).GetWidth() * m_dpiScaleFactor; }
@@ -516,11 +516,10 @@ namespace Wisteria
         int m_zoomLevel{ 0 };
         double m_dpiScaleFactor{ 1.0 };
 
+        // the current drawing rect
         wxRect m_rect;
-        // The minimum width of the canvas.
-        int m_canvasMinWidth{ 0 };
-        // The minimum height of the canvas.
-        int m_canvasMinHeight{ 0 };
+        // the minimum size of the canvas
+        wxSize m_canvasMinSize{ 0, 0 };
 
         bool m_alignRowContent{ false };
         bool m_alignColumnContent{ false };
