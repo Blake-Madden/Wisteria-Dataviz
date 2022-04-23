@@ -784,7 +784,7 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
              throws an exception.*/
-        void ImportCsv(const wxString& filePath, const ImportInfo& info)
+        void ImportCSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
             @details This is a shortcut for ImportText(), using tabs as the column separator.
@@ -792,7 +792,7 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
              throws an exception.*/
-        void ImportTsv(const wxString& filePath, const ImportInfo& info)
+        void ImportTSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
         /** @brief Exports the dataset to a text file.
             @details Continuous columns are exported with six-point precision and date
@@ -808,14 +808,14 @@ namespace Wisteria::Data
             @details This is a shortcut for ExportText(), using tabs as the column separator.
             @param filePath The file path to save to.
             @throws std::runtime_error If the file can't be written to.*/
-        void ExportTsv(const wxString& filePath) const
+        void ExportTSV(const wxString& filePath) const
             { ExportText(filePath, L'\t', false); }
         /** @brief Exports the dataset to as a comma-delimited text file.
             @details This is a shortcut for ExportText(),
              using commas as the column separator and quoting the columns.
             @param filePath The file path to save to.
             @throws std::runtime_error If the file can't be written to.*/
-        void ExportCsv(const wxString& filePath) const
+        void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
     private:
         /// @returns The specified continuous column.
