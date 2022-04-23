@@ -64,9 +64,6 @@ namespace Wisteria::GraphItems
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-            { return GetBoundingBox(); }
-        /// @returns The rectangle on the canvas where the spacer would fit in.
-        [[nodiscard]] wxRect GetBoundingBox() const final
             {
             wxASSERT_LEVEL_2(m_size.IsFullySpecified());
             return wxRect(GetAnchorPoint(), m_size*GetScaling());

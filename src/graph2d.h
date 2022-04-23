@@ -296,10 +296,6 @@ namespace Wisteria::Graphs
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-            { return GetBoundingBox(); }
-        /// @returns The rectangular area of the entire plot (plotting area and axis labels [brackets, etc]).
-        ///  This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetBoundingBox() const noexcept final
             { return m_rect; }
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
         [[nodiscard]] wxRect GetPlotAreaBoundingBox() const noexcept

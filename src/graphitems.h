@@ -1115,8 +1115,6 @@ namespace Wisteria
                 @param yToMove The amount to move vertically.*/
             virtual void Offset(const int xToMove, const int yToMove) = 0;
             /// @returns The rectangle on the canvas where the element would fit in.
-            [[nodiscard]] virtual wxRect GetBoundingBox() const = 0;
-            /// @returns The rectangle on the canvas where the element would fit in.
             /// @param dc The DC to measure content with.
             [[nodiscard]] virtual wxRect GetBoundingBox(wxDC& dc) const = 0;
             /** @brief Override this to set the rectangular area of the object.
@@ -1845,9 +1843,6 @@ namespace Wisteria
             /// @returns The rectangle on the canvas where the point would fit in.
             /// @param dc Measurement DC, which is not used in this implementation.
             [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-                { return GetBoundingBox(); }
-            /// @returns The rectangle on the canvas where the point would fit in.
-            [[nodiscard]] wxRect GetBoundingBox() const final
                 {
                 if (!IsOk())
                     { return wxRect(); }
@@ -1989,9 +1984,6 @@ namespace Wisteria
             /// @returns The rectangle on the canvas where the point would fit in.
             /// @param dc Measurement DC, which is not used in this implementation.
             [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-                { return GetBoundingBox(); }
-            /// @returns The rectangle on the canvas where all the points would fit.
-            [[nodiscard]] wxRect GetBoundingBox() const final
                 {
                 wxRect boundingBox(m_boundingBox.GetTopLeft(),
                                    wxSize(m_boundingBox.GetWidth()*GetScaling(),
@@ -2198,9 +2190,7 @@ namespace Wisteria
             /// @returns The rectangle on the canvas where the point would fit in.
             /// @param dc Measurement DC, which is not used in this implementation.
             [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-                { return GetBoundingBox(); }
-            /// @returns The rectangle on the canvas where the element would fit in.
-            [[nodiscard]] wxRect GetBoundingBox() const final;
+                { return GetPolygonBoundingBox(&m_scaledPoints[0], m_scaledPoints.size()); }
             /** @brief Moves the polygon by the specified x and y values.
                 @param xToMove The amount to move horizontally.
                 @param yToMove The amount to move vertically.*/

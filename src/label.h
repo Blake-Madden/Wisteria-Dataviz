@@ -264,13 +264,6 @@ namespace Wisteria::GraphItems
             @param pt The point to draw the text. This coordinate refers to the top-left corner of the rectangle bounding the string.
             @param leftOffset The padding to put on the left of each line.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt, wxCoord leftOffset) const;
-        /// @private
-        [[deprecated("Only call Label::GetBoundingBox() version that takes a wxDC!")]]
-        [[nodiscard]] wxRect GetBoundingBox() const final
-            {
-            wxFAIL_MSG(L"Only call Label::GetBoundingBox() version that takes a wxDC!");
-            return GetCachedBoundingBox();
-            }
         /// @brief Figures out how many characters are in the longest line of text (takes multiline labels into account).
         void CalcLongestLineLength();
         /** @brief Retrieves The physical size of label (including outlined bounding box if the pen is valid).

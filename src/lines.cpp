@@ -50,7 +50,7 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    wxRect Lines::GetBoundingBox() const
+    wxRect Lines::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
         if (m_lines.empty())
             { return wxRect(); }

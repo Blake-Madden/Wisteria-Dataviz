@@ -86,9 +86,6 @@ namespace Wisteria::GraphItems
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-            { return GetBoundingBox(); }
-
-        wxRect GetBoundingBox() const final
             { return Polygon::GetPolygonBoundingBox(GetPolygon()); }
 
         // obligatory virtual interfaces that aren't implemented

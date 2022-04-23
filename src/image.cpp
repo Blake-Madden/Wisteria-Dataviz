@@ -356,7 +356,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Image::GetBoundingBox() const
+    wxRect Image::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
         const wxCoord width(m_frameSize.GetWidth()*GetScaling());
         const wxCoord height(m_frameSize.GetHeight()*GetScaling());

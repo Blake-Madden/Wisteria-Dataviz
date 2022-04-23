@@ -1181,13 +1181,6 @@ namespace Wisteria::GraphItems
         /// @param dc The DC to draw on.
         /// @returns The bounding box that the axis was drawn in.
         [[nodiscard]] wxRect Draw(wxDC& dc) const final;
-        /** @returns The rectangle that the axis would fit in.*/
-        [[deprecated("Only call Axis::GetBoundingBox() version that takes a wxDC!")]]
-        [[nodiscard]] wxRect GetBoundingBox() const final
-            {
-            wxFAIL_MSG(L"Only call Axis::GetBoundingBox() version that takes a wxDC!");
-            return GetCachedBoundingBox();
-            }
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with the same DC.*/

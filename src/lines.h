@@ -73,10 +73,7 @@ namespace Wisteria::GraphItems
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-            { return GetBoundingBox(); }
-        /// @returns The rectangle on the canvas where all the lines would fit.
-        [[nodiscard]] wxRect GetBoundingBox() const final;
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @returns `true` if the given point is inside any of the points in this collection.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;

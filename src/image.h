@@ -246,11 +246,8 @@ namespace Wisteria::GraphItems
             @returns The box that the image is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
-            /// @param dc Measurement DC, which is not used in this implementation.
-            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-                { return GetBoundingBox(); }
-        /// @returns The rectangle on the canvas where the image would fit in.
-        [[nodiscard]] wxRect GetBoundingBox() const final;
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Bounds the image to the given rectangle.
             @param rect The rectangle to bound the image to.
             @param parentScaling This parameter is ignored.

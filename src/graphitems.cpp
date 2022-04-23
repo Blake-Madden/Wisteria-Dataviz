@@ -256,10 +256,6 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Polygon::GetBoundingBox() const
-        { return GetPolygonBoundingBox(&m_scaledPoints[0], m_scaledPoints.size()); }
-
-    //-------------------------------------------
     bool Polygon::HitTest(const wxPoint pt, wxDC& dc) const
         { return IsInsidePolygon(pt, &m_scaledPoints[0], m_scaledPoints.size()); }
 
