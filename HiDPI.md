@@ -3,7 +3,7 @@ High DPI Display
 
 Wisteria works with either regular or high DPI displays.
 
-If designing your own graph, you will may need to set the DPI scaling factor for objects:
+If designing your own graph, you may need to set the DPI scaling factor for objects:
 
 ```cpp
 Label groupHeader(
@@ -30,5 +30,5 @@ DPI scaling, on the other hand, should always be set to any object to ensure tha
 DPI scale factor is used for it.
 
 Normally, the framework will handle this for you. For example, `Graph2D::AddObject()` will set the
-object's DPI for you. However, if you are using a tempory, stack-based object to measure with
+object's DPI for you. However, if you are using a temporary, stack-based object to measure with
 in your calculation code, then you should set the object's DPI scaling to the parent's DPI scaling.
