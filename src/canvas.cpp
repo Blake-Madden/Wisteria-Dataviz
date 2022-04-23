@@ -692,7 +692,7 @@ namespace Wisteria
         // add the left titles
         for (auto& title : m_leftTitles)
             {
-            title.SetDPIScaleFactor(m_dpiScaleFactor);
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
@@ -729,7 +729,7 @@ namespace Wisteria
         // add the right titles
         for (auto& title : m_rightTitles)
             {
-            title.SetDPIScaleFactor(m_dpiScaleFactor);;
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomRightCorner ||
@@ -766,7 +766,7 @@ namespace Wisteria
         // add the top titles
         for (auto& title : m_topTitles)
             {
-            title.SetDPIScaleFactor(m_dpiScaleFactor);;
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
                 title.GetAnchoring() == Anchoring::BottomRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
@@ -800,7 +800,7 @@ namespace Wisteria
         // add the bottom titles
         for (auto& title : m_bottomTitles)
             {
-            title.SetDPIScaleFactor(m_dpiScaleFactor);;
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                 title.GetAnchoring() == Anchoring::TopRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
@@ -850,6 +850,8 @@ namespace Wisteria
             (std::accumulate(m_rowProportions.cbegin(), m_rowProportions.cend(), 0.0)) <= 1,
             "Canvas row proportions are more than 100%!");
 
+        m_dpiScaleFactor = dc.GetDPIScaleFactor();
+
         /* The rendering area must have a minimum size of 700x500;
            otherwise, it will be crunched up and look bad.*/
         wxSize CanvasMinSize = GetCanvasRect().GetSize();
@@ -857,7 +859,7 @@ namespace Wisteria
         CanvasMinSize.SetHeight(std::max(GetCanvasMinHeight(), CanvasMinSize.GetHeight()));
         m_rect.SetSize(CanvasMinSize);
 
-        const wxCoord titleSpacingWidth = ScaleToScreenAndCanvas(2);
+        const wxCoord titleSpacingWidth = ScaleToScreenAndCanvas(2, dc);
 
         // calculate the left/right margins around the canvas and construct the titles
         GetTitles().clear();
@@ -887,7 +889,7 @@ namespace Wisteria
                     (*objectsPos)->SetContentBottom(std::nullopt);
                     (*objectsPos)->SetContentLeft(std::nullopt);
                     (*objectsPos)->SetContentRight(std::nullopt);
-                    (*objectsPos)->SetDPIScaleFactor(m_dpiScaleFactor);
+                    (*objectsPos)->SetDPIScaleFactor(dc.GetDPIScaleFactor());
                     }
                 }
             }
@@ -918,14 +920,14 @@ namespace Wisteria
                                currentObjHeight));
                     const wxRect nonPaddedBoundingRect{ boundingRect };
                     // adjust for margins
-                    boundingRect.y += ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin());
-                    boundingRect.x += ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin());
+                    boundingRect.y += ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc);
+                    boundingRect.x += ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc);
                     boundingRect.SetWidth(std::max<double>(0, boundingRect.GetWidth() -
-                        ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin()) -
-                        ScaleToScreenAndCanvas(objectsPos->GetRightCanvasMargin())) );
+                        ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc) -
+                        ScaleToScreenAndCanvas(objectsPos->GetRightCanvasMargin(), dc)) );
                     boundingRect.SetHeight(std::max<double>(0, boundingRect.GetHeight() -
-                        ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin()) -
-                        ScaleToScreenAndCanvas(objectsPos->GetBottomCanvasMargin())) );
+                        ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc) -
+                        ScaleToScreenAndCanvas(objectsPos->GetBottomCanvasMargin(), dc)) );
 
                     objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
                     currentXPos += nonPaddedBoundingRect.GetWidth();
@@ -1090,8 +1092,6 @@ namespace Wisteria
             row >= GetFixedObjects().size() ||
             column >= GetFixedObjects().at(0).size())
             { return; }
-        if (object)
-            { object->SetDPIScaleFactor(m_dpiScaleFactor); }
         GetFixedObjects().at(row).at(column) = object;
         // how much of the canvas is being consumed by the row
         // that this item was just added to
@@ -1200,14 +1200,14 @@ namespace Wisteria
         // fill in the background image (if there is one)
         if (GetBackgroundImage().IsOk() && m_bgOpacity != wxALPHA_TRANSPARENT)
             {
-            GetBackgroundImage().SetDPIScaleFactor(m_dpiScaleFactor);;
+            GetBackgroundImage().SetDPIScaleFactor(dc.GetDPIScaleFactor());
             GetBackgroundImage().SetAnchoring(Anchoring::Center);
             GetBackgroundImage().SetAnchorPoint(
                 wxPoint(GetCanvasRect().GetLeft() + safe_divide(GetCanvasRect().GetWidth(), 2),
                         GetCanvasRect().GetTop() + safe_divide(GetCanvasRect().GetHeight(), 2)));
             // we clip the image a little so that it fits the area better
             GetBackgroundImage().SetBestSize(GetCanvasRect().GetSize() +
-                                             wxSize(100*m_dpiScaleFactor, 100*m_dpiScaleFactor));
+                                             wxSize(100*dc.GetDPIScaleFactor(), 100*dc.GetDPIScaleFactor()));
             GetBackgroundImage().SetOpacity(m_bgOpacity);
             GetBackgroundImage().Draw(dc);
             }
@@ -1285,8 +1285,9 @@ namespace Wisteria
 
         if (m_watermarkImg.IsOk())
             {
-            m_watermarkImg.SetBestSize(wxSize(ScaleToScreenAndCanvas(100),
-                                              ScaleToScreenAndCanvas(100)));
+            m_watermarkImg.SetDPIScaleFactor(dc.GetDPIScaleFactor());
+            m_watermarkImg.SetBestSize(wxSize(ScaleToScreenAndCanvas(100, dc),
+                                              ScaleToScreenAndCanvas(100, dc)));
             // make logo image mildly translucent
             // (twice as opaque as the system translucency).
             m_watermarkImg.SetOpacity(Settings::GetTranslucencyValue()*2);
@@ -1357,9 +1358,8 @@ namespace Wisteria
         wxPoint unscrolledPosition;
         CalcUnscrolledPosition(event.GetPosition().x, event.GetPosition().y,
                                &unscrolledPosition.x, &unscrolledPosition.y);
-        const wxCoord refreshPadding = ScaleToScreenAndCanvas(10);
-
         wxGCDC gdc(this);
+        const wxCoord refreshPadding = ScaleToScreenAndCanvas(10, gdc);
 
         if (event.LeftDown())
             {
@@ -1562,6 +1562,7 @@ namespace Wisteria
             event.GetKeyCode() == WXK_NUMPAD_RIGHT ||
             event.GetKeyCode() == WXK_RIGHT)
             {
+            wxGCDC gdc(this);
             bool movingFloatingObjects{ false };
             for (auto& floatingObj : GetFreeFloatingObjects())
                 {
@@ -1574,25 +1575,25 @@ namespace Wisteria
                         case WXK_NUMPAD_DOWN:
                             [[fallthrough]];
                         case WXK_DOWN:
-                            floatingObj->Offset(0, ScaleToScreenAndCanvas(1));
+                            floatingObj->Offset(0, ScaleToScreenAndCanvas(1, gdc));
                             break;
                         // up
                         case WXK_NUMPAD_UP:
                             [[fallthrough]];
                         case WXK_UP:
-                            floatingObj->Offset(0, ScaleToScreenAndCanvas(-1));
+                            floatingObj->Offset(0, ScaleToScreenAndCanvas(-1, gdc));
                             break;
                         // left
                         case WXK_NUMPAD_LEFT:
                             [[fallthrough]];
                         case WXK_LEFT:
-                            floatingObj->Offset(ScaleToScreenAndCanvas(-1), 0);
+                            floatingObj->Offset(ScaleToScreenAndCanvas(-1, gdc), 0);
                             break;
                         // right
                         case WXK_NUMPAD_RIGHT:
                             [[fallthrough]];
                         case WXK_RIGHT:
-                            floatingObj->Offset(ScaleToScreenAndCanvas(1), 0);
+                            floatingObj->Offset(ScaleToScreenAndCanvas(1, gdc), 0);
                             break;
                         }
                     }

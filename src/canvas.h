@@ -132,10 +132,7 @@ namespace Wisteria
         /// @brief Overlays translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
         void SetWatermarkLogo(const GraphItems::Image& watermark) noexcept
-            {
-            m_watermarkImg = watermark;
-            m_watermarkImg.SetDPIScaleFactor(m_dpiScaleFactor);
-            }
+            { m_watermarkImg = watermark; }
         /// @}
 
         /** @name Size Functions
@@ -484,14 +481,15 @@ namespace Wisteria
             Dragging
             };
 
-        /// @brief Apply screen DPI and parent canvas scaling to a value.
+        /// @brief Apply a DC's DPI and parent canvas scaling to a value.
         /// @param value The value (e.g., pen width) to scale.
+        /// @param dc The DC to measure with. May be a screen or export DC.
         /// @returns The scaled value.
         /// @note This should be used to rescale pixel values used for line widths and point sizes.
         ///  It should NOT be used with font point sizes because DPI scaling handled by the OS for those.
         ///  Instead, font sizes should only be scaled to the canvas's scaling.
-        [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
-            { return value*GetScaling()*GetDPIScaleFactor(); }
+        [[nodiscard]] double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
+            { return value * GetScaling() * dc.GetDPIScaleFactor(); }
 
         /// @returns The rectangle area of the canvas.
         [[nodiscard]] const wxRect& GetCanvasRect() const noexcept
