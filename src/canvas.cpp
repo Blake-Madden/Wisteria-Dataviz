@@ -1399,7 +1399,7 @@ namespace Wisteria
                 (*movableObjectsPos)->SetSelected(!(*movableObjectsPos)->IsSelected());
                 Refresh(true);
                 Update();
-                m_dragImage.reset(new wxDragImage((*movableObjectsPos)->ToBitmap(), wxCursor(wxCURSOR_HAND)));
+                m_dragImage.reset(new wxDragImage((*movableObjectsPos)->ToBitmap(gdc), wxCursor(wxCURSOR_HAND)));
                 (*movableObjectsPos)->SetInDragState(true);
                 currentlyDraggedShape = (*movableObjectsPos);
                 event.Skip();

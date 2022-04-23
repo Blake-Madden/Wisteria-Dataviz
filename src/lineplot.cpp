@@ -247,7 +247,7 @@ namespace Wisteria::Graphs
                 if (std::isnan(line.m_xColumn->GetValue(i)))
                     {
                     points->AddPoint(Point2D(
-                        GraphItemInfo().AnchorPoint(wxPoint(wxDefaultCoord, wxDefaultCoord)), 1));
+                        GraphItemInfo().AnchorPoint(wxPoint(wxDefaultCoord, wxDefaultCoord)), 1), dc);
                     continue;
                     }
                 if (!GetPhyscialCoordinates(line.m_xColumn->GetValue(i),
@@ -264,7 +264,7 @@ namespace Wisteria::Graphs
                                     Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
                                     Settings::GetPointRadius(),
                                     GetShapeScheme()->GetShape(line.m_groupId),
-                                    &GetShapeScheme()->GetImage()));
+                                    &GetShapeScheme()->GetImage()), dc);
                 }
             AddObject(points);
             }

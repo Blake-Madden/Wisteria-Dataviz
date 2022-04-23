@@ -584,9 +584,9 @@ namespace Wisteria::Graphs
                 connectionLine->SetSelectable(false);
                 connectionLine->AddPoint(Point2D(
                     GraphItemInfo().AnchorPoint(
-                        wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0));
+                        wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
                 connectionLine->AddPoint(Point2D(
-                    GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0));
+                    GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
                 connectionLine->SetLineStyle(GetInnerPieConnectionLineStyle());
                 AddObject(connectionLine);
                 }

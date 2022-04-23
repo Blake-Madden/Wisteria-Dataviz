@@ -1107,8 +1107,9 @@ namespace Wisteria
                 }
             /** @returns The element, rendered to a bitmap. The image will be the size of the
                  bounding box. The area around the polygon will be set to transparent pixels.
+                @param dc Measurement DC. Not used, just need for API requirements.
                 @note This is used for dragging when an object is free floating.*/
-            [[nodiscard]] virtual wxBitmap ToBitmap() const;
+            [[nodiscard]] virtual wxBitmap ToBitmap(wxDC& dc) const;
             /** @brief Moves the element by the specified x and y values.
                 @param xToMove The amount to move horizontally.
                 @param yToMove The amount to move vertically.*/
@@ -1910,8 +1911,9 @@ namespace Wisteria
                 @details The point's canvas and scaling will be implicitly set to the
                  collection's canvas and scaling.
                 @param pt The point to add.
+                @param dc Measurement DC. Not used, just needed for API requirements.
                 @note To not actually draw the point, set its shape to BlankIcon.*/
-            void AddPoint(Point2D pt);
+            void AddPoint(Point2D pt, wxDC& dc);
             /** @brief Sets whether selecting the points collection will select the
                  individual point that was clicked on or all the points.
                 @param singlePointSelect Whether to select the last hit point.*/
