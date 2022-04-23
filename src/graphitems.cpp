@@ -493,15 +493,12 @@ namespace Wisteria::GraphItems
         
         if (m_singlePointSelection)
             {
-            // re-select selected items if necessary
+            // update previous selections
             // (this is needed if the parent graph needed to recreate this collection)
-            if (selected)
+            for (auto& pt : m_points)
                 {
-                for (auto& pt : m_points)
-                    {
-                    if (GetSelectedIds().find(pt.GetId()) != GetSelectedIds().cend())
-                        { pt.SetSelected(true); }
-                    }
+                if (GetSelectedIds().find(pt.GetId()) != GetSelectedIds().cend())
+                    { pt.SetSelected(selected); }
                 }
             if (m_lastHitPointIndex < GetPoints().size())
                 {

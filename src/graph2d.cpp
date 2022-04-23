@@ -841,13 +841,13 @@ namespace Wisteria::Graphs
             m_selectedItemsWithSubitems.clear();
             for (auto& plotObject : m_plotObjects)
                 {
-                plotObject->SetSelected(false);
                 plotObject->GetSelectedIds().clear();
+                plotObject->SetSelected(false);
                 }
             for (auto& plotObject : m_embeddedObjects)
                 {
-                plotObject.m_object->SetSelected(false);
                 plotObject.m_object->GetSelectedIds().clear();
+                plotObject.m_object->SetSelected(false);
                 }
             }
         // items are added to a plot FILO (i.e., painter's algorithm),
