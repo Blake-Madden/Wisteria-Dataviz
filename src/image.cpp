@@ -453,7 +453,7 @@ namespace Wisteria::GraphItems
         if (!IsShown() || !IsOk() || !m_img.IsOk())
             { return wxRect(); }
         if (IsInDragState())
-            { return GetBoundingBox(); }
+            { return GetBoundingBox(dc); }
 
         // if the size or scaling has changed, then rescale from the original image to maintain fidelity.
         const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(), GetImageSize().GetHeight()*GetScaling());
@@ -467,7 +467,7 @@ namespace Wisteria::GraphItems
 
         // Draw the shadow. This needs to be a polygon outside of the image in case the image is translucent.
         if (GetShadowType() != ShadowType::NoShadow && !IsSelected() &&
-            GetBoundingBox().GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
+            GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
             wxDCPenChanger pc(dc, wxPen(GetShadowColour(), ScaleToScreenAndCanvas(1)));
             wxDCBrushChanger bc(dc, wxBrush(GetShadowColour()));
@@ -475,46 +475,46 @@ namespace Wisteria::GraphItems
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {
                 wxPoint shadowPts[7];
-                shadowPts[0] = GetBoundingBox().GetLeftBottom()+wxPoint(scaledShadowOffset,0);
-                shadowPts[1] = GetBoundingBox().GetLeftBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox().GetRightBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[3] = GetBoundingBox().GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[4] = GetBoundingBox().GetRightTop()+wxPoint(0,scaledShadowOffset);
-                shadowPts[5] = GetBoundingBox().GetRightBottom();
+                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom()+wxPoint(scaledShadowOffset,0);
+                shadowPts[1] = GetBoundingBox(dc).GetLeftBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[2] = GetBoundingBox(dc).GetRightBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[3] = GetBoundingBox(dc).GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[4] = GetBoundingBox(dc).GetRightTop()+wxPoint(0,scaledShadowOffset);
+                shadowPts[5] = GetBoundingBox(dc).GetRightBottom();
                 shadowPts[6] = shadowPts[0];//close polygon
                 dc.DrawPolygon(WXSIZEOF(shadowPts), shadowPts);
                 }
             else if (GetShadowType() == ShadowType::RightSideShadow)
                 {
                 wxPoint shadowPts[4];
-                shadowPts[0] = GetBoundingBox().GetRightBottom()+wxPoint(scaledShadowOffset,0);
-                shadowPts[1] = GetBoundingBox().GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox().GetRightTop()+wxPoint(0,scaledShadowOffset);
-                shadowPts[3] = GetBoundingBox().GetRightBottom();
+                shadowPts[0] = GetBoundingBox(dc).GetRightBottom()+wxPoint(scaledShadowOffset,0);
+                shadowPts[1] = GetBoundingBox(dc).GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[2] = GetBoundingBox(dc).GetRightTop()+wxPoint(0,scaledShadowOffset);
+                shadowPts[3] = GetBoundingBox(dc).GetRightBottom();
                 dc.DrawPolygon(WXSIZEOF(shadowPts), shadowPts);
                 }
             }
 
         if ((GetFrameSize() == GetImageSize()) ||
             (GetAnchoring() == Wisteria::Anchoring::TopLeftCorner))
-            { dc.DrawBitmap(wxBitmap(m_img), GetBoundingBox().GetLeftTop(), true); }
+            { dc.DrawBitmap(wxBitmap(m_img), GetBoundingBox(dc).GetLeftTop(), true); }
         else if (GetAnchoring() == Wisteria::Anchoring::Center)
-            { dc.DrawBitmap(wxBitmap(m_img), wxRect(wxPoint(0,0),GetImageSize()*GetScaling()).CenterIn(GetBoundingBox()).GetLeftTop(), true); }
+            { dc.DrawBitmap(wxBitmap(m_img), wxRect(wxPoint(0,0),GetImageSize()*GetScaling()).CenterIn(GetBoundingBox(dc)).GetLeftTop(), true); }
         else if (GetAnchoring() == Wisteria::Anchoring::TopRightCorner)
             {
-            wxPoint cornerPt = GetBoundingBox().GetTopRight();
+            wxPoint cornerPt = GetBoundingBox(dc).GetTopRight();
             cornerPt.x -= GetImageSize().GetWidth()*GetScaling();
             dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
             }
         else if (GetAnchoring() == Wisteria::Anchoring::BottomLeftCorner)
             {
-            wxPoint cornerPt = GetBoundingBox().GetBottomLeft();
+            wxPoint cornerPt = GetBoundingBox(dc).GetBottomLeft();
             cornerPt.y -= GetImageSize().GetHeight()*GetScaling();
             dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
             }
         else if (GetAnchoring() == Wisteria::Anchoring::BottomRightCorner)
             {
-            wxPoint cornerPt = GetBoundingBox().GetBottomRight();
+            wxPoint cornerPt = GetBoundingBox(dc).GetBottomRight();
             cornerPt.y -= GetImageSize().GetHeight()*GetScaling();
             cornerPt.x -= GetImageSize().GetWidth()*GetScaling();
             dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
@@ -522,7 +522,7 @@ namespace Wisteria::GraphItems
 
         // draw the outline
         wxPoint pts[5];
-        GraphItems::Polygon::GetRectPoints(GetBoundingBox(), pts);
+        GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
         pts[4] = pts[0]; // close the square
         if (GetPen().IsOk())
             {
@@ -539,6 +539,6 @@ namespace Wisteria::GraphItems
             dc.DrawLines(std::size(pts), pts);
             }
 
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
     }

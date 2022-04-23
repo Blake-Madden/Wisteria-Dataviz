@@ -253,7 +253,7 @@ namespace Wisteria::Graphs
                 }
             };
 
-        m_plotRect = GetBoundingBox();
+        m_plotRect = GetBoundingBox(dc);
         // set the axes' points assuming the entire drawing area, then measure their overhangs
         adjustAxesPoints();
 
@@ -485,7 +485,7 @@ namespace Wisteria::Graphs
             if (title->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 title->SetAnchoring(Anchoring::TopLeftCorner);
-                auto topPt = GetBoundingBox().GetTopLeft();
+                auto topPt = GetBoundingBox(dc).GetTopLeft();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing());
                 title->SetAnchorPoint(topPt);
                 AddObject(title);
@@ -493,17 +493,17 @@ namespace Wisteria::Graphs
             else if (title->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
                 title->SetAnchoring(Anchoring::Center);
-                auto topPt = GetBoundingBox().GetLeftTop();
+                auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing()) +
                             (title->GetBoundingBox(dc).GetHeight()/2);
-                topPt.x += GetBoundingBox().GetWidth()/2;
+                topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 title->SetAnchorPoint(topPt);
                 AddObject(title);
                 }
             else if (title->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
                 title->SetAnchoring(Anchoring::TopRightCorner);
-                auto topPt = GetBoundingBox().GetRightTop();
+                auto topPt = GetBoundingBox(dc).GetRightTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing());
                 title->SetAnchorPoint(topPt);
                 AddObject(title);
@@ -521,7 +521,7 @@ namespace Wisteria::Graphs
             if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 subtitle->SetAnchoring(Anchoring::TopLeftCorner);
-                auto topPt = GetBoundingBox().GetTopLeft();
+                auto topPt = GetBoundingBox(dc).GetTopLeft();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
@@ -529,17 +529,17 @@ namespace Wisteria::Graphs
             else if (subtitle->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
                 subtitle->SetAnchoring(Anchoring::Center);
-                auto topPt = GetBoundingBox().GetLeftTop();
+                auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) +
                                (subtitle->GetBoundingBox(dc).GetHeight()/2)+titleSpacing;
-                topPt.x += GetBoundingBox().GetWidth()/2;
+                topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
                 }
             else if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
                 subtitle->SetAnchoring(Anchoring::TopRightCorner);
-                auto topPt = GetBoundingBox().GetRightTop();
+                auto topPt = GetBoundingBox(dc).GetRightTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
@@ -553,7 +553,7 @@ namespace Wisteria::Graphs
             if (caption->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                 {
                 caption->SetAnchoring(Anchoring::BottomLeftCorner);
-                auto bottomPt = GetBoundingBox().GetLeftBottom();
+                auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
                 caption->SetAnchorPoint(bottomPt);
                 AddObject(caption);
@@ -561,17 +561,17 @@ namespace Wisteria::Graphs
             else if (caption->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
                 caption->SetAnchoring(Anchoring::Center);
-                auto bottomPt = GetBoundingBox().GetLeftBottom();
+                auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing()) +
                                (caption->GetBoundingBox(dc).GetHeight()/2);
-                bottomPt.x += GetBoundingBox().GetWidth()/2;
+                bottomPt.x += GetBoundingBox(dc).GetWidth()/2;
                 caption->SetAnchorPoint(bottomPt);
                 AddObject(caption);
                 }
             else if (caption->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
                 caption->SetAnchoring(Anchoring::BottomRightCorner);
-                auto bottomPt = GetBoundingBox().GetRightBottom();
+                auto bottomPt = GetBoundingBox(dc).GetRightBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
                 caption->SetAnchorPoint(bottomPt);
                 AddObject(caption);
@@ -733,7 +733,7 @@ namespace Wisteria::Graphs
                 {
                 wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 wxPoint pts[5];
-                GraphItems::Polygon::GetRectPoints(GetBoundingBox(), pts);
+                GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), pts);
                 pts[4] = pts[0]; // close the square
                 dc.DrawLines(std::size(pts), pts);
                 }
@@ -759,22 +759,22 @@ namespace Wisteria::Graphs
                 // ruler along the top, showing a 100-pixel legend
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
-                    dc.DrawLine(GetBoundingBox().GetTopLeft(), GetBoundingBox().GetTopRight());
+                    dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // left-to-right
-                    for (auto i = GetBoundingBox().GetTopLeft().x; i < GetBoundingBox().GetTopRight().x; i += 100)
+                    for (auto i = GetBoundingBox(dc).GetTopLeft().x; i < GetBoundingBox(dc).GetTopRight().x; i += 100)
                         {
-                        dc.DrawLine(wxPoint(i, GetBoundingBox().GetTop()),
-                            wxPoint(i, GetBoundingBox().GetTop()+ScaleToScreenAndCanvas(20)) );
+                        dc.DrawLine(wxPoint(i, GetBoundingBox(dc).GetTop()),
+                            wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(20)) );
                         }
                     // right-to-left
-                    for (auto i = GetBoundingBox().GetTopRight().x; i > GetBoundingBox().GetTopLeft().x; i -= 100)
+                    for (auto i = GetBoundingBox(dc).GetTopRight().x; i > GetBoundingBox(dc).GetTopLeft().x; i -= 100)
                         {
-                        dc.DrawLine(wxPoint(i, GetBoundingBox().GetTop()+ScaleToScreenAndCanvas(20)),
-                            wxPoint(i, GetBoundingBox().GetTop()+ScaleToScreenAndCanvas(40)) );
+                        dc.DrawLine(wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(20)),
+                            wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(40)) );
                         }
                     Label rulerLabel(GraphItemInfo(L"\u21E6 100 pixels").
-                        AnchorPoint(wxPoint(GetBoundingBox().GetTopRight().x - ScaleToScreenAndCanvas(5),
-                                            GetBoundingBox().GetTop() + ScaleToScreenAndCanvas(25))).
+                        AnchorPoint(wxPoint(GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
+                                            GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25))).
                         Anchoring(Anchoring::TopRightCorner).FontColor(*wxBLUE).
                         Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2,2,2,2));
@@ -782,22 +782,22 @@ namespace Wisteria::Graphs
                     rulerLabel.Draw(dc);
                     rulerLabel.SetAnchoring(Anchoring::TopLeftCorner);
                     rulerLabel.SetText(L"100 pixels \u21E8");
-                    rulerLabel.SetAnchorPoint((wxPoint(GetBoundingBox().GetTopLeft().x + ScaleToScreenAndCanvas(5),
-                        GetBoundingBox().GetTop() + ScaleToScreenAndCanvas(5))) );
+                    rulerLabel.SetAnchorPoint((wxPoint(GetBoundingBox(dc).GetTopLeft().x + ScaleToScreenAndCanvas(5),
+                        GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(5))) );
                     rulerLabel.Draw(dc);
                     }
                 // ruler along the left, showing a 100-pixel legend
                     {
                     wxDCPenChanger pc(dc, wxPen(*wxBLUE, ScaleToScreenAndCanvas(4)));
-                    dc.DrawLine(GetBoundingBox().GetTopLeft(), GetBoundingBox().GetTopRight());
+                    dc.DrawLine(GetBoundingBox(dc).GetTopLeft(), GetBoundingBox(dc).GetTopRight());
                     // top-to-bottom
-                    for (auto i = GetBoundingBox().GetTopLeft().y; i < GetBoundingBox().GetBottomLeft().y; i += 100)
+                    for (auto i = GetBoundingBox(dc).GetTopLeft().y; i < GetBoundingBox(dc).GetBottomLeft().y; i += 100)
                         {
-                        dc.DrawLine(wxPoint(GetBoundingBox().GetLeft(), i),
-                            wxPoint(GetBoundingBox().GetLeft()+ScaleToScreenAndCanvas(20), i) );
+                        dc.DrawLine(wxPoint(GetBoundingBox(dc).GetLeft(), i),
+                            wxPoint(GetBoundingBox(dc).GetLeft()+ScaleToScreenAndCanvas(20), i) );
                         }
                     }
-                const auto bBox = GetBoundingBox();
+                const auto bBox = GetBoundingBox(dc);
                 Label infoLabel(GraphItemInfo(
                         wxString::Format(L"Scaling: %s\n"
                             "Vertical Axes Top (x, y): %d, %d\n"
@@ -819,14 +819,14 @@ namespace Wisteria::Graphs
                             m_calculatedTopPadding, m_calculatedRightPadding,
                             m_calculatedBottomPadding, m_calculatedLeftPadding,
                             m_debugDrawInfoLabel)).
-                        AnchorPoint(GetBoundingBox().GetBottomRight()).
+                        AnchorPoint(GetBoundingBox(dc).GetBottomRight()).
                         Anchoring(Anchoring::BottomRightCorner).FontColor(*wxBLUE).
                         Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
                 infoLabel.Draw(dc);
                 }
             }
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
 
     //----------------------------------------------------------------

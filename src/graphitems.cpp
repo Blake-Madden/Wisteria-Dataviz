@@ -27,7 +27,7 @@ namespace Wisteria::GraphItems
         {
         if (IsSelected() && IsShowingLabelWhenSelected() && !GetText().empty())
             {
-            const wxRect ItemBoundingBox(GetBoundingBox());
+            const wxRect ItemBoundingBox(GetBoundingBox(dc));
             GraphItems::Label selectionLabel(GraphItemInfo(GetGraphItemInfo()).
                 Scaling(scaling).Pen(*wxBLACK_PEN).
                 DPIScaling(GetDPIScaleFactor()).
@@ -297,8 +297,8 @@ namespace Wisteria::GraphItems
         if (!IsShown())
             { return wxRect(); }
         if (IsInDragState())
-            { return GetBoundingBox(); }
-        const wxRect boundingBox = GetBoundingBox();
+            { return GetBoundingBox(dc); }
+        const wxRect boundingBox = GetBoundingBox(dc);
 
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
@@ -472,7 +472,7 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     void Point2D::SetBoundingBox(const wxRect& rect,
-                                 [[maybe_unused]] wxDC& dc,
+                                 wxDC& dc,
                                  [[maybe_unused]] const double parentScaling)
         {
         wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
@@ -482,9 +482,9 @@ namespace Wisteria::GraphItems
         SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
                                rect.GetTop()+(rect.GetHeight()/2)));
         const double upscaleSizeWidth = safe_divide<double>(rect.GetWidth(),
-                                                            GetBoundingBox().GetWidth());
+                                                            GetBoundingBox(dc).GetWidth());
         const double upscaleSizeHeight = safe_divide<double>(rect.GetHeight(),
-                                                             GetBoundingBox().GetHeight());
+                                                             GetBoundingBox(dc).GetHeight());
         const double upscaleBestFix = std::min(upscaleSizeWidth, upscaleSizeHeight);
         if (upscaleBestFix > 1)
             { SetScaling(GetScaling()*upscaleBestFix); }
@@ -590,7 +590,7 @@ namespace Wisteria::GraphItems
             {
             if (point.IsSelected() && point.IsShowingLabelWhenSelected() && !point.GetText().empty())
                 {
-                const wxRect ItemBoundingBox(point.GetBoundingBox());
+                const wxRect ItemBoundingBox(point.GetBoundingBox(dc));
                 GraphItems::Label selectionLabel(
                     GraphItemInfo(point.GetText()).Scaling(scaling).Pen(*wxBLACK_PEN).
                     DPIScaling(GetDPIScaleFactor()).
@@ -636,7 +636,7 @@ namespace Wisteria::GraphItems
         if (!IsShown())
             { return wxRect(); }
         if (IsInDragState())
-            { return GetBoundingBox(); }
+            { return GetBoundingBox(dc); }
         // draw connection points
         if (GetPen().IsOk() && m_points.size())
             {
@@ -739,7 +739,7 @@ namespace Wisteria::GraphItems
             else
                 { point.Draw(dc); }
             }
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
 
     //-------------------------------------------
@@ -748,11 +748,11 @@ namespace Wisteria::GraphItems
         if (!IsShown() || !IsOk())
             { return wxRect(); }
         if (IsInDragState())
-            { return GetBoundingBox(); }
+            { return GetBoundingBox(dc); }
         if (GetAnchorPoint().IsFullySpecified())
             {
             wxDCBrushChanger bc(dc, GetBrush());
-            const auto boundingBox = GetBoundingBox();
+            const auto boundingBox = GetBoundingBox(dc);
             auto boxRect = boundingBox;
             const auto midPoint = wxPoint(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2));
             const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
@@ -869,10 +869,10 @@ namespace Wisteria::GraphItems
                         }
                     break;
                 default:
-                    dc.DrawCircle(GetBoundingBox().GetLeftTop()+(GetBoundingBox().GetSize()/2),
+                    dc.DrawCircle(GetBoundingBox(dc).GetLeftTop()+(GetBoundingBox().GetSize()/2),
                                   ScaleToScreenAndCanvas(GetRadius()));
                 };
             }
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
     }

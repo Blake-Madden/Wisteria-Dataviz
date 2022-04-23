@@ -80,12 +80,12 @@ namespace Wisteria::GraphItems
             if (Wisteria::Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
                 {
                 wxPoint debugOutline[5]{ {0,0} };
-                Polygon::GetRectPoints(GetBoundingBox(), debugOutline);
+                Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
                 debugOutline[4] = debugOutline[0];
                 wxDCPenChanger pcBg(dc, wxPen(*wxRED, GetScaling()*2, wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
-            return GetBoundingBox();
+            return GetBoundingBox(dc);
             }
     private:
         wxSize m_size;

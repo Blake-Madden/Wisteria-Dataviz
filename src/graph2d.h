@@ -416,7 +416,7 @@ namespace Wisteria::Graphs
         /** @returns `true` if @c pt is inside of plot area.
             @param pt The point to see that is in the plot.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
-            { return GetBoundingBox().Contains(pt); }
+            { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Selects the object at the given point (relative to the parent canvas),
              if there is an object at that point.
             @param pt The point to hit test.

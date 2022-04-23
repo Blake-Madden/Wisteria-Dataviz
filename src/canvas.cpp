@@ -1464,7 +1464,7 @@ namespace Wisteria
                 const wxPoint movePt(unscrolledPosition-dragStartPos);
                 currentlyDraggedShape->Offset(movePt.x, movePt.y);
                 currentlyDraggedShape->SetInDragState(false);
-                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox().Inflate(refreshPadding));
+                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition()-unscrolledPosition);
                 currentlyDraggedShape = nullptr;
                 Refresh(true, &boundingBox);
@@ -1483,13 +1483,13 @@ namespace Wisteria
 
                 // redraw the item being dragged
                 // (we refresh a few pixels around the object to prevent any shearing)
-                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox().Inflate(refreshPadding));
+                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition()-unscrolledPosition);
                 Refresh(true, &boundingBox);
                 Update();
 
                 // the offset between the top-left of the shape image and the current shape position
-                const wxPoint beginDragHotSpot = dragStartPos-currentlyDraggedShape->GetBoundingBox().GetPosition();
+                const wxPoint beginDragHotSpot = dragStartPos-currentlyDraggedShape->GetBoundingBox(gdc).GetPosition();
                 // now we do this inside the implementation: always assume
                 // coordinates relative to the capture window (client coordinates)
                 if (!m_dragImage->BeginDrag(beginDragHotSpot, this, false))

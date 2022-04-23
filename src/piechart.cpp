@@ -230,7 +230,7 @@ namespace Wisteria::GraphItems
             dc.DrawLines(points.size(), &points[0]);
             }
 
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
     }
 

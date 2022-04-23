@@ -41,12 +41,12 @@ namespace Wisteria::GraphItems
         if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
             {
             wxPoint debugOutline[5]{ { 0, 0 } };
-            GraphItems::Polygon::GetRectPoints(GetBoundingBox(), debugOutline);
+            GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
             debugOutline[4] = debugOutline[0];
             wxDCPenChanger pcDebug(dc, wxPen(*wxRED, 2*scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH));
             dc.DrawLines(std::size(debugOutline), debugOutline);
             }
-        return GetBoundingBox();
+        return GetBoundingBox(dc);
         }
 
     //----------------------------------------------------------------
