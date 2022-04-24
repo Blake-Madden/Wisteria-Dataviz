@@ -27,7 +27,7 @@ namespace Wisteria::Graphs
          | @image html BoxPlot.svg width=90% | @image html GroupedBoxPlot.svg width=90% |
 
          Outliers are always displayed, and non-outlier points can be optionally
-         displayed as well. If non-outlier points overlap, then bee-swarm jittering
+         displayed as well. If any points overlap, then bee-swarm jittering
          is used to show their distribution.
 
         @note For multi-box plots, set the pen (via GetPen()) to enable and customize
