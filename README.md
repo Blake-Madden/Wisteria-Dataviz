@@ -7,6 +7,7 @@ Introduction
 Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets). It includes features
 such as:
 
+- Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
 - Built-in [printing](Printing.md) support
 - Built-in copy support
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
@@ -14,10 +15,10 @@ such as:
 - Data [importing](ImportingData.md) and exporting (CSV or tab-delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date, and ID columns
-- HiDPI display support (Windows)
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds
 - Effects for boxes and bars, including transparency, a glassy look, stipple brushes, and color fades
+- HiDPI display support (Windows)
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
 - Customizable [axes](Axes.md)

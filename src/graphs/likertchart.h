@@ -152,7 +152,7 @@ namespace Wisteria::Graphs
                     }) );
          // Original data has a scale going from 1-7, but we want to simplify
          // it to 1-3. To do this, we will collapse all the positive levels
-         // into one, and all negative levels into another level.
+         // into one, and all negative levels into another.
          const auto responsesScale = LikertChart::Simplify(surveyData,
                                                  surveyData->GetCategoricalColumnNames(),
                                                  LikertChart::LikertSurveyQuestionFormat::SevenPoint);
@@ -547,7 +547,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] LikertSurveyQuestionFormat GetSurveyType() const noexcept
             { return m_surveyType; }
 
-        /** @brief Gets the number of levels in the survey (e.g., ThreePoint -> 3).
+        /** @brief Gets the number of levels in the survey (e.g., @c ThreePoint -> 3).
             @returns The number of levels in the survey.*/
         [[nodiscard]] size_t GetLevelCount() const noexcept
             {
