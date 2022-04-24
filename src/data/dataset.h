@@ -345,6 +345,9 @@ namespace Wisteria::Data
 
     /// @brief Class for specifying which columns from an input file to use in the dataset
     ///  and how to map them.
+    /// 
+    /// @details The fields in this class are chainable, so you can set multiple properties
+    ///  in place as you construct it.
     class ImportInfo
         {
         friend class Dataset;
@@ -356,7 +359,7 @@ namespace Wisteria::Data
             wxString m_columnName;
             /// @brief The method to import the column with.
             DateImportMethod m_importMethod{ DateImportMethod::Automatic };
-            /// @brief If using StrptimeFormatString, this will be the format string to use.
+            /// @brief If using @c StrptimeFormatString, this will be the format string to use.
             wxString m_strptimeFormatString;
             };
 
@@ -370,27 +373,30 @@ namespace Wisteria::Data
             };
 
         /// @brief Map of regular expressions and their replacement strings.
-        /// @internal Needs to be shared pointers because wxRegEx has private CTOR.
+        /// @internal Needs to be shared pointers because @c wxRegEx has private CTOR.
         using RegExMap = std::map<std::shared_ptr<wxRegEx>, wxString>;
 
         /** @brief Sets the names of the input columns to import for the date columns.
 
              As an example:
 
-             `info().DateColumns({
+            @code
+             info().DateColumns({
                  // parse using the format "%Y-%m-%d"
                  { L"StartDate", DateImportMethod::StrptimeFormatString, L"%Y-%m-%d" },
                  // YYYY-MM-DD strings in the data
                  { L"EndDate", DateImportMethod::IsoDate }
-                 })`
+                 })
+            @endcode
 
              Will result in `StartDate` being imported as the first date column and `EndDate`
              as the second date column. Also, note that `StartDate` will be read using a custom
              format, while `EndDate` will read the date in ISO format.
             @param dateColumns The column names and their respective important methods
-             (and optional format string, if method is StrptimeFormatString).
+             (and optional format string, if method is @c StrptimeFormatString).\n
              For the import methods, you can specify how to parse the dates from the input,
-             including providing your own format string. Refer to DateImportInfo for more info.
+             including providing your own format string.
+            @sa DateImportInfo for more info.
             @returns A self reference.*/
         ImportInfo& DateColumns(const std::vector<DateImportInfo>& dateColumns)
             {
@@ -408,18 +414,21 @@ namespace Wisteria::Data
 
              As an example:
 
-             `info().CategoricalColumns({
+            @code
+             info().CategoricalColumns({
                  { L"AGE RANGE" },
                  { L"GENDER", CategoricalImportMethod::ReadAsIntegers }
-                 })`
+                 })
+            @endcode
 
              Will result in `AGE RANGE` being imported as the first categorical column and `GENDER`
              as the second categorical column. Also, note that `GENDER` will be read as discrete
              numbers, while `AGE RANGE` will use the default of being imported as strings.
-            @param categoricalColumns The column names and their respective important methods.
+            @param categoricalColumns The column names and their respective important methods.\n
              For the import methods, you can either import the column as strings
              and have integer codes automatically (and arbitrarily) assigned to them, or import integer
-             codes that you later assign strings to. Refer to CategoricalImportMethod for more info.
+             codes that you later assign strings to.
+            @sa Data::CategoricalImportMethod for more info.
             @returns A self reference.*/
         ImportInfo& CategoricalColumns(const std::vector<CategoricalImportInfo>& categoricalColumns)
             {
@@ -434,7 +443,9 @@ namespace Wisteria::Data
             }
         /** @brief Sets the names of the input columns to import for the continuous columns.
 
-             `info().ContinuousColumns({ L"COMPASS SCORES", L"GPA" })`
+            @code
+             info().ContinuousColumns({ L"COMPASS SCORES", L"GPA" })
+            @endcode
 
              This will result in `COMPASS SCORES` being imported as the first continuous column
              and `GPA` as the second continuous column.
@@ -508,7 +519,10 @@ namespace Wisteria::Data
 
     /** @brief %Dataset interface for graphs.
         @details Contains columns for continuous data, categoricals, groupings,
-         dates, and observation names/IDs.*/
+         dates, and observation names/IDs.
+         
+        @sa [Importing Data](../../ImportingData.md) and [Building Data](../../BuildingData.md)
+         for dataset overviews.*/
     class Dataset
         {
     public:
@@ -516,9 +530,9 @@ namespace Wisteria::Data
         /// @details This is used by ReadColumnInfo().
         enum class ColumnImportType
             {
-            String,  /*!< Column is text.*/
-            Numeric, /*!< Column is numeric (double or integer).*/
-            Date     /*!< Column is a date.*/
+            String,  /*!< %Column is text.*/
+            Numeric, /*!< %Column is numeric (double or integer).*/
+            Date     /*!< %Column is a date.*/
             };
 
         /// @brief The names and data types of columns in a dataset.
@@ -792,7 +806,7 @@ namespace Wisteria::Data
             @param delimiter The delimiter to parse the columns with.
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types,
-            @returns A vector of column names and their respective data types.
+            @returns A vector of column names and their respective data types.\n
              This can be especially useful for determining whether a categorical column
              should be imported as strings or codes (i.e., discrete numbers).
             @throws std::runtime_error If the file can't be read, throws an exception.*/

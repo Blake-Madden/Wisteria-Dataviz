@@ -11,11 +11,13 @@
 using namespace Wisteria;
 using namespace Wisteria::UI;
 
-VariableSelectDlg::VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
+VariableSelectDlg::VariableSelectDlg(wxWindow* parent, 
+                                     const Data::Dataset::ColumnPreviewInfo& columnInfo,
                        const std::vector<VariableListInfo>& varInfo,
                        wxWindowID id /*= wxID_ANY*/,
                        const wxString& caption /*= _("Set Opacity")*/,
-                       const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+                       const wxPoint& pos /*= wxDefaultPosition*/,
+                       const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
                     m_columnInfo(columnInfo)
     {
@@ -44,7 +46,7 @@ void VariableSelectDlg::UpdateButtonStates()
     }
 
 //-------------------------------------------------------------
-void VariableSelectDlg::MoveSelectedVariables(wxListView* list, wxListView* otherList)
+void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxListView* otherList)
     {
     wxASSERT_MSG(list, "Invalid list control!");
     wxASSERT_MSG(otherList, "Invalid list control!");
@@ -63,16 +65,16 @@ void VariableSelectDlg::MoveSelectedVariables(wxListView* list, wxListView* othe
             return;
             }
         }
-    const auto selStrings = GetSelectedVariables(list);
+    const auto selStrings = GetSelectedVariablesInList(list);
     wxWindowUpdateLocker noUpdates(otherList);
     for (const auto& str : selStrings)
         { otherList->InsertItem(otherList->GetItemCount(), str); }
     otherList->SetColumnWidth(0, wxLIST_AUTOSIZE);
-    RemoveSelectedVariables(list);
+    RemoveSelectedVariablesFromList(list);
     }
 
 //-------------------------------------------------------------
-std::vector<wxString> VariableSelectDlg::GetSelectedVariables(wxListView* list)
+std::vector<wxString> VariableSelectDlg::GetSelectedVariablesInList(wxListView* list)
     {
     std::vector<wxString> selStrings;
     long item{ wxNOT_FOUND };
@@ -87,7 +89,7 @@ std::vector<wxString> VariableSelectDlg::GetSelectedVariables(wxListView* list)
     };
 
 //-------------------------------------------------------------
-void VariableSelectDlg::RemoveSelectedVariables(wxListView* list)
+void VariableSelectDlg::RemoveSelectedVariablesFromList(wxListView* list)
     {
     wxWindowUpdateLocker noUpdates(list);
     long item{ wxNOT_FOUND };
@@ -182,7 +184,9 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
 
         const long style = currentList.m_singleSelection ?
             (wxLC_REPORT|wxLC_NO_HEADER|wxLC_SINGLE_SEL) : (wxLC_REPORT|wxLC_NO_HEADER);
-        currentList.m_list = addVarControls(currentList.m_addId, currentList.m_removeId, currentList.m_label, style);
+        currentList.m_list = addVarControls(currentList.m_addId,
+                                            currentList.m_removeId, currentList.m_label,
+                                            style);
         m_varLists.push_back(currentList);
         }
 
@@ -216,14 +220,14 @@ void VariableSelectDlg::CreateControls(const std::vector<VariableListInfo>& varI
         Bind(wxEVT_BUTTON,
             [&, this](wxCommandEvent&)
                 {
-                MoveSelectedVariables(m_mainVarlist, varList.m_list);
+                MoveSelectedVariablesBetweenLists(m_mainVarlist, varList.m_list);
                 UpdateButtonStates();
                 },
             varList.m_addId);
         Bind(wxEVT_BUTTON,
             [&, this](wxCommandEvent&)
                 {
-                MoveSelectedVariables(varList.m_list, m_mainVarlist);
+                MoveSelectedVariablesBetweenLists(varList.m_list, m_mainVarlist);
                 UpdateButtonStates();
                 },
             varList.m_removeId);
@@ -243,8 +247,9 @@ bool VariableSelectDlg::Validate()
             varList.m_list->GetItemCount() == 0)
             {
             wxMessageBox(
-                wxString::Format(_(L"Variable(s) must be selected for the %s list."), varList.m_label),
-                _(L"Variable Not Specified"), wxOK | wxICON_WARNING | wxCENTRE);
+                wxString::Format(
+                    _(L"Variable(s) must be selected for the %s list."), varList.m_label),
+                    _(L"Variable Not Specified"), wxOK|wxICON_WARNING|wxCENTRE);
             return false;
             }
         }

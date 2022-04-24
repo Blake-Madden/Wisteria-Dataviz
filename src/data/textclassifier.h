@@ -62,32 +62,32 @@ namespace Wisteria::Data
 
           After loading a classifier dataset, you then load a dataset to analyze:
 
-          | COMMENTS                                                          |
-          | :--                                                               |
-          | I love the football games. The stadium needs some repairs though. |
-          | The parking lot is hard to find.                                  |
-          | Wish they had hot pretzels at the softball games.                 |
-          | The printer is always broken in the library :(                    |
-          | A class for engineering (software development) would be nice.     |
-          | The chemical engineering classes are too tough.                   |
+          | COMMENTS                                                           |
+          | :--                                                                |
+          | I love the football games. The stadium needs more seats though.    |
+          | The parking lot is hard to find.                                   |
+          | Wish they had hot pretzels at the softball games.                  |
+          | The printer in the library was out of paper :(                     |
+          | More classes for engineering (software development) would be nice. |
+          | The chemical engineering classes are too tough.                    |
 
           This will result in two datasets; one with the comments categorized:
 
-          | COMMENTS                                                          | CATEGORY        | SUBCATEGORY |
-          | :--                                                               | :--             |             |
-          | I love the football games. The stadium needs some repairs though. | Facilities      |             |
-          | I love the football games. The stadium needs some repairs though. | Athletics       |             |
-          | The parking lot is hard to find.                                  | Facilities      | Parking Lot |
-          | Wish they had hot pretzels at the softball games.                 | Athletics       |             |
-          | Wish they had hot pretzels at the softball games.                 | Food & Beverage |             |
-          | A class for engineering (software development) would be nice.     | Programs        | CompSci     |
-          | The chemical engineering classes are too tough                    | Programs        | Engineering |
+          | COMMENTS                                                           | CATEGORY        | SUBCATEGORY |
+          | :--                                                                | :--             |             |
+          | I love the football games. The stadium needs more seats though.    | Facilities      |             |
+          | I love the football games. The stadium needs more seats though.    | Athletics       |             |
+          | The parking lot is hard to find.                                   | Facilities      | Parking Lot |
+          | Wish they had hot pretzels at the softball games.                  | Athletics       |             |
+          | Wish they had hot pretzels at the softball games.                  | Food & Beverage |             |
+          | More classes for engineering (software development) would be nice. | Programs        | CompSci     |
+          | The chemical engineering classes are too tough.                    | Programs        | Engineering |
 
           And one with the uncategorized comments:
 
           | COMMENTS                                       |
           | :--                                            |
-          | The printer is always broken in the library :( |
+          | The printer in the library was out of paper :( |
          */
     class TextClassifier
         {
@@ -95,7 +95,7 @@ namespace Wisteria::Data
         /** @brief Sets the categories and their respective regular expressions
              used to classify text into them.
             @param classifierData The dataset with the categories and regexes in it.
-            @param categoryColumnName The name of the column with the categories in it.
+            @param categoryColumnName The name of the column with the categories in it.\n
              Note that the same categories can be used throughout the file, with different
              regular expressions next to them. This allows for using numerous regexes to
              classify text into the same category.
@@ -122,11 +122,13 @@ namespace Wisteria::Data
             @param contentData The dataset with the text to be classified.
             @param contentColumnName The name of the text column that contains content to
              be classifed. This would usually be a column of comments from a survey.
-            @returns A pair of datasets.
+            @returns A pair of datasets.\n
+             \n
              The first is a dataset filled with the comments and the categories that they matched against.
              Note that if a comment was classified into multiple categories,
              then a row will be added for each of these matches. In other words, the comment
-             will appear multiple times in the output, with the different categories next to it.
+             will appear multiple times in the output, with the different categories next to it.\n
+             \n
              The second is a dataset of all comments that were not classified. This can be useful
              for retraining your classifier (i.e., adding more regexes to your classifier dataset).
             @throws std::runtime_error If the file can't be read or named columns aren't found,

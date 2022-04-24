@@ -1,9 +1,10 @@
 Bar Chart
 =============================
 
-Note: this overview is meant for those designing a new chart derived from the `BarChart` class.
+Note: this overview is meant for those designing a new chart derived from the `BarChart` class. For a simplified API to
+create a bar chart from a dataset, refer to `Wisteria::Graphs::Histogram` and `Wisteria::Graphs::CategoricalBarChart`.
 
-The `Wisteria::Graphs::BarChart` class is a highly customizable chart, which is also used as the basis for numerous other graphs.
+The `Wisteria::Graphs::BarChart` class is a highly customizable chart, which is also the basis for a number of other graphs.
 The following is an explanation of how these are built and how they can be customized to create more complex charts.
 
 If deriving a new graph type from `BarChart`, you can create the bars by calling `AddBar()`. This can either be done when the data

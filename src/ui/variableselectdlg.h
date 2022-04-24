@@ -25,19 +25,37 @@
 
 namespace Wisteria::UI
     {
-    /** @brief Dialog for selecting variables for an analysis.*/
+    /** @brief Dialog for selecting variables for an analysis.
+    
+        @par Example:
+        @code
+         // This will create a selection dialog with a list
+         // for "Questions" variables and an optional list
+         // for one grouping variable.
+         VariableSelectDlg selectVarsDlg(this, columnInfo,
+            {
+            VariableSelectDlg::VariableListInfo().Label(_(L"Questions")),
+            VariableSelectDlg::VariableListInfo().Label(_(L"Grouping")).
+                SingleSelection(true).Required(false)
+            }
+        if (selectVarsDlg.ShowModal() == wxID_OK)
+           ...
+        @endcode*/
     class VariableSelectDlg final : public wxDialog
         {
     public:
         /// @brief Definition for a variable list for a user to select.
-        /// @details Examples of this could be a list of categoricals, a single grouping variable,
-        ///  an X variable, etc.
+        /// @details Examples of this could be a list of categoricals,
+        ///  a single grouping variable, an X variable, etc.
+        /// 
+        ///  The fields in this class are chainable, so you can construct
+        ///  it in place in the VariableSelectDlg's constructor.
         class VariableListInfo
             {
             friend class VariableSelectDlg;
         public:
             /// @brief Sets the list's label.
-            /// @param name The label to display above the variable list.
+            /// @param label The label to display above the variable list.
             /// @returns A self reference.
             VariableListInfo& Label(const wxString& label)
                 {
@@ -71,8 +89,8 @@ namespace Wisteria::UI
 
         /** @brief Constructor.
             @param parent The dialog's parent.
-            @param columnInfo The list of columns (and their respective data types) to choose from.
-             This will usually be the result from a call to Dataset::ReadColumnInfo().
+            @param columnInfo The list of columns (and their respective data types) to choose from.\n
+             This will usually be the result from a call to `Data::Dataset::ReadColumnInfo()`.
             @param varInfo Definitions for the variable lists that the user can specify.
             @param id The dialog's ID.
             @param caption The caption for the dialog.
@@ -83,7 +101,8 @@ namespace Wisteria::UI
                           const std::vector<VariableListInfo>& varInfo,
                           wxWindowID id = wxID_ANY,
                           const wxString& caption = _("Select Variables"),
-                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                          const wxPoint& pos = wxDefaultPosition,
+                          const wxSize& size = wxDefaultSize,
                           long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
         /// @private
         VariableSelectDlg() = delete;
@@ -93,13 +112,13 @@ namespace Wisteria::UI
         VariableSelectDlg& operator=(const VariableSelectDlg&) = delete;
 
         /// @brief Gets the variables that a user has moved into a given list.
-        /// @detais The list is accessed by index, in the order that the variable definitions
+        /// @details The list is accessed by index, in the order that the variable definitions
         ///  were passed to the constructor. For example, if the VariableListInfo passed to the
         ///  constructor included a continuous and grouping set of variable lists (in that order),
         ///  then `1` will return the variables in the grouping list.
         /// @param listIndex The index of the client-defined variable list.
         /// @returns A list of the variable names that the user has selected for a given list.
-        std::vector<wxString> VariableSelectDlg::GetSelectedVariables(const size_t listIndex) const;
+        std::vector<wxString> GetSelectedVariables(const size_t listIndex) const;
     private:
         struct VariableList
             {
@@ -116,14 +135,14 @@ namespace Wisteria::UI
         /// @brief Moves the selected variables in one list to another.
         /// @param list The list to move items from.
         /// @param otherList The sub list to move the variables into.
-        static void MoveSelectedVariables(wxListView* list, wxListView* othotherListerlist);
+        static void MoveSelectedVariablesBetweenLists(wxListView* list, wxListView* othotherListerlist);
         /// @returns the list of variables selected a list.
         /// @param list The list to get the selected items from.
         /// @returns A vector of the selected strings.
-        [[nodiscard]] static std::vector<wxString> GetSelectedVariables(wxListView* list);
+        [[nodiscard]] static std::vector<wxString> GetSelectedVariablesInList(wxListView* list);
         /// @brief Removes the selected items from a list.
         /// @param list The list box to remove items from.
-        static void RemoveSelectedVariables(wxListView* list);
+        static void RemoveSelectedVariablesFromList(wxListView* list);
         /// @brief Enables/disables buttons as needed.
         void UpdateButtonStates();
 

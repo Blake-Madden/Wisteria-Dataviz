@@ -17,7 +17,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Grid-based plot which compares each value from a vector and
+    /** @brief A discrete heat map, which is a grid-based plot which compares each value from a vector and
          maps them along a color scale (e.g., grayscale). Each cell shows an observation's
          value and its color represents that value's scale in comparison to the other
          observations.

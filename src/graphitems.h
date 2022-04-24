@@ -42,7 +42,7 @@ namespace Wisteria::Graphs
 /// @brief Graphics classes and enumerations.
 namespace Wisteria
     {
-    /// @brief The sorting direction of bars (on axes), label on tooltips, etc.
+    /// @brief The sorting direction of bars along an axis.
     enum class SortDirection
         {
         SortAscending,  /*!< Sorted smallest to largest.*/
@@ -160,7 +160,8 @@ namespace Wisteria
         RightArrowLinedPaperWithMargins, /*!< Display the label as lined paper
                                               (right arrow lines under each text line, within the margins of the label).
                                               Will use the same pen as the label's text.*/
-        LABEL_STYLE_COUNT                /*!< The number of items in this enumeration.*/
+        /// @private
+        LABEL_STYLE_COUNT
         };
 
     /// @brief The types of shapes that can be drawn on a legend or plot.
@@ -198,6 +199,7 @@ namespace Wisteria
         {
         Horizontal, /*!< Horizontal (i.e., left to right).*/
         Vertical,   /*!< Vertical (i.e., top to bottom).*/
+        /// @private
         ORIENTATION_COUNT
         };
 
@@ -209,7 +211,7 @@ namespace Wisteria
         EmbeddedOnGraph,    /*!< The legend will be on the plot.
                                  This will include outlining on the legend*/
         RightOrLeftOfGraph, /*!< The legend will be on the right or left of the plot.
-                                 This will set the legend's canvas width % a calculated value.*/
+                                 This will set the legend's canvas width % to a calculated value.*/
         AboveOrBeneathGraph /*!< The legend will be above or below the plot.
                                  This will set the legend's canvas width % to 1.*/
         };
@@ -265,13 +267,13 @@ namespace Wisteria
     /// @brief How to align perpendicular labels with their parent axis or bracket.
     enum class AxisLabelAlignment
         {
-        AlignWithAxisLine,  /*!< The labels will be flush right against the axis line.*/
-        AlignWithBoundary,  /*!< If the labels are perpendicular against the axis and some are wider
-                                 than others, then align the labels against the outer parameter of the
-                                 axis area. @note Has no effect with parallel axes.*/
-        CenterOnAxisLine    /*!< The labels will be centered on the axis line.
-                                 @note Has no effect on bracket labels.
-                                 @todo Add support for horizontal axes.*/
+        AlignWithAxisLine, /*!< The labels will be flush right against the axis line.*/
+        AlignWithBoundary, /*!< If the labels are perpendicular against the axis and some are wider
+                                than others, then align the labels against the outer parameter of the
+                                axis area. @note Has no effect with parallel axes.*/
+        CenterOnAxisLine   /*!< The labels will be centered on the axis line.
+                                @note Has no effect on bracket labels.
+                                @todo Add support for horizontal axes.*/
         };
 
     /// @brief The type of cap (i.e., head) that an axis line displays at its ending point
@@ -302,7 +304,8 @@ namespace Wisteria
         FadeFromRightToLeft = FadeFromTopToBottom, /*!< Color gradient, right-to-left.*/
         Stipple,                                   /*!< Fill with repeating images.*/
         CommonImage,                               /*!< A subimage of a larger image shared by all boxes.*/
-        EFFECTS_COUNTS                             /*!< The number of bar effects options.*/
+        /// @private
+        EFFECTS_COUNT
         };
 
     /// @brief How the corners of how various boxes are drawn.
@@ -321,7 +324,8 @@ namespace Wisteria
         BinPercentage,           /*!< The percentage of items in each bin.*/
         BinValueAndPercentage,   /*!< Both the percentage and number of items in each bin.*/
         NoDisplay,               /*!< Don't display labels on the bins.*/
-        BIN_LABEL_DISPLAY_COUNT  /*!< The number of ways to display labels.*/
+        /// @private
+        BIN_LABEL_DISPLAY_COUNT
         };
 
     /// @brief How to round floating-point values when binning.
@@ -331,7 +335,8 @@ namespace Wisteria
         RoundDown,             /*!< Round down (ceiling).*/
         RoundUp,               /*!< Round up (floor).*/
         NoRounding,            /*!< Do not round.*/
-        ROUNDING_METHOD_COUNT  /*!< The number of rounding methods.*/
+        /// @private
+        ROUNDING_METHOD_COUNT
         };
 
     /// @brief Criteria lamba to return a color if a point's

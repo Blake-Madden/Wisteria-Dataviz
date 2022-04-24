@@ -9,8 +9,8 @@ the X data, another a grouping column, etc. Then you would pass the dataset to a
 
 Importing
 =============================
-Datasets can be imported from tab- or comma-delimited text files via `Wisteria::Data::Dataset::ImportCsv()` or
-`Wisteria::Data::Dataset::ImportTsv()`. During this import, you indicate which columns to include and how
+Datasets can be imported from tab- or comma-delimited text files via `Wisteria::Data::Dataset::ImportCSV()` or
+`Wisteria::Data::Dataset::ImportTSV()`. During this import, you indicate which columns to include and how
 they should be used by your graphs. This variable selection is done through the `Wisteria::Data::ImportInfo` class,
 which include chainable calls which classify the columns. For example:
 
@@ -147,11 +147,11 @@ companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
         });
 ```
 
-Missing data in a date column are imported as wxInvalidDateTime, so `wxDateTime::IsValid()` should be called when
+Missing data in a date column are imported as @c wxInvalidDateTime, so `wxDateTime::IsValid()` should be called when
 working with imported values. Also, any parsing errors (from malformed input) while imporing dates are logged
 (via `wxLogWarning()`).
 
-Recoding during Import
+Recoding Data
 =============================
 
 Text columns can have regular expression replacements applied to them during import. The `ImportInfo` parameter

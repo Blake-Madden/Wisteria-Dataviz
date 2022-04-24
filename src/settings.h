@@ -29,13 +29,13 @@ namespace Wisteria
         DrawBoundingBoxesOnSelection = 0x01, /*!< Draw a bounding box around objects when they are selected.*/
         DrawInformationOnSelection = 0x02,   /*!< Write additional information on the screen when an object is selected
                                                   (e.g., the scaling value).*/
-        DrawExtraInformation = 0x04,         /*!< Draw more verbose information, even when objects aren't selected.
+        DrawExtraInformation = 0x04,         /*!< Draw more verbose information, even when objects aren't selected.\n
                                                   This is only recommended when first designing a graph.*/
-        IncludeExperimentalCode = 0x08       /*!< Run experimental code.
+        IncludeExperimentalCode = 0x08       /*!< Run experimental code.\n
                                                   Code being used to test a new graph type during the design stage should
-                                                  be wrapped in IncludeExperimentalCode blocks.
-                                                  This is a preferred replacement for "#ifdef 0" code blocks as finalized code
-                                                  can be scanned for IncludeExperimentalCode and removed.*/
+                                                  be wrapped in @c IncludeExperimentalCode blocks.\n
+                                                  This is a preferred replacement for `#ifdef 0` code blocks as this
+                                                  can easily be enabled/disabled globally.*/
         };
 
     /// @brief Class for managing global library settings.
@@ -102,7 +102,7 @@ namespace Wisteria
         /// @param enable Whether to enable or disable the flag.
         /// @note DebugSettings::DrawBoundingBoxesOnSelection is enabled by default
         ///  if @c wxDEBUG_LEVEL is set to 2; otherwise, all flags are disabled.
-        static void EnableDebugFlag(const int flag, const bool enable) noexcept
+        static void EnableDebugFlag(const DebugSettings flag, const bool enable) noexcept
             {
             if (enable)
                 { m_debugSettings |= flag; }

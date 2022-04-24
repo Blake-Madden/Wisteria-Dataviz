@@ -35,8 +35,10 @@ enum class DTExplanation
     {
     DebugMessage,    /*!< Debugging/Tracing related string.*/
     LogMessage,      /*!< Log messages that aren't normally user facing.*/
-    ProperNoun,      /*!< The name of a proper person, place, or thing that wouldn't normally be translated.*/
-    DirectQuote,     /*!< A direct quote (e.g., a German phrase) that should remain in its original form.*/
+    ProperNoun,      /*!< The name of a proper person, place, or thing that wouldn't
+                          normally be translated.*/
+    DirectQuote,     /*!< A direct quote (e.g., a German phrase) that should remain
+                          in its original form.*/
     FilePath,        /*!< A filename or path.*/
     InternalKeyword, /*!< An internal keyword or constant.*/
     Command,         /*!< A command, such as "open" in a `ShellExecute()` call.*/
@@ -46,17 +48,21 @@ enum class DTExplanation
     NoExplanation    /*!< No explanation.*/
     };
 
-/** @brief "Don't Translate." Simply expands a string in place, indicating to the developer that is not meant to be translated.
+/** @brief "Don't Translate." Simply expands a string in place at compile time,
+     while communicating to developers that is not meant to be translated.
 
      This is useful for explicitly stating that a string is not meant for localization.
 
-     In essence, this is the opposite of the `_()` macro from the **GETTEXT** library that marks a string as translatable.
+     In essence, this is the opposite of the `_()` macro from the **GETTEXT** library
+     that marks a string as translatable.
     @param str The string.
-    @param explanation An optional type of explanation for why this string should not be available for translation.
-    @param explanationMessage An optional message to add explaining why this shouldn't be translated. This is a useful
-                         alternative to wrapping comments around the code.
+    @param explanation An optional type of explanation for why this string should not
+     be available for translation.
+    @param explanationMessage An optional message to add explaining why this shouldn't
+     be translated. This is a useful alternative to wrapping comments around the code.
     @returns The same string.
-    @note This works with `char`, `uint8_t`, `char16_t`, `char32_t`, and `wchar_t` type string constants.
+    @note This works with `char`, `uint8_t`, `char16_t`, `char32_t`, and `wchar_t`
+     type string constants.
     @sa _DT().
     @par Example
     @code
@@ -73,7 +79,8 @@ enum class DTExplanation
         // an even more descriptive approach
         auto command3 = DONTTRANSLATE("open ",
                                       DTExplanation::Command,
-                                      "This is part of a command line, don't expose for translation!") +
+                                      "This is part of a command line, "
+                                      "don't expose for translation!") +
                         fileName;
         // also expands to "open C:\\data\\logreport.txt"
 
@@ -89,8 +96,10 @@ inline constexpr auto DONTTRANSLATE(T str,
 
 /** @brief A shorthand alias for DONTTRANSLATE().
     @param str The string.
-    @param explanation An optional type of explanation for why this string should not be available for translation.
-    @param explanationMessage An optional message to add explaining why this shouldn't be translated.
+    @param explanation An optional type of explanation for why this string
+     should not be available for translation.
+    @param explanationMessage An optional message to add explaining why this
+     should not be translated.
     @returns The same string.*/
 template<typename T,
          std::enable_if_t<is_string_constant_v<T>, bool> = true>

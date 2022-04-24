@@ -119,10 +119,12 @@ namespace Wisteria::GraphItems
                 @param position The position on the axis for the tickmark.
                 @param lineLength The length of the tickmark.*/
             TickMark(const DisplayType displayType, const double position, wxCoord lineLength) noexcept :
-                m_displayType(displayType), m_position(position), m_lineLength(lineLength), m_physicalCoordinate(-1)
+                m_displayType(displayType), m_position(position),
+                m_lineLength(lineLength), m_physicalCoordinate(-1)
                 {}
             /// @brief Default Constructor.
-            TickMark() noexcept : m_displayType(DisplayType::Inner), m_position(0), m_lineLength(0), m_physicalCoordinate(-1)
+            TickMark() noexcept : m_displayType(DisplayType::Inner), m_position(0),
+                                  m_lineLength(0), m_physicalCoordinate(-1)
                 {}
             /// @brief Returns how the tickmark is displayed.
             /// @returns The tickmark display method.
@@ -155,8 +157,10 @@ namespace Wisteria::GraphItems
                 @param pos2 The ending position (relative to its parent axis) of where to place the bracket.
                 @param labelPos The position (relative to its axis) of where to place the bracket's label.
                 @param label The label to display next to the brackets.
-                @param color The color of the lines and label. The font color can be overridden via GetLabel(), and the line via GetLinePen().*/
-            AxisBracket(const double pos1, const double pos2, const double labelPos, const wxString label, const wxColour color = *wxBLACK) :
+                @param color The color of the lines and label.
+                 The font color can be overridden via GetLabel(), and the line via GetLinePen().*/
+            AxisBracket(const double pos1, const double pos2, const double labelPos,
+                        const wxString label, const wxColour color = *wxBLACK) :
                 m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
                 m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(color)
                 {
@@ -166,7 +170,8 @@ namespace Wisteria::GraphItems
             AxisBracket() = delete;
 
             /// @name Range Functions
-            /// @brief Functions relating to the bracket's starting and ending point (relative to its parent axis).
+            /// @brief Functions relating to the bracket's starting and ending point
+            ///  (relative to its parent axis).
             /// @{
 
             /// @returns The starting position (relative to the parent axis).
@@ -207,10 +212,12 @@ namespace Wisteria::GraphItems
             [[nodiscard]] double GetLabelPosition() const noexcept
                 { return m_labelPosition; }
 
-            /// @returns How the labels are aligned, either against the connection lines or the outer boundary of the brackets.
+            /// @returns How the labels are aligned, either against the connection
+            ///  lines or the outer boundary of the brackets.
             [[nodiscard]] const AxisLabelAlignment& GetPerpendicularLabelConnectionLinesAlignment() const noexcept
                 { return m_axisLabelAlignment; }
-            /// @brief Sets how the labels are aligned, either against the lines (connecting to the parent axis) or the outer boundary.
+            /// @brief Sets how the labels are aligned, either against the lines
+            ///  (connecting to the parent axis) or the outer boundary.
             /// @param alignment How to alignment the labels within the bracket section.
             /// @note Has no effect if axis labels are parallel to the connection lines.
             void SetPerpendicularLabelConnectionLinesAlignment(const AxisLabelAlignment alignment) noexcept
@@ -224,7 +231,7 @@ namespace Wisteria::GraphItems
             /** @brief Gets/sets the line pen.
                 @returns The pen used to draw the bracket's line.
                  Call this to edit the line's color, style, width, etc.
-                 (e.g., GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT))*/
+                 (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)*/
             [[nodiscard]] wxPen& GetLinePen() noexcept
                 { return m_linePen; }
 
@@ -281,7 +288,8 @@ namespace Wisteria::GraphItems
             ///  bracket label and axis labels.
             [[nodiscard]] wxCoord GetLineSpacing() const noexcept
                 {
-                return (GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine) ? (GetTickmarkLength()+GetPadding()) : GetPadding();
+                return (GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine) ?
+                        (GetTickmarkLength()+GetPadding()) : GetPadding();
                 }
             /** @brief Sets the orientation of the bracket.
                 @param orientation The orientation to use.*/
@@ -361,7 +369,8 @@ namespace Wisteria::GraphItems
         private:
             /** @brief Sets the point on the parent axis at the specified coordinate.
                 @param coordinate The axis coordinate to place the point.
-                @note This function is normally handled by the parent plot, use SetValue() (or constructor) to set the axis value where the point should be.*/
+                @note This function is normally handled by the parent plot, use SetValue()
+                 (or constructor) to set the axis value where the point should be.*/
             void SetPhysicalCoordinate(const double coordinate) noexcept
                 { m_physicalCoordinate = coordinate; }
             /// @returns The point's physical coordinates along the parent axis.
@@ -466,7 +475,8 @@ namespace Wisteria::GraphItems
             @param rangeStart The start of the range.
             @param rangeEnd The end of the range.
             @param precision The floating-point precision to show on the axis labels.
-            @param includeExtraInterval Useful for including point labels that take up unexpected space on the plot.*/
+            @param includeExtraInterval Useful for including point labels that take up unexpected
+             space on the plot.*/
         void SetRange(double rangeStart, double rangeEnd,
                       const uint8_t precision,
                       bool includeExtraInterval = false);
@@ -520,7 +530,8 @@ namespace Wisteria::GraphItems
             @sa AdjustRangeToLabels().*/
         void AddUnevenAxisPoint(const double value, const wxString& label);
         /// @brief Adjusts the start and end of the range based on min and max range of the labels.
-        ///  This should be called if the generated (default) axis labels have been edited via GetAxisPoints() or AddUnevenAxisPoint().
+        ///  This should be called if the generated (default) axis labels have been edited via
+        ///  GetAxisPoints() or AddUnevenAxisPoint().
         void AdjustRangeToLabels();
         /// @brief Whether the axis begins at zero.
         /// @returns `true` if set to begin at zero.
@@ -547,8 +558,8 @@ namespace Wisteria::GraphItems
              Specifying "2" means that every other axis tick will have a label on it.
             @param interval How often a label should be displayed on the ticks.
             @param offset The starting point on the axis from where to start labeling ticks.
-            @warning This must be called after setting the axis labels. Also, this will override ShowDefaultLabels()
-             if it had been set to `false`.*/
+            @warning This must be called after setting the axis labels. Also, this will override
+             ShowDefaultLabels() if it had been set to `false`.*/
         void SetDisplayInterval(const size_t interval, const size_t offset = 0);
         /// @}
 
@@ -557,7 +568,8 @@ namespace Wisteria::GraphItems
             @details The axis labels are managed by default labels generated by SetRange() or AddUnevenAxisPoint(),
              and by custom labels. Custom labels can be placed anywhere along the axis and can override default axis points.
 
-             To set the padding for axis labels, call SetPadding(), SetTopPadding(), SetRightPadding(), SetBottomPadding(), or SetLeftPadding()
+             To set the padding for axis labels, call SetPadding(), SetTopPadding(),
+             SetRightPadding(), SetBottomPadding(), or SetLeftPadding()
              (this will only affect the axis labels, not the actual axis).
 
              To change the font attributes of the axis labels, call SetFontBackgroundColor(), SetFontColor(), and GetFont().
@@ -708,7 +720,8 @@ namespace Wisteria::GraphItems
             @param right The right padding.
             @param bottom The bottom padding.
             @param left The left padding.*/
-        void SetPadding(const wxCoord top, const wxCoord right, const wxCoord bottom, const wxCoord left) noexcept final
+        void SetPadding(const wxCoord top, const wxCoord right,
+                        const wxCoord bottom, const wxCoord left) noexcept final
             {
             GraphItemBase::SetPadding(top, right, bottom, left);
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
@@ -794,7 +807,8 @@ namespace Wisteria::GraphItems
             @param displayType How to draw the tick mark.
             @param position The axis point to draw the tick mark on.
             @param length The length of the tick mark.*/
-        void AddCustomTickMark(const TickMark::DisplayType displayType, const double position, const double length)
+        void AddCustomTickMark(const TickMark::DisplayType displayType,
+                               const double position, const double length)
             { m_customTickMarks.push_back(TickMark(displayType, position, length)); }
 
         /// @returns The interval of the tick marks being shown.
@@ -811,7 +825,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] int GetMinorTickMarkLength() const noexcept
             { return m_minorTickMarkLength; }
         /// @brief Sets the length of the minor tick marks (i.e., tick marks between axis labels).
-        /// @param length The length of the minor tickmarks. This is a pixel value that the framework will scale to the screen for you.
+        /// @param length The length of the minor tickmarks.
+        ///  This is a pixel value that the framework will scale to the screen for you.
         ///  (The parent axis will also scale this as the graph's scaling changes.)
         void SetMinorTickMarkLength(const int length) noexcept
             { m_minorTickMarkLength = length; }
@@ -820,7 +835,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] int GetMajorTickMarkLength() const noexcept
             { return m_majorTickMarkLength; }
         /// @brief Sets the length of the major tick marks (i.e., tick marks that correspond to axis labels).
-        /// @param length The length of the major tickmarks. This is a pixel value that the framework will scale to the screen for you.
+        /// @param length The length of the major tickmarks.
+        ///  This is a pixel value that the framework will scale to the screen for you.
         ///  (The parent axis will also scale this as the graph's scaling changes.)
         void SetMajorTickMarkLength(const int length) noexcept
             { m_majorTickMarkLength = length; }
@@ -977,7 +993,8 @@ namespace Wisteria::GraphItems
         void SetOutlineSize(const wxSize sz) noexcept
             { m_outlineSize = sz; }
         /// @returns The inflated size around the axis that an outline is being drawn.
-        /// @note By default, this outline is not being drawn and SetOutlineSize() must be called to enable this behavior.
+        /// @note By default, this outline is not being drawn and SetOutlineSize()
+        ///  must be called to enable this behavior.
         [[nodiscard]] wxSize GetOutlineSize() const noexcept
             { return m_outlineSize; }
 

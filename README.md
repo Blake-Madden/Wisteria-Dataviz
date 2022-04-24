@@ -14,8 +14,8 @@ such as:
 - Data [importing](ImportingData.md) and exporting (CSV or tab-delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date, and ID columns
-- [HiDPI](HiDPI.md) display support
-- Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Microsoft Windows, if available)
+- HiDPI display support (Windows)
+- Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds
 - Effects for boxes and bars, including transparency, a glassy look, stipple brushes, and color fades
 - Customizable point markers and line styles
@@ -50,16 +50,17 @@ such as:
   - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](BarChart.md))
   - Uses an object-based API for positioning points, text boxes, polygons, lines, and images
   - Supports custom axes
-  - Draws bounding boxes and extended information in debug mode
+  - Draw bounding boxes and extended information in debug mode (via `Wisteria::Settings::EnableDebugFlag()`)
   - Profiling macros (e.g., `PROFILE()`) to help with reviewing performance
+  - I18n functions to help prevent accidental translations (e.g., DONTTRANSLATE() and _DT())
   
 General Workflow
 =============================
 
-- [Setup the library's settings](Setup.md) (optionally) when your application starts
+- Setup the [library's settings](Setup.md) (optionally) when your application starts
 - Construct a `Wisteria::Canvas` object (which is a `wxScrolledWindow`-derived window), and embed it into
 a `wxFrame` or `wxDialog`
-- [Import data](ImportingData.md) into a `Wisteria::Data::Dataset` object (or [build](BuildingData.md) a dataset),
+- [Import data](ImportingData.md) into a `Wisteria::Data::Dataset` (or [build](BuildingData.md) a dataset),
 specifying which columns to include and how to classify them
 - Construct a plot object (e.g., `Wisteria::Graphs::LinePlot`) and pass your dataset to it
 - Customize the plot, as needed
@@ -104,7 +105,7 @@ Statistical
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/Histogram.svg) | ![](docs/doxygen/images/BoxPlot.svg) |
 
-| Heat Map (Wisteria::Graphs::HeatMap) | Grouped Heat Map (Wisteria::Graphs::HeatMap) |
+| Discrete Heat Map (Wisteria::Graphs::HeatMap) | Grouped Discrete Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
 | ![](docs/doxygen/images/Heatmap.svg) | ![](docs/doxygen/images/HeatmapGrouped.svg) |
 
@@ -150,7 +151,8 @@ To build the API documentation, open "docs/doxygen/Doxyfile" in Doxygen and run 
 Windows
 -----------------------------
 
-On Windows, you will need to set `wxWidgets_ROOT_DIR` to the root folder where you have wxWidgets.
+On Windows, you will need to set `wxWidgets_ROOT_DIR` to the root folder where you have wxWidgets when
+building with CMake.
 
 Assuming that you had built wxWidgets in "C:/SRC/wxWidgets," you can pass this command line CMake:
 

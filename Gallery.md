@@ -50,7 +50,7 @@ Statistical
 | :-------------- | :-------------------------------- |
 | ![](docs/doxygen/images/BoxPlot.svg) | ![](docs/doxygen/images/GroupedBoxPlot.svg) |
 
-| Heat Map (Wisteria::Graphs::HeatMap) | Grouped Heat Map (Wisteria::Graphs::HeatMap) |
+| Discrete Heat Map (Wisteria::Graphs::HeatMap) | Grouped Discrete Heat Map (Wisteria::Graphs::HeatMap) |
 | :-------------- | :-------------------------------- |
 | ![](docs/doxygen/images/Heatmap.svg) | ![](docs/doxygen/images/HeatmapGrouped.svg) |
 
