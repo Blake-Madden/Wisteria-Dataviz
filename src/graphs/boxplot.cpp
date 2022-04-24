@@ -20,15 +20,15 @@ namespace Wisteria::Graphs
                                          std::optional<const wxString> groupColumnName,
                                          const Data::GroupIdType groupId)
         {
+        if (data == nullptr)
+            { return; }
+
         m_data = data;
         // If ignoring grouping column, then set the group ID to the default 0 value.
         // If the parent plot needs to access this ID for shape and color scheme info,
         // it will then use the default 0 value.
         m_useGrouping = groupColumnName.has_value();
         m_groupId = m_useGrouping ? groupId : 0;
-
-        if (m_data == nullptr)
-            { return; }
 
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
@@ -160,10 +160,6 @@ namespace Wisteria::Graphs
             { GetBottomXAxis().GetTitle().SetText(groupColumnName.value()); }
         // AddBox() will turn on label display again if we have more than one box
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-
-        // garbage, so bail
-        if (m_data == nullptr)
-            { return; }
 
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());

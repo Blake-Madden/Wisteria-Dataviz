@@ -43,13 +43,6 @@ namespace Wisteria::Graphs
         if (binCountRanges.second)
             { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
-        // garbage, so reset and bail
-        if (m_data == nullptr)
-            {
-            ClearBars();
-            return;
-            }
-
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())

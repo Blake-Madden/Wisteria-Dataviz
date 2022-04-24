@@ -19,10 +19,10 @@ namespace Wisteria::Graphs
                                  std::optional<const wxString>& groupColumnName,
                                  const Data::GroupIdType groupId)
         {
-        m_data = data;
-        if (m_data == nullptr)
+        if (data == nullptr)
             { return; }
 
+        m_data = data;
         m_groupId = groupId;
 
         m_yColumnName = yColumnName;
@@ -59,7 +59,7 @@ namespace Wisteria::Graphs
                            const wxString& xColumnName,
                            std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
-        if (m_data == nullptr)
+        if (data == nullptr)
             { return; }
 
         m_data = data;

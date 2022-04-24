@@ -29,13 +29,6 @@ namespace Wisteria::Graphs
         GetSelectedIds().clear();
         m_binLabelDisplay = blDisplay;
 
-        // garbage, so reset and bail
-        if (m_data == nullptr)
-            {
-            ClearBars();
-            return;
-            }
-
         m_categoricalColumn = m_data->GetCategoricalColumn(categoricalColumnName);
         if (m_categoricalColumn == m_data->GetCategoricalColumns().cend())
             {
