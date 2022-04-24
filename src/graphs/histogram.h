@@ -21,13 +21,18 @@ namespace Wisteria::Graphs
 
          Bins can either be plotted as a regular bar or split into (stacked) groups.
 
-         | Regular   | Grouped
+         | Regular         | Grouped
          | :-------------- | :--------------------------------
          | @image html Histogram.svg width=90% | @image html GroupedHistogram.svg width=90%
 
          Bins usually represent ranges of values for the data to be sorted into. As the data
          are sorted into the bins, the values can either be rounded in various ways or not be
          rounded at all. This offers the ability to control how the values are sorted into the bins.
+
+         When sorting data into binned ranges (the default behavior), the number of bins is
+         determined using the Sturges method (if the number of observations is less than 200).
+         If N is 200 or more, then Scott's choice is used. The number of bins can be manually specified
+         as well if you prefer.
 
          Along with range-based bins, bins can also be created for each unique value from the data.
          This is useful for getting aggregated counts of the discrete categories within a column.
