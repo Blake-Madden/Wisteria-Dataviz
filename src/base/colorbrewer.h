@@ -18,10 +18,10 @@
 #include <wx/string.h>
 #include <vector>
 #include <initializer_list>
-#include "math/statistics.h"
+#include "../math/statistics.h"
 
 /// @brief Color management features (building, brewing, contrasting, etc.).
-/// @sa The [color management](../../Colors.md) overview for more information.
+/// @sa The [color management](../../../Colors.md) overview for more information.
 namespace Wisteria::Colors
     {
     /** @brief List of colors to use with ColorBrewer::GetColor().

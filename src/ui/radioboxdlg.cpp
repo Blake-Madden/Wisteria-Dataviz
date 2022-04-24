@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "radioboxdlg.h"
-#include "../colorbrewer.h"
+#include "../base/colorbrewer.h"
 
 using namespace Wisteria::UI;
 using namespace Wisteria::Colors;

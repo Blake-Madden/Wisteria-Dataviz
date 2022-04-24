@@ -13,7 +13,7 @@
 #define __WISTERIA_BOX_PLOT_H__
 
 #include "graph2d.h"
-#include "data/jitter.h"
+#include "../data/jitter.h"
 
 namespace Wisteria::Graphs
     {

@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "histogram.h"
-#include "util/frequency_set.h"
-#include "math/statistics.h"
+#include "../util/frequency_set.h"
+#include "../math/statistics.h"
 
 using namespace Wisteria::GraphItems;
 

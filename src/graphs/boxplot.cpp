@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "boxplot.h"
-#include "math/statistics.h"
+#include "../math/statistics.h"
 
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

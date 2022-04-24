@@ -14,8 +14,8 @@
 
 #include <map>
 #include "graph2d.h"
-#include "colorbrewer.h"
-#include "math/mathematics.h"
+#include "../base/colorbrewer.h"
+#include "../math/mathematics.h"
 
 namespace Wisteria::GraphItems
     {

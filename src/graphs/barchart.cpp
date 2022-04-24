@@ -8,7 +8,6 @@
 
 
 #include "barchart.h"
-#include "colorbrewer.h"
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::GraphItems;

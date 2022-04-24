@@ -13,7 +13,7 @@
 #define __CANDLESTICK_PLOT_H__
 
 #include "graph2d.h"
-#include "colorbrewer.h"
+#include "../base/colorbrewer.h"
 
 namespace Wisteria::Graphs
     {

@@ -25,7 +25,7 @@
 #include <wx/uilocale.h>
 #include <wx/numformatter.h>
 #include "settings.h"
-#include "math/mathematics.h"
+#include "../math/mathematics.h"
 
 // forward declares
 namespace Wisteria

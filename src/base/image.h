@@ -22,9 +22,9 @@
 #include <wx/bmpbndl.h>
 #include "graphitems.h"
 #include "colorbrewer.h"
-#include "math/mathematics.h"
-#include "util/memorymappedfile.h"
-#include "easyexif/exif.h"
+#include "../math/mathematics.h"
+#include "../util/memorymappedfile.h"
+#include "../easyexif/exif.h"
 
 // forward declares
 namespace Wisteria::UI

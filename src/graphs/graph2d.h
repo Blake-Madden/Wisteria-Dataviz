@@ -12,11 +12,11 @@
 #ifndef __WISTERIA_PLOT2D_H__
 #define __WISTERIA_PLOT2D_H__
 
-#include "canvas.h"
-#include "colorbrewer.h"
-#include "data/dataset.h"
-#include "axis.h"
-#include "lines.h"
+#include "../base/canvas.h"
+#include "../base/colorbrewer.h"
+#include "../data/dataset.h"
+#include "../base/axis.h"
+#include "../base/lines.h"
 
 /// @brief Classes for presenting data graphically.
 namespace Wisteria::Graphs

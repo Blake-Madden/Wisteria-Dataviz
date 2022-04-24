@@ -42,8 +42,8 @@
 #include "graphitems.h"
 #include "image.h"
 #include "label.h"
-#include "ui/imageexportdlg.h"
-#include "ui/radioboxdlg.h"
+#include "../ui/imageexportdlg.h"
+#include "../ui/radioboxdlg.h"
 
 DECLARE_EVENT_TYPE(EVT_WISTERIA_CANVAS_DCLICK, -1)
 

@@ -13,7 +13,6 @@
 #define __WISTERIA_LINE_PLOT_H__
 
 #include "graph2d.h"
-#include "colorbrewer.h"
 
 namespace Wisteria::Graphs
     {

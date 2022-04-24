@@ -13,11 +13,11 @@
 #define __WISTERIA_JITTER_H__
 
 #include <algorithm>
-#include "math/safe_math.h"
-#include "math/mathematics.h"
-#include "util/frequency_set.h"
-#include "graphitems.h"
-#include "axis.h"
+#include "../math/safe_math.h"
+#include "../math/mathematics.h"
+#include "../util/frequency_set.h"
+#include "../base/graphitems.h"
+#include "../base/axis.h"
 
 namespace Wisteria::Data
     {

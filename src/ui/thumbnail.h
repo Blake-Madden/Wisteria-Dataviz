@@ -22,7 +22,7 @@
 #include <wx/dcbuffer.h>
 #include <wx/dnd.h>
 #include <wx/filename.h>
-#include "../image.h"
+#include "../base/image.h"
 
 namespace Wisteria::UI
     {
