@@ -95,6 +95,7 @@ namespace Wisteria::GraphItems
         };
 
     /// @brief An axis on a graph.
+    /// @sa The [axis](../../Axes.md) overview for more information.
     class Axis final : public GraphItems::GraphItemBase
         {
         friend class Wisteria::Canvas;
