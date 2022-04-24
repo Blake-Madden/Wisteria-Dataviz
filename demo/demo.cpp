@@ -1365,7 +1365,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                "Should we consider dropping VB.NET from the catalog?\n"
                "Enrollment has been really low the last few years.")).
             Padding(4, 4, 4, 4).
-            Scaling(2).Pen(wxNullPen));
+            Scaling(2).
+            DPIScaling(subframe->m_canvas->GetDPIScaleFactor()).
+            Pen(wxNullPen));
         note->GetHeaderInfo().Enable(true).FontColor(*wxBLUE).GetFont().MakeBold();
         subframe->m_canvas->SetFixedObject(1, 0, note);
 
