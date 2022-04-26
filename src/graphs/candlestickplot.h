@@ -174,7 +174,7 @@ namespace Wisteria::Graphs
             {
             if (m_ohlcs.size() > GetPointsPerDefaultCanvasSize())
                 {
-                GetCanvas()->SetCanvasMinWidth(GetCanvas()->GetDefaultCanvasWidth() *
+                GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
                     std::ceil(safe_divide<double>(m_ohlcs.size(),
                                                   GetPointsPerDefaultCanvasSize())));
                 }

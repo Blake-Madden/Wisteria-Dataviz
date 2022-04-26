@@ -45,7 +45,7 @@ namespace Wisteria::Graphs
         {
         if (GetBars().size() > GetBarsPerDefaultCanvasSize())
             {
-            GetCanvas()->SetCanvasMinHeight(GetCanvas()->GetDefaultCanvasHeight() *
+            GetCanvas()->SetCanvasMinHeightDIPs(GetCanvas()->GetDefaultCanvasHeightDIPs() *
                 std::ceil(safe_divide<double>(GetBars().size(), GetBarsPerDefaultCanvasSize())));
             }
         }

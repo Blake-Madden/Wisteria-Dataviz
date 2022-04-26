@@ -399,7 +399,7 @@ namespace Wisteria::Graphs
             { barCount -= m_sevenPointCategorizedQuestions.size(); }
         if (barCount > GetBarsPerDefaultCanvasSize())
             {
-            GetCanvas()->SetCanvasMinHeight(GetCanvas()->GetDefaultCanvasHeight() *
+            GetCanvas()->SetCanvasMinHeightDIPs(GetCanvas()->GetDefaultCanvasHeightDIPs() *
                 std::ceil(safe_divide<double>(barCount, GetBarsPerDefaultCanvasSize())));
             }
         }

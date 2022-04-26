@@ -359,7 +359,7 @@ namespace Wisteria::Graphs
                 {
                 if (line.GetData()->GetRowCount() > GetPointsPerDefaultCanvasSize())
                     {
-                    GetCanvas()->SetCanvasMinWidth(GetCanvas()->GetDefaultCanvasWidth() *
+                    GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
                         std::ceil(safe_divide<double>(line.GetData()->GetRowCount(),
                                                       GetPointsPerDefaultCanvasSize())));
                     }
