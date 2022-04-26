@@ -52,8 +52,9 @@ namespace Wisteria
                 dc->SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
                 // get the size of the canvas
-                wxCoord maxX = m_canvas->GetCanvasRect().GetWidth(),
-                        maxY = m_canvas->GetCanvasRect().GetHeight();
+                wxGCDC gdc;
+                wxCoord maxX = m_canvas->GetCanvasRect(gdc).GetWidth(),
+                        maxY = m_canvas->GetCanvasRect(gdc).GetHeight();
 
                 // Let's have at least 10 device units margin
                 const float marginX = GetMarginPadding();
@@ -351,8 +352,8 @@ namespace Wisteria
             // new bitmap to be used by memory DC
             wxBitmap canvasBitmap;
             canvasBitmap.CreateWithDIPSize(
-                wxSize(ToDIP(GetCanvasRect().GetWidth()),
-                       ToDIP(GetCanvasRect().GetHeight())),
+                wxSize(GetCanvasRectDIPs().GetWidth(),
+                       GetCanvasRectDIPs().GetHeight()),
                 GetDPIScaleFactor());
             wxMemoryDC memDc(canvasBitmap);
             memDc.Clear();
@@ -491,8 +492,8 @@ namespace Wisteria
         wxFileName fn(filePath);
 
         // create a preview image (scale down size if on HiDPI)
-        const wxCoord width = ToDIP(GetCanvasRect().GetWidth());
-        const wxCoord height = ToDIP(GetCanvasRect().GetHeight());
+        const wxCoord width = GetCanvasRectDIPs().GetWidth();
+        const wxCoord height = GetCanvasRectDIPs().GetHeight();
 
         // new bitmap to be used by preview image
         wxBitmap previewImg;
@@ -524,7 +525,7 @@ namespace Wisteria
 
         wxFileName(filePath.GetFullPath()).SetPermissions(wxS_DEFAULT);
 
-        wxCoord width = GetCanvasRect().GetWidth(), height = GetCanvasRect().GetHeight();
+        wxCoord width = GetCanvasRectDIPs().GetWidth(), height = GetCanvasRectDIPs().GetHeight();
 
         const wxCoord originalWidth = width;
         const wxCoord originalHeight = height;
@@ -536,15 +537,15 @@ namespace Wisteria
 
         if (filePath.GetExt().CmpNoCase(L"svg") == 0)
             {
-            // wxWidgets BR #22130 fixed font scaling for wxMemoryDC, but not
-            // wxSVGFileDC, so need to get that fixed. Note that setting
-            // the DC's window to "this" doesn't workaround it either.
+            wxSize CanvasMinSize = GetCanvasRectDIPs().GetSize();
+            CanvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
+            CanvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
+
             wxSVGFileDC svg(filePath.GetFullPath(),
-                width, height, 72.0, GetLabel());
-            svg.SetUserScale(safe_divide<double>(width, originalWidth),
-                             safe_divide<double>(height, originalHeight));
+                CanvasMinSize.GetWidth(), CanvasMinSize.GetHeight(), 72.0, GetLabel());
             svg.SetBitmapHandler(new wxSVGBitmapEmbedHandler());
             // rescale everything to the SVG DC's scaling
+            wxEventBlocker blocker(this); // prevent resize event
             CalcAllSizes(svg);
             OnDraw(svg);
             // readjust the measurements to the canvas's DC
@@ -629,10 +630,9 @@ namespace Wisteria
         : wxScrolledWindow(parent, itemId, pos, size,
                            flags|wxBORDER_NONE|wxVSCROLL|wxHSCROLL|wxFULL_REPAINT_ON_RESIZE)
         {
-        m_dpiScaleFactor = GetDPIScaleFactor();
         m_watermarkFont.MakeBold();
-        SetCanvasMinWidth(GetDefaultCanvasWidth());
-        SetCanvasMinHeight(GetDefaultCanvasHeight());
+        SetCanvasMinWidthDIPs(GetDefaultCanvasWidthDIPs());
+        SetCanvasMinHeightDIPs(GetDefaultCanvasHeightDIPs());
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetBackgroundColour(*wxWHITE);
         SetScrollbars(10, 10, 0, 0);
@@ -703,7 +703,7 @@ namespace Wisteria
                 // lined up to the left (bottom) of the canvas
                 // (need to adjust for anchoring so that it doesn't go off the canvas)
                 title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(leftMarginWidth+textWidth,
-                    GetCanvasRect().GetHeight() -
+                    GetCanvasRect(dc).GetHeight() -
                     ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
                         (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                          title.GetAnchoring() == Anchoring::TopRightCorner) ?
@@ -715,7 +715,7 @@ namespace Wisteria
                          title.GetAnchoring() == Anchoring::BottomRightCorner) ?
                         title.GetBoundingBox(dc).GetHeight() : 0)) :
                 // centered (note that anchoring will actually be applied here)
-                wxPoint(leftMarginWidth+textWidth, (GetCanvasRect().GetHeight()/2)) );
+                wxPoint(leftMarginWidth+textWidth, (GetCanvasRect(dc).GetHeight()/2)) );
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
             }
@@ -725,7 +725,7 @@ namespace Wisteria
     long Canvas::CalcRightTitles(wxDC& dc, const long spacingWidth)
         {
         long rightMarginWidth{ 0 };
-        long position = GetCanvasRect().GetWidth() - spacingWidth;
+        long position = GetCanvasRect(dc).GetWidth() - spacingWidth;
         // add the right titles
         for (auto& title : m_rightTitles)
             {
@@ -740,7 +740,7 @@ namespace Wisteria
                 // lined up to the left (bottom) of the canvas
                 // (need to adjust for anchoring so that it doesn't go off the canvas)
                 title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(position-textWidth,
-                    GetCanvasRect().GetHeight() -
+                    GetCanvasRect(dc).GetHeight() -
                     ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
                         (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                          title.GetAnchoring() == Anchoring::TopRightCorner) ?
@@ -752,7 +752,7 @@ namespace Wisteria
                          title.GetAnchoring() == Anchoring::BottomRightCorner) ?
                         title.GetBoundingBox(dc).GetHeight() : 0)) :
                 // centered (note that anchoring will actually be applied here)
-                wxPoint(position-textWidth, (GetCanvasRect().GetHeight()/2)) );
+                wxPoint(position-textWidth, (GetCanvasRect(dc).GetHeight()/2)) );
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
@@ -780,13 +780,13 @@ namespace Wisteria
                        title.GetAnchoring() == Anchoring::BottomRightCorner) ?
                         title.GetBoundingBox(dc).GetWidth() : 0), topMarginWidth+textHeight) :
                 // lined up to the right
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect().GetWidth() -
+                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect(dc).GetWidth() -
                     ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
                       (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                        title.GetAnchoring() == Anchoring::BottomLeftCorner) ?
                         title.GetBoundingBox(dc).GetWidth() : 0), topMarginWidth+textHeight) :
                 // centered (note that anchoring will actually be applied here)
-                wxPoint((GetCanvasRect().GetWidth()/2), topMarginWidth+textHeight));
+                wxPoint((GetCanvasRect(dc).GetWidth()/2), topMarginWidth+textHeight));
             topMarginWidth += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
             }
@@ -796,7 +796,7 @@ namespace Wisteria
     long Canvas::CalcBottomTitles(wxDC& dc, const long spacingWidth)
         {
         long bottomMarginWidth{ 0 };
-        long position = GetCanvasRect().GetHeight() - spacingWidth;
+        long position = GetCanvasRect(dc).GetHeight() - spacingWidth;
         // add the bottom titles
         for (auto& title : m_bottomTitles)
             {
@@ -814,13 +814,13 @@ namespace Wisteria
                        title.GetAnchoring() == Anchoring::BottomRightCorner) ?
                         title.GetBoundingBox(dc).GetWidth() : 0), position-textHeight) :
                 // lined up to the right
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect().GetWidth() -
+                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect(dc).GetWidth() -
                     ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
                       (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                        title.GetAnchoring() == Anchoring::BottomLeftCorner) ?
                         title.GetBoundingBox(dc).GetWidth() : 0), position-textHeight) :
                 // centered (note that anchoring will actually be applied here)
-                wxPoint((GetCanvasRect().GetWidth()/2),position-textHeight));
+                wxPoint((GetCanvasRect(dc).GetWidth()/2),position-textHeight));
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             bottomMarginWidth += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
@@ -830,17 +830,19 @@ namespace Wisteria
 
     void Canvas::OnResize([[maybe_unused]] wxSizeEvent& event)
         {
+        wxGCDC gdc(this);
         //if the new size is larger than the canvas itself, then turn off zooming.
-        if (GetClientRect().GetWidth() > GetCanvasRect().GetWidth() &&
-            GetClientRect().GetHeight() > GetCanvasRect().GetHeight())
+        if (GetClientRect().GetWidth() > GetCanvasRect(gdc).GetWidth() &&
+            GetClientRect().GetHeight() > GetCanvasRect(gdc).GetHeight())
             { m_zoomLevel = 0; }
         //don't resize if canvas is zoomed into
         if (m_zoomLevel <= 0)
             {
-            m_rect = GetClientRect();
-            wxGCDC gdc(this);
+            m_rectDIPs = GetClientRect();
+            m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / gdc.GetDPIScaleFactor());
+            m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / gdc.GetDPIScaleFactor());
             CalcAllSizes(gdc);
-            SetVirtualSize(GetCanvasRect().GetSize());
+            SetVirtualSize(GetCanvasRect(gdc).GetSize());
             }
         }
 
@@ -850,14 +852,12 @@ namespace Wisteria
             (std::accumulate(m_rowProportions.cbegin(), m_rowProportions.cend(), 0.0)) <= 1,
             "Canvas row proportions are more than 100%!");
 
-        m_dpiScaleFactor = dc.GetDPIScaleFactor();
-
         /* The rendering area must have a minimum size of 700x500;
            otherwise, it will be crunched up and look bad.*/
-        wxSize CanvasMinSize = GetCanvasRect().GetSize();
-        CanvasMinSize.SetWidth(std::max(GetCanvasMinWidth(), CanvasMinSize.GetWidth()));
-        CanvasMinSize.SetHeight(std::max(GetCanvasMinHeight(), CanvasMinSize.GetHeight()));
-        m_rect.SetSize(CanvasMinSize);
+        wxSize CanvasMinSize = GetCanvasRectDIPs().GetSize();
+        CanvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
+        CanvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
+        m_rectDIPs.SetSize(CanvasMinSize);
 
         const wxCoord titleSpacingWidth = ScaleToScreenAndCanvas(2, dc);
 
@@ -868,7 +868,7 @@ namespace Wisteria
         const long bottomBorder = CalcBottomTitles(dc, titleSpacingWidth);
         const long rightBorder = CalcRightTitles(dc, titleSpacingWidth);
 
-        wxRect fixedObjectRect = GetCanvasRect();
+        wxRect fixedObjectRect = GetCanvasRect(dc);
         fixedObjectRect.x += leftBorder;
         fixedObjectRect.y += topBorder;
         fixedObjectRect.SetWidth(fixedObjectRect.GetWidth()-(leftBorder+rightBorder));
@@ -1028,7 +1028,7 @@ namespace Wisteria
                 }
             }
 
-        SetVirtualSize(GetCanvasRect().GetSize());
+        SetVirtualSize(GetCanvasRect(dc).GetSize());
         }
 
     //---------------------------------------------------
@@ -1184,17 +1184,15 @@ namespace Wisteria
     //-------------------------------------------
     void Canvas::OnDraw(wxDC& dc)
         {
-        m_dpiScaleFactor = dc.GetDPIScaleFactor();
-
         dc.Clear();
         // fill in the background color with a linear gradient (if there is a user defined color)
         if (m_bgColorUseLinearGradient && GetBackgroundColor().IsOk())
-            { dc.GradientFillLinear(GetCanvasRect(), GetBackgroundColor(), *wxWHITE, wxSOUTH); }
+            { dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(), *wxWHITE, wxSOUTH); }
         else
             {
             //if background color is bad, then just fill the canvas with white. Otherwise, fill with color
             wxDCBrushChanger bc(dc, !GetBackgroundColor().IsOk() ? *wxWHITE_BRUSH : wxBrush(GetBackgroundColor()) );
-            dc.DrawRectangle(GetCanvasRect());
+            dc.DrawRectangle(GetCanvasRect(dc));
             }
 
         // fill in the background image (if there is one)
@@ -1203,10 +1201,10 @@ namespace Wisteria
             GetBackgroundImage().SetDPIScaleFactor(dc.GetDPIScaleFactor());
             GetBackgroundImage().SetAnchoring(Anchoring::Center);
             GetBackgroundImage().SetAnchorPoint(
-                wxPoint(GetCanvasRect().GetLeft() + safe_divide(GetCanvasRect().GetWidth(), 2),
-                        GetCanvasRect().GetTop() + safe_divide(GetCanvasRect().GetHeight(), 2)));
+                wxPoint(GetCanvasRect(dc).GetLeft() + safe_divide(GetCanvasRect(dc).GetWidth(), 2),
+                        GetCanvasRect(dc).GetTop() + safe_divide(GetCanvasRect(dc).GetHeight(), 2)));
             // we clip the image a little so that it fits the area better
-            GetBackgroundImage().SetBestSize(GetCanvasRect().GetSize() +
+            GetBackgroundImage().SetBestSize(GetCanvasRect(dc).GetSize() +
                                              wxSize(100*dc.GetDPIScaleFactor(), 100*dc.GetDPIScaleFactor()));
             GetBackgroundImage().SetOpacity(m_bgOpacity);
             GetBackgroundImage().Draw(dc);
@@ -1251,7 +1249,7 @@ namespace Wisteria
         // draw label
             {
             wxDCFontChanger fc(dc, m_watermarkFont);
-            DrawWatermarkLabel(dc, GetCanvasRect(),
+            DrawWatermarkLabel(dc, GetCanvasRect(dc),
                 WaterMark{ GetWatermark(),
                 ColorBrewer::GetColor(Color::Red, Settings::GetTranslucencyValue()),
                 WatermarkDirection::Diagonal } );
@@ -1280,7 +1278,7 @@ namespace Wisteria
     //-------------------------------------------
     void Canvas::DrawWatermarkLogo(wxDC& dc)
         {
-        if (GetCanvasRect().GetWidth() == 0 || GetCanvasRect().GetHeight() == 0)
+        if (GetCanvasRect(dc).GetWidth() == 0 || GetCanvasRect(dc).GetHeight() == 0)
             { return; }
 
         if (m_watermarkImg.IsOk())
@@ -1292,8 +1290,8 @@ namespace Wisteria
             // (twice as opaque as the system translucency).
             m_watermarkImg.SetOpacity(Settings::GetTranslucencyValue()*2);
             m_watermarkImg.SetAnchoring(Anchoring::BottomRightCorner);
-            m_watermarkImg.SetAnchorPoint(wxPoint(GetCanvasRect().GetWidth(),
-                                                  GetCanvasRect().GetHeight()));
+            m_watermarkImg.SetAnchorPoint(wxPoint(GetCanvasRect(dc).GetWidth(),
+                                                  GetCanvasRect(dc).GetHeight()));
             m_watermarkImg.Draw(dc);
             }
         }
@@ -1617,11 +1615,13 @@ namespace Wisteria
         if (m_zoomLevel >= 40) // don't allow zooming into a nonsensical depth
             { return; }
         ++m_zoomLevel;
-        m_rect.SetWidth(GetCanvasRect().GetWidth()*ZOOM_FACTOR);
-        m_rect.SetHeight(GetCanvasRect().GetHeight()*ZOOM_FACTOR);
         wxGCDC gdc(this);
+
+        m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() * ZOOM_FACTOR);
+        m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() * ZOOM_FACTOR);
+
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect().GetSize());
+        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }
@@ -1633,11 +1633,13 @@ namespace Wisteria
         if (m_zoomLevel <= 0)
             { return; }
         --m_zoomLevel;
-        m_rect.SetWidth(GetCanvasRect().GetWidth()/ZOOM_FACTOR);
-        m_rect.SetHeight(GetCanvasRect().GetHeight()/ZOOM_FACTOR);
         wxGCDC gdc(this);
+
+        m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / ZOOM_FACTOR);
+        m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / ZOOM_FACTOR);
+        
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect().GetSize());
+        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }
@@ -1649,10 +1651,14 @@ namespace Wisteria
         if (m_zoomLevel == 0)
             { return; }
         m_zoomLevel = 0;
-        m_rect = GetClientRect();
         wxGCDC gdc(this);
+
+        m_rectDIPs = GetClientRect();
+        m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / gdc.GetDPIScaleFactor());
+        m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / gdc.GetDPIScaleFactor());
+
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect().GetSize());
+        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }

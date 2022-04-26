@@ -140,31 +140,31 @@ namespace Wisteria
         /// @{
 
         /// @returns The minimum width that the canvas can be, it will be forced to be this wide even as its parent is resized.
-        [[nodiscard]] int GetCanvasMinWidth() const noexcept
-            { return m_canvasMinSize.GetWidth(); }
+        [[nodiscard]] int GetCanvasMinWidthDIPs() const noexcept
+            { return m_canvasMinSizeDIPs.GetWidth(); }
         /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
             @param minWidth The minimum width to use.*/
-        void SetCanvasMinWidth(const int minWidth) noexcept
-           { m_canvasMinSize.SetWidth(minWidth); }
+        void SetCanvasMinWidthDIPs(const int minWidth) noexcept
+           { m_canvasMinSizeDIPs.SetWidth(minWidth); }
         /// @returns The minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
-        [[nodiscard]] int GetCanvasMinHeight() const noexcept
-           { return m_canvasMinSize.GetHeight(); }
+        [[nodiscard]] int GetCanvasMinHeightDIPs() const noexcept
+           { return m_canvasMinSizeDIPs.GetHeight(); }
         /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
-        void SetCanvasMinHeight(const int minHeight) noexcept
-           { m_canvasMinSize.SetHeight(minHeight); }
+        void SetCanvasMinHeightDIPs(const int minHeight) noexcept
+           { m_canvasMinSizeDIPs.SetHeight(minHeight); }
         /// @returns The default minimum width used for canvas. Can be overridden by SetCanvasMinWidth().
-        [[nodiscard]] int GetDefaultCanvasWidth() const
-            { return wxSize(700,500).GetWidth() * m_dpiScaleFactor; }
+        [[nodiscard]] int GetDefaultCanvasWidthDIPs() const
+            { return wxSize(700,500).GetWidth(); }
         /// @returns The default minimum height used for canvas. Can be overridden by SetCanvasMinHeight().
-        [[nodiscard]] int GetDefaultCanvasHeight() const
-            { return wxSize(700,500).GetHeight() * m_dpiScaleFactor; }
+        [[nodiscard]] int GetDefaultCanvasHeightDIPs() const
+            { return wxSize(700,500).GetHeight(); }
         /// @returns The diagonal length of the canvas using the Pythagorean theorem.
         [[nodiscard]] long GetCanvasDiagonal() const
             {
             return static_cast<long>(std::sqrt(
-                    (static_cast<double>(GetCanvasRect().GetWidth()) * GetCanvasRect().GetWidth()) +
-                    (static_cast<double>(GetCanvasRect().GetHeight()) * GetCanvasRect().GetHeight())));
+                    (static_cast<double>(GetCanvasRectDIPs().GetWidth()) * GetCanvasRectDIPs().GetWidth()) +
+                    (static_cast<double>(GetCanvasRectDIPs().GetHeight()) * GetCanvasRectDIPs().GetHeight())));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
             @param item The item to measure.
@@ -173,7 +173,8 @@ namespace Wisteria
         [[nodiscard]] double CalcMinWidthProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
-            return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(), GetCanvasMinWidth());
+            return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(),
+                GetCanvasMinWidthDIPs() * gdc.GetDPIScaleFactor());
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
             @param item The item to measure.
@@ -182,7 +183,8 @@ namespace Wisteria
         [[nodiscard]] double CalcMinHeightProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
-            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(), GetCanvasMinHeight());
+            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(),
+                GetCanvasMinHeightDIPs() * gdc.GetDPIScaleFactor());
             }
         /// @}
 
@@ -375,7 +377,9 @@ namespace Wisteria
             @details This is used to see how much fonts and lines need to be increased to match the screen size.
             @returns The scaling.*/
         [[nodiscard]] double GetScaling() const
-            { return std::max<double>(safe_divide<double>(GetCanvasRect().GetWidth(), GetCanvasMinWidth()), 1.0f); }
+            { return std::max<double>(
+                safe_divide<double>(GetCanvasRectDIPs().GetWidth(),
+                GetCanvasMinWidthDIPs()), 1.0f); }
 
         /// @brief Saves the canvas as an image.
         /// @param filePath The file path of the image to save to.
@@ -492,8 +496,17 @@ namespace Wisteria
             { return value * GetScaling() * dc.GetDPIScaleFactor(); }
 
         /// @returns The rectangle area of the canvas.
-        [[nodiscard]] const wxRect& GetCanvasRect() const noexcept
-            { return m_rect; }
+        [[nodiscard]] const wxRect& GetCanvasRectDIPs() const noexcept
+            { return m_rectDIPs; }
+
+        /// @returns The rectangle area of the canvas.
+        [[nodiscard]] wxRect GetCanvasRect(wxDC& dc) const noexcept
+            {
+            wxRect scaledRect(m_rectDIPs);
+            scaledRect.SetWidth(scaledRect.GetWidth() * dc.GetDPIScaleFactor());
+            scaledRect.SetHeight(scaledRect.GetHeight() * dc.GetDPIScaleFactor());
+            return scaledRect;
+            }
 
         // Events
         void OnResize([[maybe_unused]] wxSizeEvent& event);
@@ -514,12 +527,11 @@ namespace Wisteria
 
         static constexpr double ZOOM_FACTOR{ 1.5 };
         int m_zoomLevel{ 0 };
-        double m_dpiScaleFactor{ 1.0 };
 
         // the current drawing rect
-        wxRect m_rect;
+        wxRect m_rectDIPs;
         // the minimum size of the canvas
-        wxSize m_canvasMinSize{ 0, 0 };
+        wxSize m_canvasMinSizeDIPs{ 0, 0 };
 
         bool m_alignRowContent{ false };
         bool m_alignColumnContent{ false };
