@@ -491,13 +491,10 @@ namespace Wisteria
 
         wxFileName fn(filePath);
 
-        // create a preview image (scale down size if on HiDPI)
-        const wxCoord width = GetCanvasRectDIPs().GetWidth();
-        const wxCoord height = GetCanvasRectDIPs().GetHeight();
-
         // new bitmap to be used by preview image
+        // (scale down size if on HiDPI)
         wxBitmap previewImg;
-        previewImg.CreateWithDIPSize(wxSize(width, height), GetDPIScaleFactor());
+        previewImg.CreateWithDIPSize(GetCanvasRectDIPs().GetSize(), GetDPIScaleFactor());
         wxMemoryDC memDc(previewImg);
         memDc.Clear();
         wxGCDC gcdc(memDc);
@@ -505,14 +502,19 @@ namespace Wisteria
         memDc.SelectObject(wxNullBitmap);
 
         ImageExportOptions imgOptions;
-        imgOptions.m_imageSize = wxSize(width, height);
+        imgOptions.m_imageSize = GetCanvasRectDIPs().GetSize();
 
         wxString ext{ fn.GetExt() };
         ImageExportDlg optionsDlg(this, Image::GetImageFileTypeFromExtension(ext),
             previewImg, imgOptions);
         optionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
-        if (optionsDlg.ShowModal() != wxID_OK)
-            { return; }
+        // no options for SVG (since size doesn't matter),
+        // so don't bother showing the dialog for that
+        if (ext.CmpNoCase(L"svg") != 0)
+            {
+            if (optionsDlg.ShowModal() != wxID_OK)
+                { return; }
+            }
 
         Save(filePath, optionsDlg.GetOptions());
         }
