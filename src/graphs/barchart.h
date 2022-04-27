@@ -20,11 +20,6 @@ namespace Wisteria::Graphs
     {
     /** @brief %Bar chart, which plots data as bars horizontally or vertically along a 2D axis.
 
-         The visual effects of the bars are controlled on a bar-by-bar basis; please refer to Bar.
-         Unlike other graphs, this chart does not interface with Dataset objects. Rather, you
-         construct each bar. Also, the visual effects of the bars are controlled on a
-         bar-by-bar basis; please refer to Bar.
-
          | Regular   | Stylized |
          | :-------------- | :-------------------------------- |
          | @image html BarChart.svg width=90% | @image html BarChartStylized.svg width=90% |
@@ -171,7 +166,8 @@ namespace Wisteria::Graphs
             {
             Rectangle,     /*!< A rectangle.*/
             Arrow,         /*!< An arrow.*/
-            BARSHAPE_COUNT /*!< The number of bar shape types.*/
+            /// @private
+            BARSHAPE_COUNT
             };
 
         class BarBlock; // forward declare
