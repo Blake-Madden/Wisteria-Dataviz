@@ -36,6 +36,10 @@ bool MyApp::OnInit()
 
     wxInitAllImageHandlers();
 
+    // enable this to route wxLog messages to a file
+    // auto logFile = new LogFile;
+    // delete wxLog::SetActiveTarget(logFile);
+
     // enable this to draw additional debug information:
     // Wisteria::Settings::EnableAllDebugFlags();
 

@@ -33,4 +33,5 @@ SET(WISTERIA_SRC
     src/ui/thumbnail.cpp
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
+    src/util/logfile.cpp
     src/util/memorymappedfile.cpp)

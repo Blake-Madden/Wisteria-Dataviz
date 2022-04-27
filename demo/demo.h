@@ -33,6 +33,7 @@
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/base/spacer.h"
 #include "../src/import/text_matrix.h"
+#include "../src/util/logfile.h"
 
 // Define a new application
 class MyApp final : public wxApp
