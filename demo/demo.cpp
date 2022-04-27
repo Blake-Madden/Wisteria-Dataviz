@@ -1526,7 +1526,7 @@ void MyFrame::OnClose([[maybe_unused]] wxCommandEvent& event)
 void MyFrame::InitToolBar(wxToolBar* toolBar)
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize{ wxSize(32, 32) };
+    const wxSize iconSize{ wxSize(16, 16) };
 
     toolBar->AddTool(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
