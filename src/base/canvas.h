@@ -127,7 +127,8 @@ namespace Wisteria
         void SetWatermark(const wxString& watermark)
             { m_watermark = watermark; }
         /// @returns The watermark label shown across the canvas.
-        /// @note The tags [DATETIME], [DATE], and [TIME] are expanded to their literal values at time of rendering.
+        /// @note The tags [DATETIME], [DATE], and [TIME] are expanded to their literal values
+        ///  at time of rendering.
         [[nodiscard]] wxString GetWatermark() const;
         /// @brief Overlays translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
@@ -139,48 +140,52 @@ namespace Wisteria
             @brief Functions related to width and height measurements of the canvas.*/
         /// @{
 
-        /// @returns The minimum width that the canvas can be, it will be forced to be this wide even as its parent is resized.
+        /// @returns The minimum width that the canvas can be, it will be forced to be this
+        ///  wide even as its parent is resized.
         [[nodiscard]] int GetCanvasMinWidthDIPs() const noexcept
             { return m_canvasMinSizeDIPs.GetWidth(); }
-        /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
+        /** @brief Sets the minimum height that the canvas can be, it will be forced to be
+             this tall even as its parent is resized.
             @param minWidth The minimum width to use.*/
         void SetCanvasMinWidthDIPs(const int minWidth) noexcept
            { m_canvasMinSizeDIPs.SetWidth(minWidth); }
-        /// @returns The minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
+        /// @returns The minimum height that the canvas can be, it will be forced to be this
+        ///  tall even as its parent is resized.
         [[nodiscard]] int GetCanvasMinHeightDIPs() const noexcept
            { return m_canvasMinSizeDIPs.GetHeight(); }
-        /** @brief Sets the minimum height that the canvas can be, it will be forced to be this tall even as its parent is resized.
+        /** @brief Sets the minimum height that the canvas can be, it will be forced to be this
+             tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
         void SetCanvasMinHeightDIPs(const int minHeight) noexcept
            { m_canvasMinSizeDIPs.SetHeight(minHeight); }
-        /// @returns The default minimum width used for canvas. Can be overridden by SetCanvasMinWidth().
+        /// @returns The default minimum width used for canvas.
+        ///  Can be overridden by SetCanvasMinWidth().
         [[nodiscard]] int GetDefaultCanvasWidthDIPs() const
             { return wxSize(700,500).GetWidth(); }
-        /// @returns The default minimum height used for canvas. Can be overridden by SetCanvasMinHeight().
+        /// @returns The default minimum height used for canvas.
+        ///  Can be overridden by SetCanvasMinHeight().
         [[nodiscard]] int GetDefaultCanvasHeightDIPs() const
             { return wxSize(700,500).GetHeight(); }
-        /// @returns The diagonal length of the canvas using the Pythagorean theorem.
-        [[nodiscard]] long GetCanvasDiagonal() const
-            {
-            return static_cast<long>(std::sqrt(
-                    (static_cast<double>(GetCanvasRectDIPs().GetWidth()) * GetCanvasRectDIPs().GetWidth()) +
-                    (static_cast<double>(GetCanvasRectDIPs().GetHeight()) * GetCanvasRectDIPs().GetHeight())));
-            }
-        /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
+        /** @brief Calculates the minimum percent of the canvas an item should consume
+             when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This should be passed to the items SetCanvasWidthProportion() method prior to adding to the canvas.*/
-        [[nodiscard]] double CalcMinWidthProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+            @note This should be passed to the items SetCanvasWidthProportion()
+             method prior to adding to the canvas.*/
+        [[nodiscard]] double CalcMinWidthProportion(
+                                 const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
             return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(),
                 GetCanvasMinWidthDIPs() * gdc.GetDPIScaleFactor());
             }
-        /** @brief Calculates the minimum percent of the canvas an item should consume when at 1.0 scaling.
+        /** @brief Calculates the minimum percent of the canvas an item should consume
+             when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @note This can be passed to the canvas's SetRowProportion() method.*/
-        [[nodiscard]] double CalcMinHeightProportion(const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+        [[nodiscard]] double CalcMinHeightProportion(
+                                 const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
             return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(),
@@ -190,14 +195,15 @@ namespace Wisteria
 
         /** @name Layout Functions
             @brief Functions related to the fixed objects (e.g., plots) being embedded
-             onto the canvas. These items are placed within a grid and accessed and managed through that.*/
+             onto the canvas. These items are placed within a grid and accessed and
+             managed through that.*/
         /// @{
 
         /** @brief Sets the number of rows and columns in the grid of fixed objects on the canvas.
             @param rows The number of rows to use.
             @param columns The number of columns to use.
-            @note Contents currently in the grid will be preserved, unless @c rows or @c columns
-             is smaller than the current size.\n
+            @note Contents currently in the grid will be preserved,
+             unless @c rows or @c columns is smaller than the current size.\n
              Call ClearFixedObjects() if you need to clear the current contents.*/
         void SetFixedObjectsGridSize(const size_t rows, const size_t columns);
         /// @returns The size of the fixed object grid (number of rows x columns).
@@ -214,7 +220,8 @@ namespace Wisteria
         /// @returns The fixed object at @c row and @c column.
         /// @param row The row of the object.
         /// @param column The column of the object.
-        [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row, const size_t column);
+        [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase>
+                          GetFixedObject(const size_t row, const size_t column);
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
@@ -254,7 +261,8 @@ namespace Wisteria
              accordingly.*/
         void SetRowProportion(const size_t row, const double proportion) noexcept
             {
-            wxASSERT_MSG(row < m_rowProportions.size(), "Invalid row in call to SetRowProportion()!");
+            wxASSERT_MSG(row < m_rowProportions.size(),
+                         "Invalid row in call to SetRowProportion()!");
             if (row >= m_rowProportions.size())
                 { return; }
             m_rowProportions.at(row) = proportion;
@@ -262,17 +270,20 @@ namespace Wisteria
         /// @}
 
         /** @name Free-floating objects Functions
-            @brief Functions related to the floating objects (e.g., a label used as a "sticky note") being shown
-             onto the canvas. These items are not part of the fixed object grid, but instead placed anywhere
-             on the canvas, sitting on top of the grid.*/
+            @brief Functions related to the floating objects
+             (e.g., a label used as a "sticky note") being shown onto the canvas.
+             These items are not part of the fixed object grid, but instead placed
+             anywhere on the canvas, sitting on top of the grid.*/
         /// @{
 
         /** @brief Gets/sets the free floating (i.e., movable) objects on the canvas.
-            @note These items are never cleared by the canvas itself and are not connected to the anything.
-             When the canvas is resized, the size and position of these items does **not** change.
-             Also, the canvas takes ownership of any objects added to this collection.
+            @note These items are never cleared by the canvas itself and are not connected
+             to the anything. When the canvas is resized, the size and position of these
+             items does **not** change. Also, the canvas takes ownership of any objects
+             added to this collection.
             @returns The free-floating objects.*/
-        [[nodiscard]] std::vector<std::shared_ptr<GraphItems::GraphItemBase>>& GetFreeFloatingObjects() noexcept
+        [[nodiscard]] std::vector<std::shared_ptr<GraphItems::GraphItemBase>>&
+                          GetFreeFloatingObjects() noexcept
             { return m_freeFloatingObjects; }
         /// @}
 
@@ -281,7 +292,8 @@ namespace Wisteria
         /// @{
 
         /// @returns The top titles. This can be used to add or edit a top title.
-        /// @note Call Label::SetRelativeAlignment() to adjust the alignment of the title on the canvas.
+        /// @note Call Label::SetRelativeAlignment() to adjust the alignment of the
+        ///  title on the canvas.
         [[nodiscard]] std::vector<GraphItems::Label>& GetTopTitles() noexcept
             { return m_topTitles; }
         /// @returns The bottom titles. This can be used to add or edit a bottom title.
@@ -370,11 +382,12 @@ namespace Wisteria
 
         /// @brief Calculates the sizes of all objects on the canvas.
         /// @param dc The DC to measure content with.
-        /// @details Call this if customizations have been made to a subobject (e.g., a plot) and you
-        ///  wish to refresh the content.
+        /// @details Call this if customizations have been made to a subobject
+        ///  (e.g., a plot) and you wish to refresh the content.
         void CalcAllSizes(wxDC& dc);
         /** @brief The scaling of the size of the canvas compared to the default minimum size.
-            @details This is used to see how much fonts and lines need to be increased to match the screen size.
+            @details This is used to see how much fonts and lines need to be increased
+             to match the screen size.
             @returns The scaling.*/
         [[nodiscard]] double GetScaling() const
             { return std::max<double>(
@@ -429,7 +442,8 @@ namespace Wisteria
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
             @param watermark The label to draw across the canvas.*/
-        static void DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect, const WaterMark& watermark);
+        static void DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect,
+                                       const WaterMark& watermark);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc);
@@ -447,7 +461,8 @@ namespace Wisteria
         [[nodiscard]] const std::vector<GraphItems::Label>& GetRightTitles() const noexcept
             { return m_rightTitles; }
         /// @private
-        [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(const size_t row, const size_t column) const;
+        [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>
+                          GetFixedObject(const size_t row, const size_t column) const;
     private:
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] GraphItems::Image& GetBackgroundImage() noexcept
