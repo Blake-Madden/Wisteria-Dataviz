@@ -65,29 +65,29 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageVerticalOffset() const
+    wxCoord Label::CalcPageVerticalOffset(wxDC& dc) const
         {
-        return !GetMinimumUserHeight() ? 0 : // if no min height, then no offset needed
-            (GetMinimumUserHeight().value() <= GetCachedContentBoundingBox().GetHeight()) ?
+        return !GetMinimumUserHeightDIPs() ? 0 : // if no min height, then no offset needed
+            (GetMinimumUserHeightDIPs().value() * dc.GetDPIScaleFactor() <= GetCachedContentBoundingBox().GetHeight()) ?
             0 :
             (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
             0 :
             (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-            (GetMinimumUserHeight().value() - GetCachedContentBoundingBox().GetHeight()) / 2 :
-            (GetMinimumUserHeight().value() - GetCachedContentBoundingBox().GetHeight());
+            (GetMinimumUserHeightDIPs().value() * dc.GetDPIScaleFactor() - GetCachedContentBoundingBox().GetHeight()) / 2 :
+            (GetMinimumUserHeightDIPs().value() * dc.GetDPIScaleFactor() - GetCachedContentBoundingBox().GetHeight());
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageHorizontalOffset() const
+    wxCoord Label::CalcPageHorizontalOffset(wxDC& dc) const
         {
-        return !GetMinimumUserWidth() ? 0 : // if no min width, then no offset needed
-            (GetMinimumUserWidth().value() <= GetCachedContentBoundingBox().GetWidth()) ?
+        return !GetMinimumUserWidthDIPs() ? 0 : // if no min width, then no offset needed
+            (GetMinimumUserWidthDIPs().value() * dc.GetDPIScaleFactor() <= GetCachedContentBoundingBox().GetWidth()) ?
             0 :
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned) ?
             0 :
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-            (GetMinimumUserWidth().value() - GetCachedContentBoundingBox().GetWidth()) / 2 :
-            (GetMinimumUserWidth().value() - GetCachedContentBoundingBox().GetWidth());
+            (GetMinimumUserWidthDIPs().value() * dc.GetDPIScaleFactor() - GetCachedContentBoundingBox().GetWidth()) / 2 :
+            (GetMinimumUserWidthDIPs().value() * dc.GetDPIScaleFactor() - GetCachedContentBoundingBox().GetWidth());
         }
 
     //-------------------------------------------
@@ -130,7 +130,8 @@ namespace Wisteria::GraphItems
         SetCachedBoundingBox(rect);
 
         // used for page alignment
-        SetMinimumUserSize(rect.GetWidth(), rect.GetHeight());
+        SetMinimumUserSizeDIPs(rect.GetWidth() / dc.GetDPIScaleFactor(),
+                               rect.GetHeight() / dc.GetDPIScaleFactor());
 
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
@@ -139,8 +140,8 @@ namespace Wisteria::GraphItems
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset();
-        contentRect.x += CalcPageHorizontalOffset();
+        contentRect.y += CalcPageVerticalOffset(dc);
+        contentRect.x += CalcPageHorizontalOffset(dc);
         SetCachedContentBoundingBox(contentRect);
         }
 
@@ -155,8 +156,10 @@ namespace Wisteria::GraphItems
 
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
-        wxCoord width = std::max(measuredWidth, (GetMinimumUserWidth() ? GetMinimumUserWidth().value() : 0));
-        wxCoord height = std::max(measuredHeight, (GetMinimumUserHeight() ? GetMinimumUserHeight().value() : 0));
+        wxCoord width = std::max<wxCoord>(measuredWidth,
+            (GetMinimumUserWidthDIPs() ? GetMinimumUserWidthDIPs().value() * dc.GetDPIScaleFactor() : 0));
+        wxCoord height = std::max<wxCoord>(measuredHeight,
+            (GetMinimumUserHeightDIPs() ? GetMinimumUserHeightDIPs().value() * dc.GetDPIScaleFactor() : 0));
 
         wxRect boundingBox;
         if (GetTextOrientation() == Orientation::Horizontal)
@@ -200,8 +203,8 @@ namespace Wisteria::GraphItems
         // if there is a minimum height that is taller than the text, then center
         // the text vertically
         auto contentRect = GetCachedContentBoundingBox();
-        contentRect.y += CalcPageVerticalOffset();
-        contentRect.x += CalcPageHorizontalOffset();
+        contentRect.y += CalcPageVerticalOffset(dc);
+        contentRect.x += CalcPageHorizontalOffset(dc);
         SetCachedContentBoundingBox(contentRect);
         return boundingBox;
         }
@@ -1136,8 +1139,8 @@ namespace Wisteria::GraphItems
         const wxCoord spaceBetweenLines = (GetLineCount()-1) *
                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
-        pt.y += CalcPageVerticalOffset() + ScaleToScreenAndCanvas(GetTopPadding());
-        leftOffset += CalcPageHorizontalOffset();
+        pt.y += CalcPageVerticalOffset(dc) + ScaleToScreenAndCanvas(GetTopPadding());
+        leftOffset += CalcPageHorizontalOffset(dc);
 
         // render the text
         wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };

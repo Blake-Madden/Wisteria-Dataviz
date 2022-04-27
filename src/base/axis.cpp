@@ -12,6 +12,7 @@ namespace Wisteria::GraphItems
     {
     //-----------------------------------------
     void Axis::AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel,
+                                                     wxDC& dc,
                                                      const bool useMaxWidth) const
         {
         if (GetFontBackgroundColor().IsOk() &&
@@ -22,7 +23,8 @@ namespace Wisteria::GraphItems
                 {
                 if (useMaxWidth)
                     {
-                    axisLabel.SetMinimumUserSize(m_maxLabelWidth, std::nullopt);
+                    axisLabel.SetMinimumUserSizeDIPs(
+                        m_maxLabelWidth / dc.GetDPIScaleFactor(), std::nullopt);
                     }
                 axisLabel.SetPadding(std::max(4, GetTopPadding()),
                     std::max(4, GetRightPadding()),
@@ -32,7 +34,8 @@ namespace Wisteria::GraphItems
                 {
                 if (useMaxWidth)
                     {
-                    axisLabel.SetMinimumUserSize(std::nullopt, m_maxLabelWidth);
+                    axisLabel.SetMinimumUserSizeDIPs(
+                        std::nullopt, m_maxLabelWidth / dc.GetDPIScaleFactor());
                     }
                 axisLabel.SetPadding(std::max(4, GetTopPadding()),
                     std::max(4, GetRightPadding()),
@@ -314,7 +317,7 @@ namespace Wisteria::GraphItems
     void Axis::CalcHorizontalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
         {
         // the first (far most left) axis label
-        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
+        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel(dc);
         wxCoord firstLabelPhysicalPos{ 0 };
         if (!std::isnan(firstLabelPosition) && GetPhysicalCoordinate(firstLabelPosition, firstLabelPhysicalPos))
             {
@@ -333,7 +336,7 @@ namespace Wisteria::GraphItems
                 }
             }
         // the last (far most right) axis label
-        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel();
+        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel(dc);
         wxCoord lastLabelPhysicalPos{ 0 };
         if (!std::isnan(lastLabelPosition) && GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
             {
@@ -357,7 +360,7 @@ namespace Wisteria::GraphItems
     void Axis::CalcVerticalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const
         {
         // the first (far most bottom) axis label
-        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel();
+        const auto [firstLabel, firstLabelPosition] = GetFirstDisplayedLabel(dc);
         wxCoord firstLabelPhysicalPos{ 0 };
         if (!std::isnan(firstLabelPosition) && GetPhysicalCoordinate(firstLabelPosition, firstLabelPhysicalPos))
             {
@@ -376,7 +379,7 @@ namespace Wisteria::GraphItems
                 }
             }
         // the last (far most top) axis label
-        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel();
+        const auto [lastLabel, lastLabelPosition] = GetLastDisplayedLabel(dc);
         wxCoord lastLabelPhysicalPos{ 0 };
         if (!std::isnan(lastLabelPosition) && GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
             {
@@ -1566,9 +1569,9 @@ namespace Wisteria::GraphItems
                           GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
                         !(axisPtIter == GetAxisPoints().cend() &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true); }
                     else
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, false); }
 
                     if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
                         {
@@ -1780,9 +1783,9 @@ namespace Wisteria::GraphItems
                           GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
                         !(axisPtIter == GetAxisPoints().cend()-1 &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true); }
                     else
-                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                        { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, false); }
 
                     if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                         {
@@ -2168,7 +2171,7 @@ namespace Wisteria::GraphItems
             Font(GetFont()).DPIScaling(GetDPIScaleFactor()).
             Padding(GetTopPadding(), GetRightPadding(),
                     GetBottomPadding(), GetLeftPadding()) );
-        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true);
+        AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true);
 
         for (auto pos = GetAxisPoints().cbegin();
             pos != GetAxisPoints().cend();
@@ -2554,7 +2557,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::pair<Label, double> Axis::GetFirstDisplayedLabel() const
+    std::pair<Label, double> Axis::GetFirstDisplayedLabel(wxDC& dc) const
         {
         for (auto axisPos = GetAxisPoints().cbegin();
             axisPos != GetAxisPoints().cend();
@@ -2572,9 +2575,9 @@ namespace Wisteria::GraphItems
                 // with the standard padding
                 if (!(axisPos == GetAxisPoints().cbegin() &&
                     GetParallelLabelAlignment() == RelativeAlignment::FlushRight))
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true); }
                 else
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, false); }
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }
@@ -2583,7 +2586,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::pair<Label, double> Axis::GetLastDisplayedLabel() const
+    std::pair<Label, double> Axis::GetLastDisplayedLabel(wxDC& dc) const
         {
         for (auto axisPos = GetAxisPoints().crbegin();
             axisPos != GetAxisPoints().crend();
@@ -2601,9 +2604,9 @@ namespace Wisteria::GraphItems
                 // with the standard padding
                 if (!(axisPos == GetAxisPoints().crbegin() &&
                     GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, true); }
+                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true); }
                 else
-                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, false); }
+                    { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, false); }
                 return std::make_pair(axisLabel, axisPos->GetValue());
                 }
             }

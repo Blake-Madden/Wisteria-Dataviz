@@ -782,7 +782,7 @@ namespace Wisteria::Graphs
                         Anchoring(Anchoring::TopRightCorner).FontColor(*wxBLUE).
                         Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2,2,2,2));
-                    rulerLabel.SetMinimumUserSize(90, std::nullopt);
+                    rulerLabel.SetMinimumUserSizeDIPs(90, std::nullopt);
                     rulerLabel.Draw(dc);
                     rulerLabel.SetAnchoring(Anchoring::TopLeftCorner);
                     rulerLabel.SetText(L"100 pixels \u21E8");

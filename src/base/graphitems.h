@@ -124,7 +124,7 @@ namespace Wisteria
     /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from top-to-bottom.
     /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
     ///  is taller than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSize(), TextAlignment.
+    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageVerticalAlignment
         {
         TopAligned,   /*!< Text is aligned to the top of the label's bounding box.*/
@@ -135,7 +135,7 @@ namespace Wisteria
     /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from left-to-right.
     /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
     ///  is wider than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSize(), TextAlignment.
+    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageHorizontalAlignment
         {
         LeftAligned,   /*!< Text is aligned to the left of the label's bounding box. (This is the default.)*/
@@ -943,8 +943,8 @@ namespace Wisteria
             LabelStyle m_labelStyle{ LabelStyle::NoLabelStyle };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             HeaderInfo m_headerInfo;
-            std::optional<wxCoord> m_minimumUserWidth{ std::nullopt };
-            std::optional<wxCoord> m_minimumUserHeight{ std::nullopt };
+            std::optional<wxCoord> m_minimumUserWidthDIPs{ std::nullopt };
+            std::optional<wxCoord> m_minimumUserHeightDIPs{ std::nullopt };
 
             bool m_isOk{ true };
             /*!< @todo Expand support for this for Label.*/
@@ -1334,22 +1334,22 @@ namespace Wisteria
 
             /** @brief Gets the minimum width for the item's bounding box that the client has requested.
                  This is currently only relevant to @c Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSize().\n
+                @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
                  This is the minimum size that the client has requested, which may or may not be
                  the same as the actual content's size (including text, padding, icons, etc.).
-                @sa SetMinimumUserSize(), GetMinimumUserHeight().
+                @sa SetMinimumUserSizeDIPs(), GetMinimumUserHeightDIPs().
                 @returns The minimum user width.*/
-            [[nodiscard]] std::optional<wxCoord> GetMinimumUserWidth() const noexcept
-                { return m_itemInfo.m_minimumUserWidth; }
+            [[nodiscard]] std::optional<wxCoord> GetMinimumUserWidthDIPs() const noexcept
+                { return m_itemInfo.m_minimumUserWidthDIPs; }
             /** @brief Gets the minimum height for the item's bounding box that the client has requested.
                  This is currently only relevant to Label objects.
-                @note By default this is optional until the client calls SetMinimumUserSize().\n
+                @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
                  This is the minimum size that the client has requested, which may or may not
                  be the same as the actual content's size (including text, padding, icons, etc.).
-                @sa SetMinimumUserSize(), GetMinimumUserWidth().
+                @sa SetMinimumUserSizeDIPs(), GetMinimumUserWidthDIPs().
                 @returns The minimum user width.*/
-            [[nodiscard]] std::optional<wxCoord> GetMinimumUserHeight() const noexcept
-                { return m_itemInfo.m_minimumUserHeight; }
+            [[nodiscard]] std::optional<wxCoord> GetMinimumUserHeightDIPs() const noexcept
+                { return m_itemInfo.m_minimumUserHeightDIPs; }
             /** @brief Sets the minimum size for the item's bounding box.
                  This is currently only relevant to Label objects.
                 @details This should include space for the text and its padding.
@@ -1358,14 +1358,12 @@ namespace Wisteria
                 @note This should be used if you wish to make the label larger than its content.
                  For example, use this to make a series of labels the same width.
 
-                 Also, this size should be the scaled pixel value (not DIPs), as it will be compared
-                 to the calculated size after that is scaled. In other words, this size should
-                 be whatever the pixel size is after being scaled to the screen and zoom factor.*/
-            void SetMinimumUserSize(const std::optional<wxCoord> width,
+                 Also, this size should be DIPs*/
+            void SetMinimumUserSizeDIPs(const std::optional<wxCoord> width,
                                     std::optional<wxCoord> height) noexcept
                 {
-                m_itemInfo.m_minimumUserWidth = width;
-                m_itemInfo.m_minimumUserHeight = height;
+                m_itemInfo.m_minimumUserWidthDIPs = width;
+                m_itemInfo.m_minimumUserHeightDIPs = height;
                 InvalidateCachedBoundingBox();
                 }
             /// @}

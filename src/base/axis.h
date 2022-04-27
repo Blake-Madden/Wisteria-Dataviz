@@ -1171,7 +1171,7 @@ namespace Wisteria::GraphItems
             { return m_axisLabelScaling; }
         /// @brief If labels have a background color, then make their boxes wide enough
         ///  to fill the entire place available to them.
-        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, const bool useMaxWidth) const;
+        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, wxDC& dc, const bool useMaxWidth) const;
         /// @brief Sets the scaling of the axis.
         /// @param scaling The scaling to use.
         void SetScaling(const double scaling) final;
@@ -1244,12 +1244,12 @@ namespace Wisteria::GraphItems
         /// @returns The first displayed (left or bottom) label along the axis. Also,
         ///  returns the axis position of where the label is. If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most left (or bottom) label, regardless of orientation.
-        [[nodiscard]] std::pair<Label, double> GetFirstDisplayedLabel() const;
+        [[nodiscard]] std::pair<Label, double> GetFirstDisplayedLabel(wxDC& dc) const;
         /// @brief Get the last label (and its axis position) that is being displayed.
         /// @returns The last displayed (right or top) label along the axis. Also,
         ///  returns the axis position of where the label is. If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most right (or top) label, regardless of orientation.
-        [[nodiscard]] std::pair<Label, double> GetLastDisplayedLabel() const;
+        [[nodiscard]] std::pair<Label, double> GetLastDisplayedLabel(wxDC& dc) const;
         /// @returns The (const) custom tick marks.
         [[nodiscard]] const std::vector<TickMark>& GetCustomTickMarks() const noexcept
             { return m_customTickMarks; }
