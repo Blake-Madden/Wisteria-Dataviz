@@ -17,6 +17,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void CategoricalBarChart::SetData(std::shared_ptr<const Data::Dataset> data,
                             const wxString& categoricalColumnName,
+                            const std::optional<const wxString> valueColumnName /*= std::nullopt*/,
                             const std::optional<const wxString> groupColumnName /*= std::nullopt*/,
                             const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/)
         {
@@ -25,6 +26,7 @@ namespace Wisteria::Graphs
 
         m_data = data;
         m_useGrouping = groupColumnName.has_value();
+        m_useValueColumn = valueColumnName.has_value();
         m_groupIds.clear();
         GetSelectedIds().clear();
         m_binLabelDisplay = blDisplay;
@@ -41,6 +43,13 @@ namespace Wisteria::Graphs
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for categorical bar chart."), groupColumnName.value()));
+            }
+        m_continuousColumn = (valueColumnName ? m_data->GetContinuousColumn(valueColumnName.value()) :
+            m_data->GetContinuousColumns().cend());
+        if (valueColumnName && m_continuousColumn == m_data->GetContinuousColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': continuous column not found for categorical bar chart."), valueColumnName.value()));
             }
 
         // see if we should use grouping from the data
@@ -77,16 +86,21 @@ namespace Wisteria::Graphs
             { return; }
 
         // calculate how many observations are in each group
-        multi_value_frequency_map<CatBarBlock, wxString, std::less<CatBarBlock>, Data::StringCmpNoCase> groups;
+        multi_value_aggregate_map<CatBarBlock, wxString, std::less<CatBarBlock>, Data::StringCmpNoCase> groups;
         groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
 
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
             {
-            groups.insert(CatBarBlock{
-                m_categoricalColumn->GetValue(i),
-                (m_useGrouping ?
-                    m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)) },
-                m_data->GetIdColumn().GetValue(i).wc_str() );
+            groups.insert(
+                // the current category ID (and group, if applicable)
+                CatBarBlock{
+                    m_categoricalColumn->GetValue(i),
+                    (m_useGrouping ?
+                        m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)) },
+                // create list of observation names into the current bar
+                // (and its group, if applicable)
+                m_data->GetIdColumn().GetValue(i).wc_str(),
+                (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1));
             }
 
         // add the bars (block-by-block)
@@ -150,6 +164,7 @@ namespace Wisteria::Graphs
                 UpdateScalingAxisFromBar(*foundBar);
                 }
             }
+
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
             {

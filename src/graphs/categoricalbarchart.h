@@ -16,7 +16,8 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief %Bar chart that aggregates the frequency of a categorical column's labels.
+    /** @brief %Bar chart that aggregates the frequency (or summed values)
+         of a categorical column's labels.
     
          Bars can either be plotted as a regular bar or split into (stacked) groups.
         
@@ -25,9 +26,11 @@ namespace Wisteria::Graphs
          | @image html CatagorizedBarChart.svg width=90% | @image html GroupedCatagorizedBarChart.svg width=90%
 
         @par Data:
-         This plot accepts a Data::Dataset, where a categorical column
-         is label-based data to be aggregated. A grouping column can optionally be used to
-         create separate blocks within the bars.
+         This plot accepts a Data::Dataset, where a categorical column is split into levels
+         and aggregated. The aggregation can either be the frequency of observations or
+         summed values from a corresponding continuous column.
+
+         A grouping column can optionally be used to create separate blocks within the bars.
           
         @note If you want to create a bar chart that aggregates the counts of discrete values
          from a continuous variable, then histograms offer this ability. Refer to the
@@ -91,12 +94,15 @@ namespace Wisteria::Graphs
         /** @brief Sets the data.
             @param data The data to use for the histogram.
             @param categoricalColumnName The column from the dataset with the labels to aggregate.
+            @param valueColumnName The column with values to sum for each category.
+             If not used (@c std::nullopt), then the frequency of the observations will be used.
             @param groupColumnName The group column to split the bars into
              (this is optional).
             @param blDisplay Which type of labels to display for the bars.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& categoricalColumnName,
+                     const std::optional<const wxString> valueColumnName = std::nullopt,
                      const std::optional<const wxString> groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
 
@@ -140,6 +146,7 @@ namespace Wisteria::Graphs
 
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
+        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
@@ -147,6 +154,7 @@ namespace Wisteria::Graphs
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         bool m_useGrouping{ false };
+        bool m_useValueColumn{ false };
         std::set<Data::GroupIdType> m_groupIds;
         };
     }

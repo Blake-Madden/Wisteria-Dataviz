@@ -950,7 +950,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
             std::make_shared<Colors::Schemes::Decade1980s>());
 
-        plot->SetData(mpgData, L"manufacturer", L"class");
+        plot->SetData(mpgData, L"manufacturer", std::nullopt, L"class");
         plot->SetBarOpacity(220);
         plot->SetBarEffect(BoxEffect::Glassy);
 
