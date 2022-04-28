@@ -199,30 +199,31 @@ private:
     };
 
 /** @brief Same as a std::map (where the key is a single value), but also
-     supports multiple (unique) values connected to each key and includes a counter for each key.*/
+     supports multiple (unique) values connected to each key and includes
+     an aggregator for each key.*/
 template <typename T1, typename T2,
           typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
-class multi_value_frequency_map
+class multi_value_aggregate_map
     {
 public:
     /// @private
     using values_set = typename std::set<T2, CompareSecondaryValues>;
     /// @private
-    using values_and_counter_pair_type = typename std::pair<values_set, size_t>;
+    using values_and_aggregate_pair_type = typename std::pair<values_set, double>;
     /// @private
-    using map_type = typename std::map<T1, values_and_counter_pair_type, Compare>;
+    using map_type = typename std::map<T1, values_and_aggregate_pair_type, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @private
     using iterator = typename map_type::iterator;
     /// @private
-    using value_type = typename std::pair<T1,values_and_counter_pair_type>;
+    using value_type = typename std::pair<T1, values_and_aggregate_pair_type>;
     /// @brief Constructor.
-    multi_value_frequency_map() : m_secondaryValuesMax(static_cast<size_t>(-1)) {}
+    multi_value_aggregate_map() {}
     /** @brief Inserts a pair of items into the map.
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
-        @param frequencyIncrement the amount to increase the frequency count for the item.
+        @param aggregateValue the amount to increase the aggregated value for the item.
          Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
@@ -230,43 +231,43 @@ public:
          If the second value isn't in the key's current values,
          then that value is added to the list of values connected to that key.*/
     const_iterator insert(const T1& value1, const T2& value2,
-                          const size_t frequencyIncrement = 1)
+                          const double aggregateValue = 1)
         {
         auto [index_iter, inserted] =
             m_table.try_emplace(value1,
-                values_and_counter_pair_type(values_set({value2}), frequencyIncrement) );
+                values_and_aggregate_pair_type(values_set({value2}), aggregateValue) );
         // if it was already there, then just update it
         if (!inserted)
             {
             if (m_secondaryValuesMax == static_cast<size_t>(-1) ||
                 index_iter->second.first.size() < m_secondaryValuesMax)
                 { index_iter->second.first.insert(value2); }
-            index_iter->second.second += frequencyIncrement;
+            index_iter->second.second += aggregateValue;
             }
         return index_iter;
         }
     /** @brief Inserts a pair of items into the map.
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
-        @param frequencyIncrement the amount to increase the frequency count for the item.
+        @param aggregateValue the amount to increase the aggregated value for the item.
          Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
          If a key is already in the map, then that key's count is incremented.
          If the second value isn't in the key's current values,
          then that value is added to the list of values connected to that key.*/
-    const_iterator insert(T1&& value1, T2&& value2, const size_t frequencyIncrement = 1)
+    const_iterator insert(T1&& value1, T2&& value2, const double aggregateValue = 1)
         {
         auto [index_iter, inserted] =
             m_table.try_emplace(value1,
-                values_and_counter_pair_type(values_set({value2}), frequencyIncrement) );
+                values_and_aggregate_pair_type(values_set({value2}), aggregateValue) );
         // if it was already there, then just update it
         if (!inserted)
             {
             if (m_secondaryValuesMax == static_cast<size_t>(-1) ||
                 index_iter->second.first.size() < m_secondaryValuesMax)
                 { index_iter->second.first.insert(value2); }
-            index_iter->second.second += frequencyIncrement;
+            index_iter->second.second += aggregateValue;
             }
         return index_iter;
         }
