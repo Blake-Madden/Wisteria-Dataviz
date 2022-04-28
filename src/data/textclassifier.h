@@ -142,7 +142,7 @@ namespace Wisteria::Data
         // wxRegEx cannot be copy constructed by design, so use shared pointers instead
         using RegExPair = std::pair<std::shared_ptr<wxRegEx>, std::shared_ptr<wxRegEx>>;
 
-        multi_value_frequency_map<IdPair, RegExPair> m_categoryPatternsMap;
+        multi_value_aggregate_map<IdPair, RegExPair> m_categoryPatternsMap;
         wxString m_categoryColumnName;
         std::optional<wxString> m_subCategoryColumnName;
         ColumnWithStringTable::StringTableType m_categoriesStringTable;
