@@ -123,7 +123,7 @@ namespace Wisteria::Graphs
             { return; }
 
         // calculate how many observations are in each group
-        multi_value_frequency_map<BinBlock, wxString, std::less<BinBlock>, Data::StringCmpNoCase> groups;
+        multi_value_aggregate_map<BinBlock, wxString, std::less<BinBlock>, Data::StringCmpNoCase> groups;
         groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
         bool hasFloatingPointValue{ false };
 
