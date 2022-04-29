@@ -159,11 +159,11 @@ namespace Wisteria
         void SetCanvasMinHeightDIPs(const int minHeight) noexcept
            { m_canvasMinSizeDIPs.SetHeight(minHeight); }
         /// @returns The default minimum width used for canvas.
-        ///  Can be overridden by SetCanvasMinWidth().
+        ///  Can be overridden by SetCanvasMinWidthDIPs().
         [[nodiscard]] int GetDefaultCanvasWidthDIPs() const
             { return wxSize(700,500).GetWidth(); }
         /// @returns The default minimum height used for canvas.
-        ///  Can be overridden by SetCanvasMinHeight().
+        ///  Can be overridden by SetCanvasMinHeightDIPs().
         [[nodiscard]] int GetDefaultCanvasHeightDIPs() const
             { return wxSize(700,500).GetHeight(); }
         /** @brief Calculates the minimum percent of the canvas an item should consume

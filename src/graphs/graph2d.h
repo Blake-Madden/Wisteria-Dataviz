@@ -131,7 +131,7 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Adds a reference line to draw across the graph.
-            @details The parent axis and starting point are specified in the ReferenceLine,
+            @details The parent axis and starting point are specified in the @c ReferenceLine,
              and the graph will set the length of the line to be the full length of the parallel axis for you.
             @param refLine The reference line to add.*/
         void AddReferenceLine(const Wisteria::GraphItems::ReferenceLine& refLine)
@@ -270,7 +270,7 @@ namespace Wisteria::Graphs
         void AddReferenceLinesAndAreasToLegend(std::shared_ptr<GraphItems::Label>& legend) const;
         /// @returns A non-const version of the parent canvas.
         /// @details This should be used in derived classes when needing to call
-        ///  `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeight()`.
+        ///  `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeightDIPs()`.
         [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
             { return m_parentCanvas; }
         /** @brief Adds an object (e.g., a polygon) to the plot to be rendered.
