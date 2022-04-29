@@ -786,15 +786,14 @@ namespace Wisteria::Data
         [[nodiscard]] std::pair<double, double> GetContinuousMinMax(const wxString& column,
             const std::optional<wxString>& groupColumn,
             const GroupIdType groupId) const;
-        /** @brief Determines whether there is valid (i.e., non-NaN) data in the
-             specified continuous column.
+        /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column.
             @param column The name of the continuous column.
             @param groupColumn The (optional) group column to filter with.
              If there is no grouping being used, then the full continuous column is reviewed.
             @param groupId The group ID to filter on (if a grouping column was supplied).
-            @returns `true` if any valid values are found,
-             `false` if the column is empty or filled with NaN.*/
-        [[nodiscard]] bool HasValidContinuousData(const wxString& column,
+            @returns The number of valid N for the given continuous column,
+             filtered by group (if provided)*/
+        [[nodiscard]] size_t GetContinuousColumnValidN(const wxString& column,
             const std::optional<wxString>& groupColumn,
             const GroupIdType groupId) const;
 

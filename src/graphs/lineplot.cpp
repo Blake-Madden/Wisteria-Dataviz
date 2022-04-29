@@ -163,10 +163,13 @@ namespace Wisteria::Graphs
             {
             if (!m_useGrouping || group == m_groupColumn->GetValue(i))
                 {
-                if (m_xColumn->GetValue(i) < currentX)
-                    { return false; }
-                else
-                    { currentX = m_xColumn->GetValue(i); }
+                if (!std::isnan(m_xColumn->GetValue(i)))
+                    {
+                    if (m_xColumn->GetValue(i) < currentX)
+                        { return false; }
+                    else
+                        { currentX = m_xColumn->GetValue(i); }
+                    }
                 }
             }
         return true;
@@ -176,12 +179,12 @@ namespace Wisteria::Graphs
     void LinePlot::AddLine(const LinePlot::Line& line)
         {
         if (line.GetData() == nullptr ||
-            !line.GetData()->HasValidContinuousData(line.m_yColumnName,
+            (line.GetData()->GetContinuousColumnValidN(line.m_yColumnName,
                                                     line.m_groupColumnName,
-                                                    line.m_groupId) ||
-            !line.GetData()->HasValidContinuousData(line.m_xColumnName,
+                                                    line.m_groupId) == 0) ||
+            (line.GetData()->GetContinuousColumnValidN(line.m_xColumnName,
                                                     line.m_groupColumnName,
-                                                    line.m_groupId))
+                                                    line.m_groupId) == 0))
             { return; }
 
         m_lines.push_back(line);

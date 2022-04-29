@@ -123,7 +123,7 @@ namespace Wisteria::Data
         {
         auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend() ||
-            !HasValidContinuousData(column, groupColumn, groupId))
+            GetContinuousColumnValidN(column, groupColumn, groupId) == 0)
             {
             return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
                                   std::numeric_limits<double>::quiet_NaN());
@@ -136,8 +136,9 @@ namespace Wisteria::Data
         auto maxValue = std::numeric_limits<double>::min();
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
-            if ((groupColumnIterator == GetCategoricalColumns().cend()) ||
-                groupColumnIterator->GetValue(i) == groupId)
+            if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
+                ((groupColumnIterator == GetCategoricalColumns().cend()) ||
+                groupColumnIterator->GetValue(i) == groupId))
                 {
                 minValue = std::min(minValue, continuousColumnIterator->GetValue(i));
                 maxValue = std::max(maxValue, continuousColumnIterator->GetValue(i));
@@ -147,32 +148,33 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    bool Dataset::HasValidContinuousData(const wxString& column,
+    size_t Dataset::GetContinuousColumnValidN(const wxString& column,
         const std::optional<wxString>& groupColumn,
         const GroupIdType groupId) const
         {
         auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
-            { return false; }
+            { return 0; }
 
         const auto groupColumnIterator = (groupColumn.has_value() ?
             GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
 
+        size_t validN{ 0 };
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (groupColumnIterator != GetCategoricalColumns().cend())
                 {
                 if (groupColumnIterator->GetValue(i) == groupId &&
                     !std::isnan(continuousColumnIterator->GetValue(i)))
-                    { return true; }
+                    { ++validN; }
                 }
             else
                 {
                 if (!std::isnan(continuousColumnIterator->GetValue(i)))
-                    { return true; }
+                    { ++validN; }
                 }
             }
-        return false;
+        return validN;
         }
 
     //----------------------------------------------
