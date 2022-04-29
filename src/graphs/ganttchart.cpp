@@ -103,7 +103,7 @@ namespace Wisteria::Graphs
                      GetColorScheme()->GetColor(0))).
                 PercentFinished(
                     (completionColumn != data->GetContinuousColumns().cend() ?
-                     completionColumn->GetValue(i) : 0)).
+                     zero_if_nan(completionColumn->GetValue(i)) : 0)).
                 LabelDisplay(GetLabelDisplay()));
             // build a list of used group IDs (used for the legend later)
             if (groupColumn != data->GetCategoricalColumns().cend())

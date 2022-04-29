@@ -29,18 +29,21 @@ namespace Wisteria::Graphs
          | @image html BarChartImage.svg width=90% |
 
         @note This class is a base-level, generic interface for constructing a bar chart,
-         which does not have an interface for datasets.
-        
+         which does not have an interface for datasets.\n
+         \n
          If you want to create a bar chart that aggregates the counts of discrete values
          from a continuous variable, then histograms offer this ability. Refer to the
-         @c BinUniqueValues binning method in the Histogram documentation to learn more.
-
+         @c BinUniqueValues binning method in the Histogram documentation to learn more.\n
+         \n
          Likewise, to create a bar chart that aggregates counts of labels from a categorical
          variable, then categorical bar charts offer this ability as well.
-         Refer to CategoricalBarChart for further details.
-
+         Refer to CategoricalBarChart for further details.\n
+         \n
          Both Histogram and CategoricalBarChart have @c SetData() methods for working
          with a dataset, which will perform the aggregations for you.
+
+        @par Missing Data:
+         Because this class does not work with datasets, MD handling is not applicable.
 
         @par Example:
         @code

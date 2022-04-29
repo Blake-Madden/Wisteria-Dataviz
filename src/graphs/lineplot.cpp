@@ -246,7 +246,8 @@ namespace Wisteria::Graphs
                     { continue; }
                 // if explicitly missing data (i.e., NaN),
                 // then add a bogus point to show a gap in the line
-                if (std::isnan(line.m_xColumn->GetValue(i)))
+                if (std::isnan(line.m_xColumn->GetValue(i)) ||
+                    std::isnan(line.m_yColumn->GetValue(i)))
                     {
                     points->AddPoint(Point2D(
                         GraphItemInfo().AnchorPoint(wxPoint(wxDefaultCoord, wxDefaultCoord)), 1), dc);

@@ -154,6 +154,59 @@ private:
     map_type m_table;
     };
 
+/// @brief Same as a std::set, but also keeps a frequency count of every unique value added,
+///  as well as an additional value to accumulate.
+/// @todo needs unit test
+template <typename T, typename Compare = std::less<T>>
+class aggregate_frequency_set
+    {
+public:
+    /// @private
+    using map_type = typename std::map<T, std::pair<size_t, double>, Compare>;
+    /// @private
+    using const_iterator = typename map_type::const_iterator;
+    /** @brief Inserts an item into the set.
+        @param value The value to insert.
+        @param aggregateValue The value to add to running total.
+        @returns An iterator to the inserted or updated item.
+        @note If a value is already in the set, then that value's count is incremented.*/
+    const_iterator insert(const T& value, double aggregateValue)
+        {
+        auto [index_iter, inserted] = m_table.try_emplace(value, std::make_pair(1, aggregateValue));
+        // if it was already there, then just update its counter
+        if (!inserted)
+            {
+            ++(index_iter->second.first);
+            (index_iter->second.second) += aggregateValue;
+            }
+        return index_iter;
+        }
+    /** @brief Inserts an item into the set.
+        @param value The value to insert.
+        @param aggregateValue The value to add to running total.
+        @returns An iterator to the inserted or updated item.
+        @note If a value is already in the set, then that value's count is incremented.*/
+    const_iterator insert(T&& value, double aggregateValue)
+        {
+        auto [index_iter, inserted] = m_table.try_emplace(value, std::make_pair(1, aggregateValue));
+        // if it was already there, then just update its counter
+        if (!inserted)
+            {
+            ++(index_iter->second.first);
+            (index_iter->second.second) += aggregateValue;
+            }
+        return index_iter;
+        }
+    /// @brief Clears the contents of the set.
+    void clear() noexcept
+        { m_table.clear(); }
+    /// @returns The (const) set of values and their respective counts and totals.
+    [[nodiscard]] const map_type& get_data() const noexcept
+        { return m_table; }
+private:
+    map_type m_table;
+    };
+
 /// @brief Same as a map, but also keeps a frequency count of every unique value added.
 template <typename T1, typename T2, typename Compare = std::less<T1>>
 class frequency_map

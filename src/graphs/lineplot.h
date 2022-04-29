@@ -18,7 +18,7 @@ namespace Wisteria::Graphs
     {
     /** @brief %Line plot, which shows a continuous series of X and Y points.
 
-        | Line Plot   | Line Plot (more customized) |
+        | %Line Plot      | %Line Plot (more customized)      |
         | :-------------- | :-------------------------------- |
         | @image html LinePlot.svg width=90% | @image html LinePlotCustomized.svg width=90% |
 
@@ -27,6 +27,18 @@ namespace Wisteria::Graphs
          (i.e., the dependent measurements) and another continuous column is the X values.
          A grouping column can optionally be used to create separate lines for different groups
          in the data.
+
+        @par Missing Data:
+         - Missing data in the group column will be shown as an empty legend label.
+         - If either the X or Y value is missing data, then a gap in the line will be shown
+           at where the observation appeared in the series. Because the points are drawn
+           along the X axis as the appear in the data, a missing data value will not be included
+           in the line, but will break the line. The following valid point in the series will
+           restart the line.\n
+           For example, if five points are being plotted and the third item contains missing data,
+           then there will be a line going from the first to second point, then a break in the line,
+           then a line between the fourth and fifth point.
+
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog,
@@ -184,12 +196,13 @@ namespace Wisteria::Graphs
             @param colors The color scheme to apply to the points.
              Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
-             Leave as null to use the standard shapes.
+             Leave as null to use the standard shapes.\n
              Set to a new shape scheme filled with IconShape::BlankIcon to not
              show markers for certain lines/groups.
             @param linePenStyles The line styles to use for the lines.
-             The default is to use solid, straight lines. Set to a new line scheme
-             filled with `wxPenStyle::wxTRANSPARENT` to not show any lines.*/
+             The default is to use solid, straight lines.\n
+             Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
+             to not show any lines.*/
         explicit LinePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<IconShapeScheme> shapes = nullptr,
@@ -289,7 +302,7 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @brief Gets the maximum number of points displayed before the parent canvas
-        ///  is forced to be made wider. (which will make this plot easier to read).
+        ///  is forced to be made wider (which will make this plot easier to read).
         /// @returns The most points that can be plotted before the parent canvas will be widened.
         [[nodiscard]] size_t GetPointsPerDefaultCanvasSize() const noexcept
             { return m_pointsPerDefaultCanvasSize; }

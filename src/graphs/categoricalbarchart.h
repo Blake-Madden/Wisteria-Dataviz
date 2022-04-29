@@ -31,8 +31,14 @@ namespace Wisteria::Graphs
          summed values from a corresponding continuous column.
 
          A grouping column can optionally be used to create separate blocks within the bars.
+
+        @par Missing Data:
+         - Missing data in the categorical column will be shown as an empty axis label.
+         - Missing data in the group column will be shown as an empty legend label.
+         - If summing a continuous column, then missing data will be ignored.
+           (Listwise deletion of the observation.)
           
-        @note If you want to create a bar chart that aggregates the counts of discrete values
+        @note If you want to create a bar chart that sums the counts of unique, discrete values
          from a continuous variable, then histograms offer this ability. Refer to the
          @c BinUniqueValues binning method in the Histogram documentation to learn more.
          
@@ -62,6 +68,8 @@ namespace Wisteria::Graphs
             std::make_shared<Colors::Schemes::Decade1980s>());
 
           plot->SetData(mpgData, L"manufacturer");
+          // to group by model within the manufacturers
+          // plot->SetData(mpgData, L"manufacturer", std::nullopt, L"model");
 
           canvas->SetFixedObject(0, 0, plot);
          @endcode

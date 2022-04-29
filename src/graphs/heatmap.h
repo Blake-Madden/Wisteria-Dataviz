@@ -67,9 +67,13 @@ namespace Wisteria::Graphs
          (i.e., nothing is sorted). Because this, the grouping column should be presorted
          and each group's values should be in the order that want them to be appear in the plot.
 
-         Also note that missing data will be shown as transparent cells with a red 'X' in the middle.
-         With the above dataset, a row for the student `Joe` will only have two valid cells
-         (for weeks 1 and 4), and two cells in the middle that are crossed out (for weeks 2 and 3).
+         @par Missing Data:
+         - Missing data in the ID column will result in an empty selection label for the cell.
+         - Missing data in the group column will be shown as an empty row label (for the group).
+         - If the value is missing data, then that will be shown as a transparent cell with a red 'X' in the middle.\n
+           With the above dataset, a row for the student `Joe` will only have two valid cells
+           (for weeks 1 and 4), and two cells in the middle that are crossed out (for weeks 2 and 3).
+
          @par Example:
          @code
           // "this" will be a parent wxWidgets frame or dialog,

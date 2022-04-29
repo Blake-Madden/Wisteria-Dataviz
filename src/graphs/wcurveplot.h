@@ -50,6 +50,10 @@ namespace Wisteria::Graphs
          Regarding the X column, the values should start at 1 and usually go up
          to 4 (going up to 10 is supported). This represents the semester/year/period that the measurement
          was recorded for the observation.
+
+        @par Missing Data:
+         Refer to LinePlot for how missing data is handled.
+
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog,

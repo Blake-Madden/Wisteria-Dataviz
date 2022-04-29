@@ -86,20 +86,20 @@ namespace Wisteria::Graphs
             { return; }
 
         // calculate how many observations are in each group
-        multi_value_aggregate_map<CatBarBlock, wxString, std::less<CatBarBlock>, Data::StringCmpNoCase> groups;
-        groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
+        aggregate_frequency_set<CatBarBlock> groups;
 
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
             {
+            // entire observation is ignored if value being aggregated is NaN
+            if (m_useValueColumn &&
+                std::isnan(m_continuousColumn->GetValue(i)))
+                { continue; }
             groups.insert(
                 // the current category ID (and group, if applicable)
                 CatBarBlock{
                     m_categoricalColumn->GetValue(i),
                     (m_useGrouping ?
                         m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)) },
-                // create list of observation names into the current bar
-                // (and its group, if applicable)
-                m_data->GetIdColumn().GetValue(i).wc_str(),
                 (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1));
             }
 
@@ -109,17 +109,15 @@ namespace Wisteria::Graphs
             const wxColour blockColor = (m_useGrouping ?
                 GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0));
 
-            wxString blockLabelText{ wxString::Format(_("%s item(s)\n"),
-                wxNumberFormatter::ToString(blockTable.second.second, 0,
-                    Settings::GetDefaultNumberFormat())) };
-            // piece the first few observations together as a display label for the block
-            for (const auto& obsLabel : blockTable.second.first)
-                { blockLabelText.append(obsLabel).append(L"\n"); }
-            blockLabelText.Trim();
-            // if observations are added to the selection label, but not all of them, then add ellipsis
-            if (blockTable.second.first.size() < blockTable.second.second &&
-                blockTable.second.first.size() > 1)
-                { blockLabelText += L"..."; }
+            wxString blockLabelText = (m_useValueColumn ?
+                wxString::Format(_("%s item(s), totalling %s"),
+                    wxNumberFormatter::ToString(blockTable.second.first, 0,
+                        Settings::GetDefaultNumberFormat()),
+                    wxNumberFormatter::ToString(blockTable.second.second, 2,
+                        Settings::GetDefaultNumberFormat())) :
+                wxString::Format(_("%s item(s)"),
+                    wxNumberFormatter::ToString(blockTable.second.first, 0,
+                        Settings::GetDefaultNumberFormat())) );
 
             if (m_useGrouping)
                 {
@@ -141,25 +139,12 @@ namespace Wisteria::Graphs
                     wxEmptyString,
                     GraphItems::Label(m_categoricalColumn->GetCategoryLabel(blockTable.first.m_bin)),
                     GetBarEffect(), GetBarOpacity());
-                // if observations added to the selection label, then show it as a report
-                if (blockTable.second.first.size() > 1)
-                    {
-                    theBar.GetBlocks()[0].GetSelectionLabel().
-                        GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::Centered);
-                    theBar.GetBlocks()[0].GetSelectionLabel().
-                        SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
-                    }
                 AddBar(theBar);
                 }
             else
                 {
                 BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).
                     Brush(blockColor).SelectionLabel(blockLabel)) };
-                if (blockTable.second.first.size() > 1)
-                    {
-                    block.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
-                    block.GetSelectionLabel().GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::Centered);
-                    }
                 foundBar->AddBlock(block);
                 UpdateScalingAxisFromBar(*foundBar);
                 }

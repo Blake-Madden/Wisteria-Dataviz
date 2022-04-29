@@ -13,7 +13,6 @@
 #define __WISTERIA_GANTT_H__
 
 #include "barchart.h"
-#include "../base/colorbrewer.h"
 
 namespace Wisteria::Graphs
     {
@@ -33,9 +32,13 @@ namespace Wisteria::Graphs
          | Develop Product | 2022-09-01 | 12/25/2022 |                      | Development | 50         |
          | Testing         | 2022-10-15 | 12/25/2022 | Maybe outsource this | QA          |            |
 
-         Note that if the start date is missing data, then the starting point of the task will be whatever
-         the earliest date along the bottom axis. Likewise, if the end date is missing data, then the task
-         will be drawn as an arrow, stretching to the end of the bottom axis.
+        @par Missing Data:
+         - Missing data in the group, resource, or description columns will be displayed as empty labels.
+         - Missing data in the completion rate column will be treated as zero.
+         - If the start date is missing data, then the starting point of the task will be whatever
+           the earliest date along the bottom axis.
+         - If the end date is missing data, then the task will be drawn as an arrow,
+           stretching to the end of the bottom axis.
 
         @par Example:
         @code

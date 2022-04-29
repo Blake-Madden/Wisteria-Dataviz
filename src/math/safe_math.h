@@ -14,6 +14,12 @@
 #include <cmath>
 #include <cassert>
 
+/// @brief Returns the given value, unless it is NaN. In that case, returns zero.
+/// @param val The value to review.
+/// @returns Value, or zero if it is NaN.
+[[nodiscard]] constexpr double zero_if_nan(const double val) noexcept
+    { return std::isnan(val) ? 0 : val; }
+
 // DIVISION OPERATIONS
 //-------------------
 
