@@ -334,7 +334,7 @@ namespace Wisteria::Graphs
                 {
                 // if no label on cell, then that means this row is jagged and there
                 // are no more cells in it, so go to next row
-                if (cell.m_selectionLabel.empty())
+                if (cell.m_valueLabel.empty())
                     { continue; }
                 // if NaN, then color will be bogus, so use plot's background color
                 const wxColour cellColor = cell.m_color.IsOk() ?
