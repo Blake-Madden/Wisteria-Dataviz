@@ -39,6 +39,14 @@ namespace Wisteria::Graphs
            then there will be a line going from the first to second point, then a break in the line,
            then a line between the fourth and fifth point.
 
+        @warning Unlike other applications, the order of the data for line plots is
+         important in %Wisteria. The line(s) connecting the points is drawn in the order of the
+         points as they appear in the data, whereas most other applications will simply connect
+         the points going from left-to-right.\n
+         \n
+         This is by design so that missing data can be shown on the plot (as a break in the line),
+         as well as drawing zig-zagging/spiral lines.
+
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog,
