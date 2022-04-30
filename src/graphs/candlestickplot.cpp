@@ -54,6 +54,12 @@ namespace Wisteria::Graphs
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
+            if (!dateColumn->GetValue(i).IsValid() ||
+                std::isnan(openColumn->GetValue(i)) ||
+                std::isnan(highColumn->GetValue(i)) ||
+                std::isnan(lowColumn->GetValue(i)) ||
+                std::isnan(closeColumn->GetValue(i)))
+                { continue; }
             m_ohlcs.push_back({ dateColumn->GetValue(i), openColumn->GetValue(i),
                                 highColumn->GetValue(i), lowColumn->GetValue(i),
                                 closeColumn->GetValue(i) });
@@ -135,6 +141,18 @@ namespace Wisteria::Graphs
 
         for (const auto& ohlc : m_ohlcs)
             {
+            if (!ohlc.m_date.IsValid() ||
+                std::isnan(ohlc.m_open) ||
+                std::isnan(ohlc.m_high) ||
+                std::isnan(ohlc.m_low) ||
+                std::isnan(ohlc.m_close))
+                {
+                wxFAIL_MSG(L"Invalid observation in CandlestickPlot::RecalcSizes()! "
+                            "This item should have been filtered earlier. "
+                            "Obs. will be ignored.");
+                continue;
+                }
+
             wxString ohlcInfo = wxString::Format(
                 _(L"Date: %s\n"
                    "Opening: %s\n"

@@ -38,6 +38,9 @@ namespace Wisteria::Graphs
 
          ...
 
+         @par Missing Data:
+          - Any missing data in an observation will result in listwise deletion.
+
          @par Example:
          @code
           // "this" will be a parent wxWidgets frame or dialog,
