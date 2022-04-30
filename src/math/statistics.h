@@ -23,11 +23,24 @@
 #include "../util/frequency_set.h"
 #include "mathematics.h"
 #include "safe_math.h"
+#include "../util/frequency_set.h"
 #include "../debug/debug_assert.h"
 
 /// Namespace for statistics classes.
 namespace statistics
     {
+    /** @returns The valid (non-NaN) number of observations from the specified range.
+        @param begin The beginning of the data range.
+        @param end The end of the data range.
+        @todo needs unit test*/
+    template <typename T>
+    [[nodiscard]] inline size_t valid_n(const T begin, const T end) noexcept
+        {
+        return std::accumulate(begin, end, 0,
+            [](const auto initVal, const auto val) noexcept
+                { return initVal + (std::isnan(val) ? 0 : 1); });
+        }
+
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.
