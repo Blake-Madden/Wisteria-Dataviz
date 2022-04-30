@@ -32,10 +32,16 @@ namespace Wisteria::Graphs
 
         @note For multi-box plots, set the pen (via GetPen()) to enable and customize
          the line connecting the boxes' midpoints. (This is turned off by default.)
+
         @par %Data:
          This plot accepts a Data::Dataset, where the a continuous column is the
          dependent measurement. A categorical column can optionally be used to create
          separate boxes for different groups in the data.
+
+        @par Missing Data:
+         - Missing data in the group column will be shown as an empty label.
+         - Missing data in the value column will be ignored (listwise deletion).
+
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog, "canvas"

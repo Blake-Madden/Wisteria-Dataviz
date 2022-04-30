@@ -53,6 +53,9 @@ namespace Wisteria::Graphs
             {
             for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
                 {
+                if (std::isnan(m_continuousColumn->GetValue(i)))
+                    { continue; }
+
                 if (m_groupColumn->GetValue(i) == m_groupId)
                     { jitterPoints.insert(m_continuousColumn->GetValue(i)); }
                 }
@@ -60,7 +63,12 @@ namespace Wisteria::Graphs
         else
             {
             for (const auto& datum : m_continuousColumn->GetValues())
-                { jitterPoints.insert(datum); }
+                {
+                if (std::isnan(datum))
+                    { continue; }
+
+                jitterPoints.insert(datum);
+                }
             }
         m_jitter.CalcSpread(jitterPoints);
         }
@@ -76,16 +84,19 @@ namespace Wisteria::Graphs
             dest.reserve(GetData()->GetRowCount());
             for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
                 {
-                if (m_groupColumn->GetValue(i) == m_groupId)
+                if (m_groupColumn->GetValue(i) == m_groupId &&
+                    !std::isnan(m_continuousColumn->GetValue(i)))
                     { dest.push_back(m_continuousColumn->GetValue(i)); }
                 }
             }
         else
             {
-            dest.resize(GetData()->GetRowCount());
-            std::copy(m_continuousColumn->GetValues().cbegin(),
-                      m_continuousColumn->GetValues().cend(),
-                      dest.begin());
+            dest.reserve(GetData()->GetRowCount());
+            std::copy_if(m_continuousColumn->GetValues().cbegin(),
+                         m_continuousColumn->GetValues().cend(),
+                         std::back_inserter(dest),
+                         [](const auto val) noexcept
+                           { return !std::isnan(val); });
             }
 
         std::sort(std::execution::par, dest.begin(), dest.end());
@@ -482,6 +493,9 @@ namespace Wisteria::Graphs
             dataPoints->SetDPIScaleFactor(GetDPIScaleFactor());
             for (size_t i = 0; i < box.GetData()->GetRowCount(); ++i)
                 {
+                if (std::isnan(box.m_continuousColumn->GetValue(i)))
+                    { continue; }
+
                 const auto pointOutline =
                     wxColour(GetPointColor());
                 // skip value if from a different group

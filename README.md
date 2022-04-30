@@ -12,9 +12,10 @@ such as:
 - Built-in copy support
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
 - Mouse- and keyboard-enabled zooming
-- Data [importing](ImportingData.md) and exporting (CSV or tab-delimited files) support
+- Data [importing](ImportingData.md) and exporting (CSV, tab-delimited, or user-defined delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
   - Includes support for continuous, categorical, date, and ID columns
+  - Graphs are designed to handle missing data
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds
 - Effects for boxes and bars, including transparency, a glassy look, stipple brushes, and color fades
