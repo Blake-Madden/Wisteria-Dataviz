@@ -1,7 +1,9 @@
 Wisteria Dataviz
 =============================
 
-Introduction
+<img src="wisteria.svg" width="200" />
+
+About
 =============================
 
 Wisteria Dataviz is data visualization library based on [wxWidgets](https://github.com/wxWidgets/wxWidgets). It includes features

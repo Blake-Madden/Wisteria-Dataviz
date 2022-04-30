@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   stroke-linejoin="bevel"
+   fill-rule="evenodd"
+   viewBox="0 0 409.6 409.6"
+   version="1.1"
+   overflow="visible"
+   stroke-width="0.501"
+   id="svg4566"
+   sodipodi:docname="Wisteria.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1368"
+     inkscape:window-height="849"
+     id="namedview4568"
+     showgrid="false"
+     inkscape:zoom="0.79345702"
+     inkscape:cx="29.390357"
+     inkscape:cy="195.50137"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4566" />
+  <title
+     id="title4544">Logo for Kelasabil - The Seven Hexagons</title>
+  <metadata
+     id="metadata4546">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Logo for Kelasabil - The Seven Hexagons</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:date>2014-12-14</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Hikmat Surya Permana</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Kelasabil.com</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>The Seven Hexagons</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>The Logo in a very basic format</dc:description>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs4548" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4550"
+     d="m 71.868543,365.44731 61.381487,35.43365 61.38311,-35.43365 V 294.56375 L 133.2484,259.1301 71.866917,294.56375 Z"
+     style="fill:#ebd7ff;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4552"
+     d="m 143.57617,241.23449 61.37824,35.4499 61.39123,-35.4499 v -70.86731 l -61.39123,-35.4499 -61.37824,35.4499 z"
+     style="fill:#b48df2;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4554"
+     d="m 215.29193,365.44731 61.37498,35.43365 61.37499,-35.43365 v -70.88356 l -61.37499,-35.43365 -61.37498,35.43365 z"
+     style="fill:#8c5bd4;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4556"
+     d="M 0.15441051,241.23449 61.537521,276.66814 122.92388,241.23449 V 170.35093 L 61.540771,134.91728 0.15441051,170.35093 Z"
+     style="fill:#d7b8fd;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4558"
+     d="m 71.558092,117.21671 61.381488,35.4499 61.38473,-35.4499 V 46.333155 l -61.38636,-35.43365 -61.381483,35.43365 z"
+     style="fill:#f3efff;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4560"
+     d="m 214.96685,116.85912 61.37498,35.43365 61.39124,-35.43365 V 45.975568 L 276.34183,10.541917 214.96685,45.975568 Z"
+     style="fill:#f3e4fc;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path4562"
+     d="m 286.98818,241.25074 61.39124,35.43365 61.37498,-35.43365 v -70.88356 l -61.37498,-35.4499 -61.39124,35.4499 z"
+     style="fill:#4e1d8f;stroke-width:0.81432378;stroke-miterlimit:79.84031677;marker-start:none;marker-end:none;fill-opacity:1" />
+</svg>

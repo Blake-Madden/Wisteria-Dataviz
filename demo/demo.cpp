@@ -60,7 +60,10 @@ MyFrame::MyFrame()
     {
     SetSize(FromDIP(wxSize(750, 500)));
 
-    //BM SetIcon(wxICON(sample));
+    const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
+    const wxSize iconSize{ wxSize(16, 16) };
+
+    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
     // Associate the menu bar with the frame
     SetMenuBar(CreateMainMenubar());
