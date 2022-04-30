@@ -56,8 +56,8 @@ such as:
   - Supports custom axes
   - Draw bounding boxes and extended information in debug mode (via `Wisteria::Settings::EnableDebugFlag()`)
   - Profiling macros (e.g., `PROFILE()`) to help with reviewing performance
-  - i18n functions to help prevent accidental translations (e.g., @c DONTTRANSLATE() and @c _DT())
-  - @c LogFile class for routing logging information to a formatted file
+  - i18n functions to help prevent accidental translations (e.g., `DONTTRANSLATE()` and `_DT()`)
+  - `LogFile` class for routing logging information to a formatted file
   
 General Workflow
 =============================

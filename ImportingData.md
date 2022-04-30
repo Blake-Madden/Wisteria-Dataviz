@@ -36,7 +36,7 @@ should be in C locale (i.e., US format), where '.' is the radix separator.
 
 Although data is imported and stored as floating point values, discrete/integer values can also be read into these columns.
 
-Missing data in a continuous column will be imported as NaN (@c std::numeric_limits<double>::quiet_NaN(), so @c std::isnan()
+Missing data in a continuous column will be imported as NaN (`std::numeric_limits<double>::quiet_NaN()`, so `std::isnan()`
 should be used when working with imported data.
 
 Categorical and Grouping Data
@@ -82,11 +82,11 @@ It's in these functions that you control how to import these columns with a `Cat
 If reading the columns as strings, then the importer will internally assign integral codes to the strings
 in the order that they appear in the file. Because of this, the numeric code assigned to missing data
 (i.e., empty string) is non-deterministic. It will be whatever the next ID in the sequence is when the
-first empty value is encountered in the column. @c ColumnWithStringTable::FindMissingDataCode()
+first empty value is encountered in the column. `ColumnWithStringTable::FindMissingDataCode()`
 can be usded to find this code after import.
 
 Otherwise, if the file contains integers, then you can import the column as such using
-@c CategoricalImportMethod::ReadAsIntegers. If you want strings to be connected to these
+`CategoricalImportMethod::ReadAsIntegers`. If you want strings to be connected to these
 codes/integers, then this can be done by accessing the column's string table, like so:
 
 ```cpp
@@ -96,8 +96,8 @@ yData->GetCategoricalColumn(0).GetStringTable() =
 
 Note that this step is optional, as some graphs only require integer codes for these columns (e.g., Likert charts).
 
-If imported as integers, missing data in the column will be coded to @c 0 by default.
-This can be overridden by specifying a different code as the third argument to @c CategoricalImportInfo:
+If imported as integers, missing data in the column will be coded to `0` by default.
+This can be overridden by specifying a different code as the third argument to `CategoricalImportInfo`:
 
 ```cpp
 auto patientData = std::make_shared<Data::Dataset>();
@@ -108,8 +108,8 @@ patientData->ImportCSV(L"kidney.csv",
     CategoricalColumns({ { L"hospitalid", CategoricalImportMethod::ReadAsIntegers, 9999 } }));
 ```
 
-In the above example, any missing data in the column @c hospitalid will be coded to @c 9999.
-If you assign a string table to this column, ensure that @c 9999 is mapped to empty string.
+In the above example, any missing data in the column `hospitalid` will be coded to `9999`.
+If you assign a string table to this column, ensure that `9999` is mapped to empty string.
 
 You can import multiple categorical columns, where you can specify each one's name and how to import it.
 
@@ -163,7 +163,7 @@ companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
         });
 ```
 
-Missing data in a date column are imported as @c wxInvalidDateTime, so `wxDateTime::IsValid()` should be called when
+Missing data in a date column are imported as `wxInvalidDateTime`, so `wxDateTime::IsValid()` should be called when
 working with imported values. Also, any parsing errors (from malformed input) while imporing dates are logged
 (via `wxLogWarning()`).
 
