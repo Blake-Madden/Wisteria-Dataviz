@@ -47,11 +47,14 @@ namespace Wisteria::Graphs
 
          ...
 
+        @warning The question columns must be imported using @c CategoricalImportMethod::ReadAsIntegers,
+         and the missing data code must be left as the default @c 0.
+
         @par Missing Data:
          - Missing data in the group column will be displayed as empty labels.
          - Missing data in a question column are treated the same as responses coded as @c 0,
-           which will group them into the "No Response" area. Note that when import data,
-           the MD code for the questions should be left as @c 0.
+           which will group them into the "No Response" area. Note that when importing data,
+           the missing data code for the questions should be left as @c 0.
 
         @par 7-Point Scale Example:
         @code

@@ -80,9 +80,14 @@ It's in these functions that you control how to import these columns with a `Cat
 (The above code example demonstrates this.)
 
 If reading the columns as strings, then the importer will internally assign integral codes to the strings
-in the order that they appear in the file. Otherwise, if the file contains integers, then those codes will
-be imported and used. If you are importing as integers and want strings to be assigned to your codes,
-this can done by accessing the column's string table, like so:
+in the order that they appear in the file. Because of this, the numeric code assigned to missing data
+(i.e., empty string) is non-deterministic. It will be whatever the next ID in the sequence is when the
+first empty value is encountered in the column. @c ColumnWithStringTable::FindMissingDataCode()
+can be usded to find this code after import.
+
+Otherwise, if the file contains integers, then you can import the column as such using
+@c CategoricalImportMethod::ReadAsIntegers. If you want strings to be connected to these
+codes/integers, then this can be done by accessing the column's string table, like so:
 
 ```cpp
 yData->GetCategoricalColumn(0).GetStringTable() =
@@ -91,9 +96,20 @@ yData->GetCategoricalColumn(0).GetStringTable() =
 
 Note that this step is optional, as some graphs only require integer codes for these columns (e.g., Likert charts).
 
-Missing data in a column will be coded as '0'. If using integer codes in your data, ensure that '0' is not used or
-only used to represent missing data. Also, if setting a string table to your column, be sure that the string connected
-'0' relates to missing data (e.g., "Unknown", "No response", etc.).
+If imported as integers, missing data in the column will be coded to @c 0 by default.
+This can be overridden by specifying a different code as the third argument to @c CategoricalImportInfo:
+
+```cpp
+auto patientData = std::make_shared<Data::Dataset>();
+patientData->ImportCSV(L"kidney.csv",
+    ImportInfo().
+    ContinuousColumns({ L"visits" }).
+    // code missing data to 9999
+    CategoricalColumns({ { L"hospitalid", CategoricalImportMethod::ReadAsIntegers, 9999 } }));
+```
+
+In the above example, any missing data in the column @c hospitalid will be coded to @c 9999.
+If you assign a string table to this column, ensure that @c 9999 is mapped to empty string.
 
 You can import multiple categorical columns, where you can specify each one's name and how to import it.
 

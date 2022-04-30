@@ -369,7 +369,18 @@ namespace Wisteria::Data
             /// @brief The name of the column.
             wxString m_columnName;
             /// @brief The method to import the column with.
+            /// @details The numeric code assigned to missing data (i.e., empty string)
+            ///  is non-deterministic. It will be whatever the next ID in the sequence is when
+            ///  the first empty value is encountered in the column.
+            ///  @c ColumnWithStringTable::FindMissingDataCode() can be usded to find this code after loading the data.
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
+            /// @brief The default missing data code.
+            /// @details This is only used if using the @c ReadAsIntegers method.
+            ///  When an empty value is encountered in the column, this value will be assigned
+            ///  to it.\n
+            ///  Caller is responsible for assigning an empty string to this code when
+            ///  connecting a string table to this column after import.
+            GroupIdType m_mdCode{ 0 };
             };
 
         /// @brief Map of regular expressions and their replacement strings.
@@ -891,7 +902,8 @@ namespace Wisteria::Data
         [[nodiscard]] Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
             { return m_dateColumns.at(column); }
         [[nodiscard]] static double ConvertToDouble(const wxString& input);
-        [[nodiscard]] static GroupIdType ConvertToGroupId(const wxString& input);
+        [[nodiscard]] static GroupIdType ConvertToGroupId(const wxString& input,
+                                                          const GroupIdType mdCode);
         [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
                                                       const DateImportMethod method,
                                                       const wxString& formatStr);

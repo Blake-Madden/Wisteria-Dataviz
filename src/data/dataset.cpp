@@ -26,10 +26,10 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    GroupIdType Dataset::ConvertToGroupId(const wxString& input)
+    GroupIdType Dataset::ConvertToGroupId(const wxString& input, const GroupIdType mdCode)
         {
         if (input.empty())
-            { return 0; }
+            { return mdCode; }
         else
             {
             wchar_t* end{ nullptr };
@@ -507,6 +507,7 @@ namespace Wisteria::Data
             {
             size_t m_index{ 0 };
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
+            GroupIdType m_mdCode{ 0 };
             };
 
         // column index with specialized import method
@@ -557,7 +558,7 @@ namespace Wisteria::Data
                 (catColumnIter != preview.get_header_names().cend()) ?
                 std::optional<catIndexInfo>(catIndexInfo{
                     static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
-                                        catColumn.m_importMethod }) :
+                                        catColumn.m_importMethod, catColumn.m_mdCode }) :
                 std::nullopt);
             }
 
@@ -650,7 +651,9 @@ namespace Wisteria::Data
                     else
                         {
                         catCodes.emplace_back(
-                            ConvertToGroupId(currentRow.at(catColumnIndices.at(i).value().m_index)));
+                            ConvertToGroupId(
+                                currentRow.at(catColumnIndices.at(i).value().m_index),
+                                catColumnIndices.at(i).value().m_mdCode));
                         }
                     }
                 }
