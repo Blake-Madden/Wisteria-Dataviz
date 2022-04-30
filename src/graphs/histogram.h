@@ -41,10 +41,14 @@ namespace Wisteria::Graphs
          Refer to Wisteria::RoundingMethod and Histogram::BinningMethod for controlling these
          features when calling SetData().
 
-         @par Data:
-          This plot accepts a Data::Dataset, where a continuous column
-          is the dependent measurement. A grouping column can optionally be used to
-          create separate blocks within the bins.
+        @par Data:
+         This plot accepts a Data::Dataset, where a continuous column
+         is the dependent measurement. A grouping column can optionally be used to
+         create separate blocks within the bins.
+
+        @par Missing Data:
+         - Missing data in the group column will be shown as an empty legend label.
+         - Missing data in the value column will be ignored (listwise deletion).
 
         @par Example:
         @code
@@ -380,6 +384,7 @@ namespace Wisteria::Graphs
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
+        size_t m_validN{ 0 };
 
         BinningMethod m_binningMethod{ BinningMethod::BinByIntegerRange };
         RoundingMethod m_roundingMethod{ RoundingMethod::NoRounding };

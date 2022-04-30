@@ -40,6 +40,7 @@ namespace Wisteria::Graphs
         m_binLabelDisplay = blDisplay;
         m_displayFullRangeOfValues = showFullRangeOfValues;
         m_startBinsValue = startBinsValue;
+
         if (binCountRanges.second)
             { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
@@ -57,6 +58,10 @@ namespace Wisteria::Graphs
                 _(L"'%s': continuous column not found for histogram."), continuousColumnName));
             }
 
+        m_validN = statistics::valid_n(
+            m_continuousColumn->GetValues().cbegin(),
+            m_continuousColumn->GetValues().cend());
+
         // see if we should use grouping from the data
         if (m_useGrouping)
             {
@@ -68,7 +73,7 @@ namespace Wisteria::Graphs
         ClearBars();
 
         // if no data then just draw a blank 10x10 grid
-        if (m_data->GetRowCount() == 0)
+        if (m_validN == 0)
             {
             GetScalingAxis().SetRange(0, 10, 0, 1, 1);
             GetBarAxis().SetRange(0, 10, 0, 1, 1);
@@ -112,7 +117,12 @@ namespace Wisteria::Graphs
 
         frequency_set<double> groups;
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
-            { groups.insert(ConvertToSortableValue(m_continuousColumn->GetValue(i))); }
+            {
+            if (!std::isnan(m_continuousColumn->GetValue(i)))
+                {
+                groups.insert(ConvertToSortableValue(m_continuousColumn->GetValue(i)));
+                }
+            }
         return groups.get_data().size();
         }
 
@@ -129,6 +139,9 @@ namespace Wisteria::Graphs
 
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
             {
+            if (std::isnan(m_continuousColumn->GetValue(i)))
+                { continue; }
+
             groups.insert(BinBlock{
                 ConvertToSortableValue(m_continuousColumn->GetValue(i)),
                 (m_useGrouping ?
@@ -238,7 +251,7 @@ namespace Wisteria::Graphs
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
             {
-            const double percentage = safe_divide<double>(bar.GetLength(),m_continuousColumn->GetRowCount())*100;
+            const double percentage = safe_divide<double>(bar.GetLength(), m_validN)*100;
             const wxString labelStr = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
                 wxString(wxEmptyString) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
@@ -255,7 +268,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Histogram::SortIntoRanges(const std::optional<size_t> binCount)
         {
-        if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (m_data == nullptr || m_validN == 0)
             { return; }
         double minVal = *std::min_element(
             m_continuousColumn->GetValues().cbegin(),
@@ -324,6 +337,9 @@ namespace Wisteria::Graphs
         std::vector<std::vector<comparable_first_pair<Data::GroupIdType, valuesCounter>>> bins(numOfBins);
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
             {
+            if (std::isnan(m_continuousColumn->GetValue(i)))
+                { continue; }
+
             for (size_t j = 0; j < bins.size(); ++j)
                 {
                 const double currentVal = ConvertToSortableValue(m_continuousColumn->GetValue(i));
@@ -510,12 +526,12 @@ namespace Wisteria::Graphs
         if (m_data == nullptr)
             { return 0; }
 
-        if (m_data->GetRowCount() <= 1)
+        if (m_validN <= 1)
             { return 1; }
         // Sturges
-        else if (m_data->GetRowCount() < 200)
+        else if (m_validN < 200)
             {
-            return std::ceil(std::log2(m_data->GetRowCount())) + 1;
+            return std::ceil(std::log2(m_validN)) + 1;
             }
         // Scott
         else
@@ -529,7 +545,7 @@ namespace Wisteria::Graphs
             const auto sd = statistics::standard_deviation(m_continuousColumn->GetValues().cbegin(),
                 m_continuousColumn->GetValues().cend(), true);
             return safe_divide(maxVal - minVal,
-                3.5 * safe_divide(sd, std::cbrt(m_data->GetRowCount())) );
+                3.5 * safe_divide(sd, std::cbrt(m_validN)) );
             }
         }
 
