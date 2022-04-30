@@ -44,7 +44,9 @@ namespace statistics
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.
-        @returns A set containing all modes from a specified range. In the case of a tie, multiple modes will be returned.*/
+        @returns A set containing all modes from a specified range.
+         In the case of a tie, multiple modes will be returned.
+        @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
     template <typename T, typename InputIterator>
     [[nodiscard]] std::set<T> mode(const InputIterator begin, const InputIterator end)
         {
@@ -52,19 +54,20 @@ namespace statistics
         if (end <= begin)
             { return modes; }
         frequency_set<T> groups;
-        std::multimap<size_t, T, std::greater<size_t>> groupsByCount;//this will sort the larger items to the front
-        const size_t N = (end-begin);
+        std::multimap<size_t, T, std::greater<size_t>> groupsByCount; // this will sort the larger items to the front
+        // look at the full range of the data, not just non-NaN
+        const size_t N = (end - begin);
         if (N == 0)
             { return modes; }
 
         for (size_t i = 0; i < N; ++i)
             { groups.insert(begin[i]); }
-        //flip the groupings so that the size of each group is the first element
+        // flip the groupings so that the size of each group is the first element
         for (auto pos = groups.get_data().cbegin();
             pos != groups.get_data().cend();
             ++pos)
             { groupsByCount.emplace(pos->second, pos->first); }
-        //start at the most frequent group and work forwards to get any other modes that have the same count
+        // start at the most frequent group and work forwards to get any other modes that have the same count
         if (groupsByCount.size())
             {
             const size_t modeGroupSize = groupsByCount.cbegin()->first;
@@ -83,8 +86,11 @@ namespace statistics
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.
-        @param transformValue Function to transform values when grouping them. For example, you can pass in a functor to round double values into integers.
-        @returns A set containing all modes from a specified range. In the case of a tie, multiple modes will be returned.*/
+        @param transformValue Function to transform values when grouping them.
+        For example, you can pass in a functor to round double values into integers.
+        @returns A set containing all modes from a specified range.
+         In the case of a tie, multiple modes will be returned.
+        @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
     template <typename T, typename InputIterator, typename predicateT>
     [[nodiscard]] std::set<T> mode(const InputIterator begin, const InputIterator end, predicateT transformValue)
         {
@@ -92,19 +98,20 @@ namespace statistics
         if (end <= begin)
             { return modes; }
         frequency_set<T> groups;
-        std::multimap<size_t, T, std::greater<size_t>> groupsByCount; //this will sort the larger items to the front
+        std::multimap<size_t, T, std::greater<size_t>> groupsByCount; // this will sort the larger items to the front
+        // look at the full range of the data, not just non-NaN
         const size_t N = (end-begin);
         if (N == 0)
             { return modes; }
 
         for (size_t i = 0; i < N; ++i)
             { groups.insert(transformValue(begin[i])); }
-        //flip the groupings so that the size of each group is the first element
+        // flip the groupings so that the size of each group is the first element
         for (auto pos = groups.get_data().cbegin();
             pos != groups.get_data().cend();
             ++pos)
             { groupsByCount.emplace(pos->second, pos->first); }
-        //start at the most frequent group and work forwards to get any other modes that have the same count
+        // start at the most frequent group and work forwards to get any other modes that have the same count
         if (groupsByCount.size())
             {
             const size_t modeGroupSize = groupsByCount.cbegin()->first;
