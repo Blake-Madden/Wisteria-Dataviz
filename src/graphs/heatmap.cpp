@@ -385,7 +385,9 @@ namespace Wisteria::Graphs
                     Pen(wxNullPen).
                     Padding(0, labelRightPadding, 0, 0).
                     LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
-                groupRowLabel->SetMinimumUserSizeDIPs(groupLabelWidth / dc.GetDPIScaleFactor(), boxWidth);
+                groupRowLabel->SetMinimumUserSizeDIPs(
+                    groupLabelWidth / dc.GetDPIScaleFactor(),
+                    boxWidth / dc.GetDPIScaleFactor());
                 AddObject(groupRowLabel);
                 }
 
