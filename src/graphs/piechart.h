@@ -116,11 +116,11 @@ namespace Wisteria::Graphs
          An optional donut hole (with or without a label) can also be included in
          middle of the pie.
 
-         | Pie Chart | Subgrouped Pie Chart |
+         | Pie Chart       | Subgrouped Pie Chart              |
          | :-------------- | :-------------------------------- |
          | @image html PieChart.svg width=90% | @image html PieChartSubgrouped.svg width=90% |
 
-         | Donut Chart | Subgrouped Donut Chart |
+         | Donut Chart     | Subgrouped Donut Chart            |
          | :-------------- | :-------------------------------- |
          | @image html DonutChart.svg width=90% | @image html DonutChartSubgrouped.svg width=90% |
 
@@ -155,6 +155,10 @@ namespace Wisteria::Graphs
          `Enrollment` will be aggregated into it. Also, an inner ring for the courses will be drawn,
          showing the aggregated enrollment numbers for each courses. The courses' slices will be
          aligned next to parent College slice that they belong to.
+
+        @par Missing Data:
+         - Missing data in the group column(s) will be shown as an empty pie & legend label.
+         - Missing data in the value column will be ignored (listwise deletion).
 
         @par Example:
         @code

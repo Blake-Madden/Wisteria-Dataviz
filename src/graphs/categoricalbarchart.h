@@ -35,8 +35,7 @@ namespace Wisteria::Graphs
         @par Missing Data:
          - Missing data in the categorical column will be shown as an empty axis label.
          - Missing data in the group column will be shown as an empty legend label.
-         - If summing a continuous column, then missing data will be ignored.
-           (Listwise deletion of the observation.)
+         - If summing a continuous column, then missing data will be ignored (listwise deletion).
           
         @note If you want to create a bar chart that sums the counts of unique, discrete values
          from a continuous variable, then histograms offer this ability. Refer to the

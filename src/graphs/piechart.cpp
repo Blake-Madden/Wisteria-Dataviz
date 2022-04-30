@@ -296,6 +296,9 @@ namespace Wisteria::Graphs
         double totalValue{ 0.0 };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
+            if (std::isnan(m_continuousColumn->GetValue(i)) )
+                { continue; }
+
             auto [iterator, inserted] = outerGroups.insert(std::make_pair(
                 m_groupColumn1->GetValue(i),
                 m_continuousColumn->GetValue(i)) );
@@ -325,6 +328,9 @@ namespace Wisteria::Graphs
                                               SliceAndValues>(0, SliceAndValues());
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
+                if (std::isnan(m_continuousColumn->GetValue(i)) )
+                    { continue; }
+
                 searchValue.first = m_groupColumn1->GetValue(i);
                 auto [iterator, inserted] = innerGroups.insert(searchValue);
                 if (inserted)
@@ -491,7 +497,7 @@ namespace Wisteria::Graphs
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
             auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
-                                                                GetOuterPieMidPointLabelDisplay());
+                                                        GetOuterPieMidPointLabelDisplay());
             if (middleLabel != nullptr)
                 {
                 middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
@@ -714,12 +720,14 @@ namespace Wisteria::Graphs
             // slightly adjusted color based on the parent slice color
             sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
-                ColorContrast::ShadeOrTint(m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, .1));
+                ColorContrast::ShadeOrTint(
+                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, .1));
             // starting a new group
             if (currentParentSliceIndex != GetInnerPie().at(i).m_parentSliceGroup)
                 {
                 currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
-                legendText.append(GetOuterPie().at(currentParentSliceIndex).GetGroupLabel()).append(L"\n \n");
+                legendText.append(
+                    GetOuterPie().at(currentParentSliceIndex).GetGroupLabel()).append(L"\n \n");
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
                 legend->GetLegendIcons().emplace_back(
