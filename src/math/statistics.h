@@ -145,16 +145,20 @@ namespace statistics
 
     /** @returns The median value from the specified range (assumes data is already sorted).
         @param begin The beginning of the data range.
-        @param end The end of the data range.*/
+        @param end The end of the data range.
+        @warning NaN values should be removed from the input prior to calling this.*/
     template<typename ptr_typeT>
     [[nodiscard]] inline double median_presorted(const ptr_typeT begin, const ptr_typeT end)
         {
+        // since we are looking at specific positions in the data,
+        // we have to look at the whole range of the data, not just
+        // the non-NaN values
         const size_t sizeN = (end-begin);
         if (sizeN == 1)
             { return *begin; }
         if (sizeN == 0)
             { throw std::invalid_argument("No observations in median calculation."); }
-        const size_t lowerMidPoint = (sizeN/2)-1; //subtract 1 because of 0-based indexing
+        const size_t lowerMidPoint = (sizeN/2)-1; // subtract 1 because of 0-based indexing
         if (is_even(sizeN))
             {
             return (begin[lowerMidPoint] + begin[lowerMidPoint+1])
@@ -386,7 +390,8 @@ namespace statistics
                 lq, uq,
                 lo, uo, le, ue);
             }
-        /// @returns A pointer/iterator to the next outlier, or end of the container if no more outliers.
+        /// @returns A pointer/iterator to the next outlier,
+        ///  or end of the container if no more outliers.
         [[nodiscard]] const T operator()() noexcept
             {
             m_current_position = std::find_if(
