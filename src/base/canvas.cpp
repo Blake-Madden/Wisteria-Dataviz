@@ -1200,16 +1200,18 @@ namespace Wisteria
         // fill in the background image (if there is one)
         if (GetBackgroundImage().IsOk() && m_bgOpacity != wxALPHA_TRANSPARENT)
             {
-            GetBackgroundImage().SetDPIScaleFactor(dc.FromDIP(1));
-            GetBackgroundImage().SetAnchoring(Anchoring::Center);
-            GetBackgroundImage().SetAnchorPoint(
+            GraphItems::Image img(m_watermarkImg.GetBitmap(
+                m_watermarkImg.GetDefaultSize()).ConvertToImage());
+            img.SetDPIScaleFactor(dc.FromDIP(1));
+            img.SetAnchoring(Anchoring::Center);
+            img.SetAnchorPoint(
                 wxPoint(GetCanvasRect(dc).GetLeft() + safe_divide(GetCanvasRect(dc).GetWidth(), 2),
                         GetCanvasRect(dc).GetTop() + safe_divide(GetCanvasRect(dc).GetHeight(), 2)));
             // we clip the image a little so that it fits the area better
-            GetBackgroundImage().SetBestSize(GetCanvasRect(dc).GetSize() +
-                                             dc.FromDIP(wxSize(100, 100)));
-            GetBackgroundImage().SetOpacity(m_bgOpacity);
-            GetBackgroundImage().Draw(dc);
+            img.SetBestSize(GetCanvasRect(dc).GetSize() +
+                            dc.FromDIP(wxSize(100, 100)));
+            img.SetOpacity(m_bgOpacity);
+            img.Draw(dc);
             }
 
         // draw the actual objects on the canvas
@@ -1259,7 +1261,7 @@ namespace Wisteria
         }
 
     //-------------------------------------------
-    void Canvas::SetBackgroundImage(GraphItems::Image& backgroundImage,
+    void Canvas::SetBackgroundImage(const wxBitmapBundle& backgroundImage,
                                     const uint8_t opacity /*= wxALPHA_OPAQUE*/) noexcept
         {
         m_bgImage = backgroundImage;

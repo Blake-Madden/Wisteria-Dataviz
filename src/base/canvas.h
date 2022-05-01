@@ -114,7 +114,7 @@ namespace Wisteria
         /** @brief Sets the background image being drawn on the canvas.
             @param backgroundImage The image to draw on the background.
             @param opacity The opacity to render the image with.*/
-        void SetBackgroundImage(GraphItems::Image& backgroundImage,
+        void SetBackgroundImage(const wxBitmapBundle& backgroundImage,
                                 const uint8_t opacity = wxALPHA_OPAQUE) noexcept;
         /// @}
 
@@ -455,6 +455,13 @@ namespace Wisteria
         void DrawWatermarkLogo(wxDC& dc);
 
         /// @private
+        void SetBackgroundImage(wxBitmapBundle&& backgroundImage,
+                                const uint8_t opacity = wxALPHA_OPAQUE) noexcept
+            {
+            m_bgImage = std::move(backgroundImage);
+            m_bgOpacity = opacity;
+            }
+        /// @private
         void SetWatermarkLogo(wxBitmapBundle&& watermark, const wxSize sz) noexcept
             {
             m_watermarkImg = std::move(watermark);
@@ -477,7 +484,7 @@ namespace Wisteria
                           GetFixedObject(const size_t row, const size_t column) const;
     private:
         /// @returns The background image being drawn on the canvas.
-        [[nodiscard]] GraphItems::Image& GetBackgroundImage() noexcept
+        [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }
         /** @brief Draws the left titles.
             @returns How much of the left margin of the plot those title take up.
@@ -602,7 +609,7 @@ namespace Wisteria
         wxColour m_bgColor{ *wxWHITE };
         uint8_t m_bgOpacity{ wxALPHA_OPAQUE };
         bool m_bgColorUseLinearGradient{ false };
-        Wisteria::GraphItems::Image m_bgImage;
+        wxBitmapBundle m_bgImage;
         };
     }
 
