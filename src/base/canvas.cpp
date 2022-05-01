@@ -694,7 +694,7 @@ namespace Wisteria
         // add the left titles
         for (auto& title : m_leftTitles)
             {
-            title.SetDPIScaleFactor(dc.FromDIP(1));
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
@@ -731,7 +731,7 @@ namespace Wisteria
         // add the right titles
         for (auto& title : m_rightTitles)
             {
-            title.SetDPIScaleFactor(dc.FromDIP(1));
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
             const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomRightCorner ||
@@ -768,7 +768,7 @@ namespace Wisteria
         // add the top titles
         for (auto& title : m_topTitles)
             {
-            title.SetDPIScaleFactor(dc.FromDIP(1));
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
                 title.GetAnchoring() == Anchoring::BottomRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
@@ -802,7 +802,7 @@ namespace Wisteria
         // add the bottom titles
         for (auto& title : m_bottomTitles)
             {
-            title.SetDPIScaleFactor(dc.FromDIP(1));
+            title.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             title.SetScaling(GetScaling());
             const wxCoord textHeight = (title.GetAnchoring() == Anchoring::TopLeftCorner ||
                 title.GetAnchoring() == Anchoring::TopRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
@@ -841,8 +841,8 @@ namespace Wisteria
         if (m_zoomLevel <= 0)
             {
             m_rectDIPs = GetClientRect();
-            m_rectDIPs.SetWidth(gdc.ToDIP(m_rectDIPs.GetWidth()));
-            m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
+            m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / gdc.GetDPIScaleFactor());
+            m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / gdc.GetDPIScaleFactor());
             CalcAllSizes(gdc);
             SetVirtualSize(GetCanvasRect(gdc).GetSize());
             }
@@ -891,7 +891,7 @@ namespace Wisteria
                     (*objectsPos)->SetContentBottom(std::nullopt);
                     (*objectsPos)->SetContentLeft(std::nullopt);
                     (*objectsPos)->SetContentRight(std::nullopt);
-                    (*objectsPos)->SetDPIScaleFactor(dc.FromDIP(1));
+                    (*objectsPos)->SetDPIScaleFactor(dc.GetDPIScaleFactor());
                     }
                 }
             }
@@ -1200,14 +1200,14 @@ namespace Wisteria
         // fill in the background image (if there is one)
         if (GetBackgroundImage().IsOk() && m_bgOpacity != wxALPHA_TRANSPARENT)
             {
-            GetBackgroundImage().SetDPIScaleFactor(dc.FromDIP(1));
+            GetBackgroundImage().SetDPIScaleFactor(dc.GetDPIScaleFactor());
             GetBackgroundImage().SetAnchoring(Anchoring::Center);
             GetBackgroundImage().SetAnchorPoint(
                 wxPoint(GetCanvasRect(dc).GetLeft() + safe_divide(GetCanvasRect(dc).GetWidth(), 2),
                         GetCanvasRect(dc).GetTop() + safe_divide(GetCanvasRect(dc).GetHeight(), 2)));
             // we clip the image a little so that it fits the area better
             GetBackgroundImage().SetBestSize(GetCanvasRect(dc).GetSize() +
-                                             dc.FromDIP(wxSize(100, 100)));
+                                             wxSize(100*dc.GetDPIScaleFactor(), 100*dc.GetDPIScaleFactor()));
             GetBackgroundImage().SetOpacity(m_bgOpacity);
             GetBackgroundImage().Draw(dc);
             }
@@ -1288,7 +1288,7 @@ namespace Wisteria
             GraphItems::Image img(m_watermarkImg.GetBitmap(
                 m_watermarkImg.GetDefaultSize()).ConvertToImage());
             img.GetPen() = wxNullPen;
-            img.SetDPIScaleFactor(dc.FromDIP(1));
+            img.SetDPIScaleFactor(dc.GetDPIScaleFactor());
             img.SetBestSize(wxSize(ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetWidth(), dc),
                                    ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetHeight(), dc)));
             // make logo image mildly translucent
@@ -1659,8 +1659,8 @@ namespace Wisteria
         wxGCDC gdc(this);
 
         m_rectDIPs = GetClientRect();
-        m_rectDIPs.SetWidth(gdc.ToDIP(m_rectDIPs.GetWidth()));
-        m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
+        m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / gdc.GetDPIScaleFactor());
+        m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / gdc.GetDPIScaleFactor());
 
         CalcAllSizes(gdc);
         SetVirtualSize(GetCanvasRect(gdc).GetSize());
