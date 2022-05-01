@@ -33,7 +33,8 @@ namespace Wisteria::GraphItems
         int currentX{ 0 };
         for (const auto& img : images)
             {
-            memDC.DrawBitmap(wxBitmap(img), wxPoint(currentX, (memDC.GetSize().GetHeight()-img.GetHeight())/2));
+            memDC.DrawBitmap(wxBitmap(img),
+                wxPoint(currentX, (memDC.GetSize().GetHeight()-img.GetHeight())/2));
             currentX += img.GetWidth();
             }
         memDC.SelectObject(wxNullBitmap);
@@ -62,7 +63,8 @@ namespace Wisteria::GraphItems
         int currentY{ 0 };
         for (const auto& img : images)
             {
-            memDC.DrawBitmap(wxBitmap(img), wxPoint((memDC.GetSize().GetWidth()-img.GetWidth())/2, currentY));
+            memDC.DrawBitmap(wxBitmap(img),
+                wxPoint((memDC.GetSize().GetWidth()-img.GetWidth())/2, currentY));
             currentY += img.GetHeight();
             }
         memDC.SelectObject(wxNullBitmap);
@@ -71,7 +73,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxImage& image, const uint8_t opacity, const bool preserveTransparentPixels)
+    void Image::SetOpacity(wxImage& image, const uint8_t opacity,
+                           const bool preserveTransparentPixels)
         {
         if (!image.IsOk())
             { return; }
@@ -107,7 +110,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxImage Image::ChangeColor(const wxImage& image, const wxColour srcColor, const wxColour destColor)
+    wxImage Image::ChangeColor(const wxImage& image, const wxColour srcColor,
+                               const wxColour destColor)
         {
         if (!image.IsOk())
             { return wxNullImage; }
@@ -173,7 +177,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxImage Image::CreateGlassEffect(const wxSize fillSize, const wxColour color, const Orientation direction)
+    wxImage Image::CreateGlassEffect(const wxSize fillSize, const wxColour color,
+                                     const Orientation direction)
         {
         wxBitmap background(fillSize);
         wxMemoryDC memDc(background);
@@ -182,8 +187,10 @@ namespace Wisteria::GraphItems
                                  (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
         //create a shiny overlay
         memDc.GradientFillLinear(wxRect(0, 0,
-                                    (direction == Orientation::Vertical) ? fillSize.GetWidth() : fillSize.GetWidth()*.25,
-                                    (direction == Orientation::Vertical) ? fillSize.GetHeight()*.25 : fillSize.GetHeight()),
+                                    (direction == Orientation::Vertical) ?
+                                        fillSize.GetWidth() : fillSize.GetWidth()*.25,
+                                    (direction == Orientation::Vertical) ?
+                                        fillSize.GetHeight()*.25 : fillSize.GetHeight()),
                                  color.ChangeLightness(115),color.ChangeLightness(155),
                                  (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
         memDc.SelectObject(wxNullBitmap);
@@ -192,7 +199,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity, const bool preserveTransparentPixels /*= false*/)
+    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity,
+                           const bool preserveTransparentPixels /*= false*/)
         {
         if (!bmp.IsOk())
             { return; }
@@ -220,12 +228,14 @@ namespace Wisteria::GraphItems
                 { stipple.InitAlpha(); }
 
             const wxSize canvasSize = includeShadow ?
-                wxSize(background.GetSize().GetWidth(), background.GetSize().GetHeight()-shadowSize) :
+                wxSize(background.GetSize().GetWidth(),
+                       background.GetSize().GetHeight()-shadowSize) :
                 background.GetSize();
 
             auto adjustedSize = geometry::calculate_downscaled_size(wxSizeToPair(stipple.GetSize()),
                                                                     wxSizeToPair(canvasSize));
-            // if the image is less than the height of the background (but was originally wider than the background),
+            // if the image is less than the height of the background
+            // (but was originally wider than the background),
             // then scale it down to fit the background and let the top of it be cut off.
             if (adjustedSize.second < canvasSize.GetHeight() &&
                 stipple.GetHeight() >= canvasSize.GetHeight())
@@ -236,8 +246,10 @@ namespace Wisteria::GraphItems
                     canvasSize.GetHeight());
                 }
 
-            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first, adjustedSize.second, wxIMAGE_QUALITY_HIGH);
-            const wxBitmap scaledStippleShadow = CreateSilhouette(scaledStipple.ConvertToImage(), false);
+            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first,
+                                                         adjustedSize.second, wxIMAGE_QUALITY_HIGH);
+            const wxBitmap scaledStippleShadow =
+                CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center, if needed
             const wxCoord yOffset = (adjustedSize.second >= canvasSize.GetHeight()) ?
@@ -261,7 +273,8 @@ namespace Wisteria::GraphItems
 
             auto adjustedSize = geometry::calculate_downscaled_size(wxSizeToPair(stipple.GetSize()),
                                                                     wxSizeToPair(canvasSize));
-            // if the image is less than the width of the background (but was originally wider than the background),
+            // if the image is less than the width of the background
+            // (but was originally wider than the background),
             // then scale it down to fit the background and let the top of it be cut off.
             if (adjustedSize.first < canvasSize.GetWidth() &&
                 stipple.GetWidth() >= canvasSize.GetWidth())
@@ -270,7 +283,8 @@ namespace Wisteria::GraphItems
                     geometry::calculate_rescale_height(
                         wxSizeToPair(stipple.GetSize()), canvasSize.GetWidth()));
                 }
-            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first, adjustedSize.second, wxIMAGE_QUALITY_HIGH);
+            const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first,
+                                                         adjustedSize.second, wxIMAGE_QUALITY_HIGH);
             wxBitmap scaledStippleShadow = CreateSilhouette(scaledStipple.ConvertToImage(), false);
 
             // center image if not as wide as the background
@@ -282,7 +296,10 @@ namespace Wisteria::GraphItems
                  i -= scaledStipple.GetHeight()+1)
                 {
                 if (includeShadow)
-                    { memDc.DrawBitmap(scaledStippleShadow, xOffset+shadowSize, i-scaledStipple.GetHeight()+1); }
+                    {
+                    memDc.DrawBitmap(scaledStippleShadow, xOffset+shadowSize,
+                                     i-scaledStipple.GetHeight()+1);
+                    }
                 memDc.DrawBitmap(scaledStipple, xOffset, i-scaledStipple.GetHeight()+1);
                 }
             }
@@ -296,7 +313,8 @@ namespace Wisteria::GraphItems
     void Image::SetWidth(const wxCoord width)
         {
         m_size = wxSize(width, geometry::calculate_rescale_height(
-            std::make_pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()), width));
+            std::make_pair<double, double>(m_originalImg.GetWidth(),
+                                           m_originalImg.GetHeight()), width));
         m_frameSize = m_size;
         }
 
@@ -304,7 +322,8 @@ namespace Wisteria::GraphItems
     void Image::SetHeight(const wxCoord height)
         {
         m_size = wxSize(geometry::calculate_rescale_width(
-            std::make_pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()), height), height);
+            std::make_pair<double, double>(m_originalImg.GetWidth(),
+                                           m_originalImg.GetHeight()), height), height);
         m_frameSize = m_size;
         }
 
@@ -328,11 +347,15 @@ namespace Wisteria::GraphItems
     void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                [[maybe_unused]] const double parentScaling)
         {
-        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(), L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
+                             L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             { return; }
         if (GetAnchoring() == Anchoring::Center)
-            { SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2), rect.GetTop()+(rect.GetHeight()/2))); }
+            {
+            SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
+                           rect.GetTop()+(rect.GetHeight()/2)));
+            }
         else if (GetAnchoring() == Anchoring::TopLeftCorner)
             { SetAnchorPoint(rect.GetTopLeft()); }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
@@ -343,13 +366,16 @@ namespace Wisteria::GraphItems
             { SetAnchorPoint(rect.GetBottomRight()); }
         // adjust the height to fit the bounding box
         m_size = wxSize(geometry::calculate_rescale_width(
-            std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetSize().GetHeight()),
+            std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(),
+                                           m_originalImg.GetSize().GetHeight()),
             rect.GetHeight()), rect.GetHeight());
-        // height adjusted to the rect, but if it is too wide now then we need to adjust the width to the rect and rescale the height to this new width
+        // height adjusted to the rect, but if it is too wide now then we need to
+        // adjust the width to the rect and rescale the height to this new width
         if (m_size.GetWidth() > rect.GetWidth())
             {
             m_size = wxSize(rect.GetWidth(), geometry::calculate_rescale_height(
-                std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()), rect.GetWidth()));
+                std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()),
+                                               rect.GetWidth()));
             }
         m_size *= safe_divide<double>(1.0f, GetScaling());
         m_frameSize = rect.GetSize()*safe_divide<double>(1.0f, GetScaling());
@@ -363,7 +389,10 @@ namespace Wisteria::GraphItems
         wxRect boundingBox;
 
         if (GetAnchoring() == Anchoring::Center)
-            { boundingBox = wxRect(GetAnchorPoint()-wxPoint(width/2,height/2), GetAnchorPoint()+wxPoint(width/2,height/2)); }
+            {
+            boundingBox = wxRect(GetAnchorPoint()-wxPoint(width/2,height/2),
+                                 GetAnchorPoint()+wxPoint(width/2,height/2));
+            }
         else if (GetAnchoring() == Anchoring::TopLeftCorner)
             { boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height)); }
         else if (GetAnchoring() == Anchoring::TopRightCorner)
@@ -373,7 +402,9 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { boundingBox = wxRect(GetAnchorPoint()-wxSize(width,height), wxSize(width,height)); }
         if (IsFreeFloating())
-            { boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling())-boundingBox.GetLeftTop()); }
+            {
+            boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling())-boundingBox.GetLeftTop());
+            }
         return boundingBox;
         }
 
@@ -386,13 +417,15 @@ namespace Wisteria::GraphItems
             if (!mappedImg.IsOk())
                 { return wxNullImage; }
 
-            wxMemoryInputStream stream(static_cast<const char*>(mappedImg.GetStream()), mappedImg.GetMapSize());
+            wxMemoryInputStream stream(static_cast<const char*>(mappedImg.GetStream()),
+                                                                mappedImg.GetMapSize());
             wxImage image(stream);
             // parse EXIF
             if (image.IsOk() && image.GetType() == wxBITMAP_TYPE_JPEG)
                 {
                 easyexif::EXIFInfo result;
-                if (result.parseFrom(static_cast<const unsigned char*>(mappedImg.GetStream()), mappedImg.GetMapSize()) == 0)
+                if (result.parseFrom(static_cast<const unsigned char*>(mappedImg.GetStream()),
+                                                                       mappedImg.GetMapSize()) == 0)
                     {
                     // correct the orientation (if necessary)
                     switch (result.Orientation)
@@ -440,8 +473,9 @@ namespace Wisteria::GraphItems
             { imageType = wxBITMAP_TYPE_PCX; }
         else if (ext.CmpNoCase(L"tga") == 0)
             { imageType = wxBITMAP_TYPE_TGA; }
+        // no enum value for this, but need to set it to something
         else if (ext.CmpNoCase(L"svg") == 0)
-            { imageType = wxBITMAP_TYPE_ANY; } // no enum value for this, but need to set it to something
+            { imageType = wxBITMAP_TYPE_ANY; }
         else
             { imageType = wxBITMAP_TYPE_PNG; }
         return imageType;
@@ -455,17 +489,21 @@ namespace Wisteria::GraphItems
         if (IsInDragState())
             { return GetBoundingBox(dc); }
 
-        // if the size or scaling has changed, then rescale from the original image to maintain fidelity.
-        const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(), GetImageSize().GetHeight()*GetScaling());
+        // if the size or scaling has changed, then rescale from
+        // the original image to maintain fidelity
+        const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(),
+                                GetImageSize().GetHeight()*GetScaling());
         if (m_img.GetSize() != scaledSize)
             {
             m_img = m_originalImg;
-            m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
+            m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(),
+                          wxIMAGE_QUALITY_HIGH);
             }
 
         SetOpacity(m_img, m_opacity, true);
 
-        // Draw the shadow. This needs to be a polygon outside of the image in case the image is translucent.
+        // Draw the shadow. This needs to be a polygon outside of the image
+        // in case the image is translucent.
         if (GetShadowType() != ShadowType::NoShadow && !IsSelected() &&
             GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
@@ -475,23 +513,31 @@ namespace Wisteria::GraphItems
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
                 {
                 wxPoint shadowPts[7];
-                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom()+wxPoint(scaledShadowOffset,0);
-                shadowPts[1] = GetBoundingBox(dc).GetLeftBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox(dc).GetRightBottom()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[3] = GetBoundingBox(dc).GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[4] = GetBoundingBox(dc).GetRightTop()+wxPoint(0,scaledShadowOffset);
+                shadowPts[0] = GetBoundingBox(dc).GetLeftBottom() +
+                               wxPoint(scaledShadowOffset,0);
+                shadowPts[1] = GetBoundingBox(dc).GetLeftBottom() +
+                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[2] = GetBoundingBox(dc).GetRightBottom() +
+                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[3] = GetBoundingBox(dc).GetRightTop() +
+                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[4] = GetBoundingBox(dc).GetRightTop() +
+                               wxPoint(0,scaledShadowOffset);
                 shadowPts[5] = GetBoundingBox(dc).GetRightBottom();
                 shadowPts[6] = shadowPts[0];//close polygon
-                dc.DrawPolygon(WXSIZEOF(shadowPts), shadowPts);
+                dc.DrawPolygon(std::size(shadowPts), shadowPts);
                 }
             else if (GetShadowType() == ShadowType::RightSideShadow)
                 {
                 wxPoint shadowPts[4];
-                shadowPts[0] = GetBoundingBox(dc).GetRightBottom()+wxPoint(scaledShadowOffset,0);
-                shadowPts[1] = GetBoundingBox(dc).GetRightTop()+wxPoint(scaledShadowOffset,scaledShadowOffset);
-                shadowPts[2] = GetBoundingBox(dc).GetRightTop()+wxPoint(0,scaledShadowOffset);
+                shadowPts[0] = GetBoundingBox(dc).GetRightBottom() +
+                               wxPoint(scaledShadowOffset,0);
+                shadowPts[1] = GetBoundingBox(dc).GetRightTop() +
+                               wxPoint(scaledShadowOffset,scaledShadowOffset);
+                shadowPts[2] = GetBoundingBox(dc).GetRightTop() +
+                               wxPoint(0,scaledShadowOffset);
                 shadowPts[3] = GetBoundingBox(dc).GetRightBottom();
-                dc.DrawPolygon(WXSIZEOF(shadowPts), shadowPts);
+                dc.DrawPolygon(std::size(shadowPts), shadowPts);
                 }
             }
 
@@ -499,7 +545,12 @@ namespace Wisteria::GraphItems
             (GetAnchoring() == Wisteria::Anchoring::TopLeftCorner))
             { dc.DrawBitmap(wxBitmap(m_img), GetBoundingBox(dc).GetLeftTop(), true); }
         else if (GetAnchoring() == Wisteria::Anchoring::Center)
-            { dc.DrawBitmap(wxBitmap(m_img), wxRect(wxPoint(0,0),GetImageSize()*GetScaling()).CenterIn(GetBoundingBox(dc)).GetLeftTop(), true); }
+            {
+            dc.DrawBitmap(wxBitmap(m_img),
+                          wxRect(wxPoint(0,0),
+                                 GetImageSize() * GetScaling()).CenterIn(GetBoundingBox(dc)).GetLeftTop(),
+                          true);
+            }
         else if (GetAnchoring() == Wisteria::Anchoring::TopRightCorner)
             {
             wxPoint cornerPt = GetBoundingBox(dc).GetTopRight();
