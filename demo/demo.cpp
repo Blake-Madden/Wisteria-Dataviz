@@ -61,7 +61,7 @@ MyFrame::MyFrame()
     SetSize(FromDIP(wxSize(750, 500)));
 
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize{ wxSize(16, 16) };
+    const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
 
     SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
@@ -1641,7 +1641,10 @@ MyChild::MyChild(wxMDIParentFrame *parent)
     {
     m_canvas = new Wisteria::Canvas{ this };
 
-    //BM SetIcon(wxICON(chart));
+    const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
+    const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
+
+    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
 
     // create our menu bar and associate it with the frame
     SetMenuBar(MyFrame::CreateMainMenubar());
