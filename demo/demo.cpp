@@ -248,6 +248,8 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
 
 void MyFrame::OnNewWindow(wxCommandEvent& event)
     {
+    const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
+
     // create and show another child frame
     MyChild* subframe = new MyChild(this);
 
@@ -617,6 +619,12 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // subframe->m_canvas->SetRowProportion(0, 1-subframe->m_canvas->CalcMinHeightProportion(legend));
         // subframe->m_canvas->SetRowProportion(1, subframe->m_canvas->CalcMinHeightProportion(legend));
         // subframe->m_canvas->SetFixedObject(1, 0, legend);
+
+        // add a watermark to the bottom right corner
+        subframe->m_canvas->SetWatermarkLogo(
+            wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg",
+                Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
+            wxSize(32, 32));
         }
     // Gantt Chart
     else if (event.GetId() == MyApp::ID_NEW_GANTT)

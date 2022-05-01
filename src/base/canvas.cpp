@@ -1285,16 +1285,19 @@ namespace Wisteria
 
         if (m_watermarkImg.IsOk())
             {
-            m_watermarkImg.SetDPIScaleFactor(dc.GetDPIScaleFactor());
-            m_watermarkImg.SetBestSize(wxSize(ScaleToScreenAndCanvas(100, dc),
-                                              ScaleToScreenAndCanvas(100, dc)));
+            GraphItems::Image img(m_watermarkImg.GetBitmap(
+                m_watermarkImg.GetDefaultSize()).ConvertToImage());
+            img.GetPen() = wxNullPen;
+            img.SetDPIScaleFactor(dc.GetDPIScaleFactor());
+            img.SetBestSize(wxSize(ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetWidth(), dc),
+                                   ScaleToScreenAndCanvas(m_watermarkImgSizeDIPs.GetHeight(), dc)));
             // make logo image mildly translucent
             // (twice as opaque as the system translucency).
-            m_watermarkImg.SetOpacity(Settings::GetTranslucencyValue()*2);
-            m_watermarkImg.SetAnchoring(Anchoring::BottomRightCorner);
-            m_watermarkImg.SetAnchorPoint(wxPoint(GetCanvasRect(dc).GetWidth(),
-                                                  GetCanvasRect(dc).GetHeight()));
-            m_watermarkImg.Draw(dc);
+            img.SetOpacity(Settings::GetTranslucencyValue() * 2);
+            img.SetAnchoring(Anchoring::BottomRightCorner);
+            img.SetAnchorPoint(wxPoint(GetCanvasRect(dc).GetWidth(),
+                                       GetCanvasRect(dc).GetHeight()));
+            img.Draw(dc);
             }
         }
 

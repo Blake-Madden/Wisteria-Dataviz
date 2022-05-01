@@ -130,10 +130,16 @@ namespace Wisteria
         /// @note The tags [DATETIME], [DATE], and [TIME] are expanded to their literal values
         ///  at time of rendering.
         [[nodiscard]] wxString GetWatermark() const;
-        /// @brief Overlays translucent image on bottom corner of the canvas.
+        /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
-        void SetWatermarkLogo(const GraphItems::Image& watermark) noexcept
-            { m_watermarkImg = watermark; }
+        /// @param sz The suggested size of the watermark (in DIPs).\n
+        ///  The image's aspect ratio will be maintained, one of the dimenstions from @c sz
+        ///  may be adjusted to be smaller.
+        void SetWatermarkLogo(const wxBitmapBundle& watermark, const wxSize sz) noexcept
+            {
+            m_watermarkImg = watermark;
+            m_watermarkImgSizeDIPs = sz;
+            }
         /// @}
 
         /** @name Size Functions
@@ -449,6 +455,12 @@ namespace Wisteria
         void DrawWatermarkLogo(wxDC& dc);
 
         /// @private
+        void SetWatermarkLogo(wxBitmapBundle&& watermark, const wxSize sz) noexcept
+            {
+            m_watermarkImg = std::move(watermark);
+            m_watermarkImgSizeDIPs = sz;
+            }
+        /// @private
         [[nodiscard]] const std::vector<GraphItems::Label>& GetTopTitles() const noexcept
             { return m_topTitles; }
         /// @private
@@ -583,8 +595,9 @@ namespace Wisteria
 
         // watermarks and logos
         wxString m_watermark;
-        GraphItems::Image m_watermarkImg;
         wxFont m_watermarkFont;
+        wxBitmapBundle m_watermarkImg;
+        wxSize m_watermarkImgSizeDIPs{ 100, 100 };
 
         // background values
         wxColour m_bgColor{ *wxWHITE };

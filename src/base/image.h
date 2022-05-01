@@ -122,7 +122,7 @@ namespace Wisteria::GraphItems
             @details This is useful for determining the aspect ratio of an SVG file.
              This can be passed to a `wxBitmapBundle` when it loads an SVG.
             @param filePath The file path to the SVG file.
-            @returns The default size of the SVG.*/
+            @returns The default size of the SVG. Will be an invalid size if the file fails to load.*/
         [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
 
         /** @returns A bitmap type from a file extension.
