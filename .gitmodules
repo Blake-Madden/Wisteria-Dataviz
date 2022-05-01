@@ -4,3 +4,6 @@
 [submodule "docs/doxygen/doxygen-awesome-css"]
 	path = docs/doxygen/doxygen-awesome-css
 	url = https://github.com/jothepro/doxygen-awesome-css
+[submodule "src/nanosvg"]
+	path = src/nanosvg
+	url = https://github.com/wxWidgets/nanosvg.git
