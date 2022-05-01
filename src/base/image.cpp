@@ -13,6 +13,21 @@ using namespace Wisteria::Colors;
 namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------
+    wxSize Image::GetSVGSize(const wxString& filePath)
+        {
+        NSVGimage* image{ nullptr };
+        image = nsvgParseFromFile(filePath, "px", 96.0f);
+        if (image == nullptr)
+            { return wxDefaultSize; }
+        wxSize sz{ static_cast<int>(image->width) ,
+                   static_cast<int>(image->height) };
+
+        nsvgDelete(image);
+
+        return sz;
+        }
+
+    //----------------------------------------------------------
     wxImage Image::StitchHorizontally(const std::initializer_list<wxImage>& images)
         {
         if (images.size() == 0)

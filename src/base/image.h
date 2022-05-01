@@ -25,6 +25,7 @@
 #include "../math/mathematics.h"
 #include "../util/memorymappedfile.h"
 #include "../easyexif/exif.h"
+#include "../nanosvg/src/nanosvg.h"
 
 // forward declares
 namespace Wisteria::UI
@@ -112,10 +113,17 @@ namespace Wisteria::GraphItems
             { return m_originalImg; }
 
         /** @name Image Loading Functions
-            @brief Functions related to constructing, editing, and importing images.
-            @brief These are all static functions and the result of most of them
+            @brief Functions related to querying, editing, and importing images.
+            @details These are all static functions and the result of most of them
              are `wxImage` objects that can be passed to an Image's constructor.*/
         /// @{
+
+        /** @brief Gets the default size of an SVG file.
+            @details This is useful for determining the aspect ratio of an SVG file.
+             This can be passed to a `wxBitmapBundle` when it loads an SVG.
+            @param filePath The file path to the SVG file.
+            @returns The default size of the SVG.*/
+        [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
 
         /** @returns A bitmap type from a file extension.
             @param[in,out] ext The file extension to review (can be either the extension or full file path).
