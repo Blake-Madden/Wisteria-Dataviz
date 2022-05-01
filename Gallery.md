@@ -16,6 +16,10 @@ Basic
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/CatagorizedBarChart.svg) | ![](docs/doxygen/images/GroupedCatagorizedBarChart.svg) |
 
+| Categorized Bar Chart with Stipple Brush (Wisteria::Graphs::CategoricalBarChart) |
+| :-------------------------------- |
+| ![](docs/doxygen/images/CatagorizedBarChartStipple.svg) |
+
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/LinePlot.svg) | ![](docs/doxygen/images/LinePlotCustomized.svg) |

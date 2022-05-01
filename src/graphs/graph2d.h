@@ -155,11 +155,11 @@ namespace Wisteria::Graphs
         /** @brief Sets the image brush to paint with.
             @details This is used by derived classes that use stipple painting for its objects (e.g., barcharts).
             @param image The image to paint with.*/
-        void SetStippleBrush(std::shared_ptr<const wxImage> image) noexcept
+        void SetStippleBrush(const wxBitmapBundle& image) noexcept
             { m_stipple = image; }
         /// @brief Gets the stipple brush.
         /// @returns The image that is being used to paint with, or null if one hasn't been specified.
-        [[nodiscard]] const std::shared_ptr<const wxImage>& GetStippleBrush() const noexcept
+        [[nodiscard]] const wxBitmapBundle& GetStippleBrush() const noexcept
             { return m_stipple; }
 
         /// @returns The background color of the plotting area
@@ -212,6 +212,9 @@ namespace Wisteria::Graphs
 
         // Just hiding these from Doxygen. If these are included inside of groupings,
         // then the "private" tag will break the group in the generated help.
+        /// @private
+        void SetStippleBrush(wxBitmapBundle&& image) noexcept
+            { m_stipple = std::move(image); }
         /// @private
         [[nodiscard]] const Wisteria::GraphItems::Axis& GetBottomXAxis() const noexcept
             { return m_bottomXAxis; }
@@ -438,7 +441,7 @@ namespace Wisteria::Graphs
         GraphItems::Label m_title;
         GraphItems::Label m_subtitle;
         GraphItems::Label m_caption;
-        std::shared_ptr<const wxImage> m_stipple{ nullptr };
+        wxBitmapBundle m_stipple;
 
         std::map<wxString, wxVariant> m_properties;
 

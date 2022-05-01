@@ -375,12 +375,13 @@ namespace Wisteria::Graphs
                     AddObject(boxImage);
                     }
                 else if (box.GetBoxEffect() == BoxEffect::Stipple &&
-                    GetStippleBrush() && GetStippleBrush()->IsOk() )
+                    GetStippleBrush().IsOk() )
                     {
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(wxNullPen).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
-                        Image::CreateStippledImage(wxImage(*GetStippleBrush()),
+                        Image::CreateStippledImage(
+                            GetStippleBrush().GetBitmap(GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                             wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()),
                             Orientation::Vertical, (GetShadowType() != ShadowType::NoShadow),
                             ScaleToScreenAndCanvas(4)));

@@ -63,6 +63,7 @@ public:
     static constexpr int ID_NEW_HISTOGRAM_UNIQUE_VALUES{ wxID_HIGHEST+21 };
     static constexpr int ID_NEW_CATEGORICAL_BARCHART{ wxID_HIGHEST+22 };
     static constexpr int ID_NEW_CATEGORICAL_BARCHART_GROUPED{ wxID_HIGHEST+23 };
+    static constexpr int ID_NEW_CATEGORICAL_BARCHART_STIPPLED{ wxID_HIGHEST+24 };
     };
 
 // Define a new frame

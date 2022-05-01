@@ -122,6 +122,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_BARCHART_IMAGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CATEGORICAL_BARCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PIECHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART);
@@ -161,6 +162,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize));
@@ -972,6 +975,34 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 1,
             plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
         }
+    else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
+        {
+        subframe->SetTitle(_(L"Bar Chart (Stipple Brush)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        auto mpgData = std::make_shared<Data::Dataset>();
+        try
+            {
+            mpgData->ImportCSV(L"datasets/mpg.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"manufacturer", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(err.what(), _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas);
+
+        plot->SetData(mpgData, L"manufacturer");
+        plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir + L"/res/tobias_Blue_Twingo.svg",
+            Image::GetSVGSize(appDir + L"/res/tobias_Blue_Twingo.svg")));
+        plot->SetBarEffect(BoxEffect::Stipple);
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
     // Pie Chart
     else if (event.GetId() == MyApp::ID_NEW_PIECHART)
         {
@@ -1560,6 +1591,10 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
         _(L"Bar Chart (Categorical Data, Grouped)"));
+    toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+        _(L"Bar Chart (Stipple Brush)"));
+    
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),

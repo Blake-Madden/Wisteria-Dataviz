@@ -290,15 +290,18 @@ namespace Wisteria::Graphs
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
-                                 GetStippleBrush() && GetStippleBrush()->IsOk() )
+                                 GetStippleBrush().IsOk() )
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with stipple bar effect.");
+                                                 L"Non-rectangular shapes not currently "
+                                                  "supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
+                                Image::CreateStippledImage(
+                                    GetStippleBrush().GetBitmap(
+                                        GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                                     wxSize(barLength, barWidth),
                                     Orientation::Horizontal, (GetShadowType() != ShadowType::NoShadow),
                                     ScaleToScreenAndCanvas(4)));
@@ -312,7 +315,8 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Glassy)
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with glassy bar effect.");
+                                                 L"Non-rectangular shapes not currently "
+                                                  "supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
@@ -609,15 +613,18 @@ namespace Wisteria::Graphs
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
-                                 GetStippleBrush() && GetStippleBrush()->IsOk() )
+                                 GetStippleBrush().IsOk() )
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with stipple bar effect.");
+                                                 L"Non-rectangular shapes not currently "
+                                                  "supported with stipple bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                Image::CreateStippledImage(wxImage(*(GetStippleBrush())),
+                                Image::CreateStippledImage(
+                                    GetStippleBrush().GetBitmap(
+                                        GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                                     wxSize(barWidth, barLength), Orientation::Vertical,
                                     (GetShadowType() != ShadowType::NoShadow),
                                     ScaleToScreenAndCanvas(4)));
@@ -631,7 +638,8 @@ namespace Wisteria::Graphs
                         else if (bar.GetEffect() == BoxEffect::Glassy)
                             {
                             wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently supported with glassy bar effect.");
+                                                 L"Non-rectangular shapes not currently "
+                                                  "supported with glassy bar effect.");
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(wxNullPen).
