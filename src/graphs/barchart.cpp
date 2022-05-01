@@ -276,13 +276,14 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage().IsOk())
                             {
                              auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                GetCommonBarsImage()->GetSubImage(barRect));
+                                 GetCommonBarsImage().GetBitmap(
+                                     GetCommonBarsImage().GetDefaultSize()).ConvertToImage().GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
@@ -599,13 +600,14 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage().IsOk())
                             {
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                GetCommonBarsImage()->GetSubImage(barRect));
+                                GetCommonBarsImage().GetBitmap(
+                                    GetCommonBarsImage().GetDefaultSize()).ConvertToImage().GetSubImage(barRect));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?

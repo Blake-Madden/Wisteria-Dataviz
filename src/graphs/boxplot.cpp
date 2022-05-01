@@ -362,12 +362,13 @@ namespace Wisteria::Graphs
                             box.GetUpperControlLimit(), box.GetMiddlePoint(),
                             box.GetLowerControlLimit());
                 // draw the box
-                if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage())
+                if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage().IsOk())
                     {
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(m_imageOutlineColor).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
-                        GetCommonBoxImage()->GetSubImage(box.m_boxRect));
+                        GetCommonBoxImage().GetBitmap(
+                            GetCommonBoxImage().GetDefaultSize()).ConvertToImage().GetSubImage(box.m_boxRect));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);

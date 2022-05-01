@@ -854,7 +854,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // make it a horizontal barchart
         plot->SetBarOrientation(Orientation::Horizontal);
 
-        plot->SetCommonBarImage(std::make_shared<wxImage>(
+        plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
             GraphItems::Image::LoadImageWithCorrection(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
             *wxWHITE);

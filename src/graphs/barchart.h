@@ -802,10 +802,17 @@ namespace Wisteria::Graphs
         /// @param barsImage The image to draw across the bars.
         /// @param outlineColor The outline color of the bars.
         /// @note This effect will only apply to bars using the @c CommonImage effect. 
-        void SetCommonBarImage(std::shared_ptr<const wxImage> barsImage,
+        void SetCommonBarImage(const wxBitmapBundle& barsImage,
                                const wxColour& outlineColor) noexcept
             {
             m_barsImage = barsImage;
+            m_imageOutlineColor = outlineColor;
+            }
+        /// @private
+        void SetCommonBarImage(wxBitmapBundle&& barsImage,
+                               const wxColour& outlineColor) noexcept
+            {
+            m_barsImage = std::move(barsImage);
             m_imageOutlineColor = outlineColor;
             }
 
@@ -820,7 +827,7 @@ namespace Wisteria::Graphs
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
     protected:
         /// @returns The image drawn across all bars.
-        [[nodiscard]] const std::shared_ptr<const wxImage>& GetCommonBarsImage() const noexcept
+        [[nodiscard]] const wxBitmapBundle& GetCommonBarsImage() const noexcept
             { return m_barsImage; }
         /// @returns The number of slots that can hold a bar.
         ///  This is used for calculating the width of the bars.
@@ -870,7 +877,7 @@ namespace Wisteria::Graphs
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
         size_t m_barsPerDefaultCanvasSize{ 500 };
         Orientation m_barOrientation{ Orientation::Vertical };
-        std::shared_ptr<const wxImage> m_barsImage{ nullptr };
+        wxBitmapBundle m_barsImage;
         wxColour m_imageOutlineColor{ *wxBLACK };
         };
     }
