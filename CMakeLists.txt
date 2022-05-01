@@ -98,7 +98,7 @@ ELSE()
     ENDIF()
 ENDIF()
 
-# Build the demo
+# Build the library demo
 ########################
 SET(DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/demo.cpp)
 
@@ -152,4 +152,60 @@ IF(APPLE)
         MACOSX_BUNDLE_ICON_FILE wxmac.icns
         MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.demo")
+ENDIF()
+
+# Build the application
+########################
+SET(APP_SRC_FILES ${CMAKE_SOURCE_DIR}/app/wisteriaapp.cpp)
+
+IF(WIN32)
+    # Include an RC file for windows
+    SET(wxUSE_DPI_AWARE_MANIFEST 1)
+    LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
+    LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
+    CONFIGURE_FILE(${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest
+                   ${CMAKE_SOURCE_DIR}/demo/wx_dpi_aware.manifest
+                   COPYONLY)
+ELSEIF(APPLE)
+    # Add an icon for the apple .app file
+    LIST(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/wxmac.icns)
+ENDIF()
+
+# Define the build target for the executable
+MESSAGE(STATUS "Building the program...")
+SET(MAIN_APP WisteriaApp)
+ADD_EXECUTABLE(${MAIN_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
+# Link required libraries to the executable
+TARGET_LINK_LIBRARIES(${MAIN_APP} Wisteria ${wxWidgets_LIBRARIES})
+
+# Embed the manifest file
+IF(WIN32)
+    SET(CMAKE_SHARED_LINKER_FLAGS /MANIFEST:NO)
+    ADD_CUSTOM_COMMAND(
+        TARGET ${MAIN_APP}
+        POST_BUILD
+        # Note about mt.exe, #1 is for EXEs and #2 is for DLLs
+        COMMAND "mt.exe" -manifest \"${CMAKE_SOURCE_DIR}/app/wx_dpi_aware.manifest\"
+                         -outputresource:\"$<TARGET_FILE:${MAIN_APP}>\"\;\#1
+        COMMENT "Adding manifest...")
+    MESSAGE(STATUS "Adding manifest...")
+ENDIF()
+
+# Copy resources and datasets into build folder
+MESSAGE(STATUS "Copying app resources...")
+ADD_CUSTOM_COMMAND(TARGET ${MAIN_APP}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/app/res $<TARGET_FILE_DIR:${MAIN_APP}>/res)
+ADD_CUSTOM_COMMAND(TARGET ${MAIN_APP}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${MAIN_APP}>/datasets)
+
+IF(APPLE)
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        RESOURCE "app/wxmac.icns"
+        MACOSX_BUNDLE_ICON_FILE wxmac.icns
+        MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
 ENDIF()

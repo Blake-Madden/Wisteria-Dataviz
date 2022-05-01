@@ -183,7 +183,7 @@ namespace Wisteria
             {
             wxGCDC gdc(this);
             return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(),
-                GetCanvasMinWidthDIPs() * gdc.GetDPIScaleFactor());
+                gdc.FromDIP(GetCanvasMinWidthDIPs()));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
              when at 1.0 scaling.
@@ -195,7 +195,7 @@ namespace Wisteria
             {
             wxGCDC gdc(this);
             return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(),
-                GetCanvasMinHeightDIPs() * gdc.GetDPIScaleFactor());
+                gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
         /// @}
 
@@ -520,18 +520,17 @@ namespace Wisteria
         ///  It should NOT be used with font point sizes because DPI scaling handled by the OS for those.
         ///  Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
-            { return value * GetScaling() * dc.GetDPIScaleFactor(); }
+            { return value * GetScaling() * dc.FromDIP(1); }
 
         /// @returns The rectangle area of the canvas.
         [[nodiscard]] const wxRect& GetCanvasRectDIPs() const noexcept
             { return m_rectDIPs; }
 
-        /// @returns The rectangle area of the canvas.
+        /// @returns The (scaled) rectangle area of the canvas.
         [[nodiscard]] wxRect GetCanvasRect(wxDC& dc) const noexcept
             {
             wxRect scaledRect(m_rectDIPs);
-            scaledRect.SetWidth(scaledRect.GetWidth() * dc.GetDPIScaleFactor());
-            scaledRect.SetHeight(scaledRect.GetHeight() * dc.GetDPIScaleFactor());
+            scaledRect.SetSize(dc.FromDIP(m_rectDIPs.GetSize()));
             return scaledRect;
             }
 
