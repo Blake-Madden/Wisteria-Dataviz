@@ -24,7 +24,7 @@ namespace Wisteria::GraphItems
                 if (useMaxWidth)
                     {
                     axisLabel.SetMinimumUserSizeDIPs(
-                        m_maxLabelWidth / dc.GetDPIScaleFactor(), std::nullopt);
+                        dc.ToDIP(m_maxLabelWidth), std::nullopt);
                     }
                 axisLabel.SetPadding(std::max(4, GetTopPadding()),
                     std::max(4, GetRightPadding()),
@@ -35,7 +35,7 @@ namespace Wisteria::GraphItems
                 if (useMaxWidth)
                     {
                     axisLabel.SetMinimumUserSizeDIPs(
-                        std::nullopt, m_maxLabelWidth / dc.GetDPIScaleFactor());
+                        std::nullopt, dc.ToDIP(m_maxLabelWidth));
                     }
                 axisLabel.SetPadding(std::max(4, GetTopPadding()),
                     std::max(4, GetRightPadding()),

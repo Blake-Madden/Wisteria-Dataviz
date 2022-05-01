@@ -399,8 +399,8 @@ namespace Wisteria::Graphs
                     Padding(0, labelRightPadding, 0, 0).
                     LabelPageVerticalAlignment(PageVerticalAlignment::Centered));
                 groupRowLabel->SetMinimumUserSizeDIPs(
-                    groupLabelWidth / dc.GetDPIScaleFactor(),
-                    boxWidth / dc.GetDPIScaleFactor());
+                    dc.ToDIP(groupLabelWidth),
+                    dc.ToDIP(boxWidth));
                 AddObject(groupRowLabel);
                 }
 
