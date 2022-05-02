@@ -20,7 +20,6 @@
 #include <vector>
 #include <map>
 #include <execution>
-#include "../util/frequency_set.h"
 #include "mathematics.h"
 #include "safe_math.h"
 #include "../util/frequency_set.h"
@@ -33,12 +32,12 @@ namespace statistics
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @todo needs unit test*/
-    template <typename T>
-    [[nodiscard]] inline size_t valid_n(const T begin, const T end) noexcept
+    [[nodiscard]] inline size_t valid_n(const std::vector<double>& data) noexcept
         {
-        return std::accumulate(begin, end, 0,
+        return static_cast<size_t>(
+            std::accumulate(data.cbegin(), data.cend(), 0.0,
             [](const auto initVal, const auto val) noexcept
-                { return initVal + (std::isnan(val) ? 0 : 1); });
+                { return initVal + (std::isnan(val) ? 0 : 1); }));
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
@@ -132,28 +131,30 @@ namespace statistics
     /** @returns The means (average) value from the specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.*/
-    template <typename T>
-    [[nodiscard]] inline double mean(const T begin, const T end)
+    [[nodiscard]] inline double mean(const std::vector<double>& data)
         {
-        const double summation = std::accumulate<T,double>(begin, end, 0.0f);
-        if ((end-begin) == 0)
+        const auto N = valid_n(data);
+        const double summation = std::accumulate(data.cbegin(), data.cend(), 0.0,
+            [](const double initVal, const double val) noexcept
+            { return initVal + (std::isnan(val) ? 0.0 : val); });
+        if (N == 0)
             { throw std::invalid_argument("No observations in mean calculation."); }
         if (summation == 0.0f)
             { return 0.0f; }
-        return summation/static_cast<double>(end-begin);
+        return safe_divide<double>(summation, N);
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @warning NaN values should be removed from the input prior to calling this.*/
-    template<typename ptr_typeT>
-    [[nodiscard]] inline double median_presorted(const ptr_typeT begin, const ptr_typeT end)
+    [[nodiscard]] inline double median_presorted(const std::vector<double>::const_iterator& begin,
+                                                 const std::vector<double>::const_iterator& end)
         {
         // since we are looking at specific positions in the data,
         // we have to look at the whole range of the data, not just
         // the non-NaN values
-        const size_t sizeN = (end-begin);
+        const size_t sizeN = std::distance(begin, end);
         if (sizeN == 1)
             { return *begin; }
         if (sizeN == 0)
@@ -161,36 +162,52 @@ namespace statistics
         const size_t lowerMidPoint = (sizeN/2)-1; // subtract 1 because of 0-based indexing
         if (is_even(sizeN))
             {
-            return (begin[lowerMidPoint] + begin[lowerMidPoint+1])
+            return (*(begin + lowerMidPoint) + *(begin + lowerMidPoint + 1))
                 / static_cast<double>(2);
             }
         else
-            { return begin[lowerMidPoint+1]; }
+            { return *(begin + lowerMidPoint + 1); }
         }
+
+    /** @returns The median value from the specified range (assumes data is already sorted).
+        @param begin The beginning of the data range.
+        @param end The end of the data range.
+        @warning NaN values should be removed from the input prior to calling this.*/
+    [[nodiscard]] inline double median_presorted(const std::vector<double>& data)
+        { return median_presorted(data.cbegin(), data.cend()); }
 
     /** @returns The median value from the specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.*/
-    template<typename T, typename ptr_typeT>
-    [[nodiscard]] inline T median(const ptr_typeT begin, const ptr_typeT end)
+    [[nodiscard]] inline double median(const std::vector<double>& data)
         {
-        std::vector<T> dest(begin, end);
+        std::vector<double> dest;
+        dest.reserve(data.size());
+        // don't copy NaN into buffer
+        std::copy_if(data.cbegin(), data.cend(),
+            std::back_inserter(dest),
+            [](const auto val) noexcept
+              { return !std::isnan(val); });
         std::sort(std::execution::par, dest.begin(), dest.end());
-        return median_presorted<decltype(dest.cbegin())>(dest.cbegin(), dest.cend());
+        return median_presorted(dest);
         }
 
     /** @returns The sum of squares/cubes/etc. from the specified range.
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @param power The exponent value (e.g., 2 will give you the sum of squares).*/
-    template<typename T>
-    [[nodiscard]] inline constexpr double sum_of_powers(const T begin, const T end, const double power)
+    [[nodiscard]] inline double sum_of_powers(const std::vector<double>& data, const double power)
         {
-        const double mean_val = mean(begin, end);
+        const double mean_val = mean(data);
 
-        return std::accumulate<T,double>(begin, end, 0.0f,
-            [mean_val, power](const auto& lhs, const auto& rhs)
-                { return lhs + std::pow(static_cast<double>(rhs - mean_val), power); }
+        return std::accumulate(data.cbegin(), data.cend(), 0.0,
+            [mean_val, power](const double lhs, const double rhs)
+                {
+                return lhs +
+                    // ignore NaN
+                    (std::isnan(rhs) ? 0.0 :
+                     std::pow(static_cast<double>(rhs - mean_val), power));
+                }
             );
         }
 
@@ -198,12 +215,11 @@ namespace statistics
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
-    template<typename T>
-    [[nodiscard]] inline double variance(const T begin, const T end, const bool is_sample)
+    [[nodiscard]] inline double variance(const std::vector<double>& data, const bool is_sample)
         {
-        //sum of squares/N-1
-        const double sos = sum_of_powers(begin, end, 2);
-        const size_t N = (end-begin);
+        // sum of squares/N-1
+        const double sos = sum_of_powers(data, 2);
+        const size_t N = valid_n(data);
         if (N < 2)
             { throw std::invalid_argument("Not enough observations to calculate variance."); }
         if (sos == 0.0f)
@@ -215,28 +231,28 @@ namespace statistics
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
-    template<typename T>
-    [[nodiscard]] inline double standard_deviation(const T begin, const T end, const bool is_sample)
+    [[nodiscard]] inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
-        if ((end-begin) < 2)
+        if (data.size() < 2)
             { throw std::invalid_argument("Not enough observations to calculate std. dev."); }
         //square root of variance
-        return std::sqrt(variance(begin, end, is_sample) );
+        return std::sqrt(variance(data, is_sample) );
         }
 
     /** @returns The standard error of the mean from the specified range.
-         The standard deviation of all sample mean estimates of a population mean. For example, if multiple samples of size N are taken from a population, the means will more than likely vary between samplings.
+         The standard deviation of all sample mean estimates of a population mean.
+         For example, if multiple samples of size N are taken from a population,
+         the means will more than likely vary between samplings.
          The standard error will measure the standard deviation of these sample means.
         @param begin The beginning of the data range.
         @param end The end of the data range.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
-    template<typename T>
-    [[nodiscard]] inline double standard_error_of_mean(const T begin, const T end, const bool is_sample)
+    [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data, const bool is_sample)
         {
-        const size_t N = (end-begin);
+        const auto N = valid_n(data);
         if (N < 2)
             { throw std::invalid_argument("Not enough observations to calculate SEM."); }
-        return safe_divide<double>(standard_deviation(begin, end, is_sample), std::sqrt(static_cast<double>(N)));
+        return safe_divide<double>(standard_deviation(data, is_sample), std::sqrt(static_cast<double>(N)));
         }
 
     /** @brief Gets the skewness from the specified range.
@@ -248,15 +264,14 @@ namespace statistics
         @param end The end of the data range.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).
         @returns The skewness from the specified range.*/
-    template<typename T>
-    [[nodiscard]] inline double skewness(const T begin, const T end, const bool is_sample)
+    [[nodiscard]] inline double skewness(const std::vector<double>& data, const bool is_sample)
         {
-        const double N = (end-begin);
+        const auto N = valid_n(data);
         if (N < 3)
             { throw std::invalid_argument("Not enough observations to calculate Skewness."); }
 
-        return safe_divide<double>(N*sum_of_powers(begin,end,3),
-                                    (N-1)*(N-2)*std::pow(standard_deviation(begin,end,is_sample),3));
+        return safe_divide<double>(N*sum_of_powers(data, 3),
+                                    (N-1)*(N-2)*std::pow(standard_deviation(data, is_sample),3));
         }
 
     /** @brief Gets the Kurtosis from the specified range.
@@ -266,15 +281,14 @@ namespace statistics
         @param end The end of the data range.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).
         @returns The Kurtosis from the specified range.*/
-    template<typename T>
-    [[nodiscard]] inline double kurtosis(const T begin, const T end, const bool is_sample)
+    [[nodiscard]] inline double kurtosis(const std::vector<double>& data, const bool is_sample)
         {
-        const double N = (end-begin);
+        const auto N = valid_n(data);
         if (N < 4)
             { throw std::invalid_argument("Not enough observations to calculate Kurtosis."); }
 
-        return safe_divide<double>(N*(N+1) * sum_of_powers(begin,end,4) - 3*sum_of_powers(begin,end,2) * sum_of_powers(begin,end,2) * (N-1),
-                                    (N-1)*(N-2)*(N-3)*std::pow(standard_deviation(begin,end,is_sample),4));
+        return safe_divide<double>(N*(N+1) * sum_of_powers(data, 4) - 3*sum_of_powers(data, 2) * sum_of_powers(data, 2) * (N-1),
+                                   (N-1)*(N-2)*(N-3)*std::pow(standard_deviation(data, is_sample),4));
         }
 
     /** @brief Calculates the 25th and 75th percentiles from the specified range using the
@@ -329,57 +343,46 @@ namespace statistics
         @details You can get the outlier and extreme ranges from the data, as
          well as read the outlier values one-by-one.
         @code
-        // analyze a vector of integers and retrieve its outliers
-        std::vector<int> values = { 5, 9, -3, 6, 7, 6, 6, 4, 3, 17 }
-        // load the data
-        statistics::find_outliers<std::vector<int>::const_iterator> findOutlier(values.cbegin(), values.cend());
-        std::vector<int> theOutliers;
-        // iterate through the outliers by calling operator().
-        for (;;)
+         // analyze a data series and retrieve its outliers
+         std::vector<double> values = { 5, 9, -3, 6, 7, 6, 6, 4, 3, 17 }
+         // load the data
+         statistics::find_outliers
+            findOutlier(values));
+         std::vector<int> theOutliers;
+         // iterate through the outliers by calling operator().
+         for (;;)
             {
             auto nextOutlier = findOutlier();
             if (nextOutlier == values.end())
                 { break; }
             theOutliers.push_back(*nextOutlier);
             }
-        // theOutliers will now be filled with -3 and 17.
-
-        // now analyze a regular array
-        theOutliers.clear();
-        int regularArrayValues[] = { 5, 9, 6, 7, 6, 4, 3, -3, 6, 17 };
-        auto arrayCount = (sizeof(regularArrayValues)/sizeof(regularArrayValues[0]));
-        statistics::find_outliers<int*> foRegularArray(regularArrayValues, regularArrayValues+arrayCount);
-        for (;;)
-            {
-            auto nextOutlier = foRegularArray();
-            if (nextOutlier == regularArrayValues+arrayCount)
-                { break; }
-            theOutliers.push_back(*nextOutlier);
-            }
-        // theOutliers will now be filled with -3 and 17.
+         // theOutliers will now be filled with -3 and 17
         @endcode
        */
-    template<typename T>
     class find_outliers
         {
     public:
         /** @brief Constructor that accepts data and analyzes it.
             @param begin The beginning of the data range.
             @param end The end of the data range.*/
-        find_outliers(const T begin, const T end)
-            : m_current_position(begin), m_end(end),
-            m_temp_buffer(std::distance(begin, end) ), lo(0), uo(0), le(0), ue(0)
-            { set_data(begin, end); }
+        find_outliers(const std::vector<double>& data)
+            : m_current_position(data.cbegin()), m_end(data.cend())
+            { set_data(data); }
         /** @brief Sets the data and analyzes it.
             @param begin The beginning of the data range.
             @param end The end of the data range.*/
-        void set_data(const T begin, const T end)
+        void set_data(const std::vector<double>& data)
             {
-            m_current_position = begin;
-            m_end = end;
-            m_temp_buffer.resize(std::distance(begin, end) );
             double lq(0), uq(0);
-            std::copy(std::execution::par, begin, end, m_temp_buffer.begin() );
+            m_current_position = data.cbegin();
+            m_end = data.cend();
+            m_temp_buffer.reserve(data.size());
+            // don't copy NaN into buffer
+            std::copy_if(data.cbegin(), data.cend(),
+                std::back_inserter(m_temp_buffer),
+                [](const auto val) noexcept
+                  { return !std::isnan(val); });
             std::sort(std::execution::par, m_temp_buffer.begin(), m_temp_buffer.end() );
             // calculate the quartile ranges
             statistics::quartiles_presorted(
@@ -392,7 +395,7 @@ namespace statistics
             }
         /// @returns A pointer/iterator to the next outlier,
         ///  or end of the container if no more outliers.
-        [[nodiscard]] const T operator()() noexcept
+        [[nodiscard]] std::vector<double>::const_iterator operator()() noexcept
             {
             m_current_position = std::find_if(
                 std::execution::par,
@@ -415,8 +418,8 @@ namespace statistics
         [[nodiscard]] double get_upper_extreme_boundary() const noexcept
             { return ue; }
     private:
-        T m_current_position;
-        T m_end;
+        std::vector<double>::const_iterator m_current_position;
+        std::vector<double>::const_iterator m_end;
         std::vector<double> m_temp_buffer;
         double lo{ 0 };
         double uo{ 0 };
