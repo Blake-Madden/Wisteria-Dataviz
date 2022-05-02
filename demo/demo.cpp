@@ -317,7 +317,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
                      MakeLarger());
 
-        // use group and put all of the students' heatmaps into one column
         plot->SetData(testScoresData, L"TEST_SCORE");
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
@@ -854,7 +853,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
-            GraphItems::Image::LoadImageWithCorrection(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
+            GraphItems::Image::LoadFile(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
             *wxWHITE);
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);

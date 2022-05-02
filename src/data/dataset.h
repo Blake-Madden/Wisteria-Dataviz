@@ -222,7 +222,7 @@ namespace Wisteria::Data
     /** @brief Class for filling a row in a dataset.
         @details This can be used to chain multiple fields together in a call to @c AddRow():
         @code
-         dataset.AddRow(DataInfo().Continuous({ 4, 120 }).Group(1));
+         dataset.AddRow(DataInfo().Continuous({ 4, 120 }).Categoricals({ 1 }));
         @endcode*/
     class RowInfo
         {
@@ -277,7 +277,7 @@ namespace Wisteria::Data
 
              As an example:
 
-             `info().Date({ dt1, dt2})`
+             `info().Dates({ dt1, dt2})`
 
              Will result in @c dt1 being used for the first date column and @c dt2
              for the second date column.
@@ -337,7 +337,7 @@ namespace Wisteria::Data
     /// @sa ImportInfo.
     enum class CategoricalImportMethod
         {
-        ReadAsIntegers, /*!< Read the column as integral codes.
+        ReadAsIntegers, /*!< Read the column as integral codes.\n
                              Caller should set the respective string values after the import.*/
         ReadAsStrings   /*!< Read the column as strings. Respective integer codes will be
                              arbitrarily assigned in the order that strings appear.*/
@@ -345,7 +345,6 @@ namespace Wisteria::Data
 
     /// @brief Class for specifying which columns from an input file to use in the dataset
     ///  and how to map them.
-    /// 
     /// @details The fields in this class are chainable, so you can set multiple properties
     ///  in place as you construct it.
     class ImportInfo
@@ -372,7 +371,8 @@ namespace Wisteria::Data
             /// @details The numeric code assigned to missing data (i.e., empty string)
             ///  is non-deterministic. It will be whatever the next ID in the sequence is when
             ///  the first empty value is encountered in the column.
-            ///  @c ColumnWithStringTable::FindMissingDataCode() can be usded to find this code after loading the data.
+            ///  @c ColumnWithStringTable::FindMissingDataCode() can be usded to
+            ///  find this code after loading the data.
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             /// @brief The default missing data code.
             /// @details This is only used if using the @c ReadAsIntegers method.
@@ -437,8 +437,8 @@ namespace Wisteria::Data
              numbers, while `AGE RANGE` will use the default of being imported as strings.
             @param categoricalColumns The column names and their respective important methods.\n
              For the import methods, you can either import the column as strings
-             and have integer codes automatically (and arbitrarily) assigned to them, or import integer
-             codes that you later assign strings to.
+             and have integer codes automatically (and arbitrarily) assigned to them, or import
+             integer codes that you later assign strings to.
             @sa Data::CategoricalImportMethod for more info.
             @returns A self reference.*/
         ImportInfo& CategoricalColumns(const std::vector<CategoricalImportInfo>& categoricalColumns)

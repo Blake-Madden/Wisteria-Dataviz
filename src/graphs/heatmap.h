@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
                      MakeBold().MakeLarger());
 
           // use group and put all of the students' heatmaps into one row
-          plot->SetData(testScoresData, L"test_score");
+          plot->SetData(testScoresData, L"test_score", L"Name", 1);
           // say "Students" at the top instead of "Groups"
           plot->SetGroupHeaderPrefix(_("Students"));
 
