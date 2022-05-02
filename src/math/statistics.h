@@ -377,6 +377,7 @@ namespace statistics
             double lq(0), uq(0);
             m_current_position = data.cbegin();
             m_end = data.cend();
+            m_temp_buffer.clear();
             m_temp_buffer.reserve(data.size());
             // don't copy NaN into buffer
             std::copy_if(data.cbegin(), data.cend(),
