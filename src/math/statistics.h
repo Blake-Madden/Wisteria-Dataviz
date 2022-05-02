@@ -45,18 +45,17 @@ namespace statistics
          In the case of a tie, multiple modes will be returned.
         @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
     template <typename T>
-    [[nodiscard]] std::set<T> mode(const std::vector<T> data)
+    [[nodiscard]] std::set<T> mode(const std::vector<T>& data)
         {
         std::set<T> modes;
         if (data.size() == 0)
             { return modes; }
         frequency_set<T> groups;
-        std::multimap<size_t, T, std::greater<size_t>> groupsByCount; // this will sort the larger items to the front
+        // this will sort the larger items to the front
+        std::multimap<size_t, T, std::greater<size_t>> groupsByCount;
         // look at the full range of the data, not just non-NaN
-        const size_t N = data.size();
-
-        for (size_t i = 0; i < N; ++i)
-            { groups.insert(begin[i]); }
+        for (const auto& val : data)
+            { groups.insert(val); }
         // flip the groupings so that the size of each group is the first element
         for (auto pos = groups.get_data().cbegin();
             pos != groups.get_data().cend();
@@ -85,21 +84,18 @@ namespace statistics
         @returns A set containing all modes from a specified range.
          In the case of a tie, multiple modes will be returned.
         @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
-    template <typename T, typename InputIterator, typename predicateT>
-    [[nodiscard]] std::set<T> mode(const InputIterator begin, const InputIterator end, predicateT transformValue)
+    template <typename T, typename predicateT>
+    [[nodiscard]] std::set<T> mode(const std::vector<T>& data, predicateT transformValue)
         {
         std::set<T> modes;
-        if (end <= begin)
+        if (data.size() == 0)
             { return modes; }
         frequency_set<T> groups;
-        std::multimap<size_t, T, std::greater<size_t>> groupsByCount; // this will sort the larger items to the front
+        // this will sort the larger items to the front
+        std::multimap<size_t, T, std::greater<size_t>> groupsByCount;
         // look at the full range of the data, not just non-NaN
-        const size_t N = (end-begin);
-        if (N == 0)
-            { return modes; }
-
-        for (size_t i = 0; i < N; ++i)
-            { groups.insert(transformValue(begin[i])); }
+        for (const auto& val : data)
+            { groups.insert(transformValue(val)); }
         // flip the groupings so that the size of each group is the first element
         for (auto pos = groups.get_data().cbegin();
             pos != groups.get_data().cend();
@@ -139,7 +135,8 @@ namespace statistics
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
-        @param data The data to analyze.
+        @param begin The start of the data range.
+        @param end The end of the data range.
         @warning NaN values should be removed from the input prior to calling this.*/
     [[nodiscard]] inline double median_presorted(const std::vector<double>::const_iterator& begin,
                                                  const std::vector<double>::const_iterator& end)
