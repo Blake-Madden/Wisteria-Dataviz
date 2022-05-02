@@ -34,7 +34,7 @@ namespace Wisteria::Graphs
         @par %Data:
          This plot accepts a Data::Dataset where a continuous column is the data that is color mapped.
          Also, this data series can optionally be grouped by a categorical column from the dataset.
-         Finally, a label can optionally be assigned to each cell (corresponding to the data point)
+         Finally, an ID/label can optionally be assigned to each cell (corresponding to the data points)
          that is displayed when selected by the client.
 
          | NAME   | TEST_SCORE | WEEK   |
@@ -59,7 +59,7 @@ namespace Wisteria::Graphs
          ...
 
          With the above dataset, the column `TEST_SCORE` will be the continuous variable,
-         and `WEEK` can optionally be used as the label when a cell is selected.
+         and `WEEK` can optionally be used as the label/ID when a cell is selected.
          If you wish to separate heat maps for each group, then `NAME` should be imported
          as the grouping variable.
 
@@ -68,8 +68,8 @@ namespace Wisteria::Graphs
          and each group's values should be in the order that want them to be appear in the plot.
 
          @par Missing Data:
+         - Missing data in the ID column will result in an empty selection label for the cell.
          - Missing data in the group column will be shown as an empty row label (for the group).
-         - Missing data in the cell label column will result in an empty selection label for the cell.
          - If the value is missing data, then that will be shown as a transparent cell with a red 'X' in the middle.\n
            With the above dataset, a row for the student `Joe` will only have two valid cells
            (for weeks 1 and 4), and two cells in the middle that are crossed out (for weeks 2 and 3).
@@ -87,10 +87,8 @@ namespace Wisteria::Graphs
             testScoresData->ImportCSV(L"datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
-                CategoricalColumns({
-                { L"Name", CategoricalImportMethod::ReadAsStrings },
-                { L"Week", CategoricalImportMethod::ReadAsStrings }
-                }));
+                IdColumn(L"Week").
+                CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
             }
           catch (const std::exception& err)
             {
@@ -138,9 +136,6 @@ namespace Wisteria::Graphs
              the heatmapping.
             @param groupColumnName The group column to split the data into
              (this is optional).
-            @param cellLabelColumnName The column containing labels to display on the
-             cells when they are selected. This can be a description of what the cell's
-             value represents.
             @param groupColumnCount If grouping, the number of columns to split
              the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
              as more than 5 columns would make the boxes too small.
@@ -155,7 +150,6 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
             std::optional<const wxString> groupColumnName = std::nullopt,
-            std::optional<const wxString> cellLabelColumnName = std::nullopt,
             std::optional<size_t> groupColumnCount = std::nullopt);
 
         /** @name Grouping Functions
@@ -214,10 +208,8 @@ namespace Wisteria::Graphs
         std::pair<double, double> m_range{ 0,0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_cellLabelColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         bool m_useGrouping{ false };
-        bool m_useCellLabels{ false };
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
         };

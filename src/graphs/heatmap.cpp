@@ -32,7 +32,6 @@ namespace Wisteria::Graphs
     void HeatMap::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& continuousColumnName,
         std::optional<const wxString> groupColumnName /*= std::nullopt*/,
-        std::optional<const wxString> cellLabelColumnName /*= std::nullopt*/,
         std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
         if (data == nullptr)
@@ -47,14 +46,6 @@ namespace Wisteria::Graphs
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for heatmap."), groupColumnName.value()));
-            }
-        m_useCellLabels = cellLabelColumnName.has_value();
-        m_cellLabelColumn = (cellLabelColumnName ? m_data->GetCategoricalColumn(cellLabelColumnName.value()) :
-            m_data->GetCategoricalColumns().cend());
-        if (cellLabelColumnName && m_cellLabelColumn == m_data->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': cell label column not found for heatmap."), cellLabelColumnName.value()));
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
@@ -133,9 +124,7 @@ namespace Wisteria::Graphs
                         crossedOutSymbolForNaN :
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
-                m_matrix[currentRow][currentColumn].m_selectionLabel = m_useCellLabels ?
-                    m_cellLabelColumn->GetCategoryLabel(m_cellLabelColumn->GetValue(i)) :
-                    wxString();
+                m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
                 m_matrix[currentRow][currentColumn].m_groupId = m_groupColumn->GetValue(i);
                 ++currentColumn;
                 }
@@ -176,9 +165,7 @@ namespace Wisteria::Graphs
                         crossedOutSymbolForNaN :
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
-                m_matrix[currentRow][currentColumn].m_selectionLabel = m_useCellLabels ?
-                    m_cellLabelColumn->GetCategoryLabel(m_cellLabelColumn->GetValue(i)) :
-                    wxString();
+                m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
                 // ignored, just default to zero
                 m_matrix[currentRow][currentColumn].m_groupId = 0;
                 ++currentColumn;

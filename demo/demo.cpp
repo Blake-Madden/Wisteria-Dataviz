@@ -300,7 +300,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             testScoresData->ImportCSV(L"datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
-                CategoricalColumns({ { L"Week", CategoricalImportMethod::ReadAsStrings } }));
+                IdColumn(L"Week"));
             }
         catch (const std::exception& err)
             {
@@ -318,7 +318,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                      MakeLarger());
 
         // use group and put all of the students' heatmaps into one column
-        plot->SetData(testScoresData, L"TEST_SCORE", std::nullopt, L"Week");
+        plot->SetData(testScoresData, L"TEST_SCORE");
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
@@ -340,10 +340,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             testScoresData->ImportCSV(L"datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
-                CategoricalColumns({
-                    { L"Name", CategoricalImportMethod::ReadAsStrings },
-                    { L"Week", CategoricalImportMethod::ReadAsStrings }
-                    }));
+                IdColumn(L"Week").
+                CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
@@ -360,7 +358,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                  MakeLarger());
 
         // use group and put all of the students' heatmaps into one column
-        plot->SetData(testScoresData, L"TEST_SCORE", L"Name", L"Week", 1);
+        plot->SetData(testScoresData, L"TEST_SCORE", L"Name", 1);
         // say "Students" at the top instead of "Groups"
         plot->SetGroupHeaderPrefix(_(L"Students"));
 
