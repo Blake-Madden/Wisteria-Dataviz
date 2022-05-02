@@ -58,9 +58,7 @@ namespace Wisteria::Graphs
                 _(L"'%s': continuous column not found for histogram."), continuousColumnName));
             }
 
-        m_validN = statistics::valid_n(
-            m_continuousColumn->GetValues().cbegin(),
-            m_continuousColumn->GetValues().cend());
+        m_validN = statistics::valid_n(m_continuousColumn->GetValues());
 
         // see if we should use grouping from the data
         if (m_useGrouping)
@@ -542,8 +540,8 @@ namespace Wisteria::Graphs
             const auto maxVal = *std::max_element(
                 m_continuousColumn->GetValues().cbegin(),
                 m_continuousColumn->GetValues().cend());
-            const auto sd = statistics::standard_deviation(m_continuousColumn->GetValues().cbegin(),
-                m_continuousColumn->GetValues().cend(), true);
+            const auto sd = statistics::standard_deviation(
+                m_continuousColumn->GetValues(), true);
             return safe_divide(maxVal - minVal,
                 3.5 * safe_divide(sd, std::cbrt(m_validN)) );
             }
