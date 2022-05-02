@@ -76,7 +76,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @returns `true` if the given point is inside any of the points in this collection.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
+        [[nodiscard]] bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final;
         /** @warning Do not call this function. It is only included because it's contractually
              required by base class and is not relevant to this object.*/
         [[deprecated("Not implemented")]]

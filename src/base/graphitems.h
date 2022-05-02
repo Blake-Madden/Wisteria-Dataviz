@@ -1632,7 +1632,7 @@ namespace Wisteria
                 @param dc The DC used for measuring.
                 @details This is usually done after a scaling update.
                 @note Derived classes need to override this to perform subitem sizing logic.*/
-            virtual void RecalcSizes(wxDC& dc) {}
+            virtual void RecalcSizes([[maybe_unused]] wxDC& dc) {}
             /** @brief Reselect subitems if the object's subitems need to be re-created.
                 @details This is called by the framework and does not need to be called
                  in client code. Just define it in derived classes, if applicable.

@@ -70,7 +70,7 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    bool Lines::HitTest(const wxPoint pt, wxDC& dc) const
+    bool Lines::HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const
         {
         wxPoint pts[2]{ { 0, 0 } };
         for (const auto& line : m_lines)

@@ -17,7 +17,7 @@
 #include <wx/statline.h>
 #include <wx/artprov.h>
 #include <vector>
-#include "../canvas.h"
+#include "../base/canvas.h"
 
 namespace Wisteria::UI
     {
