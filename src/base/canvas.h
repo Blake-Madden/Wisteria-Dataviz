@@ -113,7 +113,18 @@ namespace Wisteria
             }
         /** @brief Sets the background image being drawn on the canvas.
             @param backgroundImage The image to draw on the background.
-            @param opacity The opacity to render the image with.*/
+            @param opacity The opacity to render the image with.
+            @code
+             // load an SVG file and scale it up to the default size of a canvas
+             wxGCDC gdc(this);
+             const auto sz = Image::ToBestSize(
+                                Image::GetSVGSize(L"logo.svg"),
+                                gdc.FromDIP(wxSize(Canvas::GetDefaultCanvasWidthDIPs(),
+                                                   Canvas::GetDefaultCanvasHeightDIPs())));
+             const auto bb = wxBitmapBundle::FromSVGFile(L"logo.svg", sz));
+             // now, set it as the canvas's background
+             canvas->SetBackgroundImage(bb);
+            @endcode*/
         void SetBackgroundImage(const wxBitmapBundle& backgroundImage,
                                 const uint8_t opacity = wxALPHA_OPAQUE) noexcept;
         /// @}
@@ -166,12 +177,12 @@ namespace Wisteria
            { m_canvasMinSizeDIPs.SetHeight(minHeight); }
         /// @returns The default minimum width used for canvas.
         ///  Can be overridden by SetCanvasMinWidthDIPs().
-        [[nodiscard]] int GetDefaultCanvasWidthDIPs() const
-            { return wxSize(700,500).GetWidth(); }
+        [[nodiscard]] static int GetDefaultCanvasWidthDIPs()
+            { return wxSize(700, 500).GetWidth(); }
         /// @returns The default minimum height used for canvas.
         ///  Can be overridden by SetCanvasMinHeightDIPs().
-        [[nodiscard]] int GetDefaultCanvasHeightDIPs() const
-            { return wxSize(700,500).GetHeight(); }
+        [[nodiscard]] static int GetDefaultCanvasHeightDIPs()
+            { return wxSize(700, 500).GetHeight(); }
         /** @brief Calculates the minimum percent of the canvas an item should consume
              when at 1.0 scaling.
             @param item The item to measure.
