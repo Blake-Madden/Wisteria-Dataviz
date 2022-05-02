@@ -5,7 +5,7 @@ An image that can be placed on a graph. For example, the main place these are us
 are as canvases' backgrounds and watermarks.
 
 Also includes image loading and effect functions. For example,
-`LoadImageWithCorrection()` will load a JPEG and adjust its orientation (if necessary).
+`LoadFile()` will load a JPEG and adjust its orientation (if necessary).
 
 Other features include creating silhouettes, drawing a glassy effect,
 filling an area with a stipple bitmap, stitching multiple images together,
@@ -23,9 +23,9 @@ multiple images at one time, piece them together, and then use the results as a 
 canvas->SetBackgroundImage(
         Image(
         Image::StitchHorizontally({
-            Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_0517.JPG"),
-            Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_0592.JPG"),
-            Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_1288.JPG")
+            Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG"),
+            Image::LoadFile(L"C:\\Pictures\\IMG_0592.JPG"),
+            Image::LoadFile(L"C:\\Pictures\\IMG_1288.JPG")
             }))
     );
 ```
@@ -38,7 +38,7 @@ set as a canvas' watermark:
 canvas->SetWatermarkLogo(
         Image(
         Image::CreateSilhouette(
-            Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_0517.JPG"))) );
+            Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG"))) );
 ```
 
 Adjusting Image Sizes

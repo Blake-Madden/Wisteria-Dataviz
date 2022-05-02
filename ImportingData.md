@@ -36,7 +36,7 @@ should be in C locale (i.e., US format), where '.' is the radix separator.
 
 Although data is imported and stored as floating point values, discrete/integer values can also be read into these columns.
 
-Missing data in a continuous column will be imported as NaN (`std::numeric_limits<double>::quiet_NaN()`, so `std::isnan()`
+Missing data in a continuous column will be imported as NaN (@c std::numeric_limits<double>::quiet_NaN()), so `std::isnan()`
 should be used when working with imported data.
 
 Categorical and Grouping Data

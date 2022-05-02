@@ -134,7 +134,7 @@ namespace Wisteria::UI
     //----------------------------------
     bool Thumbnail::LoadImage(const wxString& filePath)
         {
-        m_img = GraphItems::Image(GraphItems::Image::LoadImageWithCorrection(filePath));
+        m_img = GraphItems::Image(GraphItems::Image::LoadFile(filePath));
         const wxSize newSize = m_img.SetBestSize(GetSize());
         SetSize(newSize);
         SetMinSize(newSize);
@@ -240,7 +240,7 @@ namespace Wisteria::UI
                           _(L"Image Files ") + wxImage::GetImageExtWildcard(),
                           wxFD_OPEN|wxFD_PREVIEW);
             if (fileDlg.ShowModal() == wxID_OK)
-                { SetBitmap(wxBitmap(GraphItems::Image::LoadImageWithCorrection(fileDlg.GetPath()))); }
+                { SetBitmap(wxBitmap(GraphItems::Image::LoadFile(fileDlg.GetPath()))); }
             }
         }
     }
