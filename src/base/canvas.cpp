@@ -1192,16 +1192,18 @@ namespace Wisteria
             { dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(), *wxWHITE, wxSOUTH); }
         else
             {
-            //if background color is bad, then just fill the canvas with white. Otherwise, fill with color
-            wxDCBrushChanger bc(dc, !GetBackgroundColor().IsOk() ? *wxWHITE_BRUSH : wxBrush(GetBackgroundColor()) );
+            // if background color is bad, then just fill the canvas with white.
+            // Otherwise, fill with color
+            wxDCBrushChanger bc(dc, !GetBackgroundColor().IsOk() ?
+                                *wxWHITE_BRUSH : wxBrush(GetBackgroundColor()) );
             dc.DrawRectangle(GetCanvasRect(dc));
             }
 
         // fill in the background image (if there is one)
         if (GetBackgroundImage().IsOk() && m_bgOpacity != wxALPHA_TRANSPARENT)
             {
-            GraphItems::Image img(m_watermarkImg.GetBitmap(
-                m_watermarkImg.GetDefaultSize()).ConvertToImage());
+            GraphItems::Image img(GetBackgroundImage().GetBitmap(
+                GetBackgroundImage().GetDefaultSize()).ConvertToImage());
             img.SetDPIScaleFactor(dc.FromDIP(1));
             img.SetAnchoring(Anchoring::Center);
             img.SetAnchorPoint(
