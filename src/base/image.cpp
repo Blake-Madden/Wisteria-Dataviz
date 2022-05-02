@@ -359,6 +359,31 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    wxSize Image::ToBestSize(const wxSize originalSz, const wxSize suggestedSz)
+        {
+        // if original is smaller, then upscale
+        if (originalSz.GetWidth() <= suggestedSz.GetWidth() &&
+            originalSz.GetHeight() <= suggestedSz.GetHeight())
+            {
+            const auto [width, height] = geometry::calculate_upscaled_size(
+                std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
+                wxSizeToPair(suggestedSz));
+            return wxSize(std::ceil(width), std::ceil(height));
+            }
+        // if larger, then downscale
+        else if (originalSz.GetWidth() >= suggestedSz.GetWidth() &&
+            originalSz.GetHeight() >= suggestedSz.GetHeight())
+            {
+            const auto [width, height] = geometry::calculate_downscaled_size(
+                std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
+                wxSizeToPair(suggestedSz));
+            return wxSize(std::ceil(width), std::ceil(height));
+            }
+        else
+            { return originalSz; }
+        }
+
+    //-------------------------------------------
     void Image::SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                                [[maybe_unused]] const double parentScaling)
         {
@@ -424,7 +449,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxImage Image::LoadImageWithCorrection(const wxString& filePath)
+    wxImage Image::LoadFile(const wxString& filePath)
         {
         try
             {

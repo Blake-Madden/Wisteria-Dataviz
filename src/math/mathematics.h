@@ -494,10 +494,11 @@ namespace geometry
          @c boundingSize and that it is being scaled down to fit inside of @c boundingSize.
          If it is already small enough to fit in @c boundingSize, then the original size is returned.*/
     [[nodiscard]] inline std::pair<double,double> calculate_downscaled_size(
-                                                              const std::pair<double,double> size,
-                                                              const std::pair<double,double> boundingSize) noexcept
+                                                const std::pair<double,double> size,
+                                                const std::pair<double,double> boundingSize) noexcept
         {
-        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && boundingSize.first >= 0 && boundingSize.second >= 0) &&
+        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 &&
+                              boundingSize.first >= 0 && boundingSize.second >= 0) &&
                              "size value cannot be negative");
         if (size.first < 0 || size.second < 0 || boundingSize.first < 0 || boundingSize.second < 0)
             { return std::make_pair(0,0); }//passing in negative trash, only thing to really do is return 0
@@ -523,6 +524,54 @@ namespace geometry
             }
         // otherwise, original width and height are both larger,
         // but height is more proportionally larger, so scale down by that
+        else
+            {
+            const auto adjustedSize = std::make_pair(calculate_rescale_width(size, boundingSize.second),
+                                                     boundingSize.second);
+            return calculate_downscaled_size(adjustedSize, boundingSize);
+            }
+        }
+
+    /** @brief Takes a size (width x height) and fits it into a larger bounding box.
+        @returns The rescaled size (with aspect ratio maintained).
+        @param size The initial size to be upscaled.
+        @param boundingSize The bounding box to fit the size into.
+        @note The assumption here is that @c size is either narrower or shorter (or both) than
+         @c boundingSize and that it is being upscaled down to fit inside of @c boundingSize.
+         If it is already larger enough to consume on of the dimensions of @c boundingSize,
+         then the original size is returned.*/
+    [[nodiscard]] inline std::pair<double,double> calculate_upscaled_size(
+                                    const std::pair<double,double> size,
+                                    const std::pair<double,double> boundingSize) noexcept
+        {
+        NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 &&
+                              boundingSize.first >= 0 && boundingSize.second >= 0) &&
+                             "size value cannot be negative");
+        // passing in negative trash, only thing to really do is return 0
+        if (size.first < 0 || size.second < 0 || boundingSize.first < 0 || boundingSize.second < 0)
+            { return std::make_pair(0,0); }
+        // if size fits outside of new size, then no need to upscale
+        if (size.first >= boundingSize.first && size.second >= boundingSize.second)
+            { return size; }
+        // original height is smaller, so scale up by height
+        else if (size.first >= boundingSize.first && size.second < boundingSize.second)
+            { return std::make_pair(calculate_rescale_width(size, boundingSize.second), boundingSize.second); }
+        // original width is smaller, so scale up by width
+        else if (size.first < boundingSize.first && size.second >= boundingSize.second)
+            { return std::make_pair(boundingSize.first, calculate_rescale_height(size, boundingSize.first)); }
+        // original width and height are both smaller,
+        // but width is more proportionally smaller, so scale up by that
+        else if (size.first < boundingSize.first && size.second < boundingSize.second &&
+            (size.first-boundingSize.first) < (size.second-boundingSize.second))
+            {
+            // grow the width to the bounding box and scale up the height maintaining the aspect ratio
+            const auto adjustedSize = std::make_pair(boundingSize.first,
+                                                     calculate_rescale_height(size, boundingSize.first));
+            // the scale it up to the bounding box
+            return calculate_downscaled_size(adjustedSize, boundingSize);
+            }
+        // otherwise, original width and height are both smaller,
+        // but height is more proportionally smaller, so scale up by that
         else
             {
             const auto adjustedSize = std::make_pair(calculate_rescale_width(size, boundingSize.second),

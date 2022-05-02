@@ -47,7 +47,7 @@ namespace Wisteria::GraphItems
     {
     /** @brief An image that can be placed on a graph.
         @details Also includes image loading and effect functions. For example,
-         LoadImageWithCorrection() will load a JPEG and adjust its orientation (if necessary).
+         LoadFile() will load a JPEG and adjust its orientation (if necessary).
 
          Other features include creating silhouettes, drawing a glassy effect,
          filling an area with a stipple bitmap, stitching multiple images together,
@@ -64,7 +64,8 @@ namespace Wisteria::GraphItems
             { SetOk(false); }
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
-            @param img The image to render. LoadImageWithCorrection() can be used as a quick way to load an image here.*/
+            @param img The image to render.
+             LoadFile() can be used as a quick way to load an image here.*/
         Image(const GraphItems::GraphItemInfo& itemInfo,
             const wxImage& img) : GraphItemBase(itemInfo),
             m_originalImg(img), m_img(img),
@@ -74,7 +75,7 @@ namespace Wisteria::GraphItems
             SetOk(m_originalImg.IsOk());
             }
         /** @brief Constructor.
-            @param img The image to render..*/
+            @param img The image to render.*/
         explicit Image(const wxImage& img) :
             m_originalImg(img), m_img(img),
             m_size(img.GetSize()),
@@ -84,11 +85,11 @@ namespace Wisteria::GraphItems
             }
         /** @brief Constructor.
             @param imgPath The image filepath to load.
-            @note This will call LoadImageWithCorrection(), which will make corrections such as adjusting
-             the orientation in JPEG files.*/
+            @note This will call LoadFile(), which will make corrections
+             such as adjusting the orientation in JPEG files.*/
         explicit Image(const wxString& imgPath)
             {
-            const auto img = LoadImageWithCorrection(imgPath);
+            const auto img = LoadFile(imgPath);
             if (img.IsOk())
                 {
                 m_originalImg = m_img = img;
@@ -122,19 +123,29 @@ namespace Wisteria::GraphItems
             @details This is useful for determining the aspect ratio of an SVG file.
              This can be passed to a `wxBitmapBundle` when it loads an SVG.
             @param filePath The file path to the SVG file.
-            @returns The default size of the SVG. Will be an invalid size if the file fails to load.*/
+            @returns The default size of the SVG. Will be an invalid size if the
+             file fails to load.*/
         [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
-
+        /** @brief Either downscales or upscales a size to another, maintaining the
+             original's aspect ratio.
+            @param originalSz The original size.
+            @param suggestedSz The new size.
+            @returns The original size, either upscaled or downscaled to fit within
+             the suggested size, with the original's aspect ratio maintained.*/
+        [[nodiscard]] static wxSize ToBestSize(const wxSize originalSz, const wxSize suggestedSz);
         /** @returns A bitmap type from a file extension.
-            @param[in,out] ext The file extension to review (can be either the extension or full file path).
+            @param[in,out] ext The file extension to review
+             (can be either the extension or full file path).
              If a full filepath is used, then this will be returned as just the extension.
-            @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @c ext to further review the file type.*/
+            @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @c ext to further
+             review the file type.*/
         [[nodiscard]] static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
             @param filePath The filepath of the image to load.
-            @note Memory mapping is used when loading, which can help memory usage when opening large files.
+            @note Memory mapping is used when loading, which can help memory usage when
+             opening large files.
             @returns The image loaded from @c filePath.*/
-        [[nodiscard]] static wxImage LoadImageWithCorrection(const wxString& filePath);
+        [[nodiscard]] static wxImage LoadFile(const wxString& filePath);
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images to stitch.
             @returns The combined image.
@@ -144,9 +155,9 @@ namespace Wisteria::GraphItems
              canvas->SetBackgroundImage(
                      Image(
                      Image::StitchHorizontally({
-                         Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_0517.JPG"),
-                         Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_0592.JPG"),
-                         Image::LoadImageWithCorrection(L"C:\\Pictures\\IMG_1288.JPG")
+                         Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG"),
+                         Image::LoadFile(L"C:\\Pictures\\IMG_0592.JPG"),
+                         Image::LoadFile(L"C:\\Pictures\\IMG_1288.JPG")
                          }))
                  );
             @endcode*/
@@ -186,7 +197,8 @@ namespace Wisteria::GraphItems
             @param srcColor The color to replace.
             @param destColor The color to replace it with.
             @returns The altered image.*/
-        [[nodiscard]] static wxImage ChangeColor(const wxImage& image, const wxColour srcColor, const wxColour destColor);
+        [[nodiscard]] static wxImage ChangeColor(const wxImage& image, const wxColour srcColor,
+                                                 const wxColour destColor);
         /// @}
 
         /** @name Size Functions
@@ -205,7 +217,7 @@ namespace Wisteria::GraphItems
         void SetHeight(const wxCoord height);
         /** @brief Explicitly sets the image's size.
             @param sz The new size.
-            @warning The image will be stretched to fit in this size, distorting its appearance.
+            @warning The image will be stretched to fit in this size, distorting its appearance.\n
              Prefer using SetWidth(), SetHeight(), or SetBestSize() to maintain the aspect ratio.*/
         void SetSize(const wxSize sz);
         /** @brief Sets the image's size to fit inside of the specified bounding box.
