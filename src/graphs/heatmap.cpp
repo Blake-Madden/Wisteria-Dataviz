@@ -31,8 +31,8 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void HeatMap::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& continuousColumnName,
-        std::optional<const wxString> groupColumnName /*= std::nullopt*/,
         std::optional<const wxString> cellLabelColumnName /*= std::nullopt*/,
+        std::optional<const wxString> groupColumnName /*= std::nullopt*/,
         std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
         if (data == nullptr)

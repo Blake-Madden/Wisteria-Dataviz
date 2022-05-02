@@ -106,8 +106,8 @@ namespace Wisteria::Graphs
                 Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
                      MakeBold().MakeLarger());
 
-          // use group and put all of the students' heatmaps into one row
-          plot->SetData(testScoresData, L"test_score");
+          // use group (students' names) and put all their heatmaps into one column
+          plot->SetData(testScoresData, L"TEST_SCORE", L"Week", L"Name", 1);
           // say "Students" at the top instead of "Groups"
           plot->SetGroupHeaderPrefix(_("Students"));
 
@@ -136,11 +136,11 @@ namespace Wisteria::Graphs
             @param data The data.
             @param continuousColumnName The data column from the dataset to use for
              the heatmapping.
-            @param groupColumnName The group column to split the data into
-             (this is optional).
-            @param cellLabelColumnName The column containing labels to display on the
+             @param cellLabelColumnName The column containing labels to display on the
              cells when they are selected. This can be a description of what the cell's
              value represents.
+            @param groupColumnName The group column to split the data into
+             (this is optional).
             @param groupColumnCount If grouping, the number of columns to split
              the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
              as more than 5 columns would make the boxes too small.
@@ -154,8 +154,8 @@ namespace Wisteria::Graphs
              throws an exception.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
-            std::optional<const wxString> groupColumnName = std::nullopt,
             std::optional<const wxString> cellLabelColumnName = std::nullopt,
+            std::optional<const wxString> groupColumnName = std::nullopt,
             std::optional<size_t> groupColumnCount = std::nullopt);
 
         /** @name Grouping Functions
