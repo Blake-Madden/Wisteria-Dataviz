@@ -317,9 +317,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
                      MakeLarger());
 
-        // have one continuous series of heat cells for all students
-        // ("Week" value will appear when a cell is selected)
-        plot->SetData(testScoresData, L"TEST_SCORE", L"Week");
+        // use group and put all of the students' heatmaps into one column
+        plot->SetData(testScoresData, L"TEST_SCORE", std::nullopt, L"Week");
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
@@ -360,8 +359,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Font(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)).
                  MakeLarger());
 
-        // use group (students' names) and put all their heatmaps into one column
-        plot->SetData(testScoresData, L"TEST_SCORE", L"Week", L"Name", 1);
+        // use group and put all of the students' heatmaps into one column
+        plot->SetData(testScoresData, L"TEST_SCORE", L"Name", L"Week", 1);
         // say "Students" at the top instead of "Groups"
         plot->SetGroupHeaderPrefix(_(L"Students"));
 
@@ -857,7 +856,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
-            GraphItems::Image::LoadFile(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
+            GraphItems::Image::LoadImageWithCorrection(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
             *wxWHITE);
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
@@ -1029,8 +1028,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
-                                    PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
 
