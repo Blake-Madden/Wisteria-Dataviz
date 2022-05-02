@@ -29,8 +29,7 @@
 namespace statistics
     {
     /** @returns The valid (non-NaN) number of observations from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @todo needs unit test*/
     [[nodiscard]] inline size_t valid_n(const std::vector<double>& data) noexcept
         {
@@ -41,23 +40,20 @@ namespace statistics
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @returns A set containing all modes from a specified range.
          In the case of a tie, multiple modes will be returned.
         @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
-    template <typename T, typename InputIterator>
-    [[nodiscard]] std::set<T> mode(const InputIterator begin, const InputIterator end)
+    template <typename T>
+    [[nodiscard]] std::set<T> mode(const std::vector<T> data)
         {
         std::set<T> modes;
-        if (end <= begin)
+        if (data.size() == 0)
             { return modes; }
         frequency_set<T> groups;
         std::multimap<size_t, T, std::greater<size_t>> groupsByCount; // this will sort the larger items to the front
         // look at the full range of the data, not just non-NaN
-        const size_t N = (end - begin);
-        if (N == 0)
-            { return modes; }
+        const size_t N = data.size();
 
         for (size_t i = 0; i < N; ++i)
             { groups.insert(begin[i]); }
@@ -83,8 +79,7 @@ namespace statistics
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param transformValue Function to transform values when grouping them.
         For example, you can pass in a functor to round double values into integers.
         @returns A set containing all modes from a specified range.
@@ -129,8 +124,7 @@ namespace statistics
         }
 
     /** @returns The means (average) value from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.*/
+        @param data The data to analyze.*/
     [[nodiscard]] inline double mean(const std::vector<double>& data)
         {
         const auto N = valid_n(data);
@@ -145,8 +139,7 @@ namespace statistics
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @warning NaN values should be removed from the input prior to calling this.*/
     [[nodiscard]] inline double median_presorted(const std::vector<double>::const_iterator& begin,
                                                  const std::vector<double>::const_iterator& end)
@@ -170,15 +163,13 @@ namespace statistics
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @warning NaN values should be removed from the input prior to calling this.*/
     [[nodiscard]] inline double median_presorted(const std::vector<double>& data)
         { return median_presorted(data.cbegin(), data.cend()); }
 
     /** @returns The median value from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.*/
+        @param data The data to analyze.*/
     [[nodiscard]] inline double median(const std::vector<double>& data)
         {
         std::vector<double> dest;
@@ -193,8 +184,7 @@ namespace statistics
         }
 
     /** @returns The sum of squares/cubes/etc. from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param power The exponent value (e.g., 2 will give you the sum of squares).*/
     [[nodiscard]] inline double sum_of_powers(const std::vector<double>& data, const double power)
         {
@@ -212,8 +202,7 @@ namespace statistics
         }
 
     /** @returns The variance from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
     [[nodiscard]] inline double variance(const std::vector<double>& data, const bool is_sample)
         {
@@ -228,8 +217,7 @@ namespace statistics
         }
 
     /** @returns The standard deviation from the specified range.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
     [[nodiscard]] inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
@@ -244,8 +232,7 @@ namespace statistics
          For example, if multiple samples of size N are taken from a population,
          the means will more than likely vary between samplings.
          The standard error will measure the standard deviation of these sample means.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
     [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data, const bool is_sample)
         {
@@ -260,8 +247,7 @@ namespace statistics
          A zero skew indicates a symmetrical balance in the distribution.
          A negative skew indicates that the left side of the distribution is longer and most of the values are concentrated on the right.
          A positive skew indicates that the right side of the distribution is longer and most of the values are concentrated on the left.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).
         @returns The skewness from the specified range.*/
     [[nodiscard]] inline double skewness(const std::vector<double>& data, const bool is_sample)
@@ -277,8 +263,7 @@ namespace statistics
     /** @brief Gets the Kurtosis from the specified range.
         @details Kurtosis measures the peakedness of a distribution. Zero indicates a normal distribution,
          a positive value represents a sharp curve, and a negative value represents a flat distribution.
-        @param begin The beginning of the data range.
-        @param end The end of the data range.
+        @param data The data to analyze.
         @param is_sample Set to `true` to use sample variance (i.e., N-1).
         @returns The Kurtosis from the specified range.*/
     [[nodiscard]] inline double kurtosis(const std::vector<double>& data, const bool is_sample)
@@ -364,14 +349,12 @@ namespace statistics
         {
     public:
         /** @brief Constructor that accepts data and analyzes it.
-            @param begin The beginning of the data range.
-            @param end The end of the data range.*/
+            @param data The data to analyze.*/
         find_outliers(const std::vector<double>& data)
             : m_current_position(data.cbegin()), m_end(data.cend())
             { set_data(data); }
         /** @brief Sets the data and analyzes it.
-            @param begin The beginning of the data range.
-            @param end The end of the data range.*/
+            @param data The data to analyze.*/
         void set_data(const std::vector<double>& data)
             {
             double lq(0), uq(0);
