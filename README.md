@@ -130,6 +130,10 @@ Social Sciences
 
 See more in the [graphs gallery](Gallery.md).
 
+Release Notes
+=============================
+Release information is available [here](Release.md).
+
 Building
 =============================
 
@@ -191,7 +195,7 @@ option to CMake:
 -DwxWidgets_CONFIG_EXECUTABLE=/home/myname/wxWidgets/gtk-build/wx-config
 ```
 
-If using KDevelop, go to `Project -> Open Configuration... -> Cmake` and you can edit this
+If using KDevelop, go to `Project -> Open Configuration... -> Cmake` and you can edit that
 variable there.
 
 Dependencies
