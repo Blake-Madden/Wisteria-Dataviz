@@ -11,6 +11,43 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------
+    ImportInfo::RegExMap ImportInfo::DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
+        const wxString& regexColumnName,
+        const wxString& replacementColumnName)
+        {
+        const auto regexColumn = dataset->GetCategoricalColumn(regexColumnName);
+        if (regexColumn == dataset->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': regex column not found."), regexColumnName));
+            }
+        const auto replaceColumn = dataset->GetCategoricalColumn(replacementColumnName);
+        if (replaceColumn == dataset->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': regex column not found."), replacementColumnName));
+            }
+
+        ImportInfo::RegExMap reMap;
+        wxString currentRegex;
+        for (size_t i = 0; i < dataset->GetRowCount(); ++i)
+            {
+            currentRegex = regexColumn->GetCategoryLabel(regexColumn->GetValue(i));
+            wxRegEx testRe(currentRegex);
+            if (currentRegex.empty() || !testRe.IsValid())
+                {
+                wxLogWarning(_(L"'%s': regular expression syntax error."), currentRegex);
+                continue;
+                }
+            reMap.insert(std::make_pair(
+                std::make_shared<wxRegEx>(currentRegex),
+                replaceColumn->GetCategoryLabel(replaceColumn->GetValue(i))));
+            }
+
+        return reMap;
+        }
+
+    //----------------------------------------------
     double Dataset::ConvertToDouble(const wxString& input)
         {
         if (input.empty())
