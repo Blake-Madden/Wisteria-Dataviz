@@ -406,35 +406,52 @@ namespace Wisteria
         explicit IconShapeScheme(std::initializer_list<IconShape> shapes) : m_shapes(shapes)
             {}
         /// @brief Constructor.
-        /// @param shapes The initializer list of shapes to fill the scheme with.
-        /// @param img An image to use for the point if point is using IconShape::ImageIcon.
-        IconShapeScheme(std::initializer_list<IconShape> shapes, const wxBitmapBundle& img) :
-            m_shapes(shapes), m_iconImage(img)
+        /// @param shapes The list of shapes to fill the scheme with.
+        /// @param images The list of images to use for the points if point is
+        ///  using IconShape::ImageIcon.
+        IconShapeScheme(std::initializer_list<IconShape> shapes,
+            std::initializer_list<wxBitmapBundle> images) :
+            m_shapes(shapes), m_iconImages(images)
             {}
         /// @returns The list of shapes from the scheme.
         [[nodiscard]] const std::vector<IconShape>& GetShapes() const noexcept
             { return m_shapes; }
-        /** @returns The shape from a given index.
+        /** @returns The shape from a given index.\n
+             If no shapes are available, returns a blank icon.
             @param index The index into the shape list to return. If index is outside
              number of shapes, then it will recycle (i.e., wrap around).
              For example, if there are 2 shapes, index 1 will return 1;
              however, index 2 will wrap around and return shape 0 and
              index 3 will return shape 1.*/
         [[nodiscard]] IconShape GetShape(const size_t index) const
-            { return m_shapes.at(index % m_shapes.size()); }
+            {
+            return (m_shapes.size() == 0) ?
+                IconShape::BlankIcon : m_shapes.at(index % m_shapes.size());
+            }
         /** @brief Adds a shape to the scheme.
             @param shape The shape to add.*/
         void AddShape(const IconShape shape)
             { m_shapes.push_back(shape); }
-        /// @returns The image used for icons (if shape is set to IconShape::ImageIcon).
-        [[nodiscard]] const wxBitmapBundle& GetImage() const noexcept
-            { return m_iconImage; }
+        /** @returns The image used for icons (if shape is set to IconShape::ImageIcon).\n
+             If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
+            @param index The index into the image list to return. If index is outside
+             number of images, then it will recycle (i.e., wrap around).
+             For example, if there are 2 images, index 1 will return 1;
+             however, index 2 will wrap around and return image 0 and
+             index 3 will return image 1.*/
+        [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
+            {
+            return (m_iconImages.size() == 0) ?
+                m_emptyImage :
+                m_iconImages.at(index % m_iconImages.size());
+            }
         /// @brief Removes all shapes from the collection.
         void Clear() noexcept
             { m_shapes.clear(); }
     private:
         std::vector<IconShape> m_shapes;
-        wxBitmapBundle m_iconImage;
+        std::vector<wxBitmapBundle> m_iconImages;
+        wxBitmapBundle m_emptyImage;
         };
 
     /// @brief Standard shapes.

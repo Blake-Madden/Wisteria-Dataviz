@@ -215,6 +215,13 @@ namespace Wisteria::Graphs
              std::make_shared<IconShapeScheme>(IconShapeScheme({IconShape::ImageIcon},
                 wxBitmapBundle::FromSVGFile(L"logo.svg",
                     Image::GetSVGSize(L"logo.svg"))) ));
+
+            // or show a different image for each group
+            std::make_shared<IconShapeScheme>(IconShapeScheme({IconShape::ImageIcon},
+                { wxBitmapBundle::FromSVGFile(L"hs.svg",
+                    Image::GetSVGSize(L"hs.svg")),
+                  wxBitmapBundle::FromSVGFile(L"university.svg",
+                    Image::GetSVGSize(L"university.svg")) } )));
             @endcode
             @param linePenStyles The line styles to use for the lines.
              The default is to use solid, straight lines.\n

@@ -270,7 +270,7 @@ namespace Wisteria::Graphs
                                     Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
                                     Settings::GetPointRadius(),
                                     GetShapeScheme()->GetShape(line.m_groupId),
-                                    &GetShapeScheme()->GetImage()), dc);
+                                    &GetShapeScheme()->GetImage(line.m_groupId)), dc);
                 }
             AddObject(points);
             }
