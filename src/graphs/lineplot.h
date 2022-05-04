@@ -207,6 +207,15 @@ namespace Wisteria::Graphs
              Leave as null to use the standard shapes.\n
              Set to a new shape scheme filled with IconShape::BlankIcon to not
              show markers for certain lines/groups.
+            @code
+             // to turn off markers, pass this in as the shape scheme argument
+             std::make_shared<IconShapeScheme>(IconShapeScheme{IconShape::BlankIcon}));
+
+             // to show an image as the point markers, use this
+             std::make_shared<IconShapeScheme>(IconShapeScheme({IconShape::ImageIcon},
+                wxBitmapBundle::FromSVGFile(L"logo.svg",
+                    Image::GetSVGSize(L"logo.svg"))) ));
+            @endcode
             @param linePenStyles The line styles to use for the lines.
              The default is to use solid, straight lines.\n
              Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`

@@ -855,10 +855,13 @@ namespace Wisteria::GraphItems
                     if (m_iconImage && m_iconImage->IsOk())
                         {
                         const auto downScaledSize = geometry::calculate_downscaled_size(
-                            std::make_pair<double, double>(m_iconImage->GetWidth(), m_iconImage->GetHeight()),
-                            std::make_pair<double, double>(boundingBox.GetWidth(), boundingBox.GetHeight()));
-                        const wxImage scaledImg = m_iconImage->Scale(downScaledSize.first, downScaledSize.second, wxIMAGE_QUALITY_HIGH);
-                        dc.DrawBitmap(wxBitmap(scaledImg), boundingBox.GetTopLeft());
+                            std::make_pair<double, double>(m_iconImage->GetDefaultSize().GetWidth(),
+                                                           m_iconImage->GetDefaultSize().GetHeight()),
+                            std::make_pair<double, double>(boundingBox.GetWidth(),
+                                                           boundingBox.GetHeight()));
+                        const wxBitmap scaledImg = m_iconImage->GetBitmap(wxSize(downScaledSize.first,
+                                                                                 downScaledSize.second));
+                        dc.DrawBitmap(scaledImg, boundingBox.GetTopLeft());
                         }
                     break;
                 default:

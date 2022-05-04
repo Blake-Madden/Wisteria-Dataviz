@@ -408,7 +408,7 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param shapes The initializer list of shapes to fill the scheme with.
         /// @param img An image to use for the point if point is using IconShape::ImageIcon.
-        IconShapeScheme(std::initializer_list<IconShape> shapes, const wxImage& img) :
+        IconShapeScheme(std::initializer_list<IconShape> shapes, const wxBitmapBundle& img) :
             m_shapes(shapes), m_iconImage(img)
             {}
         /// @returns The list of shapes from the scheme.
@@ -427,14 +427,14 @@ namespace Wisteria
         void AddShape(const IconShape shape)
             { m_shapes.push_back(shape); }
         /// @returns The image used for icons (if shape is set to IconShape::ImageIcon).
-        [[nodiscard]] const wxImage& GetImage() const noexcept
+        [[nodiscard]] const wxBitmapBundle& GetImage() const noexcept
             { return m_iconImage; }
         /// @brief Removes all shapes from the collection.
         void Clear() noexcept
             { m_shapes.clear(); }
     private:
         std::vector<IconShape> m_shapes;
-        wxImage m_iconImage;
+        wxBitmapBundle m_iconImage;
         };
 
     /// @brief Standard shapes.
@@ -1815,7 +1815,7 @@ namespace Wisteria
             Point2D(const GraphItems::GraphItemInfo& itemInfo,
                     const size_t radius,
                     const IconShape& shape = IconShape::CircleIcon,
-                    const wxImage* img = nullptr) :
+                    const wxBitmapBundle* img = nullptr) :
                 GraphItemBase(itemInfo), m_shape(shape),
                 m_iconImage(img), m_radius(radius)
                 {}
@@ -1874,7 +1874,7 @@ namespace Wisteria
                                 [[maybe_unused]] const double parentScaling) final;
 
             IconShape m_shape{ IconShape::CircleIcon };
-            const wxImage* m_iconImage{ nullptr };
+            const wxBitmapBundle* m_iconImage{ nullptr };
             size_t m_radius{ 4 };
             };
 
