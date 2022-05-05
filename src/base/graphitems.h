@@ -1793,7 +1793,8 @@ namespace Wisteria
         private:
             GraphItemInfo m_itemInfo;
 
-            // These are just internally for common axis alignment
+            // These are used internally for common alignment with other
+            // objects on a canvas
             std::optional<wxCoord> m_contentTop{ std::nullopt };
             std::optional<wxCoord> m_contentBottom{ std::nullopt };
             std::optional<wxCoord> m_contentLeft{ std::nullopt };

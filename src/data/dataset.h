@@ -514,6 +514,19 @@ namespace Wisteria::Data
             m_textImportReplacements = replaceStrings;
             return *this;
             }
+        /** @brief Builds a regex map from a dataset.
+            @details This can be useful for loading a file containing a list of regexes
+             and their replacement values from a file and passing that to ReplacementStrings().
+            @param dataset The dataset containing the patterns to replace and what to
+             replace them with.
+            @param regexColumnName The name of the column containing the patterns to replace.\n
+             Any regular expressions that fail to compile will be logged and then ignored.
+            @param replacementColumnName The name of the column containing the replacements.
+            @returns The map of regular expression pattherns to replace and what to replace them with.
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+        static RegExMap DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
+            const wxString& regexColumnName,
+            const wxString& replacementColumnName);
         /// @private
         ImportInfo& ReplacementStrings(RegExMap&& replaceStrings)
             {

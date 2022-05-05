@@ -368,48 +368,29 @@ namespace Wisteria::Graphs
 
         AdjustPlotArea(dc);
 
-        // ...but now, see if any axis needs to be stacked and adjust everything again (if needed)
-        bool stackingChanged = false;
-
         const bool shouldStackLeftY = GetLeftYAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetLeftYAxis().IsShown() &&
             ((GetLeftYAxis().IsStackingLabels() && !shouldStackLeftY) ||
             (!GetLeftYAxis().IsStackingLabels() && shouldStackLeftY)) )
-            {
-            GetLeftYAxis().StackLabels(shouldStackLeftY);
-            stackingChanged = true;
-            }
+            { GetLeftYAxis().StackLabels(shouldStackLeftY); }
 
         const bool shouldStackRightY = GetRightYAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetRightYAxis().IsShown() &&
             ((GetRightYAxis().IsStackingLabels() && !shouldStackRightY) ||
             (!GetRightYAxis().IsStackingLabels() && shouldStackRightY)) )
-            {
-            GetRightYAxis().StackLabels(shouldStackRightY);
-            stackingChanged = true;
-            }
+            { GetRightYAxis().StackLabels(shouldStackRightY); }
 
         const bool shouldStackBottomX = GetBottomXAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetBottomXAxis().IsShown() &&
             ((GetBottomXAxis().IsStackingLabels() && !shouldStackBottomX) ||
             (!GetBottomXAxis().IsStackingLabels() && shouldStackBottomX)) )
-            {
-            GetBottomXAxis().StackLabels(shouldStackBottomX);
-            stackingChanged = true;
-            }
+            { GetBottomXAxis().StackLabels(shouldStackBottomX); }
 
         const bool shouldStackTopX = GetTopXAxis().ShouldLabelsBeStackedToFit(dc);
         if (GetTopXAxis().IsShown() &&
             ((GetTopXAxis().IsStackingLabels() && !shouldStackTopX) ||
             (!GetTopXAxis().IsStackingLabels() && shouldStackTopX)) )
-            {
-            GetTopXAxis().StackLabels(shouldStackTopX);
-            stackingChanged = true;
-            }
-
-        // adjust plot margins again in case stacking was changed
-        if (stackingChanged)
-            { AdjustPlotArea(dc); }
+            { GetTopXAxis().StackLabels(shouldStackTopX); }
 
         // Use a consistent font scaling for the four main axes, using the smallest one.
         // Note that the fonts will only be made smaller (not larger) across the axes, so
@@ -425,6 +406,10 @@ namespace Wisteria::Graphs
         GetTopXAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetLeftYAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetRightYAxis().SetAxisLabelScaling(smallestLabelScaling);
+
+        // adjust plot margins again in case stacking or common axis
+        // label scaling was changed
+        AdjustPlotArea(dc);
 
         // fill in the plot area's color (if being used, by default it is transparent)
         if (GetBackgroundColor().IsOk() &&

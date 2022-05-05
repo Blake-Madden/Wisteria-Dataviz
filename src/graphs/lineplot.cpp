@@ -71,18 +71,18 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for line plot"), groupColumnName.value()));
+                _(L"'%s': group column not found for line plot."), groupColumnName.value()));
             }
         if (m_data->GetContinuousColumn(yColumnName) == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': Y column not found for line plot"), yColumnName));
+                _(L"'%s': Y column not found for line plot."), yColumnName));
             }
         m_xColumn = m_data->GetContinuousColumn(xColumnName);
         if (m_xColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': X column not found for line plot"), xColumnName));
+                _(L"'%s': X column not found for line plot."), xColumnName));
             }
         m_lines.clear();
         GetLeftYAxis().Reset();

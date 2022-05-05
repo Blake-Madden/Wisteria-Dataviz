@@ -1965,10 +1965,14 @@ namespace Wisteria::GraphItems
             const auto bBox = GetBoundingBox(dc);
             Label infoLabel(GraphItemInfo(
                 wxString::Format(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                                  "Axis Line Points: (%d, %d), (%d, %d)",
+                                  "Axis Line Points: (%d, %d), (%d, %d)\n"
+                                  "Scaling: %s\n"
+                                  "Axis Label Scaling: %s",
                     bBox.x, bBox.y, bBox.width, bBox.height,
                     GetBottomPoint().x, GetBottomPoint().y,
-                    GetTopPoint().x, GetTopPoint().y)).
+                    GetTopPoint().x, GetTopPoint().y,
+                    wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                    wxNumberFormatter::ToString(GetAxisLabelScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes))).
                 AnchorPoint(bBox.GetBottomRight()).
                 FontColor(*wxBLUE).
                 Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
@@ -2080,7 +2084,7 @@ namespace Wisteria::GraphItems
             return GetScaling();
             }
 
-        double currentScaling = GetScaling();
+        double currentScaling = GetAxisLabelScaling();
 
         if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
             {
@@ -2684,6 +2688,7 @@ namespace Wisteria::GraphItems
     Label Axis::GetTallestTextLabel(wxDC& dc) const
         {
         m_tallestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+        m_tallestLabel.SetScaling(GetAxisLabelScaling());
         // use cached calculation from previous call if labels haven't changed
         if (m_tallestLabel.IsOk())
             { return m_tallestLabel; }
@@ -2727,6 +2732,7 @@ namespace Wisteria::GraphItems
     Label Axis::GetWidestTextLabel(wxDC& dc) const
         {
         m_widestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+        m_widestLabel.SetScaling(GetAxisLabelScaling());
         // use cached calculation from previous call if labels haven't changed
         if (m_widestLabel.IsOk())
             { return m_widestLabel; }
