@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto spellingTestData = std::make_shared<Data::Dataset>();
-         spellingTestData->ImportCSV(L"Spelling Grades.csv",
+         spellingTestData->ImportCSV(L"/home/rdoyle/data/Spelling Grades.csv",
             ImportInfo().
             // Note that the order of the continuous columns is important.
             // The first one will be the Y data, the second the X data.

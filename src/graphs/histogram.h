@@ -58,7 +58,7 @@ namespace Wisteria::Graphs
          auto mtcarsData = std::make_shared<Data::Dataset>();
          try
             {
-            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+            mtcarsData->ImportCSV(L"/home/daphne/data/mtcars.csv",
                 ImportInfo().
                 ContinuousColumns({ L"mpg" }).
                 CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));

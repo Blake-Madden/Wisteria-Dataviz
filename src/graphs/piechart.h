@@ -172,7 +172,7 @@ namespace Wisteria::Graphs
          auto pieData = std::make_shared<Data::Dataset>();
          try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(L"/home/rdoyle/data/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({

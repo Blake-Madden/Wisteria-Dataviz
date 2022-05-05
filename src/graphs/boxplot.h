@@ -51,7 +51,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto mpgData = std::make_shared<Data::Dataset>();
-         mpgData->ImportCSV(L"mpg.csv",
+         mpgData->ImportCSV(L"/home/daphne/data/mpg.csv",
             ImportInfo().ContinuousColumns({ L"hwy" }).
             CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
          auto plot = std::make_shared<BoxPlot>(canvas);

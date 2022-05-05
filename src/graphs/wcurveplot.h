@@ -64,7 +64,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto BelongingData = std::make_shared<Data::Dataset>();
-         BelongingData->ImportCSV(L"Sense of Belonging.csv",
+         BelongingData->ImportCSV(L"/home/rdoyle/data/Sense of Belonging.csv",
              ImportInfo().
              // Note that the order of the continuous columns is important.
              // The first one will be the Y data, the second the X data.

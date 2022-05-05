@@ -84,7 +84,7 @@ namespace Wisteria::Graphs
           auto testScoresData = std::make_shared<Data::Dataset>();
           try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCSV(L"/home/daphne/data/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week").

@@ -66,7 +66,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto surveyData = std::make_shared<Data::Dataset>();
-         surveyData->ImportCSV(L"Graph Library Survey.csv",
+         surveyData->ImportCSV(L"/home/rdoyle/data/Graph Library Survey.csv",
              Data::ImportInfo().
              CategoricalColumns(
                     {

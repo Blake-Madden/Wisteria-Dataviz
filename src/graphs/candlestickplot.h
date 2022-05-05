@@ -52,7 +52,7 @@ namespace Wisteria::Graphs
           auto silverFuturesData = std::make_shared<Data::Dataset>();
           try
             {
-            silverFuturesData->ImportCSV(L"datasets/Silver Futures.csv",
+            silverFuturesData->ImportCSV(L"/home/daphne/data/Silver Futures.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
                 DateColumns({ { L"Date" } }));
