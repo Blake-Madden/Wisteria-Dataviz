@@ -78,9 +78,9 @@ TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set warnings and optimizations (will propagate to the demo project also)
 IF(MSVC)
-    # /Zc:__cplusplus tells MSVC to set the C++ versito what we are
+    # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
-    # C++ version is 98 always (for compatability reasons).
+    # C++ version is 98 always (for compatibility reasons).
 
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
