@@ -192,6 +192,29 @@ commentsData->ImportCSV(L"/home/rdoyle/data/Comments.csv",
         }));
 ```
 
+These regex replacements can also be loaded from another file:
+
+```cpp
+// file that contains the regex patterns to replace
+// and what to replace them with
+auto replacementsData = std::make_shared<Data::Dataset>();
+replacementsData->ImportCSV(L"/home/dmoon/data/replacements.csv",
+    Data::ImportInfo().CategoricalColumns({
+        { L"pattern", CategoricalImportMethod::ReadAsStrings },
+        { L"replacement", CategoricalImportMethod::ReadAsStrings }
+        }));
+
+// load a file with a column of text and transform it
+auto commentsData = std::make_shared<Data::Dataset>();
+commentsData->ImportCSV(L"/home/dmoon/data/Comments.csv",
+    Data::ImportInfo().CategoricalColumns({
+        { L"Comments", CategoricalImportMethod::ReadAsStrings }
+        }).
+    ReplacementStrings(
+        ImportInfo::DatasetToRegExMap(replacementsData, L"pattern", L"replacement")
+        ));
+```
+
 Using the Data
 =============================
 
