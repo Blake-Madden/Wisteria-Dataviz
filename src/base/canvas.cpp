@@ -897,7 +897,7 @@ namespace Wisteria
             }
 
         size_t rowHeightOffset(0);
-        // go through each row of items (e.g., subplots) and resize and move them their its grid area
+        // go through each row of items (e.g., subplots) and resize and move them into their grid area
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
              fixedObjectsRowPos != GetFixedObjects().end();
              ++fixedObjectsRowPos)
@@ -907,8 +907,10 @@ namespace Wisteria
             const size_t objectHeight = fixedObjectRect.GetHeight() *
                 m_rowProportions.at(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos));
             size_t currentXPos{ 0 };
-            for (auto& objectsPos : *fixedObjectsRowPos)
+            auto& currentRow = *fixedObjectsRowPos;
+            for (size_t i = 0; i < currentRow.size(); ++i)
                 {
+                auto& objectsPos = currentRow[i];
                 if (objectsPos != nullptr)
                     {
                     // set the scaling from the canvas and get the bounding box for it to fit in
@@ -920,7 +922,7 @@ namespace Wisteria
                                                 fixedObjectRect.y + rowHeightOffset),
                         wxSize(fixedObjectRect.GetWidth() * objectsPos->GetCanvasWidthProportion(),
                                currentObjHeight));
-                    const wxRect nonPaddedBoundingRect{ boundingRect };
+                    wxRect nonPaddedBoundingRect{ boundingRect };
                     // adjust for margins
                     boundingRect.y += ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc);
                     boundingRect.x += ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc);
@@ -932,6 +934,41 @@ namespace Wisteria
                         ScaleToScreenAndCanvas(objectsPos->GetBottomCanvasMargin(), dc)) );
 
                     objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
+                    // Some items like legends and common axis that are the full length of the area
+                    // won't need as much width from when their proportion was originally calculated.
+                    // Because of this, get its measured width and remove any extra space around its
+                    // sides, and then give that extra space back to the items previously calculated
+                    // to the left of it.
+                    auto measuredBox = objectsPos->GetBoundingBox(dc);
+                    if (measuredBox.GetWidth() < boundingRect.GetWidth())
+                        {
+                        const auto originalWidth = boundingRect.GetWidth();
+                        const auto widthDiff = (originalWidth - measuredBox.GetWidth());
+                        boundingRect.x += widthDiff;
+                        boundingRect.SetWidth(measuredBox.GetWidth());
+                        objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
+
+                        nonPaddedBoundingRect.SetWidth(
+                            nonPaddedBoundingRect.GetWidth() - widthDiff);
+                        // adjust previously laid out items by making them wider
+                        // and pushing them over
+                        if (i > 0)
+                            {
+                            const auto averageWidthToAdd =
+                                safe_divide<double>(widthDiff, i/* # of previous items*/);
+                            for (long backCounter = static_cast<long>(i-1);
+                                 backCounter >= 0;
+                                 --backCounter)
+                                {
+                                auto& backItem = currentRow[backCounter];
+                                auto backItemBoundingBox = backItem->GetBoundingBox(dc);
+                                backItemBoundingBox.x += averageWidthToAdd * backCounter;
+                                backItemBoundingBox.SetWidth(
+                                    backItemBoundingBox.GetWidth() + averageWidthToAdd);
+                                backItem->SetBoundingBox(backItemBoundingBox, dc, GetScaling());
+                                }
+                            }
+                        }
                     currentXPos += nonPaddedBoundingRect.GetWidth();
 
                     objectsPos->RecalcSizes(dc);
