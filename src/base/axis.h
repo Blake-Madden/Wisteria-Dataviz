@@ -1165,7 +1165,10 @@ namespace Wisteria::GraphItems
         ///  titles, brackets, etc.
         /// @param scaling The scaling for the axis labels.
         void SetAxisLabelScaling(const double scaling)
-            { m_axisLabelScaling = scaling; }
+            {
+            m_axisLabelScaling = scaling;
+            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+            }
         /// @returns The font scaling used just for the axis labels.
         [[nodiscard]] double GetAxisLabelScaling() const noexcept
             { return m_axisLabelScaling; }

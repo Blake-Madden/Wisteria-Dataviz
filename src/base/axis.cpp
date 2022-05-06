@@ -115,6 +115,7 @@ namespace Wisteria::GraphItems
             { return; }
         SetScaling(parentScaling);
 
+        SetAxisLabelScaling(GetScaling());
         GetHeader().SetScaling(GetScaling());
         GetFooter().SetScaling(GetScaling());
 
@@ -153,7 +154,8 @@ namespace Wisteria::GraphItems
                 GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelBottomPadding :
                 protrudingLabelBottomPadding;
-            if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
+            if (GetAnchoring() == Anchoring::TopLeftCorner ||
+                GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+protrudingBox.GetWidth(),
                                   rect.GetTopLeft().y+headerPadding),
@@ -169,7 +171,8 @@ namespace Wisteria::GraphItems
                                   rect.GetBottomLeft().y-footerPadding),
                           dc);
                 }
-            else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
+            else if (GetAnchoring() == Anchoring::TopRightCorner ||
+                     GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+(rect.GetWidth()-(boundingBox.GetWidth()-protrudingBox.GetWidth())),
                                   rect.GetTopLeft().y+headerPadding),
@@ -193,25 +196,26 @@ namespace Wisteria::GraphItems
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+(boundingBox.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+(boundingBox.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetBottomLeft().y-footerPadding),
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+(boundingBox.GetWidth()-protrudingBox.GetWidth()),
+                                  rect.GetBottomLeft().y-footerPadding),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+((rect.GetWidth()/2)),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
-                                    rect.GetBottomLeft().y-footerPadding),
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+((rect.GetWidth()/2)),
+                                  rect.GetBottomLeft().y-footerPadding),
                           dc);
                 }
-            else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
+            else if (GetAnchoring() == Anchoring::TopRightCorner ||
+                     GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetTopLeft().x+(rect.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetTopLeft().y+headerPadding),
-                            wxPoint(rect.GetBottomLeft().x+(rect.GetWidth()-protrudingBox.GetWidth()),
-                                    rect.GetBottomLeft().y-footerPadding),
+                                  rect.GetTopLeft().y+headerPadding),
+                          wxPoint(rect.GetBottomLeft().x+(rect.GetWidth()-protrudingBox.GetWidth()),
+                                  rect.GetBottomLeft().y-footerPadding),
                           dc);
                 }
             }
@@ -230,25 +234,26 @@ namespace Wisteria::GraphItems
             if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
-                            wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                                  rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
+                                  rect.GetTop()+(boundingBox.GetHeight()-protrudingBox.GetHeight())),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
-                            wxPoint(rect.GetRight()-headerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                          wxPoint(rect.GetRight()-headerPadding,
+                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
                           dc);
                 }
-            else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() ==Anchoring:: BottomRightCorner)
+            else if (GetAnchoring() == Anchoring::TopRightCorner ||
+                     GetAnchoring() == Anchoring:: BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetBottom()-protrudingBox.GetHeight()),
-                            wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetBottom()-protrudingBox.GetHeight()),
+                                  rect.GetBottom()-protrudingBox.GetHeight()),
+                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
+                                  rect.GetBottom()-protrudingBox.GetHeight()),
                           dc);
                 }
             }
@@ -264,28 +269,30 @@ namespace Wisteria::GraphItems
                 GetFooter().GetBoundingBox(dc).GetSize().GetWidth() +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+protrudingLabelLeftPadding :
                 protrudingLabelLeftPadding;
-            if (GetAnchoring() == Anchoring::TopLeftCorner || GetAnchoring() == Anchoring::BottomLeftCorner)
+            if (GetAnchoring() == Anchoring::TopLeftCorner ||
+                GetAnchoring() == Anchoring::BottomLeftCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetTop()+protrudingBox.GetHeight()),
-                            wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetTop()+protrudingBox.GetHeight()),
+                                  rect.GetTop()+protrudingBox.GetHeight()),
+                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
+                                  rect.GetTop()+protrudingBox.GetHeight()),
                           dc);
                 }
             else if (GetAnchoring() == Anchoring::Center)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
-                            wxPoint(rect.GetRight()-headerPadding,
-                                    rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                                  rect.GetTopLeft().y+((rect.GetHeight()/2))),
+                          wxPoint(rect.GetRight()-headerPadding,
+                                   rect.GetTopLeft().y+((rect.GetHeight()/2))),
                           dc);
                 }
-            else if (GetAnchoring() == Anchoring::TopRightCorner || GetAnchoring() == Anchoring::BottomRightCorner)
+            else if (GetAnchoring() == Anchoring::TopRightCorner ||
+                     GetAnchoring() == Anchoring::BottomRightCorner)
                 {
                 SetPoints(wxPoint(rect.GetLeft()+footerPadding,
-                                    rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
-                            wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
-                                    rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                                  rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
+                          wxPoint(rect.GetLeft()+(rect.GetWidth()-headerPadding),
+                                  rect.GetBottom()-(boundingBox.GetHeight()-protrudingBox.GetHeight())),
                           dc);
                 }
             }
@@ -431,7 +438,9 @@ namespace Wisteria::GraphItems
         if (GetAxisType() == AxisType::LeftYAxis)
             {
             topLeftCorner = wxPoint(GetTopPoint().x-(CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel), GetTopPoint().y);
-            bottomRightCorner = wxPoint(GetBottomPoint().x+(CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)), GetBottomPoint().y);//the line, tickmarks, and space after that
+            bottomRightCorner = wxPoint(GetBottomPoint().x +
+                (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
+                GetBottomPoint().y);//the line, tickmarks, and space after that
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
                 { bottomRightCorner.x += textMeasurement/2;}
             topLeftCorner.x -= (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
@@ -494,8 +503,12 @@ namespace Wisteria::GraphItems
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x, GetTopPoint().y-(CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)));
-            bottomRightCorner = wxPoint(GetBottomPoint().x, GetBottomPoint().y+(CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));//the line, tickmarks, and space after that
+            topLeftCorner = wxPoint(GetTopPoint().x,
+                                    GetTopPoint().y - (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
+                                        spaceBetweenAxisAndLabel : 0)));
+            bottomRightCorner = wxPoint(GetBottomPoint().x,
+                                        // include the line, tickmarks, and space after that
+                                        GetBottomPoint().y + (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));
             bottomRightCorner.y += IsStackingLabels() ? textMeasurement*2 : textMeasurement;
             if (HasDoubleSidedAxisLabels())
                 { topLeftCorner.y -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
