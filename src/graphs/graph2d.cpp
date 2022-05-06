@@ -92,12 +92,14 @@ namespace Wisteria::Graphs
         else if (hint == LegendCanvasPlacementHint::RightOrLeftOfGraph)
             {
             legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
+            legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidth() : 0)).
                 CanvasPadding(4, 4, 4, 4);;
             }
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
+            legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidth() : 0)).
                 CanvasPadding(4, 4, 4, 4);
