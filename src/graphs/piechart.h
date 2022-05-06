@@ -333,7 +333,9 @@ namespace Wisteria::Graphs
              This inner ring will be shown as subgroups within each slice
              within the (parent) outer ring.
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
             const wxString& groupColumn1Name,

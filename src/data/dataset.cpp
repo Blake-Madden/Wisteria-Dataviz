@@ -19,13 +19,13 @@ namespace Wisteria::Data
         if (regexColumn == dataset->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': regex column not found."), regexColumnName));
+                _(L"'%s': regex column not found."), regexColumnName).ToUTF8());
             }
         const auto replaceColumn = dataset->GetCategoricalColumn(replacementColumnName);
         if (replaceColumn == dataset->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': regex column not found."), replacementColumnName));
+                _(L"'%s': regex column not found."), replacementColumnName).ToUTF8());
             }
 
         ImportInfo::RegExMap reMap;
@@ -332,7 +332,7 @@ namespace Wisteria::Data
         if (!fl.IsOpened() || !fl.ReadAll(&fileText))
             {
             throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
-                                     wxSysErrorMsg(fl.GetLastError())));
+                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         fileText.Trim(true).Trim(false);
         std::vector<std::vector<wxString>> dataStrings;
@@ -474,7 +474,7 @@ namespace Wisteria::Data
         if (!fl.IsOpened() || !fl.Write(fileContent))
             {
             throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
-                                     wxSysErrorMsg(fl.GetLastError())));
+                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         }
 
@@ -493,7 +493,7 @@ namespace Wisteria::Data
         if (!fl.IsOpened() || !fl.ReadAll(&fileText))
             {
             throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
-                                     wxSysErrorMsg(fl.GetLastError())));
+                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         fileText.Trim(true).Trim(false);
 
@@ -534,8 +534,7 @@ namespace Wisteria::Data
             if (columnName.length() && foundIterator == preview.get_header_names().cend())
                 {
                 const wxString errorMsg = wxString::Format(L"'%s': column not found!", columnName.c_str());
-                wxFAIL_MSG(errorMsg);
-                throw std::runtime_error(errorMsg.ToStdString());
+                throw std::runtime_error(errorMsg.ToUTF8());
                 }
             };
 

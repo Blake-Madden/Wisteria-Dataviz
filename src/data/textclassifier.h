@@ -111,7 +111,9 @@ namespace Wisteria::Data
             @note Any invalid regular expressions loaded from the file will be logged using
              @c wxLogWarning().
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetClassifierData(std::shared_ptr<const Data::Dataset> classifierData,
                                const wxString& categoryColumnName,
                                const std::optional<wxString>& subCategoryColumnName,
@@ -132,7 +134,9 @@ namespace Wisteria::Data
              The second is a dataset of all comments that were not classified. This can be useful
              for retraining your classifier (i.e., adding more regexes to your classifier dataset).
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         std::pair<std::shared_ptr<Data::Dataset>, std::shared_ptr<Data::Dataset>>
                         ClassifyData(
                             std::shared_ptr<const Data::Dataset> contentData,

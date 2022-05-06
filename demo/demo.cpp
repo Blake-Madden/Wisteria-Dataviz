@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
+﻿/////////////////////////////////////////////////////////////////////////////
 // Name:        demo.cpp
 // Purpose:     Wisteria Library Demo
 // Author:      Blake Madden
@@ -272,7 +272,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
@@ -304,7 +305,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -344,7 +346,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -381,7 +384,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -428,7 +432,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -468,7 +473,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
@@ -527,7 +533,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
@@ -647,7 +654,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -703,7 +711,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -743,25 +752,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Solid) );
+            L"", Label(_(L"Bugs")), BoxEffect::Solid) );
 
         plot->AddBar(BarChart::Bar(2,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Solid));
+            L"", Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(3,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Solid));
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(4,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Solid));
+            L"", Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -792,7 +801,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Glassy,
+            L"", Label(_(L"Bugs")), BoxEffect::Glassy,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -804,7 +813,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Glassy,
+            L"", Label(_(L"Pending feature requests")), BoxEffect::Glassy,
             // this bar will be translucent
             75, 1));
 
@@ -812,14 +821,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
              BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Glassy,
+            L"", Label(_(L"Missing unit tests")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
@@ -853,7 +862,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
-            GraphItems::Image::LoadFile(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
+            GraphItems::Image::LoadFile(appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
             *wxWHITE);
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
@@ -865,7 +874,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::CommonImage,
+            L"", Label(_(L"Bugs")), BoxEffect::CommonImage,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -877,21 +886,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
+            L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(3.5,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
+            L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
@@ -927,7 +936,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -956,7 +965,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -987,7 +997,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -1018,7 +1029,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1052,14 +1064,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(),
+                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
 
@@ -1091,7 +1105,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1138,7 +1153,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1189,7 +1205,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas,
@@ -1256,7 +1273,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         // Original data has a scale going from 1-7, but we want to simplify
@@ -1325,7 +1343,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1362,7 +1381,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto donutChart = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1439,7 +1459,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         // create your own color scheme

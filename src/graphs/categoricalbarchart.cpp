@@ -35,21 +35,24 @@ namespace Wisteria::Graphs
         if (m_categoricalColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': categorical column not found for categorical bar chart."), categoricalColumnName));
+                _(L"'%s': categorical column not found for categorical bar chart."),
+                categoricalColumnName).ToUTF8());
             }
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for categorical bar chart."), groupColumnName.value()));
+                _(L"'%s': group column not found for categorical bar chart."),
+                groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = (valueColumnName ? m_data->GetContinuousColumn(valueColumnName.value()) :
             m_data->GetContinuousColumns().cend());
         if (valueColumnName && m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for categorical bar chart."), valueColumnName.value()));
+                _(L"'%s': continuous column not found for categorical bar chart."),
+                valueColumnName.value()).ToUTF8());
             }
 
         // see if we should use grouping from the data

@@ -523,7 +523,9 @@ namespace Wisteria::Data
              Any regular expressions that fail to compile will be logged and then ignored.
             @param replacementColumnName The name of the column containing the replacements.
             @returns The map of regular expression pattherns to replace and what to replace them with.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         static RegExMap DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
             const wxString& regexColumnName,
             const wxString& replacementColumnName);
@@ -832,7 +834,9 @@ namespace Wisteria::Data
             @returns A vector of column names and their respective data types.\n
              This can be especially useful for determining whether a categorical column
              should be imported as strings or codes (i.e., discrete numbers).
-            @throws std::runtime_error If the file can't be read, throws an exception.*/
+            @throws std::runtime_error If the file can't be read, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                               const wchar_t delimiter,
                                                               const size_t rowPreviewCount = 100);
@@ -841,7 +845,9 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @param delimiter The delimiter to parse the columns with.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.
             @sa ImportCSV(), ImportTSV(), ReadColumnInfo().
             @par Example:
             @code
@@ -859,7 +865,9 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void ImportCSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
@@ -867,7 +875,9 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void ImportTSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
         /** @brief Exports the dataset to a text file.
@@ -876,21 +886,27 @@ namespace Wisteria::Data
             @param filePath The file path to save to.
             @param delimiter The delimiter to save with.
             @param quoteColumns Whether the columns should be quoted.
-            @throws std::runtime_error If the file can't be written to.*/
+            @throws std::runtime_error If the file can't be written to.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void ExportText(const wxString& filePath,
                         const wchar_t delimiter,
                         const bool quoteColumns) const;
         /** @brief Exports the dataset to as a tab-delimited text file.
             @details This is a shortcut for ExportText(), using tabs as the column separator.
             @param filePath The file path to save to.
-            @throws std::runtime_error If the file can't be written to.*/
+            @throws std::runtime_error If the file can't be written to.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void ExportTSV(const wxString& filePath) const
             { ExportText(filePath, L'\t', false); }
         /** @brief Exports the dataset to as a comma-delimited text file.
             @details This is a shortcut for ExportText(),
              using commas as the column separator and quoting the columns.
             @param filePath The file path to save to.
-            @throws std::runtime_error If the file can't be written to.*/
+            @throws std::runtime_error If the file can't be written to.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
     private:

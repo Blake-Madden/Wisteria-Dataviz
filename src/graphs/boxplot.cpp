@@ -35,13 +35,13 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for box plot."), groupColumnName.value()));
+                _(L"'%s': group column not found for box plot."), groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for box plot."), continuousColumnName));
+                _(L"'%s': continuous column not found for box plot."), continuousColumnName).ToUTF8());
             }
         m_continuousColumnName = continuousColumnName;
         m_groupColumnName = groupColumnName;
@@ -177,13 +177,13 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for box plot."), groupColumnName.value()));
+                _(L"'%s': group column not found for box plot."), groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for box plot."), continuousColumnName));
+                _(L"'%s': continuous column not found for box plot."), continuousColumnName).ToUTF8());
             }
 
         std::vector<BoxAndWhisker> boxes;

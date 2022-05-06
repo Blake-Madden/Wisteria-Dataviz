@@ -45,13 +45,13 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for heatmap."), groupColumnName.value()));
+                _(L"'%s': group column not found for heatmap."), groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for heatmap."), continuousColumnName));
+                _(L"'%s': continuous column not found for heatmap."), continuousColumnName).ToUTF8());
             }
         m_groupColumnCount = (groupColumnCount ? std::clamp<size_t>(groupColumnCount.value(), 1, 5) : 1);
         m_matrix.clear();
