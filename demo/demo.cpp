@@ -1517,6 +1517,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto commonAxis = std::make_shared<Axis>(AxisType::RightYAxis);
         commonAxis->SetDPIScaleFactor(subframe->m_canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(linePlot->GetLeftYAxis());
+        // tell the canvas to align the axis line to the left axis's
+        // bounding box
+        commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         // Get the canvas size of the axis and add it to the canvas.
         // Note that we need to multiple the calculated size by two because
         // axes are centered when drawn
