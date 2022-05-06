@@ -635,6 +635,7 @@ namespace Wisteria::Graphs
                                            GetPlotAreaBoundingBox().GetY() +
                                            GetPlotAreaBoundingBox().GetHeight()));
             legend->SetAnchoring(Anchoring::BottomRightCorner);
+            legend->SetScaling(GetScaling());
             AddObject(legend);
             }
         }
