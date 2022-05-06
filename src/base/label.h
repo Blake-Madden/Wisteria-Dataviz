@@ -163,11 +163,11 @@ namespace Wisteria::GraphItems
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.
-            @param parentScaling The parent's scaling (only used if IsUsingParentScalingOnBoudingAdjustment() is `true`).
-            @note The scaling of the label will be adjusted (height-wise if vertical, length-wise if horizontal) to this box,
-             and will also be anchored (length-wise if vertical, height-wise if horizontal) within this box.
-             If the label isn't wide/tall enough to fill the bounding box, then it will be anchored.
-             Call SetAnchoring() to control how it is anchored.*/
+            @param parentScaling The parent's scaling (not used in this implementation).
+            @note The scaling of the label will be adjusted to this box,
+             and will also be anchored (length-wise if vertical, height-wise if horizontal) within this box.\n
+             If the label isn't wide/tall enough to fill the bounding box precisely width- and length-wise,
+             then it will be anchored. Call SetAnchoring() to control how it is anchored.*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
@@ -187,6 +187,21 @@ namespace Wisteria::GraphItems
         /// @private
         [[nodiscard]] const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
             { return m_linesIgnoringLeftMargin; }
+
+        /** @brief Set this to @c true so that calls to SetBoundingBox() will only
+             be treated as a suggestion. The bounding box will be set to the suggested size,
+             but then be scaled down to the content.\n
+             This behaviour is turned off, so that calls to SetBoundingBox() will
+             explicitly set the size.\n
+             This is mostly useful for legends being embedded on a canvas.
+             @param adjust @c true to tell SetBoundingBox() to only treat its size
+              as a suggestion.*/
+        void AdjustingBoundingBoxToContent(const bool adjust) noexcept
+            { m_adjustBoundingBoxToContent = adjust; }
+        /// @returns @c true if the bounding box passed to SetBoundingBox() is only
+        ///  treated as a suggestion.
+        [[nodiscard]] bool IsAdjustingBoundingBoxToContent() const noexcept
+            { return m_adjustBoundingBoxToContent; }
 
         /// @name Font Functions
         /// @brief Helper functions for font selection and adjustments.
@@ -225,16 +240,6 @@ namespace Wisteria::GraphItems
         static void FixFont(wxFont& theFont);
         /// @}
     private:
-        /** If this is a fixed object on a canvas, then when SetBoundingBox() is called this label's scaling (and font)
-            will adjust accordingly to fit the box (the default behavior).
-            Set this to `true` if you wish for the label to only be anchored within this box, but use the scaling
-            of the parent canvas. This is useful if you have multiple labels that need to have a uniform font size.
-            @param useParentScalining Whether to use the parent's scaling if SetBoundingBox() is called. */
-        void UseParentScalingOnBoudingAdjustment(const bool useParentScalining) noexcept
-            { m_useParentScalingOnRebounding = useParentScalining; }
-        /// @returns Whether the parent's scaling is used for the font size when SetBoundingBox() is called.
-        [[nodiscard]] bool IsUsingParentScalingOnBoudingAdjustment() const noexcept
-            { return m_useParentScalingOnRebounding; }
         /// @returns Number of lines of text in the label.
         [[nodiscard]] size_t GetLineCount() const noexcept
             { return m_lineCount; }
@@ -282,7 +287,7 @@ namespace Wisteria::GraphItems
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };
-        bool m_useParentScalingOnRebounding{ false };
+        bool m_adjustBoundingBoxToContent{ false };
         size_t m_lineCount{ 0 };
         size_t m_longestLineLength{ 0 };
         std::set<size_t> m_linesIgnoringLeftMargin;

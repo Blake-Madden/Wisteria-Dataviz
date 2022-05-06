@@ -112,27 +112,28 @@ namespace Wisteria::GraphItems
             { SetAnchorPoint(rect.GetBottomLeft()); }
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { SetAnchorPoint(rect.GetBottomRight()); }
-        const double adjustedLengthSize = (GetTextOrientation() == Orientation::Horizontal) ?
-            safe_divide<double>(rect.GetWidth(), GetBoundingBox(dc).GetWidth()) :
-            safe_divide<double>(rect.GetHeight(), GetBoundingBox(dc).GetHeight());
-        const double adjustedScaleHeightSize = (GetTextOrientation() == Orientation::Horizontal) ?
-            safe_divide<double>(rect.GetHeight(), GetBoundingBox(dc).GetHeight()) :
-            safe_divide<double>(rect.GetWidth(), GetBoundingBox(dc).GetWidth());
-        const double adjustedBestFit = std::min(adjustedLengthSize, adjustedScaleHeightSize);
-        if (adjustedBestFit > 0)
-            {
-            SetScaling(IsUsingParentScalingOnBoudingAdjustment() ?
-                // if using the parent's scaling, then use that *unless* it will make the text larger
-                // than the bounding box. In that case, use the smaller scaled font.
-                std::min(parentScaling,(GetScaling()*adjustedBestFit)) :
-                GetScaling()*adjustedBestFit);
-            }
-        SetCachedBoundingBox(rect);
 
+        // readjust the scaling to fit the new bounding box
+        double currentScaling{ 1.0 };
+        wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
+        while (measuredWidth <= rect.GetWidth() &&
+             measuredHeight <= rect.GetHeight())
+            {
+            SetScaling(currentScaling);
+            GetSize(dc, measuredWidth, measuredHeight);
+            if (measuredWidth > rect.GetWidth() ||
+                measuredHeight > rect.GetHeight())
+                {
+                currentScaling -= 0.1;
+                SetScaling(currentScaling);
+                break;
+                }
+            currentScaling += 0.1;
+            }
+        
         // used for page alignment
         SetMinimumUserSizeDIPs(dc.ToDIP(rect.GetWidth()), dc.ToDIP(rect.GetHeight()));
 
-        wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
         SetCachedContentBoundingBox(wxRect(wxPoint(rect.GetTopLeft()),
             wxSize(measuredWidth, measuredHeight)));
@@ -142,6 +143,15 @@ namespace Wisteria::GraphItems
         contentRect.y += CalcPageVerticalOffset(dc);
         contentRect.x += CalcPageHorizontalOffset(dc);
         SetCachedContentBoundingBox(contentRect);
+
+        if (IsAdjustingBoundingBoxToContent())
+            {
+            wxRect clippedRect{ rect };
+            clippedRect.SetWidth(measuredWidth);
+            SetCachedBoundingBox(clippedRect);
+            }
+        else
+            { SetCachedBoundingBox(rect); }
         }
 
     //-------------------------------------------
