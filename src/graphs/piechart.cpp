@@ -270,7 +270,7 @@ namespace Wisteria::Graphs
         if (m_groupColumn1 == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for pie chart."),
+                _(L"'%s': group column not found for pie chart.").ToUTF8(),
                 groupColumn1Name));
             }
         m_groupColumn2 = (groupColumn2Name ?
@@ -282,7 +282,7 @@ namespace Wisteria::Graphs
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for pie chart."),
+                _(L"'%s': continuous column not found for pie chart.").ToUTF8(),
                 continuousColumnName));
             }
 

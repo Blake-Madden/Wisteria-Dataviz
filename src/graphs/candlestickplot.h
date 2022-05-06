@@ -52,7 +52,7 @@ namespace Wisteria::Graphs
           auto silverFuturesData = std::make_shared<Data::Dataset>();
           try
             {
-            silverFuturesData->ImportCSV(L"datasets/Silver Futures.csv",
+            silverFuturesData->ImportCSV(L"/home/daphne/data/Silver Futures.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
                 DateColumns({ { L"Date" } }));
@@ -111,7 +111,9 @@ namespace Wisteria::Graphs
             @param lowColumnName The column containing the lowest price during the day.
             @param highColumnName The column containing the highest price during the day.
             @param closeColumnName The column containing the closing price.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& dateColumnName,
                      const wxString& openColumnName, const wxString& highColumnName,

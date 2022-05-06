@@ -66,7 +66,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto surveyData = std::make_shared<Data::Dataset>();
-         surveyData->ImportCSV(L"Graph Library Survey.csv",
+         surveyData->ImportCSV(L"/home/rdoyle/data/Graph Library Survey.csv",
              Data::ImportInfo().
              CategoricalColumns(
                     {
@@ -479,7 +479,9 @@ namespace Wisteria::Graphs
             @warning The string tables in the categorical columns need to be synchronized prior to calling this. In other works,
              ensure that the columns use the same string and integral code assignments.
              This should be done after the data is imported and prior to calling this function.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);

@@ -51,7 +51,7 @@ namespace Wisteria::Graphs
          auto companyAcquisitionData = std::make_shared<Data::Dataset>();
          try
             {
-            companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+            companyAcquisitionData->ImportCSV(L"/home/daphne/data/Company Acquisition.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({ { L"Start" }, { L"End" } }).
@@ -147,7 +147,9 @@ namespace Wisteria::Graphs
              This will set the colors of the task's bars, based on their groups.
              Note that this can be the same column as the resource or task name columns.
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const DateInterval interval,
                      const FiscalYear FYType,

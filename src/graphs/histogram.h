@@ -58,7 +58,7 @@ namespace Wisteria::Graphs
          auto mtcarsData = std::make_shared<Data::Dataset>();
          try
             {
-            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+            mtcarsData->ImportCSV(L"/home/daphne/data/mtcars.csv",
                 ImportInfo().
                 ContinuousColumns({ L"mpg" }).
                 CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
@@ -238,7 +238,9 @@ namespace Wisteria::Graphs
              (if binning into ranges) and the maximum number of bins.
              For the latter, if binning by unique values and the number of
              unique values exceeds this, then the range-based mode will be used for the binning.
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.
             @note Observation names are pulled from the dataset's ID column and the first few are
              implicitly added to the bins' selection label.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,

@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto spellingTestData = std::make_shared<Data::Dataset>();
-         spellingTestData->ImportCSV(L"Spelling Grades.csv",
+         spellingTestData->ImportCSV(L"/home/rdoyle/data/Spelling Grades.csv",
             ImportInfo().
             // Note that the order of the continuous columns is important.
             // The first one will be the Y data, the second the X data.
@@ -175,7 +175,9 @@ namespace Wisteria::Graphs
             /// @param groupColumnName The (optional) grouping column to use.
             /// @param groupId The group ID for this line. Data points from @c data will
             ///  only be used for this line if their group ID is @c groupId.
-            /// @throws std::runtime_error If any columns can't be found by name, throws an exception.
+            /// @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+            ///  The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+            ///  when formatting it for an error message.
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& yColumnName,
                          const wxString& xColumnName,
@@ -260,7 +262,9 @@ namespace Wisteria::Graphs
              The plot will make no effort to sort the data or ensure that it is.
              This is by design in case you need a line series to go backwards in certain
              spots (e.g., a downward spiral).
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         virtual void SetData(std::shared_ptr<const Data::Dataset> data,
                              const wxString& yColumnName,
                              const wxString& xColumnName,

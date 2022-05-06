@@ -84,7 +84,7 @@ namespace Wisteria::Graphs
           auto testScoresData = std::make_shared<Data::Dataset>();
           try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCSV(L"/home/daphne/data/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week").
@@ -146,7 +146,9 @@ namespace Wisteria::Graphs
              wants to display left to right, but then also by group. These
              groups will be drawn top-to-bottom.
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.*/
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
             std::optional<const wxString> groupColumnName = std::nullopt,

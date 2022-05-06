@@ -51,7 +51,7 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto mpgData = std::make_shared<Data::Dataset>();
-         mpgData->ImportCSV(L"mpg.csv",
+         mpgData->ImportCSV(L"/home/daphne/data/mpg.csv",
             ImportInfo().ContinuousColumns({ L"hwy" }).
             CategoricalColumns({ { L"class", CategoricalImportMethod::ReadAsStrings } }));
          auto plot = std::make_shared<BoxPlot>(canvas);
@@ -189,7 +189,9 @@ namespace Wisteria::Graphs
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
                 @param groupId The group ID for this box. Data points from @c data will only be used for
                  his box if their group ID is @c groupId. Has no effect if @c useGrouping if `false`.
-                @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+                @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+                 The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+                 when formatting it for an error message.*/
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName,
@@ -272,7 +274,9 @@ namespace Wisteria::Graphs
             @param data The data to use for the plot.
             @param continuousColumnName The column from the dataset to analyze.
             @param groupColumnName The group column to split the data into (this is optional).
-            @throws std::runtime_error If any columns can't be found by name, throws an exception.*/
+            @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt);

@@ -16,7 +16,7 @@ which include chainable calls which classify the columns. For example:
 
 ```cpp
 auto BelongingData = std::make_shared<Data::Dataset>();
-BelongingData->ImportCSV(L"Sense of Belonging.csv",
+BelongingData->ImportCSV(L"/home/rdoyle/data/Sense of Belonging.csv",
     ImportInfo().
     // double value columns
     ContinuousColumns({ L"Belong", L"Year" }).
@@ -101,7 +101,7 @@ This can be overridden by specifying a different code as the third argument to `
 
 ```cpp
 auto patientData = std::make_shared<Data::Dataset>();
-patientData->ImportCSV(L"kidney.csv",
+patientData->ImportCSV(L"/home/rdoyle/data/kidney.csv",
     ImportInfo().
     ContinuousColumns({ L"visits" }).
     // code missing data to 9999
@@ -118,7 +118,7 @@ We also read in one categorical (`Gender`) as strings (e.g., "Male", "Female").
 
 ```cpp
 auto surveyData = std::make_shared<Data::Dataset>();
-surveyData->ImportCSV(L"Graph Library Survey.csv",
+surveyData->ImportCSV(L"/home/rdoyle/data/Graph Library Survey.csv",
     Data::ImportInfo().
     CategoricalColumns(
         {
@@ -149,7 +149,7 @@ You can, however, have more granularity over the date input formats. The followi
 
 ```cpp
 auto surveyData = std::make_shared<Data::Dataset>();
-companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+companyAcquisitionData->ImportCSV(L"/home/rdoyle/data/Company Acquisition.csv",
     ImportInfo().
     ContinuousColumns({ L"Completion" }).
     // The default DateImportMethod::Automatic would work,
@@ -179,7 +179,7 @@ The following demonstrates this feature:
 
 ```cpp
 auto commentsData = std::make_shared<Data::Dataset>();
-commentsData->ImportCSV(L"Comments.csv",
+commentsData->ImportCSV(L"/home/rdoyle/data/Comments.csv",
     Data::ImportInfo().CategoricalColumns({
         { L"Comments", CategoricalImportMethod::ReadAsStrings }
         }).
@@ -190,6 +190,29 @@ commentsData->ImportCSV(L"Comments.csv",
         // replace 'foot ball' with 'football'
         { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
         }));
+```
+
+These regex replacements can also be loaded from another file:
+
+```cpp
+// file that contains the regex patterns to replace
+// and what to replace them with
+auto replacementsData = std::make_shared<Data::Dataset>();
+replacementsData->ImportCSV(L"/home/dmoon/data/replacements.csv",
+    Data::ImportInfo().CategoricalColumns({
+        { L"pattern", CategoricalImportMethod::ReadAsStrings },
+        { L"replacement", CategoricalImportMethod::ReadAsStrings }
+        }));
+
+// load a file with a column of text and transform it
+auto commentsData = std::make_shared<Data::Dataset>();
+commentsData->ImportCSV(L"/home/dmoon/data/Comments.csv",
+    Data::ImportInfo().CategoricalColumns({
+        { L"Comments", CategoricalImportMethod::ReadAsStrings }
+        }).
+    ReplacementStrings(
+        ImportInfo::DatasetToRegExMap(replacementsData, L"pattern", L"replacement")
+        ));
 ```
 
 Using the Data

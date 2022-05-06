@@ -19,7 +19,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': category column not found for text classifier."),
-                categoryColumnName));
+                categoryColumnName).ToUTF8());
             }
         auto subCategoryCol = (subCategoryColumnName.has_value() ?
             classifierData->GetCategoricalColumn(subCategoryColumnName.value()) :
@@ -29,14 +29,14 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': sub-category column not found for text classifier."),
-                subCategoryColumnName.value()));
+                subCategoryColumnName.value()).ToUTF8());
             }
         auto patternCol = classifierData->GetCategoricalColumn(patternsColumnName);
         if (patternCol == classifierData->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': patterns column not found for text classifier."),
-                patternsColumnName));
+                patternsColumnName).ToUTF8());
             }
         auto negationPatternCol = (negationPatternsColumnName.has_value() ?
             classifierData->GetCategoricalColumn(negationPatternsColumnName.value()) :
@@ -101,7 +101,7 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': content column not found in dataset being classified."),
-                contentColumnName));
+                contentColumnName).ToUTF8());
             }
 
         // output will be the comments and categories that they matched against

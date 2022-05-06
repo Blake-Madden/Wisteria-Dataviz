@@ -264,7 +264,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                 ImportInfo().ContinuousColumns({ L"hwy" }).
                 CategoricalColumns({
                     { L"class", CategoricalImportMethod::ReadAsStrings },
@@ -272,7 +272,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<BoxPlot>(subframe->m_canvas);
@@ -297,14 +298,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCSV(appDir + L"/datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week"));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -336,7 +338,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto testScoresData = std::make_shared<Data::Dataset>();
         try
             {
-            testScoresData->ImportCSV(L"datasets/Student Scores.csv",
+            testScoresData->ImportCSV(appDir + L"/datasets/Student Scores.csv",
                 ImportInfo().
                 ContinuousColumns({ L"test_score" }).
                 IdColumn(L"Week").
@@ -344,7 +346,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -374,14 +377,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mtcarsData = std::make_shared<Data::Dataset>();
         try
             {
-            mtcarsData->ImportCSV(L"datasets/mtcars.csv",
+            mtcarsData->ImportCSV(appDir + L"/datasets/mtcars.csv",
                 ImportInfo().
                 ContinuousColumns({ L"mpg" }).
                 CategoricalColumns({ { L"Gear", CategoricalImportMethod::ReadAsIntegers } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -422,13 +426,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                 ImportInfo().
                 ContinuousColumns({ L"cyl" }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -460,7 +465,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(L"datasets/Spelling Grades.csv",
+            linePlotData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
                 ImportInfo().
                 // first the Y column, then the X
                 ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
@@ -468,7 +473,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
@@ -519,7 +525,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlotData = std::make_shared<Data::Dataset>();
         try
             {
-            linePlotData->ImportCSV(L"datasets/Spelling Grades.csv",
+            linePlotData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
                 ImportInfo().
                 // first the Y column, then the X
                 ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
@@ -527,7 +533,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas,
@@ -635,7 +642,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
         try
             {
-            companyAcquisitionData->ImportCSV(L"datasets/Company Acquisition.csv",
+            companyAcquisitionData->ImportCSV(appDir + L"/datasets/Company Acquisition.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({ { L"Start" }, { L"End" } }).
@@ -647,7 +654,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -696,14 +704,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto silverFuturesData = std::make_shared<Data::Dataset>();
         try
             {
-            silverFuturesData->ImportCSV(L"datasets/Silver Futures.csv",
+            silverFuturesData->ImportCSV(appDir + L"/datasets/Silver Futures.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
                 DateColumns({ { L"Date" } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -743,25 +752,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(92).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Solid) );
+            L"", Label(_(L"Bugs")), BoxEffect::Solid) );
 
         plot->AddBar(BarChart::Bar(2,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Solid));
+            L"", Label(_(L"Pending feature requests")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(3,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Solid));
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::Solid));
 
         plot->AddBar(BarChart::Bar(4,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Solid));
+            L"", Label(_(L"Missing unit tests")), BoxEffect::Solid));
 
         plot->IncludeSpacesBetweenBars();
 
@@ -792,7 +801,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::Glassy,
+            L"", Label(_(L"Bugs")), BoxEffect::Glassy,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -804,7 +813,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::Glassy,
+            L"", Label(_(L"Pending feature requests")), BoxEffect::Glassy,
             // this bar will be translucent
             75, 1));
 
@@ -812,14 +821,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
              BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::Glassy,
+            L"", Label(_(L"Missing unit tests")), BoxEffect::Glassy,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
@@ -853,7 +862,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
-            GraphItems::Image::LoadFile(L"res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
+            GraphItems::Image::LoadFile(appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
             *wxWHITE);
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
@@ -865,7 +874,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            _(L""), Label(_(L"Bugs")), BoxEffect::CommonImage,
+            L"", Label(_(L"Bugs")), BoxEffect::CommonImage,
             // we will make the width of the bar twice as wide as the others
             // to show how important it is
             wxALPHA_OPAQUE, 2));
@@ -877,21 +886,21 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            _(L""), Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
+            L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(3.5,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            _(L""), Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         plot->AddBar(BarChart::Bar(4.5,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            _(L""), Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
+            L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
             wxALPHA_OPAQUE, 1));
 
         // only show the labels on the axis
@@ -918,7 +927,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
@@ -927,7 +936,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -947,7 +956,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"manufacturer", CategoricalImportMethod::ReadAsStrings },
@@ -956,7 +965,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(err.what()),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -979,7 +989,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto mpgData = std::make_shared<Data::Dataset>();
         try
             {
-            mpgData->ImportCSV(L"datasets/mpg.csv",
+            mpgData->ImportCSV(appDir + L"/datasets/mpg.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"manufacturer", CategoricalImportMethod::ReadAsStrings }
@@ -987,7 +997,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
 
@@ -1008,7 +1019,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1018,7 +1029,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1042,7 +1054,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1052,14 +1064,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(),
+                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
 
@@ -1080,7 +1094,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1091,7 +1105,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1128,7 +1143,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1138,7 +1153,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto plot = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1182,14 +1198,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wcurveData = std::make_shared<Data::Dataset>();
         try
             {
-            wcurveData->ImportCSV(L"datasets/Sense of Belonging.csv",
+            wcurveData->ImportCSV(appDir + L"/datasets/Sense of Belonging.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Year", L"Belong" }).
                 CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto WCurve = std::make_shared<WCurvePlot>(subframe->m_canvas,
@@ -1233,7 +1250,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(L"datasets/Graph Library Survey.csv",
+            surveyData->ImportCSV(appDir + L"/datasets/Graph Library Survey.csv",
                 Data::ImportInfo().
                 CategoricalColumns(
                     {
@@ -1256,7 +1273,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         // Original data has a scale going from 1-7, but we want to simplify
@@ -1303,7 +1321,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(L"datasets/Graph Library Survey.csv",
+            surveyData->ImportCSV(appDir + L"/datasets/Graph Library Survey.csv",
                 Data::ImportInfo().
                 CategoricalColumns(
                     {
@@ -1325,7 +1343,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK | wxICON_ERROR | wxCENTRE);
             return;
             }
 
@@ -1352,7 +1371,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1362,7 +1381,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         auto donutChart = std::make_shared<PieChart>(subframe->m_canvas);
@@ -1431,7 +1451,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto spellingData = std::make_shared<Data::Dataset>();
         try
             {
-            spellingData->ImportCSV(L"datasets/Spelling Grades.csv",
+            spellingData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
                 ImportInfo().
                 // different order, first the X column, then the Y
                 ContinuousColumns({ L"Week", L"AVG_GRADE" }).
@@ -1439,7 +1459,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
         catch (const std::exception& err)
             {
-            wxMessageBox(err.what(), _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return;
             }
         // create your own color scheme

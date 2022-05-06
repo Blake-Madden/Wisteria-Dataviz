@@ -48,7 +48,7 @@ namespace Wisteria::Graphs
             { return; }
         if (!groupColumnName.has_value())
             {
-            throw std::runtime_error(_(L"Group column required for W-curve plot."));
+            throw std::runtime_error(_(L"Group column required for W-curve plot.").ToUTF8());
             return;
             }
         LinePlot::SetData(data, yColumnName, xColumnName, groupColumnName);
