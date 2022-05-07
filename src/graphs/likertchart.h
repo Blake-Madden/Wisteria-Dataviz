@@ -1051,7 +1051,7 @@ namespace Wisteria::Graphs
 
         wxColour m_negativeColor{ Colors::ColorBrewer::GetColor(Colors::Color::Orange) };
         wxColour m_positiveColor{ Colors::ColorBrewer::GetColor(Colors::Color::Cerulean) };
-        wxColour m_neutralColor{ Colors::ColorBrewer::GetColor(Colors::Color::LavenderMist) };
+        wxColour m_neutralColor{ Colors::ColorBrewer::GetColor(Colors::Color::AshGrey) };
         wxColour m_noResponseColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
         // labels displayed on the legend

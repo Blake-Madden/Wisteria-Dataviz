@@ -470,7 +470,7 @@ namespace Wisteria::Graphs
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
         wxColour m_boxColour{ Colors::ColorBrewer::GetColor(Colors::Color::BelvedereCream) };
-        wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CarolinaBlue) };
+        wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CelestialBlue) };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };

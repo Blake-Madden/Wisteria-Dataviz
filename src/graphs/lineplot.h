@@ -69,7 +69,7 @@ namespace Wisteria::Graphs
             // or create your own scheme
             // std::make_shared<Colors::Schemes::ColorScheme>
             //     (Colors::Schemes::ColorScheme{
-            //         ColorBrewer::GetColor(Colors::Color::CadmiumRed),
+            //         ColorBrewer::GetColor(Colors::Color::Auburn),
             //         ColorBrewer::GetColor(Colors::Color::OctoberMist) }),
 
             // turn off markers by using a shape scheme filled with blank icons

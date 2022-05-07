@@ -20,22 +20,25 @@ previousColorData <- read_delim(str_glue("{dataFolder}/Colors.txt"),
                           trim_ws = TRUE, lazy = FALSE) %>%
   mutate("Hex"=stringi::stri_trans_toupper(`Hex`))
 
-colorData <- html_table(read_html("https://www.colorhexa.com/color-names"))[[1]] %>%
-  dplyr::select(c("Color name", "Hex")) %>%
-  mutate("Color name"=stringi::stri_trans_general(`Color name`, 'Latin-ASCII')) %>%
-  mutate("Color name"=stringi::stri_trans_totitle(`Color name`)) %>%
-  mutate("Color name"=stringr::str_remove_all(`Color name`, "([/]Web| |[-]|'s)")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Cg", "CG")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Ua", "UA")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Ucla", "UCLA")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Ufo", "UFO")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Up", "UP")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Usc", "USC")) %>%
-  mutate("Color name"=stringr::str_replace(`Color name`, "^Msu", "MSU")) %>%
-  mutate("Hex"=stringi::stri_trans_toupper(`Hex`))
+# uncomment this to re-read content from colorhexa,
+# although the list used maintained now removed a few colors that seemed redundant
+#colorData <- html_table(read_html("https://www.colorhexa.com/color-names"))[[1]] %>%
+# dplyr::select(c("Color name", "Hex")) %>%
+#  mutate("Color name"=stringi::stri_trans_general(`Color name`, 'Latin-ASCII')) %>%
+#  mutate("Color name"=stringi::stri_trans_totitle(`Color name`)) %>%
+#  mutate("Color name"=stringr::str_remove_all(`Color name`, "([/]Web| |[-]|'s)")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Cg", "CG")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Ua", "UA")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Ucla", "UCLA")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Ufo", "UFO")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Up", "UP")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Usc", "USC")) %>%
+#  mutate("Color name"=stringr::str_replace(`Color name`, "^Msu", "MSU")) %>%
+#  mutate("Hex"=stringi::stri_trans_toupper(`Hex`))
+# colorData %<>% bind_rows(previousColorData) %>%
 
-colorData %<>% bind_rows(previousColorData) %>%
-  # remove duplicate
+colorData <- previousColorData %>%
+  # remove duplicates
   dplyr::distinct(`Color name`, .keep_all=T)
 
 colorData %<>%

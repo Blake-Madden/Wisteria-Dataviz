@@ -493,7 +493,7 @@ namespace Wisteria::Graphs
         BinLabelDisplay m_outerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
 
         wxPen m_connectionLinePen{ wxPen(
-            wxPenInfo(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::LavenderGray, 200),
+            wxPenInfo(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
                       ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 

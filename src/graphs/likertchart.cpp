@@ -583,10 +583,10 @@ namespace Wisteria::Graphs
 
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
-            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist)); }
+            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
-            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist)); }
+            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
         MirrorXAxis(true);
         MirrorYAxis(true);
 
@@ -1947,10 +1947,10 @@ namespace Wisteria::Graphs
         m_responseBarCount = 0;
         GetBarAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetLeftYAxis().GetAxisLinePen().IsOk())
-            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist)); }
+            { GetBarAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
         GetScalingAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         if (GetScalingAxis().GetAxisLinePen().IsOk())
-            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist)); }
+            { GetScalingAxis().GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey)); }
         // load the questions and responses
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
             GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint)
@@ -2008,7 +2008,7 @@ namespace Wisteria::Graphs
             neutralDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize+
                                                   m_negativeBlockSize + m_positiveBlockSize);
             neutralDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-            neutralDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+            neutralDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             neutralDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
@@ -2046,7 +2046,7 @@ namespace Wisteria::Graphs
             naDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
                                              m_negativeBlockSize + m_positiveBlockSize + m_neutralBlockSize);
             naDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-            naDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+            naDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             naDividerLine.GetAxisLinePen() = wxNullPen;
             if (IsShowingSectionHeaders())
                 {
@@ -2080,7 +2080,7 @@ namespace Wisteria::Graphs
         Axis agreeDividerLine(AxisType::RightYAxis);
         agreeDividerLine.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize+m_negativeBlockSize);
         agreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-        agreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+        agreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
         agreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
@@ -2096,7 +2096,7 @@ namespace Wisteria::Graphs
         Axis disagreeDividerLine(AxisType::LeftYAxis);
         disagreeDividerLine.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize+m_negativeBlockSize);
         disagreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
-        disagreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+        disagreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
         if (IsShowingSectionHeaders())
             {
@@ -2112,7 +2112,7 @@ namespace Wisteria::Graphs
         Axis questionDividerBar(AxisType::LeftYAxis);
         questionDividerBar.SetCustomXPosition(m_questionBlockSize);
         questionDividerBar.SetCustomYPosition(GetBarAxis().GetRange().second);
-        questionDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+        questionDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
         AddCustomAxis(questionDividerBar);
 
         if (m_categoryBlockSize > 0)
@@ -2120,7 +2120,7 @@ namespace Wisteria::Graphs
             Axis categoryDividerBar(AxisType::LeftYAxis);
             categoryDividerBar.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize);
             categoryDividerBar.SetCustomYPosition(GetBarAxis().GetRange().second);
-            categoryDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+            categoryDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             AddCustomAxis(categoryDividerBar);
             }
 
@@ -2166,7 +2166,7 @@ namespace Wisteria::Graphs
             if (fullDividerLines.size() &&
                 std::find(fullDividerLines.cbegin(), fullDividerLines.cend(), i) == fullDividerLines.cend())
                 { dividerHorizontalBar.SetOffsetFromParentAxis(m_questionBlockSize); }
-            dividerHorizontalBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::LavenderMist));
+            dividerHorizontalBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             AddCustomAxis(dividerHorizontalBar);
             }
 

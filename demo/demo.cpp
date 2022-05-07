@@ -483,7 +483,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // or create your own scheme
             // std::make_shared<Colors::Schemes::ColorScheme>
             //     (Colors::Schemes::ColorScheme{
-            //         ColorBrewer::GetColor(Colors::Color::CadmiumRed),
+            //         ColorBrewer::GetColor(Colors::Color::Auburn),
             //         ColorBrewer::GetColor(Colors::Color::OctoberMist) }),
 
             // turn off markers by using a shape scheme filled with blank icons
@@ -541,7 +541,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             // create your own color scheme
             std::make_shared<Colors::Schemes::ColorScheme>
                  (Colors::Schemes::ColorScheme{
-                     ColorBrewer::GetColor(Colors::Color::CadmiumRed),
+                     ColorBrewer::GetColor(Colors::Color::Auburn),
                      ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
             // use custom markers
             std::make_shared<IconShapeScheme>(IconShapeScheme
@@ -1467,7 +1467,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         const auto colors = std::make_shared<Colors::Schemes::ColorScheme>
             (Colors::Schemes::ColorScheme{
                 ColorBrewer::GetColor(Colors::Color::GrannySmithApple),
-                ColorBrewer::GetColor(Colors::Color::CadmiumRed) });
+                ColorBrewer::GetColor(Colors::Color::Auburn) });
 
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas, colors,
             // use custom markers

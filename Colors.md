@@ -31,7 +31,7 @@ Likewise, a custom color scheme can also be used:
 auto linePlot = std::make_shared<LinePlot>(canvas,
     std::make_shared<Colors::Schemes::ColorScheme>
                  (Colors::Schemes::ColorScheme{
-                     ColorBrewer::GetColor(Colors::Color::CadmiumRed),
+                     ColorBrewer::GetColor(Colors::Color::Auburn),
                      ColorBrewer::GetColor(Colors::Color::OctoberMist) }));
 ```
 
