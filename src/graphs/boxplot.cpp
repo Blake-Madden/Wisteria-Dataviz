@@ -317,8 +317,11 @@ namespace Wisteria::Graphs
             // (which would certainly be the case, usually)
             if (box.GetData()->GetRowCount() > 1)
                 {
-                const wxString whiskerLabel = wxString::Format(_("Non-outlier range: %.3f-%.3f"),
-                        box.GetLowerWhisker(), box.GetUpperWhisker());
+                const wxString whiskerLabel = wxString::Format(_("Non-outlier range: %s-%s"),
+                        wxNumberFormatter::ToString(box.GetLowerWhisker(),
+                            3, Settings::GetDefaultNumberFormat()),
+                        wxNumberFormatter::ToString(box.GetUpperWhisker(),
+                            3, Settings::GetDefaultNumberFormat()));
 
                 const wxPen linePen(*wxBLACK, 2);
 
@@ -356,11 +359,15 @@ namespace Wisteria::Graphs
             if (box.GetData()->GetRowCount() > 1)
                 {
                 const wxString boxLabel =
-                    wxString::Format(_("75th Percentile: %.3f\n"
-                                       "Median: %.3f\n" // 50th percentile
-                                       "25th Percentile: %.3f"),
-                            box.GetUpperControlLimit(), box.GetMiddlePoint(),
-                            box.GetLowerControlLimit());
+                    wxString::Format(_("75th Percentile: %s\n"
+                                       "Median: %s\n" // 50th percentile
+                                       "25th Percentile: %s"),
+                            wxNumberFormatter::ToString(box.GetUpperControlLimit(),
+                                3, Settings::GetDefaultNumberFormat()),
+                            wxNumberFormatter::ToString(box.GetMiddlePoint(),
+                                3, Settings::GetDefaultNumberFormat()),
+                            wxNumberFormatter::ToString(box.GetLowerControlLimit(),
+                                3, Settings::GetDefaultNumberFormat()));
                 // draw the box
                 if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage().IsOk())
                     {
@@ -652,15 +659,20 @@ namespace Wisteria::Graphs
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetGraphItemInfo().Text(
-                wxString::Format(_(L"75th Percentile: %.3f\n"
-                                    "Median: %.3f\n" // 50th percentile
-                                    "25th Percentile: %.3f\n"
-                                    "Non-outlier Range: %.3f-%.3f"),
-                    GetBox(0).GetUpperControlLimit(),
-                    GetBox(0).GetMiddlePoint(),
-                    GetBox(0).GetLowerControlLimit(),
-                    GetBox(0).GetLowerWhisker(),
-                    GetBox(0).GetUpperWhisker()));
+                wxString::Format(_(L"75th Percentile: %s\n"
+                                    "Median: %s\n" // 50th percentile
+                                    "25th Percentile: %s\n"
+                                    "Non-outlier Range: %s-%s"),
+                    wxNumberFormatter::ToString(GetBox(0).GetUpperControlLimit(),
+                                                3, Settings::GetDefaultNumberFormat()),
+                    wxNumberFormatter::ToString(GetBox(0).GetMiddlePoint(),
+                                                3, Settings::GetDefaultNumberFormat()),
+                    wxNumberFormatter::ToString(GetBox(0).GetLowerControlLimit(),
+                                                3, Settings::GetDefaultNumberFormat()),
+                    wxNumberFormatter::ToString(GetBox(0).GetLowerWhisker(),
+                                                3, Settings::GetDefaultNumberFormat()),
+                    wxNumberFormatter::ToString(GetBox(0).GetUpperWhisker(),
+                                                3, Settings::GetDefaultNumberFormat())));
 
         AddReferenceLinesAndAreasToLegend(legend);
         AdjustLegendSettings(legend, hint);
