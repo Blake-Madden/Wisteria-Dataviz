@@ -4,13 +4,15 @@ Color Management
 Creating Colors
 =============================
 
-wxWidgets provides a list of standard colors, such as `wxRED` and `wxWHITE`. %Wisteria adds hundreds of more
+wxWidgets provides a list of standard colors, such as `wxRED` and `wxWHITE`. Wisteria adds hundreds of more
 colors that can be accessed by name and returned as compatible `wxColour` objects.
 These colors can be retrieved as such:
 
 ```cpp
 wxColour barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 ```
+
+Refer to the `Wisteria::Colors::Color` enumeration for a list of colors.
 
 Color Schemes
 =============================
@@ -34,6 +36,8 @@ auto linePlot = std::make_shared<LinePlot>(canvas,
                      ColorBrewer::GetColor(Colors::Color::Auburn),
                      ColorBrewer::GetColor(Colors::Color::OctoberMist) }));
 ```
+
+Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
 
 Contrasting
 =============================

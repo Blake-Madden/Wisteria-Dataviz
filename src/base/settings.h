@@ -94,7 +94,7 @@ namespace Wisteria
         static void SetMaxLegendTextLength(const size_t length) noexcept
             {
             wxASSERT_MSG(length > 0,
-                                 L"Max legend label lengths should be at least 1!");
+                         L"Max legend label lengths should be at least 1!");
             m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
             }
         /// @brief Enables or disables a debug flag.

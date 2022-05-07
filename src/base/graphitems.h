@@ -1165,10 +1165,12 @@ namespace Wisteria
                 @details When an item is drawn, its anchoring indicates what its point is referencing.\n
                  For example, if an item is anchored to its center, then the item's point refers to
                  its center and it will be drawn on its parent based on that.
-                @details This can be useful for lining up multiple labels a certain way (e.g., left aligned).
+                @details This can be useful for lining up multiple labels a certain way
+                 (e.g., left aligned).
                 @param placement The method for how the point controls the anchoring of this object.
                 @note This will have no effect on objects with more than one point
-                 (e.g., @c Axes::Axis, @c Points2D). This mostly related to objects such as Label and Image.*/
+                 (e.g., @c Axes::Axis, @c Points2D).
+                 This mostly related to objects such as Label and Image.*/
             void SetAnchoring(const Wisteria::Anchoring placement)
                 {
                 m_itemInfo.m_anchoring = placement;
@@ -1193,8 +1195,8 @@ namespace Wisteria
 
             /** @name Text Functions
                 @brief Functions related to text display.
-                @details This applies when the object is a Label. This also applies to the label displayed
-                 when this item is selected.*/
+                @details This applies when the object is a Label.
+                 This also applies to the label displayed when this item is selected.*/
             /// @{
 
             /** @brief Sets the label, which the caller can use (e.g., as a selection label).
@@ -1349,7 +1351,7 @@ namespace Wisteria
                 return false;
                 }
 
-            /** @brief Gets the minimum width for the item's bounding box that the client has requested.
+            /** @brief Gets the minimum width for the item's bounding box that the client has requested.\n
                  This is currently only relevant to @c Label objects.
                 @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
                  This is the minimum size that the client has requested, which may or may not be
