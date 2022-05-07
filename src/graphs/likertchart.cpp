@@ -441,6 +441,8 @@ namespace Wisteria::Graphs
             LabelAlignment(TextAlignment::FlushLeft).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
+        legend->GetFont().MakeSmaller();
+        legend->GetHeaderInfo().GetFont().MakeSmaller();
 
         // fill in the legend
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||

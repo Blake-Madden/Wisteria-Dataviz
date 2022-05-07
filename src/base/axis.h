@@ -396,6 +396,7 @@ namespace Wisteria::GraphItems
             SetTextAlignment(TextAlignment::Centered);
             GetTitle().SetTextOrientation((IsVertical() ?
                 Orientation::Vertical : Orientation::Horizontal));
+            GetFont().MakeSmaller();
             }
         /// @private
         Axis(const Axis& that) = default;

@@ -432,6 +432,8 @@ namespace Wisteria::Graphs
             DPIScaling(GetDPIScaleFactor()).
             Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft));
         legend->SetBoxCorners(BoxCorners::Rounded);
+        legend->GetFont().MakeSmaller();
+        legend->GetHeaderInfo().GetFont().MakeSmaller();
         if (includeHeader)
             {
             legend->SetText(

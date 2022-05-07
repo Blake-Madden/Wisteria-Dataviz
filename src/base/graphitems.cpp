@@ -36,6 +36,7 @@ namespace Wisteria::GraphItems
                 AnchorPoint(ItemBoundingBox.GetTopLeft() +
                             wxPoint(ItemBoundingBox.GetWidth()/2,
                             ItemBoundingBox.GetHeight()/2)));
+            selectionLabel.GetFont().MakeSmaller();
             const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
             // if going out of the bottom of the bounding box then move it up to fit
             if (!boundingBox.IsEmpty() && selectionLabelBox.GetBottom() > boundingBox.GetBottom())

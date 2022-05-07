@@ -284,6 +284,8 @@ namespace Wisteria::Graphs
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
+        legend->GetFont().MakeSmaller();
+        legend->GetHeaderInfo().GetFont().MakeSmaller();
 
         const bool showingMarkers = (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
                                     // multiple lines or one line and it is not using a blank icon

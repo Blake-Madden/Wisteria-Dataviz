@@ -50,7 +50,7 @@ namespace Wisteria::GraphItems
         if (level == AxisResetLevel::CosmeticSettings ||
             level == AxisResetLevel::AllSettings)
             {
-            GetFont() = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+            GetFont() = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeSmaller();
             SetFontColor(wxColour(*wxBLACK));
             SetFontBackgroundColor(wxNullColour);
             SetTextAlignment(TextAlignment::Centered);
