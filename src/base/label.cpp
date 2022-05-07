@@ -1116,8 +1116,7 @@ namespace Wisteria::GraphItems
                 }
             if (!dc.GetFont().IsOk())
                 {
-                wxLogWarning(L"Invalid font '%s' used in graphics; will be replaced by system default.",
-                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
+                wxLogWarning(L"Invalid font used in graphics; will be replaced by system default.");
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
@@ -1262,8 +1261,7 @@ namespace Wisteria::GraphItems
                 }
             if (!dc.GetFont().IsOk())
                 {
-                wxLogWarning(L"Invalid font '%s' used in graphics; will be replaced by system default.",
-                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
+                wxLogWarning(L"Invalid font used in graphics; will be replaced by system default.");
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto currentLineOffset =
