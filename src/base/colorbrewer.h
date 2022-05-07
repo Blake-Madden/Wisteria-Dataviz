@@ -1079,24 +1079,31 @@ namespace Wisteria::Colors
             [[nodiscard]] const std::vector<wxColour>& GetColors() const noexcept
                 { return m_colors; }
             /** @brief Gets the color from a given index.
-                @param index The index into the color list to return. If index is outside of the color
-                 scheme but within double the size of the scheme, then scheme will "wrap around" and return
-                 a shaded or tinted version. If outside of twice the number of colors, then returns black.
+                @param index The index into the color list to return.
+                 If index is outside of the color scheme but within double the size of the scheme,
+                 then scheme will "wrap around" and return a shaded or tinted version.
+                 If outside of twice the number of colors, then returns black.
 
-                 For example, if you have 8 colors and pass in an index of 7, the it will return the last color.
-                 If you pass in index 9, then will return a shaded/tinted version of the second color. Index 15 will return
-                 a shaded/tinted version of the last color, and index 16 will return black.
+                 For example, if you have 8 colors and pass in an index of 7,
+                 then it will return the last color.\n
+                 If you pass in index 9, then will return a shaded/tinted version
+                 of the second color.\n
+                 Index 15 will return a shaded/tinted version of the last color,
+                 and index 16 will return black.
                 @returns The color from a given index.*/
             [[nodiscard]] wxColour GetColor(const size_t index) const
                 {
-                return (index < m_colors.size()) ?
+                return (m_colors.size() == 0) ?
+                    *wxBLACK :
+                    (index < m_colors.size()) ?
                     m_colors.at(index) :
                     (index < m_colors.size()*2) ?
                     ColorContrast::ShadeOrTint(m_colors.at(index%m_colors.size())) :
                     *wxBLACK;
                 }
             /** @brief Gets the color from a given index and applies an opacity value to it.
-                @param index The index into the color list to return. Returns black if index is invalid.
+                @param index The index into the color list to return.
+                 Returns black if index is invalid.
                 @param opacity The opacity to set the color.
                 @returns The color from given index.*/
             [[nodiscard]] wxColour GetColor(const size_t index, const uint8_t opacity) const
