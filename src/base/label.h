@@ -86,36 +86,37 @@ namespace Wisteria::GraphItems
              will be truncated and have an ellipsis appended to it.*/
         void SplitTextToFitBoundingBox(wxDC& dc, const wxSize& boundingBoxSize);
 
-        /** @brief Splits the string into multiline chunks, with each line being around the suggested length argument.
+        /** @brief Splits the string into multiline chunks, with each line being around
+             the suggested length argument.
             @details String will be split on these delimiters: spaces and hyphens.
-            @param suggestedLineLength The suggested length (character count) for each new line to be.*/
+            @param suggestedLineLength The suggested length (character count) for each new line.*/
         void SplitTextToFitLength(const size_t suggestedLineLength);
 
         /** @brief Splits the text into lines containing only one character.
-            @note It is recommended to use a fixed-width font (@c wxFONTFAMILY_TELETYPE) for the best appearance.
+            @note It is recommended to set the alignment to centered for best appearance.
             @par Example
             @code
-             // set the left title of a plot to be written downward
+             // set the left title of a plot to be written downward,
              // letter-by-letter
              thePlot->GetLeftYAxis().GetTitle().GetGraphItemInfo().
                 Label(L"TIME").Orient(Orientation::Horizontal).
-                Font(wxFontInfo(10).Family(wxFontFamily::wxFONTFAMILY_TELETYPE));
+                LabelAlignment(TextAlignment::Centered);
              thePlot->GetLeftYAxis().GetTitle().SplitTextByCharacter();
             @endcode*/
         void SplitTextByCharacter();
 
-        /// @returns The minimum width needed for the left padding if including a legend. @sa SetLeftPadding().
-        /// @warning This is only the pixel size, which is what SetLeftPadding() requires (i.e., no DPI or scaling applied).
+        /// @returns The minimum width needed for the left padding if including a legend.
+        /// @sa SetLeftPadding().
         [[nodiscard]] static wxCoord GetMinLegendWidthDIPs() noexcept
             { return LegendIcon::GetIconWidthDIPs() + 2/* 1 DIP on each side of icon*/; }
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
         [[nodiscard]] double GetLineSpacing() const noexcept
             { return m_spacingBetweenLines; }
-        /** @brief Sets the number of pixels between lines (if label is multiline).
-            @param spacing The number of pixels to space between lines.
-            @note This is a pixel value that the framework will scale to the screen for you. The label's own scaling
-             will also be applied when needed.*/
+        /** @brief Sets the number of DIPs between lines (if label is multiline).
+            @param spacing The number of DIPs to space between lines.
+            @note This is in DIPS; the framework will scale this to the current DPI and zoom
+             level for you.*/
         void SetLineSpacing(const double spacing) noexcept
             { m_spacingBetweenLines = spacing; }
 
@@ -165,9 +166,11 @@ namespace Wisteria::GraphItems
             @param dc The DC to measure content with.
             @param parentScaling The parent's scaling (not used in this implementation).
             @note The scaling of the label will be adjusted to this box,
-             and will also be anchored (length-wise if vertical, height-wise if horizontal) within this box.\n
-             If the label isn't wide/tall enough to fill the bounding box precisely width- and length-wise,
-             then it will be anchored. Call SetAnchoring() to control how it is anchored.*/
+             and will also be anchored (length-wise if vertical, height-wise if horizontal)
+             within this box.\n
+             If the label isn't wide/tall enough to fill the bounding box precisely
+             width- and length-wise, then it will be anchored.\n
+             Call SetAnchoring() to control how it is anchored.*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
@@ -205,7 +208,8 @@ namespace Wisteria::GraphItems
 
         /// @name Font Functions
         /// @brief Helper functions for font selection and adjustments.
-        /// @note To change or edit the font for a label, call @c GetGraphItemInfo().Font() or GetFont().
+        /// @note To change or edit the font for a label, call
+        ///  @c GetGraphItemInfo().Font() or GetFont().
         /// @{
 
         /** @returns The best font size to fit a given string across an area diagonally.
@@ -214,25 +218,31 @@ namespace Wisteria::GraphItems
             @param boundingBox The bounding box to constrain the text within.
             @param angleInDegrees The angle that the string will be at.
             @param text The string being measured.
-            @warning `boundingBoxSize` is assumed to be scaled from the parent already, so the font size returned will
-             fit this area as-is. Because `Label`s adjust their font size based on scaling,
-             setting a label's point size to this should also set its scaling to 1 (not the parents').*/
-        [[nodiscard]] static int CalcDiagonalFontSize(wxDC& dc, const wxFont& ft, const wxRect& boundingBox,
-            const double angleInDegrees, const wxString& text);
+            @warning @c boundingBoxSize is assumed to be scaled from the parent already,
+             so the font size returned will fit this area as-is.\n
+             Because `Label`s adjust their font size based on scaling,
+             setting its point size to this should also set its scaling to 1 (not the parents').*/
+        [[nodiscard]] static int CalcDiagonalFontSize(wxDC& dc,
+                                                      const wxFont& ft, const wxRect& boundingBox,
+                                                      const double angleInDegrees,
+                                                      const wxString& text);
         /** @returns The font size that would fit for a given string within a given bounding box.
             @param dc The device context that the text is being drawn on.
             @param ft The font this is being drawn with.
             @param boundingBox The bounding box that the text should fit inside of.
             @param text The text that is being drawn.
-            @warning `boundingBoxSize` is assumed to be scaled from the parent already, so the font size returned will
-             fit this area as-is. Because `Label`s adjust their font size based on scaling,
-             setting a label's point size to this should also set its scaling to 1 (not the parents')*/
+            @warning `boundingBoxSize` is assumed to be scaled from the parent already,
+             so the font size returned will fit this area as-is.\n
+             Because `Label`s adjust their font size based on scaling,
+             setting its point size to this should also set its scaling to 1 (not the parents')*/
         [[nodiscard]] static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
             const wxRect& boundingBox, const wxString& text);
-        /** @returns The first available font (face name) found from the given list, or the system default if none are found.
+        /** @returns The first available font (face name) found from the given list,
+             or the system default if none are found.
             @param possibleFontNames The list of font names to choose from.*/
         [[nodiscard]] static wxString GetFirstAvailableFont(const wxArrayString& possibleFontNames);
-        /** @returns The first available cursive font (face name) found on the system, or the system default if none are found.
+        /** @returns The first available cursive font (face name) found on the system,
+             or the system default if none are found.
             @note This function uses a list of known cursive fonts to search with.*/
         [[nodiscard]] static wxString GetFirstAvailableCursiveFont();
         /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
@@ -252,37 +262,42 @@ namespace Wisteria::GraphItems
             // make sure this was cached properly
             wxASSERT_LEVEL_2_MSG(
                 (GetText().length() == 0 && m_longestLineLength == 0) ||
-                (GetText().length() > 0 && m_longestLineLength > 0), L"Longest line length in label was not calculated!");
+                (GetText().length() > 0 && m_longestLineLength > 0),
+                L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }
         /** @returns `true` if the given point is inside of the label.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
-        /** @brief Draws a vertical multi-line text string at the specified point, using the current text font,
-             and the current text foreground and background colours.
+        /** @brief Draws a vertical multi-line text string at the specified point,
+             using the current text font, and the current text foreground and background colours.
             @param dc The device context to draw to.
-            @param pt The point to draw the text. This coordinate refers to the bottom-left corner of the rectangle bounding the string.
+            @param pt The point to draw the text.\n
+             This coordinate refers to the bottom-left corner of the rectangle bounding the string.
             @param leftOffset The padding to put on the left of each line.*/
         void DrawVerticalMultiLineText(wxDC& dc, wxPoint pt, const wxCoord leftOffset) const;
         /** @brief Draws a multi-line text string at the specified point, using the current text font,
              and the current text foreground and background colours.
             @param dc The device context that the text is being drawn on.
-            @param pt The point to draw the text. This coordinate refers to the top-left corner of the rectangle bounding the string.
+            @param pt The point to draw the text.\n
+             This coordinate refers to the top-left corner of the rectangle bounding the string.
             @param leftOffset The padding to put on the left of each line.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt, wxCoord leftOffset) const;
-        /// @brief Figures out how many characters are in the longest line of text (takes multiline labels into account).
+        /// @brief Figures out how many characters are in the longest line of text
+        ///  (takes multiline labels into account).
         void CalcLongestLineLength();
-        /** @brief Retrieves The physical size of label (including outlined bounding box if the pen is valid).
-            @details Should only be called by GetBoundingBox(), which avoids calling this if the bounding box
-             values are already cached. GetBoundingBox() will also take into account the (optional) minimum size
-             of the label in conjunction with this.*/
+        /** @brief Retrieves The physical size of label
+             (including outlined bounding box if the pen is valid).
+            @details Should only be called by GetBoundingBox(), which avoids calling this if
+             the bounding box values are already cached. GetBoundingBox() will also take into
+             account the (optional) minimum size of the label in conjunction with this.*/
         void GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const;
-        /// @returns The offset from the top if user-defined minimum size is being used it is taller
-        ///  than the measured size.
+        /// @returns The offset from the top if user-defined minimum size is being used it is
+        ///  taller than the measured size.
         [[nodiscard]] wxCoord CalcPageVerticalOffset(wxDC& dc) const;
-        /// @returns The offset from the left if user-defined minimum size is being used it is wider
-        ///  than the measured size.
+        /// @returns The offset from the left if user-defined minimum size is being used it is
+        ///  wider than the measured size.
         [[nodiscard]] wxCoord CalcPageHorizontalOffset(wxDC& dc) const;
 
         double m_tiltAngle{ 0 };
