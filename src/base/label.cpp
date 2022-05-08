@@ -320,7 +320,7 @@ namespace Wisteria::GraphItems
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const wxRect boundingBox = GetBoundingBox(dc);
-        const wxRect contenBoundingBox = GetCachedContentBoundingBox();
+        const wxRect contentBoundingBox = GetCachedContentBoundingBox();
 
         // draw the shadow
         if (GetShadowType() != ShadowType::NoShadow && GetPen().IsOk() && !IsSelected())
@@ -681,10 +681,10 @@ namespace Wisteria::GraphItems
                 const wxCoord yOffset = (GetHeaderInfo().IsEnabled() ?
                     topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) : 0);
                 middleOfCurrentRow += yOffset;
-                const auto midPoint = wxPoint(contenBoundingBox.GetTopLeft() +
+                const auto midPoint = wxPoint(contentBoundingBox.GetTopLeft() +
                                               wxPoint(leftPadding, middleOfCurrentRow));
                 wxPoint polygonPoints[6];
-                wxRect boxRect{ wxRect(contenBoundingBox.GetTopLeft() +
+                wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(leftPadding, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
                 // draw the current shape now
@@ -693,40 +693,40 @@ namespace Wisteria::GraphItems
                     case IconShape::BlankIcon:
                         break;
                     case IconShape::HorizontalLineIcon:
-                        dc.DrawLine(contenBoundingBox.GetTopLeft() +
+                        dc.DrawLine(contentBoundingBox.GetTopLeft() +
                             wxPoint(std::ceil(leftPadding-(iconRadius)), middleOfCurrentRow),
-                            contenBoundingBox.GetTopLeft() +
+                            contentBoundingBox.GetTopLeft() +
                             wxPoint(std::ceil(leftPadding+(iconRadius)), middleOfCurrentRow));
                         break;
                     case IconShape::ArrowRightIcon:
                         GraphItems::Polygon::DrawArrow(dc,
-                            contenBoundingBox.GetTopLeft() +
+                            contentBoundingBox.GetTopLeft() +
                             wxPoint(std::ceil(leftPadding-(iconRadius)), middleOfCurrentRow),
-                            contenBoundingBox.GetTopLeft() +
+                            contentBoundingBox.GetTopLeft() +
                             wxPoint(std::ceil(leftPadding+(iconRadius)), middleOfCurrentRow),
                             ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
                         break;
                     case IconShape::LocationMarker:
-                        dc.DrawCircle(contenBoundingBox.GetTopLeft() +
+                        dc.DrawCircle(contentBoundingBox.GetTopLeft() +
                             wxPoint(leftPadding, middleOfCurrentRow),
                             iconRadius);
                         // center (1/3 the size of outer ring)
                             {
                             wxDCPenChanger pc(dc, *wxWHITE_PEN);
                             wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
-                            dc.DrawCircle(contenBoundingBox.GetLeftTop() +
+                            dc.DrawCircle(contentBoundingBox.GetLeftTop() +
                                 wxPoint(leftPadding, middleOfCurrentRow),
                                 iconRadius * .33);
                             }
                         break;
                     case IconShape::CircleIcon:
-                        dc.DrawCircle(contenBoundingBox.GetTopLeft() +
+                        dc.DrawCircle(contentBoundingBox.GetTopLeft() +
                             wxPoint(leftPadding, middleOfCurrentRow),
                             iconRadius);
                         break;
                     case IconShape::SquareIcon:
                         dc.DrawRectangle(
-                            wxRect(contenBoundingBox.GetTopLeft() +
+                            wxRect(contentBoundingBox.GetTopLeft() +
                                    wxPoint(leftPadding, middleOfCurrentRow),
                                    wxSize(1, 1)).Inflate(iconRadius));
                         break;
@@ -825,25 +825,25 @@ namespace Wisteria::GraphItems
                                                            static_cast<double>(averageLineHeight)));
                             wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first, downScaledSize.second,
                                                                      wxIMAGE_QUALITY_HIGH);
-                            dc.DrawBitmap(wxBitmap(scaledImg),contenBoundingBox.GetTopLeft() +
+                            dc.DrawBitmap(wxBitmap(scaledImg),contentBoundingBox.GetTopLeft() +
                                           wxPoint(0, middleOfCurrentRow-(scaledImg.GetHeight()/2)));
                             }
                         break;
                     // Horizontal separators
                     //----------------------
                     case IconShape::HorizontalSeparator:
-                        dc.DrawLine(contenBoundingBox.GetTopLeft() +
+                        dc.DrawLine(contentBoundingBox.GetTopLeft() +
                             wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                            contenBoundingBox.GetTopLeft() +
-                            wxPoint(contenBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
+                            contentBoundingBox.GetTopLeft() +
+                            wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
                                 middleOfCurrentRow));
                         break;
                     case IconShape::HorizontalArrowRightSeparator:
                         GraphItems::Polygon::DrawArrow(dc,
-                            contenBoundingBox.GetTopLeft() +
+                            contentBoundingBox.GetTopLeft() +
                             wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                            contenBoundingBox.GetTopLeft() +
-                            wxPoint(contenBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
+                            contentBoundingBox.GetTopLeft() +
+                            wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
                                 middleOfCurrentRow),
                             ScaleToScreenAndCanvas(iconPos->GetArrowheadSizeDIPs()));
                         break;
@@ -852,7 +852,7 @@ namespace Wisteria::GraphItems
                     case IconShape::ImageWholeLegend:
                         if (iconPos->m_img.IsOk())
                             {
-                            wxRect legendArea = contenBoundingBox;
+                            wxRect legendArea = contentBoundingBox;
                             legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
 
                             const auto downScaledSize = geometry::calculate_downscaled_size(
@@ -874,7 +874,7 @@ namespace Wisteria::GraphItems
                             {
                             // we need to see how many colors there are and draw separate gradients between each
                             // pair, until the full spectrum is shown.
-                            wxRect legendArea = contenBoundingBox;
+                            wxRect legendArea = contentBoundingBox;
                             legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
                             legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
                             legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
