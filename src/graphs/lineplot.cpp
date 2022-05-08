@@ -43,7 +43,7 @@ namespace Wisteria::Graphs
                 _(L"'%s': Y column not found for line plot."), yColumnName).ToUTF8());
             }
         m_xColumn = m_data->GetContinuousColumn(xColumnName);
-        if (m_yColumn == m_data->GetContinuousColumns().cend())
+        if (m_xColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': X column not found for line plot."), xColumnName).ToUTF8());
