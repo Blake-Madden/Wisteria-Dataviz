@@ -586,7 +586,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetCategoryLabel(groupId) :
+                m_groupColumn->GetCategoryLabelFromID(groupId) :
                 wxString(L"");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength())
                 {

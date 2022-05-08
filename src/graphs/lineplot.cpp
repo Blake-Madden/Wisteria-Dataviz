@@ -50,7 +50,7 @@ namespace Wisteria::Graphs
             }
 
         m_label = (groupColumnName.has_value() ?
-            m_groupColumn->GetCategoryLabel(m_groupId) : wxString(L""));
+            m_groupColumn->GetCategoryLabelFromID(m_groupId) : wxString(L""));
         }
 
     //----------------------------------------------------------------
@@ -142,8 +142,8 @@ namespace Wisteria::Graphs
             std::sort(m_lines.begin(), m_lines.end(),
                 [this](const auto& first, const auto& second) noexcept
                     {
-                    return m_groupColumn->GetCategoryLabel(first.m_groupId) <
-                           m_groupColumn->GetCategoryLabel(second.m_groupId);
+                    return m_groupColumn->GetCategoryLabelFromID(first.m_groupId) <
+                           m_groupColumn->GetCategoryLabelFromID(second.m_groupId);
                     }
                 );
             }
@@ -301,7 +301,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetCategoryLabel(line.m_groupId) :
+                m_groupColumn->GetCategoryLabelFromID(line.m_groupId) :
                 wxString(L"");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength())
                 {

@@ -175,7 +175,7 @@ namespace Wisteria::Data
              or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
             @param code The ID to look up.*/
-        [[nodiscard]] wxString GetCategoryLabel(const GroupIdType code) const
+        [[nodiscard]] wxString GetCategoryLabelFromID(const GroupIdType code) const
             {
             const auto foundLabel = m_stringTable.find(code);
             if (foundLabel != m_stringTable.cend())

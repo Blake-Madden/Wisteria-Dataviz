@@ -174,8 +174,9 @@ namespace Wisteria::Graphs
             [[nodiscard]] bool operator<(const BoxAndWhisker& that) const noexcept
                 {
                 return wxUILocale::GetCurrent().CompareStrings(
-                    m_groupColumn->GetCategoryLabel(m_groupId),
-                    that.m_groupColumn->GetCategoryLabel(that.m_groupId), wxCompare_CaseInsensitive) < 0;
+                    m_groupColumn->GetCategoryLabelFromID(m_groupId),
+                    that.m_groupColumn->GetCategoryLabelFromID(that.m_groupId),
+                        wxCompare_CaseInsensitive) < 0;
                 }
         private:
             /// @name Data Functions

@@ -86,14 +86,14 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             AddTask(
-                GanttChart::TaskInfo(taskColumn->GetCategoryLabel(taskColumn->GetValue(i))).
+                GanttChart::TaskInfo(taskColumn->GetCategoryLabelFromID(taskColumn->GetValue(i))).
                 Resource(
                     (resourceColumn != data->GetCategoricalColumns().cend()) ?
-                     resourceColumn->GetCategoryLabel(resourceColumn->GetValue(i)) :
+                     resourceColumn->GetCategoryLabelFromID(resourceColumn->GetValue(i)) :
                      wxString(L"")).
                 Description(
                     (descriptionColumn != data->GetCategoricalColumns().cend()) ?
-                     descriptionColumn->GetCategoryLabel(descriptionColumn->GetValue(i)) :
+                     descriptionColumn->GetCategoryLabelFromID(descriptionColumn->GetValue(i)) :
                      wxString(L"")).
                 StartDate(startColumn->GetValue(i)).
                 EndDate(endColumn->GetValue(i)).
@@ -116,7 +116,7 @@ namespace Wisteria::Graphs
             for (const auto& groupId : groupIds)
                 {
                 m_legendLines.emplace(
-                    std::make_pair(groupColumn->GetCategoryLabel(groupId),
+                    std::make_pair(groupColumn->GetCategoryLabelFromID(groupId),
                                    GetColorScheme()->GetColor(groupId)));
                 }
             }

@@ -57,12 +57,12 @@ namespace Wisteria::Data
         for (size_t i = 0; i < classifierData->GetRowCount(); ++i)
             {
             // make sure the regex is OK before loading it for later
-            const wxString reValue = patternCol->GetCategoryLabel(patternCol->GetValue(i));
+            const wxString reValue = patternCol->GetCategoryLabelFromID(patternCol->GetValue(i));
             wxRegEx re(reValue);
 
             const wxString negatingReValue =
                 (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
-                negationPatternCol->GetCategoryLabel(negationPatternCol->GetValue(i)) :
+                negationPatternCol->GetCategoryLabelFromID(negationPatternCol->GetValue(i)) :
                 wxString();
 
             if (reValue.length() && re.IsValid())
@@ -81,7 +81,7 @@ namespace Wisteria::Data
                 {
                 wxLogWarning(_(L"'%s': regular expression syntax error for category '%s.'"),
                              reValue,
-                             categoryCol->GetCategoryLabel(categoryCol->GetValue(i)));
+                             categoryCol->GetCategoryLabelFromID(categoryCol->GetValue(i)));
                 }
             }
         }
@@ -129,10 +129,10 @@ namespace Wisteria::Data
                 for (const auto& re : regexes.first)
                     {
                     if (re.first->IsValid() &&
-                        re.first->Matches(contentColumn->GetCategoryLabel(contentColumn->GetValue(i))) &&
+                        re.first->Matches(contentColumn->GetCategoryLabelFromID(contentColumn->GetValue(i))) &&
                         // either no negating regex or it doesn't match it
                         (!re.second->IsValid() ||
-                         !re.second->Matches(contentColumn->GetCategoryLabel(contentColumn->GetValue(i)))))
+                         !re.second->Matches(contentColumn->GetCategoryLabelFromID(contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;
                         matchedAnyCategory = true;
