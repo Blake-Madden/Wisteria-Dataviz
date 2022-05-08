@@ -13,7 +13,6 @@
 #define __WISTERIA_HISTOGRAM_H__
 
 #include "barchart.h"
-#include "../base/colorbrewer.h"
 
 namespace Wisteria::Graphs
     {

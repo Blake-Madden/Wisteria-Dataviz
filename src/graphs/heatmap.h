@@ -13,7 +13,6 @@
 #define __WISTERIA_HEATMAP_H__
 
 #include "graph2d.h"
-#include "../base/colorbrewer.h"
 
 namespace Wisteria::Graphs
     {
