@@ -1439,14 +1439,14 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         note->GetHeaderInfo().GetFont().MakeSmaller();
         subframe->m_canvas->SetFixedObject(1, 0, note);
 
-        // in the first column (the donut chart and the not beneath it),
+        // in the first column (the donut chart and the note beneath it),
         // set the proportions of the rows based on how tall the note is
         subframe->m_canvas->SetRowProportion(0,
             1 - subframe->m_canvas->CalcMinHeightProportion(note));
         subframe->m_canvas->SetRowProportion(1,
             subframe->m_canvas->CalcMinHeightProportion(note));
         }
-    // Multiple plots with a common axis
+    // multiple plots with a common axis
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS)
         {
         subframe->SetTitle(_(L"Multiple Plots (Common Axis)"));
@@ -1456,7 +1456,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             spellingData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
                 ImportInfo().
-                // different order, first the X column, then the Y
                 ContinuousColumns({ L"Week", L"AVG_GRADE" }).
                 CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
             }
@@ -1487,8 +1486,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 Label(wxString::Format(_(L"Week %i"), i)));
             }
 
-        // instead of adding the legend to the canvas, place it on top
-        // of the line plot
+        // instead of adding the legend to the canvas, place it on top of the line plot
         auto lineLegend = linePlot->CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
         linePlot->AddEmbeddedObject(lineLegend,
