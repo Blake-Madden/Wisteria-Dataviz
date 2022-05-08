@@ -837,6 +837,37 @@ namespace Wisteria::GraphItems
                 case IconShape::BlankIcon:
                     // don't draw anything
                     break;
+                case IconShape::LocationMarker:
+                    // pin
+                        {
+                        wxDCBrushChanger pc(dc, *wxBLACK_BRUSH);
+                        wxPoint pt[3] =
+                            {
+                            boundingBox.GetTopLeft() +
+                                        wxSize(boundingBox.GetWidth() * .25, boundingBox.GetHeight() / 2),
+                            boundingBox.GetTopLeft() +
+                                        wxSize(boundingBox.GetWidth() * .75, boundingBox.GetHeight() / 2),
+                            // bottom
+                            boundingBox.GetBottomLeft() + wxSize(boundingBox.GetWidth() / 2, 0)
+                            };
+                        dc.DrawPolygon(std::size(pt), pt);
+                        }
+                    // outer ring
+                    dc.DrawCircle(boundingBox.GetLeftTop() +
+                        wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
+                        ScaleToScreenAndCanvas(GetRadius()));
+                    // white center
+                    // (using a contrasting color just doesn't seem right here, these usually have white
+                    //  centers, regardless of background color, on most real-world maps and whatnot)
+                        {
+                        wxDCPenChanger pc(dc, *wxWHITE_PEN);
+                        wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+                        dc.DrawCircle(boundingBox.GetLeftTop() +
+                            wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
+                            // 1/3 the size of outer ring
+                            ScaleToScreenAndCanvas(GetRadius() * .33));
+                        }
+                    break;
                 case IconShape::BoxPlotIcon:
                     // whisker
                     dc.DrawLine(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetTop()),
@@ -870,6 +901,39 @@ namespace Wisteria::GraphItems
                                   ScaleToScreenAndCanvas(GetRadius()));
                 };
             }
+        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
+            {
+            wxPoint debugOutline[5];
+            GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
+            debugOutline[4] = debugOutline[0];
+            wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+            dc.DrawLines(std::size(debugOutline), debugOutline);
+            }
         return GetBoundingBox(dc);
+        }
+
+    //-------------------------------------------
+    wxRect Point2D::GetBoundingBox([[maybe_unused]] wxDC& dc) const
+        {
+        if (!IsOk())
+            { return wxRect(); }
+        wxPoint cp(GetAnchorPoint());
+        if (IsFreeFloating())
+            {
+            cp.x *= GetScaling();
+            cp.y *= GetScaling();
+            }
+        // convert center point to top left corner of area
+        cp -= wxSize(ScaleToScreenAndCanvas(GetRadius()),
+                        ScaleToScreenAndCanvas(GetRadius()));
+        wxRect boundingBox(cp,
+                            wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
+                                   (ScaleToScreenAndCanvas(GetRadius())) * 2));
+        if (m_shape == IconShape::LocationMarker)
+            {
+            boundingBox.SetTop(boundingBox.GetTop() - boundingBox.GetHeight());
+            boundingBox.SetHeight(boundingBox.GetHeight() * 1.5);
+            }
+        return boundingBox;
         }
     }

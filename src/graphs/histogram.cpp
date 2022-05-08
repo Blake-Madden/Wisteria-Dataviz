@@ -570,7 +570,7 @@ namespace Wisteria::Graphs
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetFont().MakeSmaller();

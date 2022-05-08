@@ -86,7 +86,7 @@ namespace Wisteria::Graphs
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
             legend->GetGraphItemInfo().Pen(*wxBLACK_PEN).
-                Padding(4, 4, 4, (legend->HasLegendIcons() ? Label::GetMinLegendWidth() : 4)).
+                Padding(4, 4, 4, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4)).
                 FontBackgroundColor(*wxWHITE);
             }
         else if (hint == LegendCanvasPlacementHint::RightOrLeftOfGraph)
@@ -94,14 +94,14 @@ namespace Wisteria::Graphs
             legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
             legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidth() : 0)).
+                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4);;
             }
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
             legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
-                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidth() : 0)).
+                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4);
             }
         }

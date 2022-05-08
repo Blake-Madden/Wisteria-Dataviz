@@ -428,7 +428,7 @@ namespace Wisteria::Graphs
                 Settings::GetDefaultNumberFormat()),
             wxNumberFormatter::ToString(minValue, 6,
                 Settings::GetDefaultNumberFormat()))).
-            Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidth()*1.5).
+            Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()*1.5).
             DPIScaling(GetDPIScaleFactor()).
             Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft));
         legend->SetBoxCorners(BoxCorners::Rounded);

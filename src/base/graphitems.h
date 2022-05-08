@@ -99,12 +99,14 @@ namespace Wisteria
     enum class LabelFit
         {
         ScaleFontToFit,       /*!< Text's font is scaled to fit inside the parent.*/
-        SplitTextToFit,       /*!< Text is split into multiple lines to fit in the parent.
+        SplitTextToFit,       /*!< Text is split into multiple lines to fit in the parent.\n
                                    May be truncated with an ellipsis if there are too many lines.*/
         SplitTextToFitWidth,  /*!< Text is split into multiple lines to fit in the parent's width.*/
-        DisplayAsIs,          /*!< Text is drawn from where it is anchored and is not scaled or split.
+        DisplayAsIs,          /*!< Text is drawn from where it is anchored and is
+                                   not scaled or split.\n
                                    May go outside of its parent.*/
-        DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is not scaled or split.
+        DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is
+                                   not scaled or split.\n
                                    May go outside of its parent. If it does go outside of parent,
                                    will draw a frame around the text.*/
         };
@@ -113,17 +115,20 @@ namespace Wisteria
     /// @sa PageVerticalAlignment, PageHorizontalAlignment
     enum class TextAlignment
         {
-        FlushLeft,               /*!< Text is flush left/ragged right. (This is the default.)*/
+        FlushLeft,               /*!< Text is flush left/ragged right.
+                                      (This is the default.)*/
         RaggedRight = FlushLeft, /*!< Text is flush left/ragged right.*/
         FlushRight,              /*!< Text is flush right/ragged left.*/
         RaggedLeft = FlushRight, /*!< Text is flush right/ragged left.*/
         Centered,                /*!< Text is centered.*/
-        Justified                /*!< Multiline text is tracked (space inserted) to make lines equal width.*/
+        Justified                /*!< Multiline text is tracked (space inserted)
+                                      to make lines equal width.*/
         };
 
-    /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from top-to-bottom.
-    /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
-    ///  is taller than the text.
+    /// @brief @brief How a label's text is aligned within its user-defined bounding box,
+    ///  going from top-to-bottom.
+    /// @note This is only relevant if a Label is using a minimum user-defined size,
+    ///  and only if the user-defined size is taller than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageVerticalAlignment
         {
@@ -132,13 +137,15 @@ namespace Wisteria
         BottomAligned /*!< Text is aligned to the bottom of the label's bounding box.*/
         };
 
-    /// @brief @brief How a label's text is aligned within its user-defined bounding box, going from left-to-right.
-    /// @note This is only relevant if a Label is using a minimum user-defined size, and only if the user-defined size
-    ///  is wider than the text.
+    /// @brief @brief How a label's text is aligned within its user-defined bounding box,
+    ///  going from left-to-right.
+    /// @note This is only relevant if a Label is using a minimum user-defined size,
+    ///  and only if the user-defined size is wider than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageHorizontalAlignment
         {
-        LeftAligned,   /*!< Text is aligned to the left of the label's bounding box. (This is the default.)*/
+        LeftAligned,   /*!< Text is aligned to the left of the label's bounding box.
+                            (This is the default.)*/
         Centered,      /*!< Text is centered label's bounding box.*/
         RightAligned   /*!< Text is aligned to the right of the label's bounding box.*/
         };
@@ -149,16 +156,22 @@ namespace Wisteria
         NoLabelStyle,                    /*!< No extra visual style should be applied to the label,
                                               other than possible outlining.*/
         IndexCard,                       /*!< Display the label as an index card.*/
-        LinedPaper,                      /*!< Display the label as lined paper (lines under each text line).*/
+        LinedPaper,                      /*!< Display the label as lined paper
+                                              (lines under each text line).*/
         LinedPaperWithMargins,           /*!< Display the label as lined paper
-                                              (lines under each text line, within the margins of the label).*/
-        DottedLinedPaper,                /*!< Display the label as dotted lined paper (lines under each text line).*/
+                                              (lines under each text line, within the margins
+                                               of the label).*/
+        DottedLinedPaper,                /*!< Display the label as dotted lined paper
+                                              (lines under each text line).*/
         DottedLinedPaperWithMargins,     /*!< Display the label as dotted lined paper
-                                              (lines under each text line, within the margins of the label).*/
-        RightArrowLinedPaper,            /*!< Display the label as lined paper (right arrow lines under each text line).
+                                              (lines under each text line, within the margins
+                                              of the label).*/
+        RightArrowLinedPaper,            /*!< Display the label as lined paper
+                                              (right arrow lines under each text line).\n
                                               Will use the same pen as the label's text.*/
         RightArrowLinedPaperWithMargins, /*!< Display the label as lined paper
-                                              (right arrow lines under each text line, within the margins of the label).
+                                              (right arrow lines under each text line,
+                                              within the margins of the label).
                                               Will use the same pen as the label's text.*/
         /// @private
         LABEL_STYLE_COUNT
@@ -173,9 +186,11 @@ namespace Wisteria
         CircleIcon,                    /*!< A circle.*/
         ImageIcon,                     /*!< An image, shrunk down to the height of its line
                                             (legend) or point size (point).*/
-        HorizontalSeparator,           /*!< A horizontal line going across the entire legend and text area of a label.
+        HorizontalSeparator,           /*!< A horizontal line going across the entire legend
+                                            and text area of a label.\n
                                             Only applicable for legends.*/
-        HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend and text area of a label.
+        HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend
+                                            and text area of a label.\n
                                             Only applicable for legends.*/
         ImageWholeLegend,              /*!< An image which fills the entire legend.
                                             Only one should be used per legend.
@@ -191,7 +206,8 @@ namespace Wisteria
         CrossIcon,                     /*!< A cross.*/
         AsteriskIcon,                  /*!< An asterisk.*/
         HexagonIcon,                   /*!< A hexagon.*/
-        BoxPlotIcon                    /*!< A box & whisker plot.*/
+        BoxPlotIcon,                   /*!< A box & whisker plot.*/
+        LocationMarker                 /*!< A marker indicating a location on a map.*/
         };
 
     /// @brief The orientation of an item (e.g., a vertically drawn label).
@@ -257,9 +273,10 @@ namespace Wisteria
     /// @brief How to display axis labels.
     enum class AxisLabelDisplay
         {
-        DisplayCustomLabelsOrValues,  /*!< Display either custom label (if available) or numeric value.*/
-        DisplayOnlyCustomLabels,      /*!< Only show as a custom label;
-                                           nothing will be displayed if custom label isn't available.*/
+        DisplayCustomLabelsOrValues,  /*!< Display either custom label (if available)
+                                           or numeric value.*/
+        DisplayOnlyCustomLabels,      /*!< Only show as a custom label; nothing will
+                                           be displayed if custom label isn't available.*/
         DisplayCustomLabelsAndValues, /*!< Display both numeric value and custom label.*/
         NoDisplay                     /*!< Do not display any label.*/
         };
@@ -269,8 +286,9 @@ namespace Wisteria
         {
         AlignWithAxisLine, /*!< The labels will be flush right against the axis line.*/
         AlignWithBoundary, /*!< If the labels are perpendicular against the axis and some are wider
-                                than others, then align the labels against the outer parameter of the
-                                axis area. @note Has no effect with parallel axes.*/
+                                than others, then align the labels against the outer parameter of
+                                the axis area.
+                                @note Has no effect with parallel axes.*/
         CenterOnAxisLine   /*!< The labels will be centered on the axis line.
                                 @note Has no effect on bracket labels.
                                 @todo Add support for horizontal axes.*/
@@ -296,14 +314,22 @@ namespace Wisteria
     /// @brief Box rendering options (used for bar charts, box plots, etc.)
     enum class BoxEffect
         {
-        Solid,                                     /*!< Solid color.*/
-        Glassy,                                    /*!< Glass effect.*/
-        FadeFromBottomToTop,                       /*!< Color gradient, bottom-to-top.*/
-        FadeFromLeftToRight = FadeFromBottomToTop, /*!< Color gradient, left-to-right.*/
-        FadeFromTopToBottom,                       /*!< Color gradient, top-to-bottom.*/
-        FadeFromRightToLeft = FadeFromTopToBottom, /*!< Color gradient, right-to-left.*/
-        Stipple,                                   /*!< Fill with repeating images.*/
-        CommonImage,                               /*!< A subimage of a larger image shared by all boxes.*/
+        /// @brief Solid color.
+        Solid,
+        /// @brief Glass effect.
+        Glassy,
+        /// @brief Color gradient, bottom-to-top.
+        FadeFromBottomToTop,
+        /// @brief Color gradient, left-to-right.
+        FadeFromLeftToRight = FadeFromBottomToTop,
+        /// @brief Color gradient, top-to-bottom.
+        FadeFromTopToBottom,
+        /// @brief Color gradient, right-to-left.
+        FadeFromRightToLeft = FadeFromTopToBottom,
+        /// @brief Fill with repeating images.
+        Stipple,
+        /// @brief A subimage of a larger image shared by all boxes.
+        CommonImage,
         /// @private
         EFFECTS_COUNT
         };
@@ -381,19 +407,19 @@ namespace Wisteria
         IconShape m_shape{ IconShape::BlankIcon }; /*!< The icon type.*/
         wxPen m_pen;                               /*!< The pen to draw with.*/
         wxBrush m_brush;                           /*!< The brush to paint with.*/
-        wxImage m_img;                             /*!< The image to draw (if shape is set to ImageIcon).*/
-        std::vector<wxColour> m_colors;            /*!< The color gradient to draw
-                                                        (if shape is set to ColorGradientIcon).*/
+        /// @brief The image to draw (if shape is set to ImageIcon).
+        wxImage m_img;
+        /// @brief The color gradient to draw (if shape is set to @c ColorGradientIcon).
+        std::vector<wxColour> m_colors;
 
-        /// @returns The width that should be used for legend icons.
-        /// @warning This is only the pixel size, caller must scale for screen DPI and canvas scaling.
-        ///  This is because it is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
-        ///  which require unscaled values.
-        [[nodiscard]] static constexpr double GetIconWidth() noexcept
+        /// @returns The minimum width that should be used for legend icons.
+        /// @note  This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
+        ///  which use DIPs.
+        [[nodiscard]] static constexpr double GetIconWidthDIPs() noexcept
             { return 16; }
-        /// @returns The size of the arrowhead (if shape is set to HorizontalArrowSeparator).
-        /// @warning This is only the pixel size, caller must scale for screen DPI and canvas scaling.
-        [[nodiscard]] static wxSize GetArrowheadSize()
+        /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
+        ///  in DIPs.
+        [[nodiscard]] static wxSize GetArrowheadSizeDIPs()
             { return wxSize(2, 2); }
         };
 
@@ -432,7 +458,7 @@ namespace Wisteria
             @param shape The shape to add.*/
         void AddShape(const IconShape shape)
             { m_shapes.push_back(shape); }
-        /** @returns The image used for icons (if shape is set to IconShape::ImageIcon).\n
+        /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
              If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
             @param index The index into the image list to return. If index is outside
              number of images, then it will recycle (i.e., wrap around).
@@ -696,7 +722,8 @@ namespace Wisteria
                 m_freeFloating = freeFloating;
                 return *this;
                 }
-            /// @brief Sets whether the object should display a label on itself when selected by the mouse.
+            /// @brief Sets whether the object should display a label on itself when
+            ///  selected by the mouse.
             /// @param showLabelWhenSelected `true` to show a label on the object when selected.
             /// @returns A self reference.
             GraphItemInfo& ShowLabelWhenSelected(const bool showLabelWhenSelected)
@@ -736,9 +763,10 @@ namespace Wisteria
             ///  if an item in a two-row canvas is set to 1.0, then the bottom half of the object
             ///  will go off of the canvas. Also, this should only be used if the canvas is aligning
             ///  its columns' content; otherwise, this object will be drawn on top of rows' content
-            ///  beneath it. Likewise, the canvas's row alignment should be turned off, as that would
-            ///  try to adjust the object's height and negate this setting.
-            /// @param canvasHeightProportion The percent of the canvas height that this object should consume.
+            ///  beneath it. Likewise, the canvas's row alignment should be turned off, as that
+            ///  would try to adjust the object's height and negate this setting.
+            /// @param canvasHeightProportion The percent of the canvas height that this object
+            ///  should consume.
             /// @returns A self reference.
             GraphItemInfo& CanvasHeightProportion(const std::optional<double> canvasHeightProportion)
                 {
@@ -1152,7 +1180,8 @@ namespace Wisteria
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
                 @details This is a convenient way to chain multiple attribute updates.
                 @code
-                 label->GetGraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Text(L"Number of obs.");
+                 label->GetGraphItemInfo().Scaling(GetScaling()).
+                                           Pen(wxNullPen).Text(L"Number of obs.");
                 @endcode
                 @returns The base attributes.*/
             [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo() noexcept
@@ -1162,12 +1191,14 @@ namespace Wisteria
                 }
 
             /** @brief Controls the anchoring of this item on its parent.
-                @details When an item is drawn, its anchoring indicates what its point is referencing.\n
-                 For example, if an item is anchored to its center, then the item's point refers to
-                 its center and it will be drawn on its parent based on that.
+                @details When an item is drawn, its anchoring indicates what its point
+                 is referencing.\n
+                 For example, if an item is anchored to its center, then the item's point
+                 refers to its center and it will be drawn on its parent based on that.
                 @details This can be useful for lining up multiple labels a certain way
                  (e.g., left aligned).
-                @param placement The method for how the point controls the anchoring of this object.
+                @param placement The method for how the point controls the anchoring
+                 of this object.
                 @note This will have no effect on objects with more than one point
                  (e.g., @c Axes::Axis, @c Points2D).
                  This mostly related to objects such as Label and Image.*/
@@ -1351,7 +1382,8 @@ namespace Wisteria
                 return false;
                 }
 
-            /** @brief Gets the minimum width for the item's bounding box that the client has requested.\n
+            /** @brief Gets the minimum width for the item's bounding box that the client
+                 has requested.\n
                  This is currently only relevant to @c Label objects.
                 @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
                  This is the minimum size that the client has requested, which may or may not be
@@ -1360,7 +1392,8 @@ namespace Wisteria
                 @returns The minimum user width.*/
             [[nodiscard]] std::optional<wxCoord> GetMinimumUserWidthDIPs() const noexcept
                 { return m_itemInfo.m_minimumUserWidthDIPs; }
-            /** @brief Gets the minimum height for the item's bounding box that the client has requested.
+            /** @brief Gets the minimum height for the item's bounding box that the client
+                 has requested.\n
                  This is currently only relevant to Label objects.
                 @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
                  This is the minimum size that the client has requested, which may or may not
@@ -1590,10 +1623,11 @@ namespace Wisteria
             void SetOk(const bool isOk) noexcept
                 { m_itemInfo.m_isOk = isOk; }
 
-            /** @brief Sets the alignment of the object, relative to something else (e.g., its parent).
-                @details This is handled by the caller and can have different meanings based on its context,
-                 may not be applicable to most objects (or even labels). For example, this is used for
-                 canvas titles, but not axis labels.
+            /** @brief Sets the alignment of the object, relative to something else
+                 (e.g., its parent).
+                @details This is handled by the caller and can have different meanings based
+                 on its context; may not be applicable to most objects (or even labels).\n
+                 For example, this is used for canvas titles, but not axis labels.
 
                  Refer to any given object's documentation for how this feature is used.
                 @param align How to align the text, relative to whatever the caller is
@@ -1695,9 +1729,9 @@ namespace Wisteria
             /** @brief Saves the bounding box information, which can be later retrieved from
                  GetCachedBoundingBox() and thus avoid expensive recalculations in GetBoundingBox().
                 @details Derived classes are responsible
-                 for calling this in their implementation of GetBoundingBox() and are also responsible for
-                 calling InvalidateCachedBoundingBox() in any setter function which may affect
-                 bounding box calculations.
+                 for calling this in their implementation of GetBoundingBox() and are also
+                 responsible for calling InvalidateCachedBoundingBox() in any setter function which
+                 may affect bounding box calculations.
                 @param cached The bounding box to use.
                 @note The cached bounding box is mutable, so this function can be called within
                  const functions (e.g. GetBoundingBox()).*/
@@ -1830,7 +1864,7 @@ namespace Wisteria
                  by the object's scaling and parent window's DPI scale factor.
                 @param shape The shape of the point.
                 @param img An image to use for the point if point is using IconShape::ImageIcon.
-                @warning Some icon shapes (ImageWholeLegend, ColorGradientIcon) are not
+                @warning Some icon shapes (@c ImageWholeLegend, @c ColorGradientIcon) are not
                  applicable here and will be drawn as a circle instead if used.*/
             Point2D(const GraphItems::GraphItemInfo& itemInfo,
                     const size_t radius,
@@ -1865,22 +1899,7 @@ namespace Wisteria
                 { return GetAnchorPoint().IsFullySpecified(); }
             /// @returns The rectangle on the canvas where the point would fit in.
             /// @param dc Measurement DC, which is not used in this implementation.
-            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-                {
-                if (!IsOk())
-                    { return wxRect(); }
-                wxPoint cp(GetAnchorPoint());
-                if (IsFreeFloating())
-                    {
-                    cp.x *= GetScaling();
-                    cp.y *= GetScaling();
-                    }
-                // convert center point to top left corner of area
-                cp -= wxSize(ScaleToScreenAndCanvas(GetRadius()),
-                             ScaleToScreenAndCanvas(GetRadius()));
-                return wxRect(cp, wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
-                              (ScaleToScreenAndCanvas(GetRadius())) * 2));
-                }
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
             /** @brief Moves the point by the specified x and y values.
                 @param xToMove The amount to move horizontally.
                 @param yToMove The amount to move vertically.*/
@@ -2147,7 +2166,8 @@ namespace Wisteria
                 @brief Helper functions for collision detection and shape calculations.*/
             /// @{
 
-            /** @brief Alexander Motrichuk's implementation of determining if a point is inside of a polygon.
+            /** @brief Alexander Motrichuk's implementation of determining if a point is
+                 inside of a polygon.
                 @details Tests if a point is within a polygon (or on an edge or vertex)
                  by shooting a ray along the X axis.
                 @param p The point.
@@ -2161,7 +2181,8 @@ namespace Wisteria
                  with the current brush. Adapted from code by Adrian McCarthy.
                 @param dc The device context to draw on.
                 @param pt1 The starting point of the line.
-                @param pt2 The ending point of the line (and where the arrowhead will be pointing at).
+                @param pt2 The ending point of the line
+                 (and where the arrowhead will be pointing at).
                 @param arrowHeadSize The width and height of the arrowhead.*/
             static void DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
                                   const wxSize arrowHeadSize);

@@ -281,7 +281,7 @@ namespace Wisteria::Graphs
                     // will have larger images next to them.
                     GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
                         std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
-                        Label::GetMinLegendWidth())) );
+                        Label::GetMinLegendWidthDIPs())) );
                     br.GetAxisLabel().GetLegendIcons().emplace_back(
                         LegendIcon(IconShape::ImageWholeLegend, img));
                     }
@@ -363,7 +363,7 @@ namespace Wisteria::Graphs
                     // will have larger images next to them.
                     GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
                         std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
-                        Label::GetMinLegendWidth())) );
+                        Label::GetMinLegendWidthDIPs())) );
                     arrowBar.GetAxisLabel().GetLegendIcons().emplace_back(
                         LegendIcon(IconShape::ImageWholeLegend, img));
                     }
@@ -382,7 +382,7 @@ namespace Wisteria::Graphs
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetFont().MakeSmaller();

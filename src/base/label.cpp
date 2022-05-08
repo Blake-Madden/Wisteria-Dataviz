@@ -301,10 +301,10 @@ namespace Wisteria::GraphItems
             L"Vertical legend not supported!");
         wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 || !HasLegendIcons() ||
             (GetTextOrientation() == Orientation::Horizontal &&
-             GetLeftPadding() >= GetMinLegendWidth()),
+             GetLeftPadding() >= GetMinLegendWidthDIPs()),
             wxString::Format(L"Left margin of text label should be at least %d DIPs "
                 "if using legend icons! It is currently %d.",
-                GetMinLegendWidth(), GetLeftPadding()));
+                GetMinLegendWidthDIPs(), GetLeftPadding()));
 
         wxASSERT(GetFont().IsOk());
         wxDCFontChanger fc(dc, GetFont().Scaled(GetScaling()));
@@ -704,7 +704,20 @@ namespace Wisteria::GraphItems
                             wxPoint(std::ceil(leftPadding-(iconRadius)), middleOfCurrentRow),
                             contenBoundingBox.GetTopLeft() +
                             wxPoint(std::ceil(leftPadding+(iconRadius)), middleOfCurrentRow),
-                            ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSize()));
+                            ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
+                        break;
+                    case IconShape::LocationMarker:
+                        dc.DrawCircle(contenBoundingBox.GetTopLeft() +
+                            wxPoint(leftPadding, middleOfCurrentRow),
+                            iconRadius);
+                        // center (1/3 the size of outer ring)
+                            {
+                            wxDCPenChanger pc(dc, *wxWHITE_PEN);
+                            wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+                            dc.DrawCircle(contenBoundingBox.GetLeftTop() +
+                                wxPoint(leftPadding, middleOfCurrentRow),
+                                iconRadius * .33);
+                            }
                         break;
                     case IconShape::CircleIcon:
                         dc.DrawCircle(contenBoundingBox.GetTopLeft() +
@@ -808,7 +821,7 @@ namespace Wisteria::GraphItems
                             const auto downScaledSize = geometry::calculate_downscaled_size(
                                             std::make_pair<double, double>(iconPos->m_img.GetWidth(),
                                                                            iconPos->m_img.GetHeight()),
-                                            std::make_pair(ScaleToScreenAndCanvas(LegendIcon::GetIconWidth()),
+                                            std::make_pair(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()),
                                                            static_cast<double>(averageLineHeight)));
                             wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first, downScaledSize.second,
                                                                      wxIMAGE_QUALITY_HIGH);
@@ -832,7 +845,7 @@ namespace Wisteria::GraphItems
                             contenBoundingBox.GetTopLeft() +
                             wxPoint(contenBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
                                 middleOfCurrentRow),
-                            ScaleToScreenAndCanvas(iconPos->GetArrowheadSize()));
+                            ScaleToScreenAndCanvas(iconPos->GetArrowheadSizeDIPs()));
                         break;
                     // full-length icons
                     //------------------
@@ -864,7 +877,7 @@ namespace Wisteria::GraphItems
                             wxRect legendArea = contenBoundingBox;
                             legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
                             legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
-                            legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidth()));
+                            legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
 
                             const int chunkSections = iconPos->m_colors.size()-1;
                             const wxCoord chunkHeight = safe_divide(legendArea.GetHeight(), chunkSections);

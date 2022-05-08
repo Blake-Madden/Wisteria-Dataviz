@@ -437,7 +437,7 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendCanvasPlacementHint hint)
         {
         auto legend = std::make_shared<GraphItems::Label>(GraphItemInfo().
-            Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidth()).
+            Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()).
             LabelAlignment(TextAlignment::FlushLeft).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);

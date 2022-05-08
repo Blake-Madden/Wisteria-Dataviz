@@ -682,7 +682,7 @@ namespace Wisteria::Graphs
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetFont().MakeSmaller();
@@ -762,7 +762,7 @@ namespace Wisteria::Graphs
         wxASSERT_MSG(GetOuterPie().size() > 1,
                      L"Outer ring of pie chart empty, cannot create legend!");
         auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidth()).
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
         legend->SetBoxCorners(BoxCorners::Rounded);
         legend->GetFont().MakeSmaller();
