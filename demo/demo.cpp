@@ -1433,7 +1433,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Scaling(2).
             DPIScaling(subframe->m_canvas->GetDPIScaleFactor()).
             Pen(wxNullPen));
+        // make the font smaller, and customize the header's appearance
+        note->GetFont().MakeSmaller().MakeSmaller();
         note->GetHeaderInfo().Enable(true).FontColor(*wxBLUE).GetFont().MakeBold();
+        note->GetHeaderInfo().GetFont().MakeSmaller();
         subframe->m_canvas->SetFixedObject(1, 0, note);
 
         // in the first column (the donut chart and the not beneath it),
