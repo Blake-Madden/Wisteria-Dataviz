@@ -768,7 +768,7 @@ namespace Wisteria::GraphItems
                     GraphItems::Polygon::DrawArrow(dc,
                                 wxPoint(boundingBox.GetLeft(), boundingBox.GetTop()+boundingBox.GetHeight()/2),
                                 wxPoint(boundingBox.GetRight(), boundingBox.GetTop()+boundingBox.GetHeight()/2),
-                                ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSize()));
+                                ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
                     break;
                 case IconShape::TriangleUpwardIcon:
                     polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);
