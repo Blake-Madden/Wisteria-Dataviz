@@ -10,6 +10,8 @@
 #include "label.h"
 #include "image.h"
 
+using namespace Wisteria::Colors;
+
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
@@ -111,6 +113,15 @@ namespace Wisteria::GraphItems
             m_points.clear();
             m_scaledPoints.clear();
             }
+        }
+
+    //-------------------------------------------
+    bool Polygon::IsRectInsideRect(const wxRect innerRect, const wxRect outerRect)
+        {
+        return (outerRect.Contains(innerRect.GetTopLeft()) &&
+                outerRect.Contains(innerRect.GetTopRight()) &&
+                outerRect.Contains(innerRect.GetBottomLeft()) &&
+                outerRect.Contains(innerRect.GetBottomRight()));
         }
 
     //-------------------------------------------
@@ -728,18 +739,15 @@ namespace Wisteria::GraphItems
                 }
             }
         const bool areAllPointsSelected = (!m_singlePointSelection && IsSelected());
-        wxPen scaledPen(areAllPointsSelected ?
-            wxPen(*wxBLACK,GetPen().GetWidth(),wxPENSTYLE_DOT) : *wxBLACK_PEN);
-        scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-        wxDCPenChanger pc(dc, scaledPen);
         for (const auto& point : m_points)
             {
             /*if all points selected, then the current pen is the selected one already*/
             if (!areAllPointsSelected &&
                 point.IsSelected())
                 {
-                wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                point.Draw(dc);
+                Point2D pt = point;
+                pt.GetPen() = (dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                pt.Draw(dc);
                 }
             else
                 { point.Draw(dc); }
@@ -764,6 +772,7 @@ namespace Wisteria::GraphItems
         if (GetAnchorPoint().IsFullySpecified())
             {
             wxDCBrushChanger bc(dc, GetBrush());
+            wxDCPenChanger pc(dc, GetPen());
             const auto boundingBox = GetBoundingBox(dc);
             auto boxRect = boundingBox;
             const auto midPoint = wxPoint(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2));
@@ -858,7 +867,8 @@ namespace Wisteria::GraphItems
                 case IconShape::LocationMarker:
                     // pin
                         {
-                        wxDCBrushChanger pc(dc, *wxBLACK_BRUSH);
+                        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+                        wxDCPenChanger pc(dc, *wxWHITE);
                         wxPoint pt[3] =
                             {
                             boundingBox.GetTopLeft() +
@@ -874,6 +884,15 @@ namespace Wisteria::GraphItems
                     dc.DrawCircle(boundingBox.GetLeftTop() +
                         wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
                         ScaleToScreenAndCanvas(GetRadius()));
+                    // secondary ring
+                        {
+                        wxDCPenChanger pc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                        wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                        dc.DrawCircle(boundingBox.GetLeftTop() +
+                            wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
+                            // 1/3 the size of outer ring
+                            ScaleToScreenAndCanvas(GetRadius() * .5));
+                        }
                     // white center
                     // (using a contrasting color just doesn't seem right here, these usually have white
                     //  centers, regardless of background color, on most real-world maps and whatnot)

@@ -2194,6 +2194,12 @@ namespace Wisteria
                 @returns Whether the point is inside of the polygon.*/
             [[nodiscard]] static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon,
                                                       const int N);
+            /** @brief Determines if a rectangle entirely fits another rectangle.
+                @param innerRect The smaller rect.
+                @param outerRect the larger rect.
+                @returns @c true if @c innerRect is inside of @c outerRect.*/
+            [[nodiscard]] static bool IsRectInsideRect(const wxRect innerRect,
+                                                       const wxRect outerRect);
             /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
                 @details The line is drawn with the current pen and the arrowhead is filled
                  with the current brush. Adapted from code by Adrian McCarthy.
