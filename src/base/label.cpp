@@ -8,6 +8,8 @@
 
 #include "label.h"
 
+using namespace Wisteria::Colors;
+
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
@@ -390,7 +392,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen((i == 1) ?
+                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
                         wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                         wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
@@ -405,7 +407,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1)));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
                                         ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
@@ -418,7 +420,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
                                         ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
@@ -444,7 +446,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1)));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
                                         boundingBox.GetLeftTop().y + (averageLineHeight*i) +
@@ -460,7 +462,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
                                         boundingBox.GetLeftTop().y +
@@ -504,7 +506,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen((i == 1) ?
+                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
                         wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                         wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
@@ -521,7 +523,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1)));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
                                 ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
@@ -536,7 +538,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
@@ -566,7 +568,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1)));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
                                 ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
@@ -581,7 +583,7 @@ namespace Wisteria::GraphItems
                 wxDCClipper clip(dc, boundingBox);
                 for (size_t i = 1; i <= linesToDrawCount; ++i)
                     {
-                    dc.SetPen(wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                     ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
                     dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
                                 ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
@@ -610,8 +612,6 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetLeftPadding()));
             }
         // draw the outline
-        if (scaledPen.IsOk())
-            { dc.SetPen(scaledPen); }
         if (IsSelected())
             {
             wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
@@ -628,10 +628,27 @@ namespace Wisteria::GraphItems
                 {
                 wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 dc.DrawRectangle(GetCachedContentBoundingBox());
+                if (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+                    {
+                    const auto bBox = GetBoundingBox(dc);
+                    Label infoLabel(GraphItemInfo(
+                        wxString::Format(L"Font size: %d\n"
+                                          "Default font size: %d\n"
+                                          "Scaling: %s",
+                            GetFont().GetPointSize(),
+                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize(),
+                            wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes))).
+                        AnchorPoint(bBox.GetBottomRight()).
+                        FontColor(*wxBLUE).
+                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
+                        FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                    infoLabel.Draw(dc);
+                    }
                 }
             }
         else if (GetPen().IsOk())
             {
+            wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(GetPen().GetWidth())));
             wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
@@ -647,6 +664,7 @@ namespace Wisteria::GraphItems
         if (GetTextOrientation() == Orientation::Horizontal &&
             GetLegendIcons().size())
             {
+            wxDCPenChanger pc2(dc, scaledPen.IsOk() ? scaledPen : GetPen());
             wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
             const auto topLine = lineTokenizer.GetNextToken();
             wxCoord topLineHeight{ 0 };
@@ -654,14 +672,14 @@ namespace Wisteria::GraphItems
                 {
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : GetFont());
                 topLineHeight = dc.GetTextExtent(topLine).GetHeight();
                 }
             for (auto iconPos = GetLegendIcons().cbegin();
                  iconPos != GetLegendIcons().cend();
                  ++iconPos)
                 {
-                wxPen scaledIconPen(iconPos->m_pen.IsOk() ? iconPos->m_pen : dc.GetPen());
+                wxPen scaledIconPen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen());
                 scaledIconPen.SetWidth(
                     ScaleToScreenAndCanvas(
                         // if a line icon, make it a minimum of 2 pixels wide
@@ -669,7 +687,7 @@ namespace Wisteria::GraphItems
                          std::max(scaledIconPen.GetWidth(), 2) :
                          scaledIconPen.GetWidth())) );
                 wxDCPenChanger pc2(dc, scaledIconPen);
-                wxDCBrushChanger bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush : dc.GetBrush());
+                wxDCBrushChanger bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush());
                 const size_t currentIndex = (iconPos-GetLegendIcons().begin());
                 wxCoord middleOfCurrentRow = static_cast<wxCoord>((averageLineHeight*currentIndex) +
                                                                    safe_divide<size_t>(averageLineHeight, 2)) +
@@ -713,6 +731,14 @@ namespace Wisteria::GraphItems
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +
                             wxPoint(leftPadding, middleOfCurrentRow),
                             iconRadius);
+                        // inner ring
+                            {
+                            wxDCPenChanger pc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                            wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                            dc.DrawCircle(contentBoundingBox.GetLeftTop() +
+                                wxPoint(leftPadding, middleOfCurrentRow),
+                                iconRadius * .5);
+                            }
                         // center (1/3 the size of outer ring)
                             {
                             wxDCPenChanger pc(dc, *wxWHITE_PEN);
@@ -787,8 +813,8 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::CrossIcon:
                         {
-                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(dc.GetBrush().GetColour(),
-                                                     dc.GetPen().GetWidth() * 2)));
+                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(GetBrush().GetColour(),
+                                                     GetPen().GetWidth() * 2)));
                         dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
                                     wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
                         dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
@@ -797,8 +823,8 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::AsteriskIcon:
                         {
-                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(dc.GetBrush().GetColour(),
-                                           dc.GetPen().GetWidth() * 2)));
+                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(GetBrush().GetColour(),
+                                           GetPen().GetWidth() * 2)));
                         dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
                                     wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
                         dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
@@ -1385,7 +1411,7 @@ namespace Wisteria::GraphItems
         return GetFirstAvailableFont(cursiveFonts);
         }
 
-       //--------------------------------------------------
+    //--------------------------------------------------
     int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft, const wxRect& boundingBox, const wxString& text)
         {
         // start with the smallest possible font and work our way up.
@@ -1404,7 +1430,7 @@ namespace Wisteria::GraphItems
             // bail if the font can't be made any larger
             if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
                 { return resizedFont.GetPointSize(); }
-            dc.SetFont(resizedFont);
+            wxDCFontChanger fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
             if (textWidth > boundingBox.GetWidth() ||
@@ -1437,7 +1463,7 @@ namespace Wisteria::GraphItems
             // bail if the font can't be made any larger
             if (resizedFont.GetPointSize() == dc.GetFont().GetPointSize())
                 { return resizedFont.GetPointSize(); }
-            dc.SetFont(resizedFont);
+            wxDCFontChanger fc2(dc, resizedFont);
             dc.GetMultiLineTextExtent(text, &textWidth, &textHeight);
 
             const float widthOfWatermark = textWidth *
