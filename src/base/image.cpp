@@ -529,6 +529,9 @@ namespace Wisteria::GraphItems
         if (IsInDragState())
             { return GetBoundingBox(dc); }
 
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         // if the size or scaling has changed, then rescale from
         // the original image to maintain fidelity
         const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(),
@@ -630,6 +633,8 @@ namespace Wisteria::GraphItems
             dc.DrawLines(std::size(pts), pts);
             }
 
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return GetBoundingBox(dc);
         }
     }

@@ -295,6 +295,10 @@ namespace Wisteria::GraphItems
             { return wxRect(); }
         if (IsInDragState())
             { return GetBoundingBox(dc); }
+
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         const wxRect boundingBox = GetBoundingBox(dc);
 
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
@@ -409,6 +413,9 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
             dc.DrawLines(debugOutline.size(), &debugOutline[0]);
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return boundingBox;
         }
 
@@ -631,6 +638,10 @@ namespace Wisteria::GraphItems
             { return wxRect(); }
         if (IsInDragState())
             { return GetBoundingBox(dc); }
+
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         // draw connection points
         if (GetPen().IsOk() && m_points.size())
             {
@@ -733,6 +744,9 @@ namespace Wisteria::GraphItems
             else
                 { point.Draw(dc); }
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return GetBoundingBox(dc);
         }
 
@@ -743,6 +757,10 @@ namespace Wisteria::GraphItems
             { return wxRect(); }
         if (IsInDragState())
             { return GetBoundingBox(dc); }
+
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         if (GetAnchorPoint().IsFullySpecified())
             {
             wxDCBrushChanger bc(dc, GetBrush());
@@ -909,6 +927,9 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
             dc.DrawLines(std::size(debugOutline), debugOutline);
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return GetBoundingBox(dc);
         }
 

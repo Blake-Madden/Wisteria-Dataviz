@@ -952,6 +952,14 @@ namespace Wisteria
                 m_isOk = isOk;
                 return *this;
                 }
+            /// @brief Sets the area that the drawing of this object is restricted to.
+            /// @param clippingRect The area to clip drawing to.
+            /// @returns A self reference.
+            GraphItemInfo& ClippingRect(const wxRect& clippingRect)
+                {
+                m_clippingRect = clippingRect;
+                return *this;
+                }
         private:
             bool m_show{ true };
             bool m_isSelectable{ true };
@@ -990,6 +998,7 @@ namespace Wisteria
             HeaderInfo m_headerInfo;
             std::optional<wxCoord> m_minimumUserWidthDIPs{ std::nullopt };
             std::optional<wxCoord> m_minimumUserHeightDIPs{ std::nullopt };
+            std::optional<wxRect> m_clippingRect;
 
             bool m_isOk{ true };
             /*!< @todo Expand support for this for Label.*/
@@ -1418,6 +1427,12 @@ namespace Wisteria
                 m_itemInfo.m_minimumUserHeightDIPs = height;
                 InvalidateCachedBoundingBox();
                 }
+
+            /** @brief Gets/sets the area that the object's rendering is restricted to.
+                @details By default, objects are drawn as-is and are not clipped.
+                @returns The clipping area, which by default is @c std::nullopt.*/
+            [[nodiscard]] std::optional<wxRect>& GetClippingRect() noexcept
+                { return m_itemInfo.m_clippingRect; }
             /// @}
 
             /** @name Padding Functions
@@ -1664,6 +1679,9 @@ namespace Wisteria
             /// @private
             [[nodiscard]] const std::vector<LegendIcon>& GetLegendIcons() const noexcept
                 { return m_itemInfo.m_legendIcons; }
+            /// @private
+            [[nodiscard]] const std::optional<wxRect>& GetClippingRect() const noexcept
+                { return m_itemInfo.m_clippingRect; }
         protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.

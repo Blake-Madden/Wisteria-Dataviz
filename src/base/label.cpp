@@ -296,6 +296,9 @@ namespace Wisteria::GraphItems
             { return wxRect(); }
         if (IsInDragState())
             { return GetBoundingBox(dc); }
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 ||
             (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal),
             L"Vertical legend not supported!");
@@ -895,6 +898,8 @@ namespace Wisteria::GraphItems
                 }
             }
 
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return boundingBox;
         }
 

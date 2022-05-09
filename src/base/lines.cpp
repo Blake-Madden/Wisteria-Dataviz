@@ -23,6 +23,9 @@ namespace Wisteria::GraphItems
     //----------------------------------------------------------------
     wxRect Lines::Draw(wxDC& dc) const
         {
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
         wxPen scaledPen(GetPen());
         if (GetPen().IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth())); }
@@ -46,6 +49,9 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pcDebug(dc, wxPen(*wxRED, 2*scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH));
             dc.DrawLines(std::size(debugOutline), debugOutline);
             }
+
+        if (GetClippingRect())
+            { dc.DestroyClippingRegion(); }
         return GetBoundingBox(dc);
         }
 
