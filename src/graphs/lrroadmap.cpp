@@ -53,7 +53,8 @@ namespace Wisteria::Graphs
         if (pValueColumnName && pValueColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': p-value column not found for roadmap."), pValueColumnName.value()).ToUTF8());
+                _(L"'%s': p-value column not found for roadmap."),
+                pValueColumnName.value()).ToUTF8());
             }
 
         auto cRange = std::minmax_element(coefficientColumn->GetValues().cbegin(),
@@ -79,10 +80,11 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
-        const auto axisSpaceForMarkers = 20;
+        
         // trim space off of area for the road so that there is space
         // for the markers
         auto roadRange = GetBottomXAxis().GetRange();
+        const auto axisSpaceForMarkers = (roadRange.second - roadRange.first) / 5;
         roadRange.first += axisSpaceForMarkers;
         roadRange.second -= axisSpaceForMarkers;
 
@@ -98,6 +100,10 @@ namespace Wisteria::Graphs
         std::vector<wxPoint> pts;
         std::vector<std::shared_ptr<Point2D>> locations;
         std::vector<std::shared_ptr<Label>> locationLabels;
+        auto labelConnectionLines =
+            std::make_shared<Lines>(
+                wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
+                      GetScaling());
 
         // start of the road (bottom)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
@@ -127,19 +133,35 @@ namespace Wisteria::Graphs
             auto textLabel = std::make_shared<Label>(
                 GraphItemInfo(GraphItemInfo(wxString::Format(L"%s (%s)",
                     m_roadStops[i].m_name,
-                    wxNumberFormatter::ToString(m_roadStops[i].m_coefficent, 2,
-                        wxNumberFormatter::Style::Style_None)))).
+                    wxNumberFormatter::ToString(m_roadStops[i].m_coefficent, 3,
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes)))).
                 Padding(4, 4, 4, 4).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
-                AnchorPoint((m_roadStops[i].m_coefficent >= 0 ?
+                Pen(ColorBrewer::GetColor(Colors::Color::WarmGray)).
+                FontBackgroundColor(*wxWHITE));
+            if (GetLabelPlacement() == LabelPlacement::NextToParent)
+                {
+                textLabel->SetAnchorPoint((m_roadStops[i].m_coefficent >= 0 ?
                     pt->GetBoundingBox(dc).GetBottomRight() :
-                    pt->GetBoundingBox(dc).GetBottomLeft())).
-                Anchoring((m_roadStops[i].m_coefficent >= 0 ?
-                    Anchoring::BottomLeftCorner : Anchoring::BottomRightCorner)).
-                Pen(ColorBrewer::GetColor(Colors::Color::WarmGray)).FontBackgroundColor(*wxWHITE));
+                    pt->GetBoundingBox(dc).GetBottomLeft()));
+                textLabel->SetAnchoring((m_roadStops[i].m_coefficent >= 0 ?
+                    Anchoring::BottomLeftCorner : Anchoring::BottomRightCorner));
+                textLabel->ShowLabelWhenSelected(true);
+                }
+            else
+                {
+                textLabel->SetAnchorPoint((m_roadStops[i].m_coefficent >= 0 ?
+                    wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                            pt->GetBoundingBox(dc).GetBottomRight().y) :
+                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                            pt->GetBoundingBox(dc).GetBottomLeft().y)));
+                textLabel->SetAnchoring((m_roadStops[i].m_coefficent >= 0 ?
+                    Anchoring::BottomRightCorner : Anchoring::BottomLeftCorner));
+                labelConnectionLines->AddLine(textLabel->GetAnchorPoint(),
+                                              pt->GetAnchorPoint());
+                }
             textLabel->GetFont().MakeSmaller();
-            textLabel->ShowLabelWhenSelected(true);
             locationLabels.push_back(textLabel);
             }
 
@@ -156,7 +178,8 @@ namespace Wisteria::Graphs
         for (const auto& pt : pts)
             {
             pavement->AddPoint(
-                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).DPIScaling(GetDPIScaleFactor()),
+                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).
+                    DPIScaling(GetDPIScaleFactor()),
                     0, IconShape::BlankIcon), dc);
             }
         AddObject(pavement);
@@ -171,17 +194,18 @@ namespace Wisteria::Graphs
         for (const auto& pt : pts)
             {
             laneSep->AddPoint(
-                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).DPIScaling(GetDPIScaleFactor()),
+                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).
+                    DPIScaling(GetDPIScaleFactor()),
                     0, IconShape::BlankIcon), dc);
             }
         AddObject(laneSep);
 
+        AddObject(labelConnectionLines);
         // adjust the labels to fit and make them use a uniform scale
         auto smallestLabelScaling = GetScaling();
         for (auto& locationLabel : locationLabels)
             {
             auto bBox = locationLabel->GetBoundingBox(dc);
-            auto pb = GetPlotAreaBoundingBox();
             while (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()) &&
                    locationLabel->GetScaling() >= 0.02)
                 {
@@ -195,7 +219,8 @@ namespace Wisteria::Graphs
             locationLabel->SetScaling(smallestLabelScaling);
             AddObject(locationLabel);
             }
-        // add the location markers on top
+        // add the location markers on top, going from the horizon to the starting point
+        std::reverse(locations.begin(), locations.end());
         for (auto& location : locations)
             { AddObject(location); }
         }

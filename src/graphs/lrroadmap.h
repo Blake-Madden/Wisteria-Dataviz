@@ -19,6 +19,8 @@ namespace Wisteria::Graphs
     class LRRoadmap final : public Graph2D
         {
     public:
+        
+
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/
         explicit LRRoadmap(Canvas* canvas);
@@ -38,6 +40,14 @@ namespace Wisteria::Graphs
                      const wxString& predictorColumnName,
                      const wxString& coefficentColumnName,
                      const std::optional<wxString>& pValueColumnName);
+
+        /** @brief Specifies how to arrange the location markers' names.
+            @param lPlacement How to arrange the labels.*/
+        void GetLabelPlacement(const LabelPlacement lPlacement) noexcept
+            { m_labelPlacement = lPlacement; }
+        /// @returns How the labels are arranged in the plotting area.
+        [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
+            { return m_labelPlacement; }
     public:
         void RecalcSizes(wxDC& dc) final;
 
@@ -75,6 +85,8 @@ namespace Wisteria::Graphs
         std::vector<RoadStopInfo> m_roadStops;
         // min and max of IVs' coefficients (i.e., estimated effects)
         std::pair<double, double> m_coefficientsRange;
+
+        LabelPlacement m_labelPlacement{ LabelPlacement::FlushBoth };
         };
     }
 
