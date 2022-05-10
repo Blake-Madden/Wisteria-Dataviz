@@ -139,10 +139,34 @@ template<typename T>
     return T();
     }
 
+/** @brief Rescales a value from one range into another range.
+    @details The following formula is used:
+
+     f(min) = a
+     f(max) = b
+
+            (b-a)(x - min)
+     f(x) = --------------  + a
+               max - min
+
+     https://stackoverflow.com/questions/5294955/how-to-scale-down-a-range-of-numbers-with-a-known-min-and-max-value
+    @param unscaledValue The original value to rescale.
+    @param dataRange The min and max of the data that the value came from.
+    @param newDataRange The min and max of the range that the value is being rescaled to.
+    @returns The value, rescaled to the new data range.
+    @todo needs unit tests.*/
+[[nodiscard]] constexpr inline double scale_within(double unscaledValue,
+                                                   std::pair<double, double> dataRange,
+                                                   std::pair<double, double> newDataRange)
+    {
+    return safe_divide<double>(((newDataRange.second - newDataRange.first) * (unscaledValue - dataRange.first)),
+                                (dataRange.second - dataRange.first)) + newDataRange.first;
+    }
+
 /** @returns The next base-10 interval from the given @c value using a specified number of digits.
     @param value The value to step from.
-    @param intervalSize The size of the interval to step to. For example, with a value of 2.1, the following
-     steps would yield these results:
+    @param intervalSize The size of the interval to step to.\n
+     For example, with a value of 2.1, the following steps would yield these results:
      - 1 -> 3
      - 2 -> 10
      - 3 -> 100
@@ -156,8 +180,8 @@ template<typename T>
 
 /** @returns The previous base-10 interval from the given @c value using a specified number of digits.
     @param value The value to step from.
-    @param intervalSize The size of the interval to step to. For example, with a value of 112.1, the following
-     steps would yield these results:
+    @param intervalSize The size of the interval to step to.\n
+     For example, with a value of 112.1, the following steps would yield these results:
      - 1 -> 112
      - 2 -> 110
      - 3 -> 100
@@ -373,7 +397,8 @@ namespace geometry
         @param areaSize The size of the area with the arc drawn within it.
         @param degrees The angle (in degrees) of the arc, drawn from 3 o'clock going counter clockwise.
         @returns The end point of the arc.*/
-    [[nodiscard]] constexpr inline std::pair<double, double> calc_arc_vertex(std::pair<double, double> areaSize,
+    [[nodiscard]] constexpr inline std::pair<double, double> calc_arc_vertex(
+                                                            std::pair<double, double> areaSize,
                                                             const double degrees) noexcept
         {
         return std::make_pair(

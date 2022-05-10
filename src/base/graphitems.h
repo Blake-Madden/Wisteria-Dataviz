@@ -1901,6 +1901,9 @@ namespace Wisteria
                  scale to the screen for you.*/
             void SetRadius(const size_t radius) noexcept
                 { m_radius = radius; }
+            /// @returns The rectangle on the canvas where the point would fit in.
+            /// @param dc Measurement DC, which is not used in this implementation.
+            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         private:
             /** @returns `true` if the given point is inside of this point.
                 @note This does a hit test within a bounding box of the point, not the point itself.
@@ -1915,9 +1918,6 @@ namespace Wisteria
             /// @returns `true` if center point is valid.
             [[nodiscard]] bool IsOk() const noexcept
                 { return GetAnchorPoint().IsFullySpecified(); }
-            /// @returns The rectangle on the canvas where the point would fit in.
-            /// @param dc Measurement DC, which is not used in this implementation.
-            [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
             /** @brief Moves the point by the specified x and y values.
                 @param xToMove The amount to move horizontally.
                 @param yToMove The amount to move vertically.*/

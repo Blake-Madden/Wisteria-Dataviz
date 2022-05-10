@@ -25,6 +25,7 @@ SET(WISTERIA_SRC
     src/graphs/likertchart.cpp
     src/graphs/lineplot.cpp
     src/graphs/piechart.cpp
+    src/graphs/lrroadmap.cpp
     src/graphs/wcurveplot.cpp
     src/ui/imageexportdlg.cpp
     src/ui/opacitydlg.cpp
