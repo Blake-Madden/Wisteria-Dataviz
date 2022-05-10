@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include "label.h"
+#include "polygon.h"
 
 // forward declares for friendship
 namespace Wisteria

@@ -8,6 +8,7 @@
 
 #include "points.h"
 #include "label.h"
+#include "polygon.h"
 
 using namespace Wisteria::Colors;
 

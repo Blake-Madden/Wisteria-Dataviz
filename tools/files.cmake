@@ -9,6 +9,8 @@ SET(WISTERIA_SRC
     src/base/image.cpp
     src/base/label.cpp
     src/base/lines.cpp
+    src/base/points.cpp
+    src/base/polygon.cpp
     src/data/dataset.cpp
     src/data/textclassifier.cpp
     src/debug/debug_profile.cpp
