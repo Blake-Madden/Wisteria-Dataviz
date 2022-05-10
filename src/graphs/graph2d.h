@@ -12,6 +12,7 @@
 #ifndef __WISTERIA_PLOT2D_H__
 #define __WISTERIA_PLOT2D_H__
 
+#include "../base/points.h"
 #include "../base/canvas.h"
 #include "../base/colorbrewer.h"
 #include "../data/dataset.h"
