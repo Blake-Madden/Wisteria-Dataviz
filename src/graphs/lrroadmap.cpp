@@ -122,7 +122,9 @@ namespace Wisteria::Graphs
             // the location marker:
             // points are scale of one, their point size is calculated instead
             auto pt = std::make_shared<Point2D>(
-                GraphItemInfo().Brush((m_roadStops[i].m_coefficent >= 0 ? *wxGREEN : *wxRED_BRUSH)).
+                GraphItemInfo().Brush((m_roadStops[i].m_coefficent >= 0 ?
+                    ColorBrewer::GetColor(Color::KellyGreen) :
+                    ColorBrewer::GetColor(Color::Tomato))).
                 DPIScaling(GetDPIScaleFactor()).
                 AnchorPoint({ xPt , yPt }),
                 scale_within(std::abs(m_roadStops[i].m_coefficent),
@@ -224,11 +226,12 @@ namespace Wisteria::Graphs
             if (!Polygon::IsRectInsideRect(bBox, largerRect) )
                 {
                 const double overhang = (bBox.GetLeft() < largerRect.GetLeft() ?
-                    largerRect.GetLeft() - bBox.GetLeft() : 0);
+                    largerRect.GetLeft() - bBox.GetLeft() :
+                    bBox.GetRight() - largerRect.GetRight());
                 const auto inverseProportion = 1 - (safe_divide<double>(overhang, bBox.GetWidth()));
                 locationLabel->SetScaling(locationLabel->GetScaling() *
                     // don't go any smaller than half scale
-                    std::min(inverseProportion, .5));
+                    std::max(inverseProportion, .5));
                 }
             smallestLabelScaling = std::min(smallestLabelScaling, locationLabel->GetScaling());
             }
