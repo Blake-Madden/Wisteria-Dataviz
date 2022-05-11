@@ -28,7 +28,8 @@ namespace Wisteria::Graphs
     void LRRoadmap::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& predictorColumnName,
         const wxString& coefficentColumnName,
-        const std::optional<wxString>& pValueColumnName)
+        const std::optional<wxString>& pValueColumnName,
+        const Predictors preditorsToIncludes /*= Predictors::All*/)
         {
         if (data == nullptr)
             { return; }
@@ -64,11 +65,33 @@ namespace Wisteria::Graphs
         m_coefficientsRange.first = std::abs(*cRange.first);
         m_coefficientsRange.second = std::abs(*cRange.second);
 
+        const auto includePredictor = [&](const double value)
+            {
+            if (std::isnan(value))
+                { return false; }
+            else if ((preditorsToIncludes & Predictors::All) == Predictors::All)
+                { return true; }
+            else if ((preditorsToIncludes & Predictors::Negative) == Predictors::Negative &&
+                value < 0)
+                { return true; }
+            else if ((preditorsToIncludes & Predictors::Neutral) == Predictors::Neutral &&
+                value == 0)
+                { return true; }
+            else if ((preditorsToIncludes & Predictors::Positive) == Predictors::Positive &&
+                value > 0)
+                { return true; }
+            else
+                { return false; }
+            };
+
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            m_roadStops.emplace_back(
-                RoadStopInfo(predictorColumn->GetCategoryLabelFromID(predictorColumn->GetValue(i))).
-                Coefficient(coefficientColumn->GetValue(i)));
+            if (includePredictor(coefficientColumn->GetValue(i)))
+                {
+                m_roadStops.emplace_back(
+                    RoadStopInfo(predictorColumn->GetCategoryLabelFromID(predictorColumn->GetValue(i))).
+                    Coefficient(coefficientColumn->GetValue(i)));
+                }
             }
 
         GetBottomXAxis().SetRange(0, 100, 0, 1, 1);

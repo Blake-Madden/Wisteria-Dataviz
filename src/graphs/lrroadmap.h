@@ -19,7 +19,20 @@ namespace Wisteria::Graphs
     class LRRoadmap final : public Graph2D
         {
     public:
-        
+        /// @brief The type of predictors to included, based on their
+        ///  influence on the dependent variable.
+        /// @internal This enum is a bitmap, do not make it strongly typed.
+        enum Predictors
+            {
+            /// @brief IVs with coefficients > 0.
+            Positive = 1,
+            /// @brief IVs with coefficients < 0.
+            Negative = 2,
+            /// @brief IVs with coefficients = 0.
+            Neutral = 4,
+            /// @brief All IVs.
+            All = 8
+            };
 
         /** @brief Constructor.
             @param canvas The canvas to draw the graph on.*/
@@ -33,13 +46,16 @@ namespace Wisteria::Graphs
              (i.e., predictors) names.
             @param coefficentColumnName The column containing the predictors' correlation coefficients.
             @param pValueColumnName The (optional) column containing the predictors' p-values.
+            @param preditorsToIncludes Which types of IVs (e.g., negative influence) to include.\n
+             This is a bitmap that can include multiple flags. The default is to include all IVs.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
              The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
              when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& predictorColumnName,
                      const wxString& coefficentColumnName,
-                     const std::optional<wxString>& pValueColumnName);
+                     const std::optional<wxString>& pValueColumnName,
+                     const Predictors preditorsToIncludes = Predictors::All);
 
         /** @brief Specifies how to arrange the location markers' names.
             @param lPlacement How to arrange the labels.*/
