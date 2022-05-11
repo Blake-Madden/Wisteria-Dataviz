@@ -80,7 +80,6 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
-        
         // trim space off of area for the road so that there is space
         // for the markers
         auto roadRange = GetBottomXAxis().GetRange();
@@ -126,7 +125,8 @@ namespace Wisteria::Graphs
                 GraphItemInfo().Brush((m_roadStops[i].m_coefficent >= 0 ? *wxGREEN : *wxRED_BRUSH)).
                 DPIScaling(GetDPIScaleFactor()).
                 AnchorPoint({ xPt , yPt }),
-                scale_within(std::abs(m_roadStops[i].m_coefficent), m_coefficientsRange, pointSizesRange),
+                scale_within(std::abs(m_roadStops[i].m_coefficent),
+                             m_coefficientsRange, pointSizesRange),
                 IconShape::LocationMarker);
             locations.push_back(pt);
 
@@ -140,6 +140,7 @@ namespace Wisteria::Graphs
                 DPIScaling(GetDPIScaleFactor()).
                 Pen(ColorBrewer::GetColor(Colors::Color::WarmGray)).
                 FontBackgroundColor(*wxWHITE));
+            textLabel->ShowLabelWhenSelected(true);
             if (GetLabelPlacement() == LabelPlacement::NextToParent)
                 {
                 textLabel->SetAnchorPoint((m_roadStops[i].m_coefficent >= 0 ?
@@ -147,7 +148,6 @@ namespace Wisteria::Graphs
                     pt->GetBoundingBox(dc).GetBottomLeft()));
                 textLabel->SetAnchoring((m_roadStops[i].m_coefficent >= 0 ?
                     Anchoring::BottomLeftCorner : Anchoring::BottomRightCorner));
-                textLabel->ShowLabelWhenSelected(true);
                 }
             else
                 {
@@ -203,14 +203,32 @@ namespace Wisteria::Graphs
         AddObject(labelConnectionLines);
         // adjust the labels to fit and make them use a uniform scale
         auto smallestLabelScaling = GetScaling();
+        auto leftTextArea = GetPlotAreaBoundingBox();
+        auto rightTextArea = GetPlotAreaBoundingBox();
+        wxCoord coord{ 0 };
+        if (GetBottomXAxis().GetPhysicalCoordinate(roadRange.first, coord))
+            { leftTextArea.SetRight(coord); }
+        if (GetBottomXAxis().GetPhysicalCoordinate(roadRange.second, coord))
+            {
+            rightTextArea.SetLeft(coord);
+            rightTextArea.SetRight(GetPlotAreaBoundingBox().GetRight());
+            }
+        
         for (auto& locationLabel : locationLabels)
             {
-            auto bBox = locationLabel->GetBoundingBox(dc);
-            while (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()) &&
-                   locationLabel->GetScaling() >= 0.02)
+            auto largerRect = (GetLabelPlacement() == LabelPlacement::NextToParent ?
+                GetPlotAreaBoundingBox() :
+                locationLabel->GetAnchoring() == Anchoring::BottomLeftCorner ?
+                leftTextArea : rightTextArea);
+            const auto bBox = locationLabel->GetBoundingBox(dc);
+            if (!Polygon::IsRectInsideRect(bBox, largerRect) )
                 {
-                locationLabel->SetScaling(locationLabel->GetScaling() - .02);
-                bBox = locationLabel->GetBoundingBox(dc);
+                const double overhang = (bBox.GetLeft() < largerRect.GetLeft() ?
+                    largerRect.GetLeft() - bBox.GetLeft() : 0);
+                const auto inverseProportion = 1 - (safe_divide<double>(overhang, bBox.GetWidth()));
+                locationLabel->SetScaling(locationLabel->GetScaling() *
+                    // don't go any smaller than half scale
+                    std::min(inverseProportion, .5));
                 }
             smallestLabelScaling = std::min(smallestLabelScaling, locationLabel->GetScaling());
             }
