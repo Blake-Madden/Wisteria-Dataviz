@@ -440,9 +440,6 @@ namespace Wisteria::Graphs
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()).
             LabelAlignment(TextAlignment::FlushLeft).
             DPIScaling(GetDPIScaleFactor()));
-        legend->SetBoxCorners(BoxCorners::Rounded);
-        legend->GetFont().MakeSmaller();
-        legend->GetHeaderInfo().GetFont().MakeSmaller();
 
         // fill in the legend
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
@@ -608,7 +605,7 @@ namespace Wisteria::Graphs
 
         GetSelectedIds().clear();
         m_positive1Label.clear();
-        m_positive2Label.clear();;
+        m_positive2Label.clear();
         m_positive3Label.clear();
         m_negative1Label.clear();
         m_negative2Label.clear();

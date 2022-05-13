@@ -657,9 +657,6 @@ namespace Wisteria::Graphs
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Pen(wxNullPen).
             DPIScaling(GetDPIScaleFactor()));
-        legend->SetBoxCorners(BoxCorners::Rounded);
-        legend->GetFont().MakeSmaller();
-        legend->GetHeaderInfo().GetFont().MakeSmaller();
         legend->GetGraphItemInfo().Text(
                 wxString::Format(_(L"75th Percentile: %s\n"
                                     "Median: %s\n" // 50th percentile

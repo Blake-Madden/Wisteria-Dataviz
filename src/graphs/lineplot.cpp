@@ -283,9 +283,6 @@ namespace Wisteria::Graphs
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
-        legend->SetBoxCorners(BoxCorners::Rounded);
-        legend->GetFont().MakeSmaller();
-        legend->GetHeaderInfo().GetFont().MakeSmaller();
 
         const bool showingMarkers = (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
                                     // multiple lines or one line and it is not using a blank icon

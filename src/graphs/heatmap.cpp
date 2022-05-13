@@ -431,9 +431,6 @@ namespace Wisteria::Graphs
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()*1.5).
             DPIScaling(GetDPIScaleFactor()).
             Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft));
-        legend->SetBoxCorners(BoxCorners::Rounded);
-        legend->GetFont().MakeSmaller();
-        legend->GetHeaderInfo().GetFont().MakeSmaller();
         if (includeHeader)
             {
             legend->SetText(
