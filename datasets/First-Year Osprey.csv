@@ -1,0 +1,13 @@
+﻿Factor,Coefficient
+Being female,0.19
+Being an athlete,0.29
+"Being older, closer to 26 than 18",-0.17
+Receive financial aid,0.15
+Attempt 15 or more credits per semester,0.17
+Attend a Signature Event,0.03
+Visit the Library,0.004
+Visit the Student Wellness Center,0.002
+College A major,0
+Work off campus 21+ hours a week,-0.19
+College B major,0.1
+Work on campus,0.14
