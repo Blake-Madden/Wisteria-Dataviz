@@ -83,23 +83,44 @@ namespace Wisteria::Graphs
     void Graph2D::AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
                                        const LegendCanvasPlacementHint hint)
         {
+        legend->SetBoxCorners(BoxCorners::Rounded);
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
             legend->GetGraphItemInfo().Pen(*wxBLACK_PEN).
                 Padding(4, 4, 4, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 4)).
                 FontBackgroundColor(*wxWHITE);
+            legend->GetFont().MakeSmaller();
+            legend->GetHeaderInfo().GetFont().MakeSmaller();
             }
-        else if (hint == LegendCanvasPlacementHint::RightOrLeftOfGraph)
+        else if (hint == LegendCanvasPlacementHint::LeftOfGraph)
             {
             legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
+            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
             legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4);;
+                CanvasPadding(4, 4, 4, 4);
+            legend->GetFont().MakeSmaller();
+            legend->GetHeaderInfo().GetFont().MakeSmaller();
             }
+        else if (hint == LegendCanvasPlacementHint::RightOfGraph)
+            {
+            legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
+            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
+            legend->AdjustingBoundingBoxToContent(true);
+            legend->GetGraphItemInfo().Pen(wxNullPen).
+                Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
+                CanvasPadding(4, 4, 4, 4);
+            legend->GetFont().MakeSmaller();
+            legend->GetHeaderInfo().GetFont().MakeSmaller();
+            }
+        // don't make font smaller since canvases' aspect ratio makes it so that making it
+        // taller won't increase the height of the area as much as the width if the legend
+        // was off to the right of the graph
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
             legend->AdjustingBoundingBoxToContent(true);
+            legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4);
@@ -280,13 +301,33 @@ namespace Wisteria::Graphs
         // make space for the titles
         if (GetTitle().GetText().length())
             {
-            m_plotRect.y += GetTitle().GetBoundingBox(dc).GetHeight();
+            // if using a background color, stretch it out to the width of the graph area
+            // so that it acts as a banner
+            auto titleRect = GetTitle().GetBoundingBox(dc);
+            if (GetTitle().GetFontBackgroundColor().IsOk() &&
+                GetTitle().GetFontBackgroundColor() != wxTransparentColor)
+                {
+                titleRect.SetWidth(std::max(titleRect.GetWidth(), m_rect.GetWidth()));
+                GetTitle().SetBoundingBox(titleRect, dc, GetScaling());
+                titleRect = GetTitle().GetBoundingBox(dc);
+                }
+
+            m_plotRect.y += titleRect.GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
                                   GetTitle().GetBoundingBox(dc).GetHeight());
             }
         if (GetSubtitle().GetText().length())
             {
-            m_plotRect.y += GetSubtitle().GetBoundingBox(dc).GetHeight();
+            auto titleRect = GetSubtitle().GetBoundingBox(dc);
+            if (GetSubtitle().GetFontBackgroundColor().IsOk() &&
+                GetSubtitle().GetFontBackgroundColor() != wxTransparentColor)
+                {
+                titleRect.SetWidth(std::max(titleRect.GetWidth(), m_rect.GetWidth()));
+                GetSubtitle().SetBoundingBox(titleRect, dc, GetScaling());
+                titleRect = GetSubtitle().GetBoundingBox(dc);
+                }
+
+            m_plotRect.y += titleRect.GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
                                   GetSubtitle().GetBoundingBox(dc).GetHeight());
             }
@@ -302,6 +343,14 @@ namespace Wisteria::Graphs
         // and caption at the bottom
         if (GetCaption().GetText().length())
             {
+            auto titleRect = GetCaption().GetBoundingBox(dc);
+            if (GetCaption().GetFontBackgroundColor().IsOk() &&
+                GetCaption().GetFontBackgroundColor() != wxTransparentColor)
+                {
+                titleRect.SetWidth(std::max(titleRect.GetWidth(), m_rect.GetWidth()));
+                GetCaption().SetBoundingBox(titleRect, dc, GetScaling());
+                }
+
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
                                   (GetCaption().GetBoundingBox(dc).GetHeight()+
                                    (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing()*2))));

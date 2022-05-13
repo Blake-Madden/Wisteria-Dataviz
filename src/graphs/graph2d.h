@@ -62,22 +62,25 @@ namespace Wisteria::Graphs
             @brief Functions related to the titles and caption.*/
         /// @{
 
-        /** @brief Sets/gets the plot's title.
-            @note The title's relative alignment controls where the title is aligned against the plot.
-             Its display info controls its font, color, and other formatting settings.
+        /** @brief Sets/gets the graph's title.
+            @note The title's relative alignment controls where the title is aligned against the plot
+             (i.e., whether it is center, right aligned, etc.).\n
+             Its display info controls its font, color, and other formatting settings.\n
+             As a special note, changing its background color will stretch the title across
+             the graph area, making it appear as a banner.
             @returns The title.*/
         [[nodiscard]] GraphItems::Label& GetTitle() noexcept
             { return m_title; }
 
-        /** @brief Sets/gets the plot's subtitle.
-            @note The subtitle's relative alignment controls where the subtitle is aligned against the plot.
+        /** @brief Sets/gets the graph's subtitle.
+            @note The subtitle's relative alignment controls where the subtitle is aligned against the plot.\n
              Its display info controls its font, color, and other formatting settings.
             @returns The subtitle.*/
         [[nodiscard]] GraphItems::Label& GetSubtitle() noexcept
             { return m_subtitle; }
 
-        /** @brief Sets/gets the plot's caption.
-            @note The caption's relative alignment controls where the caption is aligned against the plot.
+        /** @brief Sets/gets the graph's caption.
+            @note The caption's relative alignment controls where the caption is aligned against the plot.\n
              Its display info controls its font, color, and other formatting settings.
             @returns The caption.*/
         [[nodiscard]] GraphItems::Label& GetCaption() noexcept
