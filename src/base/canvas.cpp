@@ -943,7 +943,11 @@ namespace Wisteria
                     if (measuredBox.GetWidth() < boundingRect.GetWidth())
                         {
                         const auto originalWidth = boundingRect.GetWidth();
-                        const auto widthDiff = (originalWidth - measuredBox.GetWidth());
+                        auto widthDiff = (originalWidth - measuredBox.GetWidth());
+                        if (objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+                            { widthDiff /= 2; }
+                        else if (objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
+                            { widthDiff = 0; }
                         boundingRect.x += widthDiff;
                         boundingRect.SetWidth(measuredBox.GetWidth());
                         objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
@@ -952,7 +956,7 @@ namespace Wisteria
                             nonPaddedBoundingRect.GetWidth() - widthDiff);
                         // adjust previously laid out items by making them wider
                         // and pushing them over
-                        if (i > 0)
+                        if (i > 0 && widthDiff > 0)
                             {
                             const auto averageWidthToAdd =
                                 safe_divide<double>(widthDiff, i/* # of previous items*/);
