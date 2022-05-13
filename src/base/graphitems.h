@@ -63,6 +63,21 @@ namespace Wisteria
         Left = West
         };
 
+    /// @brief The type of predictors to included, based on their
+    ///  influence on the dependent variable.
+    /// @internal This enum is a bitmap, do not make it strongly typed.
+    enum Predictors
+        {
+        /// @brief IVs with coefficients > 0.
+        Positive = 1,
+        /// @brief IVs with coefficients < 0.
+        Negative = 2,
+        /// @brief IVs with coefficients = 0.
+        Neutral = 4,
+        /// @brief All IVs.
+        All = 8
+        };
+
     /** @brief How labels are aligned with their parents on a graph.*/
     enum class LabelPlacement
         {
@@ -240,7 +255,9 @@ namespace Wisteria
         {
         EmbeddedOnGraph,    /*!< The legend will be on the plot.
                                  This will include outlining on the legend*/
-        RightOrLeftOfGraph, /*!< The legend will be on the right or left of the plot.
+        LeftOfGraph,        /*!< The legend will be on the right or left of the plot.
+                                 This will set the legend's canvas width % to a calculated value.*/
+        RightOfGraph,       /*!< The legend will be on the right or left of the plot.
                                  This will set the legend's canvas width % to a calculated value.*/
         AboveOrBeneathGraph /*!< The legend will be above or below the plot.
                                  This will set the legend's canvas width % to 1.*/
