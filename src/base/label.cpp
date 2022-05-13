@@ -633,12 +633,12 @@ namespace Wisteria::GraphItems
                     {
                     const auto bBox = GetBoundingBox(dc);
                     Label infoLabel(GraphItemInfo(
-                        wxString::Format(L"Font size: %d\n"
+                        wxString::Format(L"Scaling: %s\n"
                                           "Default font size: %d\n"
-                                          "Scaling: %s",
+                                          "Font size: %d",
+                            wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             GetFont().GetPointSize(),
-                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize(),
-                            wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes))).
+                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
                         AnchorPoint(bBox.GetBottomRight()).
                         FontColor(*wxBLUE).
                         Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).

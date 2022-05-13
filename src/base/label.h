@@ -194,7 +194,7 @@ namespace Wisteria::GraphItems
         /** @brief Set this to @c true so that calls to SetBoundingBox() will only
              be treated as a suggestion. The bounding box will be set to the suggested size,
              but then be scaled down to the content.\n
-             This behaviour is turned off, so that calls to SetBoundingBox() will
+             This behaviour is turned off by default, so that calls to SetBoundingBox() will
              explicitly set the size.\n
              This is mostly useful for legends being embedded on a canvas.
              @param adjust @c true to tell SetBoundingBox() to only treat its size
