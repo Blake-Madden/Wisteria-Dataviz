@@ -28,11 +28,16 @@ namespace Wisteria::Graphs
     void LRRoadmap::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& predictorColumnName,
         const wxString& coefficentColumnName,
-        const std::optional<wxString>& pValueColumnName,
-        const Predictors preditorsToIncludes /*= Predictors::All*/)
+        const std::optional<wxString>& pValueColumnName /*= std::nullopt*/,
+        const std::optional<double> pLevel /*= std::nullopt*/,
+        const std::optional<Predictors> preditorsToIncludes /*= std::nullopt*/,
+        const std::optional<wxString> dvName /*= std::nullopt*/)
         {
         if (data == nullptr)
             { return; }
+
+        if (dvName)
+            { m_dvLabel = dvName.value(); }
 
         auto predictorColumn = data->GetCategoricalColumn(predictorColumnName);
         if (predictorColumn == data->GetCategoricalColumns().cend())
@@ -65,19 +70,26 @@ namespace Wisteria::Graphs
         m_coefficientsRange.first = std::abs(*cRange.first);
         m_coefficientsRange.second = std::abs(*cRange.second);
 
-        const auto includePredictor = [&](const double value)
+        const auto includePredictor = [&](const double value, const std::optional<double> pValue)
             {
             if (std::isnan(value))
                 { return false; }
-            else if ((preditorsToIncludes & Predictors::All) == Predictors::All)
+            else if (pLevel.has_value() && !std::isnan(pLevel.value()) &&
+                pValue.has_value() &&
+                (std::isnan(pValue.value()) || pValue >= pLevel.value()) )
+                { return false; }
+            // default to all included
+            else if (!preditorsToIncludes.has_value())
                 { return true; }
-            else if ((preditorsToIncludes & Predictors::Negative) == Predictors::Negative &&
+            else if ((preditorsToIncludes.value() & Predictors::All) == Predictors::All)
+                { return true; }
+            else if ((preditorsToIncludes.value() & Predictors::Negative) == Predictors::Negative &&
                 value < 0)
                 { return true; }
-            else if ((preditorsToIncludes & Predictors::Neutral) == Predictors::Neutral &&
+            else if ((preditorsToIncludes.value() & Predictors::Neutral) == Predictors::Neutral &&
                 value == 0)
                 { return true; }
-            else if ((preditorsToIncludes & Predictors::Positive) == Predictors::Positive &&
+            else if ((preditorsToIncludes.value() & Predictors::Positive) == Predictors::Positive &&
                 value > 0)
                 { return true; }
             else
@@ -86,7 +98,9 @@ namespace Wisteria::Graphs
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (includePredictor(coefficientColumn->GetValue(i)))
+            if (includePredictor(coefficientColumn->GetValue(i),
+                                 (pValueColumn != data->GetContinuousColumns().cend() ?
+                                  std::optional<double>(pValueColumn->GetValue(i)) : std::nullopt)) )
                 {
                 m_roadStops.emplace_back(
                     RoadStopInfo(predictorColumn->GetCategoryLabelFromID(predictorColumn->GetValue(i))).
@@ -163,7 +177,7 @@ namespace Wisteria::Graphs
                 Padding(4, 4, 4, 4).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
-                Pen(ColorBrewer::GetColor(Colors::Color::WarmGray)).
+                Pen(wxNullPen).
                 FontBackgroundColor(*wxWHITE));
             textLabel->ShowLabelWhenSelected(true);
             if (GetLabelPlacement() == LabelPlacement::NextToParent)
@@ -195,8 +209,10 @@ namespace Wisteria::Graphs
             { pts.push_back({ xPt, GetBoundingBox(dc).GetTop() }); }
 
         // the road pavement
-        auto pavement = std::make_shared<GraphItems::Points2D>(
-            wxPen(wxPenInfo(*wxBLACK, 40)));
+        wxASSERT_MSG(m_roadPen.IsOk(), L"Valid road pen needed to draw road!");
+        wxPen scaledRoadPen = m_roadPen;
+        scaledRoadPen.SetWidth(ScaleToScreenAndCanvas(scaledRoadPen.GetWidth()));
+        auto pavement = std::make_shared<GraphItems::Points2D>(scaledRoadPen);
         pavement->SetDPIScaleFactor(GetDPIScaleFactor());
         pavement->GetClippingRect() = GetPlotAreaBoundingBox();
         pavement->SetLineStyle(LineStyle::Spline);
@@ -209,9 +225,10 @@ namespace Wisteria::Graphs
             }
         AddObject(pavement);
 
-        // the lane separator
+        // the lane separator, which is a tenth as wide as the road
         auto laneSep = std::make_shared<GraphItems::Points2D>(
-            wxPen(wxPenInfo(*wxYELLOW, (pavement->GetPen().GetWidth() / 10),
+            wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
+                            (pavement->GetPen().GetWidth() / 10),
                             wxPenStyle::wxPENSTYLE_LONG_DASH)));
         laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
         laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
@@ -239,6 +256,7 @@ namespace Wisteria::Graphs
             rightTextArea.SetRight(GetPlotAreaBoundingBox().GetRight());
             }
         
+        constexpr double smallestLabelScalingAllowable{ 0.5 };
         for (auto& locationLabel : locationLabels)
             {
             auto largerRect = (GetLabelPlacement() == LabelPlacement::NextToParent ?
@@ -254,9 +272,11 @@ namespace Wisteria::Graphs
                 const auto inverseProportion = 1 - (safe_divide<double>(overhang, bBox.GetWidth()));
                 locationLabel->SetScaling(locationLabel->GetScaling() *
                     // don't go any smaller than half scale
-                    std::max(inverseProportion, .5));
+                    std::max(inverseProportion, smallestLabelScalingAllowable));
                 }
             smallestLabelScaling = std::min(smallestLabelScaling, locationLabel->GetScaling());
+            if (compare_doubles(smallestLabelScaling, smallestLabelScalingAllowable))
+                { break;}
             }
         for (auto& locationLabel : locationLabels)
             {
@@ -267,5 +287,41 @@ namespace Wisteria::Graphs
         std::reverse(locations.begin(), locations.end());
         for (auto& location : locations)
             { AddObject(location); }
+        }
+
+    //----------------------------------------------------------------
+    void LRRoadmap::AddDefaultCaption()
+        {
+        GetCaption().SetText(wxString::Format(
+            _("The larger the map marker and deeper the curve, "
+              "the stronger the item's association with %s"), m_dvLabel));
+        }
+
+    //----------------------------------------------------------------
+    std::shared_ptr<GraphItems::Label> LRRoadmap::CreateLegend(
+        const LegendCanvasPlacementHint hint, const bool includeHeader)
+        {
+        auto legend = std::make_shared<GraphItems::Label>(
+            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
+            DPIScaling(GetDPIScaleFactor()));
+
+        wxString legendText = wxString::Format(_("Positively associated with %s"), m_dvLabel) + L"\n" +
+                              wxString::Format(_("Negatively associated with %s"), m_dvLabel);
+        legend->GetLegendIcons().emplace_back(
+                LegendIcon(IconShape::LocationMarker, *wxBLACK, ColorBrewer::GetColor(Color::KellyGreen)));
+        legend->GetLegendIcons().emplace_back(
+            LegendIcon(IconShape::LocationMarker, *wxBLACK, ColorBrewer::GetColor(Color::Tomato)));
+
+        if (includeHeader)
+            {
+            legendText.Prepend(_(L"Key\n"));
+            legend->GetHeaderInfo().Enable(true).
+                LabelAlignment(TextAlignment::Centered).GetFont().MakeBold().MakeLarger();
+            }
+        legend->SetText(legendText.Trim());
+
+        AddReferenceLinesAndAreasToLegend(legend);
+        AdjustLegendSettings(legend, hint);
+        return legend;
         }
     }
