@@ -44,21 +44,6 @@ INCLUDE(${wxWidgets_USE_FILE})
 MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
 
-# Compile settings for library and demo
-IF(WIN32)
-    IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        ADD_COMPILE_DEFINITIONS(__WXMSW__ __WXDEBUG__ wxDEBUG_LEVEL=2 _CRT_SECURE_NO_WARNINGS)
-    ELSE()
-        ADD_COMPILE_DEFINITIONS(__WXMSW__ wxDEBUG_LEVEL=0 _CRT_SECURE_NO_WARNINGS)
-    ENDIF()
-ELSE()
-    IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        ADD_COMPILE_DEFINITIONS(__WXDEBUG__ wxDEBUG_LEVEL=2)
-    ELSE()
-        ADD_COMPILE_DEFINITIONS(wxDEBUG_LEVEL=0)
-    ENDIF()
-ENDIF()
-
 IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     # If no deployment target has been set default to the minimum supported
     # OS version (this has to be set before the first project() call)
@@ -76,21 +61,34 @@ INCLUDE(${CMAKE_SOURCE_DIR}/tools/files.cmake)
 ADD_LIBRARY(Wisteria STATIC ${WISTERIA_SRC})
 TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
-# Set warnings and optimizations (will propagate to the demo project also)
+# Set definitions, warnings, and optimizations (will propagate to the demo project also)
 IF(MSVC)
+    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
+        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
     # C++ version is 98 always (for compatibility reasons).
 
+    # /MP enables multi-core build support, speeding up compilation time.
+
+    # /W3 cranks up the warning level, /WX treats all warnings as error.
+    # Note that simply using /W4 causes a warning that it is overriding
+    # /W3, and then that turns into an error because of /W4. So /W3 is the
+    # highest you can go with /WX.
+
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /W3 /WX /wd6211 $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
+    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+                           $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 ELSE()
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXMSW__
+        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
 
-# Build the demo
+# Build the library demo
 ########################
 SET(DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/demo.cpp)
 
