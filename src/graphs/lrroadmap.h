@@ -20,15 +20,20 @@ namespace Wisteria::Graphs
             from a multiple linear regression.
         @details This graphic displays a road leading towards a final goal (i.e., the dependent).
             Along this road are "road stops" of variable size that cause the road to curve. These
-            road stops represent one of the independent variables from a linear regression. Both the
-            size of the road stop and the curve in the road represent the strength of the predictor's
-            influence. Additionally, stops on the right side of the road are positive influencers,
-            left stops are negative.
+            road stops represent the independent variables from a linear regression. Both the
+            size of a road stop and the curve in the road next to it represent the strength of the
+            predictor's influence. Additionally, stops on the right side of the road are positive
+            influencers, left stops are negative.
+        @par Roadmap displaying all factors and their level of influence:
+
         @image html LRRoadmapFirstYear.svg width=90%
+        @par Roadmap showcasing only negative factors:
+
+        @image html LRRoadmapFirstYearNegative.svg width=90%
         @par %Data:
-            This plot accepts a Data::Dataset where one categorical column is the preditor names,
-            a continuous column is their coefficients, and an optional continuous column are their
-            p-values. (The p-values are only used for filtering which predictors to include.)
+            This plot accepts a Data::Dataset where one categorical column is the predictor names,
+            a continuous column is the coefficients, and an optional continuous column is the
+            p-values. (The p-values are used for filtering which predictors to include.)
 
          | Factor                              | Coefficient | p-value |
          | :--                                 | --:         | :--     |
@@ -91,7 +96,8 @@ namespace Wisteria::Graphs
          
         @endcode
         @par Citation:
-            https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences
+            Kulp, A., &amp; Grandstaff, M. (2019, April 17). <i>Visualizing regression results for non-statistics audiences.</i>
+            Retrieved May 13, 2022, from https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences 
     */
     class LRRoadmap final : public Graph2D
         {
@@ -105,11 +111,11 @@ namespace Wisteria::Graphs
                 (i.e., predictors) names.
             @param coefficentColumnName The column containing the predictors' correlation coefficients.
             @param pValueColumnName The (optional) column containing the predictors' p-values.
-            @param preditorsToIncludes Which types of IVs (e.g., negative influence) to include.\n
+            @param preditorsToIncludes Which types of IVs (e.g., negative influencers) to include.\n
                 This is a bitmask that can include multiple flags. The default is to include all IVs.
             @param pLevel If a p-value column is supplied, only predictors with p-values lower than
                 this will be included. (Predictors with missing p-values will be excluded.)\n
-                The recommendations are usually @c .05 or @c .01 (most strict).
+                The recommendations are usually @c 0.05 or @c 0.01 (most strict).
             @param dvName The name of the dependent variable from the original analysis.
                 This will be used on the legend and default caption.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n

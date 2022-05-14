@@ -128,6 +128,10 @@ Social Sciences
 | :-------------- |
 | ![](docs/doxygen/images/WCurve.svg) |
 
+| Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
+| :-------------- |
+| ![](docs/doxygen/images/LRRoadmapFirstYear.svg) |
+
 See more in the [graphs gallery](Gallery.md).
 
 Release Notes

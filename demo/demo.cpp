@@ -128,6 +128,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_WCURVE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LIKERT_3POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LIKERT_7POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HEATMAP);
@@ -203,6 +204,8 @@ wxMenuBar* MyFrame::CreateMainMenubar()
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"))->
@@ -323,7 +326,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true) };
+        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true) };
         legend->SetLine(0, _(L"Range of Scores"));
         // after changing legend's text, recalculate how much of the
         // canvas it should consume
@@ -366,7 +369,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true) };
+        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true) };
         subframe->m_canvas->SetFixedObject(0, 1, legend);
         }
     // Histogram
@@ -415,7 +418,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         if (plot->GetGroupCount() > 0)
             {
             subframe->m_canvas->SetFixedObject(0, 1,
-                plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+                plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
             }
         }
     // Histogram (discrete categories from a grouping variable get their own bars)
@@ -515,7 +518,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
         subframe->m_canvas->SetFixedObject(0, 1,
-            linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+            linePlot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
         }
     // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
@@ -614,7 +617,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // add a legend to the side and center it vertically
-        auto legend = linePlot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false);
+        auto legend = linePlot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false);
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, legend);
 
@@ -694,7 +697,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
         // add a legend, showing whom is assigned to which tasks
         subframe->m_canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
+            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
         {
@@ -980,7 +983,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true));
+            plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
         }
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
         {
@@ -1133,7 +1136,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOfGraph));
         }
     // Donut Chart (with Subgroup)
     else if (event.GetId() == MyApp::ID_NEW_DONUTCHART_GROUPED)
@@ -1188,7 +1191,50 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOfGraph));
+        }
+    // Roadmap
+    else if (event.GetId() == MyApp::ID_NEW_ROADMAP_GRAPH)
+        {
+        subframe->SetTitle(_(L"Linear Regression Roadmap"));
+        subframe->m_canvas->SetFixedObjectsGridSize(2, 1);
+
+        auto roadmapData = std::make_shared<Data::Dataset>();
+        try
+            {
+            roadmapData->ImportCSV(appDir + L"/datasets/First-Year Osprey.csv",
+                ImportInfo().
+                ContinuousColumns({ L"coefficient" }).
+                CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto roadmap = std::make_shared<LRRoadmap>(subframe->m_canvas);
+        roadmap->SetData(roadmapData, L"factor", L"coefficient",
+            std::nullopt, std::nullopt, std::nullopt, _("GPA"));
+        roadmap->SetCanvasMargins(5, 5, 5, 5);
+        // add the default caption explaining how to read the graph
+        roadmap->AddDefaultCaption();
+        roadmap->GetTitle().SetText(_("First-Year Osprey Roadmap\n"
+            "How do background characteristics and decisions affect First - Year Students' GPA?"));
+        // add a title with a blue banner background and white font
+        roadmap->GetTitle().GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
+        roadmap->GetTitle().SetPadding(5, 5, 5, 5);
+        roadmap->GetTitle().SetFontColor(*wxWHITE);
+        roadmap->GetTitle().SetFontBackgroundColor(ColorBrewer::GetColor(Colors::Color::NavyBlue));
+
+        subframe->m_canvas->SetFixedObject(0, 0, roadmap);
+
+        // add the legend at the bottom (beneath the explanatory caption)
+        auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+        subframe->m_canvas->SetRowProportion(0, 1-subframe->m_canvas->CalcMinHeightProportion(legend));
+        subframe->m_canvas->SetRowProportion(1, subframe->m_canvas->CalcMinHeightProportion(legend));
+        subframe->m_canvas->SetFixedObject(1, 0, legend);
         }
     // W-Curve plot
     else if (event.GetId() == MyApp::ID_NEW_WCURVE)
@@ -1238,7 +1284,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, WCurve);
         subframe->m_canvas->SetFixedObject(0, 1,
-            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
+            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false));
         }
     // Likert (3-Point)
     else if (event.GetId() == MyApp::ID_NEW_LIKERT_3POINT)
@@ -1361,7 +1407,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(0, 1,
-            likertChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+            likertChart->CreateLegend(LegendCanvasPlacementHint::RightOfGraph));
         }
     // Multiple plots
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT)
@@ -1677,6 +1723,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
         _(L"W-Curve Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize),
+        _(L"Linear Regression Roadmap"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

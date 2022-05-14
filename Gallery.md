@@ -72,6 +72,14 @@ Social Sciences
 | :-------------- |
 | ![](docs/doxygen/images/WCurve.svg) |
 
+| Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
+| :-------------- |
+| ![](docs/doxygen/images/LRRoadmapFirstYear.svg) |
+
+| Linear Regression Roadmap (Wisteria::Graphs::LRRoadmap) |
+| :-------------- |
+| ![](docs/doxygen/images/LRRoadmapFirstYearNegative.svg) |
+
 Multi-plot Layouts
 -----------------------------
 
