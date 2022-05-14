@@ -78,24 +78,16 @@ TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set warnings and optimizations (will propagate to the demo project also)
 IF(MSVC)
-    IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        # /Zc:__cplusplus tells MSVC to set the C++ version to what we are
-        # actually compiling as. The default behavior in MSVC is to say that the
-        # C++ version is 98 always (for compatability reasons).
+    # /Zc:__cplusplus tells MSVC to set the C++ version what we are
+    # actually compiling as. The default behavior in MSVC is to say that the
+    # C++ version is 98 always (for compatibility reasons).
 
-        # Turns off C6211 warning: leaking memory due to an exception.
-        # wxWidgets uses heap-based objects for most everything, and MVSC complains
-        # about not wrapping all of this logic in try blocks.
-        TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /W3 /WX /Od /wd6211)
-    ELSE()
-        TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /W3 /WX /O2 /wd6211)
-    ENDIF()
+    # /wd6211 turns off C6211 warning: leaking memory due to an exception.
+    # wxWidgets uses heap-based objects for most everything, and MVSC complains
+    # about not wrapping all of this logic in try blocks.
+    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /W3 /WX /wd6211 $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 ELSE()
-    IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic -Og)
-    ELSE()
-        TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic -O2)
-    ENDIF()
+    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
 
 # Build the demo
