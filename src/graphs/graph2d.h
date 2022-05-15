@@ -286,6 +286,7 @@ namespace Wisteria::Graphs
         /// @returns The image drawn across all bars/boxes.
         [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
             { return m_commonBoxImage; }
+        /// @returns The color used to outline images used for bars/boxes.
         [[nodiscard]] wxColour GetImageOulineColor() const noexcept
             { return m_imageOutlineColor; }
         /** @brief Updates the settings for a legend based on the provided hints.

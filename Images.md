@@ -1,22 +1,21 @@
 Images
 =============================
 
-An image that can be placed on a graph. For example, the main place these are used
-are as canvases' backgrounds and watermarks.
+Wisteria supports using @c wxBitmapBundles for displaying images. Images can be used for
+canvases' backgrounds and watermarks, bar charts' bars, stipple brushes, etc.
 
-Also includes image loading and effect functions. For example,
-`LoadFile()` will load a JPEG and adjust its orientation (if necessary).
+Also, the class @c Wisteria::GraphItems::Image provides additional image loading and effect functions.
+For example, `LoadFile()` will load a JPEG and adjust its orientation (if necessary).
 
 Other features include creating silhouettes, drawing a glassy effect,
 filling an area with a stipple bitmap, stitching multiple images together,
 changing pixel colors, changing the opacity, etc.
 
-Loading an Image
+Loading and Creating Images
 =============================
 
-A @c Wisteria::GraphItems::Image can be created from an existing `wxImage`, a filepath, or from the various
-image creation functions in this class. For example, the following shows how to load
-multiple images at one time, piece them together, and then use the results as a canvas background:
+The following shows how to load
+multiple images at once, piece them together, and then use the results as a canvas background:
 
 ```cpp
 // set the background from multiple images
@@ -46,7 +45,7 @@ For most purposes, the framework will rescale an image to the appropriate size. 
 canvas background images will be resized to fit the canvas (while maintaining its aspect ratio).
 Likewise, watermarks will be scaled down to 100x100 pixel images in the corner of a canvas.
 
-If you are designing your own plot and plan to use image objects in it, then the functions `SetBestSize()`,
+If you are designing your own plot and plan to use `Image` objects in it, then the functions `SetBestSize()`,
 `SetWidth()`, and `SetHeight()` are available for setting the dimensions of an image. Note that when the
 image is drawn, these dimensions are adjusted by the image's scaling. If you wish for the image's
 dimensions to stay the same, then keep its scaling at 1, instead of setting it to its parent's scaling.

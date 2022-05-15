@@ -138,7 +138,7 @@ namespace Wisteria::GraphItems
                 (can be either the extension or full file path).
                 If a full filepath is used, then this will be returned as just the extension.
             @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @c ext to further
-                eview the file type.*/
+                review the file type.*/
         [[nodiscard]] static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
             @param filePath The filepath of the image to load.
