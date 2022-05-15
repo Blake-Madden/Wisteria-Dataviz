@@ -29,6 +29,64 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------
+    wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect)
+        {
+        wxImage scaledCommonImg;
+        if (img.IsOk() &&
+            img.GetWidth() >= rect.GetSize().GetWidth() &&
+            img.GetHeight() >= rect.GetSize().GetHeight())
+            {
+            const auto heightRatio = safe_divide<double>(
+                img.GetHeight(),
+                rect.GetSize().GetHeight());
+            const auto weightRatio = safe_divide<double>(
+                img.GetWidth(),
+                rect.GetSize().GetWidth());
+            // height is proportionally larger, so fit by width and then crop
+            // the height evenly on the top and bottom
+            if (heightRatio >= weightRatio)
+                {
+                const auto scaledHeight = geometry::calculate_rescale_height(
+                    std::make_pair(img.GetWidth(),
+                                   img.GetHeight()),
+                    rect.GetSize().GetWidth());
+                scaledCommonImg = img.Scale(rect.GetSize().GetWidth(), scaledHeight);
+
+                const auto crop = scaledCommonImg.GetHeight() -
+                    rect.GetSize().GetHeight();
+                scaledCommonImg = scaledCommonImg.GetSubImage(
+                    wxRect(wxPoint(0, std::floor(safe_divide<double>(crop, 2))),
+                           rect.GetSize()));
+                wxASSERT_MSG((scaledCommonImg.GetSize().GetHeight() >=
+                    rect.GetSize().GetHeight()),
+                    wxString::Format(L"Common image not scaled height-wise large enough! %d vs %d",
+                        scaledCommonImg.GetSize().GetHeight(),
+                        rect.GetSize().GetHeight()));
+                }
+            else
+                {
+                const auto scaledWidth = geometry::calculate_rescale_width(
+                    std::make_pair(img.GetWidth(),
+                                   img.GetHeight()),
+                    rect.GetSize().GetHeight());
+                scaledCommonImg = img.Scale(scaledWidth, rect.GetSize().GetHeight());
+
+                const auto crop = scaledCommonImg.GetWidth() -
+                                  rect.GetSize().GetWidth();
+                scaledCommonImg = scaledCommonImg.GetSubImage(
+                    wxRect(wxPoint(std::floor(safe_divide<double>(crop, 2)), 0),
+                           rect.GetSize()));
+                wxASSERT_MSG((scaledCommonImg.GetSize().GetWidth() >=
+                              rect.GetSize().GetWidth()),
+                             wxString::Format(L"Common image not scaled width-wise large enough! %d vs %d",
+                                              scaledCommonImg.GetSize().GetWidth(),
+                                              rect.GetSize().GetWidth()));
+                }
+            }
+        return scaledCommonImg;
+        }
+
+    //----------------------------------------------------------
     wxImage Image::StitchHorizontally(const std::initializer_list<wxImage>& images)
         {
         if (images.size() == 0)

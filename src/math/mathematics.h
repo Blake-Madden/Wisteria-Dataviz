@@ -525,8 +525,9 @@ namespace geometry
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 &&
                               boundingSize.first >= 0 && boundingSize.second >= 0) &&
                              "size value cannot be negative");
+        // passing in negative trash, only thing to really do is return 0
         if (size.first < 0 || size.second < 0 || boundingSize.first < 0 || boundingSize.second < 0)
-            { return std::make_pair(0,0); }//passing in negative trash, only thing to really do is return 0
+            { return std::make_pair(0, 0); }
         // if size fits inside of new size, then no need to downscale
         if (size.first <= boundingSize.first && size.second <= boundingSize.second)
             { return size; }
@@ -574,7 +575,7 @@ namespace geometry
                              "size value cannot be negative");
         // passing in negative trash, only thing to really do is return 0
         if (size.first < 0 || size.second < 0 || boundingSize.first < 0 || boundingSize.second < 0)
-            { return std::make_pair(0,0); }
+            { return std::make_pair(0, 0); }
         // if size fits outside of new size, then no need to upscale
         if (size.first >= boundingSize.first && size.second >= boundingSize.second)
             { return size; }

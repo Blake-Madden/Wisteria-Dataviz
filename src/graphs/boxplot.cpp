@@ -296,6 +296,13 @@ namespace Wisteria::Graphs
             return;
             }
 
+        // scale the common image to the plot area's size
+        wxImage scaledCommonImg = GetCommonBoxImage().IsOk() ?
+            Image::CropImageToRect(
+                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
+                GetPlotAreaBoundingBox()) :
+            wxNullImage;
+
         // draw the boxes
         for (auto& box : m_boxes)
             {
@@ -369,13 +376,15 @@ namespace Wisteria::Graphs
                             wxNumberFormatter::ToString(box.GetLowerControlLimit(),
                                 3, Settings::GetDefaultNumberFormat()));
                 // draw the box
-                if (box.GetBoxEffect() == BoxEffect::CommonImage && GetCommonBoxImage().IsOk())
+                if (box.GetBoxEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                     {
+                    auto boxRectAdjustedToPlotArea = box.m_boxRect;
+                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
+                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(m_imageOutlineColor).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
-                        GetCommonBoxImage().GetBitmap(
-                            GetCommonBoxImage().GetDefaultSize()).ConvertToImage().GetSubImage(box.m_boxRect));
+                        scaledCommonImg.GetSubImage(boxRectAdjustedToPlotArea));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);

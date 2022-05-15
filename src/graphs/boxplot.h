@@ -382,7 +382,9 @@ namespace Wisteria::Graphs
         /// @brief Sets a common image to be drawn just within the box areas.
         /// @param boxesImage The image to draw across the boxes.
         /// @param outlineColor The outline color of the boxes.
-        /// @note This effect will only apply to bars using the @c CommonImage effect. 
+        /// @note This effect will only apply to bars using the @c CommonImage effect.\n
+        ///     Also, if the image is smaller than the plot area, then it will not be used
+        ///     and the boxes will fall back to using a solid color.
         void SetCommonBoxImage(const wxBitmapBundle& boxesImage,
                                const wxColour& outlineColor) noexcept
             {

@@ -176,7 +176,7 @@ namespace Wisteria::Graphs
         class BarBlock; // forward declare
         /// @brief Helper class for constructing a BarBlock.
         /// @details This class can chain parameters together and then be passed
-        ///  to a BarBlock constructor.
+        ///    to a BarBlock constructor.
         class BarBlockInfo
             {
             friend class BarBlock;
@@ -197,12 +197,12 @@ namespace Wisteria::Graphs
                 }
             /// @brief Sets the block's background color.
             /// @details This is invalid and not used by default, as the brush is what
-            ///  is normally used. However, if this set to a valid color, then that
-            ///  color will be filled in first, and then the brush will be painted
-            ///  on top. This is useful if the brush is a pattern (e.g., hatch),
-            ///  rather than a solid color.
+            ///    is normally used. However, if this set to a valid color, then that
+            ///    color will be filled in first, and then the brush will be painted
+            ///    on top. This is useful if the brush is a pattern (e.g., hatch),
+            ///    rather than a solid color.
             /// @note This is only used if the bar block's painting effect is solid.
-            ///  In other works, this color is ignored for fades, glossy effects, stipples, etc.
+            ///    In other works, this color is ignored for fades, glossy effects, stipples, etc.
             /// @param color The background color of the block.
             /// @returns A self reference.
             BarBlockInfo& Color(const wxColour color)
@@ -213,7 +213,7 @@ namespace Wisteria::Graphs
             /// @brief Explicitly sets the outline of the bar block.
             /// @param pen The pen to use for outlining.
             /// @note If this is not set, then the parent bar chart will deduce the
-            ///  best outline color.
+            ///    best outline color.
             /// @returns A self reference.
             BarBlockInfo& OutlinePen(const wxPen pen)
                 {
@@ -274,7 +274,7 @@ namespace Wisteria::Graphs
 
         /// @brief The smaller sections of a bar.
         /// @details Multiple blocks are stacked to make the final bar
-        ///  show grouping inside of the bar.
+        ///    show grouping inside of the bar.
         class BarBlock
             {
         public:
@@ -298,12 +298,12 @@ namespace Wisteria::Graphs
                 { return m_outlinePen; }
             /// @returns The block's background color.
             /// @details This is invalid and not used by default, as the brush is what
-            ///  is normally used. However, if this set to a valid color, then that
-            ///  color will be filled in first, and then the brush will be painted
-            ///  on top. This is useful if the brush is a pattern (e.g., hatch),
-            ///  rather than a solid color.
+            ///    is normally used. However, if this set to a valid color, then that
+            ///    color will be filled in first, and then the brush will be painted
+            ///    on top. This is useful if the brush is a pattern (e.g., hatch),
+            ///    rather than a solid color.
             /// @note This is only used if the bar block's painting effect is solid.
-            ///  In other works, this color is ignored for fades, glossy effects, stipples, etc.
+            ///    In other works, this color is ignored for fades, glossy effects, stipples, etc.
             [[nodiscard]] const wxColour& GetColor() const noexcept
                 { return m_color; }
             /// @returns A lightened variation of the block color.
@@ -327,13 +327,13 @@ namespace Wisteria::Graphs
                 { return m_selectionLabel; }
             /// @brief Whether the block is being drawn.
             /// @details Set to `false` to treat the block like a placeholder
-            ///  in the parent bar.
+            ///    in the parent bar.
             /// @returns `true` if being displayed.
             [[nodiscard]] bool IsShown() const noexcept
                 { return m_show; }
             /// @brief Sets whether the block is being drawn.
             /// @param show Set to `false` to treat the block like a placeholder
-            ///  in the parent bar.
+            ///    in the parent bar.
             void Show(const bool show) noexcept
                 { m_show = show; }
             /// @returns The user-defined tag.
@@ -344,17 +344,17 @@ namespace Wisteria::Graphs
                 { return m_length; }
             /// @brief Sets the custom width of the block.
             /// @details This will be used first when drawing the block.
-            ///  If invalid, then the parent bar's custom width will be used.
-            ///  If that is invalid, then bars and blocks will have their widths
-            ///  calculated by the plot (the default).
+            ///    If invalid, then the parent bar's custom width will be used.
+            ///    If that is invalid, then bars and blocks will have their widths
+            ///    calculated by the plot (the default).
             /// @param width The width of the block (in terms of units along the bar axis).
-            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the
-            ///  block will consume 25% of the width of the axis
-            ///  (regardless of how wide the other bars are).
+            ///    For example, if the bar axis range is 0-100 and you set 25 here, then the
+            ///    block will consume 25% of the width of the axis
+            ///    (regardless of how wide the other bars are).
             /// @note You can mix and match custom-width at the bar and bar block levels,
-            ///  although that normally wouldn't be recommend.
-            ///  Prefer just setting custom widths at the bar level,
-            ///  unless you have a special need.
+            ///    although that normally wouldn't be recommend.\n
+            ///    Prefer just setting custom widths at the bar level,
+            ///    unless you have a special need.
             void SetCustomWidth(const std::optional<double> width) noexcept
                 {
                 m_customWidth = width;
@@ -369,13 +369,13 @@ namespace Wisteria::Graphs
         private:
             /// @brief The brush (color and pattern) of the block.
             /// @note The bar block's opacity will override the parent bar's opacity
-            ///  if different from the default (i.e., fully opaque).
+            ///    if different from the default (i.e., fully opaque).
             wxBrush m_brush{ *wxGREEN_BRUSH };
             /// @brief Explicitly sets the outline of the block. Normally, the
-            ///  parent chart will determine the best outline color.
+            ///    parent chart will determine the best outline color.
             wxPen m_outlinePen{ wxNullPen };
             /// @brief An optional background color to use in conjunction with the brush.
-            ///  Will be invalid by default, so that the brush is what is used exclusively.
+            ///    Will be invalid by default, so that the brush is what is used exclusively.
             wxColour m_color;
             /// The length of the block (i.e., how much of the scaling axis the block consumes).
             double m_length{ 0 };
@@ -477,7 +477,7 @@ namespace Wisteria::Graphs
                 { return m_axisLabel; }
 
             /// @brief Gets/sets the label shown on top (or to the right) of the bar
-            ///  (useful for showing the item count in the bar, for example).
+            ///    (useful for showing the item count in the bar, for example).
             /// @returns The bar label.
             [[nodiscard]] Wisteria::GraphItems::Label& GetLabel() noexcept
                 { return m_barLabel; }
@@ -489,19 +489,19 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @brief The length/height of the bar along the scaling axis
-            ///  (i.e., how tall or long the bar is).
+            ///    (i.e., how tall or long the bar is).
             /// @note This is the summation of the lengths of all blocks (i.e., groups) in the bar.
-            ///  Control of the bar's length is done through the constituent blocks in the bar.
+            ///    Control of the bar's length is done through the constituent blocks in the bar.
             /// @returns The bar's length along the scaling axis.
             [[nodiscard]] double GetLength() const noexcept
                 { return m_length; }
 
             /// @brief Sets the custom width of the bar.
             /// @param width The width of the bar (in terms of units along the bar axis).
-            ///  For example, if the bar axis range is 0-100 and you set 25 here, then the bar will
-            ///  consume 25% of the width of the axis (regardless of how wide the other bars are).
+            ///    For example, if the bar axis range is 0-100 and you set 25 here, then the bar will
+            ///    consume 25% of the width of the axis (regardless of how wide the other bars are).
             /// @note You can mix and match custom-width and auto-fitted bars in the same barchart;
-            ///  just don't set the custom width for bars that you wish to be auto-fitted.
+            ///    just don't set the custom width for bars that you wish to be auto-fitted.
             void SetCustomWidth(const std::optional<double> width) noexcept
                 {
                 m_customWidth = width;
@@ -633,8 +633,8 @@ namespace Wisteria::Graphs
         void AddBar(Bar bar, const bool adjustScalingAxis = true);
         /// @brief Removes all bars from the chart.
         /// @param resetAxes `true` to reset axes. `true` is recommended if you will be adding
-        ///  new bars and want the chart to adjust the axes as you add them. `false` is
-        ///  recommended only if you are manually setting the axes prior to adding new bars.
+        ///    new bars and want the chart to adjust the axes as you add them. `false` is
+        ///    recommended only if you are manually setting the axes prior to adding new bars.
         void ClearBars(const bool resetAxes = true)
             {
             m_bars.clear();
@@ -677,9 +677,9 @@ namespace Wisteria::Graphs
             }
         /// @returns Direct access to the bars.
         /// @note If changing the length of the bar directly, then you will need
-        ///  to adjust the scaling axis as well.
-        ///  If changing the axis position of the bar, then the bar axis may also
-        ///  need to be changed manually.
+        ///    to adjust the scaling axis as well.\n
+        ///    If changing the axis position of the bar, then the bar axis may also
+        ///    need to be changed manually.
         [[nodiscard]] std::vector<Bar>& GetBars() noexcept
             { return m_bars; }
         /// @returns Direct (const) access to the bars.
@@ -692,28 +692,28 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns The axis with the scaling, which is the axis perpendicular
-        ///  to the axis with the bars on it.
+        ///    to the axis with the bars on it.
         [[nodiscard]] Wisteria::GraphItems::Axis& GetScalingAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
         /// @returns The axis with the scaling, which is the axis perpendicular
-        ///  to the axis with the bars on it.
+        ///    to the axis with the bars on it.
         [[nodiscard]] const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
         /// @returns The axis with the scaling (opposite side),
-        ///  which is the axis perpendicular to the axis with the bars on it.
+        ///    which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] Wisteria::GraphItems::Axis& GetReverseScalingAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetRightYAxis() : GetTopXAxis();
             }
         /// @returns The axis with the scaling (opposite side),
-        ///  which is the axis perpendicular to the axis with the bars on it.
+        ///    which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] const Wisteria::GraphItems::Axis& GetReverseScalingAxis() const noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
@@ -732,7 +732,7 @@ namespace Wisteria::Graphs
                 GetBottomXAxis() : GetLeftYAxis();
             }
         /// @returns Whether the bars are laid out vertically or
-        ///  horizontally across the plot.
+        ///    horizontally across the plot.
         [[nodiscard]] Orientation GetBarOrientation() const noexcept
             { return m_barOrientation; }
         /// @brief Sets whether the bars are laid out vertically or horizontally across the plot.
@@ -748,8 +748,8 @@ namespace Wisteria::Graphs
         /// @brief Sorts the bars (based on bar size or axis label).
         /// @param sortMethod How to sort the bars.
         /// @param direction SortAscending to sort smallest-to-largest (A-Z),
-        ///  going top-to-bottom or left-to-right.
-        ///  SortDescending to sort largest-to-smallest (A-Z).
+        ///    going top-to-bottom or left-to-right.
+        ///    SortDescending to sort largest-to-smallest (A-Z).
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
         /// @returns `true` if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept
@@ -762,12 +762,12 @@ namespace Wisteria::Graphs
         void SetSortDirection(const SortDirection direction) noexcept
             { m_sortDirection = direction; }
         /// @brief Sets the bar axis so that it can be sorted
-        ///  (based on bar size or axis label).
+        ///    (based on bar size or axis label).
         /// @param sortable Whether the bars should be sortable.
         /// @note This needs to turn off bar axis reversal and only use
-        ///  custom labels on the bar axis.
-        ///  When sorting the bars, it only makes sense if the bars are
-        ///  categories/observations with text labels.
+        ///    custom labels on the bar axis.\n
+        ///    When sorting the bars, it only makes sense if the bars are
+        ///    categories/observations with text labels.
         void SetSortable(const bool sortable)
             {
             m_isSortable = sortable;
@@ -801,7 +801,9 @@ namespace Wisteria::Graphs
         /// @brief Sets a common image to be drawn just within the bar areas.
         /// @param barsImage The image to draw across the bars.
         /// @param outlineColor The outline color of the bars.
-        /// @note This effect will only apply to bars using the @c CommonImage effect. 
+        /// @note This effect will only apply to bars using the @c CommonImage effect.\n
+        ///     Also, if the image is smaller than the plot area, then it will not be used
+        ///     and the bars will fall back to using a solid color.
         void SetCommonBarImage(const wxBitmapBundle& barsImage,
                                const wxColour& outlineColor) noexcept
             {
@@ -817,29 +819,29 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The maximum number of bars displayed before the parent canvas is forced
-        ///  to be made taller (which will make this chart easier to read).
+        ///    to be made taller (which will make this chart easier to read).
         [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
             { return m_barsPerDefaultCanvasSize; }
         /** @brief Sets the maximum number of bars displayed before the parent canvas
-             is forced to be made taller.
+                is forced to be made taller.
             @param barsPerDefaultCanvasSize The number bars to display before requiring
-             the canvas to be made taller.*/
+                the canvas to be made taller.*/
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
     protected:
         /// @returns The image drawn across all bars.
         [[nodiscard]] const wxBitmapBundle& GetCommonBarsImage() const noexcept
             { return m_barsImage; }
         /// @returns The number of slots that can hold a bar.
-        ///  This is used for calculating the width of the bars.
-        ///  Using the number of bars to calculate the widths may be inaccurate if
-        ///  there are missing bars along the bar axis, so this (by default) will use
-        ///  the number of axis labels that would appear under each place that a bar would go.
-        ///  (Note that the outer labels are not counted, just the labels under the bars.)
+        ///    This is used for calculating the width of the bars.
+        ///    Using the number of bars to calculate the widths may be inaccurate if
+        ///    there are missing bars along the bar axis, so this (by default) will use
+        ///    the number of axis labels that would appear under each place that a bar would go.\n
+        ///    (Note that the outer labels are not counted, just the labels under the bars.)
         /// @note The default behaviour assumes that labels are appearing beneath the middle of
-        ///  each bar (instead of cutpoints, like in histograms), so override this if relying
-        ///  on bar axis labels won't work.
-        ///  This should be overridden if bar axis labelling is being done in a different way,
-        ///  or if bars are being stacked on top of each other or other interesting situations.
+        ///    each bar (instead of cutpoints, like in histograms), so override this if relying
+        ///    on bar axis labels won't work.\n
+        ///    This should be overridden if bar axis labelling is being done in a different way,
+        ///    or if bars are being stacked on top of each other or other interesting situations.
         [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
             { return GetBarAxis().GetAxisPoints().size()-2; }
         /// @brief Recalculates the layout of the elements on the plot.
@@ -850,8 +852,8 @@ namespace Wisteria::Graphs
             @param bar The bar to review.*/
         void UpdateScalingAxisFromBar(const Bar& bar);
         /// @brief Adjusts the parent canvas size based on how many bars there are.
-        ///  The default behaviour is to compare the number of bars to GetBarsPerDefaultCanvasSize(),
-        ///  but you can override this function.
+        ///    The default behaviour is to compare the number of bars to GetBarsPerDefaultCanvasSize(),
+        ///    but you can override this function.
         virtual void UpdateCanvasForBars();
         /** @brief Sets the DPI scaling.
             @param scaling The DPI scaling.*/

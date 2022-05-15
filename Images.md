@@ -14,19 +14,18 @@ changing pixel colors, changing the opacity, etc.
 Loading an Image
 =============================
 
-An `Image` can be created from an existing `wxImage`, a filepath, or from the various
+A @c Wisteria::GraphItems::Image can be created from an existing `wxImage`, a filepath, or from the various
 image creation functions in this class. For example, the following shows how to load
 multiple images at one time, piece them together, and then use the results as a canvas background:
 
 ```cpp
 // set the background from multiple images
 canvas->SetBackgroundImage(
-        Image(
         Image::StitchHorizontally({
             Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG"),
             Image::LoadFile(L"C:\\Pictures\\IMG_0592.JPG"),
             Image::LoadFile(L"C:\\Pictures\\IMG_1288.JPG")
-            }))
+            })
     );
 ```
 
@@ -36,9 +35,8 @@ set as a canvas' watermark:
 ```cpp
 // set the watermark from a silhouette of an image
 canvas->SetWatermarkLogo(
-        Image(
         Image::CreateSilhouette(
-            Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG"))) );
+            Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG")) );
 ```
 
 Adjusting Image Sizes
@@ -50,8 +48,8 @@ Likewise, watermarks will be scaled down to 100x100 pixel images in the corner o
 
 If you are designing your own plot and plan to use image objects in it, then the functions `SetBestSize()`,
 `SetWidth()`, and `SetHeight()` are available for setting the dimensions of an image. Note that when the
-image is drawn, these sizes are adjusted by the image's scaling. If you wish for the image's sizes to stay the same,
-then keep its scaling at 1, instead of setting it to its parent's scaling.
+image is drawn, these dimensions are adjusted by the image's scaling. If you wish for the image's
+dimensions to stay the same, then keep its scaling at 1, instead of setting it to its parent's scaling.
 
 Generally, these sizes are calculated from the area they being drawn on inside of a derived
 `RecalcSizes()` call. For example, an image may be consumed 1/4th of the plot area. In this case, the width

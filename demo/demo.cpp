@@ -861,7 +861,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto plot = std::make_shared<BarChart>(subframe->m_canvas);
 
         // make it a horizontal barchart
-        plot->SetBarOrientation(Orientation::Horizontal);
+        plot->SetBarOrientation(Orientation::Vertical);
 
         plot->SetCommonBarImage(wxBitmapBundle(
             // Photo by ThisisEngineering RAEng on Unsplash
@@ -877,40 +877,31 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             BarChart::BarBlock(BarChart::BarBlockInfo(22).Brush(*wxRED)),
             BarChart::BarBlock(BarChart::BarBlockInfo(72).Brush(barColor))
             },
-            L"", Label(_(L"Bugs")), BoxEffect::CommonImage,
-            // we will make the width of the bar twice as wide as the others
-            // to show how important it is
-            wxALPHA_OPAQUE, 2));
+            L"", Label(_(L"Bugs")), BoxEffect::CommonImage));
 
-        // Note that because the first bar has an unusual width, this will offset
-        // the positions of the following bars. Therefore, we need to place them
-        // at positions like 2.5, 3.5, etc. Normally, they would just go on points like 2 or 3.
-        plot->AddBar(BarChart::Bar(2.5,
+        plot->AddBar(BarChart::Bar(2,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(32).Brush(barColor))
             },
-            L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage,
-            wxALPHA_OPAQUE, 1));
+            L"", Label(_(L"Pending feature requests")), BoxEffect::CommonImage));
 
-        plot->AddBar(BarChart::Bar(3.5,
+        plot->AddBar(BarChart::Bar(3,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(12).Brush(barColor))
             },
-            L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage,
-            wxALPHA_OPAQUE, 1));
+            L"", Label(_(L"Unfinished help topics")), BoxEffect::CommonImage));
 
-        plot->AddBar(BarChart::Bar(4.5,
+        plot->AddBar(BarChart::Bar(4,
             {
             BarChart::BarBlock(BarChart::BarBlockInfo(107).Brush(barColor))
             },
-            L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage,
-            wxALPHA_OPAQUE, 1));
+            L"", Label(_(L"Missing unit tests")), BoxEffect::CommonImage));
 
         // only show the labels on the axis
         plot->GetBarAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         // force the custom labels set at points like 2.5 to be shown
         const auto [rangeStart, rangeEnd] = plot->GetBarAxis().GetRange();
-        plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1, 0.5, 1);
+        plot->GetBarAxis().SetRange(rangeStart, rangeEnd, 1);
 
         plot->GetBarAxis().GetTitle().GetGraphItemInfo().
             Text(L"ISSUES").Padding(5, 10, 0, 0);

@@ -182,6 +182,13 @@ namespace Wisteria::Graphs
         const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
 
+        // scale the common image to the plot area's size
+        wxImage scaledCommonImg = GetCommonBarsImage().IsOk() ?
+            Image::CropImageToRect(
+                GetCommonBarsImage().GetBitmap(GetCommonBarsImage().GetDefaultSize()).ConvertToImage(),
+                GetPlotAreaBoundingBox()) :
+            wxNullImage;
+
         // draw the bars
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
         for (auto& bar : m_bars)
@@ -276,14 +283,16 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage().IsOk())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
-                             auto barImage = std::make_shared<Image>(
+                            auto barRectAdjustedToPlotArea = barRect;
+                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
+                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
+                            auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                 GetCommonBarsImage().GetBitmap(
-                                     GetCommonBarsImage().GetDefaultSize()).ConvertToImage().GetSubImage(barRect));
+                                scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
@@ -600,14 +609,16 @@ namespace Wisteria::Graphs
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
 
-                        if (bar.GetEffect() == BoxEffect::CommonImage && GetCommonBarsImage().IsOk())
+                        if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
+                            auto barRectAdjustedToPlotArea = barRect;
+                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
+                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(m_imageOutlineColor).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                GetCommonBarsImage().GetBitmap(
-                                    GetCommonBarsImage().GetDefaultSize()).ConvertToImage().GetSubImage(barRect));
+                                scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
