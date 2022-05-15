@@ -63,10 +63,10 @@ namespace Wisteria
         Left = West
         };
 
-    /// @brief The type of predictors to included, based on their
-    ///  influence on the dependent variable.
+    /// @brief The type of influence something can have on a subject.
+    /// @details As an example, predictors in a linear regression.
     /// @internal This enum is a bitmap, do not make it strongly typed.
-    enum Predictors
+    enum Influence
         {
         /// @brief IVs with coefficients > 0.
         Positive = 1,
