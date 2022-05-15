@@ -17,8 +17,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Box & Whisker plot, used for displaying the dispersion of data and
-         for detecting outliers.
+    /** @brief Box & Whisker plot, used for displaying data dispersion and outlier detection.
 
          %Data can either be plotted as a single box or split into grouped boxes.
 
@@ -185,14 +184,14 @@ namespace Wisteria::Graphs
 
             /** @brief Sets the data for the box.
                 @details Also sets the percentiles used for the box range (must be between 1 and 49)
-                 This would usually be 25, giving you the standard quartiles range.
+                    This would usually be 25, giving you the standard quartiles range.
                 @param data The data to assign to the box.
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
                 @param groupId The group ID for this box. Data points from @c data will only be used for
-                 his box if their group ID is @c groupId. Has no effect if @c useGrouping if `false`.
+                    his box if their group ID is @c groupId. Has no effect if @c useGrouping if `false`.
                 @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                 The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-                 when formatting it for an error message.*/
+                    The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+                    when formatting it for an error message.*/
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName,
@@ -208,13 +207,13 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns The position on the X axis (on the parent plot) that the box
-            //   is aligned with.
+            //      is aligned with.
             [[nodiscard]] double GetXAxisPosition() const noexcept
                 { return m_xAxisPosition; }
             /** @brief Sets where the box should be aligned on the X axis.
                 @param position The position on the X axis to place the box.
                 @note The parent box plot will manage this value, you do not need to call
-                 them when creating a box.*/
+                    them when creating a box.*/
             void SetXAxisPosition(const double position) noexcept
                 { m_xAxisPosition = position; }
             /// @}
@@ -258,26 +257,25 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points.
-             Leave as null to use a light blue (recycled for all groups).
-            @param shapes The shape scheme to use for the points.
-             Leave as null to use the standard shapes.*/
+            @param colors The color scheme to apply to the points.\n
+                Leave as null to use a light blue (recycled for all groups).
+            @param shapes The shape scheme to use for the points.\n
+                Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<IconShapeScheme> shapes = nullptr);
 
         /** @brief Sets the data.
             @details Also sets the percentiles used for the box range (must be between 1 and 49)
-             This would usually be 25, giving you the standard quartiles range.
-
-             If multiple groups are found in the data's grouping column, then separate boxes will
-             be created for each group.
+                This would usually be 25, giving you the standard quartiles range.\n
+                If multiple groups are found in the data's grouping column, then separate boxes will
+                be created for each group.
             @param data The data to use for the plot.
             @param continuousColumnName The column from the dataset to analyze.
             @param groupColumnName The group column to split the data into (this is optional).
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+                when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& continuousColumnName,
                      std::optional<const wxString> groupColumnName = std::nullopt);
@@ -326,12 +324,11 @@ namespace Wisteria::Graphs
         /** @brief Builds and returns a legend for single-box plots, showing the various statistics.
              @details This can be then be managed by the parent canvas and placed next to the plot.
              @param hint A hint about where the legend will be placed after construction. This is used
-              for defining the legend's padding, outlining, canvas proportions, etc.
+                for defining the legend's padding, outlining, canvas proportions, etc.
              @returns The legend for the plot.
              @sa IncludedOverlayingLegend().
-             @note By default, this legend will be created and laid on top of the plot if a single box plot.
-
-              For multi-group plots, null will be returned.*/
+             @note By default, this legend will be created and laid on top of the plot if a single box plot.\n
+                For multi-group plots, null will be returned.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint);
         /// @}
@@ -339,8 +336,8 @@ namespace Wisteria::Graphs
         /// @name Box Effect Functions
         /// @brief Functions relating to the effects used to draw the boxes.
         /// @note Use the color and shape schemes in the constructor to control the color
-        ///  and shapes of the boxes and its points. GetBox() can also be used after a call to
-        ///  SetData() to customize the appearance of a box.
+        ///     and shapes of the boxes and its points. GetBox() can also be used after a call to
+        ///     SetData() to customize the appearance of a box.
         /// @{
 
         /// @returns The opacity (how opaque or translucent) the box is.
@@ -377,19 +374,6 @@ namespace Wisteria::Graphs
             for (auto& box : m_boxes)
                 { box.SetBoxColor(color); }
             m_boxColour = color;
-            }
-
-        /// @brief Sets a common image to be drawn just within the box areas.
-        /// @param boxesImage The image to draw across the boxes.
-        /// @param outlineColor The outline color of the boxes.
-        /// @note This effect will only apply to bars using the @c CommonImage effect.\n
-        ///     Also, if the image is smaller than the plot area, then it will not be used
-        ///     and the boxes will fall back to using a solid color.
-        void SetCommonBoxImage(const wxBitmapBundle& boxesImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_boxesImage = boxesImage;
-            m_imageOutlineColor = outlineColor;
             }
 
         /// @returns How the corners of the boxes are drawn.
@@ -443,22 +427,12 @@ namespace Wisteria::Graphs
         /// @private
         [[nodiscard]] const BoxAndWhisker& GetBox(const size_t index) const
             { return m_boxes[index]; }
-        /// @private
-        void SetCommonBoxImage(wxBitmapBundle&& boxesImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_boxesImage = std::move(boxesImage);
-            m_imageOutlineColor = outlineColor;
-            }
     private:
-        /// @returns The image drawn across all bars.
-        [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
-            { return m_boxesImage; }
         /** @brief Adds a box to the plot.
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom X axis
-             (even if a custom label is provided for where the box is). To override this,
-             call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
+                (even if a custom label is provided for where the box is). To override this,
+                call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes(wxDC& dc) final;
 
@@ -477,8 +451,6 @@ namespace Wisteria::Graphs
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };
         bool m_showAllPoints{ false };
-        wxBitmapBundle m_boxesImage;
-        wxColour m_imageOutlineColor{ *wxBLACK };
         };
     }
 

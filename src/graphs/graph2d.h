@@ -189,6 +189,21 @@ namespace Wisteria::Graphs
             return (m_bgColor.IsOk() && m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
                 m_bgColor : GetCanvas()->GetBackgroundColor();
             }
+
+        /// @brief Sets a common image to be drawn just within the bars' (or boxes') areas.
+        /// @details This only applies to graphs which use boxes to visualized data
+        ///     (e.g., bar charts, box plots).
+        /// @param boxImage The image to draw across the bars/boxes.
+        /// @param outlineColor The outline color of the bars/boxes.
+        /// @note This effect will only apply to bars/boxes using the @c CommonImage effect.\n
+        ///     If the image is smaller than the plot area, then it will not be used
+        ///     and the bars/boxes will fall back to using a solid color.
+        void SetCommonBoxImage(const wxBitmapBundle& boxImage,
+                               const wxColour& outlineColor) noexcept
+            {
+            m_commonBoxImage = boxImage;
+            m_imageOutlineColor = outlineColor;
+            }
         /// @}
 
         /** @name Property Functions
@@ -218,6 +233,13 @@ namespace Wisteria::Graphs
 
         // Just hiding these from Doxygen. If these are included inside of groupings,
         // then the "private" tag will break the group in the generated help.
+        /// @private
+        void SetCommonBoxImage(wxBitmapBundle&& boxImage,
+                               const wxColour& outlineColor) noexcept
+            {
+            m_commonBoxImage = std::move(boxImage);
+            m_imageOutlineColor = outlineColor;
+            }
         /// @private
         void SetStippleBrush(wxBitmapBundle&& image) noexcept
             { m_stipple = std::move(image); }
@@ -261,6 +283,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] const Wisteria::Canvas* GetCanvas() const noexcept
             { return m_parentCanvas; }
     protected:
+        /// @returns The image drawn across all bars/boxes.
+        [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
+            { return m_commonBoxImage; }
+        [[nodiscard]] wxColour GetImageOulineColor() const noexcept
+            { return m_imageOutlineColor; }
         /** @brief Updates the settings for a legend based on the provided hints.
              This should be called on a legend after it is constructed by
              a derived graph type.
@@ -453,6 +480,9 @@ namespace Wisteria::Graphs
 
         // not used by default, keep invalid
         wxColour m_bgColor;
+
+        wxBitmapBundle m_commonBoxImage;
+        wxColour m_imageOutlineColor{ *wxBLACK };
 
         Wisteria::Canvas* m_parentCanvas{ nullptr };
         Wisteria::GraphItems::Axis m_bottomXAxis{ AxisType::BottomXAxis };

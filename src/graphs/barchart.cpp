@@ -183,9 +183,9 @@ namespace Wisteria::Graphs
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
 
         // scale the common image to the plot area's size
-        wxImage scaledCommonImg = GetCommonBarsImage().IsOk() ?
+        wxImage scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
-                GetCommonBarsImage().GetBitmap(GetCommonBarsImage().GetDefaultSize()).ConvertToImage(),
+                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
                 GetPlotAreaBoundingBox()) :
             wxNullImage;
 
@@ -290,7 +290,7 @@ namespace Wisteria::Graphs
                             barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(m_imageOutlineColor).
+                                Pen(GetImageOulineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
@@ -616,7 +616,7 @@ namespace Wisteria::Graphs
                             barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(m_imageOutlineColor).
+                                Pen(GetImageOulineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
@@ -872,7 +872,7 @@ namespace Wisteria::Graphs
             }
 
         // draw the decals on top of the blocks
-        for (auto decal : decals)
+        for (auto& decal : decals)
             { AddObject(decal); }
 
         // draw the bar labels

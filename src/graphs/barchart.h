@@ -798,26 +798,6 @@ namespace Wisteria::Graphs
             { m_includeBarLabels = includeLabels; }
         /// @}
 
-        /// @brief Sets a common image to be drawn just within the bar areas.
-        /// @param barsImage The image to draw across the bars.
-        /// @param outlineColor The outline color of the bars.
-        /// @note This effect will only apply to bars using the @c CommonImage effect.\n
-        ///     Also, if the image is smaller than the plot area, then it will not be used
-        ///     and the bars will fall back to using a solid color.
-        void SetCommonBarImage(const wxBitmapBundle& barsImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_barsImage = barsImage;
-            m_imageOutlineColor = outlineColor;
-            }
-        /// @private
-        void SetCommonBarImage(wxBitmapBundle&& barsImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_barsImage = std::move(barsImage);
-            m_imageOutlineColor = outlineColor;
-            }
-
         /// @returns The maximum number of bars displayed before the parent canvas is forced
         ///    to be made taller (which will make this chart easier to read).
         [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
@@ -828,9 +808,6 @@ namespace Wisteria::Graphs
                 the canvas to be made taller.*/
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
     protected:
-        /// @returns The image drawn across all bars.
-        [[nodiscard]] const wxBitmapBundle& GetCommonBarsImage() const noexcept
-            { return m_barsImage; }
         /// @returns The number of slots that can hold a bar.
         ///    This is used for calculating the width of the bars.
         ///    Using the number of bars to calculate the widths may be inaccurate if
@@ -879,8 +856,6 @@ namespace Wisteria::Graphs
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
         size_t m_barsPerDefaultCanvasSize{ 500 };
         Orientation m_barOrientation{ Orientation::Vertical };
-        wxBitmapBundle m_barsImage;
-        wxColour m_imageOutlineColor{ *wxBLACK };
         };
     }
 

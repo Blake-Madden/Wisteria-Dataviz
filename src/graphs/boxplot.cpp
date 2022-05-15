@@ -382,7 +382,7 @@ namespace Wisteria::Graphs
                     boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
                     boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
                     auto boxImage = std::make_shared<Image>(
-                        GraphItemInfo(boxLabel).Pen(m_imageOutlineColor).
+                        GraphItemInfo(boxLabel).Pen(GetImageOulineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
                         scaledCommonImg.GetSubImage(boxRectAdjustedToPlotArea));
                     boxImage->SetOpacity(box.GetOpacity());

@@ -121,7 +121,7 @@ namespace Wisteria::GraphItems
 
         /** @brief Gets the default size of an SVG file.
             @details This is useful for determining the aspect ratio of an SVG file.
-                This can be passed to a `wxBitmapBundle` when it loads an SVG.
+                This can be passed to a @c wxBitmapBundle when it loads an SVG.
             @param filePath The file path to the SVG file.
             @returns The default size of the SVG. Will be an invalid size if the
                 file fails to load.*/
@@ -147,9 +147,10 @@ namespace Wisteria::GraphItems
             @returns The image loaded from @c filePath.*/
         [[nodiscard]] static wxImage LoadFile(const wxString& filePath);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
-            @details For example, if the height of the image is close to the rect's, then its height
-                will be scaled to the rect's height (while maintaining the aspect ratio).
-                Then, it will be centered horizontally and cropped evenly on each side.
+            @details For example, if the height of the image is closer to the rect's than
+                the width are, then its height will be scaled to the rect's height
+                (while maintaining the aspect ratio). Then, it will be centered horizontally
+                and cropped evenly on each side.
             @param img The image to fit.
             @param rect The rect to crop the image to.
             @returns The cropped image.*/
@@ -276,8 +277,8 @@ namespace Wisteria::GraphItems
             @sa SetAnchoring().*/
         [[nodiscard]] const wxSize& GetFrameSize() const noexcept
             { return m_frameSize; }
-        /** @brief Draws the image onto the given wxDC.
-            @param dc The wxDC to render onto.
+        /** @brief Draws the image onto the given DC.
+            @param dc The DC to render onto.
             @returns The box that the image is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
