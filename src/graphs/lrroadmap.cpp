@@ -53,12 +53,18 @@ namespace Wisteria::Graphs
                 pValueColumnName.value()).ToUTF8());
             }
 
-        auto cRange = std::minmax_element(coefficientColumn->GetValues().cbegin(),
+        auto maxVal = std::max_element(coefficientColumn->GetValues().cbegin(),
             coefficientColumn->GetValues().cend(),
             [](auto lh, auto rh)
             { return std::abs(lh) < std::abs(rh); });
-        GetValuesRange().first = std::abs(*cRange.first);
-        GetValuesRange().second = std::abs(*cRange.second);
+        // set the baseline (i.e., middle of the road) to zero since
+        // that would be no correlation
+        GetMagnitudeRange().first = 0;
+        GetMagnitudeRange().second = std::abs(*maxVal);
+        // if no valid coefficients then quit 
+        if (std::isnan(GetMagnitudeRange().first) ||
+            std::isnan(GetMagnitudeRange().second))
+            { return; }
 
         const auto includePredictor = [&](const double value, const std::optional<double> pValue)
             {
@@ -97,9 +103,6 @@ namespace Wisteria::Graphs
                     Value(coefficientColumn->GetValue(i)));
                 }
             }
-
-        GetBottomXAxis().SetRange(0, 100, 0, 1, 1);
-        GetLeftYAxis().SetRange(0, GetRoadStops().size()+2, 0, 1, 1);
         }
 
     //----------------------------------------------------------------

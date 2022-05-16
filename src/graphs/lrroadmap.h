@@ -31,7 +31,7 @@ namespace Wisteria::Graphs
 
         @image html LRRoadmapFirstYearNegative.svg width=90%
         @par %Data:
-            This plot accepts a Data::Dataset where one categorical column is the predictor names,
+            This graph accepts a Data::Dataset where one categorical column is the predictor names,
             a continuous column is the coefficients, and an optional continuous column is the
             p-values. (The p-values are used for filtering which predictors to include.)
 
@@ -51,7 +51,7 @@ namespace Wisteria::Graphs
         @code
          // "this" will be a parent wxWidgets frame or dialog,
          // "canvas" is a scrolled window derived object
-         // that will hold the plot
+         // that will hold the graph
          auto canvas = new Wisteria::Canvas{ this };
          canvas->SetFixedObjectsGridSize(2, 1);
 
@@ -97,7 +97,7 @@ namespace Wisteria::Graphs
         @endcode
         @par Citation:
             Kulp, A., &amp; Grandstaff, M. (2019, April 17). <i>Visualizing regression results for non-statistics audiences.</i>
-            Retrieved May 13, 2022, from https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences 
+            Retrieved May 14, 2022, from https://www.airweb.org/article/2019/04/17/visualizing-regression-results-for-non-statistics-audiences 
     */
     class LRRoadmap final : public Roadmap
         {
@@ -107,7 +107,7 @@ namespace Wisteria::Graphs
         explicit LRRoadmap(Canvas* canvas) : Roadmap(canvas)
             {}
         /** @brief Sets the data.
-            @param data The data to use for the plot.
+            @param data The data to use for the graph.
             @param predictorColumnName The column containing the independent variables'
                 (i.e., predictors) names.
             @param coefficentColumnName The column containing the predictors' correlation coefficients.
@@ -134,11 +134,11 @@ namespace Wisteria::Graphs
         void AddDefaultCaption() final;
     private:
         /// @returns The positive label used for the legend.
-        [[nodiscard]] virtual wxString GetPositiveLegendLabel() const
-            { return wxString::Format(_("Positively associated with %s"), GetGoalLabel()); }
+        [[nodiscard]] wxString GetPositiveLegendLabel() const final
+            { return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel()); }
         /// @returns The negative label used for the legend.
-        [[nodiscard]] virtual wxString GetNegativeLegendLabel() const
-            { return wxString::Format(_("Negatively associated with %s"), GetGoalLabel()); }
+        [[nodiscard]] wxString GetNegativeLegendLabel() const final
+            { return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel()); }
         };
     }
 
