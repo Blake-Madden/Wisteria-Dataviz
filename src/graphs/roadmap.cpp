@@ -18,16 +18,20 @@ namespace Wisteria::Graphs
     Roadmap::Roadmap(Canvas* canvas) :
             Graph2D(canvas)
         {
+        // axes aren't actually shown, just used for placing the objects
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
         GetLeftYAxis().Show(false);
         GetRightYAxis().Show(false);
+        GetBottomXAxis().SetRange(0, 100, 0, 1, 1);
         }
 
     
     //----------------------------------------------------------------
     void Roadmap::RecalcSizes(wxDC& dc)
         {
+        GetLeftYAxis().SetRange(0, GetRoadStops().size() + 2, 0, 1, 1);
+
         Graph2D::RecalcSizes(dc);
 
         // trim space off of area for the road so that there is space
@@ -37,12 +41,15 @@ namespace Wisteria::Graphs
         roadRange.first += axisSpaceForMarkers;
         roadRange.second -= axisSpaceForMarkers;
 
-        // left (negative coefficients) and right (positive) sides of the road
+        // left (negative items) and right (positive) sides of the road
         const auto middleX =
             (GetBottomXAxis().GetRange().second - GetBottomXAxis().GetRange().first) / 2;
         const auto rightRoadRange = std::make_pair(middleX, roadRange.second);
         const auto leftRoadRange = std::make_pair(middleX, roadRange.first);
 
+        // the scale for the location markers (in DIPs);
+        // 8 is probably the best looking small point, and 40 is a large enough
+        // while still being reasonable
         std::pair<double, double> pointSizesRange = { 8, 40 };
 
         wxCoord xPt{ 0 }, yPt{ 0 };
@@ -59,62 +66,72 @@ namespace Wisteria::Graphs
             { pts.push_back({ xPt, GetBoundingBox(dc).GetBottom() }); }
 
         // the curves in the road
-        for (size_t i = 0; i < m_roadStops.size(); ++i)
+        for (size_t i = 0; i < GetRoadStops().size(); ++i)
             {
             if (GetBottomXAxis().GetPhysicalCoordinate(
-                    scale_within(std::abs(m_roadStops[i].GetValue()),
-                                 GetValuesRange(),
-                                 (m_roadStops[i].GetValue() >= 0 ?
+                    scale_within(std::abs(GetRoadStops()[i].GetValue()),
+                                 GetMagnitudeRange(),
+                                 (GetRoadStops()[i].GetValue() >= 0 ?
                                      rightRoadRange : leftRoadRange)), xPt) &&
                 GetLeftYAxis().GetPhysicalCoordinate(i + 1, yPt))
                 { pts.push_back({ xPt, yPt }); }
 
             // the location marker:
-            // points are scale of one, their point size is calculated instead
+            // points are scale of 1.0, their point size is calculated instead
             auto pt = std::make_shared<Point2D>(
-                GraphItemInfo().Brush((m_roadStops[i].GetValue() >= 0 ?
+                GraphItemInfo().Brush((GetRoadStops()[i].GetValue() >= 0 ?
                     ColorBrewer::GetColor(Color::KellyGreen) :
                     ColorBrewer::GetColor(Color::Tomato))).
                 DPIScaling(GetDPIScaleFactor()).
                 AnchorPoint({ xPt , yPt }),
-                scale_within(std::abs(m_roadStops[i].GetValue()),
-                             GetValuesRange(), pointSizesRange),
+                scale_within(std::abs(GetRoadStops()[i].GetValue()),
+                             GetMagnitudeRange(), pointSizesRange),
                 IconShape::LocationMarker);
             locations.push_back(pt);
 
-            auto textLabel = std::make_shared<Label>(
-                GraphItemInfo(GraphItemInfo(wxString::Format(L"%s (%s)",
-                    m_roadStops[i].GetName(),
-                    wxNumberFormatter::ToString(m_roadStops[i].GetValue(), 3,
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes)))).
+            const wxString markerText =
+                (m_markerLableDisplay == MarkerLabelDisplay::NameAndValue) ?
+                     wxString::Format(L"%s (%s)",
+                        GetRoadStops()[i].GetName(),
+                            wxNumberFormatter::ToString(GetRoadStops()[i].GetValue(), 3,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes)) : 
+                (m_markerLableDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
+                    wxString::Format(L"%s (%s)",
+                        GetRoadStops()[i].GetName(),
+                            wxNumberFormatter::ToString(std::abs(GetRoadStops()[i].GetValue()), 3,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
+                GetRoadStops()[i].GetName();
+
+            auto markerLabel = std::make_shared<Label>(
+                GraphItemInfo(GraphItemInfo(markerText).
                 Padding(4, 4, 4, 4).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
                 Pen(wxNullPen).
-                FontBackgroundColor(*wxWHITE));
-            textLabel->ShowLabelWhenSelected(true);
+                FontBackgroundColor(*wxWHITE)) );
+            markerLabel->ShowLabelWhenSelected(true);
             if (GetLabelPlacement() == LabelPlacement::NextToParent)
                 {
-                textLabel->SetAnchorPoint((m_roadStops[i].GetValue() >= 0 ?
+                markerLabel->SetAnchorPoint((GetRoadStops()[i].GetValue() >= 0 ?
                     pt->GetBoundingBox(dc).GetBottomRight() :
                     pt->GetBoundingBox(dc).GetBottomLeft()));
-                textLabel->SetAnchoring((m_roadStops[i].GetValue() >= 0 ?
+                markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
                     Anchoring::BottomLeftCorner : Anchoring::BottomRightCorner));
                 }
             else
                 {
-                textLabel->SetAnchorPoint((m_roadStops[i].GetValue() >= 0 ?
+                markerLabel->SetAnchorPoint((GetRoadStops()[i].GetValue() >= 0 ?
                     wxPoint(GetPlotAreaBoundingBox().GetRight(),
                             pt->GetBoundingBox(dc).GetBottomRight().y) :
                     wxPoint(GetPlotAreaBoundingBox().GetLeft(),
                             pt->GetBoundingBox(dc).GetBottomLeft().y)));
-                textLabel->SetAnchoring((m_roadStops[i].GetValue() >= 0 ?
+                markerLabel->SetAnchoring((GetRoadStops()[i].GetValue() >= 0 ?
                     Anchoring::BottomRightCorner : Anchoring::BottomLeftCorner));
-                labelConnectionLines->AddLine(textLabel->GetAnchorPoint(),
+                labelConnectionLines->AddLine(markerLabel->GetAnchorPoint(),
                                               pt->GetAnchorPoint());
                 }
-            textLabel->GetFont().MakeSmaller();
-            locationLabels.push_back(textLabel);
+            markerLabel->GetFont().MakeSmaller();
+            locationLabels.push_back(markerLabel);
             }
 
         // end of the road (top)
@@ -196,7 +213,7 @@ namespace Wisteria::Graphs
             locationLabel->SetScaling(smallestLabelScaling);
             AddObject(locationLabel);
             }
-        // add the location markers on top, going from the horizon to the starting point
+        // add the location markers on top, going forward from the horizon to the starting point
         std::reverse(locations.begin(), locations.end());
         for (auto& location : locations)
             { AddObject(location); }
@@ -212,9 +229,11 @@ namespace Wisteria::Graphs
 
         wxString legendText = GetPositiveLegendLabel() + L"\n" + GetNegativeLegendLabel();
         legend->GetLegendIcons().emplace_back(
-                LegendIcon(IconShape::LocationMarker, *wxBLACK, ColorBrewer::GetColor(Color::KellyGreen)));
+                LegendIcon(IconShape::LocationMarker, *wxBLACK,
+                    ColorBrewer::GetColor(Color::KellyGreen)));
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::LocationMarker, *wxBLACK, ColorBrewer::GetColor(Color::Tomato)));
+                LegendIcon(IconShape::LocationMarker, *wxBLACK,
+                    ColorBrewer::GetColor(Color::Tomato)));
 
         if (includeHeader)
             {
