@@ -639,7 +639,8 @@ namespace Wisteria::GraphItems
                             wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             GetFont().GetPointSize(),
                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
-                        AnchorPoint(bBox.GetBottomRight()).
+                        AnchorPoint(bBox.GetTopLeft()).
+                        Anchoring(Anchoring::TopLeftCorner).
                         FontColor(*wxBLUE).
                         Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                         FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));

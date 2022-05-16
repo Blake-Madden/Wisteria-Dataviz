@@ -688,6 +688,7 @@ namespace Wisteria
         Bind(wxEVT_MAGNIFY, &Canvas::OnMouseEvent, this);
         }
 
+    //----------------------------------------------------------------
     long Canvas::CalcLeftTitles(wxDC& dc, const long spacingWidth)
         {
         long leftMarginWidth{ 0 };
@@ -697,33 +698,22 @@ namespace Wisteria
             title.SetDPIScaleFactor(dc.FromDIP(1));
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
-            const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
-                    title.GetAnchoring() == Anchoring::TopLeftCorner) ? 0 :
-                (title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                    title.GetBoundingBox(dc).GetWidth();
-            title.SetAnchorPoint(
-                // lined up to the left (bottom) of the canvas
-                // (need to adjust for anchoring so that it doesn't go off the canvas)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(leftMarginWidth+textWidth,
-                    GetCanvasRect(dc).GetHeight() -
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
-                        (title.GetAnchoring() == Anchoring::TopLeftCorner ||
-                         title.GetAnchoring() == Anchoring::TopRightCorner) ?
-                        title.GetBoundingBox(dc).GetHeight() : 0)) :
-                // lined up to the right (top)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(leftMarginWidth+textWidth,
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
-                        (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
-                         title.GetAnchoring() == Anchoring::BottomRightCorner) ?
-                        title.GetBoundingBox(dc).GetHeight() : 0)) :
-                // centered (note that anchoring will actually be applied here)
-                wxPoint(leftMarginWidth+textWidth, (GetCanvasRect(dc).GetHeight()/2)) );
+            title.SetAnchorPoint(wxPoint(leftMarginWidth, GetCanvasRect(dc).GetHeight()));
+            title.SetAnchoring(Anchoring::TopLeftCorner);
+            title.SetMinimumUserSizeDIPs(std::nullopt, GetCanvasRectDIPs().GetHeight());
+            title.SetPageVerticalAlignment(
+                (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
+                PageVerticalAlignment::Centered :
+                (title.GetRelativeAlignment() == RelativeAlignment::FlushRight) ?
+                PageVerticalAlignment::TopAligned :
+                PageVerticalAlignment::BottomAligned);
             leftMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
             }
         return leftMarginWidth;
         }
 
+    //----------------------------------------------------------------
     long Canvas::CalcRightTitles(wxDC& dc, const long spacingWidth)
         {
         long rightMarginWidth{ 0 };
@@ -734,27 +724,15 @@ namespace Wisteria
             title.SetDPIScaleFactor(dc.FromDIP(1));
             title.SetScaling(GetScaling());
             title.SetTextOrientation(Orientation::Vertical);
-            const wxCoord textWidth = (title.GetAnchoring() == Anchoring::BottomRightCorner ||
-                    title.GetAnchoring() == Anchoring::TopRightCorner) ? 0 :
-                (title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                    title.GetBoundingBox(dc).GetWidth();
-            title.SetAnchorPoint(
-                // lined up to the left (bottom) of the canvas
-                // (need to adjust for anchoring so that it doesn't go off the canvas)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(position-textWidth,
-                    GetCanvasRect(dc).GetHeight() -
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
-                        (title.GetAnchoring() == Anchoring::TopLeftCorner ||
-                         title.GetAnchoring() == Anchoring::TopRightCorner) ?
-                        title.GetBoundingBox(dc).GetHeight() : 0)) :
-                // lined up to the right (top)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(position-textWidth,
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 :
-                        (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
-                         title.GetAnchoring() == Anchoring::BottomRightCorner) ?
-                        title.GetBoundingBox(dc).GetHeight() : 0)) :
-                // centered (note that anchoring will actually be applied here)
-                wxPoint(position-textWidth, (GetCanvasRect(dc).GetHeight()/2)) );
+            title.SetAnchorPoint(wxPoint(position, GetCanvasRect(dc).GetHeight()));
+            title.SetAnchoring(Anchoring::BottomLeftCorner);
+            title.SetMinimumUserSizeDIPs(std::nullopt, GetCanvasRectDIPs().GetHeight());
+            title.SetPageVerticalAlignment(
+                (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
+                PageVerticalAlignment::Centered :
+                (title.GetRelativeAlignment() == RelativeAlignment::FlushRight) ?
+                PageVerticalAlignment::TopAligned :
+                PageVerticalAlignment::BottomAligned);
             position -= title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             rightMarginWidth += title.GetBoundingBox(dc).GetWidth() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
@@ -762,72 +740,54 @@ namespace Wisteria
         return rightMarginWidth;
         }
 
+    //----------------------------------------------------------------
     long Canvas::CalcTopTitles(wxDC& dc, const long spacingWidth)
         {
-        long topMarginWidth{ 0 };
+        long topMarginHeight{ 0 };
         // add the top titles
         for (auto& title : m_topTitles)
             {
             title.SetDPIScaleFactor(dc.FromDIP(1));
             title.SetScaling(GetScaling());
-            const wxCoord textHeight = (title.GetAnchoring() == Anchoring::BottomLeftCorner ||
-                title.GetAnchoring() == Anchoring::BottomRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
-                (title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 : 0;
-            title.SetAnchorPoint(
-                // lined up to the left of the canvas
-                // (need to adjust for anchoring so that it doesn't go off the canvas)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                      (title.GetAnchoring() == Anchoring::TopRightCorner ||
-                       title.GetAnchoring() == Anchoring::BottomRightCorner) ?
-                        title.GetBoundingBox(dc).GetWidth() : 0), topMarginWidth+textHeight) :
-                // lined up to the right
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect(dc).GetWidth() -
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                      (title.GetAnchoring() == Anchoring::TopLeftCorner ||
-                       title.GetAnchoring() == Anchoring::BottomLeftCorner) ?
-                        title.GetBoundingBox(dc).GetWidth() : 0), topMarginWidth+textHeight) :
-                // centered (note that anchoring will actually be applied here)
-                wxPoint((GetCanvasRect(dc).GetWidth()/2), topMarginWidth+textHeight));
-            topMarginWidth += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
+            title.SetAnchorPoint(wxPoint(0, topMarginHeight));
+            title.SetAnchoring(Anchoring::TopLeftCorner);
+            title.SetMinimumUserSizeDIPs(GetCanvasRectDIPs().GetWidth(), std::nullopt);
+            title.SetPageHorizontalAlignment(
+                (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
+                PageHorizontalAlignment::Centered :
+                (title.GetRelativeAlignment() == RelativeAlignment::FlushRight) ?
+                PageHorizontalAlignment::RightAligned :
+                PageHorizontalAlignment::LeftAligned);
+            topMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
             }
-        return topMarginWidth;
+        return topMarginHeight;
         }
 
+    //----------------------------------------------------------------
     long Canvas::CalcBottomTitles(wxDC& dc, const long spacingWidth)
         {
-        long bottomMarginWidth{ 0 };
+        long bottomMarginHeight{ 0 };
         long position = GetCanvasRect(dc).GetHeight() - spacingWidth;
         // add the bottom titles
         for (auto& title : m_bottomTitles)
             {
             title.SetDPIScaleFactor(dc.FromDIP(1));
             title.SetScaling(GetScaling());
-            const wxCoord textHeight = (title.GetAnchoring() == Anchoring::TopLeftCorner ||
-                title.GetAnchoring() == Anchoring::TopRightCorner) ? title.GetBoundingBox(dc).GetHeight() :
-                (title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetHeight()/2 : 0;
-            title.SetAnchorPoint(
-                // lined up to the left of the canvas
-                // (need to adjust for anchoring so that it doesn't go off the canvas)
-                title.GetRelativeAlignment() == RelativeAlignment::FlushLeft ? wxPoint(
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                      (title.GetAnchoring() == Anchoring::TopRightCorner ||
-                       title.GetAnchoring() == Anchoring::BottomRightCorner) ?
-                        title.GetBoundingBox(dc).GetWidth() : 0), position-textHeight) :
-                // lined up to the right
-                title.GetRelativeAlignment() == RelativeAlignment::FlushRight ? wxPoint(GetCanvasRect(dc).GetWidth() -
-                    ((title.GetAnchoring() == Anchoring::Center) ? title.GetBoundingBox(dc).GetWidth()/2 :
-                      (title.GetAnchoring() == Anchoring::TopLeftCorner ||
-                       title.GetAnchoring() == Anchoring::BottomLeftCorner) ?
-                        title.GetBoundingBox(dc).GetWidth() : 0), position-textHeight) :
-                // centered (note that anchoring will actually be applied here)
-                wxPoint((GetCanvasRect(dc).GetWidth()/2),position-textHeight));
+            title.SetAnchorPoint(wxPoint(0, position));
+            title.SetAnchoring(Anchoring::BottomLeftCorner);
+            title.SetMinimumUserSizeDIPs(GetCanvasRectDIPs().GetWidth(), std::nullopt);
+            title.SetPageHorizontalAlignment(
+                (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
+                PageHorizontalAlignment::Centered :
+                (title.GetRelativeAlignment() == RelativeAlignment::FlushRight) ?
+                PageHorizontalAlignment::RightAligned :
+                PageHorizontalAlignment::LeftAligned);
             position -= title.GetBoundingBox(dc).GetHeight() + spacingWidth;
-            bottomMarginWidth += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
+            bottomMarginHeight += title.GetBoundingBox(dc).GetHeight() + spacingWidth;
             GetTitles().emplace_back(std::make_shared<GraphItems::Label>(title));
             }
-        return bottomMarginWidth;
+        return bottomMarginHeight;
         }
 
     void Canvas::OnResize([[maybe_unused]] wxSizeEvent& event)
