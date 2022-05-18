@@ -411,7 +411,7 @@ namespace Wisteria::GraphItems
         {
         const auto textMeasurement = [this, &dc]()
             {
-            if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
+            if (!IsShowingLabels())
                 { return 0; }
             else
                 {
@@ -432,7 +432,7 @@ namespace Wisteria::GraphItems
                 }
             }();
         wxPoint topLeftCorner, bottomRightCorner;
-        const wxCoord spaceBetweenAxisAndLabel = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+        const wxCoord spaceBetweenAxisAndLabel = !IsShowingLabels() ?
             0 : ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
 
         if (GetAxisType() == AxisType::LeftYAxis)
@@ -1216,14 +1216,14 @@ namespace Wisteria::GraphItems
 
             // if not showing labels, don't include the space between the lines and the
             // non-existant labels when positioning the brackets
-            const auto spaceAreasNeeded = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+            const auto spaceAreasNeeded = !IsShowingLabels() ?
                 1 : 2;
 
             if (GetAxisType() == AxisType::LeftYAxis)
                 {
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
 
-                auto labelWidth = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                auto labelWidth = !IsShowingLabels() ?
                     0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
                 
@@ -1307,7 +1307,7 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::RightYAxis)
                 {
-                auto labelWidth = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                auto labelWidth = !IsShowingLabels() ?
                     0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
@@ -1389,7 +1389,7 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::BottomXAxis)
                 {
-                auto labelHeight = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                auto labelHeight = !IsShowingLabels() ?
                     0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
                 labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
                 long connectionY = GetTopPoint().y, connectionYDoubleSided = GetTopPoint().y;
@@ -1471,7 +1471,7 @@ namespace Wisteria::GraphItems
                 }
             else if (GetAxisType() == AxisType::TopXAxis)
                 {
-                auto labelHeight = (GetLabelDisplay() == AxisLabelDisplay::NoDisplay) ?
+                auto labelHeight = !IsShowingLabels() ?
                     0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
                 labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
                 auto connectionY = GetTopPoint().y;
@@ -3020,7 +3020,7 @@ namespace Wisteria::GraphItems
     Label Axis::GetDisplayableValue(const AxisPoint& pt) const
         {
         // just return a blank label
-        if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
+        if (!IsShowingLabels())
             { return Label(GraphItemInfo().DPIScaling(GetDPIScaleFactor())); }
 
         const auto& customLabel = GetCustomLabel(pt.GetValue());

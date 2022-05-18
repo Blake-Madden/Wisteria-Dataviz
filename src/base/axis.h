@@ -1066,6 +1066,12 @@ namespace Wisteria::GraphItems
         // shouldn't be part of the client API. They are still properly documented here,
         // though, as a reference for when you are designing a new graph type.
 
+        /// @returns Whether labels are set to display AND the axis is actually being drawn.
+        [[nodiscard]] bool IsShowingLabels() const noexcept
+            {
+            return IsShown() && (GetLabelDisplay() != AxisLabelDisplay::NoDisplay);
+            }
+
         /// @brief Sets the fiscal year date range.
         /// @details This will be used if the date interval is set to DateInterval::FiscalQuarterly.
         ///  Fiscal years can vary between domains. For example, higher education runs July 1st to June 30,
