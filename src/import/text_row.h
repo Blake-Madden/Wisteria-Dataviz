@@ -25,7 +25,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param repeat_count How many times this row definition should be repeated by the parent parser.
-        ///  Set to std::nullopt to repeat the row until the end of file is reached.
+        ///     Set to @c std::nullopt to repeat the row until the end of file is reached.
         explicit text_row(std::optional<size_t> repeat_count = std::nullopt) noexcept
             : m_repeat_count(repeat_count)
             {}
@@ -43,16 +43,18 @@ namespace lily_of_the_valley
             m_single_value = value;
             m_values = nullptr;
             }
-        /// @brief Sets whether consecutive column separators (e.g., tabs) should be treated as one. If `true`,
-        ///  then three delimiters next to each other would be seen a one delimiter and not interpreted as blank
-        ///  columns. If `false`, then this will result in two empty columns being read.
+        /// @brief Sets whether consecutive column separators (e.g., tabs) should be treated as one.
+        ///     If `true`, then three delimiters next to each other would be seen a one delimiter
+        ///     and not interpreted as blank columns. If `false`, then this will result in two empty
+        ///     columns being read.
         /// @param allow Set to `true` to treat consecutive delimiters as one.
         void treat_consecutive_delimitors_as_one(const bool allow = true) noexcept
             { m_treat_consecutive_delimitors_as_one = allow; }
         /// @brief Sets whether the row may have an unknown number of columns before parsing.
         /// @param allow `true` enable column resizing for the row.
-        ///  If `true`, then the row will dynamically add columns while parsing.
-        /// @note This is turned off by default, so the caller should enable this if the data may be jagged or column count is unknown.
+        ///     If `true`, then the row will dynamically add columns while parsing.
+        /// @note This is turned off by default, so the caller should enable this if the data
+        ///     may be jagged or column count is unknown.
         void allow_column_resizing(const bool allow = true) noexcept
             { m_allow_column_values_resizing = allow; }
         /// @returns Whether the row may have an unknown number of columns before parsing.
@@ -63,7 +65,8 @@ namespace lily_of_the_valley
         inline void add_column(text_column<text_column_standard_delimiter_parser>& column)
             {
             m_standard_delimiter_columns.push_back(column);
-            m_column_indices.push_back(std::make_pair(column_type::standard_delimiter, m_standard_delimiter_columns.size()-1));
+            m_column_indices.push_back(std::make_pair(column_type::standard_delimiter,
+                                                      m_standard_delimiter_columns.size()-1));
             // if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
@@ -73,7 +76,8 @@ namespace lily_of_the_valley
         inline void add_column(text_column<text_column_delimited_character_parser>& column)
             {
             m_delimited_character_columns.push_back(column);
-            m_column_indices.push_back(std::make_pair(column_type::delimited_character, m_delimited_character_columns.size()-1));
+            m_column_indices.push_back(std::make_pair(column_type::delimited_character,
+                                                      m_delimited_character_columns.size()-1));
             //if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
@@ -83,7 +87,8 @@ namespace lily_of_the_valley
         inline void add_column(text_column<text_column_delimited_multiple_character_parser>& column)
             {
             m_delimited_multiple_character_columns.push_back(column);
-            m_column_indices.push_back(std::make_pair(column_type::delimited_multiple_character, m_delimited_multiple_character_columns.size()-1));
+            m_column_indices.push_back(std::make_pair(column_type::delimited_multiple_character,
+                                                      m_delimited_multiple_character_columns.size()-1));
             //if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
@@ -103,29 +108,31 @@ namespace lily_of_the_valley
         inline void add_column(text_column<text_column_fixed_parser>& column)
             {
             m_fixed_width_columns.push_back(column);
-            m_column_indices.push_back(std::make_pair(column_type::fixed_width, m_fixed_width_columns.size()-1));
+            m_column_indices.push_back(std::make_pair(column_type::fixed_width,
+                                                      m_fixed_width_columns.size()-1));
             //if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
         /// @returns `true` if any of the row's columns definitions are set to read in data.
-        ///  This can be `false` if all column parsers are meant to simply skip, essentially
-        ///  reading in nothing for this row.
+        ///     This can be `false` if all column parsers are meant to simply skip, essentially
+        ///     reading in nothing for this row.
         [[nodiscard]] inline bool is_reading_text() const noexcept
             { return m_read_text; }
         /** @brief The main function which reads a block of text and divides it up into columns.
             @param text The text to parse.
             @returns The last position of the text before parsing ended. Usually, this will be the end of
-             the file, unless there are undefined columns in the row of text and row parser isn't
-             dynamically growing to include them.
+                the file, unless there are undefined columns in the row of text and row parser isn't
+                dynamically growing to include them.
             @warning Call set_values() or set_single_value() first to establish a destination for writing
-             the columns as they are read in.*/
+                the columns as they are read in.*/
         const wchar_t* read(const wchar_t* text)
             {
             m_number_of_columns_last_read = 0;
             if (text == nullptr || text[0] == 0)
                 { return nullptr; }
             cell_trim trim;
+            cell_collapse_quotes<string_typeT> cellQuoteCollapse;
             const wchar_t* previousPosition = text;
             const wchar_t* currentPosition = text;
             size_t currentColumnIndex = 0;
@@ -137,15 +144,18 @@ namespace lily_of_the_valley
                 if (pos->first == column_type::delimited_character)
                     {
                     auto currentColumnIter = m_delimited_character_columns.begin() + pos->second;
-                    //some column definitions may be used more than once for consecutive columns
+                    // some column definitions may be used more than once for consecutive columns
                     for (size_t i = 0;
-                        (!currentColumnIter->get_repeat_count() ? true : i < currentColumnIter->get_repeat_count().value());
+                        (!currentColumnIter->get_repeat_count() ?
+                                true :
+                                i < currentColumnIter->get_repeat_count().value());
                         ++i)
                         {
                         /* Make sure we had enough strings to write next column into
                            if this fails (it shouldn't) then the caller failed to resize the string
-                           vector properly. By default, we won't resize it for them either, because then the greater
-                           text matrix will wind up being a jagged array. Enable column count resizing to change that.*/
+                           vector properly. By default, we won't resize it for them either, because
+                           then the greater text matrix will wind up being a jagged array.
+                           Enable column count resizing to change that.*/
                         if (m_values)
                             {
                             if (currentColumnIndex >= m_values->size())
@@ -161,10 +171,10 @@ namespace lily_of_the_valley
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
-                        //if the current row is blank then don't add anything to its columns
+                        // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
                             { return ++currentPosition; }
-                        //if this parser is NOT set to skip the column's text then read it in
+                        // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
                             if (currentPosition == nullptr)
@@ -182,14 +192,20 @@ namespace lily_of_the_valley
                                 }
                             else
                                 {
-                                previousPosition = trim(previousPosition, currentPosition-previousPosition);
+                                previousPosition = trim(previousPosition,
+                                                        currentPosition-previousPosition);
                                 if (previousPosition == nullptr)
                                     { return nullptr; }
                                 if (m_values)
-                                    { m_values->at(currentColumnIndex++).assign(previousPosition, trim.get_trimmed_string_length()); }
+                                    {
+                                    m_values->at(currentColumnIndex++) =
+                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    }
                                 else
                                     {
-                                    m_single_value->assign(previousPosition, trim.get_trimmed_string_length());
+                                    *m_single_value =
+                                        cellQuoteCollapse(string_typeT(previousPosition,
+                                                           trim.get_trimmed_string_length()));
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -214,15 +230,18 @@ namespace lily_of_the_valley
                 if (pos->first == column_type::standard_delimiter)
                     {
                     auto currentColumnIter = m_standard_delimiter_columns.begin() + pos->second;
-                    //some column definitions may be used more than once for consecutive columns
+                    // some column definitions may be used more than once for consecutive columns
                     for (size_t i = 0;
-                        (!currentColumnIter->get_repeat_count() ? true : i < currentColumnIter->get_repeat_count().value());
+                        (!currentColumnIter->get_repeat_count() ?
+                            true :
+                            i < currentColumnIter->get_repeat_count().value());
                         ++i)
                         {
                         /* Make sure we had enough strings to write next column into
                            if this fails (it shouldn't) then the caller failed to resize the string
-                           vector properly. By default, we won't resize it for them either, because then the greater
-                           text matrix will wind up being a jagged array. Enable column count resizing to change that.*/
+                           vector properly. By default, we won't resize it for them either,
+                           because then the greater text matrix will wind up being a jagged array.
+                           Enable column count resizing to change that.*/
                         if (m_values)
                             {
                             if (currentColumnIndex >= m_values->size())
@@ -238,10 +257,10 @@ namespace lily_of_the_valley
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
-                        //if the current row is blank then don't add anything to its columns
+                        // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
                             { return ++currentPosition; }
-                        //if this parser is NOT set to skip the column's text then read it in
+                        // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
                             if (currentPosition == nullptr)
@@ -259,14 +278,20 @@ namespace lily_of_the_valley
                                 }
                             else
                                 {
-                                previousPosition = trim(previousPosition, currentPosition-previousPosition);
+                                previousPosition = trim(previousPosition,
+                                                        currentPosition-previousPosition);
                                 if (previousPosition == nullptr)
                                     { return nullptr; }
                                 if (m_values)
-                                    { m_values->at(currentColumnIndex++).assign(previousPosition, trim.get_trimmed_string_length()); }
+                                    {
+                                    m_values->at(currentColumnIndex++) =
+                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    }
                                 else
                                     {
-                                    m_single_value->assign(previousPosition, trim.get_trimmed_string_length());
+                                    *m_single_value =
+                                        cellQuoteCollapse(string_typeT(previousPosition,
+                                                           trim.get_trimmed_string_length()));
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -291,15 +316,18 @@ namespace lily_of_the_valley
                 else if (pos->first == column_type::delimited_multiple_character)
                     {
                     auto currentColumnIter = m_delimited_multiple_character_columns.begin() + pos->second;
-                    //some column definitions may be used more than once for consecutive columns
+                    // some column definitions may be used more than once for consecutive columns
                     for (size_t i = 0;
-                        (!currentColumnIter->get_repeat_count() ? true : i < currentColumnIter->get_repeat_count().value());
+                        (!currentColumnIter->get_repeat_count() ?
+                            true :
+                            i < currentColumnIter->get_repeat_count().value());
                         ++i)
                         {
                         /* Make sure we had enough strings to write next column into
                            if this fails (it shouldn't) then the caller failed to resize the string
-                           vector properly. By default, we won't resize it for them either, because then the greater
-                           text matrix will wind up being a jagged array. Enable column count resizing to change that.*/
+                           vector properly. By default, we won't resize it for them either,
+                           because then the greater text matrix will wind up being a jagged array.
+                           Enable column count resizing to change that.*/
                         if (m_values)
                             {
                             if (currentColumnIndex >= m_values->size())
@@ -335,14 +363,20 @@ namespace lily_of_the_valley
                                 }
                             else
                                 {
-                                previousPosition = trim(previousPosition, currentPosition-previousPosition);
+                                previousPosition = trim(previousPosition,
+                                                        currentPosition-previousPosition);
                                 if (previousPosition == nullptr)
                                     { return nullptr; }
                                 if (m_values)
-                                    { m_values->at(currentColumnIndex++).assign(previousPosition, trim.get_trimmed_string_length()); }
+                                    {
+                                    m_values->at(currentColumnIndex++) =
+                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    }
                                 else
                                     {
-                                    m_single_value->assign(previousPosition, trim.get_trimmed_string_length());
+                                    *m_single_value =
+                                        cellQuoteCollapse(string_typeT(previousPosition,
+                                                           trim.get_trimmed_string_length()));
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -369,13 +403,16 @@ namespace lily_of_the_valley
                     auto currentColumnIter = m_fixed_width_columns.begin() + pos->second;
                     //some column definitions may be used more than once for consecutive columns
                     for (size_t i = 0;
-                        (!currentColumnIter->get_repeat_count() ? true : i < currentColumnIter->get_repeat_count().value());
+                        (!currentColumnIter->get_repeat_count() ?
+                            true :
+                            i < currentColumnIter->get_repeat_count().value());
                         ++i)
                         {
                         /* Make sure we had enough strings to write next column into
                            if this fails (it shouldn't) then the caller failed to resize the string
-                           vector properly. By default, we won't resize it for them either, because then the greater
-                           text matrix will wind up being a jagged array. Enable column count resizing to change that.*/
+                           vector properly. By default, we won't resize it for them either,
+                           because then the greater text matrix will wind up being a jagged array.
+                           Enable column count resizing to change that.*/
                         if (m_values)
                             {
                             if (currentColumnIndex >= m_values->size())
@@ -415,14 +452,20 @@ namespace lily_of_the_valley
                                 }
                             else
                                 {
-                                previousPosition = trim(previousPosition, currentPosition-previousPosition);
+                                previousPosition = trim(previousPosition,
+                                                        currentPosition-previousPosition);
                                 if (previousPosition == nullptr)
                                     { return nullptr; }
                                 if (m_values)
-                                    { m_values->at(currentColumnIndex++).assign(previousPosition, trim.get_trimmed_string_length()); }
+                                    {
+                                    m_values->at(currentColumnIndex++) =
+                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    }
                                 else
                                     {
-                                    m_single_value->assign(previousPosition, trim.get_trimmed_string_length());
+                                    *m_single_value =
+                                        cellQuoteCollapse(string_typeT(previousPosition,
+                                                           trim.get_trimmed_string_length()));
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -441,8 +484,9 @@ namespace lily_of_the_valley
                     auto currentColumnIter = m_to_eol_columns.begin() + pos->second;
                     /* Make sure we had enough strings to write next column into
                        if this fails (it shouldn't) then the caller failed to resize the string
-                       vector properly. By default, we won't resize it for them either, because then the greater
-                       text matrix will wind up being a jagged array. Enable column count resizing to change that.*/
+                       vector properly. By default, we won't resize it for them either,
+                       because then the greater text matrix will wind up being a jagged array.
+                       Enable column count resizing to change that.*/
                     if (m_values)
                         {
                         if (currentColumnIndex >= m_values->size())
@@ -478,14 +522,20 @@ namespace lily_of_the_valley
                             }
                         else
                             {
-                            previousPosition = trim(previousPosition, currentPosition-previousPosition);
+                            previousPosition = trim(previousPosition,
+                                                    currentPosition-previousPosition);
                             if (previousPosition == nullptr)
                                 { return nullptr; }
                             if (m_values)
-                                { m_values->at(currentColumnIndex++).assign(previousPosition, trim.get_trimmed_string_length()); }
+                                {
+                                m_values->at(currentColumnIndex++) =
+                                    cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                }
                             else
                                 {
-                                m_single_value->assign(previousPosition, trim.get_trimmed_string_length());
+                                *m_single_value =
+                                    cellQuoteCollapse(string_typeT(previousPosition,
+                                                       trim.get_trimmed_string_length()));
                                 ++currentColumnIndex;
                                 }
                             ++m_number_of_columns_last_read;
@@ -499,7 +549,7 @@ namespace lily_of_the_valley
                         { return nullptr; }
                     }
                 }
-            //in case we are ignoring this row, then just eat up its text and jump to the next line
+            // in case we are ignoring this row, then just eat up its text and jump to the next line
             if (currentPosition == text)
                 {
                 while (!is_eol(currentPosition[0]) )
@@ -514,7 +564,7 @@ namespace lily_of_the_valley
             }
         /// @returns The number of times this row definition should be repeated by the parent parser.
         /// @note This is optional and if not specified then this row definition should be repeated
-        ///  by the parser until the end of file is reached.
+        ///     by the parser until the end of file is reached.
         [[nodiscard]] inline std::optional<size_t> get_repeat_count() const noexcept
             { return m_repeat_count; }
         /// @returns The number of columns last read during the previous parsing.
@@ -533,12 +583,17 @@ namespace lily_of_the_valley
         std::vector<string_typeT>* m_values{ nullptr };
         string_typeT* m_single_value{ nullptr };
         std::vector<std::pair<column_type, size_t>> m_column_indices;
-        //different column parser types
-        std::vector<text_column<text_column_standard_delimiter_parser>> m_standard_delimiter_columns;
-        std::vector<text_column<text_column_delimited_character_parser>> m_delimited_character_columns;
-        std::vector<text_column<text_column_fixed_parser>> m_fixed_width_columns;
-        std::vector<text_column<text_column_to_eol_parser>> m_to_eol_columns;
-        std::vector<text_column<text_column_delimited_multiple_character_parser>> m_delimited_multiple_character_columns;
+        // different column parser types
+        std::vector<text_column<text_column_standard_delimiter_parser>>
+            m_standard_delimiter_columns;
+        std::vector<text_column<text_column_delimited_character_parser>>
+            m_delimited_character_columns;
+        std::vector<text_column<text_column_fixed_parser>>
+            m_fixed_width_columns;
+        std::vector<text_column<text_column_to_eol_parser>>
+            m_to_eol_columns;
+        std::vector<text_column<text_column_delimited_multiple_character_parser>>
+            m_delimited_multiple_character_columns;
         is_end_of_line is_eol;
         std::optional<size_t> m_repeat_count{ std::nullopt };
         bool m_treat_consecutive_delimitors_as_one{ false };

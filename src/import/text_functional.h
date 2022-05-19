@@ -22,23 +22,26 @@ namespace lily_of_the_valley
     {
     /// @brief Replaces "" with a single ".
     /// @details In CSV files, embedded quotes are doubled like this to preserve them,
-    ///  so this interface will convert those back to a single ".
+    ///     so this interface will convert those back to a single ".
     template<typename T>
     class cell_collapse_quotes
         {
     public:
         /// @brief Converts doubled up " with a single ".
         /// @param text The string to convert.
-        void operator()(T& text) const
+        /// @returns The transformed text;
+        [[nodiscard]] T operator()(const T& text) const
             {
+            auto rText{ text };
             size_t start{ 0 };
             while (start != T::npos)
                 {
-                start = text.find(L"\"\"", start);
+                start = rText.find(L"\"\"", start);
                 if (start == T::npos)
-                    { return; }
-                text.replace(start, 2, L"\"");
+                    { return rText; }
+                rText.replace(start, 2, L"\"");
                 }
+            return rText;
             }
         };
 
@@ -48,12 +51,12 @@ namespace lily_of_the_valley
         {
     public:
         /** @brief Finds the string inside of a larger string, ignoring the
-             spaces and quotes around it.
+                spaces and quotes around it.
             @returns Position into the string buffer where the first non-space/quote is.
             @param value The string to trim.
-            @param length The length of @c value.
-             Call get_trimmed_string_length() to see how much to read from there to
-             see where the last non-space is at the end.*/
+            @param length The length of @c value.\n
+                Call get_trimmed_string_length() to see how much to read from there to
+                see where the last non-space is at the end.*/
         [[nodiscard]] const wchar_t* operator()(const wchar_t* value,
                                      size_t length = std::wstring::npos) noexcept
             {
@@ -64,14 +67,24 @@ namespace lily_of_the_valley
                 { length = std::wcslen(value); }
             if (length == 0)
                 { return value; }
-            const wchar_t* start = std::find_if_not(value, value+length,
-                [](const auto ch) noexcept
-                    { return (iswspace(ch) || ch == L'\"'); });
             // end is last valid character in the string, not the null terminator
-            const wchar_t* end = value+(length-1);
+            const wchar_t* end = value + (length - 1);
+            // trim leading quote
+            const wchar_t* valueStart = value;
+            if (valueStart[0] == L'\"')
+                {
+                ++valueStart;
+                --length;
+                }
+            const wchar_t* start = std::find_if_not(valueStart, valueStart+length,
+                [](const auto ch) noexcept
+                    { return iswspace(ch); });
+            // remove trailing quote (just the last one)
+            if (end > start && end[0] == L'\"')
+                { --end; }
             while (end > start)
                 {
-                if (iswspace(end[0]) || end[0] == L'\"')
+                if (iswspace(end[0]))
                     { --end; }
                 else
                     { break; }
@@ -80,7 +93,8 @@ namespace lily_of_the_valley
             m_trimmed_string_length = (start > end) ? 0 : (end-start)+1;
             return start;
             }
-        /// @returns The length of the string buffer, ignoring spaces and quotes on the left and right.
+        /// @returns The length of the string buffer,
+        ///     ignoring spaces and quotes on the left and right.
         [[nodiscard]] size_t get_trimmed_string_length() const noexcept
             { return m_trimmed_string_length; }
     private:
