@@ -33,6 +33,7 @@
 #include <wx/dcsvg.h>
 #include <wx/quantize.h>
 #include <wx/event.h>
+#include <wx/wupdlock.h>
 #include <cmath>
 #include <vector>
 #include <map>
@@ -54,6 +55,7 @@ namespace Wisteria
         {
     public:
         friend class CanvasPrintout;
+        friend class PrintFitToPageChanger;
 
         /** @brief Constructor.
             @param parent The parent window that will manage the canvas.
@@ -65,9 +67,13 @@ namespace Wisteria
                const wxPoint& pos = wxDefaultPosition,
                const wxSize& size = wxDefaultSize,
                const long flags = 0);
+        /// @private
         Canvas(const Canvas&) = delete;
+        /// @private
         Canvas(Canvas&&) = delete;
+        /// @private
         Canvas& operator=(const Canvas&) = delete;
+        /// @private
         Canvas& operator=(Canvas&&) = delete;
         /// @private
         ~Canvas()
@@ -349,6 +355,20 @@ namespace Wisteria
         [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
             { return m_printData; }
 
+        /// @returns @c true If fitting the canvas's content to the full page
+        ///     when printing.
+        [[nodiscard]] bool IsFittingToPageWhenPrinting() const noexcept
+            { return m_fitToPageWhenPrinting; }
+        /** @brief Adjusts the canvas's content to fit the page when printing.
+            @details The default is to draw the content as-is onto the paper,
+                maintaining its aspect ratio. (This aspect ratio is controlled
+                by calling SetCanvasMinWidthDIPs() and SetCanvasMinHeightDIPs().)\n
+                Setting this to @c true will adjust the canvas's aspect ratio
+                to fit the paper's size, resulting in filling the entire page.
+            @param fit @c true to fit the canvas to the entire printed page.*/
+        void FitToPageWhenPrinting(const bool fit) noexcept
+            { m_fitToPageWhenPrinting = fit; }
+
         /// @brief Sets the left printer header string.
         /// @param header The string to set as the left header (when printed).
         void SetLeftPrinterHeader(const wxString& header)
@@ -590,6 +610,7 @@ namespace Wisteria
 
         wxMenu* m_menu{ nullptr };
         wxPrintData m_printData;
+        bool m_fitToPageWhenPrinting{ false };
         // headers
         wxString m_leftPrinterHeader;
         wxString m_centerPrinterHeader;

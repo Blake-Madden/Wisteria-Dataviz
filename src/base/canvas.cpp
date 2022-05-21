@@ -235,6 +235,52 @@ namespace Wisteria
         Canvas* m_canvas{ nullptr };
         };
 
+    /// @brief Temporarily changes a canvas's aspect ratio to fit the page when printing.
+    class PrintFitToPageChanger
+        {
+    public:
+        /// @brief Constructor, which caches the canvas's aspect ratio and then adjusts
+        ///     it to fit the specified printout's paper size.
+        /// @param canvas The canvas to adjust.
+        /// @param printOut The printout containing the paper size.
+        PrintFitToPageChanger(Canvas* canvas, CanvasPrintout* printOut) :
+            m_canvas(canvas),
+            m_originalWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
+            originalHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0)
+            {
+            wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
+            wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
+            if (m_canvas && printOut && m_canvas->IsFittingToPageWhenPrinting())
+                {
+                int w{ 0 }, h{ 0 };
+                printOut->GetPageSizePixels(&w, &h);
+                const auto canvasInDIPs = m_canvas->ToDIP(wxSize(w, h));
+                const auto scaledHeight =
+                    geometry::calculate_rescale_height(std::make_pair(w, h), m_originalWidth);
+
+                if (scaledHeight > 0) // sanity check in case page size calc failed
+                    { m_canvas->SetCanvasMinHeightDIPs(scaledHeight); }
+                wxSizeEvent sz;
+                m_canvas->OnResize(sz);
+                }
+            }
+        /// @breif Destructor, which resets the canvas back to its original aspect ratio.
+        ~PrintFitToPageChanger()
+            {
+            if (m_canvas->IsFittingToPageWhenPrinting())
+                {
+                m_canvas->SetCanvasMinWidthDIPs(m_originalWidth);
+                m_canvas->SetCanvasMinHeightDIPs(originalHeight);
+                wxSizeEvent sz;
+                m_canvas->OnResize(sz);
+                }
+            }
+    private:
+        Canvas* m_canvas{ nullptr };
+        int m_originalWidth{ 0 };
+        int originalHeight{ 0 };
+        };
+
     //------------------------------------------------------
     void Canvas::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
@@ -245,6 +291,8 @@ namespace Wisteria
         wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
     #endif
         printOut->SetUp(dc);
+        wxWindowUpdateLocker wl(this);
+        PrintFitToPageChanger fpc(this, printOut);
 
         wxPrinter printer;
         printer.GetPrintDialogData().SetPrintData(GetPrinterData());
@@ -276,6 +324,8 @@ namespace Wisteria
     #endif
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
+        wxWindowUpdateLocker wl(this);
+        PrintFitToPageChanger fpc(this, printOut);
 
         wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, &GetPrinterData());
         if (!preview->IsOk())

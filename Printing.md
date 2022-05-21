@@ -11,6 +11,19 @@ To customize the printer settings, call `Wisteria::Canvas::SetPrinterData()`. Th
 to change the orientation and paper size of the printout. (The defaults are U.S. Letter paper size
 with portrait orientation.)
 
+Page Fitting
+----------------------------
+When printing a canvas, the default is to draw its content as-is onto the paper, maintaining its aspect ratio.
+(This aspect ratio is controlled by calling `Wisteria::Canvas::SetCanvasMinWidthDIPs()` and
+`Wisteria::Canvas::SetCanvasMinHeightDIPs()`.)
+
+A canvas can also auto-fit to its printer-page size by calling
+`Wisteria::Canvas::FitToPageWhenPrinting()`. This results in the canvas temporarily adjusting its
+ aspect ratio to match the page and filling it entirely when being printed. If a canvas only
+ contains a single graph, then this is only recommended if printing in @c wxLANDSCAPE; otherwise, the graph will
+ appear stretched vertically. This can be useful, however, if a canvas contains multiple graphs vertically
+ and you are printing in @c wxPORTRAIT; this results in a report-like appearance which more precisely fits the page.
+
 Headers & Footers
 ----------------------------
 
