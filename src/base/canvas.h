@@ -340,13 +340,13 @@ namespace Wisteria
             @brief Functions related to printing and printer settings.*/
         /// @{
 
-        /** @brief Sets the printer data.
+        /** @brief Sets the printer data, which includes paper size, orientation, etc.
             @param printData The printer data (i.e., system print settings).*/
-        void SetPrinterData(wxPrintData* printData) noexcept
+        void SetPrinterData(const wxPrintData& printData) noexcept
             { m_printData = printData; }
         /// @returns The printer data.
-        [[nodiscard]] wxPrintData& GetPrinterData() noexcept
-            { return *m_printData; }
+        [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
+            { return m_printData; }
 
         /// @brief Sets the left printer header string.
         /// @param header The string to set as the left header (when printed).
@@ -494,6 +494,9 @@ namespace Wisteria
         [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>
                           GetFixedObject(const size_t row, const size_t column) const;
     private:
+        /// @returns Direct access to the print data.
+        [[nodiscard]] wxPrintData& GetPrinterData() noexcept
+            { return m_printData; }
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }
@@ -581,7 +584,7 @@ namespace Wisteria
         bool m_alignColumnContent{ false };
 
         wxMenu* m_menu{ nullptr };
-        wxPrintData* m_printData{ nullptr };
+        wxPrintData m_printData;
         // headers
         wxString m_leftPrinterHeader;
         wxString m_centerPrinterHeader;

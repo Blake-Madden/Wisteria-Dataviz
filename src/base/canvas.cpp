@@ -235,49 +235,26 @@ namespace Wisteria
         {
         CanvasPrintout* printOut = new CanvasPrintout(this, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
-        wxPrinterDC* dc = nullptr;
+        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
     #else
-        wxPostScriptDC* dc = nullptr;
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
     #endif
-        if (m_printData)
-            {
-        #if defined(__WXMSW__) || defined(__WXOSX__)
-            dc = new wxPrinterDC(*m_printData);
-        #else
-            dc = new wxPostScriptDC(*m_printData);
-        #endif
-            }
-        else
-            {
-            wxPrintData pd;
-        #if defined(__WXMSW__) || defined(__WXOSX__)
-            dc = new wxPrinterDC(pd);
-        #else
-            dc = new wxPostScriptDC(pd);
-        #endif
-            }
-        printOut->SetDC(dc);
+        printOut->SetUp(dc);
 
         wxPrinter printer;
-        if (m_printData)
-            {
-            printer.GetPrintDialogData().SetPrintData(*m_printData);
-            }
+        printer.GetPrintDialogData().SetPrintData(GetPrinterData());
         if (!printer.Print(this, printOut, true) )
             {
             // just show a message if a real error occurred. They may have just cancelled.
             if (printer.GetLastError() == wxPRINTER_ERROR)
                 {
-                wxMessageBox(_(L"An error occurred while printing.\nYour default printer may not be set correctly."),
+                wxMessageBox(_(L"An error occurred while printing.\n"
+                                "Your default printer may not be set correctly."),
                              _(L"Print"), wxOK|wxICON_WARNING);
                 }
             }
-        if (m_printData)
-            {
-            *m_printData = printer.GetPrintDialogData().GetPrintData();
-            }
+        SetPrinterData(printer.GetPrintDialogData().GetPrintData());
         wxDELETE(printOut);
-        wxDELETE(dc);
         }
 
     //------------------------------------------------------
@@ -286,40 +263,19 @@ namespace Wisteria
         CanvasPrintout* printOut = new CanvasPrintout(this, GetLabel());
         CanvasPrintout* printOutForPrinting = new CanvasPrintout(this, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
-        wxPrinterDC* dc = nullptr;
-        wxPrinterDC* dc2 = nullptr;
+        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
+        wxPrinterDC dc2 = wxPrinterDC(GetPrinterData());
     #else
-        wxPostScriptDC* dc = nullptr;
-        wxPostScriptDC* dc2 = nullptr;
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
+        wxPostScriptDC dc2 = wxPostScriptDC(GetPrinterData());
     #endif
-        if (m_printData)
-            {
-        #if defined(__WXMSW__) || defined(__WXOSX__)
-            dc = new wxPrinterDC(*m_printData);
-            dc2 = new wxPrinterDC(*m_printData);
-        #else
-            dc = new wxPostScriptDC(*m_printData);
-            dc2 = new wxPostScriptDC(*m_printData);
-        #endif
-            }
-        else
-            {
-            wxPrintData pd;
-        #if defined(__WXMSW__) || defined(__WXOSX__)
-            dc = new wxPrinterDC(pd);
-            dc2 = new wxPrinterDC(pd);
-        #else
-            dc = new wxPostScriptDC(pd);
-            dc2 = new wxPostScriptDC(pd);
-        #endif
-            }
-        printOut->SetDC(dc);
-        printOutForPrinting->SetDC(dc2);
+        printOut->SetUp(dc);
+        printOutForPrinting->SetUp(dc2);
 
-        wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, m_printData);
+        wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, &GetPrinterData());
         if (!preview->IsOk())
             {
-            wxDELETE(preview); wxDELETE(dc); wxDELETE(dc2);
+            wxDELETE(preview);
             wxMessageBox(_(L"An error occurred while previewing.\n"
                             "Your default printer may not be set correctly."),
                          _(L"Print Preview"), wxOK|wxICON_WARNING);
@@ -333,8 +289,6 @@ namespace Wisteria
         frame->Centre(wxBOTH);
         frame->Initialize();
         frame->Show();
-
-        delete dc; delete dc2;
         }
 
     //------------------------------------------------------
