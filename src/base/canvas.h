@@ -178,11 +178,11 @@ namespace Wisteria
         /// @returns The default minimum width used for canvas.
         ///     Can be overridden by SetCanvasMinWidthDIPs().
         [[nodiscard]] static int GetDefaultCanvasWidthDIPs()
-            { return wxSize(700, 500).GetWidth(); }
+            { return m_defaultWidthDIPs; }
         /// @returns The default minimum height used for canvas.
         ///     Can be overridden by SetCanvasMinHeightDIPs().
         [[nodiscard]] static int GetDefaultCanvasHeightDIPs()
-            { return wxSize(700, 500).GetHeight(); }
+            { return m_defaultHeightDIPs; }
         /** @brief Calculates the minimum percent of the canvas an item should consume
                 when at 1.0 scaling.
             @param item The item to measure.
@@ -225,7 +225,7 @@ namespace Wisteria
         void SetFixedObjectsGridSize(const size_t rows, const size_t columns);
         /// @returns The size of the fixed object grid (number of rows x columns).
         [[nodiscard]] std::pair<size_t, size_t> GetFixedObjectsGridSize() const;
-        /// @brief Removes all fixed objects and sets the grid back to (0,0).
+        /// @brief Removes all fixed objects and sets the grid back to (0, 0).
         void ClearFixedObjects()
             { m_fixedObjects.clear(); }
         /** @brief Sets the fixed object at the given row and column.
@@ -243,10 +243,10 @@ namespace Wisteria
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
                  as stand alone axes) across a row to have the same height and positions.
-            @param align `true` to align row contents.*/
+            @param align @c true to align row contents.*/
         void AlignRowContent(const bool align) noexcept
             { m_alignRowContent = align; }
-        /// @returns `true` if items (e.g., plots, common axes) are having their content
+        /// @returns @c true if items (e.g., plots, common axes) are having their content
         ///     aligned with each other across each row.
         [[nodiscard]] bool IsRowContentAligned() const noexcept
             { return m_alignRowContent; }
@@ -254,7 +254,7 @@ namespace Wisteria
         /** @brief Whether to align the content of items across each column.
             @details For example, this will set the X axes of the plots
                 (as well as stand alone axes) down a column to have the same width and positions.
-            @param align `true` to align column contents.
+            @param align @c true to align column contents.
             @note If the grid is jagged, then the content alignment will stop on the first
                 row that has less columns than the top row. For example, if a canvas has three rows,
                 where the first and last rows have two graphs and the second only has one graph, then
@@ -263,7 +263,7 @@ namespace Wisteria
                 stops at that point.*/
         void AlignColumnContent(const bool align) noexcept
             { m_alignColumnContent = align; }
-        /// @returns `true` if items (e.g., plots, common axes) are having their content
+        /// @returns @c true if items (e.g., plots, common axes) are having their content
         ///     aligned with each other down each column.
         [[nodiscard]] bool IsColumnContentAligned() const noexcept
             { return m_alignColumnContent; }
@@ -288,7 +288,7 @@ namespace Wisteria
 
         /** @name Free-floating objects Functions
             @brief Functions related to the floating objects
-                (e.g., a label used as a "sticky note") being shown onto the canvas.
+                (e.g., a label used as a "sticky note") being shown on the canvas.\n
                 These items are not part of the fixed object grid, but instead placed
                 anywhere on the canvas, sitting on top of the grid.*/
         /// @{
@@ -407,14 +407,16 @@ namespace Wisteria
                 to match the screen size.
             @returns The scaling.*/
         [[nodiscard]] double GetScaling() const
-            { return std::max<double>(
+            {
+            return std::max<double>(
                 safe_divide<double>(GetCanvasRectDIPs().GetWidth(),
-                GetCanvasMinWidthDIPs()), 1.0f); }
+                GetCanvasMinWidthDIPs()), 1.0f);
+            }
 
         /// @brief Saves the canvas as an image.
         /// @param filePath The file path of the image to save to.
         /// @param options The export options for the image.
-        /// @returns `true` upon successful saving.
+        /// @returns @c true upon successful saving.
         bool Save(const wxFileName& filePath, const UI::ImageExportOptions& options);
 
         /// @brief Assign a menu as the right-click menu for the canvas.
@@ -538,8 +540,8 @@ namespace Wisteria
         /// @param dc The DC to measure with. May be a screen or export DC.
         /// @returns The scaled value.
         /// @note This should be used to rescale pixel values used for line widths and point sizes.
-        ///     It should NOT be used with font point sizes because DPI scaling handled by the OS for those.
-        ///     Instead, font sizes should only be scaled to the canvas's scaling.
+        ///     It should *not* be used with font point sizes because DPI scaling is handled by
+        ///     the OS for those. Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
             { return value * GetScaling() * dc.FromDIP(1); }
 
@@ -579,6 +581,8 @@ namespace Wisteria
         wxRect m_rectDIPs;
         // the minimum size of the canvas
         wxSize m_canvasMinSizeDIPs{ 0, 0 };
+        static const int m_defaultWidthDIPs{ 700 };
+        static const int m_defaultHeightDIPs{ 500 };
 
         bool m_alignRowContent{ false };
         bool m_alignColumnContent{ false };

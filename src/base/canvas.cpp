@@ -25,7 +25,7 @@ namespace Wisteria
         /// @brief Constructor.
         CanvasPrintout(Canvas* cvs, const wxString& title) : wxPrintout(title), m_canvas(cvs)
             {}
-        /** @returns `true` if specified page number is within the range of pages being printed.
+        /** @returns @c true if specified page number is within the range of pages being printed.
             @param pageNum The page number to check for.*/
         bool HasPage(int pageNum) noexcept final
             { return (pageNum == 1); }
@@ -43,7 +43,7 @@ namespace Wisteria
             }
         /** @brief Prints the specified page number.
             @param page The page to print.
-            @returns `true` if printing page was successful.*/
+            @returns @c true if printing page was successful.*/
         bool OnPrintPage(int page) final
             {
             wxDC* dc = GetDC();
@@ -160,7 +160,8 @@ namespace Wisteria
                         }
                     if (m_canvas->GetCenterPrinterHeader().length())
                         {
-                        dc->GetTextExtent(ExpandPrintString(m_canvas->GetCenterPrinterHeader()), &width, &height);
+                        dc->GetTextExtent(ExpandPrintString(
+                            m_canvas->GetCenterPrinterHeader()), &width, &height);
                         dc->DrawText(ExpandPrintString(m_canvas->GetCenterPrinterHeader()),
                             static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
                                                  safe_divide<float>(width,2)),
@@ -168,7 +169,8 @@ namespace Wisteria
                         }
                     if (m_canvas->GetRightPrinterHeader().length())
                         {
-                        dc->GetTextExtent(ExpandPrintString(m_canvas->GetRightPrinterHeader()), &width, &height);
+                        dc->GetTextExtent(ExpandPrintString(
+                            m_canvas->GetRightPrinterHeader()), &width, &height);
                         dc->DrawText(ExpandPrintString(m_canvas->GetRightPrinterHeader()),
                             static_cast<wxCoord>((dcWidth*scaleXReciprical) - (marginX+width)),
                             static_cast<wxCoord>(marginY));
@@ -189,14 +191,17 @@ namespace Wisteria
                         }
                     if (m_canvas->GetCenterPrinterFooter().length())
                         {
-                        dc->GetTextExtent(ExpandPrintString(m_canvas->GetCenterPrinterFooter()), &width, &height);
+                        dc->GetTextExtent(ExpandPrintString(
+                            m_canvas->GetCenterPrinterFooter()), &width, &height);
                         dc->DrawText(ExpandPrintString(m_canvas->GetCenterPrinterFooter()),
-                            static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) - safe_divide<float>(width,2)),
+                            static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
+                                safe_divide<float>(width,2)),
                             yPos);
                         }
                     if (m_canvas->GetRightPrinterFooter().length())
                         {
-                        dc->GetTextExtent(ExpandPrintString(m_canvas->GetRightPrinterFooter()), &width, &height);
+                        dc->GetTextExtent(ExpandPrintString(
+                            m_canvas->GetRightPrinterFooter()), &width, &height);
                         dc->DrawText(ExpandPrintString(m_canvas->GetRightPrinterFooter()),
                             static_cast<wxCoord>(((dcWidth*scaleXReciprical) - (marginX+width))),
                             yPos);
@@ -283,7 +288,7 @@ namespace Wisteria
             }
         int x{0}, y{0}, width{0}, height{0};
         wxClientDisplayRect(&x, &y, &width, &height);
-        wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"LPrint Preview"),
+        wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
                                                    wxDefaultPosition, wxSize(width, height));
 
         frame->Centre(wxBOTH);
@@ -549,12 +554,16 @@ namespace Wisteria
             wxImage img(exportFile.ConvertToImage());
 
             // color mode
-            if (options.m_mode == static_cast<decltype(options.m_mode)>(ImageExportOptions::ColorMode::Grayscale) )
+            if (options.m_mode ==
+                static_cast<decltype(options.m_mode)>(ImageExportOptions::ColorMode::Grayscale) )
                 { img = img.ConvertToGreyscale(); }
 
             // image specific options
             if (imageType == wxBITMAP_TYPE_TIF)
-                { img.SetOption(wxIMAGE_OPTION_COMPRESSION, static_cast<int>(options.m_tiffCompression)); }
+                {
+                img.SetOption(wxIMAGE_OPTION_COMPRESSION,
+                              static_cast<int>(options.m_tiffCompression));
+                }
             else if (imageType == wxBITMAP_TYPE_JPEG)
                 { img.SetOption(wxIMAGE_OPTION_QUALITY, 100); }
             else if (imageType == wxBITMAP_TYPE_PNG)
@@ -570,7 +579,8 @@ namespace Wisteria
 
             if (!img.SaveFile(filePath.GetFullPath(), imageType))
                 {
-                wxMessageBox(wxString::Format(_(L"Failed to save image\n(%s)."), filePath.GetFullPath()),
+                wxMessageBox(wxString::Format(_(L"Failed to save image\n(%s)."),
+                    filePath.GetFullPath()),
                     _(L"Save Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }
@@ -817,7 +827,8 @@ namespace Wisteria
              ++fixedObjectsRowPos)
             {
             wxASSERT_MSG(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos) <
-                static_cast<ptrdiff_t>(m_rowProportions.size()), "Canvas row proportions size is wrong!");
+                static_cast<ptrdiff_t>(m_rowProportions.size()),
+                "Canvas row proportions size is wrong!");
             const size_t objectHeight = fixedObjectRect.GetHeight() *
                 m_rowProportions.at(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos));
             size_t currentXPos{ 0 };
@@ -858,9 +869,11 @@ namespace Wisteria
                         {
                         const auto originalWidth = boundingRect.GetWidth();
                         auto widthDiff = (originalWidth - measuredBox.GetWidth());
-                        if (objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+                        if (objectsPos->GetPageHorizontalAlignment() ==
+                                 PageHorizontalAlignment::Centered)
                             { widthDiff /= 2; }
-                        else if (objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
+                        else if (objectsPos->GetPageHorizontalAlignment() ==
+                                 PageHorizontalAlignment::LeftAligned)
                             { widthDiff = 0; }
                         boundingRect.x += widthDiff;
                         boundingRect.SetWidth(measuredBox.GetWidth());
@@ -913,7 +926,8 @@ namespace Wisteria
                     if (topPoints.size() && bottomPoints.size())
                         {
                         const auto topPt = *std::max_element(topPoints.cbegin(), topPoints.cend());
-                        const auto bottomPt = *std::min_element(bottomPoints.cbegin(), bottomPoints.cend());
+                        const auto bottomPt = *std::min_element(bottomPoints.cbegin(),
+                                                                bottomPoints.cend());
                         for (auto& objectsPos : *fixedObjectsRowItems)
                             {
                             if (objectsPos != nullptr &&
@@ -964,8 +978,10 @@ namespace Wisteria
                         { break; }
                     if (leftPoints.size() && rightPoints.size())
                         {
-                        const auto leftPt = *std::max_element(leftPoints.cbegin(), leftPoints.cend());
-                        const auto rightPt = *std::min_element(rightPoints.cbegin(), rightPoints.cend());
+                        const auto leftPt = *std::max_element(leftPoints.cbegin(),
+                                                              leftPoints.cend());
+                        const auto rightPt = *std::min_element(rightPoints.cbegin(),
+                                                               rightPoints.cend());
                         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
                              fixedObjectsRowPos != GetFixedObjects().end();
                              ++fixedObjectsRowPos)
@@ -1013,7 +1029,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row, const size_t column)
+    std::shared_ptr<GraphItems::GraphItemBase>
+        Canvas::GetFixedObject(const size_t row, const size_t column)
         {
         wxASSERT(GetFixedObjects().size());
         wxASSERT(row < GetFixedObjects().size());
@@ -1026,7 +1043,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    const std::shared_ptr<GraphItems::GraphItemBase> Canvas::GetFixedObject(const size_t row, const size_t column) const
+    const std::shared_ptr<GraphItems::GraphItemBase>
+        Canvas::GetFixedObject(const size_t row, const size_t column) const
         {
         wxASSERT(GetFixedObjects().size());
         wxASSERT(row < GetFixedObjects().size());
@@ -1273,20 +1291,24 @@ namespace Wisteria
             wxCoord labelWidth{ 0 }, labelHeight{ 0 };
             if (watermark.m_direction == WatermarkDirection::Diagonal)
                 {
-                const double angle = std::atan(safe_divide<double>(drawingRect.GetHeight(),
-                                                                   drawingRect.GetWidth())) * (180 / M_PI);
+                const double angle =
+                    std::atan(safe_divide<double>(drawingRect.GetHeight(),
+                                                  drawingRect.GetWidth())) * (180 / M_PI);
 
                 // set the font size so that the text will fit diagonally
                 wxFont labelFont = dc.GetFont();
-                labelFont.SetPointSize(Label::CalcDiagonalFontSize(dc, labelFont, drawingRect, angle, watermark.m_label));
+                labelFont.SetPointSize(Label::CalcDiagonalFontSize(dc, labelFont, drawingRect,
+                                                                   angle, watermark.m_label));
                 labelFont.MakeBold();
                 wxDCFontChanger fc(dc, labelFont);
 
                 dc.GetMultiLineTextExtent(watermark.m_label, &labelWidth, &labelHeight);
 
-                const float widthOfWatermark = labelWidth*std::abs(std::cos(geometry::degrees_to_radians(angle))) -
+                const float widthOfWatermark =
+                    labelWidth*std::abs(std::cos(geometry::degrees_to_radians(angle))) -
                     labelHeight*std::abs(std::sin(geometry::degrees_to_radians(angle)));
-                const float heightOfWatermark = labelWidth*std::abs(std::sin(geometry::degrees_to_radians(angle))) +
+                const float heightOfWatermark =
+                    labelWidth*std::abs(std::sin(geometry::degrees_to_radians(angle))) +
                     labelHeight*std::abs(std::cos(geometry::degrees_to_radians(angle)));
 
                 std::negate<double> neg;
@@ -1299,7 +1321,8 @@ namespace Wisteria
                 {
                 wxFont labelFont = dc.GetFont();
                 labelFont.SetPointSize(
-                    Label::CalcFontSizeToFitBoundingBox(dc, labelFont, drawingRect, watermark.m_label));
+                    Label::CalcFontSizeToFitBoundingBox(dc, labelFont,
+                                                        drawingRect, watermark.m_label));
                 labelFont.MakeBold();
                 wxDCFontChanger fc(dc, labelFont);
 
@@ -1361,7 +1384,8 @@ namespace Wisteria
                 (*movableObjectsPos)->SetSelected(!(*movableObjectsPos)->IsSelected());
                 Refresh(true);
                 Update();
-                m_dragImage.reset(new wxDragImage((*movableObjectsPos)->ToBitmap(gdc), wxCursor(wxCURSOR_HAND)));
+                m_dragImage.reset(new wxDragImage((*movableObjectsPos)->ToBitmap(gdc),
+                                                  wxCursor(wxCURSOR_HAND)));
                 (*movableObjectsPos)->SetInDragState(true);
                 currentlyDraggedShape = (*movableObjectsPos);
                 event.Skip();
@@ -1382,7 +1406,8 @@ namespace Wisteria
                      fixedObjectsPos != fixedObjectsRowPos->end();
                      ++fixedObjectsPos)
                     {
-                    if ((*fixedObjectsPos) && (*fixedObjectsPos)->SelectObjectAtPoint(unscrolledPosition, gdc))
+                    if ((*fixedObjectsPos) &&
+                        (*fixedObjectsPos)->SelectObjectAtPoint(unscrolledPosition, gdc))
                         {
                         Refresh(true);
                         Update();
@@ -1411,7 +1436,8 @@ namespace Wisteria
             dragMode = DragMode::DraggingNone;
 
             wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Drag image is null while mouse up, although drag mode isn't set to none!");
+                                 "Drag image is null while mouse up, "
+                                 "although drag mode isn't set to none!");
             if (m_dragImage != nullptr)
                 {
                 m_dragImage->Hide();
@@ -1420,7 +1446,8 @@ namespace Wisteria
                 }
 
             wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Item being dragged is null while mouse up, although drag mode isn't set to none!");
+                                 "Item being dragged is null while mouse up, "
+                                 "although drag mode isn't set to none!");
             if (currentlyDraggedShape)
                 {
                 const wxPoint movePt(unscrolledPosition-dragStartPos);
@@ -1435,7 +1462,8 @@ namespace Wisteria
         else if (event.Dragging() && dragMode != DragMode::DraggingNone)
             {
             wxASSERT_LEVEL_2_MSG(currentlyDraggedShape,
-                                 "Item being dragged is null while mouse drag, although drag mode isn't set to none!");
+                                 "Item being dragged is null while mouse drag, "
+                                 "although drag mode isn't set to none!");
             if (dragMode == DragMode::DragStart && currentlyDraggedShape)
                 {
                 dragStartPos = unscrolledPosition;
@@ -1451,7 +1479,8 @@ namespace Wisteria
                 Update();
 
                 // the offset between the top-left of the shape image and the current shape position
-                const wxPoint beginDragHotSpot = dragStartPos-currentlyDraggedShape->GetBoundingBox(gdc).GetPosition();
+                const wxPoint beginDragHotSpot =
+                    dragStartPos - currentlyDraggedShape->GetBoundingBox(gdc).GetPosition();
                 // now we do this inside the implementation: always assume
                 // coordinates relative to the capture window (client coordinates)
                 if (!m_dragImage->BeginDrag(beginDragHotSpot, this, false))
