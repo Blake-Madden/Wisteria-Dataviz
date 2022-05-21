@@ -682,12 +682,15 @@ namespace Wisteria::GraphItems
                  ++iconPos)
                 {
                 wxPen scaledIconPen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen());
-                scaledIconPen.SetWidth(
-                    ScaleToScreenAndCanvas(
-                        // if a line icon, make it a minimum of 2 pixels wide
-                        (iconPos->m_shape == IconShape::HorizontalLineIcon ?
-                         std::max(scaledIconPen.GetWidth(), 2) :
-                         scaledIconPen.GetWidth())) );
+                if (scaledIconPen.IsOk())
+                    {
+                    scaledIconPen.SetWidth(
+                        ScaleToScreenAndCanvas(
+                            // if a line icon, make it a minimum of 2 pixels wide
+                            (iconPos->m_shape == IconShape::HorizontalLineIcon ?
+                             std::max(scaledIconPen.GetWidth(), 2) :
+                             scaledIconPen.GetWidth())) );
+                    }
                 wxDCPenChanger pc2(dc, scaledIconPen);
                 wxDCBrushChanger bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush());
                 const size_t currentIndex = (iconPos-GetLegendIcons().begin());
