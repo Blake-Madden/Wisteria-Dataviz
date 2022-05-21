@@ -245,8 +245,9 @@ namespace Wisteria
         /// @param printOut The printout containing the paper size.
         PrintFitToPageChanger(Canvas* canvas, CanvasPrintout* printOut) :
             m_canvas(canvas),
-            m_originalWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
-            originalHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0)
+            m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
+            m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
+            m_originalSize(canvas ? canvas->GetSize() : wxSize())
             {
             wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
             wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
@@ -256,63 +257,70 @@ namespace Wisteria
                 printOut->GetPageSizePixels(&w, &h);
                 const auto canvasInDIPs = m_canvas->ToDIP(wxSize(w, h));
                 const auto scaledHeight =
-                    geometry::calculate_rescale_height(std::make_pair(w, h), m_originalWidth);
+                    geometry::calculate_rescale_height(std::make_pair(w, h), m_originalMinWidth);
 
                 if (scaledHeight > 0) // sanity check in case page size calc failed
-                    { m_canvas->SetCanvasMinHeightDIPs(scaledHeight); }
-                wxSizeEvent sz;
-                m_canvas->OnResize(sz);
+                    {
+                    m_canvas->SetCanvasMinHeightDIPs(scaledHeight);
+                    m_canvas->SetSize(
+                        m_canvas->FromDIP(wxSize(m_canvas->GetCanvasMinWidthDIPs(),
+                                                 m_canvas->GetCanvasMinHeightDIPs())));
+                    }
                 }
             }
-        /// @breif Destructor, which resets the canvas back to its original aspect ratio.
+        /// @breif Destructor, which resets the canvas back to its original aspect ratio and size.
         ~PrintFitToPageChanger()
             {
             if (m_canvas->IsFittingToPageWhenPrinting())
                 {
-                m_canvas->SetCanvasMinWidthDIPs(m_originalWidth);
-                m_canvas->SetCanvasMinHeightDIPs(originalHeight);
-                wxSizeEvent sz;
-                m_canvas->OnResize(sz);
+                m_canvas->SetCanvasMinWidthDIPs(m_originalMinWidth);
+                m_canvas->SetCanvasMinHeightDIPs(m_originalMinHeight);
+                m_canvas->SetSize(m_originalSize);
                 }
             }
     private:
         Canvas* m_canvas{ nullptr };
-        int m_originalWidth{ 0 };
-        int originalHeight{ 0 };
+        int m_originalMinWidth{ 0 };
+        int m_originalMinHeight{ 0 };
+        wxSize m_originalSize;
         };
 
     //------------------------------------------------------
     void Canvas::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
-        CanvasPrintout* printOut = new CanvasPrintout(this, GetLabel());
+        auto printOut = std::make_unique<CanvasPrintout>(this, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
         wxPrinterDC dc = wxPrinterDC(GetPrinterData());
     #else
         wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
     #endif
         printOut->SetUp(dc);
+
         wxWindowUpdateLocker wl(this);
-        PrintFitToPageChanger fpc(this, printOut);
+        PrintFitToPageChanger fpc(this, printOut.get());
 
         wxPrinter printer;
         printer.GetPrintDialogData().SetPrintData(GetPrinterData());
-        if (!printer.Print(this, printOut, true) )
+        if (!printer.Print(this, printOut.get(), true) )
             {
             // just show a message if a real error occurred. They may have just cancelled.
             if (printer.GetLastError() == wxPRINTER_ERROR)
                 {
                 wxMessageBox(_(L"An error occurred while printing.\n"
                                 "Your default printer may not be set correctly."),
-                             _(L"Print"), wxOK|wxICON_WARNING);
+                                _(L"Print"), wxOK|wxICON_WARNING);
                 }
             }
         SetPrinterData(printer.GetPrintDialogData().GetPrintData());
-        wxDELETE(printOut);
         }
 
     //------------------------------------------------------
     void Canvas::OnPreview([[maybe_unused]] wxCommandEvent& event)
         {
+        // From wx's docs:
+        // Do not explicitly delete the printout objects once this constructor has been called,
+        // since they will be deleted in the wxPrintPreview destructor.
+        // The same does not apply to the (printer) data argument.
         CanvasPrintout* printOut = new CanvasPrintout(this, GetLabel());
         CanvasPrintout* printOutForPrinting = new CanvasPrintout(this, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
@@ -324,10 +332,13 @@ namespace Wisteria
     #endif
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
+
         wxWindowUpdateLocker wl(this);
         PrintFitToPageChanger fpc(this, printOut);
 
-        wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting, &GetPrinterData());
+        // wxPreviewFrame make take ownership, don't use smare pointer here
+        wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting,
+                                                     &GetPrinterData());
         if (!preview->IsOk())
             {
             wxDELETE(preview);
@@ -336,7 +347,7 @@ namespace Wisteria
                          _(L"Print Preview"), wxOK|wxICON_WARNING);
             return;
             }
-        int x{0}, y{0}, width{0}, height{0};
+        int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
         wxClientDisplayRect(&x, &y, &width, &height);
         wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
                                                    wxDefaultPosition, wxSize(width, height));
