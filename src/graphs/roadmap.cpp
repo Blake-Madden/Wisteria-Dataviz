@@ -18,11 +18,25 @@ namespace Wisteria::Graphs
     Roadmap::Roadmap(Canvas* canvas) :
             Graph2D(canvas)
         {
-        // axes aren't actually shown, just used for placing the objects
-        GetBottomXAxis().Show(false);
-        GetTopXAxis().Show(false);
-        GetLeftYAxis().Show(false);
-        GetRightYAxis().Show(false);
+        // Axes aren't actually shown, just used for placing the objects.
+        // But client might want to add axis titles or brackets, so hide
+        // the lines and labels explicilty instead of entirely hiding the axes.
+        GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetBottomXAxis().GetAxisLinePen() = wxNullPen;
+        GetBottomXAxis().GetGridlinePen() = wxNullPen;
+
+        GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetTopXAxis().GetAxisLinePen() = wxNullPen;
+        GetTopXAxis().GetGridlinePen() = wxNullPen;
+
+        GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetLeftYAxis().GetAxisLinePen() = wxNullPen;
+        GetLeftYAxis().GetGridlinePen() = wxNullPen;
+
+        GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+        GetRightYAxis().GetAxisLinePen() = wxNullPen;
+        GetRightYAxis().GetGridlinePen() = wxNullPen;
+
         GetBottomXAxis().SetRange(0, 100, 0, 1, 1);
         }
 
