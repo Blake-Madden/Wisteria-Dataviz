@@ -1229,7 +1229,7 @@ namespace Wisteria
             {
             wxDCFontChanger fc(dc, m_watermarkFont);
             DrawWatermarkLabel(dc, GetCanvasRect(dc),
-                WaterMark{ GetWatermark(),
+                Watermark{ GetWatermark(),
                 ColorBrewer::GetColor(Color::Red, Settings::GetTranslucencyValue()),
                 WatermarkDirection::Diagonal } );
             }
@@ -1279,7 +1279,7 @@ namespace Wisteria
         }
 
     //-------------------------------------------
-    void Canvas::DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect, const WaterMark& watermark)
+    void Canvas::DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect, const Watermark& watermark)
         {
         wxDCTextColourChanger cc(dc, watermark.m_color);
 

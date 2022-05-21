@@ -5,11 +5,14 @@ The `Wisteria::Canvas` object has print support built into it. To initiate a pri
 under Microsoft Windows) operation, send a `wxID_PRINT` (or `wxID_PREVIEW`) event to a `Wisteria::Canvas` window.
 Any objects on the canvas (e.g., plots, legends) will then be printed.
 
+Print Settings
+----------------------------
+To customize the printer settings, call `Wisteria::Canvas::SetPrinterData()`. This will enable you
+to change the orientation and paper size of the printout. (The defaults are U.S. Letter paper size
+with portrait orientation.)
+
 Headers & Footers
 ----------------------------
-
-To customize the printer settings, call `Wisteria::Canvas::SetPrinterData()`. This will enable you
-to change the orientation and paper size of the printout.
 
 Headers and footers can be added to a printout via `Wisteria::Canvas::SetLeftPrinterHeader()`,
 `Wisteria::Canvas::SetCenterPrinterHeader()`, `Wisteria::Canvas::SetRightPrinterHeader()`,
@@ -30,5 +33,11 @@ Note that a user interface, `PrinterHeaderFooterDlg`, is also available to promp
 Watermarks
 ----------------------------
 
-Finally, watermarks can be drawn across the canvas via `Wisteria::Canvas::DrawWatermarkLabel()`.
+Finally, watermarks can be drawn across the canvas via `Wisteria::Canvas::SetWatermark()`.
 Note that the text, color, and direction of this watermark are fully customizable.
+
+Notes
+----------------------------
+It should be noted that all printer settings are managed on the canvas level, not globally. In other words,
+each canvas has its own paper size, header and footers, watermarks, etc. If your application allows customizing
+printer settings by the client, then it will need to apply any updates to all active canvases.

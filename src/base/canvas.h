@@ -337,7 +337,8 @@ namespace Wisteria
         /// @}
 
         /** @name Print Functions
-            @brief Functions related to printing and printer settings.*/
+            @brief Functions related to printing and printer settings.
+            @sa The [printing](../../Printing.md) overview for more information.*/
         /// @{
 
         /** @brief Sets the printer data, which includes paper size, orientation, etc.
@@ -447,7 +448,7 @@ namespace Wisteria
             };
 
         /// @brief Information for drawing a watermark across a canvas.
-        struct WaterMark
+        struct Watermark
             {
             /** @brief The text.*/
             wxString m_label;
@@ -462,7 +463,7 @@ namespace Wisteria
             @param drawingRect The rect within the DC to draw within.
             @param watermark The label to draw across the canvas.*/
         static void DrawWatermarkLabel(wxDC& dc, const wxRect drawingRect,
-                                       const WaterMark& watermark);
+                                       const Watermark& watermark);
         /** @brief Draws a watermark logo on the corner of a canvas.
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc);
