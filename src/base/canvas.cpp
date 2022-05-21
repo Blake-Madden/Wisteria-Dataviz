@@ -836,7 +836,9 @@ namespace Wisteria
     void Canvas::CalcAllSizes(wxDC& dc)
         {
         wxASSERT_MSG(
-            (std::accumulate(m_rowProportions.cbegin(), m_rowProportions.cend(), 0.0)) <= 1,
+            (std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
+                [](const auto initVal, const auto val) noexcept
+                    { return initVal + val.GetHeightProportion(); })) <= 1,
             "Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
@@ -881,17 +883,17 @@ namespace Wisteria
                 }
             }
 
-        size_t rowHeightOffset(0);
+        size_t rowHeightOffset{ 0 };
         // go through each row of items (e.g., subplots) and resize and move them into their grid area
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
              fixedObjectsRowPos != GetFixedObjects().end();
              ++fixedObjectsRowPos)
             {
             wxASSERT_MSG(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos) <
-                static_cast<ptrdiff_t>(m_rowProportions.size()),
+                static_cast<ptrdiff_t>(m_rowsInfo.size()),
                 "Canvas row proportions size is wrong!");
             const size_t objectHeight = fixedObjectRect.GetHeight() *
-                m_rowProportions.at(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos));
+                GetRowInfo(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)).GetHeightProportion();
             size_t currentXPos{ 0 };
             auto& currentRow = *fixedObjectsRowPos;
             for (size_t i = 0; i < currentRow.size(); ++i)
@@ -1085,8 +1087,8 @@ namespace Wisteria
             { pos->resize(columns, nullptr); }
 
         // a full reset is needed
-        m_rowProportions.clear();
-        m_rowProportions.resize(rows, safe_divide<double>(1.0, rows));
+        m_rowsInfo.clear();
+        m_rowsInfo.resize(rows, CanvasRowInfo{ safe_divide<double>(1.0, rows) });
         }
 
     //---------------------------------------------------

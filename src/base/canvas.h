@@ -56,6 +56,29 @@ namespace Wisteria
     public:
         friend class CanvasPrintout;
 
+        /// @brief Class describing a row of items on the canvas.
+        class CanvasRowInfo
+            {
+        public:
+            /// @brief Constructor.
+            /// @param prop The proportion of the canvas's height that this row consumes.
+            CanvasRowInfo(const double prop) : m_heightProportion(prop)
+                {}
+            /// @brief The proportion of the canvas's height that this row consumes.
+            /// @param prop The height proportion (0.0 - 1.0).
+            /// @returns A self reference.
+            CanvasRowInfo& HeightProportion(const double prop) noexcept
+                {
+                m_heightProportion = prop;
+                return *this;
+                }
+            /// @returns The height proportion of the canvas that this row consumes.
+            [[nodiscard]] double GetHeightProportion() const noexcept
+                { return m_heightProportion; }
+        private:
+            double m_heightProportion{ 1.0 };
+            };
+
         /** @brief Constructor.
             @param parent The parent window that will manage the canvas.
             @param itemId The ID of this canvas.
@@ -205,7 +228,7 @@ namespace Wisteria
                 when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This can be passed to the canvas's SetRowProportion() method.*/
+            @note This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.*/
         [[nodiscard]] double CalcMinHeightProportion(
                                  const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
@@ -273,21 +296,19 @@ namespace Wisteria
         [[nodiscard]] bool IsColumnContentAligned() const noexcept
             { return m_alignColumnContent; }
 
-        /** @brief Sets the proportion of the canvas (height-wise) that the given row should consume.
-            @param row The row index.
-            @param proportion The percent of the canvas the row should consume.
+        /** @brief Accesses attibutes for a row.
+            @details This can be used for adjusting the row's canvas height proportion.
+            @returns The row information at the specified index.
             @warning When setting a row's proportion, be sure to reset all other row proportions
                 as well; otherwise, they will not all add up to 100%. This is because when a grid size
                 is specified, the rows are given uniform proportions. If one is changes, then the sum
                 of all row proportions will be more or less than 100%. You must adjust all other rows
                 accordingly.*/
-        void SetRowProportion(const size_t row, const double proportion) noexcept
+        [[nodiscard]] CanvasRowInfo& GetRowInfo(const size_t row) noexcept
             {
-            wxASSERT_MSG(row < m_rowProportions.size(),
-                         "Invalid row in call to SetRowProportion()!");
-            if (row >= m_rowProportions.size())
-                { return; }
-            m_rowProportions.at(row) = proportion;
+            wxASSERT_MSG(row < m_rowsInfo.size(),
+                L"Invalid row in call to GetRowInfo()!");
+            return m_rowsInfo.at(row);
             }
         /// @}
 
@@ -632,7 +653,7 @@ namespace Wisteria
 
         // embedded object (e.g., graphs, legends)
         std::vector<std::vector<std::shared_ptr<GraphItems::GraphItemBase>>> m_fixedObjects;
-        std::vector<double> m_rowProportions;
+        std::vector<CanvasRowInfo> m_rowsInfo;
 
         // draggable items
         std::shared_ptr<wxDragImage> m_dragImage;
