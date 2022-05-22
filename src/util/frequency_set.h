@@ -200,8 +200,11 @@ public:
     /// @brief Clears the contents of the set.
     void clear() noexcept
         { m_table.clear(); }
-    /// @returns The (const) set of values and their respective counts and totals.
+    /// @private
     [[nodiscard]] const map_type& get_data() const noexcept
+        { return m_table; }
+    /// @returns The set of values and their respective counts and totals.
+    [[nodiscard]] map_type& get_data() noexcept
         { return m_table; }
 private:
     map_type m_table;
