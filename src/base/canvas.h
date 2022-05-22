@@ -221,7 +221,10 @@ namespace Wisteria
                                  const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
-            return safe_divide<double>(item->GetBoundingBox(gdc).GetWidth(),
+            return safe_divide<double>(
+                item->GetBoundingBox(gdc).GetWidth() +
+                    gdc.FromDIP(item->GetLeftCanvasMargin()) +
+                    gdc.FromDIP(item->GetRightCanvasMargin()),
                 gdc.FromDIP(GetCanvasMinWidthDIPs()));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
@@ -233,7 +236,12 @@ namespace Wisteria
                                  const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
-            return safe_divide<double>(item->GetBoundingBox(gdc).GetHeight(),
+            return safe_divide<double>(
+                item->GetBoundingBox(gdc).GetHeight() +
+                    // canvas margins aren't factored into the item's calculated bounding box,
+                    // so add that here
+                    gdc.FromDIP(item->GetTopCanvasMargin()) +
+                    gdc.FromDIP(item->GetBottomCanvasMargin()),
                 gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
         /// @}
