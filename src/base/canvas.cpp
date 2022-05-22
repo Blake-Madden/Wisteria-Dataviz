@@ -818,11 +818,11 @@ namespace Wisteria
     void Canvas::OnResize([[maybe_unused]] wxSizeEvent& event)
         {
         wxGCDC gdc(this);
-        //if the new size is larger than the canvas itself, then turn off zooming.
+        // if the new size is larger than the canvas itself, then turn off zooming.
         if (GetClientRect().GetWidth() > GetCanvasRect(gdc).GetWidth() &&
             GetClientRect().GetHeight() > GetCanvasRect(gdc).GetHeight())
             { m_zoomLevel = 0; }
-        //don't resize if canvas is zoomed into
+        // don't resize if canvas is zoomed into
         if (m_zoomLevel <= 0)
             {
             m_rectDIPs = GetClientRect();
@@ -885,6 +885,16 @@ namespace Wisteria
             }
 
         if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+            {
+            m_debugInfo = wxString::Format(L"Canvas scaling: %s\n"
+                "Area height: %s\nGrid height: %s\n",
+                wxNumberFormatter::ToString(GetScaling(), 3,
+                    wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                wxNumberFormatter::ToString(GetCanvasRect(dc).GetHeight(), 0,
+                    wxNumberFormatter::Style::Style_WithThousandsSep),
+                wxNumberFormatter::ToString(fixedObjectRect.GetHeight(), 0,
+                    wxNumberFormatter::Style::Style_WithThousandsSep));
+            }
         size_t rowHeightOffset{ 0 };
         // go through each row of items (e.g., subplots) and resize and move them into their grid area
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
@@ -1309,6 +1319,19 @@ namespace Wisteria
                 Watermark{ GetWatermark(),
                 ColorBrewer::GetColor(Color::Red, Settings::GetTranslucencyValue()),
                 WatermarkDirection::Diagonal } );
+            }
+
+        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+            {
+            m_debugInfo.Trim();
+            const auto bBox = GetCanvasRect(dc);
+            Label infoLabel(GraphItemInfo(m_debugInfo).
+                AnchorPoint(bBox.GetBottomRight()).
+                Anchoring(Anchoring::BottomRightCorner).
+                FontColor(*wxBLUE).
+                Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
+                FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+            infoLabel.Draw(dc);
             }
         }
 
