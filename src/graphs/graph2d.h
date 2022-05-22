@@ -31,21 +31,26 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The parent canvas that the plot is being drawn on.*/
         explicit Graph2D(Canvas* canvas);
+        /// @private
         Graph2D(const Graph2D&) = delete;
+        /// @private
         Graph2D(Graph2D&&) = delete;
+        /// @private
         Graph2D& operator=(const Graph2D&) = delete;
+        /// @private
         Graph2D& operator=(Graph2D&&) = delete;
 
         /** @brief Embeds an object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
             @param pt The X and Y coordinates of the object. These coordinates are relative to the
-             plot's X and Y axes, not physical coordinates on the canvas.\n
-             Note that if one (or both) of the axes are date-based, you can call @c GetPointFromDate()
-             to find its point to use here.
-            @param interestPts An optional collection of points on the plot to draw a line from this
-             object's anchor point to. For example, this can draw a line from a data point to an annotation.
+                plot's X and Y axes, not physical coordinates on the canvas.\n
+                Note that if one (or both) of the axes are date-based, you can call
+                @c GetPointFromDate() to find its point to use here.
+            @param interestPts An optional collection of points on the plot to draw a line from
+                this object's anchor point to.
+                For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on top of the plot.
-             An example would be inserting a @c Label as a sticky note.*/
+                An example would be inserting a @c Label as a sticky note.*/
         void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
                                const wxPoint pt,
                                const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
@@ -64,24 +69,24 @@ namespace Wisteria::Graphs
 
         /** @brief Sets/gets the graph's title.
             @note The title's relative alignment controls where the title is aligned against the plot
-             (i.e., whether it is center, right aligned, etc.).\n
-             Its display info controls its font, color, and other formatting settings.\n
-             As a special note, changing its background color will stretch the title across
-             the graph area, making it appear as a banner.
+                (i.e., whether it is center, right aligned, etc.).\n
+                Its display info controls its font, color, and other formatting settings.\n
+                As a special note, changing its background color will stretch the title across
+                the graph area, making it appear as a banner.
             @returns The title.*/
         [[nodiscard]] GraphItems::Label& GetTitle() noexcept
             { return m_title; }
 
         /** @brief Sets/gets the graph's subtitle.
             @note The subtitle's relative alignment controls where the subtitle is aligned against the plot.\n
-             Its display info controls its font, color, and other formatting settings.
+                Its display info controls its font, color, and other formatting settings.
             @returns The subtitle.*/
         [[nodiscard]] GraphItems::Label& GetSubtitle() noexcept
             { return m_subtitle; }
 
         /** @brief Sets/gets the graph's caption.
             @note The caption's relative alignment controls where the caption is aligned against the plot.\n
-             Its display info controls its font, color, and other formatting settings.
+                Its display info controls its font, color, and other formatting settings.
             @returns The caption.*/
         [[nodiscard]] GraphItems::Label& GetCaption() noexcept
             { return m_caption; }
@@ -129,7 +134,8 @@ namespace Wisteria::Graphs
         void MirrorYAxis(const bool mirror) noexcept
             { m_mirrorYAxis = mirror; }
 
-        /** @brief Adds a custom axis that would be in addition to the regular X and Y axes around the graph.
+        /** @brief Adds a custom axis that would be in addition to the regular X and Y
+                axes around the graph.
             @param axis The custom axis to add.*/
         void AddCustomAxis(Wisteria::GraphItems::Axis& axis)
             {
@@ -138,18 +144,20 @@ namespace Wisteria::Graphs
 
         /** @brief Adds a reference line to draw across the graph.
             @details The parent axis and starting point are specified in the @c ReferenceLine,
-             and the graph will set the length of the line to be the full length of the parallel axis for you.
+                and the graph will set the length of the line to be the full length of the
+                parallel axis for you.
             @param refLine The reference line to add.*/
         void AddReferenceLine(const Wisteria::GraphItems::ReferenceLine& refLine)
             { m_referenceLines.push_back(refLine); }
 
         /** @brief Adds a reference area to draw across the graph.
-            @details The parent axis and starting points are specified in the composite reference lines,
-             and the graph will set the length of the lines to be the full length of the parallel axis for you.
+            @details The parent axis and starting points are specified in the composite
+                reference lines, and the graph will set the length of the lines to be the
+                full length of the parallel axis for you.
             @param refArea The reference area to add.
             @note Duplicate reference areas will be combined into one on the legend;
-             This is useful for instances of related events on a plot (e.g., recessions).
-             In this context, 'duplicate' means the areas have the same label and area color.*/
+                This is useful for instances of related events on a plot (e.g., recessions).
+                In this context, 'duplicate' means the areas have the same label and area color.*/
         void AddReferenceArea(const Wisteria::GraphItems::ReferenceArea& refArea)
             { m_referenceAreas.push_back(refArea); }
         /// @}
@@ -159,7 +167,8 @@ namespace Wisteria::Graphs
         /// @{
 
         /** @brief Sets the image brush to paint with.
-            @details This is used by derived classes that use stipple painting for its objects (e.g., barcharts).
+            @details This is used by derived classes that use stipple painting for its objects
+                (e.g., barcharts).
             @param image The image to paint with.*/
         void SetStippleBrush(const wxBitmapBundle& image) noexcept
             { m_stipple = image; }
@@ -169,21 +178,21 @@ namespace Wisteria::Graphs
             { return m_stipple; }
 
         /// @returns The background color of the plotting area
-        ///  (i.e., the area inside the X and Y axes).
-        /// @note By default, this color is invalid and not used, which will allow the parent canvas's
-        ///  background to show through. To see which color is actually being shown in the plotting
-        ///  area, call GetPlotOrCanvasColor().
+        ///     (i.e., the area inside the X and Y axes).
+        /// @note By default, this color is invalid and not used, which will allow the parent
+        ///     canvas's background to show through. To see which color is actually being shown
+        ///     in the plotting area, call GetPlotOrCanvasColor().
         [[nodiscard]] wxColour GetBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
-             This is the color of the plotting area (inside the main axes).
-             This is invalid by default (normally, the canvas background will show through).
+                This is the color of the plotting area (inside the main axes).
+                This is invalid by default (normally, the canvas background will show through).
             @param color The color to paint with.*/
         void SetBackgroundColor(const wxColour& color)
             { m_bgColor = color; }
 
         /// @returns The plot background color, if it is valid and not transparent;
-        ///  otherwise, returns the canvas's background.
+        ///     otherwise, returns the canvas's background.
         [[nodiscard]] wxColour GetPlotOrCanvasColor() const noexcept
             {
             return (m_bgColor.IsOk() && m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
@@ -209,7 +218,7 @@ namespace Wisteria::Graphs
         /** @name Property Functions
             @brief Functions related to adding custom properties to a plot.
             @details This is a useful way to add extended information to a plot
-             that can be application specific.*/
+                that can be application specific.*/
         /// @{
 
         /// @brief Clears all custom properties.
@@ -290,31 +299,31 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxColour GetImageOulineColor() const noexcept
             { return m_imageOutlineColor; }
         /** @brief Updates the settings for a legend based on the provided hints.
-             This should be called on a legend after it is constructed by
-             a derived graph type.
+                This should be called on a legend after it is constructed by
+                a derived graph type.
             @param[in,out] legend The legend to adjust.
             @param hint A hint about where the legend will be placed.*/
         void AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
                                   const LegendCanvasPlacementHint hint);
         /** @brief Adds information about any reference lines/areas in the graph onto the legend.
             @details This will be a separate section added to the bottom of the legend,
-             with a separator line above it.
+                with a separator line above it.
             @param[in,out] legend The legend to add the information to. This should already be
-             constructed with any other text and icons it needs in it.
+                constructed with any other text and icons it needs in it.
             @note Duplicate reference areas will be combined into one;
-             This is useful for multiple instances of the same event on a plot
-             (e.g., recessions).*/
+                This is useful for multiple instances of the same event on a plot
+                (e.g., recessions).*/
         void AddReferenceLinesAndAreasToLegend(std::shared_ptr<GraphItems::Label>& legend) const;
         /// @returns A non-const version of the parent canvas.
         /// @details This should be used in derived classes when needing to call
-        ///  `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeightDIPs()`.
+        ///     `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeightDIPs()`.
         [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
             { return m_parentCanvas; }
         /** @brief Adds an object (e.g., a polygon) to the plot to be rendered.
             @param object The object to add to the plot.
             @note The canvas of @c object is set to the plot's, but its scaling
-             is preserved as objects may be using the parent's scaling or a different
-             one, depending on how it was constructed.*/
+                is preserved as objects may be using the parent's scaling or a different
+                one, depending on how it was constructed.*/
         void AddObject(std::shared_ptr<GraphItems::GraphItemBase> object)
             {
             if (object != nullptr)
@@ -345,7 +354,7 @@ namespace Wisteria::Graphs
             @param xValue The x value of the point.
             @param yValue The y value of the point.
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
-             within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
+                within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
             @returns `true` if the point could be found within the plot.*/
         bool GetPhyscialCoordinates(const double xValue, const double yValue, wxPoint& resultPt) const
             {
@@ -362,17 +371,17 @@ namespace Wisteria::Graphs
         /** @brief Retrieves the coordinates on the canvas where the given point is at.
             @param point The point to search for.
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
-             within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
+                within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
             @returns `true` if the point could be found within the plot.*/
         bool GetPhyscialCoordinates(const wxPoint& point, wxPoint& resultPt) const
             { return GetPhyscialCoordinates(point.x, point.y, resultPt); };
 
         /** @brief Override this to perform plotting logic.
             @details The is the main interface for constructing the layout and object positioning
-             for a plot. All plots should override this.
+                for a plot. All plots should override this.
             @param dc The DC to measure content with.
             @note The base version of this should be called first in derived overrides
-             so that the axis and gridlines are drawn.*/
+                so that the axis and gridlines are drawn.*/
         void RecalcSizes(wxDC& dc) override;
 
         void UpdateSelectedItems() final;
@@ -451,19 +460,19 @@ namespace Wisteria::Graphs
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Selects the object at the given point (relative to the parent canvas),
-             if there is an object at that point.
+                if there is an object at that point.
             @param pt The point to hit test.
             @returns `true` if something was selected at the given point.
             @note This will toggle the selection of an object, if it was selected before
-             then it will become unselected.*/
+                then it will become unselected.*/
         [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
         /// @brief Calculates how much outer axis labels and headers go outside of the
-        ///  axes' widths and heights (used to adjust the margins of the plot area).
+        ///     axes' widths and heights (used to adjust the margins of the plot area).
         void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin, long& bottomMargin,
                              wxDC& dc) const;
         /// @brief Calculates how much space is needed around the plot to fit everything
-        ///  (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
-        ///  recalculates the axes' points' positions.
+        ///     (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
+        ///     recalculates the axes' points' positions.
         void AdjustPlotArea(wxDC& dc);
 
         wxRect m_rect;

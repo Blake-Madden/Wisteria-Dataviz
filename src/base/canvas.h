@@ -457,9 +457,13 @@ namespace Wisteria
             @returns The scaling.*/
         [[nodiscard]] double GetScaling() const
             {
+            // aspect ratio is the same when resizing or zooming the window,
+            // so using width or height is interchangable here
             return std::max<double>(
-                safe_divide<double>(GetCanvasRectDIPs().GetWidth(),
-                GetCanvasMinWidthDIPs()), 1.0f);
+                safe_divide<double>(
+                    GetCanvasRectDIPs().GetWidth(),
+                    GetCanvasMinWidthDIPs()),
+                1.0f);
             }
 
         /// @brief Saves the canvas as an image.
