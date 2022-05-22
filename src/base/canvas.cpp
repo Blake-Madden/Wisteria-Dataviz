@@ -833,13 +833,14 @@ namespace Wisteria
             }
         }
 
+    //---------------------------------------------------
     void Canvas::CalcAllSizes(wxDC& dc)
         {
         wxASSERT_MSG(
             (std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
                 [](const auto initVal, const auto val) noexcept
                     { return initVal + val.GetHeightProportion(); })) <= 1,
-            "Canvas row proportions are more than 100%!");
+            L"Canvas row proportions are more than 100%!");
 
         /* The rendering area must have a minimum size of 700x500;
            otherwise, it will be crunched up and look bad.*/
@@ -883,6 +884,7 @@ namespace Wisteria
                 }
             }
 
+        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
         size_t rowHeightOffset{ 0 };
         // go through each row of items (e.g., subplots) and resize and move them into their grid area
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
@@ -891,9 +893,21 @@ namespace Wisteria
             {
             wxASSERT_MSG(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos) <
                 static_cast<ptrdiff_t>(m_rowsInfo.size()),
-                "Canvas row proportions size is wrong!");
+                L"Canvas row proportions size is wrong!");
             const size_t objectHeight = fixedObjectRect.GetHeight() *
-                GetRowInfo(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)).GetHeightProportion();
+                GetRowInfo(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)).
+                GetHeightProportion();
+            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+                {
+                m_debugInfo += wxString::Format(L"Row %zu: height %s, proportion %s\n",
+                                std::distance(GetFixedObjects().begin(), fixedObjectsRowPos),
+                                wxNumberFormatter::ToString(objectHeight, 0,
+                                    wxNumberFormatter::Style::Style_WithThousandsSep),
+                                wxNumberFormatter::ToString(
+                                    GetRowInfo(std::distance(GetFixedObjects().begin(),
+                                        fixedObjectsRowPos)).GetHeightProportion(), 3,
+                                    wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                }
             size_t currentXPos{ 0 };
             auto& currentRow = *fixedObjectsRowPos;
             for (size_t i = 0; i < currentRow.size(); ++i)

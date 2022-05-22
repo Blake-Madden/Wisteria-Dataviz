@@ -682,6 +682,8 @@ namespace Wisteria
         uint8_t m_bgOpacity{ wxALPHA_OPAQUE };
         bool m_bgColorUseLinearGradient{ false };
         wxBitmapBundle m_bgImage;
+
+        wxString m_debugInfo;
         };
     }
 
