@@ -98,7 +98,8 @@ namespace Wisteria::GraphItems
         {
         InvalidateCachedBoundingBox();
 
-        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(), L"SetBoundingBox() should only be called on fixed objects!");
+        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
+                             L"SetBoundingBox() should only be called on fixed objects!");
         if (IsFreeFloating())
             { return; }
 
@@ -116,22 +117,17 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { SetAnchorPoint(rect.GetBottomRight()); }
 
-        // readjust the scaling to fit the new bounding box
-        double currentScaling{ 1.0 };
+        // start at 0.5 scaling (anything smaller won't look right, but probably won't happen),
+        // and scale up to fit the bounding box
+        SetScaling(0.5);
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
-        while (measuredWidth <= rect.GetWidth() &&
-             measuredHeight <= rect.GetHeight())
+        GetSize(dc, measuredWidth, measuredHeight);
+        if (measuredWidth <= rect.GetWidth() &&
+            measuredHeight <= rect.GetHeight())
             {
-            SetScaling(currentScaling);
-            GetSize(dc, measuredWidth, measuredHeight);
-            if (measuredWidth > rect.GetWidth() ||
-                measuredHeight > rect.GetHeight())
-                {
-                currentScaling -= 0.1;
-                SetScaling(currentScaling);
-                break;
-                }
-            currentScaling += 0.1;
+            const auto widthFactor = safe_divide<double>(rect.GetWidth(), measuredWidth);
+            const auto heightFactor = safe_divide<double>(rect.GetHeight(), measuredHeight);
+            SetScaling(GetScaling() * std::min(widthFactor, heightFactor));
             }
         
         // used for page alignment
