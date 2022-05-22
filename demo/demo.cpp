@@ -1558,6 +1558,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // tell the canvas to align the axis line to the left axis's
         // bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
+        commonAxis->SetCanvasMargins(0, 0, 0, 10);
         // Get the canvas size of the axis and add it to the canvas.
         // Note that we need to multiple the calculated size by two because
         // axes are centered when drawn
