@@ -902,16 +902,53 @@ namespace Wisteria
              fixedObjectsRowPos != GetFixedObjects().end();
              ++fixedObjectsRowPos)
             {
-            wxASSERT_MSG(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos) <
-                static_cast<ptrdiff_t>(m_rowsInfo.size()),
-                L"Canvas row proportions size is wrong!");
-            const size_t rowHeight = fixedObjectRect.GetHeight() *
-                GetRowInfo(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)).
-                    GetHeightProportion();
+            auto& currentRow = *fixedObjectsRowPos;
+            const auto currentRowIndex = std::distance(GetFixedObjects().begin(), fixedObjectsRowPos);
+            wxASSERT_MSG(currentRowIndex < static_cast<ptrdiff_t>(m_rowsInfo.size()),
+                L"Canvas row out of range!");
+
+            const size_t rowHeightGridArea = fixedObjectRect.GetHeight() *
+                GetRowInfo(currentRowIndex).GetHeightProportion();
+            const size_t rowHeightFullCanvas = GetCanvasRect(dc).GetHeight() *
+                GetRowInfo(currentRowIndex).GetHeightProportion() +
+                (currentRow.size() && currentRow.at(0) ?
+                    ScaleToScreenAndCanvas(currentRow.at(0)->GetTopCanvasMargin(), dc) +
+                    ScaleToScreenAndCanvas(currentRow.at(0)->GetBottomCanvasMargin(), dc) :
+                    0);
+            // is row proportional to the drawing area (the norm), or the entire canvas
+            const size_t rowHeight = (GetRowInfo(currentRowIndex).IsProportionLocked() ?
+                rowHeightFullCanvas : rowHeightGridArea);
+            // if row's proportion is locked to the whole page, then previous items need
+            // to have their layouts adjusted
+            if (GetRowInfo(currentRowIndex).IsProportionLocked() && currentRowIndex > 0)
+                {
+                const auto rowHeightDiff = rowHeightFullCanvas - rowHeightGridArea;
+                rowHeightOffset -= rowHeightDiff;
+                const auto rowHeightDiffForPreviousRows =
+                    safe_divide<double>(rowHeightDiff, currentRowIndex);
+                // previous rows (and their objects) pushed up and made smaller to make room for
+                // current row which is being made taller
+                for (size_t previousRowIndex = 0;
+                    previousRowIndex < static_cast<size_t>(currentRowIndex);
+                    ++previousRowIndex)
+                    {
+                    auto& previousRow = GetFixedObjects().at(previousRowIndex);
+                    for (auto& previousRowObject : previousRow)
+                        {
+                        auto bBox = previousRowObject->GetBoundingBox(dc);
+                        bBox.SetHeight(bBox.GetHeight() - rowHeightDiffForPreviousRows);
+                        bBox.Offset(wxPoint(0, -(rowHeightDiffForPreviousRows * previousRowIndex)) );
+                        previousRowObject->SetBoundingBox(bBox, dc, GetScaling());
+                        previousRowObject->RecalcSizes(dc);
+                        previousRowObject->UpdateSelectedItems();
+                        }
+                    }
+                }
+
             if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
                 {
-                m_debugInfo += wxString::Format(L"Row %zu: height %s, proportion %s\n",
-                                std::distance(GetFixedObjects().begin(), fixedObjectsRowPos),
+                m_debugInfo += wxString::Format(L"Row %s: height %s, proportion %s\n",
+                                wxNumberFormatter::ToString(currentRowIndex),
                                 wxNumberFormatter::ToString(rowHeight, 0,
                                     wxNumberFormatter::Style::Style_WithThousandsSep),
                                 wxNumberFormatter::ToString(
@@ -920,7 +957,6 @@ namespace Wisteria
                                     wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             size_t currentXPos{ 0 };
-            auto& currentRow = *fixedObjectsRowPos;
             for (size_t i = 0; i < currentRow.size(); ++i)
                 {
                 auto& objectsPos = currentRow[i];

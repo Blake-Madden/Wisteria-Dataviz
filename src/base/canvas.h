@@ -64,6 +64,9 @@ namespace Wisteria
             /// @param prop The proportion of the canvas's height that this row consumes.
             CanvasRowInfo(const double prop) : m_heightProportion(prop)
                 {}
+            /// @returns The height proportion of the canvas that this row consumes.
+            [[nodiscard]] double GetHeightProportion() const noexcept
+                { return m_heightProportion; }
             /// @brief The proportion of the canvas's height that this row consumes.
             /// @param prop The height proportion (0.0 - 1.0).
             /// @returns A self reference.
@@ -72,11 +75,29 @@ namespace Wisteria
                 m_heightProportion = prop;
                 return *this;
                 }
-            /// @returns The height proportion of the canvas that this row consumes.
-            [[nodiscard]] double GetHeightProportion() const noexcept
-                { return m_heightProportion; }
+            /// @returns @c true if row's height proportion is relative to the entire
+            ///     canvas, regardless of canvas padding and titles.
+            [[nodiscard]] bool IsProportionLocked() const noexcept
+                { return m_lockProportion; }
+            /// @brief If @c true, the row's height proportion is relative to the entire
+            ///     canvas, regardless of canvas padding and titles.
+            /// @details This is useful for horizontally placed legends, so that
+            ///     their scaling doesn't grow too small when canvas titles are added.
+            /// @param prop Whether row's proportion is relative to the entire canvas
+            ///     and remains locked, regardless of titles.
+            /// @warning This should only be used for the first or last row on a page,
+            ///     as it requires to adjust the layout of previous items on the page.
+            ///     If multiple items are locked on the same page or appear on the middle
+            ///     of the page, this will result in unexpeced page layout.
+            /// @returns A self reference.
+            CanvasRowInfo& LockProportion(const bool locked) noexcept
+                {
+                m_lockProportion = locked;
+                return *this;
+                }
         private:
             double m_heightProportion{ 1.0 };
+            bool m_lockProportion{ false };
             };
 
         /** @brief Constructor.
@@ -222,9 +243,7 @@ namespace Wisteria
             {
             wxGCDC gdc(this);
             return safe_divide<double>(
-                item->GetBoundingBox(gdc).GetWidth() +
-                    gdc.FromDIP(item->GetLeftCanvasMargin()) +
-                    gdc.FromDIP(item->GetRightCanvasMargin()),
+                item->GetBoundingBox(gdc).GetWidth(),
                 gdc.FromDIP(GetCanvasMinWidthDIPs()));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
@@ -237,11 +256,7 @@ namespace Wisteria
             {
             wxGCDC gdc(this);
             return safe_divide<double>(
-                item->GetBoundingBox(gdc).GetHeight() +
-                    // canvas margins aren't factored into the item's calculated bounding box,
-                    // so add that here
-                    gdc.FromDIP(item->GetTopCanvasMargin()) +
-                    gdc.FromDIP(item->GetBottomCanvasMargin()),
+                item->GetBoundingBox(gdc).GetHeight(),
                 gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
         /// @}
