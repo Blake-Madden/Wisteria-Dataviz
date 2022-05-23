@@ -128,7 +128,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_DONUTCHART_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_WCURVE);
-    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_ROADMAP_GRAPH);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LR_ROADMAP_GRAPH);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_PROCON_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LIKERT_3POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_LIKERT_7POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HEATMAP);
@@ -204,7 +205,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"))->
+    fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize));
     fileMenu->AppendSeparator();
 
@@ -626,8 +629,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // subframe->m_canvas->SetFixedObjectsGridSize(2, 2);
         // legend = linePlot->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph);
         // legend->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
-        // subframe->m_canvas->SetRowProportion(0, 1-subframe->m_canvas->CalcMinHeightProportion(legend));
-        // subframe->m_canvas->SetRowProportion(1, subframe->m_canvas->CalcMinHeightProportion(legend));
+        // subframe->m_canvas->GetRowInfo(0).HeightProportion(1-subframe->m_canvas->CalcMinHeightProportion(legend));
+        // subframe->m_canvas->GetRowInfo(1).HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend));
         // subframe->m_canvas->SetFixedObject(1, 0, legend);
 
         // add a watermark to the bottom right corner
@@ -1184,8 +1187,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 1,
             plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOfGraph));
         }
-    // Roadmap
-    else if (event.GetId() == MyApp::ID_NEW_ROADMAP_GRAPH)
+    // Linear Regression Roadmap
+    else if (event.GetId() == MyApp::ID_NEW_LR_ROADMAP_GRAPH)
         {
         subframe->SetTitle(_(L"Linear Regression Roadmap"));
         subframe->m_canvas->SetFixedObjectsGridSize(2, 1);
@@ -1223,9 +1226,112 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add the legend at the bottom (beneath the explanatory caption)
         auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-        subframe->m_canvas->SetRowProportion(0, 1-subframe->m_canvas->CalcMinHeightProportion(legend));
-        subframe->m_canvas->SetRowProportion(1, subframe->m_canvas->CalcMinHeightProportion(legend));
+        subframe->m_canvas->GetRowInfo(0).HeightProportion(1-subframe->m_canvas->CalcMinHeightProportion(legend));
+        subframe->m_canvas->GetRowInfo(1).HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend));
         subframe->m_canvas->SetFixedObject(1, 0, legend);
+        }
+    // SWOT Roadmap
+    else if (event.GetId() == MyApp::ID_NEW_PROCON_ROADMAP_GRAPH)
+        {
+        subframe->SetTitle(_(L"Pros & Cons Roadmap"));
+        subframe->m_canvas->SetFixedObjectsGridSize(3, 1);
+
+        // strengths and weaknesses
+            {
+            auto swData = std::make_shared<Data::Dataset>();
+            try
+                {
+                swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
+                    ImportInfo().
+                    CategoricalColumns({
+                        { L"Strength", CategoricalImportMethod::ReadAsStrings },
+                        { L"Weakness", CategoricalImportMethod::ReadAsStrings }
+                        }));
+                }
+            catch (const std::exception& err)
+                {
+                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                return;
+                }
+
+            auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
+            roadmap->SetData(swData,
+                             L"Strength", std::nullopt,
+                             L"Weakness", std::nullopt, 2);
+            roadmap->SetCanvasMargins(5, 5, 0, 5);
+            roadmap->GetLeftYAxis().GetTitle().SetText(_("Strengths & Weaknesses"));
+            roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+            // don't include the counts on the labels
+            roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+
+            subframe->m_canvas->SetFixedObject(0, 0, roadmap);
+            }
+
+        // opportunities and threats
+            {
+            auto swData = std::make_shared<Data::Dataset>();
+            try
+                {
+                swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
+                    ImportInfo().
+                    CategoricalColumns({
+                        { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
+                        { L"Threat", CategoricalImportMethod::ReadAsStrings }
+                        }));
+                }
+            catch (const std::exception& err)
+                {
+                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                return;
+                }
+
+            auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
+            roadmap->SetData(swData,
+                             L"Opportunity", std::nullopt,
+                             L"Threat", std::nullopt,
+                             // ignore items that are only mentioned once
+                             2);
+            roadmap->SetCanvasMargins(0, 5, 5, 5);
+            roadmap->GetLeftYAxis().GetTitle().SetText(_("Opportunities & Threats"));
+            roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+            // add the default caption explaining how to read the graph
+            roadmap->AddDefaultCaption();
+            // don't include the counts on the labels
+            roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+
+            subframe->m_canvas->SetFixedObject(1, 0, roadmap);
+
+            // add the legend at the bottom (beneath the explanatory caption)
+            roadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
+            roadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
+            auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+            const auto proportionForEachRoadMap =
+                safe_divide<double>(1 - subframe->m_canvas->CalcMinHeightProportion(legend), 2);
+            subframe->m_canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
+            subframe->m_canvas->GetRowInfo(1).HeightProportion(proportionForEachRoadMap);
+            // calculate the canvas height that the legend needs and lock it
+            subframe->m_canvas->GetRowInfo(2).
+                HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend)).
+                LockProportion(true);
+            subframe->m_canvas->SetFixedObject(2, 0, legend);
+            }
+
+        // add a title with a green banner background and white font
+        Label topTitle(GraphItemInfo(_("ERP Migration SWOT Analysis\n"
+            "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
+            Padding(5, 5, 5, 5).
+            ChildAlignment(RelativeAlignment::FlushLeft).
+            FontColor(*wxWHITE).
+            FontBackgroundColor(ColorBrewer::GetColor(Colors::Color::HunterGreen)));
+        topTitle.GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
+        subframe->m_canvas->GetTopTitles().push_back(topTitle);
+
+        // make the canvas tall since we are stacking two graphs on top of each other
+        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2.5);
+        // also, fit it to the entire page when printing (preferrably in portait)
+        subframe->m_canvas->FitToPageWhenPrinting(true);
         }
     // W-Curve plot
     else if (event.GetId() == MyApp::ID_NEW_WCURVE)
@@ -1478,9 +1584,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // in the first column (the donut chart and the note beneath it),
         // set the proportions of the rows based on how tall the note is
-        subframe->m_canvas->SetRowProportion(0,
+        subframe->m_canvas->GetRowInfo(0).HeightProportion(
             1 - subframe->m_canvas->CalcMinHeightProportion(note));
-        subframe->m_canvas->SetRowProportion(1,
+        subframe->m_canvas->GetRowInfo(1).HeightProportion(
             subframe->m_canvas->CalcMinHeightProportion(note));
         }
     // multiple plots with a common axis
@@ -1715,9 +1821,12 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
         _(L"W-Curve Plot"));
-    toolBar->AddTool(MyApp::ID_NEW_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
+    toolBar->AddTool(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize),
         _(L"Linear Regression Roadmap"));
+    toolBar->AddTool(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize),
+        _(L"Pros & Cons Roadmap"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

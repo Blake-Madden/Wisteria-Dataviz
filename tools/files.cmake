@@ -29,6 +29,7 @@ SET(WISTERIA_SRC
     src/graphs/piechart.cpp
     src/graphs/lrroadmap.cpp
     src/graphs/roadmap.cpp
+    src/graphs/proconroadmap.cpp
     src/graphs/wcurveplot.cpp
     src/ui/imageexportdlg.cpp
     src/ui/opacitydlg.cpp

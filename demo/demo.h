@@ -32,6 +32,7 @@
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/lrroadmap.h"
+#include "../src/graphs/proconroadmap.h"
 #include "../src/base/spacer.h"
 #include "../src/import/text_matrix.h"
 #include "../src/util/logfile.h"
@@ -65,7 +66,8 @@ public:
     static constexpr int ID_NEW_CATEGORICAL_BARCHART{ wxID_HIGHEST+22 };
     static constexpr int ID_NEW_CATEGORICAL_BARCHART_GROUPED{ wxID_HIGHEST+23 };
     static constexpr int ID_NEW_CATEGORICAL_BARCHART_STIPPLED{ wxID_HIGHEST+24 };
-    static constexpr int ID_NEW_ROADMAP_GRAPH{ wxID_HIGHEST+25 };
+    static constexpr int ID_NEW_LR_ROADMAP_GRAPH{ wxID_HIGHEST+25 };
+    static constexpr int ID_NEW_PROCON_ROADMAP_GRAPH{ wxID_HIGHEST+26 };
     };
 
 // Define a new frame
