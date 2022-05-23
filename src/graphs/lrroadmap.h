@@ -58,7 +58,7 @@ namespace Wisteria::Graphs
          auto roadmapData = std::make_shared<Data::Dataset>();
          try
             {
-            roadmapData->ImportCSV(appDir + L"/datasets/First-Year Osprey.csv",
+            roadmapData->ImportCSV(L"/home/mwalker/data/First-Year Osprey.csv",
                 ImportInfo().
                 ContinuousColumns({ L"coefficient" }).
                 CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
