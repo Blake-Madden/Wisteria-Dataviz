@@ -222,8 +222,7 @@ namespace Wisteria
         /** @brief Sets the minimum height that the canvas can be, it will be forced to be this
                 tall even as its parent is resized.
             @param minHeight The minimum height to use.*/
-        void SetCanvasMinHeightDIPs(const int minHeight) noexcept
-           { m_canvasMinSizeDIPs.SetHeight(minHeight); }
+        void SetCanvasMinHeightDIPs(const int minHeight) noexcept;
         /// @returns The default minimum width used for canvas.
         ///     Can be overridden by SetCanvasMinWidthDIPs().
         [[nodiscard]] static int GetDefaultCanvasWidthDIPs()

@@ -1129,6 +1129,46 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void Canvas::SetCanvasMinHeightDIPs(const int minHeight) noexcept
+        {
+        // adjust any rows whose height proportion was locked to
+        // the canvas height to take into account the new height
+        const auto heightAdjustmentScale =
+            safe_divide<double>(m_canvasMinSizeDIPs.GetHeight(), minHeight);
+
+        double cummulativeProportionDiff{ 0 };
+        size_t nonLockedRows{ 0 };
+        // adjust the proportion height for rows that are relying on its
+        // proportion to the entire canvas (not just its sub-objects grid)
+        for (auto& rowInfo : m_rowsInfo)
+            {
+            if (rowInfo.IsProportionLocked())
+                {
+                cummulativeProportionDiff += rowInfo.GetHeightProportion() -
+                    (rowInfo.GetHeightProportion() * heightAdjustmentScale);
+                rowInfo.HeightProportion(rowInfo.GetHeightProportion() * heightAdjustmentScale);
+                }
+            else
+                { ++nonLockedRows; }
+            }
+        // add or subtract the proportion changes for the locked rows and distribute
+        // that to the unlocked rows (i.e., rows whose proportion simply relies
+        // on the canvas's sub-object grid)
+        const auto propDiffPerNonLockedRows =
+            safe_divide<double>(cummulativeProportionDiff, nonLockedRows);
+        for (auto& rowInfo : m_rowsInfo)
+            {
+            if (!rowInfo.IsProportionLocked())
+                {
+                rowInfo.HeightProportion(rowInfo.GetHeightProportion() + propDiffPerNonLockedRows);
+                }
+            }
+
+        // now, set the new height
+        m_canvasMinSizeDIPs.SetHeight(minHeight);
+        }
+
+    //---------------------------------------------------
     std::pair<size_t,size_t> Canvas::GetFixedObjectsGridSize() const
         {
         std::pair<size_t,size_t> result(0,0);
