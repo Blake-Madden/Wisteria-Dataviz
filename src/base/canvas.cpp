@@ -106,7 +106,7 @@ namespace Wisteria
                     m_canvas->GetDPIScaleFactor());
                 wxMemoryDC memDc(previewImg);
                 memDc.Clear();
-#ifdef __WXMSW__
+    #ifdef __WXMSW__
                 // use Direct2D for rendering
                 wxGraphicsContext* context{ nullptr };
                 auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
@@ -133,14 +133,14 @@ namespace Wisteria
 
                     m_canvas->OnDraw(gcdc);
                     }
-#else
+    #else
                 wxGCDC gcdc(memDc);
 
                 gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
                 gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
                 m_canvas->OnDraw(gcdc);
-#endif
+    #endif
                 dc->Blit(0,0,dcWidth,dcHeight,&memDc,0,0);
 
                 // draw the headers
@@ -377,7 +377,7 @@ namespace Wisteria
                 GetDPIScaleFactor());
             wxMemoryDC memDc(canvasBitmap);
             memDc.Clear();
-#ifdef __WXMSW__
+    #ifdef __WXMSW__
             wxGraphicsContext* context{ nullptr };
             auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
             if (renderer)
@@ -393,10 +393,10 @@ namespace Wisteria
                 wxGCDC gcdc(memDc);
                 OnDraw(gcdc);
                 }
-#else
+    #else
             wxGCDC gcdc(memDc);
             OnDraw(gcdc);
-#endif
+    #endif
             // unlock the image from the DC
             memDc.SelectObject(wxNullBitmap);
 
@@ -587,7 +587,7 @@ namespace Wisteria
                 GetDPIScaleFactor());
             wxMemoryDC memDc(exportFile);
             memDc.Clear();
-#ifdef __WXMSW__
+    #ifdef __WXMSW__
             wxGraphicsContext* context{ nullptr };
             auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
             if (renderer)
@@ -603,10 +603,10 @@ namespace Wisteria
                 wxGCDC gcdc(memDc);
                 OnDraw(gcdc);
                 }
-#else
+    #else
             wxGCDC gcdc(memDc);
             OnDraw(gcdc);
-#endif
+    #endif
             // unlock the image from the DC
             memDc.SelectObject(wxNullBitmap);
             Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
@@ -815,6 +815,7 @@ namespace Wisteria
         return bottomMarginHeight;
         }
 
+    //---------------------------------------------------
     void Canvas::OnResize([[maybe_unused]] wxSizeEvent& event)
         {
         wxGCDC gdc(this);
@@ -883,7 +884,7 @@ namespace Wisteria
                     }
                 }
             }
-
+        
         if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             m_debugInfo = wxString::Format(L"Canvas scaling: %s\n"
@@ -904,14 +905,14 @@ namespace Wisteria
             wxASSERT_MSG(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos) <
                 static_cast<ptrdiff_t>(m_rowsInfo.size()),
                 L"Canvas row proportions size is wrong!");
-            const size_t objectHeight = fixedObjectRect.GetHeight() *
+            const size_t rowHeight = fixedObjectRect.GetHeight() *
                 GetRowInfo(std::distance(GetFixedObjects().begin(), fixedObjectsRowPos)).
-                GetHeightProportion();
+                    GetHeightProportion();
             if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
                 {
                 m_debugInfo += wxString::Format(L"Row %zu: height %s, proportion %s\n",
                                 std::distance(GetFixedObjects().begin(), fixedObjectsRowPos),
-                                wxNumberFormatter::ToString(objectHeight, 0,
+                                wxNumberFormatter::ToString(rowHeight, 0,
                                     wxNumberFormatter::Style::Style_WithThousandsSep),
                                 wxNumberFormatter::ToString(
                                     GetRowInfo(std::distance(GetFixedObjects().begin(),
@@ -929,7 +930,7 @@ namespace Wisteria
                     objectsPos->SetScaling(GetScaling());
                     const auto currentObjHeight = objectsPos->GetCanvasHeightProportion() ?
                         objectsPos->GetCanvasHeightProportion().value() * fixedObjectRect.GetHeight() :
-                        objectHeight;
+                        rowHeight;
                     wxRect boundingRect(wxPoint(fixedObjectRect.x + currentXPos,
                                                 fixedObjectRect.y + rowHeightOffset),
                         wxSize(fixedObjectRect.GetWidth() * objectsPos->GetCanvasWidthProportion(),
@@ -1029,7 +1030,7 @@ namespace Wisteria
                         }
                     }
                 }
-            rowHeightOffset += objectHeight;
+            rowHeightOffset += rowHeight;
             }
 
         if (IsColumnContentAligned())
@@ -1214,7 +1215,7 @@ namespace Wisteria
     //---------------------------------------------------
     void Canvas::OnPaint([[maybe_unused]] wxPaintEvent& event)
         {
-#ifdef __WXMSW__
+    #ifdef __WXMSW__
         wxAutoBufferedPaintDC pdc(this);
         pdc.Clear();
         wxGraphicsContext* context{ nullptr };
@@ -1234,13 +1235,13 @@ namespace Wisteria
             PrepareDC(dc);
             OnDraw(dc);
             }
-#else
+    #else
         wxAutoBufferedPaintDC pdc(this);
         pdc.Clear();
         wxGCDC dc(pdc);
         PrepareDC(dc);
         OnDraw(dc);
-#endif
+    #endif
         }
 
     //-------------------------------------------
@@ -1449,7 +1450,7 @@ namespace Wisteria
         if (event.LeftDown())
             {
             wxASSERT_LEVEL_2_MSG(currentlyDraggedShape == nullptr,
-                                 "Item being dragged should be null upon left mouse down!");
+                                 L"Item being dragged should be null upon left mouse down!");
             // unselect any selected items (if Control/Command isn't held down),
             // as we are now selecting (and possibly dragging) something else.
             if (!wxGetMouseState().CmdDown())
@@ -1494,7 +1495,7 @@ namespace Wisteria
             else
                 {
                 wxASSERT_LEVEL_2_MSG(currentlyDraggedShape == nullptr,
-                                     "Item being dragged should be null upon left mouse down!");
+                                     L"Item being dragged should be null upon left mouse down!");
                 currentlyDraggedShape = nullptr;
                 }
             //or the fixed items connected to the canvas's grid
@@ -1553,7 +1554,8 @@ namespace Wisteria
                 const wxPoint movePt(unscrolledPosition-dragStartPos);
                 currentlyDraggedShape->Offset(movePt.x, movePt.y);
                 currentlyDraggedShape->SetInDragState(false);
-                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
+                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).
+                    Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition()-unscrolledPosition);
                 currentlyDraggedShape = nullptr;
                 Refresh(true, &boundingBox);
@@ -1573,7 +1575,8 @@ namespace Wisteria
 
                 // redraw the item being dragged
                 // (we refresh a few pixels around the object to prevent any shearing)
-                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).Inflate(refreshPadding));
+                wxRect boundingBox(currentlyDraggedShape->GetBoundingBox(gdc).
+                    Inflate(refreshPadding));
                 boundingBox.Offset(event.GetPosition()-unscrolledPosition);
                 Refresh(true, &boundingBox);
                 Update();
@@ -1590,7 +1593,8 @@ namespace Wisteria
                     }
                 else
                     {
-                    // note that this should be the window coordinates, not the unscrolled coordinates
+                    // note that this should be the window coordinates,
+                    // not the unscrolled coordinates
                     m_dragImage->Move(event.GetPosition());
                     m_dragImage->Show();
                     }
