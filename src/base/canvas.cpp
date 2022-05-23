@@ -1129,7 +1129,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void Canvas::SetCanvasMinHeightDIPs(const int minHeight) noexcept
+    void Canvas::SetCanvasMinHeightDIPs(const int minHeight)
         {
         // adjust any rows whose height proportion was locked to
         // the canvas height to take into account the new height
