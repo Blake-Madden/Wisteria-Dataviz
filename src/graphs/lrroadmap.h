@@ -16,7 +16,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Linear Regression Roadmap, which shows predictors' influence on a dependent variable
+    /** @brief Linear Regression %Roadmap, which shows predictors' influence on a dependent variable
             from a multiple linear regression.
         @details This graphic displays a road leading towards a final goal (i.e., the dependent).
             Along this road are "road stops" of variable size that cause the road to curve. These
@@ -39,7 +39,7 @@ namespace Wisteria::Graphs
          | :--                                 | --:         | :--     |
          | Being female                        | 0.19        | 0.009   |
          | Being an athlete                    | 0.29        | 0.001   |
-         | "Being older, closer to 26 than 18" | -0.17       | 0.002   |
+         | Being older, closer to 26 than 18   | -0.17       | 0.002   |
 
          ...
 

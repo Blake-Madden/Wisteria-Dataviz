@@ -16,7 +16,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Roadmap graphic, which shows items' positive and negative influence on a subject.
+    /** @brief %Roadmap graphic, which shows items' positive and negative influence on a subject.
         @details This is an abstract base class.*/
     class Roadmap : public Graph2D
         {

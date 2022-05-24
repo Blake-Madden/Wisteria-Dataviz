@@ -1329,7 +1329,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->GetTopTitles().push_back(topTitle);
 
         // make the canvas tall since we are stacking two graphs on top of each other
-        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2.5);
+        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
         // also, fit it to the entire page when printing (preferrably in portait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }

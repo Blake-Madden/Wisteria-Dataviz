@@ -16,18 +16,19 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Pros & Cons Roadmap, which compares pros and cons (i.e., positive and negative
-            sentiments) about subject.\n
-            This can be useful for surveys and SWOT (Strengths/Weaknesses/Opportunites/Threats) analyses.
+    /** @brief Pro & Con %Roadmap, which compares pros and cons (i.e., positive and negative
+            sentiments) about a subject. This can be useful for surveys and SWOT
+            (<b>S</b>trengths/<b>W</b>eaknesses/<b>O</b>pportunites/<b>T</b>hreats) analyses.
         @details This graphic displays a road leading towards a final goal.
             Along this road are "road stops" of variable size that cause the road to curve. These
             road stops represent the pros and cons from survey responses. Both the
             size of a road stop and the curve in the road next to it represent the number of times the
             pro or con was mentioned in the survey.\n
+            \n
             The stops on the right side of the road are pros, the left ones are cons.
-        @par Roadmap displaying all factors and their level of influence:
+        @par Two Pro & Con Roadmaps stacked into a SWOT analysis report:
 
-        @image html SWOTRoadmap.svg width=90%
+        @image html SWOTRoadmap.svg width=70%
 
         @par %Data:
             This plot accepts a Data::Dataset where one categorical column is the positive
@@ -40,13 +41,12 @@ namespace Wisteria::Graphs
             by the graph. Meanwhile, the @c Weakness column will be loaded using the pre-calculated
             totals from the corresponding @c WeeknessTotals column.
 
-            | Strength                 | Weekness                     | WeeknessTotals |
-            | :--                      | :--                          | --:            |
-            | New features             | Cost                         | 22             |
-            | New features             | Missing features             | 12             |
-            | Improved user management | Requires employee retraining | 12             |
-
-         ...
+            | Strength                 | Weekness            | WeeknessTotals |
+            | :--                      | :--                 | --:            |
+            | New features             | Cost                | 22             |
+            | New features             | Missing features    | 12             |
+            | Improved user management | Employee retraining | 12             |
+            ...
 
         @par Missing Data:
             Missing sentiment labels or aggregate counts will result in list-wise deletion.
@@ -152,7 +152,7 @@ namespace Wisteria::Graphs
          canvas->GetTopTitles().push_back(topTitle);
 
          // make the canvas tall since we are stacking two graphs on top of each other
-         canvas->SetCanvasMinHeightDIPs(canvas->GetDefaultCanvasHeightDIPs() * 2.5);
+         canvas->SetCanvasMinHeightDIPs(canvas->GetDefaultCanvasHeightDIPs() * 2);
          // also, fit it to the entire page when printing (preferrably in portait)
          canvas->FitToPageWhenPrinting(true);
          
@@ -184,7 +184,7 @@ namespace Wisteria::Graphs
                 This is optional; if not used, the frequencies of the labels
                 as they appear in the negative column are used.
             @param minimumCountForItem The minimum occurrence for an item to be included.\n
-                This is useful for excluding items not mentioned often in the SWOT analysis.
+                This is useful for excluding items not mentioned often in the survey.
                 The default is to include all items.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

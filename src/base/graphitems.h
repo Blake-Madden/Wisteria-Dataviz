@@ -745,7 +745,7 @@ namespace Wisteria
                 m_isSelectable = selectable;
                 return *this;
                 }
-            /// @brief Sets whether the object is **not** bound to its parent canvas.
+            /// @brief Sets whether the object is <b>not</b> bound to its parent canvas.
             /// @param freeFloating `true` to not anchor this object to its parent canvas.
             /// @returns A self reference.
             GraphItemInfo& FreeFloating(const bool freeFloating)

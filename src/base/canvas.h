@@ -83,7 +83,7 @@ namespace Wisteria
             ///     canvas, regardless of canvas padding and titles.
             /// @details This is useful for horizontally placed legends, so that
             ///     their scaling doesn't grow too small when canvas titles are added.
-            /// @param prop Whether row's proportion is relative to the entire canvas
+            /// @param locked Whether row's proportion is relative to the entire canvas
             ///     and remains locked, regardless of titles.
             /// @warning This should only be used for the first or last row on a page,
             ///     as it requires to adjust the layout of previous items on the page.
@@ -320,6 +320,7 @@ namespace Wisteria
 
         /** @brief Accesses attibutes for a row.
             @details This can be used for adjusting the row's canvas height proportion.
+            @param row The row index to access.
             @returns The row information at the specified index.
             @warning When setting a row's proportion, be sure to reset all other row proportions
                 as well; otherwise, they will not all add up to 100%. This is because when a grid size
@@ -344,7 +345,7 @@ namespace Wisteria
         /** @brief Gets/sets the free floating (i.e., movable) objects on the canvas.
             @note These items are never cleared by the canvas itself and are not connected
                 to the anything. When the canvas is resized, the size and position of these
-                items does **not** change. Also, the canvas takes ownership of any objects
+                items does <b>not</b> change. Also, the canvas takes ownership of any objects
                 added to this collection.
             @returns The free-floating objects.*/
         [[nodiscard]] std::vector<std::shared_ptr<GraphItems::GraphItemBase>>&
@@ -607,7 +608,7 @@ namespace Wisteria
         /// @param dc The DC to measure with. May be a screen or export DC.
         /// @returns The scaled value.
         /// @note This should be used to rescale pixel values used for line widths and point sizes.
-        ///     It should *not* be used with font point sizes because DPI scaling is handled by
+        ///     It should <b>not</b> be used with font point sizes because DPI scaling is handled by
         ///     the OS for those. Instead, font sizes should only be scaled to the canvas's scaling.
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value, wxDC& dc) const noexcept
             { return value * GetScaling() * dc.FromDIP(1); }
