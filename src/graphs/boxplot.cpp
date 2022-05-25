@@ -272,7 +272,8 @@ namespace Wisteria::Graphs
 
         Graph2D::RecalcSizes(dc);
         // get how much space we have for all the boxes
-        const wxCoord boxWidth = (GetPlotAreaBoundingBox().GetWidth()/(m_boxes.size()+3)) -
+        const wxCoord boxWidth = safe_divide<int>(GetPlotAreaBoundingBox().GetWidth(),
+                                                  (m_boxes.size()+3)) -
                                   ScaleToScreenAndCanvas(10);
 
         // if we don't have enough collective space for the boxes to be at least 3
@@ -515,7 +516,7 @@ namespace Wisteria::Graphs
                     { continue; }
 
                 const auto pointOutline =
-                    wxColour(GetPointColor());
+                    ColorContrast::BlackOrWhiteContrast(GetPointColor());
                 // skip value if from a different group
                 if (box.m_useGrouping &&
                     box.m_groupColumn->GetValue(i) != box.m_groupId)
