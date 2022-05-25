@@ -236,7 +236,11 @@ namespace Wisteria
         AsteriskIcon,                  /*!< An asterisk.*/
         HexagonIcon,                   /*!< A hexagon.*/
         BoxPlotIcon,                   /*!< A box & whisker plot.*/
-        LocationMarker                 /*!< A marker indicating a location on a map.*/
+        LocationMarker,                /*!< A marker indicating a location on a map.*/
+        GoRoadSign,                    /*!< A circular sign that says 'Go' on it,
+                                            with a sign post beneath it.*/
+        WarningRoadSign                /*!< A triangular sign containing an exclamation point,
+                                            with a sign post beneath it.*/
         };
 
     /// @brief The orientation of an item (e.g., a vertically drawn label).

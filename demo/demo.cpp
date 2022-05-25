@@ -1264,6 +1264,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
             // don't include the counts on the labels
             roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+            // use road signs
+            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
 
             subframe->m_canvas->SetFixedObject(0, 0, roadmap);
             }
@@ -1300,6 +1302,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             roadmap->AddDefaultCaption();
             // don't include the counts on the labels
             roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+            // use road signs
+            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
 
             subframe->m_canvas->SetFixedObject(1, 0, roadmap);
 

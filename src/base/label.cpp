@@ -697,17 +697,17 @@ namespace Wisteria::GraphItems
                     ScaleToScreenAndCanvas(GetTopPadding());
                 const auto iconAreaWidth{ averageLineHeight };
                 const auto iconRadius{ iconAreaWidth*.3 };
-                const auto leftPadding{ iconAreaWidth*.5 };
+                const auto iconMiddleX{ iconAreaWidth*.5 };
                 // if there is a minimum height that is taller than the text, then center
                 // the text vertically
                 const wxCoord yOffset = (GetHeaderInfo().IsEnabled() ?
                     topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) : 0);
                 middleOfCurrentRow += yOffset;
                 const auto midPoint = wxPoint(contentBoundingBox.GetTopLeft() +
-                                              wxPoint(leftPadding, middleOfCurrentRow));
+                                              wxPoint(iconMiddleX, middleOfCurrentRow));
                 wxPoint polygonPoints[6];
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
-                                       wxPoint(leftPadding, middleOfCurrentRow),
+                                       wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
                 // draw the current shape now
                 switch (iconPos->m_shape)
@@ -716,48 +716,97 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::HorizontalLineIcon:
                         dc.DrawLine(contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(leftPadding-(iconRadius)), middleOfCurrentRow),
+                            wxPoint(std::ceil(iconMiddleX-(iconRadius)), middleOfCurrentRow),
                             contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(leftPadding+(iconRadius)), middleOfCurrentRow));
+                            wxPoint(std::ceil(iconMiddleX+(iconRadius)), middleOfCurrentRow));
                         break;
                     case IconShape::ArrowRightIcon:
                         GraphItems::Polygon::DrawArrow(dc,
                             contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(leftPadding-(iconRadius)), middleOfCurrentRow),
+                            wxPoint(std::ceil(iconMiddleX-(iconRadius)), middleOfCurrentRow),
                             contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(leftPadding+(iconRadius)), middleOfCurrentRow),
+                            wxPoint(std::ceil(iconMiddleX+(iconRadius)), middleOfCurrentRow),
                             ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
+                        break;
+                    case IconShape::WarningRoadSign:
+                        {
+                        wxDCPenChanger pc3(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                        const auto circleCenter = contentBoundingBox.GetLeftTop() +
+                            wxPoint(iconMiddleX, middleOfCurrentRow);
+                        polygonPoints[0] = circleCenter + wxPoint(0, -iconRadius);
+                        polygonPoints[1] = circleCenter + wxPoint(iconRadius, 0);
+                        polygonPoints[2] = circleCenter + wxPoint(0, iconRadius);
+                        polygonPoints[3] = circleCenter + wxPoint(-iconRadius, 0);
+                        dc.DrawPolygon(4, polygonPoints);
+                        // ! label
+                        Label bangLabel(GraphItemInfo(L"!").Pen(wxNullPen).
+                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
+                            LabelAlignment(TextAlignment::Centered).
+                            DPIScaling(GetDPIScaleFactor()));
+                        bangLabel.SetFontColor(*wxBLACK);
+                        bangLabel.SetBoundingBox(
+                            wxRect(circleCenter - wxPoint(iconMiddleX, iconMiddleX),
+                                   wxSize(iconAreaWidth, iconAreaWidth)),
+                            dc, GetScaling());
+                        bangLabel.Draw(dc);
+                        }
+                        break;
+                    case IconShape::GoRoadSign:
+                        {
+                        wxDCPenChanger pc3(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                        const auto circleCenter = contentBoundingBox.GetLeftTop() +
+                            wxPoint(iconMiddleX, middleOfCurrentRow);
+                        dc.DrawCircle(circleCenter, iconRadius);
+                        // GO label
+                        Label goLabel(GraphItemInfo(_("GO")).Pen(wxNullPen).
+                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
+                            LabelAlignment(TextAlignment::Centered).
+                            DPIScaling(GetDPIScaleFactor()));
+                        goLabel.SetFontColor(*wxWHITE);
+                        wxPoint goLabelLabelCorner{ circleCenter };
+                        auto rectWithinCircleWidth =
+                            geometry::radius_to_inner_rect_width(iconRadius);
+                        goLabelLabelCorner.x -= rectWithinCircleWidth / 2;
+                        goLabelLabelCorner.y -= rectWithinCircleWidth / 2;
+                        goLabel.SetBoundingBox(
+                            wxRect(goLabelLabelCorner,
+                                wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
+                            dc, GetScaling());
+                        goLabel.Draw(dc);
+                        }
                         break;
                     case IconShape::LocationMarker:
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +
-                            wxPoint(leftPadding, middleOfCurrentRow),
+                            wxPoint(iconMiddleX, middleOfCurrentRow),
                             iconRadius);
                         // inner ring
                             {
-                            wxDCPenChanger pc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
-                            wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                            wxDCPenChanger pc3(dc,
+                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                            wxDCBrushChanger bc3(dc,
+                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
                             dc.DrawCircle(contentBoundingBox.GetLeftTop() +
-                                wxPoint(leftPadding, middleOfCurrentRow),
+                                wxPoint(iconMiddleX, middleOfCurrentRow),
                                 iconRadius * .5);
                             }
                         // center (1/3 the size of outer ring)
                             {
-                            wxDCPenChanger pc(dc, *wxWHITE_PEN);
-                            wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+                            wxDCPenChanger pc3(dc, *wxWHITE_PEN);
+                            wxDCBrushChanger bc3(dc, *wxWHITE_BRUSH);
                             dc.DrawCircle(contentBoundingBox.GetLeftTop() +
-                                wxPoint(leftPadding, middleOfCurrentRow),
+                                wxPoint(iconMiddleX, middleOfCurrentRow),
                                 iconRadius * .33);
                             }
                         break;
                     case IconShape::CircleIcon:
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +
-                            wxPoint(leftPadding, middleOfCurrentRow),
+                            wxPoint(iconMiddleX, middleOfCurrentRow),
                             iconRadius);
                         break;
                     case IconShape::SquareIcon:
                         dc.DrawRectangle(
                             wxRect(contentBoundingBox.GetTopLeft() +
-                                   wxPoint(leftPadding, middleOfCurrentRow),
+                                   wxPoint(iconMiddleX, middleOfCurrentRow),
                                    wxSize(1, 1)).Inflate(iconRadius));
                         break;
                     case IconShape::BoxPlotIcon:
@@ -766,20 +815,26 @@ namespace Wisteria::GraphItems
                                             boxRect.GetTop()),
                                     wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2),
                                             boxRect.GetBottom()));
-                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2)-boxRect.GetWidth()/4,
+                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) -
+                                                boxRect.GetWidth()/4,
                                             boxRect.GetTop()),
-                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2)+boxRect.GetWidth()/4,
+                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) +
+                                                boxRect.GetWidth()/4,
                                             boxRect.GetTop()));
-                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2)-boxRect.GetWidth()/4,
+                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) -
+                                                boxRect.GetWidth()/4,
                                             boxRect.GetBottom()),
-                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2)+boxRect.GetWidth()/4,
+                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) +
+                                                boxRect.GetWidth()/4,
                                             boxRect.GetBottom()));
                         boxRect.y += (boxRect.GetHeight()/2)-(boxRect.GetHeight()/4); // center
                         boxRect.SetHeight(boxRect.GetHeight()/2);
                         dc.DrawRectangle(boxRect);
                         // median line
-                        dc.DrawLine(wxPoint(boxRect.GetLeft(), boxRect.GetTop()+(boxRect.GetHeight()/2)),
-                                    wxPoint(boxRect.GetRight(), boxRect.GetTop()+(boxRect.GetHeight()/2)));
+                        dc.DrawLine(wxPoint(boxRect.GetLeft(), boxRect.GetTop() +
+                                            (boxRect.GetHeight()/2)),
+                                    wxPoint(boxRect.GetRight(), boxRect.GetTop() +
+                                            (boxRect.GetHeight()/2)));
                         break;
                     case IconShape::TriangleUpwardIcon:
                         polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);

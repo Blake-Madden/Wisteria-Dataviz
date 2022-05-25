@@ -660,7 +660,7 @@ namespace Wisteria::Graphs
                     AnchorPoint(centerPt);
 
                 wxPoint donutHoleLabelCorner{ centerPt };
-                auto rectWithinCircleWidth = holeRadius * std::sqrt(2);
+                auto rectWithinCircleWidth = geometry::radius_to_inner_rect_width(holeRadius);
                 donutHoleLabelCorner.x -= rectWithinCircleWidth / 2;
                 donutHoleLabelCorner.y -= rectWithinCircleWidth / 2;
                 donutHoleLabel->SetBoundingBox(

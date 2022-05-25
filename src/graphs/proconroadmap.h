@@ -22,8 +22,8 @@ namespace Wisteria::Graphs
         @details This graphic displays a road leading towards a final goal.
             Along this road are "road stops" of variable size that cause the road to curve. These
             road stops represent the pros and cons from survey responses. Both the
-            size of a road stop and the curve in the road next to it represent the number of times the
-            pro or con was mentioned in the survey.\n
+            size of a road stop and the curve in the road next to it represent the number of times
+            the pro or con was mentioned in the survey.\n
             \n
             The stops on the right side of the road are pros, the left ones are cons.
         @par Two Pro & Con Roadmaps stacked into a SWOT analysis report:

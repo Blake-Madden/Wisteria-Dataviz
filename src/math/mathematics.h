@@ -374,10 +374,15 @@ public:
 /// @brief Geometric functions.
 namespace geometry
     {
+    /** @brief Calculates the width of a rectangle that can fit inside of a circle.
+        @param radius The radius of the circle.
+        @returns The width of the largest rectangle that can fit inside of the circle.*/
+    [[nodiscard]] inline double radius_to_inner_rect_width(const double radius) noexcept
+        { return radius * std::sqrt(2); }
     /** @brief Converts circumference to radius.
         @param circumference The circumference of the circle.
         @returns The radius of the circle.*/
-    [[nodiscard]] inline double circumference_to_radius(const double circumference) noexcept
+    [[nodiscard]] constexpr inline double circumference_to_radius(const double circumference) noexcept
         { return safe_divide<double>(safe_divide<double>(circumference, M_PI), 2); }
 
     /** @brief Converts degrees (i.e., an angle) to radians.

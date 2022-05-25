@@ -21,6 +21,15 @@ namespace Wisteria::Graphs
     class Roadmap : public Graph2D
         {
     public:
+        /// @brief Which type of markers to use for the road stops.
+        enum class RoadStopTheme
+            {
+            /// @brief A Geolocation marker.
+            LocationMarkers,
+            /// @brief Warning and Go road signs.
+            RoadSigns
+            };
+
         /// @brief How the labels next to the road stops are displayed.
         enum class MarkerLabelDisplay
             {
@@ -51,6 +60,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxPen& GetRoadPen() noexcept
             { return m_roadPen; }
 
+        /** @brief Sets the icon theme for the road stops.
+            @param theme Which theme to use.*/
+        void SetRoadStopTheme(const RoadStopTheme theme) noexcept
+            { m_iconTheme = theme; }
+
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.
@@ -69,6 +83,8 @@ namespace Wisteria::Graphs
         /// @brief Adds a caption explaining how to interpret the graph.
         virtual void AddDefaultCaption() = 0;
     protected:
+        /// @brief Description of icon used for a road stop.
+        using RoadStopIcon = std::pair<IconShape, wxColour>;
         /// @brief A "stop on the road" (i.e., an IV from the multiple regression formula,
         ///     strength from a SWOT analysis, etc.), which causes a curve in the road
         ///     based on its influence.
@@ -137,6 +153,27 @@ namespace Wisteria::Graphs
         wxString m_goalLabel{ _("Goal") };
 
         wxPen m_roadPen{ *wxBLACK, 10 };
+        RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
+
+        /// @returns The icon used for negative sentitments, based on current theme.
+        [[nodiscard]] RoadStopIcon GetNegativeIcon() const noexcept
+            {
+            return m_iconTheme == RoadStopTheme::LocationMarkers ?
+                std::make_pair(IconShape::LocationMarker,
+                               Colors::ColorBrewer::GetColor(Colors::Color::Tomato)) :
+                std::make_pair(IconShape::WarningRoadSign,
+                               Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow));
+            }
+
+        /// @returns The icon used for positive sentitments, based on current theme.
+        [[nodiscard]] RoadStopIcon GetPositiveIcon() const noexcept
+            {
+            return m_iconTheme == RoadStopTheme::LocationMarkers ?
+                std::make_pair(IconShape::LocationMarker,
+                               Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen)) :
+                std::make_pair(IconShape::GoRoadSign,
+                               Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen));
+            }
 
         LabelPlacement m_labelPlacement{ LabelPlacement::FlushBoth };
         MarkerLabelDisplay m_markerLableDisplay{ MarkerLabelDisplay::NameAndValue };

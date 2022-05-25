@@ -301,7 +301,10 @@ namespace Wisteria::GraphItems
         if (GetAnchorPoint().IsFullySpecified())
             {
             wxDCBrushChanger bc(dc, GetBrush());
-            wxDCPenChanger pc(dc, GetPen());
+            wxPen scaledPen{ GetPen() };
+            if (scaledPen.IsOk())
+                { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
+            wxDCPenChanger pc(dc, scaledPen);
             const auto boundingBox = GetBoundingBox(dc);
             auto boxRect = boundingBox;
             const auto midPoint = wxPoint(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2));
@@ -393,11 +396,110 @@ namespace Wisteria::GraphItems
                 case IconShape::BlankIcon:
                     // don't draw anything
                     break;
+                case IconShape::WarningRoadSign:
+                    // sign post
+                        {
+                        wxPoint pt[2] =
+                            {
+                            boundingBox.GetTopLeft() +
+                                // top of post is in the middle of the sign
+                                // so that pen cap doesn't appear above sign
+                                wxSize(boundingBox.GetWidth() / 2, iconRadius),
+                            // bottom
+                            boundingBox.GetBottomLeft() +
+                                wxSize(boundingBox.GetWidth() / 2, 0)
+                            };
+                        // white outline of sign post
+                            {
+                            wxDCPenChanger pc2(dc,
+                                wxPen(*wxWHITE, ScaleToScreenAndCanvas((GetRadius() / 5) + 1)));
+                            dc.DrawLine(pt[0], pt[1]);
+                            }
+                        // actual sign post
+                            {
+                            wxDCPenChanger pc2(dc,
+                                wxPen(*wxBLACK, ScaleToScreenAndCanvas(GetRadius() / 5)));
+                            dc.DrawLine(pt[0], pt[1]);
+                            }
+                        }
+                    // sign
+                        {
+                        wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
+                        const auto circleCenter = boundingBox.GetLeftTop() +
+                            wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33);
+                        polygonPoints[0] = circleCenter + wxPoint(0, -iconRadius);
+                        polygonPoints[1] = circleCenter + wxPoint(iconRadius, 0);
+                        polygonPoints[2] = circleCenter + wxPoint(0, iconRadius);
+                        polygonPoints[3] = circleCenter + wxPoint(-iconRadius, 0);
+                        dc.DrawPolygon(4, polygonPoints);
+                        // ! label
+                        Label bangLabel(GraphItemInfo(L"!").Pen(wxNullPen).
+                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
+                            LabelAlignment(TextAlignment::Centered).
+                            DPIScaling(GetDPIScaleFactor()));
+                        bangLabel.SetFontColor(*wxBLACK);
+                        bangLabel.GetFont().MakeBold();
+                        bangLabel.SetBoundingBox(
+                            wxRect(boundingBox.GetLeftTop(),
+                                wxSize(boundingBox.GetWidth(), boundingBox.GetHeight() * .66)),
+                            dc, GetScaling());
+                        bangLabel.Draw(dc);
+                        }
+                    break;
+                case IconShape::GoRoadSign:
+                    // sign post
+                        {
+                        wxPoint pt[2] =
+                            {
+                            boundingBox.GetTopLeft() +
+                                wxSize(boundingBox.GetWidth() / 2, iconRadius),
+                            // bottom
+                            boundingBox.GetBottomLeft() +
+                                wxSize(boundingBox.GetWidth() / 2, 0)
+                            };
+                        // white outline of sign post
+                            {
+                            wxDCPenChanger pc2(dc,
+                                wxPen(*wxWHITE, ScaleToScreenAndCanvas((GetRadius() / 5) + 1)));
+                            dc.DrawLine(pt[0], pt[1]);
+                            }
+                        // actual sign post
+                            {
+                            wxDCPenChanger pc2(dc,
+                                wxPen(*wxBLACK, ScaleToScreenAndCanvas(GetRadius() / 5)));
+                            dc.DrawLine(pt[0], pt[1]);
+                            }
+                        }
+                    // sign
+                        {
+                        wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
+                        const auto circleCenter = boundingBox.GetLeftTop() +
+                            wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33);
+                        dc.DrawCircle(circleCenter,
+                            ScaleToScreenAndCanvas(GetRadius()));
+                        // GO label
+                        Label goLabel(GraphItemInfo(_(L"GO")).Pen(wxNullPen).
+                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
+                            LabelAlignment(TextAlignment::Centered).
+                            DPIScaling(GetDPIScaleFactor()));
+                        goLabel.SetFontColor(*wxWHITE);
+                        wxPoint goLabelLabelCorner{ circleCenter };
+                        auto rectWithinCircleWidth =
+                            geometry::radius_to_inner_rect_width(ScaleToScreenAndCanvas(GetRadius()));
+                        goLabelLabelCorner.x -= rectWithinCircleWidth / 2;
+                        goLabelLabelCorner.y -= rectWithinCircleWidth / 2;
+                        goLabel.SetBoundingBox(
+                            wxRect(goLabelLabelCorner,
+                                wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
+                            dc, GetScaling());
+                        goLabel.Draw(dc);
+                        }
+                    break;
                 case IconShape::LocationMarker:
                     // pin
                         {
-                        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
-                        wxDCPenChanger pc(dc, *wxWHITE);
+                        wxDCBrushChanger bc2(dc, *wxBLACK_BRUSH);
+                        wxDCPenChanger pc2(dc, wxPen(*wxWHITE, ScaleToScreenAndCanvas(1)));
                         wxPoint pt[3] =
                             {
                             boundingBox.GetTopLeft() +
@@ -415,7 +517,9 @@ namespace Wisteria::GraphItems
                         ScaleToScreenAndCanvas(GetRadius()));
                     // secondary ring
                         {
-                        wxDCPenChanger pc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                        wxDCPenChanger pc(dc,
+                            wxPen(ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4),
+                                  ScaleToScreenAndCanvas(1)));
                         wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
                         dc.DrawCircle(boundingBox.GetLeftTop() +
                             wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
@@ -426,8 +530,8 @@ namespace Wisteria::GraphItems
                     // (using a contrasting color just doesn't seem right here, these usually have white
                     //  centers, regardless of background color, on most real-world maps and whatnot)
                         {
-                        wxDCPenChanger pc(dc, *wxWHITE_PEN);
-                        wxDCBrushChanger bc(dc, *wxWHITE_BRUSH);
+                        wxDCPenChanger pc2(dc, *wxWHITE_PEN);
+                        wxDCBrushChanger bc2(dc, *wxWHITE_BRUSH);
                         dc.DrawCircle(boundingBox.GetLeftTop() +
                             wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
                             // 1/3 the size of outer ring
@@ -498,7 +602,9 @@ namespace Wisteria::GraphItems
         wxRect boundingBox(cp,
                             wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
                                    (ScaleToScreenAndCanvas(GetRadius())) * 2));
-        if (m_shape == IconShape::LocationMarker)
+        if (m_shape == IconShape::LocationMarker ||
+            m_shape == IconShape::GoRoadSign ||
+            m_shape == IconShape::WarningRoadSign)
             {
             boundingBox.SetTop(boundingBox.GetTop() - boundingBox.GetHeight());
             boundingBox.SetHeight(boundingBox.GetHeight() * 1.5);

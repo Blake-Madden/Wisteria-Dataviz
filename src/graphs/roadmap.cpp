@@ -72,8 +72,9 @@ namespace Wisteria::Graphs
         std::vector<std::shared_ptr<Label>> locationLabels;
         auto labelConnectionLines =
             std::make_shared<Lines>(
-                wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
-                      GetScaling());
+                wxPen(ColorBrewer::GetColor(Colors::Color::WarmGray), 1,
+                      wxPenStyle::wxPENSTYLE_LONG_DASH),
+                GetScaling());
 
         // start of the road (bottom)
         if (GetBottomXAxis().GetPhysicalCoordinate(middleX, xPt))
@@ -94,13 +95,14 @@ namespace Wisteria::Graphs
             // points are scale of 1.0, their point size is calculated instead
             auto pt = std::make_shared<Point2D>(
                 GraphItemInfo().Brush((GetRoadStops()[i].GetValue() >= 0 ?
-                    ColorBrewer::GetColor(Color::KellyGreen) :
-                    ColorBrewer::GetColor(Color::Tomato))).
+                    GetPositiveIcon().second :
+                    GetNegativeIcon().second)).
                 DPIScaling(GetDPIScaleFactor()).
                 AnchorPoint({ xPt , yPt }),
                 scale_within(std::abs(GetRoadStops()[i].GetValue()),
                              GetMagnitudeRange(), pointSizesRange),
-                IconShape::LocationMarker);
+                (GetRoadStops()[i].GetValue() >= 0 ?
+                    GetPositiveIcon().first : GetNegativeIcon().first));
             locations.push_back(pt);
 
             const wxString markerText =
@@ -118,7 +120,6 @@ namespace Wisteria::Graphs
 
             auto markerLabel = std::make_shared<Label>(
                 GraphItemInfo(GraphItemInfo(markerText).
-                Padding(4, 4, 4, 4).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()).
                 Pen(wxNullPen).
@@ -243,11 +244,11 @@ namespace Wisteria::Graphs
 
         wxString legendText = GetPositiveLegendLabel() + L"\n" + GetNegativeLegendLabel();
         legend->GetLegendIcons().emplace_back(
-                LegendIcon(IconShape::LocationMarker, *wxBLACK,
-                    ColorBrewer::GetColor(Color::KellyGreen)));
+                LegendIcon(GetPositiveIcon().first, *wxBLACK,
+                    GetPositiveIcon().second));
         legend->GetLegendIcons().emplace_back(
-                LegendIcon(IconShape::LocationMarker, *wxBLACK,
-                    ColorBrewer::GetColor(Color::Tomato)));
+                LegendIcon(GetNegativeIcon().first, *wxBLACK,
+                    GetNegativeIcon().second));
 
         if (includeHeader)
             {

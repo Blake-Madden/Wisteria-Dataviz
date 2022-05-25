@@ -35,12 +35,11 @@ namespace Wisteria::Graphs
             a continuous column is the coefficients, and an optional continuous column is the
             p-values. (The p-values are used for filtering which predictors to include.)
 
-         | Factor                              | Coefficient | p-value |
-         | :--                                 | --:         | :--     |
-         | Being female                        | 0.19        | 0.009   |
-         | Being an athlete                    | 0.29        | 0.001   |
-         | Being older, closer to 26 than 18   | -0.17       | 0.002   |
-
+         | Factor                            | Coefficient | p-value |
+         | :--                               | --:         | --:     |
+         | Being female                      | 0.19        | 0.009   |
+         | Being an athlete                  | 0.29        | 0.001   |
+         | Being older, closer to 26 than 18 | -0.17       | 0.002   |
          ...
 
         @par Missing Data:
