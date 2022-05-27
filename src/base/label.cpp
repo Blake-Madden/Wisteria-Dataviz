@@ -8,6 +8,7 @@
 
 #include "label.h"
 #include "polygon.h"
+#include "shapes.h"
 
 using namespace Wisteria::Colors;
 
@@ -753,26 +754,12 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::GoRoadSign:
                         {
-                        wxDCPenChanger pc3(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
-                        const auto circleCenter = contentBoundingBox.GetLeftTop() +
-                            wxPoint(iconMiddleX, middleOfCurrentRow);
-                        dc.DrawCircle(circleCenter, iconRadius);
-                        // GO label
-                        Label goLabel(GraphItemInfo(_("GO")).Pen(wxNullPen).
-                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
-                            LabelAlignment(TextAlignment::Centered).
+                        Shapes sh(GraphItemInfo(_(L"GO")).Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()));
-                        goLabel.SetFontColor(*wxWHITE);
-                        wxPoint goLabelLabelCorner{ circleCenter };
-                        auto rectWithinCircleWidth =
-                            geometry::radius_to_inner_rect_width(iconRadius);
-                        goLabelLabelCorner.x -= rectWithinCircleWidth / 2;
-                        goLabelLabelCorner.y -= rectWithinCircleWidth / 2;
-                        goLabel.SetBoundingBox(
-                            wxRect(goLabelLabelCorner,
-                                wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
-                            dc, GetScaling());
-                        goLabel.Draw(dc);
+                        sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
+                                                   wxPoint(iconMiddleX, middleOfCurrentRow),
+                            wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * .5)),
+                            dc);
                         }
                         break;
                     case IconShape::LocationMarker:

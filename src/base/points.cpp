@@ -9,6 +9,7 @@
 #include "points.h"
 #include "label.h"
 #include "polygon.h"
+#include "shapes.h"
 
 using namespace Wisteria::Colors;
 
@@ -472,27 +473,12 @@ namespace Wisteria::GraphItems
                         }
                     // sign
                         {
-                        wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2)));
-                        const auto circleCenter = boundingBox.GetLeftTop() +
-                            wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33);
-                        dc.DrawCircle(circleCenter,
-                            ScaleToScreenAndCanvas(GetRadius()));
-                        // GO label
-                        Label goLabel(GraphItemInfo(_(L"GO")).Pen(wxNullPen).
-                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
-                            LabelAlignment(TextAlignment::Centered).
+                        const auto signRect = wxRect(boundingBox.GetLeftTop(),
+                                                     wxSize(boundingBox.GetWidth(),
+                                                            boundingBox.GetHeight() * .66));
+                        Shapes sh(GraphItemInfo(_(L"GO")).Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()));
-                        goLabel.SetFontColor(*wxWHITE);
-                        wxPoint goLabelLabelCorner{ circleCenter };
-                        auto rectWithinCircleWidth =
-                            geometry::radius_to_inner_rect_width(ScaleToScreenAndCanvas(GetRadius()));
-                        goLabelLabelCorner.x -= rectWithinCircleWidth / 2;
-                        goLabelLabelCorner.y -= rectWithinCircleWidth / 2;
-                        goLabel.SetBoundingBox(
-                            wxRect(goLabelLabelCorner,
-                                wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
-                            dc, GetScaling());
-                        goLabel.Draw(dc);
+                        sh.DrawCircularSign(signRect, dc);
                         }
                     break;
                 case IconShape::LocationMarker:

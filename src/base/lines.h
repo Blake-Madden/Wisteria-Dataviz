@@ -38,6 +38,7 @@ namespace Wisteria::GraphItems
             @param scaling The scaling factor to use when drawing.*/
         Lines(const wxPen& pen, const double scaling) : GraphItemBase(scaling, wxEmptyString)
             { GetPen() = pen; }
+        /// @private
         Lines() = delete;
         /// @brief Removes all lines from the collection.
         void Clear() noexcept

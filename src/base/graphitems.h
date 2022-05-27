@@ -1069,7 +1069,7 @@ namespace Wisteria
                 }
             /** @brief Constructor.
                 @param itemInfo Extended information to construct this item with.*/
-            GraphItemBase(const GraphItemInfo& itemInfo) : m_itemInfo(itemInfo)
+            explicit GraphItemBase(const GraphItemInfo& itemInfo) : m_itemInfo(itemInfo)
                 {}
             /// @private
             virtual ~GraphItemBase() {}
@@ -1760,7 +1760,7 @@ namespace Wisteria
             ///  because DPI scaling is handled by the OS for those.
             ///  Instead, font sizes should only be scaled to the canvas's scaling.
             [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
-                { return value*GetScaling() * GetDPIScaleFactor(); }
+                { return value * GetScaling() * GetDPIScaleFactor(); }
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param sz The size to be scaled.
             /// @returns The scaled size.
