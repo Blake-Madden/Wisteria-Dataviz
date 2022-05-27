@@ -1256,58 +1256,49 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 }
 
         // strengths and weaknesses
-            {
-            auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-            roadmap->SetData(swData,
-                             L"Strength", std::nullopt,
-                             L"Weakness", std::nullopt, 2);
-            roadmap->SetCanvasMargins(5, 5, 0, 5);
-            roadmap->GetLeftYAxis().GetTitle().SetText(_("Strengths & Weaknesses"));
-            roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
-            // don't include the counts on the labels
-            roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
-            // use road signs and a white road line
-            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-            roadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
-
-            subframe->m_canvas->SetFixedObject(0, 0, roadmap);
-            }
+        auto SWroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
+        SWroadmap->SetData(swData,
+                            L"Strength", std::nullopt,
+                            L"Weakness", std::nullopt, 2);
+        SWroadmap->SetCanvasMargins(5, 5, 0, 5);
+        SWroadmap->GetLeftYAxis().GetTitle().SetText(_("Strengths & Weaknesses"));
+        SWroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+        // don't include the counts on the labels
+        SWroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+        // use road signs and a white road line
+        SWroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
+        SWroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
         // opportunities and threats
-            {
-            auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
-            roadmap->SetData(swData,
-                             L"Opportunity", std::nullopt,
-                             L"Threat", std::nullopt,
-                             // ignore items that are only mentioned once
-                             2);
-            roadmap->SetCanvasMargins(0, 5, 5, 5);
-            roadmap->GetLeftYAxis().GetTitle().SetText(_("Opportunities & Threats"));
-            roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
-            // add the default caption explaining how to read the graph
-            roadmap->AddDefaultCaption();
-            // don't include the counts on the labels
-            roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
-            // use road signs and a white road line
-            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
-            roadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
+        auto OTroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
+        OTroadmap->SetData(swData,
+                            L"Opportunity", std::nullopt,
+                            L"Threat", std::nullopt,
+                            // ignore items that are only mentioned once
+                            2);
+        OTroadmap->SetCanvasMargins(0, 5, 5, 5);
+        OTroadmap->GetLeftYAxis().GetTitle().SetText(_("Opportunities & Threats"));
+        OTroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
+        // add the default caption explaining how to read the graph
+        OTroadmap->AddDefaultCaption();
+        // don't include the counts on the labels
+        OTroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+        // use road signs and a white road line
+        OTroadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
+        OTroadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
-            subframe->m_canvas->SetFixedObject(1, 0, roadmap);
-
-            // add the legend at the bottom (beneath the explanatory caption)
-            roadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
-            roadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-            auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-            const auto proportionForEachRoadMap =
-                safe_divide<double>(1 - subframe->m_canvas->CalcMinHeightProportion(legend), 2);
-            subframe->m_canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
-            subframe->m_canvas->GetRowInfo(1).HeightProportion(proportionForEachRoadMap);
-            // calculate the canvas height that the legend needs and lock it
-            subframe->m_canvas->GetRowInfo(2).
-                HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend)).
-                LockProportion(true);
-            subframe->m_canvas->SetFixedObject(2, 0, legend);
-            }
+        // add the legend at the bottom (beneath the explanatory caption)
+        OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
+        OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
+        auto legend = OTroadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+        const auto proportionForEachRoadMap =
+            safe_divide<double>(1 - subframe->m_canvas->CalcMinHeightProportion(legend), 2);
+        subframe->m_canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
+        subframe->m_canvas->GetRowInfo(1).HeightProportion(proportionForEachRoadMap);
+        // calculate the canvas height that the legend needs and lock it
+        subframe->m_canvas->GetRowInfo(2).
+            HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend)).
+            LockProportion(true);
 
         // add a title with a green banner background and white font
         Label topTitle(GraphItemInfo(_("ERP Migration SWOT Analysis\n"
@@ -1319,8 +1310,20 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         topTitle.GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
         subframe->m_canvas->GetTopTitles().push_back(topTitle);
 
+        // set a common scale for the road stop sizes between the two roadmaps
+        SWroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
+                                         OTroadmap->GetMagnitude()));
+        OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
+                                         OTroadmap->GetMagnitude()));
+
+        // add everything to the canvas
+        subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
+        subframe->m_canvas->SetFixedObject(1, 0, OTroadmap);
+        subframe->m_canvas->SetFixedObject(2, 0, legend);
+
         // make the canvas tall since we are stacking two graphs on top of each other
-        subframe->m_canvas->SetCanvasMinHeightDIPs(subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
+        subframe->m_canvas->SetCanvasMinHeightDIPs(
+            subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
         // also, fit it to the entire page when printing (preferrably in portait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }

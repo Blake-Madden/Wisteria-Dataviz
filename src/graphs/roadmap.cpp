@@ -85,7 +85,7 @@ namespace Wisteria::Graphs
             {
             if (GetBottomXAxis().GetPhysicalCoordinate(
                     scale_within(std::abs(GetRoadStops()[i].GetValue()),
-                                 GetMagnitudeRange(),
+                                 std::make_pair(0.0, GetMagnitude()),
                                  (GetRoadStops()[i].GetValue() >= 0 ?
                                      rightRoadRange : leftRoadRange)), xPt) &&
                 GetLeftYAxis().GetPhysicalCoordinate(i + 1, yPt))
@@ -100,7 +100,7 @@ namespace Wisteria::Graphs
                 Scaling(GetScaling()).
                 AnchorPoint({ xPt , yPt }),
                 scale_within(std::abs(GetRoadStops()[i].GetValue()),
-                             GetMagnitudeRange(), pointSizesRange),
+                             std::make_pair(0.0, GetMagnitude()), pointSizesRange),
                 (GetRoadStops()[i].GetValue() >= 0 ?
                     GetPositiveIcon().first : GetNegativeIcon().first));
             locations.push_back(pt);

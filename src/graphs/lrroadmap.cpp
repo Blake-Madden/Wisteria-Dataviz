@@ -57,13 +57,10 @@ namespace Wisteria::Graphs
             coefficientColumn->GetValues().cend(),
             [](auto lh, auto rh)
             { return std::abs(lh) < std::abs(rh); });
-        // set the baseline (i.e., middle of the road) to zero since
-        // that would be no correlation
-        GetMagnitudeRange().first = 0;
-        GetMagnitudeRange().second = std::abs(*maxVal);
-        // if no valid coefficients then quit 
-        if (std::isnan(GetMagnitudeRange().first) ||
-            std::isnan(GetMagnitudeRange().second))
+        // set the magnitude to the strongest coefficient (either negative or positive)
+        SetMagnitude(std::abs(*maxVal));
+        // if no valid coefficients, then quit 
+        if (std::isnan(GetMagnitude()))
             { return; }
 
         const auto includePredictor = [&](const double value, const std::optional<double> pValue)

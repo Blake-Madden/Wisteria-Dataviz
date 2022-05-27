@@ -90,6 +90,22 @@ namespace Wisteria::Graphs
 
         /// @brief Adds a caption explaining how to interpret the graph.
         virtual void AddDefaultCaption() = 0;
+
+        /// @brief The maximum absolute value of the values (e.g., coefficients, counts, etc.).
+        /// @details Essentially, this is the value of the most influential road stop
+        ///     (either positive or negative).\n
+        ///     For example, the values { -7, 1, 3 } would have a magnitude 7.
+        /// @returns The magnitude of the values.
+        [[nodiscard]] double GetMagnitude() const noexcept
+            { return m_magnitude; }
+        /// @brief Sets the maximum absolute value of the values (e.g., coefficients, counts, etc.).
+        /// @details This should be calculated in derived classes' @c SetData() function.\n
+        ///     Client code would not normally need to call this. It can, however, be used
+        ///     to set the same scale between two or more roadmaps being stacked into
+        ///     one large road (refer to example code for @c ProConRoadmap).
+        /// @param magnitude The maximum influence of the road stops.
+        void SetMagnitude(const double magnitude) noexcept
+            { m_magnitude = magnitude; }
     protected:
         /// @brief Description of icon used for a road stop.
         using RoadStopIcon = std::pair<IconShape, wxColour>;
@@ -147,17 +163,12 @@ namespace Wisteria::Graphs
         /// @returns The road stops.
         [[nodiscard]] std::vector<RoadStopInfo>& GetRoadStops() noexcept
             { return m_roadStops; }
-        /// @brief The range of the values, adjusted to be in terms of magnitude.
-        /// @details For example, { -7, 1, 3 } would have a magnitude range of 1-7.
-        /// @returns The magnitude range.
-        [[nodiscard]] std::pair<double, double>& GetMagnitudeRange() noexcept
-            { return m_valuesRange; }
     private:
         void RecalcSizes(wxDC& dc) final;
 
         std::vector<RoadStopInfo> m_roadStops;
-        // min and max of values (e.g., IVs' coefficients)
-        std::pair<double, double> m_valuesRange;
+        // (absolute) max of values (e.g., IVs' coefficients)
+        double m_magnitude{ 0 };
         wxString m_goalLabel{ _("Goal") };
 
         wxPen m_roadPen{ *wxBLACK, 10 };

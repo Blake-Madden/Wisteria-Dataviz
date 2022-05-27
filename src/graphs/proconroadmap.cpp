@@ -118,10 +118,8 @@ namespace Wisteria::Graphs
             { values.push_back(std::abs(influencer.second.second)); }
 
         auto maxVal = std::max_element(values.cbegin(), values.cend());
-        // since we are using counts, we know the baseline (i.e., the middle of the road)
-        // should be at zero
-        GetMagnitudeRange().first = 0;
-        GetMagnitudeRange().second = std::abs(*maxVal);
+        // set the magnitude to the highest category count
+        SetMagnitude(std::abs(*maxVal));
 
         // add the influencers as road stops
         for (const auto& influencer : influencers.get_data())
