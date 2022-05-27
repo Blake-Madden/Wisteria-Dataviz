@@ -27,7 +27,7 @@ namespace Wisteria::GraphItems
     public:
         /** @brief Constructor.
             @param itemInfo Extended information to construct this item with.*/
-        explicit Shapes(const GraphItemInfo& info) : m_graphInfo(info)
+        explicit Shapes(const GraphItemInfo& itemInfo) : m_graphInfo(itemInfo)
             {}
         /// @private
         Shapes() = delete;
