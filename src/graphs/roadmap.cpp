@@ -171,21 +171,23 @@ namespace Wisteria::Graphs
         AddObject(pavement);
 
         // the lane separator, which is a tenth as wide as the road
-        auto laneSep = std::make_shared<GraphItems::Points2D>(
-            wxPen(wxPenInfo(ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
-                            (pavement->GetPen().GetWidth() / 10),
-                            wxPenStyle::wxPENSTYLE_LONG_DASH)));
-        laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
-        laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
-        laneSep->SetLineStyle(LineStyle::Spline);
-        for (const auto& pt : pts)
+        if (m_laneSeparatorPen.IsOk())
             {
-            laneSep->AddPoint(
-                Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).
-                    DPIScaling(GetDPIScaleFactor()),
-                    0, IconShape::BlankIcon), dc);
+            m_laneSeparatorPen.SetWidth(pavement->GetPen().GetWidth() / 10);
+            auto laneSep = std::make_shared<GraphItems::Points2D>(m_laneSeparatorPen);
+            laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
+            laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
+            laneSep->SetLineStyle(LineStyle::Spline);
+            for (const auto& pt : pts)
+                {
+                laneSep->AddPoint(
+                    Point2D(GraphItemInfo().
+                        AnchorPoint(pt).
+                        DPIScaling(GetDPIScaleFactor()),
+                        0, IconShape::BlankIcon), dc);
+                }
+            AddObject(laneSep);
             }
-        AddObject(laneSep);
 
         AddObject(labelConnectionLines);
         // adjust the labels to fit and make them use a uniform scale

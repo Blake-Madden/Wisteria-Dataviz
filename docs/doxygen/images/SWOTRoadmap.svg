@@ -40,7 +40,7 @@
 <g style="clip-path: url(#clip1);">
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFD800; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <path d="M 693.00 506.00 L 569.50 486.50 C 487.17 473.50, 504.67 460.83, 622.00 448.50 C 739.33 436.17, 751.17 423.83, 657.50 411.50 C 563.83 399.17, 528.67 386.83, 552.00 374.50 C 575.33 362.17, 569.50 349.83, 534.50 337.50 C 499.50 325.17, 534.67 312.67, 640.00 300.00 C 745.33 287.33, 739.33 274.83, 622.00 262.50 C 504.67 250.17, 551.33 237.83, 762.00 225.50 C 972.67 213.17, 1042.83 200.83, 972.50 188.50 C 902.17 176.17, 838.00 157.50, 780.00 132.50 L 693.00 95.00" style="fill:none" shape-rendering="auto" stroke-dasharray="5.000000,2.666667"/>
 </g>
 </g>
@@ -247,7 +247,7 @@
 <g style="clip-path: url(#clip3);">
 <g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#000000; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
 </g>
-<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFD800; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
+<g style="stroke-width:1; stroke-linecap:round; stroke-linejoin:round; fill:#FFFFFF; fill-opacity:1.00; stroke:#FFFFFF; stroke-opacity:1.00;" transform="translate(0 0) scale(1.00 1.00)">
   <path d="M 693.00 919.00 L 747.50 888.00 C 783.83 867.33, 751.67 851.67, 651.00 841.00 C 550.33 830.33, 518.17 819.83, 554.50 809.50 C 590.83 799.17, 595.33 788.67, 568.00 778.00 C 540.67 767.33, 568.33 756.67, 651.00 746.00 C 733.67 735.33, 825.50 724.83, 926.50 714.50 C 1027.50 704.17, 981.67 693.67, 789.00 683.00 C 596.33 672.33, 509.00 661.67, 527.00 651.00 C 545.00 640.33, 540.17 629.83, 512.50 619.50 C 484.83 609.17, 521.67 598.67, 623.00 588.00 C 724.33 577.33, 761.33 561.33, 734.00 540.00 L 693.00 508.00" style="fill:none" shape-rendering="auto" stroke-dasharray="5.000000,2.666667"/>
 </g>
 </g>

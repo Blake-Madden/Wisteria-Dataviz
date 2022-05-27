@@ -60,6 +60,14 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxPen& GetRoadPen() noexcept
             { return m_roadPen; }
 
+        /// @brief Gets/sets the pen used to draw the lane separator on the road.
+        /// @details This is useful for changing the color, pen style, or even removing the
+        ///     line on the middle of the road.
+        /// @note Set this to @c wxNullPen to not draw a line down the middle fo the road.
+        /// @returns The pen used to draw the road.
+        [[nodiscard]] wxPen& GetLaneSeparatorPen() noexcept
+            { return m_laneSeparatorPen; }
+
         /** @brief Sets the icon theme for the road stops.
             @param theme Which theme to use.*/
         void SetRoadStopTheme(const RoadStopTheme theme) noexcept
@@ -153,6 +161,10 @@ namespace Wisteria::Graphs
         wxString m_goalLabel{ _("Goal") };
 
         wxPen m_roadPen{ *wxBLACK, 10 };
+        wxPen m_laneSeparatorPen{
+            wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
+                                1, wxPenStyle::wxPENSTYLE_LONG_DASH)
+            };
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
         /// @returns The icon used for negative sentitments, based on current theme.
