@@ -530,7 +530,7 @@ namespace Wisteria::Graphs
                 title->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing()) +
-                            (title->GetBoundingBox(dc).GetHeight()/2);
+                            safe_divide<double>(title->GetBoundingBox(dc).GetHeight(), 2);
                 topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 title->SetAnchorPoint(topPt);
                 AddObject(title);
@@ -557,7 +557,7 @@ namespace Wisteria::Graphs
                 {
                 subtitle->SetAnchoring(Anchoring::TopLeftCorner);
                 auto topPt = GetBoundingBox(dc).GetTopLeft();
-                topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
+                topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) + titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
                 }
@@ -566,7 +566,7 @@ namespace Wisteria::Graphs
                 subtitle->SetAnchoring(Anchoring::Center);
                 auto topPt = GetBoundingBox(dc).GetLeftTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) +
-                               (subtitle->GetBoundingBox(dc).GetHeight()/2)+titleSpacing;
+                    safe_divide<double>(subtitle->GetBoundingBox(dc).GetHeight(), 2) + titleSpacing;
                 topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 subtitle->SetAnchorPoint(topPt);
                 AddObject(subtitle);
@@ -598,7 +598,7 @@ namespace Wisteria::Graphs
                 caption->SetAnchoring(Anchoring::Center);
                 auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing()) +
-                               (caption->GetBoundingBox(dc).GetHeight()/2);
+                    safe_divide<double>(caption->GetBoundingBox(dc).GetHeight(), 2);
                 bottomPt.x += GetBoundingBox(dc).GetWidth()/2;
                 caption->SetAnchorPoint(bottomPt);
                 AddObject(caption);

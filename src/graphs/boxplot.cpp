@@ -35,13 +35,15 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for box plot."), groupColumnName.value()).ToUTF8());
+                _(L"'%s': group column not found for box plot."),
+                groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for box plot."), continuousColumnName).ToUTF8());
+                _(L"'%s': continuous column not found for box plot."),
+                continuousColumnName).ToUTF8());
             }
         m_continuousColumnName = continuousColumnName;
         m_groupColumnName = groupColumnName;
@@ -177,13 +179,15 @@ namespace Wisteria::Graphs
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for box plot."), groupColumnName.value()).ToUTF8());
+                _(L"'%s': group column not found for box plot."),
+                groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for box plot."), continuousColumnName).ToUTF8());
+                _(L"'%s': continuous column not found for box plot."),
+                continuousColumnName).ToUTF8());
             }
 
         std::vector<BoxAndWhisker> boxes;
@@ -300,7 +304,8 @@ namespace Wisteria::Graphs
         // scale the common image to the plot area's size
         wxImage scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
-                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
+                GetCommonBoxImage().GetBitmap(
+                    GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
                 GetPlotAreaBoundingBox()) :
             wxNullImage;
 
@@ -380,8 +385,10 @@ namespace Wisteria::Graphs
                 if (box.GetBoxEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                     {
                     auto boxRectAdjustedToPlotArea = box.m_boxRect;
-                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
-                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
+                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() -
+                                                      GetPlotAreaBoundingBox().GetLeft());
+                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() -
+                                                     GetPlotAreaBoundingBox().GetTop());
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(GetImageOulineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
@@ -399,15 +406,16 @@ namespace Wisteria::Graphs
                         GraphItemInfo(boxLabel).Pen(wxNullPen).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
                         Image::CreateStippledImage(
-                            GetStippleBrush().GetBitmap(GetStippleBrush().GetDefaultSize()).ConvertToImage(),
+                            GetStippleBrush().GetBitmap(
+                                GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                             wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()),
                             Orientation::Vertical, (GetShadowType() != ShadowType::NoShadow),
                             ScaleToScreenAndCanvas(4)));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
-                    // note that stipples have their own shadows (a silhouette), so turn off the
-                    // Image's native shadow renderer.
+                    // note that stipples have their own shadows (a silhouette), so turn off
+                    // the Image's native shadow renderer.
                     boxImage->SetShadowType(ShadowType::NoShadow);
                     AddObject(boxImage);
                     }
@@ -436,7 +444,8 @@ namespace Wisteria::Graphs
                     // a shadow as another polygon
                     if ((GetShadowType() != ShadowType::NoShadow))
                         {
-                        const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
+                        const wxCoord scaledShadowOffset =
+                            ScaleToScreenAndCanvas(GetShadowOffset());
                         wxPoint shadowPts[7];
                         shadowPts[0] = box.m_boxRect.GetLeftBottom() +
                                         wxPoint(scaledShadowOffset,0);
@@ -592,8 +601,9 @@ namespace Wisteria::Graphs
                         {
                         auto label = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(
-                                wxNumberFormatter::ToString(box.GetLowerControlLimit(), GetLabelPrecision(),
-                                Settings::GetDefaultNumberFormat())).
+                                wxNumberFormatter::ToString(box.GetLowerControlLimit(),
+                                                            GetLabelPrecision(),
+                                                            Settings::GetDefaultNumberFormat())).
                             Scaling(GetScaling()).Pen(*wxBLACK_PEN).
                             FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2).
                             AnchorPoint(box.m_lowerQuartileCoordinate));
@@ -605,8 +615,9 @@ namespace Wisteria::Graphs
                         {
                         auto label = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(
-                                wxNumberFormatter::ToString(box.GetUpperControlLimit(), GetLabelPrecision(),
-                                    Settings::GetDefaultNumberFormat())).
+                                wxNumberFormatter::ToString(box.GetUpperControlLimit(),
+                                                            GetLabelPrecision(),
+                                                            Settings::GetDefaultNumberFormat())).
                                 Scaling(GetScaling()).Pen(*wxBLACK_PEN).
                                 FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2).
                                 AnchorPoint(box.m_upperQuartileCoordinate));
@@ -618,8 +629,9 @@ namespace Wisteria::Graphs
                         {
                         auto label = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(
-                                wxNumberFormatter::ToString(box.GetLowerWhisker(), GetLabelPrecision(),
-                                Settings::GetDefaultNumberFormat())).
+                                wxNumberFormatter::ToString(box.GetLowerWhisker(),
+                                                            GetLabelPrecision(),
+                                                            Settings::GetDefaultNumberFormat())).
                             Scaling(GetScaling()).Pen(*wxBLACK_PEN).
                             FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2).
                             AnchorPoint(box.m_lowerOutlierRangeCoordinate));
@@ -631,8 +643,9 @@ namespace Wisteria::Graphs
                         {
                         auto label = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(
-                                wxNumberFormatter::ToString(box.GetUpperWhisker(), GetLabelPrecision(),
-                                Settings::GetDefaultNumberFormat())).
+                                wxNumberFormatter::ToString(box.GetUpperWhisker(),
+                                                            GetLabelPrecision(),
+                                                            Settings::GetDefaultNumberFormat())).
                             Scaling(GetScaling()).Pen(*wxBLACK_PEN).
                             FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2).
                             AnchorPoint(box.m_upperOutlierRangeCoordinate));

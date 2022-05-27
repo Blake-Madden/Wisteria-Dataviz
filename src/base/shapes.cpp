@@ -26,7 +26,7 @@ namespace Wisteria::GraphItems
 
         dc.DrawCircle(circleCenter, radius);
 
-        // GO label
+        // lettering on the sign
         Label goLabel(GraphItemInfo(m_graphInfo.GetText()).Pen(wxNullPen).
             AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).

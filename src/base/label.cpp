@@ -46,7 +46,7 @@ namespace Wisteria::GraphItems
             return;
             }
 
-        // if multiline, then see which line is the longest
+        // if multi-line, then see which line is the longest
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         if (lineTokenizer.CountTokens() > 1)
             {
@@ -179,13 +179,24 @@ namespace Wisteria::GraphItems
                                      GetAnchorPoint()+wxPoint(width/2,height/2));
                 }
             else if (GetAnchoring() == Anchoring::TopLeftCorner)
-                { boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::TopRightCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxSize(width,0), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint() - wxSize(width,0),
+                                     wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height),
+                                     wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::BottomRightCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height),
+                                     wxSize(width,height));
+                }
             }
         else
             {
@@ -195,16 +206,30 @@ namespace Wisteria::GraphItems
                                      GetAnchorPoint()+wxPoint(width/2,height/2));
                 }
             else if (GetAnchoring() == Anchoring::TopLeftCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint()-wxPoint(0,height),
+                                     wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::TopRightCorner)
-                { boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint(), wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::BottomLeftCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,height),
+                                     wxSize(width,height));
+                }
             else if (GetAnchoring() == Anchoring::BottomRightCorner)
-                { boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,0), wxSize(width,height)); }
+                {
+                boundingBox = wxRect(GetAnchorPoint()-wxPoint(width,0),
+                                     wxSize(width,height));
+                }
             }
         if (IsFreeFloating())
-            { boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling())-boundingBox.GetLeftTop()); }
+            {
+            boundingBox.Offset((boundingBox.GetLeftTop()*GetScaling()) -
+                                boundingBox.GetLeftTop());
+            }
 
         SetCachedBoundingBox(boundingBox);
         SetCachedContentBoundingBox(wxRect(wxPoint(boundingBox.GetTopLeft()),
@@ -710,6 +735,11 @@ namespace Wisteria::GraphItems
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
+                // object that can handle drawing various shapes for the icons.
+                Shapes sh(GraphItemInfo().
+                    Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
+                    Scaling(GetScaling()).
+                    DPIScaling(GetDPIScaleFactor()));
                 // draw the current shape now
                 switch (iconPos->m_shape)
                     {
@@ -754,10 +784,7 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::GoRoadSign:
                         {
-                        Shapes sh(GraphItemInfo(_(L"GO")).
-                            Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
-                            Scaling(GetScaling()).
-                            DPIScaling(GetDPIScaleFactor()));
+                        sh.GetGraphItemInfo().Text(_(L"GO"));
                         sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
                                                    wxPoint(iconMiddleX, middleOfCurrentRow),
                             wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * .5)),

@@ -311,6 +311,10 @@ namespace Wisteria::GraphItems
             const auto midPoint = wxPoint(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2));
             const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
             wxPoint polygonPoints[6];
+            // object that can handle drawing various shapes for the icons.
+            Shapes sh(GraphItemInfo().Brush(GetBrush()).
+                Scaling(GetScaling()).
+                DPIScaling(GetDPIScaleFactor()));
             switch (m_shape)
                 {
                 case IconShape::CircleIcon:
@@ -476,9 +480,7 @@ namespace Wisteria::GraphItems
                         const auto signRect = wxRect(boundingBox.GetLeftTop(),
                                                      wxSize(boundingBox.GetWidth(),
                                                             boundingBox.GetHeight() * .66));
-                        Shapes sh(GraphItemInfo(_(L"GO")).Brush(GetBrush()).
-                            Scaling(GetScaling()).
-                            DPIScaling(GetDPIScaleFactor()));
+                        sh.GetGraphItemInfo().Text(_(L"GO"));
                         sh.DrawCircularSign(signRect, dc);
                         }
                     break;

@@ -148,7 +148,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::vector<RoadStopInfo>& GetRoadStops() noexcept
             { return m_roadStops; }
         /// @brief The range of the values, adjusted to be in terms of magnitude.
-        /// @details For example, { -7, 1, 3 } should have a magnitude range of 1-7.
+        /// @details For example, { -7, 1, 3 } would have a magnitude range of 1-7.
         /// @returns The magnitude range.
         [[nodiscard]] std::pair<double, double>& GetMagnitudeRange() noexcept
             { return m_valuesRange; }

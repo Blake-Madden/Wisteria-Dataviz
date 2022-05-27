@@ -33,6 +33,12 @@ namespace Wisteria::GraphItems
             {}
         /// @private
         Shapes() = delete;
+        /// @brief Gets/sets the shape's underlying information (e.g., brush color, pen, etc.).
+        /// @details This is useful for changing the shape's settings when preparing to
+        ///     draw different shapes.
+        /// @returns The shape's information.
+        [[nodiscard]] GraphItemInfo& GetGraphItemInfo() noexcept
+            { return m_graphInfo; }
         /// @brief Draws a circle filled with the shape's brush, draws a black
         ///     outline, and draws the shape's text value in the center of it.
         /// @param rect The area to bind the circle within.
