@@ -62,7 +62,7 @@ namespace Wisteria::Graphs
         const auto leftRoadRange = std::make_pair(middleX, roadRange.first);
 
         // the scale for the location markers (in DIPs);
-        // 8 is probably the best looking small point, and 40 is a large enough
+        // 8 is probably the best looking small points, and 40 is a large enough
         // while still being reasonable
         std::pair<double, double> pointSizesRange = { 8, 40 };
 
@@ -98,6 +98,7 @@ namespace Wisteria::Graphs
                     GetPositiveIcon().second :
                     GetNegativeIcon().second)).
                 DPIScaling(GetDPIScaleFactor()).
+                Scaling(GetScaling()).
                 AnchorPoint({ xPt , yPt }),
                 scale_within(std::abs(GetRoadStops()[i].GetValue()),
                              GetMagnitudeRange(), pointSizesRange),
