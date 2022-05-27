@@ -276,7 +276,7 @@ namespace Wisteria::GraphItems
                 point.IsSelected())
                 {
                 Point2D pt = point;
-                pt.GetPen() = (dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                pt.GetPen().SetStyle(wxPENSTYLE_DOT);
                 pt.Draw(dc);
                 }
             else
