@@ -754,7 +754,9 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::GoRoadSign:
                         {
-                        Shapes sh(GraphItemInfo(_(L"GO")).Scaling(GetScaling()).
+                        Shapes sh(GraphItemInfo(_(L"GO")).
+                            Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
+                            Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()));
                         sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
                                                    wxPoint(iconMiddleX, middleOfCurrentRow),

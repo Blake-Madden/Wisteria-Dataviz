@@ -995,6 +995,20 @@ namespace Wisteria
                 m_clippingRect = clippingRect;
                 return *this;
                 }
+            // Accessors
+            //----------
+            /// @returns The scaling.
+            [[nodiscard]] double GetScaling() const noexcept
+                { return m_scaling; }
+            /// @returns The DPI scaling.
+            [[nodiscard]] std::optional<double> GetDPIScaleFactor() const noexcept
+                { return m_dpiScaleFactor; }
+            /// @returns The brush.
+            [[nodiscard]] wxBrush GetBrush() const noexcept
+                { return m_brush; }
+            /// @returns The brush.
+            [[nodiscard]] wxString GetText() const noexcept
+                { return m_text; }
         private:
             bool m_show{ true };
             bool m_isSelectable{ true };

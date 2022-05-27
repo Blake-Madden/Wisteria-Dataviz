@@ -476,7 +476,8 @@ namespace Wisteria::GraphItems
                         const auto signRect = wxRect(boundingBox.GetLeftTop(),
                                                      wxSize(boundingBox.GetWidth(),
                                                             boundingBox.GetHeight() * .66));
-                        Shapes sh(GraphItemInfo(_(L"GO")).Scaling(GetScaling()).
+                        Shapes sh(GraphItemInfo(_(L"GO")).Brush(GetBrush()).
+                            Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()));
                         sh.DrawCircularSign(signRect, dc);
                         }

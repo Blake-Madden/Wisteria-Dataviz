@@ -18,8 +18,8 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc,
                           wxPen(*wxBLACK,
                                 // use smaller outline if sign is small
-                                (radius >= 6 ? 2 : 1)));
-        wxDCBrushChanger bc(dc, m_graphInfo.m_brush);
+                                ScaleToScreenAndCanvas(radius >= 6 ? 2 : 1)));
+        wxDCBrushChanger bc(dc, m_graphInfo.GetBrush());
 
         const auto circleCenter = rect.GetLeftTop() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -27,7 +27,7 @@ namespace Wisteria::GraphItems
         dc.DrawCircle(circleCenter, radius);
 
         // GO label
-        Label goLabel(GraphItemInfo(m_graphInfo.m_text).Pen(wxNullPen).
+        Label goLabel(GraphItemInfo(m_graphInfo.GetText()).Pen(wxNullPen).
             AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).
             DPIScaling(GetDPIScaleFactor()));

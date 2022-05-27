@@ -38,14 +38,14 @@ namespace Wisteria::GraphItems
         void DrawCircularSign(const wxRect rect, wxDC& dc);
     private:
         [[nodiscard]] double GetScaling() const noexcept
-            { return m_graphInfo.m_scaling; }
+            { return m_graphInfo.GetScaling(); }
 
         double GetDPIScaleFactor() const noexcept
             {
-            wxASSERT_LEVEL_2_MSG(m_graphInfo.m_dpiScaleFactor.has_value(),
-                                 L"Graph item should have a proper DPI scaling.");
-            return (m_graphInfo.m_dpiScaleFactor.has_value() ?
-                    m_graphInfo.m_dpiScaleFactor.value() : 1);
+            wxASSERT_LEVEL_2_MSG(m_graphInfo.GetDPIScaleFactor().has_value(),
+                                 L"Shape should have a proper DPI scaling.");
+            return (m_graphInfo.GetDPIScaleFactor().has_value() ?
+                    m_graphInfo.GetDPIScaleFactor().value() : 1);
             }
 
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
