@@ -39,9 +39,9 @@ namespace Wisteria::Graphs
             \n
             The example below shows a @c Strength column that will have its categories aggregated
             by the graph. Meanwhile, the @c Weakness column will be loaded using the pre-calculated
-            totals from the corresponding @c WeeknessTotals column.
+            totals from the corresponding @c WeaknessTotals column.
 
-            | Strength                 | Weekness            | WeeknessTotals |
+            | Strength                 | Weakness            | WeaknessTotals |
             | :--                      | :--                 | --:            |
             | New features             | Cost                | 22             |
             | New features             | Missing features    | 12             |
