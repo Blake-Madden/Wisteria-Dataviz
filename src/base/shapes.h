@@ -18,10 +18,12 @@ namespace Wisteria::GraphItems
     {
     /** @brief Helper class to draw shapes.
         @details This class accepts a GraphItemInfo object, which will be used
-            when any @c DrawX() functions.\n
+            by the @c DrawXX() functions.\n
             This class is not an embeddable object placed on a canvas like
             `GraphItemBase`-deirived classes; rather, it is used by these classes
-            as a way to draw commonly used shapes.*/
+            as a way to draw commonly used shapes.
+        @note This class is used by Point2D and Label objects and not meant to be
+            used by client code. Prefer using Point2D for drawing icons on a graph.*/
     class Shapes
         {
     public:

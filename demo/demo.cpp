@@ -1236,16 +1236,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->SetTitle(_(L"Pros & Cons Roadmap"));
         subframe->m_canvas->SetFixedObjectsGridSize(3, 1);
 
-        // strengths and weaknesses
-            {
-            auto swData = std::make_shared<Data::Dataset>();
+        auto swData = std::make_shared<Data::Dataset>();
             try
                 {
                 swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
                     ImportInfo().
                     CategoricalColumns({
                         { L"Strength", CategoricalImportMethod::ReadAsStrings },
-                        { L"Weakness", CategoricalImportMethod::ReadAsStrings }
+                        { L"Weakness", CategoricalImportMethod::ReadAsStrings },
+                        { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
+                        { L"Threat", CategoricalImportMethod::ReadAsStrings }
                         }));
                 }
             catch (const std::exception& err)
@@ -1255,6 +1255,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 return;
                 }
 
+        // strengths and weaknesses
+            {
             auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
             roadmap->SetData(swData,
                              L"Strength", std::nullopt,
@@ -1273,23 +1275,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // opportunities and threats
             {
-            auto swData = std::make_shared<Data::Dataset>();
-            try
-                {
-                swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
-                    ImportInfo().
-                    CategoricalColumns({
-                        { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
-                        { L"Threat", CategoricalImportMethod::ReadAsStrings }
-                        }));
-                }
-            catch (const std::exception& err)
-                {
-                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
-                return;
-                }
-
             auto roadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
             roadmap->SetData(swData,
                              L"Opportunity", std::nullopt,

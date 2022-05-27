@@ -59,25 +59,27 @@ namespace Wisteria::Graphs
          auto canvas = new Wisteria::Canvas{ this };
          canvas->SetFixedObjectsGridSize(3, 1);
 
+         auto swData = std::make_shared<Data::Dataset>();
+         try
+            {
+            swData->ImportCSV(L"/home/mwalker/data/ERP Migration Survey.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"Strength", CategoricalImportMethod::ReadAsStrings },
+                    { L"Weakness", CategoricalImportMethod::ReadAsStrings },
+                    { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
+                    { L"Threat", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                            _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
          // strengths and weaknesses
             {
-            auto swData = std::make_shared<Data::Dataset>();
-            try
-                {
-                swData->ImportCSV(L"/home/mwalker/data/ERP Migration Survey.csv",
-                    ImportInfo().
-                    CategoricalColumns({
-                        { L"Strength", CategoricalImportMethod::ReadAsStrings },
-                        { L"Weakness", CategoricalImportMethod::ReadAsStrings }
-                        }));
-                }
-            catch (const std::exception& err)
-                {
-                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
-                return;
-                }
-
             auto roadmap = std::make_shared<ProConRoadmap>(canvas);
             roadmap->SetData(swData,
                              L"Strength", std::nullopt,
@@ -87,29 +89,15 @@ namespace Wisteria::Graphs
             roadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
             // don't include the counts on the labels
             roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+            // use road signs and a white road line
+            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
+            roadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
             canvas->SetFixedObject(0, 0, roadmap);
             }
 
          // opportunities and threats
             {
-            auto swData = std::make_shared<Data::Dataset>();
-            try
-                {
-                swData->ImportCSV(L"/home/mwalker/data/ERP Migration Survey.csv",
-                    ImportInfo().
-                    CategoricalColumns({
-                        { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
-                        { L"Threat", CategoricalImportMethod::ReadAsStrings }
-                        }));
-                }
-            catch (const std::exception& err)
-                {
-                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
-                return;
-                }
-
             auto roadmap = std::make_shared<ProConRoadmap>(canvas);
             roadmap->SetData(swData,
                              L"Opportunity", std::nullopt,
@@ -123,6 +111,9 @@ namespace Wisteria::Graphs
             roadmap->AddDefaultCaption();
             // don't include the counts on the labels
             roadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
+            // use road signs and a white road line
+            roadmap->SetRoadStopTheme(Roadmap::RoadStopTheme::RoadSigns);
+            roadmap->GetLaneSeparatorPen().SetColour(*wxWHITE);
 
             canvas->SetFixedObject(1, 0, roadmap);
 

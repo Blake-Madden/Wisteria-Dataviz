@@ -62,9 +62,9 @@ namespace Wisteria::Graphs
         const auto leftRoadRange = std::make_pair(middleX, roadRange.first);
 
         // the scale for the location markers (in DIPs);
-        // 8 is probably the best looking small points, and 40 is a large enough
+        // 4 is probably the best looking small points, and 20 is a large enough
         // while still being reasonable
-        std::pair<double, double> pointSizesRange = { 8, 40 };
+        std::pair<double, double> pointSizesRange = { 4, 20 };
 
         wxCoord xPt{ 0 }, yPt{ 0 };
         std::vector<wxPoint> pts;
