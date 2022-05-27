@@ -92,7 +92,6 @@ namespace Wisteria::Graphs
                 { pts.push_back({ xPt, yPt }); }
 
             // the location marker:
-            // points are scale of 1.0, their point size is calculated instead
             auto pt = std::make_shared<Point2D>(
                 GraphItemInfo().Brush((GetRoadStops()[i].GetValue() >= 0 ?
                     GetPositiveIcon().second :
