@@ -228,6 +228,15 @@ namespace Wisteria::GraphItems
             auto points = GetPolygon();
             wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             dc.DrawLines(points.size(), &points[0]);
+            // highlight the selected protruding bounding box in debug mode
+            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+                {
+                wxPoint debugOutline[5];
+                GraphItems::Polygon::GetRectPoints(m_pieArea, debugOutline);
+                debugOutline[4] = debugOutline[0];
+                wxDCPenChanger pcDebug(dc, wxPen(*wxGREEN, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                dc.DrawLines(std::size(debugOutline), debugOutline);
+                }
             }
 
         return GetBoundingBox(dc);
@@ -391,15 +400,17 @@ namespace Wisteria::Graphs
 
         // get a square inside of the drawing area for the pie
         wxRect drawArea = GetPlotAreaBoundingBox();
-        // add space to the top and bottom to fit a label
-        const auto labelBox = Label(GraphItemInfo(L"Aq\nAq").
-            DPIScaling(GetDPIScaleFactor()).
-            Pen(wxNullPen).Scaling(GetScaling())).GetBoundingBox(dc);
-        drawArea.SetHeight(drawArea.GetHeight() - labelBox.GetHeight()*2);
-        drawArea.SetY(labelBox.GetHeight());
-        const auto widthDifference = (drawArea.GetWidth() - drawArea.GetHeight());
-        drawArea.SetWidth(drawArea.GetWidth() - widthDifference);
-        drawArea.SetX(drawArea.GetX() + widthDifference / 2);
+        // get 75% of the area width and height for the pie (adding space for any labels),
+        // and use the smaller of the two for the pie's area dimensions
+        const auto pieHeight = drawArea.GetHeight() * 0.75;
+        const auto pieWidth = (drawArea.GetWidth() * 0.75);
+        const auto pieDimension = std::min(pieHeight, pieWidth);
+        const auto widthDifference = (drawArea.GetWidth() - pieDimension);
+        const auto heightDifference = (drawArea.GetHeight() - pieDimension);
+        drawArea.SetWidth(pieDimension);
+        drawArea.SetX(drawArea.GetX() + (widthDifference / 2));
+        drawArea.SetHeight(pieDimension);
+        drawArea.SetY(drawArea.GetY() + (heightDifference / 2));
 
         // make the connection line poke out a little from the pie
         auto outerDrawArea = drawArea;
