@@ -7,9 +7,13 @@ Any objects on the canvas (e.g., plots, legends) will then be printed.
 
 Print Settings
 ----------------------------
-To customize the printer settings, call `Wisteria::Canvas::SetPrinterData()`. This will enable you
+To access and customize a canvas's printer settings, call `Wisteria::Canvas::GetPrinterData()`. This will enable you
 to change the orientation and paper size of the printout. (The defaults are U.S. Letter paper size
 with portrait orientation.)
+
+Each canvas has its own print settings, allowing for canvases to have different page orientations.
+
+You can also copy print settings into a canvas by calling `Wisteria::Canvas::SetPrinterData()`.
 
 Page Fitting
 ----------------------------

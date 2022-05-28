@@ -187,8 +187,8 @@ namespace Wisteria
         void SetWatermark(const wxString& watermark)
             { m_watermark = watermark; }
         /// @returns The watermark label shown across the canvas.
-        /// @note The tags [DATETIME], [DATE], and [TIME] are expanded to their literal values
-        ///     at time of rendering.
+        /// @note The tags @c [DATETIME], @c [DATE], and @c [TIME] are expanded to their literal
+        ///     values at time of rendering.
         [[nodiscard]] wxString GetWatermark() const;
         /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
@@ -358,7 +358,7 @@ namespace Wisteria
         /// @{
 
         /// @returns The top titles. This can be used to add or edit a top title.
-        /// @note Call Label::SetRelativeAlignment() to adjust the alignment of the
+        /// @note Call @c Label::SetRelativeAlignment() to adjust the alignment of the
         ///     title on the canvas.
         [[nodiscard]] std::vector<GraphItems::Label>& GetTopTitles() noexcept
             { return m_topTitles; }
@@ -394,8 +394,10 @@ namespace Wisteria
             @param printData The printer data (i.e., system print settings).*/
         void SetPrinterData(const wxPrintData& printData) noexcept
             { m_printData = printData; }
-        /// @returns The printer data.
-        [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
+        /** @brief Access the printer data. This is useful for changing the print
+                settings for the canvas (e.g., changing the paper orientation).
+            @returns The printer data.*/
+        [[nodiscard]] wxPrintData& GetPrinterData() noexcept
             { return m_printData; }
 
         /// @returns @c true If fitting the canvas's content to the full page
@@ -536,6 +538,9 @@ namespace Wisteria
         void DrawWatermarkLogo(wxDC& dc);
 
         /// @private
+        [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
+            { return m_printData; }
+        /// @private
         void SetBackgroundImage(wxBitmapBundle&& backgroundImage,
                                 const uint8_t opacity = wxALPHA_OPAQUE) noexcept
             {
@@ -564,9 +569,6 @@ namespace Wisteria
         [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>
                           GetFixedObject(const size_t row, const size_t column) const;
     private:
-        /// @returns Direct access to the print data.
-        [[nodiscard]] wxPrintData& GetPrinterData() noexcept
-            { return m_printData; }
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }

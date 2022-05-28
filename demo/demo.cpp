@@ -1582,6 +1582,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             1 - subframe->m_canvas->CalcMinHeightProportion(note));
         subframe->m_canvas->GetRowInfo(1).HeightProportion(
             subframe->m_canvas->CalcMinHeightProportion(note));
+
+        // set the canvas's print orientation to landscape
+        subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
         }
     // multiple plots with a common axis
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS)
