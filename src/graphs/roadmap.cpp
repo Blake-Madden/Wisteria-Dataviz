@@ -173,7 +173,9 @@ namespace Wisteria::Graphs
         // the lane separator, which is a tenth as wide as the road
         if (m_laneSeparatorPen.IsOk())
             {
-            m_laneSeparatorPen.SetWidth(pavement->GetPen().GetWidth() / 10);
+            m_laneSeparatorPen.SetWidth(
+                pavement->GetPen().GetWidth() /
+                (m_laneSepatatorStyle == LaneSeparatorStyle::DoubleLine ? 5 : 10));
             auto laneSep = std::make_shared<GraphItems::Points2D>(m_laneSeparatorPen);
             laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
             laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
@@ -187,6 +189,26 @@ namespace Wisteria::Graphs
                         0, IconShape::BlankIcon), dc);
                 }
             AddObject(laneSep);
+            // if a double line, then draw a road colored line down the middle
+            // of the lane separator to make it look like two lines
+            if (m_laneSepatatorStyle == LaneSeparatorStyle::DoubleLine)
+                {
+                wxPen lineSepPen = wxPen(m_roadPen.GetColour(),
+                                         m_laneSeparatorPen.GetWidth() * .33);
+                auto laneSepRoadLine = std::make_shared<GraphItems::Points2D>(lineSepPen);
+                laneSepRoadLine->SetDPIScaleFactor(GetDPIScaleFactor());
+                laneSepRoadLine->GetClippingRect() = GetPlotAreaBoundingBox();
+                laneSepRoadLine->SetLineStyle(LineStyle::Spline);
+                for (const auto& pt : pts)
+                    {
+                    laneSepRoadLine->AddPoint(
+                        Point2D(GraphItemInfo().
+                            AnchorPoint(pt).
+                            DPIScaling(GetDPIScaleFactor()),
+                            0, IconShape::BlankIcon), dc);
+                    }
+                AddObject(laneSepRoadLine);
+                }
             }
 
         AddObject(labelConnectionLines);

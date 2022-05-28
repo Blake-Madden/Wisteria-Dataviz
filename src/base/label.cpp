@@ -658,7 +658,8 @@ namespace Wisteria::GraphItems
                         wxString::Format(L"Scaling: %s\n"
                                           "Default font size: %d\n"
                                           "Font size: %d",
-                            wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(GetScaling(), 1,
+                                                        wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             GetFont().GetPointSize(),
                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
                         AnchorPoint(bBox.GetTopLeft()).
@@ -716,9 +717,11 @@ namespace Wisteria::GraphItems
                 wxDCPenChanger pc2(dc, scaledIconPen);
                 wxDCBrushChanger bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush());
                 const size_t currentIndex = (iconPos-GetLegendIcons().begin());
-                wxCoord middleOfCurrentRow = static_cast<wxCoord>((averageLineHeight*currentIndex) +
-                                                                   safe_divide<size_t>(averageLineHeight, 2)) +
-                    (static_cast<wxCoord>(currentIndex)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                wxCoord middleOfCurrentRow =
+                    static_cast<wxCoord>((averageLineHeight*currentIndex) +
+                    safe_divide<size_t>(averageLineHeight, 2)) +
+                    (static_cast<wxCoord>(currentIndex) *
+                        std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
                     // spaces between proceeding lines
                     ScaleToScreenAndCanvas(GetTopPadding());
                 const auto iconAreaWidth{ averageLineHeight };
@@ -787,7 +790,7 @@ namespace Wisteria::GraphItems
                         sh.GetGraphItemInfo().Text(_(L"GO"));
                         sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
                                                    wxPoint(iconMiddleX, middleOfCurrentRow),
-                            wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * .5)),
+                            wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * 0.5)),
                             dc);
                         }
                         break;
@@ -798,12 +801,12 @@ namespace Wisteria::GraphItems
                         // inner ring
                             {
                             wxDCPenChanger pc3(dc,
-                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
                             wxDCBrushChanger bc3(dc,
-                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
                             dc.DrawCircle(contentBoundingBox.GetLeftTop() +
                                 wxPoint(iconMiddleX, middleOfCurrentRow),
-                                iconRadius * .5);
+                                iconRadius * 0.5);
                             }
                         // center (1/3 the size of outer ring)
                             {
@@ -811,7 +814,7 @@ namespace Wisteria::GraphItems
                             wxDCBrushChanger bc3(dc, *wxWHITE_BRUSH);
                             dc.DrawCircle(contentBoundingBox.GetLeftTop() +
                                 wxPoint(iconMiddleX, middleOfCurrentRow),
-                                iconRadius * .33);
+                                iconRadius * 0.33);
                             }
                         break;
                     case IconShape::CircleIcon:
@@ -919,11 +922,12 @@ namespace Wisteria::GraphItems
                     case IconShape::ImageIcon:
                         if (iconPos->m_img.IsOk())
                             {
-                            const auto downScaledSize = geometry::calculate_downscaled_size(
-                                            std::make_pair<double, double>(iconPos->m_img.GetWidth(),
-                                                                           iconPos->m_img.GetHeight()),
-                                            std::make_pair(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()),
-                                                           static_cast<double>(averageLineHeight)));
+                            const auto downScaledSize =
+                                geometry::calculate_downscaled_size(
+                                    std::make_pair<double, double>(iconPos->m_img.GetWidth(),
+                                                                    iconPos->m_img.GetHeight()),
+                                    std::make_pair(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()),
+                                                    static_cast<double>(averageLineHeight)));
                             wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first, downScaledSize.second,
                                                                      wxIMAGE_QUALITY_HIGH);
                             dc.DrawBitmap(wxBitmap(scaledImg),contentBoundingBox.GetTopLeft() +
@@ -1015,7 +1019,7 @@ namespace Wisteria::GraphItems
         {
         if (GetText().length() < suggestedLineLength)
             { return; }
-        // if multiline, see if any of its lines are too long. If so,
+        // if multi-line, see if any of its lines are too long. If so,
         // we need to split this string up and reformat it.
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         bool lineIsTooLong(false);

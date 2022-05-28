@@ -30,6 +30,15 @@ namespace Wisteria::Graphs
             RoadSigns
             };
 
+        /// @brief The style of the lane separator.
+        enum class LaneSeparatorStyle
+            {
+            /// @brief Sinlge line.
+            SingleLine,
+            /// @brief Double line.
+            DoubleLine
+            };
+
         /// @brief How the labels next to the road stops are displayed.
         enum class MarkerLabelDisplay
             {
@@ -176,6 +185,7 @@ namespace Wisteria::Graphs
             wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
                                 1, wxPenStyle::wxPENSTYLE_LONG_DASH)
             };
+        LaneSeparatorStyle m_laneSepatatorStyle{ LaneSeparatorStyle::SingleLine };
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
         /// @returns The icon used for negative sentitments, based on current theme.

@@ -15,10 +15,7 @@ namespace Wisteria::GraphItems
         {
         const auto radius =
             safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2);
-        wxDCPenChanger pc(dc,
-                          wxPen(*wxBLACK,
-                                // use smaller outline if sign is small
-                                ScaleToScreenAndCanvas(radius >= 6 ? 2 : 1)));
+        wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
         wxDCBrushChanger bc(dc, m_graphInfo.GetBrush());
 
         const auto circleCenter = rect.GetLeftTop() +

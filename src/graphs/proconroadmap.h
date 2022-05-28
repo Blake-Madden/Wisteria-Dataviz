@@ -135,9 +135,9 @@ namespace Wisteria::Graphs
 
          // set a common scale for the road stop sizes between the two roadmaps
          SWroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
-                                         OTroadmap->GetMagnitude()));
+                                          OTroadmap->GetMagnitude()));
          OTroadmap->SetMagnitude(std::max(SWroadmap->GetMagnitude(),
-                                         OTroadmap->GetMagnitude()));
+                                          OTroadmap->GetMagnitude()));
 
          // add everything to the canvas
          canvas->SetFixedObject(0, 0, SWroadmap);
