@@ -178,7 +178,7 @@ namespace Wisteria::Graphs
         std::vector<RoadStopInfo> m_roadStops;
         // (absolute) max of values (e.g., IVs' coefficients)
         double m_magnitude{ 0 };
-        wxString m_goalLabel{ _("Goal") };
+        wxString m_goalLabel{ _(L"Goal") };
 
         wxPen m_roadPen{ *wxBLACK, 10 };
         wxPen m_laneSeparatorPen{

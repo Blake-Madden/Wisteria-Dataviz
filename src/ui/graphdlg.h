@@ -21,7 +21,8 @@
 
 namespace Wisteria::UI
     {
-    /** @brief Dialog for showing a graph. Includes buttons for saving, copying, and printing the graph.*/
+    /** @brief Dialog for showing a graph. Includes buttons for saving, copying,
+            and printing the graph.*/
     class GraphDlg final : public wxDialog
         {
     public:
@@ -29,18 +30,20 @@ namespace Wisteria::UI
             @param parent the parent of the dialog.
             @param id the window ID for this dialog.
             @param caption the title of this dialog.
-            @note This dialog takes ownership of the graph and will delete it upon destruction. Therefore, the graph
-             should be created on the heap.*/
-        GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _("View Graph"))
+            @note This dialog takes ownership of the graph and will delete it upon destruction.
+                Therefore, the graph should be created on the heap.*/
+        GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Graph"))
             { Create(parent, id, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER); }
+        /// @private
         GraphDlg() = delete;
 
-        /// @returns Access to the canvas, where you can add the graph (it has already been initialized to hold one graph).
+        /// @returns Access to the canvas, where you can add the graph
+        //      (it has already been initialized to hold one graph).
         [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
             { return m_canvas; }
     private:
         // Creation step.
-        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _("View Graph"),
+        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Graph"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                     long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER)
             {
@@ -100,7 +103,7 @@ namespace Wisteria::UI
             SetSizerAndFit(mainSizer);
             }
 
-        //Button clicking
+        // Button clicking
         void OnButtonClick(wxCommandEvent& event)
             {
             if (event.GetId() == wxID_CLOSE)

@@ -15,7 +15,7 @@ VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
                                      const Data::Dataset::ColumnPreviewInfo& columnInfo,
                        const std::vector<VariableListInfo>& varInfo,
                        wxWindowID id /*= wxID_ANY*/,
-                       const wxString& caption /*= _("Set Opacity")*/,
+                       const wxString& caption /*= _(L"Set Opacity")*/,
                        const wxPoint& pos /*= wxDefaultPosition*/,
                        const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
@@ -60,7 +60,7 @@ void VariableSelectDlg::MoveSelectedVariablesBetweenLists(wxListView* list, wxLi
             list->GetSelectedItemCount() > 1)
             {
             wxMessageBox(_(L"Only one variable is allowed in this list."),
-                         _("Invalid Variable Selection"),
+                         _(L"Invalid Variable Selection"),
                          wxOK|wxICON_WARNING|wxCENTRE);
             return;
             }

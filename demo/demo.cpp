@@ -1210,11 +1210,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto roadmap = std::make_shared<LRRoadmap>(subframe->m_canvas);
         roadmap->SetData(roadmapData, L"factor", L"coefficient",
-            std::nullopt, std::nullopt, std::nullopt, _("GPA"));
+            std::nullopt, std::nullopt, std::nullopt, _(L"GPA"));
         roadmap->SetCanvasMargins(5, 5, 5, 5);
         // add the default caption explaining how to read the graph
         roadmap->AddDefaultCaption();
-        roadmap->GetTitle().SetText(_("First-Year Osprey Roadmap\n"
+        roadmap->GetTitle().SetText(_(L"First-Year Osprey Roadmap\n"
             "How do background characteristics and decisions affect First - Year Students' GPA?"));
         // add a title with a blue banner background and white font
         roadmap->GetTitle().GetHeaderInfo().Enable(true).FontColor(*wxWHITE).GetFont().MakeBold();
@@ -1261,7 +1261,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                             L"Strength", std::nullopt,
                             L"Weakness", std::nullopt, 2);
         SWroadmap->SetCanvasMargins(5, 5, 0, 5);
-        SWroadmap->GetLeftYAxis().GetTitle().SetText(_("Strengths & Weaknesses"));
+        SWroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
         SWroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
         // don't include the counts on the labels
         SWroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
@@ -1277,7 +1277,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                             // ignore items that are only mentioned once
                             2);
         OTroadmap->SetCanvasMargins(0, 5, 5, 5);
-        OTroadmap->GetLeftYAxis().GetTitle().SetText(_("Opportunities & Threats"));
+        OTroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
         OTroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
         // add the default caption explaining how to read the graph
         OTroadmap->AddDefaultCaption();
@@ -1301,7 +1301,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             LockProportion(true);
 
         // add a title with a green banner background and white font
-        Label topTitle(GraphItemInfo(_("ERP Migration SWOT Analysis\n"
+        Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
             "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
             Padding(5, 5, 5, 5).
             ChildAlignment(RelativeAlignment::FlushLeft).

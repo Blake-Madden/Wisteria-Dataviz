@@ -93,7 +93,8 @@ namespace Wisteria::Graphs
             {
             if (includePredictor(coefficientColumn->GetValue(i),
                                  (pValueColumn != data->GetContinuousColumns().cend() ?
-                                  std::optional<double>(pValueColumn->GetValue(i)) : std::nullopt)) )
+                                  std::optional<double>(pValueColumn->GetValue(i)) :
+                                  std::nullopt)) )
                 {
                 GetRoadStops().emplace_back(
                     RoadStopInfo(predictorColumn->GetCategoryLabelFromID(predictorColumn->GetValue(i))).
@@ -106,7 +107,7 @@ namespace Wisteria::Graphs
     void LRRoadmap::AddDefaultCaption()
         {
         GetCaption().SetText(wxString::Format(
-            _("The larger the map marker and deeper the curve, "
-              "the stronger the item's association with %s"), GetGoalLabel()));
+            _(L"The larger the map marker and deeper the curve, "
+               "the stronger the item's association with %s"), GetGoalLabel()));
         }
     }

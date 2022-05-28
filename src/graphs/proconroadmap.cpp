@@ -133,7 +133,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void ProConRoadmap::AddDefaultCaption()
         {
-        GetCaption().SetText(_("The larger the map marker and deeper the curve, "
+        GetCaption().SetText(_(L"The larger the map marker and deeper the curve, "
               "the stronger the positive or negative influence"));
         }
     }

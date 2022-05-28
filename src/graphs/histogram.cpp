@@ -44,18 +44,21 @@ namespace Wisteria::Graphs
         if (binCountRanges.second)
             { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
-        m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
+        m_groupColumn = (groupColumnName ?
+            m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
         if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for histogram."), groupColumnName.value()).ToUTF8());
+                _(L"'%s': group column not found for histogram."),
+                groupColumnName.value()).ToUTF8());
             }
         m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == m_data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for histogram."), continuousColumnName).ToUTF8());
+                _(L"'%s': continuous column not found for histogram."),
+                continuousColumnName).ToUTF8());
             }
 
         m_validN = statistics::valid_n(m_continuousColumn->GetValues());
@@ -95,7 +98,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    wxString Histogram::GetCustomBarLabelOrValue(const double& value, const size_t precision /*= 0*/)
+    wxString Histogram::GetCustomBarLabelOrValue(const double& value,
+                                                 const size_t precision /*= 0*/)
         {
         const auto& customLabel = GetBarAxis().GetCustomLabel(value);
         if (customLabel.IsOk() && customLabel.GetText().length())
@@ -186,9 +190,10 @@ namespace Wisteria::Graphs
         for (const auto& blockTable : groups.get_data())
             {
             const wxColour blockColor = (m_useGrouping ?
-                GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0));
+                GetColorScheme()->GetColor(blockTable.first.m_block) :
+                GetColorScheme()->GetColor(0));
 
-            wxString blockLabel{ wxString::Format(_("%s item(s)\n"),
+            wxString blockLabel{ wxString::Format(_(L"%s item(s)\n"),
                 wxNumberFormatter::ToString(blockTable.second.second, 0,
                     Settings::GetDefaultNumberFormat())) };
             // piece the first few observations together as a display label for the block
@@ -409,8 +414,8 @@ namespace Wisteria::Graphs
            }
 
         /* remove any following bins that do not have anything in them (might happen if the range
-           had to be expanded to create neat intervals). Leading bins are handled separately in the loop
-           below because the range min value makes removing bins here more tricky.*/
+           had to be expanded to create neat intervals). Leading bins are handled separately in the
+           loop below because the range min value makes removing bins here more tricky.*/
         while (bins.size())
             {
             if (bins.back().size() > 0)
@@ -437,7 +442,7 @@ namespace Wisteria::Graphs
                     GetColorScheme()->GetColor(block.first) : GetColorScheme()->GetColor(0));
                 currentBarBlocksTotal += block.second.first;
 
-                wxString blockLabel{ wxString::Format(_("%s item(s)\n"),
+                wxString blockLabel{ wxString::Format(_(L"%s item(s)\n"),
                     wxNumberFormatter::ToString(block.second.first, 0,
                         Settings::GetDefaultNumberFormat())) };
                 for (const auto& obsLabel : block.second.second)
@@ -459,26 +464,33 @@ namespace Wisteria::Graphs
                 }
 
             const double barValue = currentBarBlocksTotal;
-            const double percentage = safe_divide<double>(barValue,total)*100;
+            const double percentage = safe_divide<double>(barValue,total) * 100;
             const wxString barLabel = (barValue == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ? wxString(wxEmptyString) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ? wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ? wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
+                    wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
+                    wxNumberFormatter::ToString(percentage, 0,
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
                 wxNumberFormatter::ToString(barValue, 0,
                     Settings::GetDefaultNumberFormat()) +
                     L" (" +
-                    wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                    wxNumberFormatter::ToString(percentage, 0,
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                     L"%)";
             theBar.GetLabel().SetText(barLabel);
 
-            /* If values are being rounded and the intervals are "neat," then show the bins simply as
-               integer ranges instead of ">= and <" ranges (makes it easier to read).*/
+            /* If values are being rounded and the intervals are "neat," then show the bins
+               simply as integer ranges instead of ">= and <" ranges (makes it easier to read).*/
             if (GetBinningMethod() == BinningMethod::BinByIntegerRange &&
                 GetRoundingMethod() != RoundingMethod::NoRounding)
                 {
-                /* The first bin gets an extra value (the lowest value) so that an extra bin doesn't need to be created just for
-                   that (unless rounding is turned on and the lowest value is rounded down). If we are rounding down the lowest
-                   value, then we need to step the starting point of the range by 1 because that is where the first value really falls.
-                   The rest of the bins need to show that they actually begin from the integer starting after the cutpoint.*/
+                /* The first bin gets an extra value (the lowest value) so that an extra bin
+                   doesn't need to be created just for that (unless rounding is turned on and
+                   the lowest value is rounded down). If we are rounding down the lowest value,
+                   then we need to step the starting point of the range by 1 because that is
+                   where the first value really falls.
+                   The rest of the bins need to show that they actually begin from the integer
+                   starting after the cutpoint.*/
                 const double startValue = (i == 0) ?
                     isLowestValueBeingAdjusted ? minVal+1 : minVal :
                         minVal+1+(i*BinSize);
@@ -492,21 +504,30 @@ namespace Wisteria::Graphs
                         GetCustomBarLabelOrValue(endValue);
                     }
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
-                    { GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize), GraphItems::Label(axisLabel)); }
+                    {
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize),
+                                                GraphItems::Label(axisLabel));
+                    }
                 }
             else
                 {
                 const wxString axisLabel = ((i == 0) ? L">= " : L"> ") +
-                    wxNumberFormatter::ToString(minVal+(i*BinSize), 6, wxNumberFormatter::Style::Style_NoTrailingZeroes) + _(" and <= ") +
-                    wxNumberFormatter::ToString(minVal+(i*BinSize)+BinSize, 6, wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    wxNumberFormatter::ToString(minVal+(i*BinSize), 6,
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes) + _(L" and <= ") +
+                    wxNumberFormatter::ToString(minVal+(i*BinSize)+BinSize, 6,
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
                 if (GetIntervalDisplay() == IntervalDisplay::Midpoints)
-                    { GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize), GraphItems::Label(axisLabel)); }
+                    {
+                    GetBarAxis().SetCustomLabel(startingBarAxisPosition+(i*BinSize),
+                                                GraphItems::Label(axisLabel));
+                    }
                 }
 
-            /* Remove any leading bins that do not have anything in them (might happen if the range
-               had to be expanded to create neat intervals).*/
+            /* Remove any leading bins that do not have anything in them
+               (might happen if the range had to be expanded to create neat intervals).*/
             if (!firstBinWithValuesFound && barValue <= 0 &&
-                // if bins are not forced to start at a certain place, then allow these leading empty bars
+                // if bins are not forced to start at a certain place,
+                // then allow these leading empty bars
                 (!GetBinsStart() || theBar.GetAxisPosition() < GetBinsStart().value()))
                 { continue; }
             else

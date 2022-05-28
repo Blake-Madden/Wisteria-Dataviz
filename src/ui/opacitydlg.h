@@ -34,7 +34,7 @@ namespace Wisteria::UI
              @param size The dialog's initial size.
              @param style The dialog's flags.*/
         OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& image,
-                   wxWindowID id = wxID_ANY, const wxString& caption = _("Set Opacity"),
+                   wxWindowID id = wxID_ANY, const wxString& caption = _(L"Set Opacity"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
         OpacityDlg() = delete;

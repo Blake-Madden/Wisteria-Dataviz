@@ -80,7 +80,7 @@ public:
         @code
          wxDebugReportCompress* report = new wxDebugReportCompress;
          //"logFile" will the LogFile object you created earlier
-         report->AddFile(logFile->GetLogFilePath(), _("Log Report"));
+         report->AddFile(logFile->GetLogFilePath(), _(L"Log Report"));
          ...
         @endcode
         @returns The path of the log file.

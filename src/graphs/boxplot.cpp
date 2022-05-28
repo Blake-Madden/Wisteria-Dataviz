@@ -291,7 +291,7 @@ namespace Wisteria::Graphs
                                          GetPlotAreaBoundingBox().GetY() +
                                           (GetPlotAreaBoundingBox().GetHeight()/2));
             auto invalidLabel = std::make_shared<GraphItems::Label>(
-                GraphItemInfo(_("Too many boxes. Plot cannot be drawn.")).
+                GraphItemInfo(_(L"Too many boxes. Plot cannot be drawn.")).
                 Scaling(GetScaling()).Pen(*wxBLACK_PEN).
                 Font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeLarger()).
                 AnchorPoint(textCoordinate));
@@ -330,7 +330,7 @@ namespace Wisteria::Graphs
             // (which would certainly be the case, usually)
             if (box.GetData()->GetRowCount() > 1)
                 {
-                const wxString whiskerLabel = wxString::Format(_("Non-outlier range: %s-%s"),
+                const wxString whiskerLabel = wxString::Format(_(L"Non-outlier range: %s-%s"),
                         wxNumberFormatter::ToString(box.GetLowerWhisker(),
                             3, Settings::GetDefaultNumberFormat()),
                         wxNumberFormatter::ToString(box.GetUpperWhisker(),
@@ -372,7 +372,7 @@ namespace Wisteria::Graphs
             if (box.GetData()->GetRowCount() > 1)
                 {
                 const wxString boxLabel =
-                    wxString::Format(_("75th Percentile: %s\n"
+                    wxString::Format(_(L"75th Percentile: %s\n"
                                        "Median: %s\n" // 50th percentile
                                        "25th Percentile: %s"),
                             wxNumberFormatter::ToString(box.GetUpperControlLimit(),

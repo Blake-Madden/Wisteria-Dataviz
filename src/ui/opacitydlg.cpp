@@ -11,9 +11,11 @@
 
 using namespace Wisteria::UI;
 
-OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity, const wxBitmap& image, wxWindowID id /*= wxID_ANY*/,
-                       const wxString& caption /*= _("Set Opacity")*/,
-                       const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+OpacityDlg::OpacityDlg(wxWindow* parent, const uint8_t opacity,
+                       const wxBitmap& image, wxWindowID id /*= wxID_ANY*/,
+                       const wxString& caption /*= _(L"Set Opacity")*/,
+                       const wxPoint& pos /*= wxDefaultPosition*/,
+                       const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
                         m_opacity(opacity), m_image(image)
     {

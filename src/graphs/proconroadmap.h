@@ -84,7 +84,7 @@ namespace Wisteria::Graphs
                             L"Strength", std::nullopt,
                             L"Weakness", std::nullopt, 2);
          SWroadmap->SetCanvasMargins(5, 5, 0, 5);
-         SWroadmap->GetLeftYAxis().GetTitle().SetText(_("Strengths & Weaknesses"));
+         SWroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Strengths & Weaknesses"));
          SWroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
          // don't include the counts on the labels
          SWroadmap->SetMarkerLabelDisplay(Roadmap::MarkerLabelDisplay::Name);
@@ -100,7 +100,7 @@ namespace Wisteria::Graphs
                             // ignore items that are only mentioned once
                             2);
          OTroadmap->SetCanvasMargins(0, 5, 5, 5);
-         OTroadmap->GetLeftYAxis().GetTitle().SetText(_("Opportunities & Threats"));
+         OTroadmap->GetLeftYAxis().GetTitle().SetText(_(L"Opportunities & Threats"));
          OTroadmap->GetLeftYAxis().GetTitle().SetMinimumUserSizeDIPs(30, std::nullopt);
          // add the default caption explaining how to read the graph
          OTroadmap->AddDefaultCaption();
@@ -124,7 +124,7 @@ namespace Wisteria::Graphs
             LockProportion(true);
 
          // add a title with a green banner background and white font
-         Label topTitle(GraphItemInfo(_("ERP Migration SWOT Analysis\n"
+         Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
             "Employee Survey Results Regarding Proposed Migration to new ERP Software")).
             Padding(5, 5, 5, 5).
             ChildAlignment(RelativeAlignment::FlushLeft).
@@ -209,8 +209,8 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxString GetNegativeLegendLabel() const final
             { return m_negativeLabel; }
         
-        wxString m_positiveLabel{ _("Pro") };
-        wxString m_negativeLabel{ _("Con") };
+        wxString m_positiveLabel{ _(L"Pro") };
+        wxString m_negativeLabel{ _(L"Con") };
         };
     }
 

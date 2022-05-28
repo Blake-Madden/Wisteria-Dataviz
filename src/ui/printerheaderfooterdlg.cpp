@@ -97,14 +97,14 @@ void PrinterHeaderFooterDlg::CreateControls()
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxStaticBox* headerFrame = new wxStaticBox(this, wxID_ANY, _("Headers"));
+    wxStaticBox* headerFrame = new wxStaticBox(this, wxID_ANY, _(L"Headers"));
     wxStaticBoxSizer* headerFrameSizer = new wxStaticBoxSizer(headerFrame, wxHORIZONTAL);
     mainSizer->Add(headerFrameSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
     wxBoxSizer* headerLeftSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerLeftSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* leftHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _("Left:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* leftHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _(L"Left:"), wxDefaultPosition, wxDefaultSize, 0);
     headerLeftSizer->Add(leftHeaderTextLabel, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     wxArrayString choiceStrings;
@@ -121,7 +121,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     wxBoxSizer* headerCenterSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerCenterSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* centerHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _("Center:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* centerHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _(L"Center:"), wxDefaultPosition, wxDefaultSize, 0);
     headerCenterSizer->Add(centerHeaderTextLabel, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     centerHeaderPrinterCombo = new wxComboBox(this, ID_CENTER_HEADER_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -131,21 +131,21 @@ void PrinterHeaderFooterDlg::CreateControls()
     wxBoxSizer* headerRightSizer = new wxBoxSizer(wxVERTICAL);
     headerFrameSizer->Add(headerRightSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* rightHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _("Right:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* rightHeaderTextLabel = new wxStaticText(this, wxID_STATIC, _(L"Right:"), wxDefaultPosition, wxDefaultSize, 0);
     headerRightSizer->Add(rightHeaderTextLabel, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     rightHeaderPrinterCombo = new wxComboBox(this, ID_RIGHT_HEADER_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize,
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_rightPrinterHeader));
     headerRightSizer->Add(rightHeaderPrinterCombo, 1, wxEXPAND);
 
-    wxStaticBox* footersTextBox = new wxStaticBox(this, wxID_ANY, _("Footers"));
+    wxStaticBox* footersTextBox = new wxStaticBox(this, wxID_ANY, _(L"Footers"));
     wxStaticBoxSizer* footerSizer = new wxStaticBoxSizer(footersTextBox, wxHORIZONTAL);
     mainSizer->Add(footerSizer, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
     wxBoxSizer* footerLeftSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerLeftSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* leftFooterPrinterText = new wxStaticText(this, wxID_STATIC, _("Left:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* leftFooterPrinterText = new wxStaticText(this, wxID_STATIC, _(L"Left:"), wxDefaultPosition, wxDefaultSize, 0);
     footerLeftSizer->Add(leftFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     leftFooterPrinterCombo = new wxComboBox(this, ID_LEFT_FOOTER_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -155,7 +155,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     wxBoxSizer* footerCenterSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerCenterSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* centerFooterPrinterText = new wxStaticText(this, wxID_STATIC, _("Center:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* centerFooterPrinterText = new wxStaticText(this, wxID_STATIC, _(L"Center:"), wxDefaultPosition, wxDefaultSize, 0);
     footerCenterSizer->Add(centerFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     centerFooterPrinterCombo = new wxComboBox(this, ID_CENTER_FOOTER_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -165,7 +165,7 @@ void PrinterHeaderFooterDlg::CreateControls()
     wxBoxSizer* footerRightSizer = new wxBoxSizer(wxVERTICAL);
     footerSizer->Add(footerRightSizer, 1, wxEXPAND|wxLEFT|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
-    wxStaticText* rightFooterPrinterText = new wxStaticText(this, wxID_STATIC, _("Right:"), wxDefaultPosition, wxDefaultSize, 0);
+    wxStaticText* rightFooterPrinterText = new wxStaticText(this, wxID_STATIC, _(L"Right:"), wxDefaultPosition, wxDefaultSize, 0);
     footerRightSizer->Add(rightFooterPrinterText, 0, wxEXPAND|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     rightFooterPrinterCombo = new wxComboBox(this, ID_RIGHT_FOOTER_COMBOBOX, wxEmptyString, wxDefaultPosition, wxDefaultSize,

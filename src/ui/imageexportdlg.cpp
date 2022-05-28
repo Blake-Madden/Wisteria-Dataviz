@@ -47,11 +47,12 @@ void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
     }
 
 /// Creation
-bool ImageExportDlg::Create(wxWindow* parent, const wxBitmapType bitmapType, wxWindowID id /*= wxID_ANY*/,
-                                const wxString& caption /*= _("Image Export Options")*/,
-                                const wxPoint& pos /*= wxDefaultPosition*/,
-                                const wxSize& size /*= wxDefaultSize*/,
-                                long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
+bool ImageExportDlg::Create(wxWindow* parent,
+                            const wxBitmapType bitmapType, wxWindowID id /*= wxID_ANY*/,
+                            const wxString& caption /*= _(L"Image Export Options")*/,
+                            const wxPoint& pos /*= wxDefaultPosition*/,
+                            const wxSize& size /*= wxDefaultSize*/,
+                            long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/)
     {
     SetExtraStyle(GetExtraStyle()|wxWS_EX_VALIDATE_RECURSIVELY|wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);

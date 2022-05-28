@@ -18,8 +18,8 @@ LogFile::LogFile()
     if (!logFile.Create(m_logFilePath, true))
         {
         wxMessageBox(wxString::Format(
-            _("Unable to create log file at '%s'"), m_logFilePath),
-            _("Logging Error"), wxOK|wxICON_WARNING);
+            _(L"Unable to create log file at '%s'"), m_logFilePath),
+            _(L"Logging Error"), wxOK|wxICON_WARNING);
         }
     else
         {

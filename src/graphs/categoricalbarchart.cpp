@@ -113,12 +113,12 @@ namespace Wisteria::Graphs
                 GetColorScheme()->GetColor(blockTable.first.m_block) : GetColorScheme()->GetColor(0));
 
             wxString blockLabelText = (m_useValueColumn ?
-                wxString::Format(_("%s item(s), totalling %s"),
+                wxString::Format(_(L"%s item(s), totalling %s"),
                     wxNumberFormatter::ToString(blockTable.second.first, 0,
                         Settings::GetDefaultNumberFormat()),
                     wxNumberFormatter::ToString(blockTable.second.second, 2,
                         Settings::GetDefaultNumberFormat())) :
-                wxString::Format(_("%s item(s)"),
+                wxString::Format(_(L"%s item(s)"),
                     wxNumberFormatter::ToString(blockTable.second.first, 0,
                         Settings::GetDefaultNumberFormat())) );
 

@@ -71,11 +71,11 @@ namespace Wisteria::Graphs
 
          auto roadmap = std::make_shared<LRRoadmap>(canvas);
          roadmap->SetData(roadmapData, L"factor", L"coefficient",
-            std::nullopt, std::nullopt, std::nullopt, _("GPA"));
+            std::nullopt, std::nullopt, std::nullopt, _(L"GPA"));
          roadmap->SetCanvasMargins(5, 5, 5, 5);
          // add the default caption explaining how to read the graph
          roadmap->AddDefaultCaption();
-         roadmap->GetTitle().SetText(_("First-Year Osprey Roadmap\n"
+         roadmap->GetTitle().SetText(_(L"First-Year Osprey Roadmap\n"
             "How do background characteristics and decisions affect First - Year Students' GPA?"));
          // add a title with a blue banner background and white font
          roadmap->GetTitle().GetHeaderInfo().Enable(true).

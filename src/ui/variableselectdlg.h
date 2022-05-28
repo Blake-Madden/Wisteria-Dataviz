@@ -100,7 +100,7 @@ namespace Wisteria::UI
         VariableSelectDlg(wxWindow* parent, const Data::Dataset::ColumnPreviewInfo& columnInfo,
                           const std::vector<VariableListInfo>& varInfo,
                           wxWindowID id = wxID_ANY,
-                          const wxString& caption = _("Select Variables"),
+                          const wxString& caption = _(L"Select Variables"),
                           const wxPoint& pos = wxDefaultPosition,
                           const wxSize& size = wxDefaultSize,
                           long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
