@@ -282,7 +282,9 @@ namespace Wisteria::GraphItems
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
                     GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
-                const auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                 ScaleToScreenAndCanvas(GetRightPadding());
                 width = std::max(topLineSize.GetWidth(), width);
                 height += topLineSize.GetHeight();
                 }
@@ -307,7 +309,9 @@ namespace Wisteria::GraphItems
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
                     GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
-                const auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
+                topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
+                                 ScaleToScreenAndCanvas(GetRightPadding());
                 height = std::max(topLineSize.GetWidth(), height);
                 width += topLineSize.GetHeight();
                 }
