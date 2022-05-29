@@ -208,7 +208,7 @@ namespace Wisteria::Graphs
                                Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen));
             }
 
-        LabelPlacement m_labelPlacement{ LabelPlacement::FlushBoth };
+        LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
         MarkerLabelDisplay m_markerLableDisplay{ MarkerLabelDisplay::NameAndValue };
         };
     }

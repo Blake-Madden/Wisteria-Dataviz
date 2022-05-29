@@ -500,7 +500,7 @@ namespace Wisteria::Graphs
 
         BinLabelDisplay m_innerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
         BinLabelDisplay m_outerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
-        LabelPlacement m_labelPlacement{ LabelPlacement::FlushBoth };
+        LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
 
         wxPen m_connectionLinePen{ wxPen(
             wxPenInfo(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
