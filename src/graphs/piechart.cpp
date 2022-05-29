@@ -693,28 +693,29 @@ namespace Wisteria::Graphs
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
 
-        // sort top quandrat labels (top-to-bottom)
+        // sort top quandrant labels (top-to-bottom)
         std::sort(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
-                {
-                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
-                return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
-                });
+            {
+            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
+            });
         // reverse bottom quandrant sort labels (bottom-to-top)
         std::sort(outerBottomLeftLabelAndLines.begin(), outerBottomLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
-                {
-                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
-                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
-                return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
-                });
+            {
+            wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+            wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+            return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+            });
         // Make the left-side outer labels (for both rings) have a common font size.
         // Also, adjust their positioning and connection lines (if necessary).
 
         // left-side labels, top quadrant
-        for (auto& [outerLabel, outerLine] : outerTopLeftLabelAndLines)
+        for (size_t i = 0; i < outerTopLeftLabelAndLines.size(); ++i)
             {
+            auto& [outerLabel, outerLine] = outerTopLeftLabelAndLines[i];
             if (outerLabel == nullptr)
                 { continue; }
             outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
@@ -722,25 +723,54 @@ namespace Wisteria::Graphs
 
             if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
+                std::shared_ptr<Label> nextLabel =
+                                        (i+1 < outerTopLeftLabelAndLines.size() ?
+                                         outerTopLeftLabelAndLines[i+1].first :
+                                         nullptr);
+                // push label to the left and center it to its connect line vertically
                 outerLabel->SetAnchorPoint(
                     wxPoint(GetPlotAreaBoundingBox().GetLeft(),
-                            outerLabel->GetAnchorPoint().y +
-                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
+                        outerLabel->GetAnchorPoint().y +
+                        (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                // Does the top label overlap the one below it?
+                // If so, push it all the way up to the top.
+                if (i == 0 && nextLabel)
+                    {
+                    auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetLeft());
+                    nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
+                    if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                        {
+                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
+                        outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
+                        }
+                    }
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 }
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
                 {
-                if (GetLabelPlacement() == LabelPlacement::Flush)
+                if (GetLabelPlacement() == LabelPlacement::Flush &&
+                    // flush always has three points, just a sanity test
+                    outerLine->GetPoints().size() == 3)
                     {
-                    auto& lastPt = outerLine->GetPoints().back();
+                    const auto& firstPt = outerLine->GetPoints()[0];
+                    auto& middlePt = outerLine->GetPoints()[1];
+                    auto& lastPt = outerLine->GetPoints()[2];
+                    const auto labelBox = outerLabel->GetBoundingBox(dc);
+                    // connect last point to middle of label's right side
                     lastPt.SetAnchorPoint(
-                        wxPoint(lastPt.GetAnchorPoint().x +
-                            outerLabel->GetBoundingBox(dc).GetWidth(),
-                            lastPt.GetAnchorPoint().y));
+                        wxPoint(labelBox.GetRight(),
+                                labelBox.GetTop() + (labelBox.GetHeight()/2)));
+                    const auto calculatedMiddlePt =
+                        wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
+                    // move middle point over to make lines straight,
+                    // but only if line connection is outside of the pie's bounding box
+                    if (!drawArea.Contains(calculatedMiddlePt))
+                        { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
                 AddObject(outerLine);
                 }
@@ -760,32 +790,34 @@ namespace Wisteria::Graphs
                                         (i+1 < outerBottomLeftLabelAndLines.size() ?
                                          outerBottomLeftLabelAndLines[i+1].first :
                                          nullptr);
+                // push label to the left and center it to its connect line vertically
+                outerLabel->SetAnchorPoint(
+                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                        outerLabel->GetAnchorPoint().y -
+                        (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                 // Does the bottom label overlap the one above it?
                 // If so, push it all the way down to the bottom.
-                if (i == 0 && outerBottomLeftLabelAndLines.size() > 1 &&
-                    nextLabel &&
-                    outerLabel->GetBoundingBox(dc).Intersects(nextLabel->GetBoundingBox(dc)))
+                if (i == 0 && nextLabel)
                     {
-                    outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetBottomLeft());
-                    outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
-                    outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                    auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetLeft());
+                    nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
+                    if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                        {
+                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetBottomLeft());
+                        outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                        }
                     }
-                else
-                    {
-                    outerLabel->SetAnchorPoint(
-                        wxPoint(GetPlotAreaBoundingBox().GetLeft(),
-                            outerLabel->GetAnchorPoint().y -
-                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                    outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
-                    outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
-                    }
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 }
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
-            if (outerLine != nullptr && outerLine->GetPoints().size() == 3)
+            if (outerLine != nullptr)
                 {
-                if (GetLabelPlacement() == LabelPlacement::Flush)
+                if (GetLabelPlacement() == LabelPlacement::Flush &&
+                    outerLine->GetPoints().size() == 3)
                     {
                     const auto& firstPt = outerLine->GetPoints()[0];
                     auto& middlePt = outerLine->GetPoints()[1];
@@ -812,14 +844,14 @@ namespace Wisteria::Graphs
             {
             wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
             wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
-            return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+            return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
             });
         std::sort(outerBottomRightLabelAndLines.begin(), outerBottomRightLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
             wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
             wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
-            return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
+            return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
             });
         // right-side labels, top quadrant
         for (auto& [outerLabel, outerLine] : outerTopRightLabelAndLines)
