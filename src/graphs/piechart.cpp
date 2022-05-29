@@ -420,12 +420,16 @@ namespace Wisteria::Graphs
         outerDrawArea.Offset(wxPoint((drawArea.width - outerDrawArea.width) / 2,
             (drawArea.height - outerDrawArea.height) / 2));
 
+        int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
+
         // shrinks an outer label to fit within the plotting area
         // and also draws a connection line from the label to the pie slice
-        std::vector<std::pair<
-                    std::shared_ptr<Label>,
-                    std::shared_ptr<Wisteria::GraphItems::Points2D>>> outerLabelAndLines;
-        int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
+        using labelLinePair = std::vector<std::pair<
+            std::shared_ptr<Label>,
+            std::shared_ptr<Wisteria::GraphItems::Points2D>>>;
+        labelLinePair outerTopLeftLabelAndLines, outerBottomLeftLabelAndLines,
+                      outerTopRightLabelAndLines, outerBottomRightLabelAndLines;
+
         const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
             {
             auto outerLabel = pSlice->CreateOuterLabel(dc,
@@ -468,8 +472,11 @@ namespace Wisteria::Graphs
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
 
                 std::shared_ptr<Points2D> connectionLine{ nullptr };
-                const bool isLeft = (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner ||
-                                     outerLabel->GetAnchoring() == Anchoring::TopRightCorner);
+                const bool isTopLeft = outerLabel->GetAnchoring() == Anchoring::BottomRightCorner;
+                const bool isBottomLeft = outerLabel->GetAnchoring() == Anchoring::TopRightCorner;
+                const bool isLeft = (isTopLeft || isBottomLeft);
+                const bool isTopRight = outerLabel->GetAnchoring() == Anchoring::BottomLeftCorner;
+                const bool isBottomRight = outerLabel->GetAnchoring() == Anchoring::TopLeftCorner;
                 if (isInnerSlice)
                     {
                     // a line connecting the inner slice to its outside label
@@ -512,7 +519,8 @@ namespace Wisteria::Graphs
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
                         connectionLine->AddPoint(Point2D(
-                            GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
+                            GraphItemInfo().AnchorPoint(
+                                outerLabel->GetAnchorPoint()).Show(false), 0), dc);
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(isLeft ?
@@ -522,7 +530,26 @@ namespace Wisteria::Graphs
                         connectionLine->SetLineStyle(LineStyle::Lines);
                         }
                     }
-                outerLabelAndLines.emplace_back(std::make_pair(outerLabel, connectionLine));
+                if (isTopLeft)
+                    {
+                    outerTopLeftLabelAndLines.emplace_back(
+                        std::make_pair(outerLabel, connectionLine));
+                    }
+                else if (isBottomLeft)
+                    {
+                    outerBottomLeftLabelAndLines.emplace_back(
+                        std::make_pair(outerLabel, connectionLine));
+                    }
+                else if (isTopRight)
+                    {
+                    outerTopRightLabelAndLines.emplace_back(
+                        std::make_pair(outerLabel, connectionLine));
+                    }
+                else if (isBottomRight)
+                    {
+                    outerBottomRightLabelAndLines.emplace_back(
+                        std::make_pair(outerLabel, connectionLine));
+                    }
                 }
             };
 
@@ -666,61 +693,42 @@ namespace Wisteria::Graphs
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
 
-        // Make the outer labels (for both rings) have a common font size.
+        // reverse sort labels (bottom-to-top)
+        std::sort(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                {
+                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+                return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+                });
+        std::sort(outerBottomLeftLabelAndLines.begin(), outerBottomLeftLabelAndLines.end(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                {
+                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+                return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+                });
+        // Make the left-side outer labels (for both rings) have a common font size.
         // Also, adjust their positioning and connection lines (if necessary).
-        for (auto& [outerLabel, outerLine] : outerLabelAndLines)
+
+        // left-side labels, top quadrant
+        for (auto& [outerLabel, outerLine] : outerTopLeftLabelAndLines)
             {
             if (outerLabel == nullptr)
                 { continue; }
-            const bool isLeft = (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner ||
-                                 outerLabel->GetAnchoring() == Anchoring::TopRightCorner);
-            if (outerLabel != nullptr)
+            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+
+            if (GetLabelPlacement() == LabelPlacement::Flush)
                 {
-                outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
-                outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
-                AddObject(outerLabel);
-                if (GetLabelPlacement() == LabelPlacement::Flush)
-                    {
-                    // left-side labels
-                    if (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner)
-                        {
-                        outerLabel->SetAnchorPoint(
-                            wxPoint(GetPlotAreaBoundingBox().GetLeft(),
-                                    outerLabel->GetAnchorPoint().y +
-                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
-                        outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
-                        }
-                    else if (outerLabel->GetAnchoring() == Anchoring::TopRightCorner)
-                        {
-                        outerLabel->SetAnchorPoint(
-                            wxPoint(GetPlotAreaBoundingBox().GetLeft(),
-                                    outerLabel->GetAnchorPoint().y -
-                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
-                        outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
-                        }
-                    // right-side labels
-                    else if (outerLabel->GetAnchoring() == Anchoring::BottomLeftCorner)
-                        {
-                        outerLabel->SetAnchorPoint(
-                            wxPoint(GetPlotAreaBoundingBox().GetRight(),
-                                    outerLabel->GetAnchorPoint().y +
-                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
-                        outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
-                        }
-                    else if (outerLabel->GetAnchoring() == Anchoring::TopLeftCorner)
-                        {
-                        outerLabel->SetAnchorPoint(
-                            wxPoint(GetPlotAreaBoundingBox().GetRight(),
-                                    outerLabel->GetAnchorPoint().y -
-                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
-                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
-                        outerLabel->SetAnchoring(Anchoring::TopRightCorner);
-                        }
-                    }
+                outerLabel->SetAnchorPoint(
+                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                            outerLabel->GetAnchorPoint().y +
+                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
+                outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
                 }
+            AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -730,9 +738,121 @@ namespace Wisteria::Graphs
                     auto& lastPt = outerLine->GetPoints().back();
                     lastPt.SetAnchorPoint(
                         wxPoint(lastPt.GetAnchorPoint().x +
-                            (isLeft ?
-                                outerLabel->GetBoundingBox(dc).GetWidth() :
-                                -outerLabel->GetBoundingBox(dc).GetWidth()),
+                            outerLabel->GetBoundingBox(dc).GetWidth(),
+                            lastPt.GetAnchorPoint().y));
+                    }
+                AddObject(outerLine);
+                }
+            }
+        // left-side labels, bottom quadrant
+        for (auto& [outerLabel, outerLine] : outerBottomLeftLabelAndLines)
+            {
+            if (outerLabel == nullptr)
+                { continue; }
+            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+
+            if (GetLabelPlacement() == LabelPlacement::Flush)
+                {
+                outerLabel->SetAnchorPoint(
+                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                            outerLabel->GetAnchorPoint().y -
+                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
+                outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
+                }
+            AddObject(outerLabel);
+            // If there is a connection line and label is flush, set the end point
+            // to be next to the label; otherwise, just add it.
+            if (outerLine != nullptr)
+                {
+                if (GetLabelPlacement() == LabelPlacement::Flush)
+                    {
+                    auto& lastPt = outerLine->GetPoints().back();
+                    lastPt.SetAnchorPoint(
+                        wxPoint(lastPt.GetAnchorPoint().x +
+                            outerLabel->GetBoundingBox(dc).GetWidth(),
+                            lastPt.GetAnchorPoint().y));
+                    }
+                AddObject(outerLine);
+                }
+            }
+
+        // do the same for the right-side labels
+        std::sort(outerTopRightLabelAndLines.begin(), outerTopRightLabelAndLines.end(),
+            [](const auto& lhv, const auto& rhv) noexcept
+            {
+                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+                return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+            });
+        std::sort(outerBottomRightLabelAndLines.begin(), outerBottomRightLabelAndLines.end(),
+            [](const auto& lhv, const auto& rhv) noexcept
+            {
+                wxASSERT_MSG(lhv.first, L"Invalid pie label when sorting!");
+                wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
+                return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
+            });
+        // right-side labels, top quadrant
+        for (auto& [outerLabel, outerLine] : outerTopRightLabelAndLines)
+            {
+            if (outerLabel == nullptr)
+                { continue; }
+            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+            if (GetLabelPlacement() == LabelPlacement::Flush)
+                {
+                outerLabel->SetAnchorPoint(
+                    wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                            outerLabel->GetAnchorPoint().y +
+                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
+                outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
+                }
+            AddObject(outerLabel);
+            // If there is a connection line and label is flush, set the end point
+            // to be next to the label; otherwise, just add it.
+            if (outerLine != nullptr)
+                {
+                if (GetLabelPlacement() == LabelPlacement::Flush)
+                    {
+                    auto& lastPt = outerLine->GetPoints().back();
+                    lastPt.SetAnchorPoint(
+                        wxPoint(lastPt.GetAnchorPoint().x -
+                            outerLabel->GetBoundingBox(dc).GetWidth(),
+                            lastPt.GetAnchorPoint().y));
+                    }
+                AddObject(outerLine);
+                }
+            }
+        // right-side labels, bottom quadrant
+        for (auto& [outerLabel, outerLine] : outerBottomRightLabelAndLines)
+            {
+            if (outerLabel == nullptr)
+                { continue; }
+            outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
+            outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
+
+            if (GetLabelPlacement() == LabelPlacement::Flush)
+                {
+                outerLabel->SetAnchorPoint(
+                    wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                            outerLabel->GetAnchorPoint().y -
+                            (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
+                outerLabel->SetAnchoring(Anchoring::TopRightCorner);
+                }
+            AddObject(outerLabel);
+            // If there is a connection line and label is flush, set the end point
+            // to be next to the label; otherwise, just add it.
+            if (outerLine != nullptr)
+                {
+                if (GetLabelPlacement() == LabelPlacement::Flush)
+                    {
+                    auto& lastPt = outerLine->GetPoints().back();
+                    lastPt.SetAnchorPoint(
+                        wxPoint(lastPt.GetAnchorPoint().x -
+                            outerLabel->GetBoundingBox(dc).GetWidth(),
                             lastPt.GetAnchorPoint().y));
                     }
                 AddObject(outerLine);
