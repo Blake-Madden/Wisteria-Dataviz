@@ -424,9 +424,9 @@ namespace Wisteria::Graphs
         // and also draws a connection line from the label to the pie slice
         std::vector<std::pair<
                     std::shared_ptr<Label>,
-                    std::shared_ptr<Wisteria::GraphItems::Points2D>>> outerLabels;
+                    std::shared_ptr<Wisteria::GraphItems::Points2D>>> outerLabelAndLines;
         int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
-        const auto adjustOuterLabelFont = [&](auto pSlice, bool isInnerSlice)
+        const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
             {
             auto outerLabel = pSlice->CreateOuterLabel(dc,
                 (isInnerSlice ? outerDrawArea : drawArea));
@@ -522,7 +522,7 @@ namespace Wisteria::Graphs
                         connectionLine->SetLineStyle(LineStyle::Lines);
                         }
                     }
-                outerLabels.emplace_back(std::make_pair(outerLabel, connectionLine));
+                outerLabelAndLines.emplace_back(std::make_pair(outerLabel, connectionLine));
                 }
             };
 
@@ -557,7 +557,7 @@ namespace Wisteria::Graphs
                 }
             AddObject(pSlice);
             if (GetOuterPie().at(i).m_showText)
-                { adjustOuterLabelFont(pSlice, false); }
+                { createLabelAndConnectionLine(pSlice, false); }
 
             double sliceProportion = 1 - (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
             if (GetInnerPie().size())
@@ -648,7 +648,7 @@ namespace Wisteria::Graphs
             AddObject(pSlice);
 
             if (GetInnerPie().at(i).m_showText)
-                { adjustOuterLabelFont(pSlice, true); }
+                { createLabelAndConnectionLine(pSlice, true); }
 
             auto middleLabel = pSlice->CreateMiddleLabel(dc,
                 // take into account the hole consuming a larger % of the inner
@@ -665,11 +665,11 @@ namespace Wisteria::Graphs
 
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
+
         // Make the outer labels (for both rings) have a common font size.
-        // Also, adjust their place if necessary.
-        for (auto& outerLabelPair : outerLabels)
+        // Also, adjust their positioning and connection lines (if necessary).
+        for (auto& [outerLabel, outerLine] : outerLabelAndLines)
             {
-            auto& outerLabel = outerLabelPair.first;
             if (outerLabel == nullptr)
                 { continue; }
             const bool isLeft = (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner ||
@@ -721,12 +721,13 @@ namespace Wisteria::Graphs
                         }
                     }
                 }
-            // if a connection line, set the end point to be next to the label
-            if (outerLabelPair.second != nullptr)
+            // If there is a connection line and label is flush, set the end point
+            // to be next to the label; otherwise, just add it.
+            if (outerLine != nullptr)
                 {
-                auto& lastPt = outerLabelPair.second->GetPoints().back();
                 if (GetLabelPlacement() == LabelPlacement::Flush)
                     {
+                    auto& lastPt = outerLine->GetPoints().back();
                     lastPt.SetAnchorPoint(
                         wxPoint(lastPt.GetAnchorPoint().x +
                             (isLeft ?
@@ -734,10 +735,11 @@ namespace Wisteria::Graphs
                                 -outerLabel->GetBoundingBox(dc).GetWidth()),
                             lastPt.GetAnchorPoint().y));
                     }
-                AddObject(outerLabelPair.second);
+                AddObject(outerLine);
                 }
             }
-        // make the inner ring middle labels have a common font size
+
+        // make the inner ring center labels have a common font size
         for (auto& middleLabel : middleLabels)
             {
             if (middleLabel != nullptr)
