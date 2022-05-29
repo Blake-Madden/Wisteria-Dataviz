@@ -413,7 +413,8 @@ namespace Wisteria::Graphs
                 their labels outside of the pie.
             @param lStyle The line style to use.
             @note If label placement is LabelPlacement::Flush, then this will be overridden
-                to use LineStyle::Lines.\nThis is because the connection will need to drawn as
+                to use LineStyle::Lines.\n
+                This is because the connection will need to drawn as
                 two lines (one going from the inner slice to outside the pie, and then one going
                 from there to the label against the edge of the pie area). Using a style such as
                 LineStyle::Arrows will look odd in this situation, so LineStyle::Lines will
