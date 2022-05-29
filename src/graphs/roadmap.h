@@ -56,8 +56,11 @@ namespace Wisteria::Graphs
         explicit Roadmap(Canvas* canvas);
 
         /** @brief Specifies how to arrange the location markers' names.
-            @param lPlacement How to arrange the labels.*/
-        void GetLabelPlacement(const LabelPlacement lPlacement) noexcept
+            @param lPlacement How to arrange the labels.
+            @note LabelPlacement::FlushLeft, LabelPlacement::FlushRight, and
+                LabelPlacement::FlushBoth will all have the same effect as the
+                road must always be in the middle of the graph.*/
+        void SetLabelPlacement(const LabelPlacement lPlacement) noexcept
             { m_labelPlacement = lPlacement; }
         /// @returns How the labels are arranged in the plotting area.
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
