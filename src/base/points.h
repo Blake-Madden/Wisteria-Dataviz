@@ -111,7 +111,7 @@ namespace Wisteria::GraphItems
         explicit Points2D(const wxPen& pen)
             { GetPen() = pen; }
         /// @returns The points in this collection.
-        [[nodiscard]] const std::vector<Point2D>& GetPoints() const noexcept
+        [[nodiscard]] std::vector<Point2D>& GetPoints() noexcept
             { return m_points; }
         /// @brief Reserves memory for a specified number of points.
         /// @param size The number of points to reserve space for.
@@ -167,6 +167,9 @@ namespace Wisteria::GraphItems
             for (auto& point : m_points)
                 { point.SetDPIScaleFactor(scaling); }
             }
+        /// @private
+        [[nodiscard]] const std::vector<Point2D>& GetPoints() const noexcept
+            { return m_points; }
     private:
         /** @brief Sets whether the points are selected.
             @param selected Whether the last hit point

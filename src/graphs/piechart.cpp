@@ -412,7 +412,8 @@ namespace Wisteria::Graphs
         drawArea.SetHeight(pieDimension);
         drawArea.SetY(drawArea.GetY() + (heightDifference / 2));
 
-        // make the connection line poke out a little from the pie
+        // make the connection line for inner slices and their labels
+        // poke out a little from the pie
         auto outerDrawArea = drawArea;
         outerDrawArea.width *= 1.1;
         outerDrawArea.height *= 1.1;
@@ -420,10 +421,16 @@ namespace Wisteria::Graphs
             (drawArea.height - outerDrawArea.height) / 2));
 
         // shrinks an outer label to fit within the plotting area
-        std::vector<std::shared_ptr<Label>> outerLabels;
+        // and also draws a connection line from the label to the pie slice
+        std::vector<std::pair<
+                    std::shared_ptr<Label>,
+                    std::shared_ptr<Wisteria::GraphItems::Points2D>>> outerLabels;
         int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
-        const auto adjustOuterLabelFont = [&](auto outerLabel)
+        const auto adjustOuterLabelFont = [&](auto pSlice, bool isInnerSlice)
             {
+            auto outerLabel = pSlice->CreateOuterLabel(dc,
+                (isInnerSlice ? outerDrawArea : drawArea));
+            outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
                 bool outerLabelIsTooSmall{ false };
@@ -459,7 +466,63 @@ namespace Wisteria::Graphs
                     }
                 smallestOuterLabelFontSize =
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
-                outerLabels.emplace_back(outerLabel);
+
+                std::shared_ptr<Points2D> connectionLine{ nullptr };
+                const bool isLeft = (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner ||
+                                     outerLabel->GetAnchoring() == Anchoring::TopRightCorner);
+                if (isInnerSlice)
+                    {
+                    // a line connecting the inner slice to its outside label
+                    auto arcMiddle = pSlice->GetMiddleOfArc(1);
+                    connectionLine =
+                        std::make_shared<Points2D>(GetInnerPieConnectionLinePen());
+                    connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
+                    connectionLine->SetSelectable(false);
+                    connectionLine->AddPoint(Point2D(
+                        GraphItemInfo().AnchorPoint(
+                            wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
+                    connectionLine->AddPoint(Point2D(
+                        GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
+                    if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                        {
+                        connectionLine->AddPoint(Point2D(
+                            GraphItemInfo().AnchorPoint(
+                                wxPoint(isLeft ?
+                                            GetPlotAreaBoundingBox().GetLeft() :
+                                            GetPlotAreaBoundingBox().GetRight(),
+                                        outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
+                        // force using lines (instead of arrows) since this will be two lines
+                        connectionLine->SetLineStyle(LineStyle::Lines);
+                        }
+                    else
+                        { connectionLine->SetLineStyle(GetInnerPieConnectionLineStyle()); }
+                    }
+                else
+                    {
+                    // a line connecting the outer slice to its outside label
+                    // (only if pushed over to the side)
+                    if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                        {
+                        auto arcMiddle = pSlice->GetMiddleOfArc(1);
+                        connectionLine =
+                            std::make_shared<Points2D>(GetInnerPieConnectionLinePen());
+                        connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
+                        connectionLine->SetSelectable(false);
+                        connectionLine->AddPoint(Point2D(
+                            GraphItemInfo().AnchorPoint(
+                                wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
+                        connectionLine->AddPoint(Point2D(
+                            GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
+                        connectionLine->AddPoint(Point2D(
+                            GraphItemInfo().AnchorPoint(
+                                wxPoint(isLeft ?
+                                            GetPlotAreaBoundingBox().GetLeft() :
+                                            GetPlotAreaBoundingBox().GetRight(),
+                                        outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
+                        connectionLine->SetLineStyle(LineStyle::Lines);
+                        }
+                    }
+                outerLabels.emplace_back(std::make_pair(outerLabel, connectionLine));
                 }
             };
 
@@ -494,11 +557,7 @@ namespace Wisteria::Graphs
                 }
             AddObject(pSlice);
             if (GetOuterPie().at(i).m_showText)
-                {
-                auto outerLabel = pSlice->CreateOuterLabel(dc, drawArea);
-                outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                adjustOuterLabelFont(outerLabel);
-                }
+                { adjustOuterLabelFont(pSlice, false); }
 
             double sliceProportion = 1 - (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
             if (GetInnerPie().size())
@@ -589,25 +648,7 @@ namespace Wisteria::Graphs
             AddObject(pSlice);
 
             if (GetInnerPie().at(i).m_showText)
-                {
-                auto outerLabel = pSlice->CreateOuterLabel(dc, outerDrawArea);
-                outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                adjustOuterLabelFont(outerLabel);
-
-                // a line connecting the inner slice to its outside label
-                auto arcMiddle = pSlice->GetMiddleOfArc(1);
-                auto connectionLine =
-                    std::make_shared<Wisteria::GraphItems::Points2D>(GetInnerPieConnectionLinePen());
-                connectionLine->SetDPIScaleFactor(GetDPIScaleFactor());
-                connectionLine->SetSelectable(false);
-                connectionLine->AddPoint(Point2D(
-                    GraphItemInfo().AnchorPoint(
-                        wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
-                connectionLine->AddPoint(Point2D(
-                    GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
-                connectionLine->SetLineStyle(GetInnerPieConnectionLineStyle());
-                AddObject(connectionLine);
-                }
+                { adjustOuterLabelFont(pSlice, true); }
 
             auto middleLabel = pSlice->CreateMiddleLabel(dc,
                 // take into account the hole consuming a larger % of the inner
@@ -624,14 +665,76 @@ namespace Wisteria::Graphs
 
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
-        // make the outer labels (for both rings) have a common font size
-        for (auto& outerLabel : outerLabels)
+        // Make the outer labels (for both rings) have a common font size.
+        // Also, adjust their place if necessary.
+        for (auto& outerLabelPair : outerLabels)
             {
+            auto& outerLabel = outerLabelPair.first;
+            if (outerLabel == nullptr)
+                { continue; }
+            const bool isLeft = (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner ||
+                                 outerLabel->GetAnchoring() == Anchoring::TopRightCorner);
             if (outerLabel != nullptr)
                 {
                 outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
                 outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
                 AddObject(outerLabel);
+                if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                    {
+                    // left-side labels
+                    if (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner)
+                        {
+                        outerLabel->SetAnchorPoint(
+                            wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                                    outerLabel->GetAnchorPoint().y +
+                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
+                        outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                        }
+                    else if (outerLabel->GetAnchoring() == Anchoring::TopRightCorner)
+                        {
+                        outerLabel->SetAnchorPoint(
+                            wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                                    outerLabel->GetAnchorPoint().y -
+                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
+                        outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
+                        }
+                    // right-side labels
+                    else if (outerLabel->GetAnchoring() == Anchoring::BottomLeftCorner)
+                        {
+                        outerLabel->SetAnchorPoint(
+                            wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                                    outerLabel->GetAnchorPoint().y +
+                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
+                        outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
+                        }
+                    else if (outerLabel->GetAnchoring() == Anchoring::TopLeftCorner)
+                        {
+                        outerLabel->SetAnchorPoint(
+                            wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                                    outerLabel->GetAnchorPoint().y -
+                                    (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
+                        outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight);
+                        outerLabel->SetAnchoring(Anchoring::TopRightCorner);
+                        }
+                    }
+                }
+            // if a connection line, set the end point to be next to the label
+            if (outerLabelPair.second != nullptr)
+                {
+                auto& lastPt = outerLabelPair.second->GetPoints().back();
+                if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                    {
+                    lastPt.SetAnchorPoint(
+                        wxPoint(lastPt.GetAnchorPoint().x +
+                            (isLeft ?
+                                outerLabel->GetBoundingBox(dc).GetWidth() :
+                                -outerLabel->GetBoundingBox(dc).GetWidth()),
+                            lastPt.GetAnchorPoint().y));
+                    }
+                AddObject(outerLabelPair.second);
                 }
             }
         // make the inner ring middle labels have a common font size

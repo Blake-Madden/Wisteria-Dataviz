@@ -368,6 +368,17 @@ namespace Wisteria::Graphs
         /// @param display What to display.
         void SetOuterPieMidPointLabelDisplay(const BinLabelDisplay display) noexcept
             { m_outerPieMidPointLabelDisplay = display; }
+
+        /** @brief Specifies where the outer labels are placed, relative to the pie area.
+            @details Labels can either be next to their respective pie slices, or pushed
+                over to the edge of the pie's area. (The latter will left or right align
+                the label relative to each other.)
+            @param placement How to place the labels.*/
+        void SetLabelPlacement(const LabelPlacement placement) noexcept
+            { m_labelPlacement = placement; }
+        /// @returns Where the outer labels are placed.
+        [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
+            { return m_labelPlacement; }
         /// @}
 
         /// @name Inner Pie Functions
@@ -489,6 +500,7 @@ namespace Wisteria::Graphs
 
         BinLabelDisplay m_innerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
         BinLabelDisplay m_outerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
+        LabelPlacement m_labelPlacement{ LabelPlacement::FlushBoth };
 
         wxPen m_connectionLinePen{ wxPen(
             wxPenInfo(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
