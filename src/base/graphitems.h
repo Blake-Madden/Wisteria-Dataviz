@@ -83,13 +83,9 @@ namespace Wisteria
         {
         /// @brief Labels are next to their parents.
         NextToParent,
-        /// @brief Labels are flush with the plotting area's left side.
-        FlushLeft,
-        /// @brief Labels are flush with the plotting area's right side.
-        FlushRight,
         /// @brief Labels are flush with the plotting area's left or right side.
         /// @details This is graph-type dependent.
-        FlushBoth
+        Flush
         };
 
     /// @brief How an element is aligned to whatever it is being drawn on.

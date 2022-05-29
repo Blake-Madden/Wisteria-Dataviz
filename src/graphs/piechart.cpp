@@ -483,7 +483,7 @@ namespace Wisteria::Graphs
                             wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
                     connectionLine->AddPoint(Point2D(
                         GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
-                    if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                    if (GetLabelPlacement() == LabelPlacement::Flush)
                         {
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
@@ -501,7 +501,7 @@ namespace Wisteria::Graphs
                     {
                     // a line connecting the outer slice to its outside label
                     // (only if pushed over to the side)
-                    if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                    if (GetLabelPlacement() == LabelPlacement::Flush)
                         {
                         auto arcMiddle = pSlice->GetMiddleOfArc(1);
                         connectionLine =
@@ -679,7 +679,7 @@ namespace Wisteria::Graphs
                 outerLabel->GetHeaderInfo().GetFont().SetPointSize(smallestOuterLabelFontSize);
                 outerLabel->GetFont().SetPointSize(smallestOuterLabelFontSize);
                 AddObject(outerLabel);
-                if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                if (GetLabelPlacement() == LabelPlacement::Flush)
                     {
                     // left-side labels
                     if (outerLabel->GetAnchoring() == Anchoring::BottomRightCorner)
@@ -725,7 +725,7 @@ namespace Wisteria::Graphs
             if (outerLabelPair.second != nullptr)
                 {
                 auto& lastPt = outerLabelPair.second->GetPoints().back();
-                if (GetLabelPlacement() == LabelPlacement::FlushBoth)
+                if (GetLabelPlacement() == LabelPlacement::Flush)
                     {
                     lastPt.SetAnchorPoint(
                         wxPoint(lastPt.GetAnchorPoint().x +
