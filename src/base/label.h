@@ -196,7 +196,14 @@ namespace Wisteria::GraphItems
              but then be scaled down to the content.\n
              This behaviour is turned off by default, so that calls to SetBoundingBox() will
              explicitly set the size.\n
-             This is mostly useful for legends being embedded on a canvas.
+             This is mostly useful for legends being embedded on a canvas. Having this option
+             set will tell the canvas to re-measure the legend and only use the space that it
+             needs, giving any extra space back to the items in the same row. If this is not
+             set, then the canvas will just use the pre-calculated size of the legend based
+             on its proportion to the overall canvas; thus, it may upscale the legend's size,
+             instead of keeping it at the correct scale and reclaiming the extra space.\n
+             This situation relates to when the canvas is being made wider than when
+             its canvas proportion was calculated.
              @param adjust @c true to tell SetBoundingBox() to only treat its size
               as a suggestion.*/
         void AdjustingBoundingBoxToContent(const bool adjust) noexcept
