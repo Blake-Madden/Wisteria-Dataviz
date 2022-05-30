@@ -123,8 +123,12 @@ namespace Wisteria::Graphs
             | @image html DonutChart.svg width=90% | @image html DonutChartSubgrouped.svg width=90% |
 
         @par %Data:
-            This plot accepts a Data::Dataset where a continuous column is the measurement,
-            and a grouping column is the groups that the continuous values are aggregated into.
+            This plot accepts a Data::Dataset where a continuous column is the aggregate counts,
+            and a grouping column is the groups that the values are aggregated into.
+
+            The aggregate column is optional and if not provided then the frequency counts of
+            the groups are used.
+
             Optionally, a second grouping column can be used to create subgroups within the main
             slices of the pie. These subgroups are shown along an inner ring, lined up against
             their parent group slices in the outer ring.
@@ -132,26 +136,29 @@ namespace Wisteria::Graphs
             Below is an example where the continuous is `Enrollment`, the main grouping column
             is `College`, and the optional second grouping column is `Course`.
 
-            | Course            | College                   | Enrollment |
-            | :--               | :--                       | --:        |
-            | Science           | Anatomy & Physiology I    | 52         |
-            | Business          | Business Ethics           | 51         |
-            | English           | Creative Writing          | 47         |
-            | Computer Science  | COBOL                     | 45         |
-            | Business          | Introduction to Economics | 34         |
-            | Business          | Introduction to Economics | 32         |
-            | Computer Science  | C++                       | 32         |
-            | Science           | Organic Chemistry I       | 32         |
-            | Business          | Business Communication    | 31         |
-            | Science           | Organic Chemistry I       | 28         |
-            | Business          | Business Communication    | 27         |
-            | Computer Science  | C++                       | 27         |
+            | Course           | College                   | Enrollment |
+            | :--              | :--                       | --:        |
+            | Science          | Anatomy & Physiology I    | 52         |
+            | Business         | Business Ethics           | 51         |
+            | English          | Creative Writing          | 47         |
+            | Computer Science | COBOL                     | 45         |
+            | Business         | Introduction to Economics | 34         |
+            | Business         | Introduction to Economics | 32         |
+            | Computer Science | C++                       | 32         |
+            | Science          | Organic Chemistry I       | 32         |
+            | Business         | Business Communication    | 31         |
+            | Science          | Organic Chemistry I       | 28         |
+            | Business         | Business Communication    | 27         |
+            | Computer Science | C++                       | 27         |
             ...
 
             With the above data, and outer ring for the colleges will be drawn, where the values from
             `Enrollment` will be aggregated into it. Also, an inner ring for the courses will be drawn,
             showing the aggregated enrollment numbers for each courses. The courses' slices will be
             aligned next to parent College slice that they belong to.
+
+            If `Enrollment` is not used as the aggregate column, then the frequency counts for the labels
+            in `Course` and/or `College` will be used for their pie slice values.
 
         @par Missing Data:
         - Missing data in the group column(s) will be shown as an empty pie & legend label.
@@ -290,7 +297,7 @@ namespace Wisteria::Graphs
                 { m_description = desc; }
             /// @brief Whether to display the slice's label outside the outer ring of the pie.
             /// @param show @c true to show the label.
-            /// @note Setting this to `false` will also hide the description.
+            /// @note Setting this to @c false will also hide the description.
             ///     The label and description will still be shown if the slice is selected.
             void ShowGroupLabel(const bool show) noexcept
                 { m_showText = show; }
@@ -321,12 +328,15 @@ namespace Wisteria::Graphs
                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
 
         /** @brief Sets the data for the chart.
-            @param data The data to use, which will use a continuous column
-                for the values, a grouping column for dividing the values, and (optionally)
-                the second grouping column to create an inner (subgrouped) ring.
-            @param continuousColumnName The data column.
+            @param data The data to use, which can (optionally) use a continuous column
+                containing aggregate counts, the main grouping column, and (optionally)
+                a second grouping column to create an inner (subgrouped) ring.
+            @param aggregateColumnName The (optional) aggregate count column.\n
+                These are the values accumulated into the respective labels from
+                the group column(s). If this column is not provided, then frequency counts
+                of the labels from the group column(s) are used.
             @param groupColumn1Name The main grouping ring.
-            @param groupColumn2Name The (optional) second grouping ring.
+            @param groupColumn2Name The (optional) second grouping ring.\n
                 This inner ring will be shown as subgroups within each slice
                 within the (parent) outer ring.
             @throws std::runtime_error If any columns can't be found by name,
@@ -334,7 +344,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-            const wxString& continuousColumnName,
+            std::optional<const wxString> aggregateColumnName,
             const wxString& groupColumn1Name,
             std::optional<const wxString> groupColumn2Name = std::nullopt);
 
@@ -517,11 +527,11 @@ namespace Wisteria::Graphs
         LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
 
         wxPen m_connectionLinePen{ wxPen(
-            wxPenInfo(Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
+            wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
                       ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
-        std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> m_pieColors;
+        std::shared_ptr<Colors::Schemes::ColorScheme> m_pieColors;
 
         bool m_useColorLabels{ false };
 

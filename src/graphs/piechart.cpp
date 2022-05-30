@@ -263,7 +263,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void PieChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
-                           const wxString& continuousColumnName,
+                           std::optional<const wxString> aggregateColumnName,
                            const wxString& groupColumn1Name,
                            std::optional<const wxString> groupColumn2Name /*= std::nullopt*/)
         {
@@ -294,13 +294,19 @@ namespace Wisteria::Graphs
             }
         const bool useSubgrouping =
             (groupColumn2 != data->GetCategoricalColumns().cend());
-        const auto& continuousColumn = data->GetContinuousColumn(continuousColumnName);
-        if (continuousColumn == data->GetContinuousColumns().cend())
+
+        const auto& aggregateColumn = (aggregateColumnName.has_value() ?
+            data->GetContinuousColumn(aggregateColumnName.value()) :
+            data->GetContinuousColumns().cend());
+        if (aggregateColumnName.has_value() &&
+            aggregateColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for pie chart.").ToUTF8(),
-                continuousColumnName));
+                _(L"'%s': aggregate column not found for pie chart.").ToUTF8(),
+                aggregateColumnName.value()));
             }
+        const bool useAggregateColumn =
+            (aggregateColumn != data->GetContinuousColumns().cend());
 
         GetInnerPie().clear();
         GetOuterPie().clear();
@@ -312,16 +318,16 @@ namespace Wisteria::Graphs
         double totalValue{ 0.0 };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (std::isnan(continuousColumn->GetValue(i)) )
+            if (useAggregateColumn && std::isnan(aggregateColumn->GetValue(i)) )
                 { continue; }
 
             auto [iterator, inserted] = outerGroups.insert(std::make_pair(
                 groupColumn1->GetValue(i),
-                continuousColumn->GetValue(i)) );
+                (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)) );
             // increment counts for group
             if (!inserted)
-                { iterator->second += continuousColumn->GetValue(i); }
-            totalValue += continuousColumn->GetValue(i);
+                { iterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1); }
+            totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
             }
 
         // create slices with their percents of the overall total
@@ -344,7 +350,7 @@ namespace Wisteria::Graphs
                                               SliceAndValues>(0, SliceAndValues());
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                if (std::isnan(continuousColumn->GetValue(i)) )
+                if (useAggregateColumn && std::isnan(aggregateColumn->GetValue(i)) )
                     { continue; }
 
                 searchValue.first = groupColumn1->GetValue(i);
@@ -353,18 +359,18 @@ namespace Wisteria::Graphs
                     {
                     iterator->second.insert(std::make_pair(
                         groupColumn2->GetValue(i),
-                        continuousColumn->GetValue(i)));
+                        (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)));
                     }
                 else
                     {
                     auto [subIterator, subInserted] = iterator->second.insert(std::make_pair(
                         groupColumn2->GetValue(i),
-                        continuousColumn->GetValue(i)));
+                        (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)));
                     // increment counts for group
                     if (!subInserted)
-                        { subIterator->second += continuousColumn->GetValue(i); }
+                        { subIterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1); }
                     }
-                totalValue += continuousColumn->GetValue(i);
+                totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
                 }
 
             std::map<wxString, PieInfo, Data::StringCmpNoCase> innerPie;
