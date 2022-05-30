@@ -326,7 +326,9 @@ namespace Wisteria::Graphs
                 (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)) );
             // increment counts for group
             if (!inserted)
-                { iterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1); }
+                {
+                iterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+                }
             totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
             }
 
@@ -368,7 +370,10 @@ namespace Wisteria::Graphs
                         (useAggregateColumn ? aggregateColumn->GetValue(i) : 1)));
                     // increment counts for group
                     if (!subInserted)
-                        { subIterator->second += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1); }
+                        {
+                        subIterator->second +=
+                            (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
+                        }
                     }
                 totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
                 }
@@ -502,7 +507,8 @@ namespace Wisteria::Graphs
                         GraphItemInfo().AnchorPoint(
                             wxPoint(arcMiddle.first, arcMiddle.second)).Show(false), 0), dc);
                     connectionLine->AddPoint(Point2D(
-                        GraphItemInfo().AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
+                        GraphItemInfo().
+                        AnchorPoint(outerLabel->GetAnchorPoint()).Show(false), 0), dc);
                     if (GetLabelPlacement() == LabelPlacement::Flush)
                         {
                         connectionLine->AddPoint(Point2D(
@@ -654,12 +660,12 @@ namespace Wisteria::Graphs
             // outline for all inner slices within the current group
             const auto sliceLineColor{
                 ColorContrast::ShadeOrTint(
-                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup), .4) };
+                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup), 0.4) };
             // slightly adjusted color based on the parent slice color
             sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
                 ColorContrast::ShadeOrTint(
-                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, .1));
+                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, 0.1));
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
 
             auto pSlice = std::make_shared<PieSlice>(
@@ -677,7 +683,7 @@ namespace Wisteria::Graphs
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 if (IsUsingColorLabels())
                     { pSlice->GetHeaderInfo().FontColor(sliceColor); }
-                pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), .4));
+                pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
                 }
             else
                 {
