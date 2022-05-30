@@ -396,8 +396,9 @@ namespace Wisteria
         ROUNDING_METHOD_COUNT
         };
 
-    /// @brief Criteria lamba to return a color if a point's
-    ///  X and/or Y values meet a certain set of criteria.
+    /// @brief Lamba to return a color if a point's
+    ///     X and/or Y values meet a certain set of criteria.\n
+    ///     Should return an invalid color if values to not the criteria.
     using PointColorCriteria = std::function<wxColour(double x, double y)>;
 
     /// @brief Item to draw on a legend.
@@ -433,6 +434,7 @@ namespace Wisteria
         LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush) :
             m_shape(icon), m_pen(pen), m_brush(brush), m_img(wxNullImage)
             {}
+        /// @private
         LegendIcon() = delete;
 
         IconShape m_shape{ IconShape::BlankIcon }; /*!< The icon type.*/
@@ -445,11 +447,11 @@ namespace Wisteria
 
         /// @returns The minimum width that should be used for legend icons.
         /// @note  This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
-        ///  which use DIPs.
+        ///     which use DIPs.
         [[nodiscard]] static constexpr double GetIconWidthDIPs() noexcept
             { return 16; }
         /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
-        ///  in DIPs.
+        ///     in DIPs.
         [[nodiscard]] static wxSize GetArrowheadSizeDIPs()
             { return wxSize(2, 2); }
         };
@@ -465,7 +467,7 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param shapes The list of shapes to fill the scheme with.
         /// @param images The list of images to use for the points if point is
-        ///  using IconShape::ImageIcon.
+        ///     using IconShape::ImageIcon.
         IconShapeScheme(std::initializer_list<IconShape> shapes,
             std::initializer_list<wxBitmapBundle> images) :
             m_shapes(shapes), m_iconImages(images)
@@ -474,12 +476,12 @@ namespace Wisteria
         [[nodiscard]] const std::vector<IconShape>& GetShapes() const noexcept
             { return m_shapes; }
         /** @returns The shape from a given index.\n
-             If no shapes are available, returns a blank icon.
+                If no shapes are available, returns a blank icon.
             @param index The index into the shape list to return. If index is outside
-             number of shapes, then it will recycle (i.e., wrap around).
-             For example, if there are 2 shapes, index 1 will return 1;
-             however, index 2 will wrap around and return shape 0 and
-             index 3 will return shape 1.*/
+                number of shapes, then it will recycle (i.e., wrap around).
+                For example, if there are 2 shapes, index 1 will return 1;
+                however, index 2 will wrap around and return shape 0 and
+                index 3 will return shape 1.*/
         [[nodiscard]] IconShape GetShape(const size_t index) const
             {
             return (m_shapes.size() == 0) ?
@@ -490,12 +492,12 @@ namespace Wisteria
         void AddShape(const IconShape shape)
             { m_shapes.push_back(shape); }
         /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
-             If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
+                If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
             @param index The index into the image list to return. If index is outside
-             number of images, then it will recycle (i.e., wrap around).
-             For example, if there are 2 images, index 1 will return 1;
-             however, index 2 will wrap around and return image 0 and
-             index 3 will return image 1.*/
+                number of images, then it will recycle (i.e., wrap around).
+                For example, if there are 2 images, index 1 will return 1;
+                however, index 2 will wrap around and return image 0 and
+                index 3 will return image 1.*/
         [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
             {
             return (m_iconImages.size() == 0) ?
@@ -616,7 +618,8 @@ namespace Wisteria
                 @param col1 The first color of the gradient.
                 @param col2 The second color of the gradient.
                 @param dir The direction of the gradient.*/
-            GradientFill(const wxColour& col1, const wxColour& col2, const FillDirection dir) noexcept :
+            GradientFill(const wxColour& col1, const wxColour& col2,
+                         const FillDirection dir) noexcept :
                 m_color1(col1), m_color2(col2), m_direction(dir) {}
             /// @returns `true` if the primary color has been specified.
             [[nodiscard]] bool IsOk() const
@@ -624,7 +627,7 @@ namespace Wisteria
             /// @returns `true` if a gradient is being used.
             [[nodiscard]] bool IsGradient() const
                 { return (m_color1.IsOk() && m_color2.IsOk()); }
-            /// @returns The primary color. If a gradient, the returns the first color of the gradient.
+            /// @returns The primary color. If a gradient, returns the first color of the gradient.
             [[nodiscard]] const wxColour& GetColor1() const noexcept
                 { return m_color1; }
             /// @returns The second color of the gradient.
@@ -724,7 +727,7 @@ namespace Wisteria
             /// @brief Sets the ID.
             /// @param id The ID to assign to this object.
             /// @returns A self reference.
-            GraphItemInfo& Id(const long id)
+            GraphItemInfo& Id(const long id) noexcept
                 {
                 m_id = id;
                 return *this;
@@ -732,7 +735,7 @@ namespace Wisteria
             /// @brief Sets whether to show the object.
             /// @param show `true` to display the object.
             /// @returns A self reference.
-            GraphItemInfo& Show(const bool show)
+            GraphItemInfo& Show(const bool show) noexcept
                 {
                 m_show = show;
                 return *this;
@@ -740,7 +743,7 @@ namespace Wisteria
             /// @brief Sets whether the object is selectable.
             /// @param selectable `true` to show the item as selected with clicked on.
             /// @returns A self reference.
-            GraphItemInfo& Selectable(const bool selectable)
+            GraphItemInfo& Selectable(const bool selectable) noexcept
                 {
                 m_isSelectable = selectable;
                 return *this;
@@ -748,22 +751,22 @@ namespace Wisteria
             /// @brief Sets whether the object is <b>not</b> bound to its parent canvas.
             /// @param freeFloating `true` to not anchor this object to its parent canvas.
             /// @returns A self reference.
-            GraphItemInfo& FreeFloating(const bool freeFloating)
+            GraphItemInfo& FreeFloating(const bool freeFloating) noexcept
                 {
                 m_freeFloating = freeFloating;
                 return *this;
                 }
             /// @brief Sets whether the object should display a label on itself when
-            ///  selected by the mouse.
+            ///     selected by the mouse.
             /// @param showLabelWhenSelected `true` to show a label on the object when selected.
             /// @returns A self reference.
-            GraphItemInfo& ShowLabelWhenSelected(const bool showLabelWhenSelected)
+            GraphItemInfo& ShowLabelWhenSelected(const bool showLabelWhenSelected) noexcept
                 {
                 m_showLabelWhenSelected = showLabelWhenSelected;
                 return *this;
                 }
             /** @brief Sets the margins for this object when being used as separate grid
-                 in a multi-item canvas, starting at 12 o'clock and going clockwise.
+                    in a multi-item canvas, starting at 12 o'clock and going clockwise.
                 @param top The top margin.
                 @param right The right margin.
                 @param bottom The bottom margin.
@@ -780,9 +783,10 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets the percent of the canvas width that this object should consume.
-            /// @param canvasWidthProportion The percent of the canvas that this object should consume.
+            /// @param canvasWidthProportion The percent of the canvas that this
+            ///     object should consume.
             /// @returns A self reference.
-            GraphItemInfo& CanvasWidthProportion(const double canvasWidthProportion)
+            GraphItemInfo& CanvasWidthProportion(const double canvasWidthProportion) noexcept
                 {
                 m_canvasWidthProportion = canvasWidthProportion;
                 return *this;
@@ -797,15 +801,16 @@ namespace Wisteria
             ///  beneath it. Likewise, the canvas's row alignment should be turned off, as that
             ///  would try to adjust the object's height and negate this setting.
             /// @param canvasHeightProportion The percent of the canvas height that this object
-            ///  should consume.
+            ///     should consume.
             /// @returns A self reference.
-            GraphItemInfo& CanvasHeightProportion(const std::optional<double> canvasHeightProportion)
+            GraphItemInfo& CanvasHeightProportion(
+                const std::optional<double> canvasHeightProportion) noexcept
                 {
                 m_canvasHeightProportion = canvasHeightProportion;
                 return *this;
                 }
             /// @brief Sets the text of the item. Depending on context, this may be a label
-            ///  when the item is selected, or text shown on the item.
+            ///     when the item is selected, or text shown on the item.
             /// @param text The string to display.
             /// @returns A self reference.
             GraphItemInfo& Text(const wxString& text)
@@ -816,7 +821,7 @@ namespace Wisteria
             /// @brief Sets the anchoring.
             /// @param anchoring The anchoring to use.
             /// @returns A self reference.
-            GraphItemInfo& Anchoring(const Wisteria::Anchoring anchoring)
+            GraphItemInfo& Anchoring(const Wisteria::Anchoring anchoring) noexcept
                 {
                 m_anchoring = anchoring;
                 return *this;
@@ -848,7 +853,7 @@ namespace Wisteria
             /// @brief Sets the scaling.
             /// @param scaling The object's scaling.
             /// @returns A self reference.
-            GraphItemInfo& Scaling(const double scaling)
+            GraphItemInfo& Scaling(const double scaling) noexcept
                 {
                 m_scaling = scaling;
                 return *this;
@@ -856,7 +861,7 @@ namespace Wisteria
             /// @brief Sets the DPI scaling.
             /// @param scaling The object's DPI scaling.
             /// @returns A self reference.
-            GraphItemInfo& DPIScaling(const double scaling)
+            GraphItemInfo& DPIScaling(const double scaling) noexcept
                 {
                 m_dpiScaleFactor = scaling;
                 return *this;
@@ -866,7 +871,7 @@ namespace Wisteria
             /// @returns A self reference.
             /// @sa Anchoring().
             /// @note This will not apply to objects with their own set of multiple
-            ///  points (e.g., Polygon, Axis).
+            ///     points (e.g., Polygon, Axis).
             GraphItemInfo& AnchorPoint(const wxPoint pt)
                 {
                 m_point = pt;
@@ -875,7 +880,7 @@ namespace Wisteria
             /// @brief Sets the relative alignment within the object's parent.
             /// @param alignment The object's relative alignment.
             /// @returns A self reference.
-            GraphItemInfo& ChildAlignment(const RelativeAlignment alignment)
+            GraphItemInfo& ChildAlignment(const RelativeAlignment alignment) noexcept
                 {
                 m_relativeAlignment = alignment;
                 return *this;
@@ -884,7 +889,7 @@ namespace Wisteria
                 @param orientation The orientation of the text.
                 @returns A self reference.
                 @note Label objects also have a Label::Tilt() function to tilt the text,
-                 using its initial orientation as its basis.*/
+                    using its initial orientation as its basis.*/
             GraphItemInfo& Orient(const Orientation orientation) noexcept
                 {
                 m_orientation = orientation;
@@ -905,10 +910,12 @@ namespace Wisteria
                 m_leftPadding = left;
                 return *this;
                 }
-            /** @brief Set how the label should adjust (if at all) its content to fit inside its parent.
-                @details This controls how to draw the label across an element (and possibly fit inside it).
-                 An example of this could be a label drawn on the center of a bar on a bar chart.
-                 Essentially, this is used when the parent it treating this label like a decal.
+            /** @brief Set how the label should adjust (if at all) its content
+                    to fit inside its parent.
+                @details This controls how to draw the label across an element
+                    (and possibly fit inside it).\n
+                    An example of this could be a label drawn on the center of a bar on a bar chart.
+                    Essentially, this is used when the parent it treating this label like a decal.
                 @param labelFit The fitting method to use.
                 @returns A self reference.*/
             GraphItemInfo& LabelFitting(const LabelFit labelFit) noexcept
@@ -917,28 +924,30 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets the text alignment
-            ///  (applies to Label objects or labels managed by the object, such as Axis).
+            ///     (applies to Label objects or labels managed by the object, such as Axis).
             /// @param alignment How the text is alignment.
             /// @returns A self reference.
-            GraphItemInfo& LabelAlignment(const TextAlignment& alignment)
+            GraphItemInfo& LabelAlignment(const TextAlignment& alignment) noexcept
                 {
                 m_textAlignment = alignment;
                 return *this;
                 }
             /// @brief Sets the text's vertical alignment
-            ///  (applies to Label objects using a minimum user-defined size).
+            ///     (applies to Label objects using a minimum user-defined size).
             /// @param alignment How the text is alignment.
             /// @returns A self reference.
-            GraphItemInfo& LabelPageVerticalAlignment(const PageVerticalAlignment& alignment)
+            GraphItemInfo& LabelPageVerticalAlignment(
+                const PageVerticalAlignment& alignment) noexcept
                 {
                 m_pageVerticalAlignment = alignment;
                 return *this;
                 }
             /// @brief Sets the text's horizontal alignment
-            ///  (applies to Label objects using a minimum user-defined size).
+            ///     (applies to Label objects using a minimum user-defined size).
             /// @param alignment How the text is alignment.
             /// @returns A self reference.
-            GraphItemInfo& LabelPageHorizontalAlignment(const PageHorizontalAlignment& alignment)
+            GraphItemInfo& LabelPageHorizontalAlignment(
+                const PageHorizontalAlignment& alignment) noexcept
                 {
                 m_pageHorizontalAlignment = alignment;
                 return *this;
@@ -946,7 +955,7 @@ namespace Wisteria
             /// @brief Sets how to style the label background (applies only to Label).
             /// @param style How to style the label.
             /// @returns A self reference.
-            GraphItemInfo& LabelStyling(const LabelStyle& style)
+            GraphItemInfo& LabelStyling(const LabelStyle& style) noexcept
                 {
                 m_labelStyle = style;
                 return *this;
@@ -978,7 +987,7 @@ namespace Wisteria
             /// @brief Sets whether the object is valid.
             /// @param isOk `true` to mark the object is valid.
             /// @returns A self reference.
-            GraphItemInfo& Ok(const bool isOk)
+            GraphItemInfo& Ok(const bool isOk) noexcept
                 {
                 m_isOk = isOk;
                 return *this;
@@ -1000,10 +1009,10 @@ namespace Wisteria
             [[nodiscard]] std::optional<double> GetDPIScaleFactor() const noexcept
                 { return m_dpiScaleFactor; }
             /// @returns The brush.
-            [[nodiscard]] wxBrush GetBrush() const noexcept
+            [[nodiscard]] const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
-            /// @returns The brush.
-            [[nodiscard]] wxString GetText() const noexcept
+            /// @returns The text.
+            [[nodiscard]] const wxString& GetText() const noexcept
                 { return m_text; }
         private:
             bool m_show{ true };
@@ -1069,7 +1078,7 @@ namespace Wisteria
             /** @brief Constructor.
                 @param scaling The current scaling to measure and render with.
                 @param label The label to attach to the element
-                 (can be used for things like selection labels).*/
+                    (can be used for things like selection labels).*/
             GraphItemBase(const double scaling, const wxString& label)
                 {
                 m_itemInfo.m_text = label;
@@ -1086,11 +1095,11 @@ namespace Wisteria
 
             /** @brief Sets the scaling of the element.
                 @details This will affect the thickness of the object's outline.
-                 Also, for objects with a center point (@c Image, @c Label, @c Point2D),
-                 this will affect the size of the object.
+                    Also, for objects with a center point (@c Image, @c Label, @c Point2D),
+                    this will affect the size of the object.
                 @param scaling The scaling factor.
                 @note Objects with more than a single point (e.g., @c Axis) will
-                 maintain its size and position; scaling will not affect it.*/
+                    maintain its size and position; scaling will not affect it.*/
             virtual void SetScaling(const double scaling)
                 {
                 wxASSERT_LEVEL_2_MSG(scaling > 0,
@@ -1106,8 +1115,8 @@ namespace Wisteria
                 { return m_itemInfo.m_scaling; }
             /** @brief Sets the DPI scaling of the element.
                 @details This will affect the thickness of the object's outline.
-                 Also, for objects with a center point (@c Image, @c Label, @c Point2D),
-                 this will affect the size of the object.
+                    Also, for objects with a center point (@c Image, @c Label, @c Point2D),
+                    this will affect the size of the object.
                 @param scaling The scaling factor.*/
             virtual void SetDPIScaleFactor(const double scaling)
                 {
@@ -1122,13 +1131,13 @@ namespace Wisteria
                 @sa SetScaling().*/
             [[nodiscard]] double GetDPIScaleFactor() const noexcept;
             /// @returns `true` if the object is not reset to specific coordinates on the canvas
-            ///  and has to have its position adjusted as the canvas gets rescaled.
+            ///     and has to have its position adjusted as the canvas gets rescaled.
             [[nodiscard]] bool IsFreeFloating() const noexcept
                 { return m_itemInfo.m_freeFloating; }
             /** @brief Sets whether the object should be shown.
                 @param show Whether to show the object or not.
                 @note When this is set to `false`, GetBoundingBox() will generally return
-                 an invalid @c wxRect.*/
+                    an invalid @c wxRect.*/
             void Show(const bool show = true) noexcept
                 { m_itemInfo.m_show = show; }
             /// @returns Whether this object is being displayed or not.
@@ -1144,7 +1153,7 @@ namespace Wisteria
 
             /** @brief Sets the point where the box will be anchored.
                 @note Call SetAnchoring() to control what this point means in relation
-                 to how it is anchored. The default is for this point to be the center point.
+                    to how it is anchored. The default is for this point to be the center point.
                 @param pt The point where the box will be anchored.*/
             void SetAnchorPoint(const wxPoint pt)
                 {
@@ -1165,7 +1174,7 @@ namespace Wisteria
             /** @brief Sets whether the element is selected.
                 @param selected Whether the element is selected.
                 @internal Don't make this @c noexcept as derived versions may need
-                 to call @noexcept functions.*/
+                 to call @c noexcept functions.*/
             virtual void SetSelected(const bool selected)
                 { m_selected = selected; }
 
@@ -1175,7 +1184,7 @@ namespace Wisteria
             /** @brief Sets whether the element can be selected.
                 @param selectable Whether the element can be selected.
                 @note It is recommended to check for this in SelectObjectAtPoint()
-                 for derived objects if they override that function.*/
+                    for derived objects if they override that function.*/
             virtual void SetSelectable(const bool selectable) noexcept
                 { m_itemInfo.m_isSelectable = selectable; }
 
@@ -1183,7 +1192,7 @@ namespace Wisteria
             [[nodiscard]] bool IsShowingLabelWhenSelected() const noexcept
                 { return m_itemInfo.m_showLabelWhenSelected; }
             /** @brief Set whether to show the element's label as a text window on top of
-                 the element when selected.
+                    the element when selected.
                 @param show Whether to show the label.*/
             void ShowLabelWhenSelected(const bool show)
                 {
@@ -1210,7 +1219,7 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 }
             /** @returns The element, rendered to a bitmap. The image will be the size of the
-                 bounding box. The area around the polygon will be set to transparent pixels.
+                    bounding box. The area around the polygon will be set to transparent pixels.
                 @param dc Measurement DC. Not used, just need for API requirements.
                 @note This is used for dragging when an object is free floating.*/
             [[nodiscard]] virtual wxBitmap ToBitmap(wxDC& dc) const;
@@ -1235,7 +1244,7 @@ namespace Wisteria
                 @details This is a convenient way to chain multiple attribute updates.
                 @code
                  label->GetGraphItemInfo().Scaling(GetScaling()).
-                                           Pen(wxNullPen).Text(L"Number of obs.");
+                                           Pen(wxNullPen).Text(_(L"Number of obs."));
                 @endcode
                 @returns The base attributes.*/
             [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo() noexcept
@@ -1263,15 +1272,15 @@ namespace Wisteria
                 }
 
             /// @returns What the object's starting point is referencing when it need to be
-            ///  rendered on its parent.
+            ///     rendered on its parent.
             [[nodiscard]] const Anchoring& GetAnchoring() const noexcept
                 { return m_itemInfo.m_anchoring; }
 
             /** @brief Sets which type of shadow is being drawn under the object
                 @param shadow The type of shadow to display.
                 @note For some objects, shadow will always be displayed as @c RightSideShadow
-                 (unless set to @c NoShadow); otherwise, it would look odd.
-                 Set to @c NoShadow to turn off shadows.*/
+                    (unless set to @c NoShadow); otherwise, it would look odd.
+                    Set to @c NoShadow to turn off shadows.*/
             void SetShadowType(const ShadowType shadow) noexcept
                 { m_itemInfo.m_shadowType = shadow; }
             /** @returns Which type of shadow is being drawn under the object.*/
@@ -1281,7 +1290,7 @@ namespace Wisteria
             /** @name Text Functions
                 @brief Functions related to text display.
                 @details This applies when the object is a Label.
-                 This also applies to the label displayed when this item is selected.*/
+                    This also applies to the label displayed when this item is selected.*/
             /// @{
 
             /** @brief Sets the label, which the caller can use (e.g., as a selection label).
@@ -1298,7 +1307,7 @@ namespace Wisteria
             /** @brief Gets/sets the label font.
                 @returns The font used for any labelling.
                 @note If the top line is being treated as a header, then it will manage its own
-                 font. Call GetHeaderInfo() to manage the header line's font.*/
+                    font. Call GetHeaderInfo() to manage the header line's font.*/
             [[nodiscard]] virtual wxFont& GetFont() noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1307,7 +1316,7 @@ namespace Wisteria
             /** @brief Sets the font.
                 @param font The font to use.
                 @note Calling GetFont() can access the font directly,
-                 which is a simpler way to edit it.*/
+                    which is a simpler way to edit it.*/
             virtual void SetFont(const wxFont& font)
                 {
                 InvalidateCachedBoundingBox();
@@ -1358,11 +1367,11 @@ namespace Wisteria
                 }
 
             /** @returns If a Label, the alignment of the text
-                 (if multiline or using a minimum user-defined size).*/
+                    (if multiline or using a minimum user-defined size).*/
             [[nodiscard]] const TextAlignment& GetTextAlignment() const noexcept
                 { return m_itemInfo.m_textAlignment; }
             /** @brief If a Label, sets the alignment of the text
-                 (if multiline or using a minimum user-defined size).
+                    (if multiline or using a minimum user-defined size).
                 @param alignment How to align the text.*/
             void SetTextAlignment(const TextAlignment alignment) noexcept
                 {
@@ -1371,14 +1380,14 @@ namespace Wisteria
                 }
 
             /** @returns If a Label, the vertical alignment of the text
-                 (if using a minimum user-defined size).*/
+                    (if using a minimum user-defined size).*/
             [[nodiscard]] const PageVerticalAlignment& GetPageVerticalAlignment() const noexcept
                 { return m_itemInfo.m_pageVerticalAlignment; }
             /** @brief If a Label, sets the vertical alignment of the tex
-                 (if using a minimum user-defined size).
+                    (if using a minimum user-defined size).
                 @param alignment How to align the text.
                 @note This can be used to center or bottom align a legend vertically
-                 if being placed on a canvas (next to its plot).*/
+                    if being placed on a canvas (next to its plot).*/
             void SetPageVerticalAlignment(const PageVerticalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1413,17 +1422,17 @@ namespace Wisteria
 
             /** @returns If a @c Label, the collection of icons (optionally) being drawn.
                 @note Call SetLeftPadding() to make space for these icons
-                 (with a minimum of 16 pixels).*/
+                    (with a minimum of 16 pixels).*/
             [[nodiscard]] std::vector<LegendIcon>& GetLegendIcons() noexcept
                 {
                 InvalidateCachedBoundingBox();
                 return m_itemInfo.m_legendIcons;
                 }
             /** @returns If a @c Label being used as a legend, `true` if icons have been added to it.
-                 This is useful if trying to determine if legend padding is needed for a Label.
+                    This is useful if trying to determine if legend padding is needed for a Label.
                 @note This takes into account blank icons and separators that don't require
-                 padding to be drawn, so this is more accurate than calling
-                 `GetLegendIcons().size()`.*/
+                    padding to be drawn, so this is more accurate than calling
+                    `GetLegendIcons().size()`.*/
             [[nodiscard]] bool HasLegendIcons() const noexcept
                 {
                 for (const auto& icon : GetLegendIcons())
@@ -1437,34 +1446,32 @@ namespace Wisteria
                 }
 
             /** @brief Gets the minimum width for the item's bounding box that the client
-                 has requested.\n
-                 This is currently only relevant to @c Label objects.
+                    has requested.\n
+                    This is currently only relevant to @c Label objects.
                 @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
-                 This is the minimum size that the client has requested, which may or may not be
-                 the same as the actual content's size (including text, padding, icons, etc.).
+                    This is the minimum size that the client has requested, which may or may not be
+                    the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserHeightDIPs().
                 @returns The minimum user width.*/
             [[nodiscard]] std::optional<wxCoord> GetMinimumUserWidthDIPs() const noexcept
                 { return m_itemInfo.m_minimumUserWidthDIPs; }
             /** @brief Gets the minimum height for the item's bounding box that the client
-                 has requested.\n
-                 This is currently only relevant to Label objects.
+                    has requested.\n
+                    This is currently only relevant to Label objects.
                 @note By default this is optional until the client calls SetMinimumUserSizeDIPs().\n
-                 This is the minimum size that the client has requested, which may or may not
-                 be the same as the actual content's size (including text, padding, icons, etc.).
+                    This is the minimum size that the client has requested, which may or may not
+                    be the same as the actual content's size (including text, padding, icons, etc.).
                 @sa SetMinimumUserSizeDIPs(), GetMinimumUserWidthDIPs().
                 @returns The minimum user width.*/
             [[nodiscard]] std::optional<wxCoord> GetMinimumUserHeightDIPs() const noexcept
                 { return m_itemInfo.m_minimumUserHeightDIPs; }
             /** @brief Sets the minimum size for the item's bounding box.
-                 This is currently only relevant to Label objects.
+                    This is currently only relevant to Label objects.
                 @details This should include space for the text and its padding.
                 @param width The minimum width. Set to @c std::nullopt to ignore it.
                 @param height The minimum height. Set to @c std::nullopt to ignore it.
                 @note This should be used if you wish to make the label larger than its content.
-                 For example, use this to make a series of labels the same width.
-
-                 Also, this size should be DIPs*/
+                    For example, use this to make a series of labels the same width.*/
             void SetMinimumUserSizeDIPs(const std::optional<wxCoord> width,
                                     std::optional<wxCoord> height) noexcept
                 {
@@ -1490,7 +1497,7 @@ namespace Wisteria
                 @param bottom The bottom padding.
                 @param left The left padding.
                 @note This will only affect Label and Axis;
-                 will be ignored by other object types.*/
+                    will be ignored by other object types.*/
             virtual void SetPadding(const wxCoord top, const wxCoord right,
                                     const wxCoord bottom, const wxCoord left) noexcept
                 {
@@ -1507,7 +1514,7 @@ namespace Wisteria
             /** @brief Sets the right padding of the object.
                 @param padding The padding size.
                 @note This is a pixel value that the framework will scale to
-                 the screen for you.*/
+                    the screen for you.*/
             virtual void SetRightPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1520,7 +1527,7 @@ namespace Wisteria
             /** @brief Sets the left padding of the object.
                 @param padding The padding size.
                 @note This is a pixel value that the framework will scale to
-                 the screen for you.*/
+                    the screen for you.*/
             virtual void SetLeftPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1533,7 +1540,7 @@ namespace Wisteria
             /** @brief Sets the bottom padding of the object.
                 @param padding The padding size.
                 @note This is a pixel value that the framework will scale to
-                 the screen for you.*/
+                    the screen for you.*/
             virtual void SetBottomPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1546,7 +1553,7 @@ namespace Wisteria
             /** @brief Sets the top padding of the object.
                 @param padding The padding size.
                 @note This is a pixel value that the framework will scale
-                 to the screen for you.*/
+                    to the screen for you.*/
             virtual void SetTopPadding(const wxCoord padding) noexcept
                 {
                 InvalidateCachedBoundingBox();
@@ -1583,18 +1590,18 @@ namespace Wisteria
 
             /** @name Canvas Functions
                 @brief Functions related to how this object is placed, resized,
-                 and padded when inserted into the grid of a multi-item canvas
-                 (i.e., a Label being used as a legend next to a plot).*/
+                    and padded when inserted into the grid of a multi-item canvas
+                    (i.e., a Label being used as a legend next to a plot).*/
             /// @{
 
             /** @brief Sets the margins for this object when being used as separate
-                 grid in a multi-item canvas, starting at 12 o'clock and going clockwise.
+                    grid in a multi-item canvas, starting at 12 o'clock and going clockwise.
                 @param top The top margin.
                 @param right The right margin.
                 @param bottom The bottom margin.
                 @param left The left margin.
                 @note This will have no effect unless it is the only object in a
-                 canvas's grid.*/
+                    canvas's grid.*/
             void SetCanvasMargins(const wxCoord top, const wxCoord right,
                                   const wxCoord bottom, const wxCoord left) noexcept
                 {
@@ -1684,14 +1691,14 @@ namespace Wisteria
                 { m_itemInfo.m_isOk = isOk; }
 
             /** @brief Sets the alignment of the object, relative to something else
-                 (e.g., its parent).
+                    (e.g., its parent).
                 @details This is handled by the caller and can have different meanings based
-                 on its context; may not be applicable to most objects (or even labels).\n
-                 For example, this is used for canvas titles, but not axis labels.
+                    on its context; may not be applicable to most objects (or even labels).\n
+                    For example, this is used for canvas titles, but not axis labels.
 
-                 Refer to any given object's documentation for how this feature is used.
+                    Refer to any given object's documentation for how this feature is used.
                 @param align How to align the text, relative to whatever the caller is
-                 placing it against.*/
+                    placing it against.*/
             void SetRelativeAlignment(const RelativeAlignment align)
                 {
                 m_itemInfo.m_relativeAlignment = align;
@@ -1751,7 +1758,7 @@ namespace Wisteria
             virtual void RecalcSizes([[maybe_unused]] wxDC& dc) {}
             /** @brief Reselect subitems if the object's subitems need to be re-created.
                 @details This is called by the framework and does not need to be called
-                 in client code. Just define it in derived classes, if applicable.
+                    in client code. Just define it in derived classes, if applicable.
                 @note Derived classes should override this if they contain subitems.*/
             virtual void UpdateSelectedItems() {}
             /// @brief Clears all selected items.
@@ -1777,16 +1784,16 @@ namespace Wisteria
             [[nodiscard]] wxSize ScaleToScreenAndCanvas(const wxSize sz) const
                 { return sz * GetScaling() * GetDPIScaleFactor(); }
             /// @brief Takes a pixel value that has been scaled from the screen DPI
-            ///  and parent canvas scaling and converts it back to its base DIP.
+            ///     and parent canvas scaling and converts it back to its base DIP.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The downscaled value.
             [[nodiscard]] double DownscaleFromScreenAndCanvas(const double value) const noexcept
                 { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
             /** @brief Resets the cached bounding box to empty.
                 @note Derived classes should call this in their setter functions
-                 that may affect the bounding box as well.\n
-                 This also resets the cached content bounding box
-                 (only some objects like Label use this).*/
+                    that may affect the bounding box as well.\n
+                    This also resets the cached content bounding box
+                    (only some objects like Label use this).*/
             void InvalidateCachedBoundingBox()
                 { m_cachedBoundingBox = m_cachedContentBoundingBox = wxRect(); }
             /** @brief Saves the bounding box information, which can be later retrieved from
@@ -1801,7 +1808,7 @@ namespace Wisteria
             void SetCachedBoundingBox(const wxRect cached) const noexcept
                 { m_cachedBoundingBox = cached; }
             /** @returns The bounding box calculated from the last call to GetBoundingBox()
-                ( which derived classes should implement ).
+                    (which derived classes should implement ).
                 @note Before using this, verify that it is not empty
                  (InvalidateCachedBoundingBox() will set it to empty).\n
                  Also, derived classes are responsible for calling InvalidateCachedBoundingBox() in any
@@ -1809,7 +1816,7 @@ namespace Wisteria
             [[nodiscard]] wxRect GetCachedBoundingBox() const noexcept
                 { return m_cachedBoundingBox; }
             /// @brief Caches the content bounding box, which may be different
-            ///  from the overall bounding box. This is only used by some objects, such as Label.
+            ///     from the overall bounding box. This is only used by some objects, such as Label.
             /// @param cached The content box to cache.
             void SetCachedContentBoundingBox(const wxRect cached) const noexcept
                 { m_cachedContentBoundingBox = cached; }
@@ -1824,12 +1831,12 @@ namespace Wisteria
             void SetInDragState(const bool isBeingDragged) noexcept
                 { m_inDragState = isBeingDragged; }
             /** @brief Override this for selecting subitems at a given point.
-                 This implementation will select the entire object if @c pt is inside of the object.
+                    This implementation will select the entire object if @c pt is inside of the object.
                 @param pt The point to hit test.
                 @param dc The DC used for measuring. Not all objects use this parameter.
                 @returns `true` if something was selected at the given point.
                 @note This will toggle the selection of an object. If it was selected before,
-                 then it will become unselected.*/
+                    then it will become unselected.*/
             virtual bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)
                 {
                 if (!IsSelectable())
@@ -1842,10 +1849,10 @@ namespace Wisteria
                 return false;
                 }
             /// @brief Returns the rectangle (relative to the canvas) of the object's
-            ///  main content.
+            ///     main content.
             /// @details This is object specific and is used by the canvas
-            ///  when aligning objects across a row. For example, this can be used to
-            ///  align the axes of multiple plots.
+            ///     when aligning objects across a row. For example, this can be used to
+            ///     align the axes of multiple plots.
             /// @returns The content area.
             [[nodiscard]] virtual wxRect GetContentRect() const noexcept
                 { return wxRect(); }
@@ -1854,8 +1861,8 @@ namespace Wisteria
                 { return m_contentTop; }
             /** @brief Sets the object's content area top point (relative to the parent canvas).
                 @details This is object specific and is used by the canvas
-                 when aligning objects across a row. For example, this can be used to
-                 align the axes of multiple plots.
+                    when aligning objects across a row. For example, this can be used to
+                    align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentTop(const std::optional<wxCoord>& pt) noexcept
                 { m_contentTop = pt; }
@@ -1864,8 +1871,8 @@ namespace Wisteria
                 { return m_contentBottom; }
             /** @brief Sets the object's content area bottom point (relative to the parent canvas).
                 @details This is object specific and is used by the canvas
-                 when aligning objects across a row. For example, this can be used to
-                 align the axes of multiple plots.
+                    when aligning objects across a row. For example, this can be used to
+                    align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentBottom(const std::optional<wxCoord>& pt) noexcept
                 { m_contentBottom = pt; }
@@ -1874,8 +1881,8 @@ namespace Wisteria
                 { return m_contentLeft; }
             /** @brief Sets the object's content area left point (relative to the parent canvas).
                 @details This is object specific and is used by the canvas
-                 when aligning objects down a column. For example, this can be used to
-                 align the axes of multiple plots.
+                    when aligning objects down a column. For example, this can be used to
+                    align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentLeft(const std::optional<wxCoord>& pt) noexcept
                 { m_contentLeft = pt; }
@@ -1884,8 +1891,8 @@ namespace Wisteria
                 { return m_contentRight; }
             /** @brief Sets the object's content area right point (relative to the parent canvas).
                 @details This is object specific and is used by the canvas
-                 when aligning objects down a column. For example, this can be used to
-                 align the axes of multiple plots.
+                    when aligning objects down a column. For example, this can be used to
+                    align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentRight(const std::optional<wxCoord>& pt) noexcept
                 { m_contentRight = pt; }

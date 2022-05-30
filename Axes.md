@@ -1,10 +1,10 @@
 Axes
 =============================
 
-Customizing a Plot's Axes
+Customizing a Graph's Axes
 =============================
 
-A plot’s axes can be directly accessed via `GetBottomXAxis()`, `GetTopXAxis()`, `GetLeftYAxis()`, or `GetRightYAxis()`.
+A graph’s axes can be directly accessed via `GetBottomXAxis()`, `GetTopXAxis()`, `GetLeftYAxis()`, or `GetRightYAxis()`.
 These functions return a `Wisteria::GraphItems::Axis` object, where you can edit its range, fonts, labels, titles, etc.
 
 By default, the right Y and top X axes are blank. However, you can tell the plot to have them display the same content as
@@ -208,7 +208,7 @@ theChart->GetLeftYAxis().AddBracket(
 Adding a Custom Axis
 =============================
 
-Custom axes can also be added to a plot and customized via `AddCustomAxis()` and `GetCustomAxes()`.
+Custom axes can also be added to a graph and customized via `AddCustomAxis()` and `GetCustomAxes()`.
 
 To build a custom axis, first an axis is constructed with a type. For example, to make a vertical custom axis,
 set its type to `Wisteria::AxisType::LeftYAxis`. Vertical custom axis will be anchored to the bottom X axis, while

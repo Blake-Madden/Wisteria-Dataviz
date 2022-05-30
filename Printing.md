@@ -21,7 +21,7 @@ When printing a canvas, the default is to draw its content as-is onto the paper,
 (This aspect ratio is controlled by calling `Wisteria::Canvas::SetCanvasMinWidthDIPs()` and
 `Wisteria::Canvas::SetCanvasMinHeightDIPs()`.)
 
-A canvas can also auto-fit to its printer-page size by calling
+A canvas can also auto-fit to the page size by calling
 `Wisteria::Canvas::FitToPageWhenPrinting()`. This results in the canvas temporarily adjusting its
  aspect ratio to match the page and filling it entirely when being printed. If a canvas only
  contains a single graph, then this is only recommended if printing in @c wxLANDSCAPE; otherwise, the graph will

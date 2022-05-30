@@ -450,17 +450,19 @@ namespace Wisteria::Graphs
                 { return m_barEffect; }
             /// @brief Sets the effect drawn across the bar.
             /// @param effect The box effect to use.
+            /// @note If using the arrow shape, some effects (glassy, stipple) are ignored.
+            /// @sa SetShape().
             void SetEffect(const BoxEffect effect) noexcept
                 { m_barEffect = effect; }
             /** @returns The shape of the bar.
                 @note Image-based bar effects and drop shadows will only work with rectangular shapes.
-                @todo Add support for drop shadows for arrows.
-                @todo Add support for 3D effect for arrows.
-                @todo Add support for stipple for arrows.*/
+                @todo Add support for drop shadows for arrows.*/
             [[nodiscard]] BarShape GetShape() const noexcept
                 { return m_barShape; }
             /** @brief Sets the shape to draw the bar as.
-                @param shape The shape to draw for the bar.*/
+                @param shape The shape to draw for the bar.
+                @note If using the arrow shape, some effects (glassy, stipple) are ignored.
+                @sa SetEffect().*/
             void SetShape(const BarShape shape) noexcept
                 { m_barShape = shape; }
             /// @}

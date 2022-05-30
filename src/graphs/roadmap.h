@@ -26,14 +26,14 @@ namespace Wisteria::Graphs
             {
             /// @brief A Geolocation marker.
             LocationMarkers,
-            /// @brief Warning and Go road signs.
+            /// @brief Warning and GO road signs.
             RoadSigns
             };
 
         /// @brief The style of the lane separator.
         enum class LaneSeparatorStyle
             {
-            /// @brief Sinlge line.
+            /// @brief Single line.
             SingleLine,
             /// @brief Double line.
             DoubleLine
@@ -183,8 +183,7 @@ namespace Wisteria::Graphs
         wxPen m_roadPen{ *wxBLACK, 10 };
         wxPen m_laneSeparatorPen{
             wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
-                                1, wxPenStyle::wxPENSTYLE_LONG_DASH)
-            };
+                                1, wxPenStyle::wxPENSTYLE_LONG_DASH) };
         LaneSeparatorStyle m_laneSepatatorStyle{ LaneSeparatorStyle::SingleLine };
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
