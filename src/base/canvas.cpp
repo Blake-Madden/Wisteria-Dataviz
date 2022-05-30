@@ -972,7 +972,8 @@ namespace Wisteria
                         wxSize(fixedObjectRect.GetWidth() * objectsPos->GetCanvasWidthProportion(),
                                currentObjHeight));
                     wxRect nonPaddedBoundingRect{ boundingRect };
-                    // adjust for margins
+                    // subtract the canvas margins from the object's allocated space
+                    // and center its drawing area within that
                     boundingRect.y += ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc);
                     boundingRect.x += ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc);
                     boundingRect.SetWidth(std::max<double>(0, boundingRect.GetWidth() -
@@ -988,6 +989,9 @@ namespace Wisteria
                     // Because of this, get its measured width and remove any extra space around its
                     // sides, and then give that extra space back to the items previously calculated
                     // to the left of it.
+                    // Note that the newly measured area is within the bouding box that had the
+                    // canvas margins subtracted from it, so if we use this new measurement
+                    // the margins will be preserved.
                     auto measuredBox = objectsPos->GetBoundingBox(dc);
                     if (measuredBox.GetWidth() < boundingRect.GetWidth())
                         {

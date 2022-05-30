@@ -1502,6 +1502,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(0, 1,
             likertChart->CreateLegend(LegendCanvasPlacementHint::RightOfGraph));
+
+        // when printing, make it landscape and stretch it to fill the entire page
+        subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
+        subframe->m_canvas->FitToPageWhenPrinting(true);
         }
     // Multiple plots
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT)
@@ -1657,19 +1661,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the box plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 1, boxPlot);
 
-        // create a common axis, also copied from the line plot's
-        // left axis
+        // create a common axis, also copied from the line plot's left axis
         auto commonAxis = std::make_shared<Axis>(AxisType::RightYAxis);
         commonAxis->SetDPIScaleFactor(subframe->m_canvas->GetDPIScaleFactor());
         commonAxis->CopySettings(linePlot->GetLeftYAxis());
-        // tell the canvas to align the axis line to the left axis's
+        // tell the canvas to align the axis line to the left side of its
         // bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         commonAxis->SetCanvasMargins(0, 0, 0, 10);
         // Get the canvas size of the axis and add it to the canvas.
-        // Note that we need to multiple the calculated size by two because
-        // axes are centered when drawn
-        commonAxis->SetCanvasWidthProportion(subframe->m_canvas->CalcMinWidthProportion(commonAxis)*2);
+        commonAxis->SetCanvasWidthProportion(subframe->m_canvas->CalcMinWidthProportion(commonAxis));
         subframe->m_canvas->SetFixedObject(0, 2, commonAxis);
 
         // now that we are done copying the left axis from the line plot,

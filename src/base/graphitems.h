@@ -621,10 +621,10 @@ namespace Wisteria
             GradientFill(const wxColour& col1, const wxColour& col2,
                          const FillDirection dir) noexcept :
                 m_color1(col1), m_color2(col2), m_direction(dir) {}
-            /// @returns `true` if the primary color has been specified.
+            /// @returns @c true if the primary color has been specified.
             [[nodiscard]] bool IsOk() const
                 { return m_color1.IsOk(); }//we use either the first color or both
-            /// @returns `true` if a gradient is being used.
+            /// @returns @c true if a gradient is being used.
             [[nodiscard]] bool IsGradient() const
                 { return (m_color1.IsOk() && m_color2.IsOk()); }
             /// @returns The primary color. If a gradient, returns the first color of the gradient.
@@ -652,11 +652,11 @@ namespace Wisteria
             {
         public:
             /// @brief Whether the top line of a label object is a header.
-            /// @returns `true` if the top line is treated like a header.
+            /// @returns @c true if the top line is treated like a header.
             [[nodiscard]] bool IsEnabled() const noexcept
                 { return m_enabled; }
             /** @brief Specifies whether to treat the top line of the label as a header.
-                @param enable `true` to enable header mode.
+                @param enable @c true to enable header mode.
                 @returns A self reference.*/
             HeaderInfo& Enable(const bool enable) noexcept
                 {
@@ -733,7 +733,7 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets whether to show the object.
-            /// @param show `true` to display the object.
+            /// @param show @c true to display the object.
             /// @returns A self reference.
             GraphItemInfo& Show(const bool show) noexcept
                 {
@@ -741,7 +741,7 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets whether the object is selectable.
-            /// @param selectable `true` to show the item as selected with clicked on.
+            /// @param selectable @c true to show the item as selected with clicked on.
             /// @returns A self reference.
             GraphItemInfo& Selectable(const bool selectable) noexcept
                 {
@@ -749,7 +749,7 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets whether the object is <b>not</b> bound to its parent canvas.
-            /// @param freeFloating `true` to not anchor this object to its parent canvas.
+            /// @param freeFloating @c true to not anchor this object to its parent canvas.
             /// @returns A self reference.
             GraphItemInfo& FreeFloating(const bool freeFloating) noexcept
                 {
@@ -758,7 +758,7 @@ namespace Wisteria
                 }
             /// @brief Sets whether the object should display a label on itself when
             ///     selected by the mouse.
-            /// @param showLabelWhenSelected `true` to show a label on the object when selected.
+            /// @param showLabelWhenSelected @c true to show a label on the object when selected.
             /// @returns A self reference.
             GraphItemInfo& ShowLabelWhenSelected(const bool showLabelWhenSelected) noexcept
                 {
@@ -985,7 +985,7 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets whether the object is valid.
-            /// @param isOk `true` to mark the object is valid.
+            /// @param isOk @c true to mark the object is valid.
             /// @returns A self reference.
             GraphItemInfo& Ok(const bool isOk) noexcept
                 {
@@ -1130,13 +1130,13 @@ namespace Wisteria
             /** @returns The DPI scaling of the element.
                 @sa SetScaling().*/
             [[nodiscard]] double GetDPIScaleFactor() const noexcept;
-            /// @returns `true` if the object is not reset to specific coordinates on the canvas
+            /// @returns @c true if the object is not reset to specific coordinates on the canvas
             ///     and has to have its position adjusted as the canvas gets rescaled.
             [[nodiscard]] bool IsFreeFloating() const noexcept
                 { return m_itemInfo.m_freeFloating; }
             /** @brief Sets whether the object should be shown.
                 @param show Whether to show the object or not.
-                @note When this is set to `false`, GetBoundingBox() will generally return
+                @note When this is set to @c false, GetBoundingBox() will generally return
                     an invalid @c wxRect.*/
             void Show(const bool show = true) noexcept
                 { m_itemInfo.m_show = show; }
@@ -1428,7 +1428,7 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 return m_itemInfo.m_legendIcons;
                 }
-            /** @returns If a @c Label being used as a legend, `true` if icons have been added to it.
+            /** @returns If a @c Label being used as a legend, @c true if icons have been added to it.
                     This is useful if trying to determine if legend padding is needed for a Label.
                 @note This takes into account blank icons and separators that don't require
                     padding to be drawn, so this is more accurate than calling
@@ -1594,99 +1594,105 @@ namespace Wisteria
                     (i.e., a Label being used as a legend next to a plot).*/
             /// @{
 
-            /** @brief Sets the margins for this object when being used as separate
-                    grid in a multi-item canvas, starting at 12 o'clock and going clockwise.
+            /** @brief Sets the margins for this object when being used as a separate item
+                    inside a grid cell of a multi-item canvas, starting at 12 o'clock
+                    and going clockwise.
                 @param top The top margin.
                 @param right The right margin.
                 @param bottom The bottom margin.
                 @param left The left margin.
                 @note This will have no effect unless it is the only object in a
-                    canvas's grid.*/
+                    canvas's grid cell.*/
             void SetCanvasMargins(const wxCoord top, const wxCoord right,
                                   const wxCoord bottom, const wxCoord left) noexcept
                 {
+                InvalidateCachedBoundingBox();
                 m_itemInfo.m_topCanvasMargin = top;
                 m_itemInfo.m_rightCanvasMargin = right;
                 m_itemInfo.m_bottomCanvasMargin = bottom;
                 m_itemInfo.m_leftCanvasMargin = left;
                 }
             /// @returns The right margin of the object.
-            /// @warning This will need to be scaled when being drawn or measured.
+            /// @note This is a DIP value.
             [[nodiscard]] constexpr wxCoord GetRightCanvasMargin() const noexcept
                 { return m_itemInfo.m_rightCanvasMargin; }
             /** @brief Sets the right margin of the object.
                 @param margin The margin size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a DIP value that the framework will scale for you.
+                @sa SetCanvasMargins().*/
             void SetRightCanvasMargin(const wxCoord margin) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_rightCanvasMargin = margin;
                 }
             /// @returns The left margin of the object.
-            /// @warning This will need to be scaled when being drawn or measured.
+            /// @note This is a DIP value.
             [[nodiscard]] constexpr wxCoord GetLeftCanvasMargin() const noexcept
                 { return m_itemInfo.m_leftCanvasMargin; }
             /** @brief Sets the left margin of the object.
                 @param margin The margin size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a DIP value that the framework will scale for you.
+                @sa SetCanvasMargins().*/
             void SetLeftCanvasMargin(const wxCoord margin) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_leftCanvasMargin = margin;
                 }
             /// @returns The bottom margin of the object.
-            /// @warning This will need to be scaled when being drawn or measured.
+            /// @note This is a DIP value.
             [[nodiscard]] constexpr wxCoord GetBottomCanvasMargin() const noexcept
                 { return m_itemInfo.m_bottomCanvasMargin; }
             /** @brief Sets the bottom margin of the object.
                 @param margin The margin size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a DIP value that the framework will scale for you.
+                @sa SetCanvasMargins().*/
             void SetBottomCanvasMargin(const wxCoord margin) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_bottomCanvasMargin = margin;
                 }
             /// @returns The top margin of the object.
-            /// @warning This will need to be scaled when being drawn or measured.
+            /// @note This is a DIP value.
             [[nodiscard]] constexpr wxCoord GetTopCanvasMargin() const noexcept
                 { return m_itemInfo.m_topCanvasMargin; }
             /** @brief Sets the top margin of the object.
                 @param margin The margin size.
-                @note This is a pixel value that the framework will scale to the screen for you.*/
+                @note This is a DIP value that the framework will scale for you.
+                @sa SetCanvasMargins().*/
             void SetTopCanvasMargin(const wxCoord margin) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_topCanvasMargin = margin;
                 }
 
+            /// @returns The percent of the canvas width that this object should consume.
+            [[nodiscard]] double GetCanvasWidthProportion() const noexcept
+                { return m_itemInfo.m_canvasWidthProportion; }
             /** @brief Sets the percent of the canvas that this object should consume.
                 @param widthProportion The percent of the canvas recommended for this object.*/
             void SetCanvasWidthProportion(const double widthProportion) noexcept
                 {
-                m_itemInfo.m_canvasWidthProportion = widthProportion;
                 InvalidateCachedBoundingBox();
+                m_itemInfo.m_canvasWidthProportion = widthProportion;
                 }
+            /// @returns The percent of the canvas height that this object should consume.
+            [[nodiscard]] std::optional<double> GetCanvasHeightProportion() const noexcept
+                { return m_itemInfo.m_canvasHeightProportion; }
             /** @brief Sets the percent of the canvas height that this object should consume.
                 @param heightProportion The percent of the canvas recommended for this object.*/
             void SetCanvasHeightProportion(const std::optional<double> heightProportion) noexcept
                 {
-                m_itemInfo.m_canvasHeightProportion = heightProportion;
                 InvalidateCachedBoundingBox();
+                m_itemInfo.m_canvasHeightProportion = heightProportion;
                 }
-            /// @returns The percent of the canvas width that this object should consume.
-            [[nodiscard]] double GetCanvasWidthProportion() const noexcept
-                { return m_itemInfo.m_canvasWidthProportion; }
-            /// @returns The percent of the canvas height that this object should consume.
-            [[nodiscard]] std::optional<double> GetCanvasHeightProportion() const noexcept
-                { return m_itemInfo.m_canvasHeightProportion; }
             /// @}
 
-            /// @returns `true` if the object is valid.
+            /// @returns @c true if the object is valid.
             [[nodiscard]] bool IsOk() const noexcept
                 { return m_itemInfo.m_isOk; }
             /** @brief Sets the object to valid or invalid.
                 @param isOk Whether the object is valid.
-                @note By default, all objects are valid until you call this with `false`.*/
+                @note By default, all objects are valid until you call this with @c false.*/
             void SetOk(const bool isOk) noexcept
                 { m_itemInfo.m_isOk = isOk; }
 
@@ -1765,7 +1771,7 @@ namespace Wisteria
             /// @note Derived classes need to override this to unselect all subitems.
             virtual void ClearSelections()
                 { SetSelected(false); }
-            /** @returns `true` if the given point is inside of this element.
+            /** @returns @c true if the given point is inside of this element.
                 @param pt The point to check.
                 @param dc The DC used for measuring. Not all objects use this parameter.*/
             [[nodiscard]] virtual bool HitTest(const wxPoint pt, wxDC& dc) const = 0;
@@ -1823,7 +1829,7 @@ namespace Wisteria
             /// @returns The cached content bounding box.
             [[nodiscard]] wxRect GetCachedContentBoundingBox() const noexcept
                 { return m_cachedContentBoundingBox; }
-            /// @returns `true` if element is currently being dragged.
+            /// @returns @c true if element is currently being dragged.
             [[nodiscard]] bool IsInDragState() const noexcept
                 { return m_inDragState; }
             /** @brief Sets whether the element is in a drag state.
@@ -1834,7 +1840,7 @@ namespace Wisteria
                     This implementation will select the entire object if @c pt is inside of the object.
                 @param pt The point to hit test.
                 @param dc The DC used for measuring. Not all objects use this parameter.
-                @returns `true` if something was selected at the given point.
+                @returns @c true if something was selected at the given point.
                 @note This will toggle the selection of an object. If it was selected before,
                     then it will become unselected.*/
             virtual bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc)

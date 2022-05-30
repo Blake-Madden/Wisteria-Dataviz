@@ -235,27 +235,37 @@ namespace Wisteria
                 when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This should be passed to the items SetCanvasWidthProportion()
-                method prior to adding to the canvas.*/
+            @note This should be passed to the item's @c SetCanvasWidthProportion()
+                method prior to adding to the canvas.\n
+                Also, if this object needs canvas margins around it, set those to the
+                object prior to calling this because those are factored into this calculation.*/
         [[nodiscard]] double CalcMinWidthProportion(
                                  const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
             return safe_divide<double>(
-                item->GetBoundingBox(gdc).GetWidth(),
+                item->GetBoundingBox(gdc).GetWidth() +
+                    // canvas margins are not part of the bounding box calculation,
+                    // so those need to be factored in here
+                    gdc.FromDIP(item->GetLeftCanvasMargin()) +
+                    gdc.FromDIP(item->GetRightCanvasMargin()),
                 gdc.FromDIP(GetCanvasMinWidthDIPs()));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
                 when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.*/
+            @note This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.
+                Also, if this object needs canvas margins around it, set those to the
+                object prior to calling this because those are factored into this calculation.*/
         [[nodiscard]] double CalcMinHeightProportion(
                                  const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
             {
             wxGCDC gdc(this);
             return safe_divide<double>(
-                item->GetBoundingBox(gdc).GetHeight(),
+                item->GetBoundingBox(gdc).GetHeight() +
+                    gdc.FromDIP(item->GetTopCanvasMargin()) +
+                    gdc.FromDIP(item->GetBottomCanvasMargin()),
                 gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
         /// @}
