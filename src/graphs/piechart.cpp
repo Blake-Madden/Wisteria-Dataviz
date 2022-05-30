@@ -262,7 +262,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::SetData(std::shared_ptr<const Data::Dataset> data,
+    void PieChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
                            const wxString& continuousColumnName,
                            const wxString& groupColumn1Name,
                            std::optional<const wxString> groupColumn2Name /*= std::nullopt*/)
@@ -273,22 +273,21 @@ namespace Wisteria::Graphs
         if (data == nullptr || data->GetCategoricalColumns().size() == 0)
             { return; }
 
-        m_data = data;
         GetSelectedIds().clear();
-        m_groupColumn1 = m_data->GetCategoricalColumn(groupColumn1Name);
-        if (m_groupColumn1 == m_data->GetCategoricalColumns().cend())
+        const auto& groupColumn1 = data->GetCategoricalColumn(groupColumn1Name);
+        if (groupColumn1 == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for pie chart.").ToUTF8(),
                 groupColumn1Name));
             }
-        m_groupColumn2 = (groupColumn2Name ?
-            m_data->GetCategoricalColumn(groupColumn2Name.value()) :
-            m_data->GetCategoricalColumns().cend());
+        const auto& groupColumn2 = (groupColumn2Name ?
+            data->GetCategoricalColumn(groupColumn2Name.value()) :
+            data->GetCategoricalColumns().cend());
         const bool useSubgrouping =
-            (m_groupColumn2 != m_data->GetCategoricalColumns().cend());
-        m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == m_data->GetContinuousColumns().cend())
+            (groupColumn2 != data->GetCategoricalColumns().cend());
+        const auto& continuousColumn = data->GetContinuousColumn(continuousColumnName);
+        if (continuousColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for pie chart.").ToUTF8(),
@@ -305,23 +304,23 @@ namespace Wisteria::Graphs
         double totalValue{ 0.0 };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (std::isnan(m_continuousColumn->GetValue(i)) )
+            if (std::isnan(continuousColumn->GetValue(i)) )
                 { continue; }
 
             auto [iterator, inserted] = outerGroups.insert(std::make_pair(
-                m_groupColumn1->GetValue(i),
-                m_continuousColumn->GetValue(i)) );
+                groupColumn1->GetValue(i),
+                continuousColumn->GetValue(i)) );
             // increment counts for group
             if (!inserted)
-                { iterator->second += m_continuousColumn->GetValue(i); }
-            totalValue += m_continuousColumn->GetValue(i);
+                { iterator->second += continuousColumn->GetValue(i); }
+            totalValue += continuousColumn->GetValue(i);
             }
 
         // create slices with their percents of the overall total
         for (const auto& group : outerGroups)
             {
             GetOuterPie().emplace_back(
-                SliceInfo{ m_groupColumn1->GetCategoryLabelFromID(group.first),
+                SliceInfo{ groupColumn1->GetCategoryLabelFromID(group.first),
                            group.second,
                            safe_divide(group.second, totalValue) });
             }
@@ -337,27 +336,27 @@ namespace Wisteria::Graphs
                                               SliceAndValues>(0, SliceAndValues());
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                if (std::isnan(m_continuousColumn->GetValue(i)) )
+                if (std::isnan(continuousColumn->GetValue(i)) )
                     { continue; }
 
-                searchValue.first = m_groupColumn1->GetValue(i);
+                searchValue.first = groupColumn1->GetValue(i);
                 auto [iterator, inserted] = innerGroups.insert(searchValue);
                 if (inserted)
                     {
                     iterator->second.insert(std::make_pair(
-                        m_groupColumn2->GetValue(i),
-                        m_continuousColumn->GetValue(i)));
+                        groupColumn2->GetValue(i),
+                        continuousColumn->GetValue(i)));
                     }
                 else
                     {
                     auto [subIterator, subInserted] = iterator->second.insert(std::make_pair(
-                        m_groupColumn2->GetValue(i),
-                        m_continuousColumn->GetValue(i)));
+                        groupColumn2->GetValue(i),
+                        continuousColumn->GetValue(i)));
                     // increment counts for group
                     if (!subInserted)
-                        { subIterator->second += m_continuousColumn->GetValue(i); }
+                        { subIterator->second += continuousColumn->GetValue(i); }
                     }
-                totalValue += m_continuousColumn->GetValue(i);
+                totalValue += continuousColumn->GetValue(i);
                 }
 
             std::map<wxString, PieInfo, Data::StringCmpNoCase> innerPie;
@@ -369,13 +368,13 @@ namespace Wisteria::Graphs
                 for (const auto& innerGroup : innerGroupOuterRing.second)
                     {
                     currentOuterSliceSlices.emplace_back(
-                        SliceInfo{ m_groupColumn2->GetCategoryLabelFromID(innerGroup.first),
+                        SliceInfo{ groupColumn2->GetCategoryLabelFromID(innerGroup.first),
                                innerGroup.second,
                                safe_divide(innerGroup.second, totalValue) });
                     }
                 std::sort(currentOuterSliceSlices.begin(), currentOuterSliceSlices.end());
                 innerPie.insert(std::make_pair(
-                    m_groupColumn1->GetCategoryLabelFromID(innerGroupOuterRing.first),
+                    groupColumn1->GetCategoryLabelFromID(innerGroupOuterRing.first),
                     currentOuterSliceSlices));
                 }
             // unroll the grouped slices into one large pie

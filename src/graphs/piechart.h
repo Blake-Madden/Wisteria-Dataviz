@@ -333,7 +333,7 @@ namespace Wisteria::Graphs
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void SetData(std::shared_ptr<const Data::Dataset> data,
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
             const wxString& continuousColumnName,
             const wxString& groupColumn1Name,
             std::optional<const wxString> groupColumn2Name = std::nullopt);
@@ -522,11 +522,6 @@ namespace Wisteria::Graphs
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
         std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> m_pieColors;
-
-        std::shared_ptr<const Wisteria::Data::Dataset> m_data{ nullptr };
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn1;
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn2;
 
         bool m_useColorLabels{ false };
 
