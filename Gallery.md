@@ -67,7 +67,7 @@ Survey Data
 
 | Pro & Con Roadmap (Wisteria::Graphs::ProConRoadmap) |
 | :-------------- |
-| <div class="image"><img src="docs/doxygen/images/SWOTRoadmap.svg" align="center" width="70%" /></div> |
+| ![](docs/doxygen/images/SWOTRoadmap.svg) |
 
 Social Sciences
 -----------------------------
