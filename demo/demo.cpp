@@ -1034,7 +1034,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(),
+                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
 
@@ -1096,8 +1097,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
                     { L"Course", CategoricalImportMethod::ReadAsStrings },
-                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings },
-                    { L"Course", CategoricalImportMethod::ReadAsStrings }
+                    { L"COLLEGE", CategoricalImportMethod::ReadAsStrings }
                     }));
             }
         catch (const std::exception& err)
@@ -1110,7 +1110,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // find a group from the outer ring and add a description to it
-        auto foundSlice = std::find(plot->GetOuterPie().begin(), plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
+        auto foundSlice = std::find(plot->GetOuterPie().begin(),
+                                    plot->GetOuterPie().end(), PieChart::SliceInfo{ L"English" });
         if (foundSlice != plot->GetOuterPie().end())
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
         // turn off all but one of the outer labels for the inner ring
@@ -1173,6 +1174,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     { slice.SetDescription(_(L"Drop this from the catalog?")); }
                 }
             );
+        // place the label around the pie, not off to the side
+        plot->SetLabelPlacement(LabelPlacement::NextToParent);
 
         // apply the slice's colors to its respective outside label
         plot->UseColorLabels(true);
@@ -1552,6 +1555,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     { slice.ShowGroupLabel(false); }
                 }
             );
+        groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 
         // apply the slice's colors to its respective outside label
         groupedPieChart->UseColorLabels(true);
