@@ -1017,7 +1017,7 @@ namespace Wisteria::Graphs
                 GraphItemInfo().Brush(GetDonutHoleColor()).
                 DPIScaling(GetDPIScaleFactor()).
                 Selectable(false).
-                Pen(wxNullPen).
+                Pen(*wxTRANSPARENT_PEN).
                 Anchoring(Anchoring::Center).
                 AnchorPoint(centerPt),
                 0);
