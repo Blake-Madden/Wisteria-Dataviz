@@ -281,9 +281,17 @@ namespace Wisteria::Graphs
                 _(L"'%s': group column not found for pie chart.").ToUTF8(),
                 groupColumn1Name));
             }
+
         const auto& groupColumn2 = (groupColumn2Name ?
             data->GetCategoricalColumn(groupColumn2Name.value()) :
             data->GetCategoricalColumns().cend());
+        if (groupColumn2Name.has_value() &&
+            groupColumn2 == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': inner group column not found for pie chart.").ToUTF8(),
+                groupColumn2Name.value()));
+            }
         const bool useSubgrouping =
             (groupColumn2 != data->GetCategoricalColumns().cend());
         const auto& continuousColumn = data->GetContinuousColumn(continuousColumnName);
