@@ -1,5 +1,6 @@
 Importing Data
 =============================
+[TOC]
 
 A `Wisteria::Data::Dataset` object is available for importing data, as well as connecting the data to
 various graph types. When you import data, you can select which columns to use and specify

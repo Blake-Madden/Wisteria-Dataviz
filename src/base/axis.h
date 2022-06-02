@@ -495,7 +495,7 @@ namespace Wisteria::GraphItems
              Also, after calling this, GetRangeDates() will return the (possibly adjusted)
              start and end dates. GetRange(), on the other hand, will return the underlying
              axis values (which may be something like 0-365 if the date range is a year).
-            @sa GetRangeDates(), SetFiscalYearType(), SetFiscalYearStart().*/
+            @sa GetRangeDates().*/
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                       const DateInterval displayInterval,
                       const FiscalYear FYtype);
@@ -510,10 +510,10 @@ namespace Wisteria::GraphItems
         [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetRangeDates() const noexcept
             { return std::make_pair(m_firstDay, m_lastDay); }
         /// @returns The point on the axis corresponding to the provided date,
-        ///  or std::nullopt if not found.
+        ///  or @c std::nullopt if not found.
         /// @param date The date to search for along the axis.
-        /// @note Axis must be initialized with a series of date from SetRange(); otherwise,
-        ///  this will return std::nullopt.
+        /// @note The axis must be initialized with a series of dates from SetRange(); otherwise,
+        ///  this will return @c std::nullopt.
         [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept;
         /** @brief Adds a point at value/label to the axis.
             @details This function should only be called if you need to fill the axis with

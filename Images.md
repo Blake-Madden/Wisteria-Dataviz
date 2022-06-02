@@ -1,5 +1,6 @@
 Images
 =============================
+[TOC]
 
 Wisteria supports using @c wxBitmapBundles for displaying images. Images can be used for
 canvases' backgrounds and watermarks, bar charts' bars, stipple brushes, etc.
