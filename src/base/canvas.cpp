@@ -1077,23 +1077,23 @@ namespace Wisteria
             {
             if (GetFixedObjects().size() && GetFixedObjects().at(0).size())
                 {
-                bool noMoreRows{ false };
+                bool noMoreColumns{ false };
                 const auto& topRow = GetFixedObjects().at(0);
-                for (size_t i = 0; i < topRow.size(); ++i)
+                for (size_t colIndex = 0; colIndex < topRow.size(); ++colIndex)
                     {
                     std::vector<wxCoord> leftPoints;
                     std::vector<wxCoord> rightPoints;
                     // go through each row and adjust the current column
                     for (auto fixedObjectsRowPos = GetFixedObjects().begin();
-                            fixedObjectsRowPos != GetFixedObjects().end();
-                            ++fixedObjectsRowPos)
+                         fixedObjectsRowPos != GetFixedObjects().end();
+                         ++fixedObjectsRowPos)
                         {
-                        if (fixedObjectsRowPos->size() == (i + 1))
+                        if (colIndex >= fixedObjectsRowPos->size())
                             {
-                            noMoreRows = true;
+                            noMoreColumns = true;
                             break;
                             }
-                        auto& objectPos = fixedObjectsRowPos->at(i);
+                        auto& objectPos = fixedObjectsRowPos->at(colIndex);
                         if (objectPos != nullptr &&
                             !objectPos->GetContentRect().IsEmpty())
                             {
@@ -1102,7 +1102,7 @@ namespace Wisteria
                             }
                         }
                     // the grid is jagged, so stop aligning the columns
-                    if (noMoreRows)
+                    if (noMoreColumns)
                         { break; }
                     if (leftPoints.size() && rightPoints.size())
                         {
@@ -1114,7 +1114,7 @@ namespace Wisteria
                              fixedObjectsRowPos != GetFixedObjects().end();
                              ++fixedObjectsRowPos)
                             {
-                            auto& objectPos = fixedObjectsRowPos->at(i);
+                            auto& objectPos = fixedObjectsRowPos->at(colIndex);
                             if (objectPos != nullptr &&
                                 !objectPos->GetContentRect().IsEmpty())
                                 {
