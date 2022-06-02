@@ -30,22 +30,24 @@ namespace Wisteria
                   other graphs in the list
                 - The graphs will then have their left axes's labels turned off
                   (since the common axis will be serving this purpose)
-                - Finally, the newly constructed axis will be returned, where the client
-                  should add it onto the canvas, right of the graphs
+                - Finally, the newly constructed axis will be returned, where the caller
+                  should add it onto the canvas, to the right of the graphs
 
-            @param canvas The canvas that the axis will be added to (later, but the caller).\n
+            @param canvas The canvas that the axis will be added to (later, by the caller).\n
                 Note that The graphs connected to the axis should also be on this canvas,
                 and also be in the same row of the canvas.
             @param graphs The graphs that will be connected to the common axis.\n
                 Note that these graphs' left Y axis will have their labels turned off after
                 calling this function.
             @returns The common axis for the graphs, which should be added to the canvas
-                (right of the graphs).
+                (to the right of the graphs).
             @par Example
             @code
-             // with "canvas" being the canvas containing your graphs and
+             // with "canvas" being the canvas containing the graphs and
              // "linePlot" and "boxPlot" being two graphs in the canvas's
              // first row:
+             canvas->SetFixedObject(0, 0, linePlot);
+             canvas->SetFixedObject(0, 1, boxPlot);
              canvas->SetFixedObject(0, 2,
                 // construct a common axis connected to the line and box plots,
                 // and add it to the righ of them on the canvas
@@ -53,6 +55,50 @@ namespace Wisteria
                     { linePlot, boxPlot}));
             @endcode*/
         static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildRightAxis(Canvas* canvas,
+            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs);
+        /** @brief Builds a common axis for graphs along a column.
+            @details This function will perform the following:
+                - A new axis will be copied from the first graph's bottom axis
+                - The first graph's bottom axis settings and scale will be applied to the
+                  other graphs in the list
+                - The graphs will then have their bottom axes's labels turned off
+                  (since the common axis will be serving this purpose)
+                - Finally, the newly constructed axis will be returned, where the caller
+                  should add it onto the canvas, below the graphs
+                - The caller will also need to set the proportions of the rows,
+                  using the returned axis's @c GetCanvasHeightProportion() method
+
+            @param canvas The canvas that the axis will be added to (later, by the caller).\n
+                Note that The graphs connected to the axis should also be on this canvas,
+                and also be in the same column of the canvas.
+            @param graphs The graphs that will be connected to the common axis.\n
+                Note that these graphs' bottom X axis will have their labels turned off after
+                calling this function.
+            @returns The common axis for the graphs, which should be added to the canvas
+                (below the graphs).
+            @par Example
+            @code
+             // with "canvas" being the canvas containing the graphs and
+             // "linePlotAY1" and "linePlotAY2" being two graphs in the canvas's column:
+             auto commonAxis = CommonAxisBuilder::BuildBottomAxis(canvas,
+                { linePlotAY1 , linePlotAY2 });
+
+             // add graphs and their shared axis into the first column
+             canvas->SetFixedObject(0, 0, linePlotAY1);
+             canvas->SetFixedObject(1, 0, linePlotAY2);
+             canvas->SetFixedObject(2, 0, commonAxis);
+
+             // subtract the amount of space needed for the axis height-wise from the canvas,
+             // and divide that amongst the two graphs
+             auto proportionPerRow =
+                safe_divide<double>(1 - commonAxis->GetCanvasHeightProportion().value(), 2);
+             canvas->GetRowInfo(0).HeightProportion(proportionPerRow);
+             canvas->GetRowInfo(1).HeightProportion(proportionPerRow);
+             // set the height of the shared axis row
+             canvas->GetRowInfo(2).
+                HeightProportion(commonAxis->GetCanvasHeightProportion().value());
+            @endcode*/
+        static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildBottomAxis(Canvas* canvas,
             std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs);
         };
     };
