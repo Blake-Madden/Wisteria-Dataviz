@@ -473,9 +473,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             linePlotData->ImportCSV(appDir + L"/datasets/Spelling Grades.csv",
                 ImportInfo().
-                // first the Y column, then the X
-                ContinuousColumns({ L"AVG_GRADE", L"WeeK"}).
-                CategoricalColumns({ { L"Gender", CategoricalImportMethod::ReadAsStrings } }));
+                // first the Y column
+                ContinuousColumns({ L"AVG_GRADE"}).
+                // group and X
+                CategoricalColumns({
+                    { L"Gender", CategoricalImportMethod::ReadAsStrings },
+                    { L"WEEK_NAME", CategoricalImportMethod::ReadAsStrings }
+                    }));
             }
         catch (const std::exception& err)
             {
@@ -498,8 +502,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
-        // set the data and use the grouping column from the dataset to create separate lines
-        linePlot->SetData(linePlotData, L"AVG_GRADE", L"WeeK", L"Gender");
+        // Set the data and use the grouping column from the dataset to create separate lines.
+        // Also, use a categorical column for the X axis.
+        linePlot->SetData(linePlotData, L"AVG_GRADE", L"WEEK_NAME", L"Gender");
 
         // add some titles
         linePlot->GetTitle().SetText(_(L"Average Grades"));
@@ -510,13 +515,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // remove default titles
         linePlot->GetBottomXAxis().GetTitle().SetText(L"");
         linePlot->GetLeftYAxis().GetTitle().SetText(L"");
-
-        // customize the X axis labels
-        for (int i = 1; i < 6; ++i)
-            {
-            linePlot->GetBottomXAxis().SetCustomLabel(i,
-                Label(wxString::Format(_(L"Week %i"), i)));
-            }
 
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
@@ -1653,35 +1651,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // customize the box appearance
         boxPlot->SetBoxCorners(BoxCorners::Rounded);
-
-        // copy the left axis range from the line plot to the box plot,
-        // then turn off the labels and pen
-        boxPlot->GetLeftYAxis().CopySettings(linePlot->GetLeftYAxis());
-        boxPlot->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         boxPlot->GetLeftYAxis().GetAxisLinePen() = wxNullPen;
 
         // add the box plot to the canvas
         subframe->m_canvas->SetFixedObject(0, 1, boxPlot);
 
-        // create a common axis, also copied from the line plot's left axis
-        auto commonAxis = std::make_shared<Axis>(AxisType::RightYAxis);
-        commonAxis->SetDPIScaleFactor(subframe->m_canvas->GetDPIScaleFactor());
-        commonAxis->CopySettings(linePlot->GetLeftYAxis());
-        // tell the canvas to align the axis line to the left side of its
-        // bounding box
-        commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
-        commonAxis->SetCanvasMargins(0, 0, 0, 10);
-        // Get the canvas size of the axis and add it to the canvas.
-        commonAxis->SetCanvasWidthProportion(subframe->m_canvas->CalcMinWidthProportion(commonAxis));
-        subframe->m_canvas->SetFixedObject(0, 2, commonAxis);
-
-        // now that we are done copying the left axis from the line plot,
-        // hide the line plot's axis labels
-        linePlot->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-
-        // tell the canvas to align the plots and stand-alone axes across
-        // each row
-        subframe->m_canvas->AlignRowContent(true);
+        subframe->m_canvas->SetFixedObject(0, 2,
+            // construct a common axis connected to the line and box plots,
+            // and add it to the righ of them on the canvas
+            CommonAxisBuilder::BuildRightAxis(subframe->m_canvas,
+                { linePlot, boxPlot}));
 
         // add a centered title and subtitle on the canvas
         // (above the plots)
@@ -1826,10 +1805,10 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
         wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
         _(L"W-Curve Plot"));
     toolBar->AddTool(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
         _(L"Linear Regression Roadmap"));
     toolBar->AddTool(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
         _(L"Pros & Cons Roadmap"));
     toolBar->AddSeparator();
 

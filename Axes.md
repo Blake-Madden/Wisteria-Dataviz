@@ -1,5 +1,6 @@
 Axes
 =============================
+[TOC]
 
 Customizing a Graph's Axes
 =============================
@@ -239,3 +240,21 @@ and the custom axis calls `SetCustomYPosition(75)`, then it will run parallel wi
         1    2    3    4    5    6
 
 After the positions of the custom axis are established, then the range, tickmarks, labels, etc. can be customized.
+
+Common Axis
+=============================
+
+A helper class, `Wisteria::CommonAxisBuilder`, is available for creating a shared axis for multiple graphs. This
+class will take a list of graphs from the same row or column and normalize them to use the same scale. Then it will
+turn off the graph's axis labels. Finally, it will return a new axis that can be added next to graphs on the canvas.
+
+```cpp
+// with "canvas" being the canvas containing your graphs and
+// "linePlot" and "boxPlot" being two graphs in the canvas's
+// first row:
+canvas->SetFixedObject(0, 2,
+    // construct a common axis connected to the line and box plots,
+    // and add it to the righ of them on the canvas
+    CommonAxisBuilder::BuildRightAxis(canvas,
+        { linePlot, boxPlot}));
+```

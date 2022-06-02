@@ -26,6 +26,7 @@
 #include "../src/graphs/lineplot.h"
 #include "../src/graphs/wcurveplot.h"
 #include "../src/base/label.h"
+#include "../src/base/commonaxisbuilder.h"
 #include "../src/graphs/heatmap.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/likertchart.h"

@@ -4,6 +4,7 @@
 SET(WISTERIA_SRC
     src/base/axis.cpp
     src/base/canvas.cpp
+    src/base/commonaxisbuilder.cpp
     src/base/colorbrewer.cpp
     src/base/graphitems.cpp
     src/base/image.cpp
