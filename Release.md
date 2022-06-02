@@ -5,6 +5,7 @@ Wisteria Dataviz 0.9.1 Release
 - Added Pros & Cons Roadmap
 - Added ability to stretch content to fit the entire page when printing
 - Added common axis builder helper class
+- Line plots can now use categorical or continuous columns for X axis values
 - Added support for aligning pie chart labels flush left or right against the plotting area
 - Fixed pie charts being drawn outside of their plot area under certain circumstances
 - Setting background color of canvas titles now stretches them across the canvas,
