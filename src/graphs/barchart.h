@@ -644,7 +644,7 @@ namespace Wisteria::Graphs
                 {
                 m_longestBarLength = 0;
                 m_lowestBarAxisPosition = std::numeric_limits<double>::max();
-                m_highestBarAxisPosition = std::numeric_limits<double>::min();
+                m_highestBarAxisPosition = std::numeric_limits<double>::lowest();
                 // Gridlines are reset in SetBarOrientation(), so remember how this
                 // was set from before and then restore it.
                 const wxPen gridlinePen = GetBarAxis().GetGridlinePen();
@@ -851,7 +851,7 @@ namespace Wisteria::Graphs
         BoxEffect m_barEffect{ BoxEffect::Solid };
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
-        double m_highestBarAxisPosition{ std::numeric_limits<double>::min() };
+        double m_highestBarAxisPosition{ std::numeric_limits<double>::lowest() };
         bool m_includeSpacesBetweenBars{ false };
         bool m_includeBarLabels{ true };
         bool m_isSortable{ false };

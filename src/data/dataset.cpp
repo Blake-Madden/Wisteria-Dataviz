@@ -184,7 +184,7 @@ namespace Wisteria::Data
                 groupColumn.value()).ToUTF8());
             }
 
-        // No rows or all NaN? The return a range of NaNs.
+        // No rows or all NaN? Then return a range of NaNs.
         if (GetContinuousColumnValidN(column, groupColumn, groupId) == 0)
             {
             return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
@@ -192,7 +192,7 @@ namespace Wisteria::Data
             }
 
         auto minValue = std::numeric_limits<double>::max();
-        auto maxValue = std::numeric_limits<double>::min();
+        auto maxValue = std::numeric_limits<double>::lowest();
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
