@@ -1,11 +1,11 @@
-WEEK,AVG_GRADE,GENDER
-1,88,Female
-2,85,Female
-3,84,Female
-4,86,Female
-5,90,Female
-1,90,Male
-2,82,Male
-3,83,Male
-4,59,Male
-5,91,Male
+WEEK_NAME,WEEK,AVG_GRADE,GENDER
+Week 1,1,88,Female
+Week 2,2,85,Female
+Week 3,3,84,Female
+Week 4,4,86,Female
+Week 5,5,90,Female
+Week 1,1,90,Male
+Week 2,2,82,Male
+Week 3,3,83,Male
+Week 4,4,59,Male
+Week 5,5,91,Male

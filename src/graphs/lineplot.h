@@ -23,29 +23,30 @@ namespace Wisteria::Graphs
         | @image html LinePlot.svg width=90% | @image html LinePlotCustomized.svg width=90% |
 
         @par %Data:
-         This plot accepts a Data::Dataset, where a continuous column is the Y values
-         (i.e., the dependent measurements) and another continuous column is the X values.
-         A grouping column can optionally be used to create separate lines for different groups
-         in the data.
+            This plot accepts a Data::Dataset, where a continuous column is the Y values
+            (i.e., the dependent measurements) and another column is the X values.
+            (X can either be a continuous or categorical column.)
+            A grouping column can optionally be used to create separate lines for different groups
+            in the data.
 
         @par Missing Data:
-         - Missing data in the group column will be shown as an empty legend label.
-         - If either the X or Y value is missing data, then a gap in the line will be shown
-           at where the observation appeared in the series. Because the points are drawn
-           along the X axis as the appear in the data, a missing data value will not be included
-           in the line, but will break the line. The following valid point in the series will
-           restart the line.\n
-           For example, if five points are being plotted and the third item contains missing data,
-           then there will be a line going from the first to second point, then a break in the line,
-           then a line between the fourth and fifth point.
+            - Missing data in the group column will be shown as an empty legend label.
+            - If either the X or Y value is missing data, then a gap in the line will be shown
+              at where the observation appeared in the series. Because the points are drawn
+              along the X axis as the appear in the data, a missing data value will not be included
+              in the line, but will break the line. The following valid point in the series will
+              restart the line.\n
+              For example, if five points are being plotted and the third item contains missing
+              data, then there will be a line going from the first to second point,
+              then a break in the line, then a line between the fourth and fifth point.
 
         @warning Unlike other applications, the order of the data for line plots is
-         important in %Wisteria. The line(s) connecting the points is drawn in the order of the
-         points as they appear in the data, whereas most other applications will simply connect
-         the points going from left-to-right.\n
-         \n
-         This is by design so that missing data can be shown on the plot (as a break in the line),
-         as well as drawing zig-zagging/spiral lines.
+            important in %Wisteria. The line(s) connecting the points is drawn in the order of the
+            points as they appear in the data, whereas most other applications will simply connect
+            the points going from left-to-right.\n
+            \n
+            This is by design so that missing data can be shown on the plot
+            (as a break in the line), as well as drawing zig-zagging/spiral lines.
 
         @par Example:
         @code
@@ -61,8 +62,11 @@ namespace Wisteria::Graphs
             ImportInfo().
             // Note that the order of the continuous columns is important.
             // The first one will be the Y data, the second the X data.
-            ContinuousColumns({ L"AVG_GRADE", L"WEEK" }).
-            CategoricalColumns({ { L"GENDER", CategoricalImportMethod::ReadAsStrings } }));
+            ContinuousColumns({ L"AVG_GRADE" }).
+            CategoricalColumns({
+            { L"GENDER", CategoricalImportMethod::ReadAsStrings },
+            { L"WEEK_NAME", CategoricalImportMethod::ReadAsStrings }
+            }));
          auto linePlot = std::make_shared<LinePlot>(canvas,
             // use a different color scheme
             std::make_shared<Colors::Schemes::Decade1960s>(),
@@ -79,7 +83,7 @@ namespace Wisteria::Graphs
          linePlot->SetCanvasMargins(5, 5, 5, 5);
 
          // set the data and use the grouping column from the dataset to create separate lines
-         linePlot->SetData(linePlotData, L"AVG_GRADE", L"WeeK", L"Gender");
+         linePlot->SetData(linePlotData, L"AVG_GRADE", L"WEEK_NAME", L"Gender");
          // after setting the data, customize the appearance of one of the lines by index
          linePlot->GetLine(1).GetPen().SetStyle(wxPenStyle::wxPENSTYLE_DOT_DASH);
          // iterate through the lines and change their color based on their names
@@ -116,13 +120,6 @@ namespace Wisteria::Graphs
          linePlot->GetCaption().SetText(_(L"Note: not all grades have been\n"
                                            "entered yet for last week."));
 
-         // customize the X axis labels
-         for (int i = 1; i < 6; ++i)
-            {
-            linePlot->GetBottomXAxis().SetCustomLabel(i,
-                Label(wxString::Format(_(L"Week %i"), i)));
-            }
-
          // add the line plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, linePlot);
          canvas->SetFixedObject(0, 1, linePlot->CreateLegend(
@@ -140,13 +137,13 @@ namespace Wisteria::Graphs
         public:
             /// @name Line Display Functions
             /// @brief Functions relating to the visual display of the line
-            ///  connecting the points.
+            ///     connecting the points.
             /// @{
 
             /// @returns The line pen. This can be customized to change the pattern,
-            ///  color, and width of the line.
+            ///     color, and width of the line.
             /// @note Set this to transparent or @c wxNullPen to turn off the line
-            ///  (e.g., if you only want to show the points).
+            ///     (e.g., if you only want to show the points).
             [[nodiscard]] wxPen& GetPen() noexcept
                 { return m_linePen; }
 
@@ -168,32 +165,23 @@ namespace Wisteria::Graphs
             [[nodiscard]] const wxPen& GetPen() const noexcept
                 { return m_linePen; }
         private:
-            /// @brief Sets the data.
-            /// @param data The data to use for the line plot.
-            /// @param yColumnName The Y column data.
-            /// @param xColumnName The X column data.
-            /// @param groupColumnName The (optional) grouping column to use.
+            /// @brief Sets the grouping information connected to this line.
+            /// @param groupColumnName The grouping column to use. This is used for
+            ///     data validation later.
             /// @param groupId The group ID for this line. Data points from @c data will
             ///  only be used for this line if their group ID is @c groupId.
-            /// @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-            ///  The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-            ///  when formatting it for an error message.
-            void SetData(std::shared_ptr<const Data::Dataset> data,
-                         const wxString& yColumnName,
-                         const wxString& xColumnName,
-                         std::optional<const wxString>& groupColumnName,
-                         const Data::GroupIdType groupId);
-            [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const
-                { return m_data; }
+            /// @param groupName The display name of the group.\m
+            ///     This is useful for a client to find a line by name and then customize it.
+            void SetGroupInfo(std::optional<const wxString>& groupColumnName,
+                              const Data::GroupIdType groupId,
+                              const wxString& groupName)
+                {
+                m_groupColumnName = groupColumnName;
+                m_groupId = groupId;
+                m_label = groupName;
+                }
 
-            std::shared_ptr<const Data::Dataset> m_data;
-            std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-            std::vector<Wisteria::Data::Column<double>>::const_iterator m_yColumn;
-            std::vector<Wisteria::Data::Column<double>>::const_iterator m_xColumn;
-            wxString m_yColumnName;
-            wxString m_xColumnName;
             std::optional<wxString> m_groupColumnName;
-
             Data::GroupIdType m_groupId{ 0 };
             wxString m_label;
 
@@ -204,11 +192,11 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the line plot on.
             @param colors The color scheme to apply to the points.
-             Leave as null to use the default theme.
+                Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
-             Leave as null to use the standard shapes.\n
-             Set to a new shape scheme filled with IconShape::BlankIcon to not
-             show markers for certain lines/groups.
+                Leave as null to use the standard shapes.\n
+                Set to a new shape scheme filled with IconShape::BlankIcon to not
+                show markers for certain lines/groups.
             @code
              // to turn off markers, pass this in as the shape scheme argument
              std::make_shared<IconShapeScheme>(IconShapeScheme{IconShape::BlankIcon}));
@@ -226,9 +214,9 @@ namespace Wisteria::Graphs
                     Image::GetSVGSize(L"university.svg")) } )));
             @endcode
             @param linePenStyles The line styles to use for the lines.
-             The default is to use solid, straight lines.\n
-             Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
-             to not show any lines.*/
+                The default is to use solid, straight lines.\n
+                Set to a new line scheme filled with `wxPenStyle::wxTRANSPARENT`
+                to not show any lines.*/
         explicit LinePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<IconShapeScheme> shapes = nullptr,
@@ -248,36 +236,40 @@ namespace Wisteria::Graphs
             }
 
         /** @brief Sets the data.
-            @details Along with the X and Y points, separate lines will be created based
-             on the grouping column in the data. The group ID assigned to each line will
-             also select which color, marker shape, and line style to use.
+            @details Along with the X and Y points, separate lines can be created based
+                on the (optional) grouping column in the data.
+                The group ID assigned to each line will select which color, marker shape,
+                and line style to use.
             @param data The data to use for the line plot.
-            @param yColumnName The Y column data.
-            @param xColumnName The X column data.
-            @param groupColumnName The (optional) grouping column to use.
-             This will split the data into separate lines based on this grouping column.
+            @param yColumnName The Y column data (a continuous column).
+            @param xColumnName The X column data (a continuous or categorical column).\n
+                If a categorical column, the columns labels will be assigned to the X axis.
+                Also, the categories will be placed along the X axis in the order of their
+                underlying numeric values.
+            @param groupColumnName The (optional) categorical column to use for grouping.
+                This will split the data into separate lines based on this grouping column.
             @note To add missing points to the data so that a gap in the line will appear,
-             set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
+                set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
             @warning The data points are drawn in the order that they appear in the dataset.
-             The plot will make no effort to sort the data or ensure that it is.
-             This is by design in case you need a line series to go backwards in certain
-             spots (e.g., a downward spiral).
+                The plot will make no effort to sort the data or ensure that it is.\n
+                This is by design in case you need a line series to go backwards in certain
+                spots (e.g., a downward spiral).
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         virtual void SetData(std::shared_ptr<const Data::Dataset> data,
                              const wxString& yColumnName,
                              const wxString& xColumnName,
                              std::optional<const wxString> groupColumnName = std::nullopt);
 
         /** @brief Sets an additional function to assign a point's color to something different
-             from the rest of its group based on a set of criteria.
+                from the rest of its group based on a set of criteria.
             @details This will be any @c std::function
-             (or lambda) that takes two doubles (the X and Y values) and returns a color if the
-             X and/or Y values meet a certain criteria. If the values don't meet the criteria, then
-             an uninitialized @c wxColour should be returned. If the function returns an invalid
-             @c wxColour (implying that the point didn't meet the criteria), then the parent line's
-             color will be used.
+                (or lambda) that takes two doubles (the X and Y values) and returns a color if the
+                X and/or Y values meet a certain criteria. If the values don't meet the criteria,
+                then an uninitialized @c wxColour should be returned. If the function
+                returns an invalid @c wxColour (implying that the point didn't meet the criteria),
+                then the parent line's color will be used.
             @param criteria The function/lambda to use as your criteria.
             @code
              // change the color for any point less than 60 to red to show if failing
@@ -292,6 +284,10 @@ namespace Wisteria::Graphs
         void SetPointColorCriteria(PointColorCriteria criteria)
             { m_colorIf = criteria; }
 
+        /// @name Line Functions
+        /// @brief Functions relating to accessing and customizing the lines.
+        /// @{
+
         /** @brief Get the lines at the specified index.
             @param index The index of the line to get.
             @returns The line.
@@ -303,7 +299,7 @@ namespace Wisteria::Graphs
             return m_lines.at(index);
             }
         /// @brief Gets the lines so that you can iterate through them and make edits
-        ///  (e.g., changing the line color based on the label).
+        ///     (e.g., changing the line color based on the label).
         /// @returns Direct access to the lines.
         /// @note This should be called after SetData().
         [[nodiscard]] std::vector<Line>& GetLines() noexcept
@@ -314,31 +310,32 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t GetLineCount() const noexcept
             { return m_lines.size(); }
 
-        /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
-             setting this to `true` will change the line to be drawn as a spline.
-             This is useful when plotting a line that shows a downward spiral
-             (refer to WCurvePlot as an example).
-             @param autoSpline `true` to enable auto splining.*/
-        void AutoSpline(const bool autoSpline) noexcept
-            { m_autoSpline = autoSpline; }
-        /// @returns `true` if auto splining is enabled.
+        /// @returns @c true if auto splining is enabled.
         [[nodiscard]] bool IsAutoSplining() const noexcept
             { return m_autoSpline; }
+        /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
+                setting this to @c true  will change the line to be drawn as a spline.\n
+                This is useful when plotting a line that shows a downward spiral
+                (refer to WCurvePlot as an example).
+            @param autoSpline @c true  to enable auto splining.*/
+        void AutoSpline(const bool autoSpline) noexcept
+            { m_autoSpline = autoSpline; }
+        /// @}
 
         /// @name Layout Functions
         /// @brief Functions relating to layout of the plot.
         /// @{
 
         /// @brief Gets the maximum number of points displayed before the parent canvas
-        ///  is forced to be made wider (which will make this plot easier to read).
+        ///     is forced to be made wider (which will make this plot easier to read).
         /// @returns The most points that can be plotted before the parent canvas will be widened.
         [[nodiscard]] size_t GetPointsPerDefaultCanvasSize() const noexcept
             { return m_pointsPerDefaultCanvasSize; }
         /** @brief Sets the maximum number of points displayed before the parent canvas is
-             forced to be made wider.
+                forced to be made wider.
             @details Adjusting this is useful for when you have a large number of points and the
-             display looks too condensed. Increasing this value will widen the plot, allowing for
-             more space to spread the points out. The default is 100 points.
+                display looks too condensed. Increasing this value will widen the plot, allowing
+                for more space to spread the points out. The default is 100 points.
             @param pointsPerDefaultCanvasSize The number points to display before requiring the
              canvas to be made wider.*/
         void SetPointsPerDefaultCanvasSize(const size_t pointsPerDefaultCanvasSize)
@@ -351,8 +348,8 @@ namespace Wisteria::Graphs
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.
-              This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @param includeHeader `true` to show the group column name as the header.
+                This is used for defining the legend's padding, outlining, canvas proportions, etc.
+            @param includeHeader @c true  to show the group column name as the header.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
                                                          const LegendCanvasPlacementHint hint,
@@ -361,19 +358,84 @@ namespace Wisteria::Graphs
         /// @returns The plot's dataset.
         [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
             { return m_data; }
-        /// @returns The max value from the current X column (or NaN if dataset is invalid).
-        [[nodiscard]] double GetMaxXValue() const noexcept
-            {
-            if (m_data == nullptr)
-                { return std::numeric_limits<double>::quiet_NaN(); }
-            return *std::max_element(
-                m_xColumn->GetValues().cbegin(),
-                m_xColumn->GetValues().cend());
-            }
-        /// @returns `true` if data is being grouped.
+        /// @returns @c true  if data is being grouped.
         [[nodiscard]] bool IsGrouping() const noexcept
             { return m_useGrouping; }
+
+        /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
+        /// @param index The row in the X column to review.
+        /// @returns @c true if the given row in the X column is valid.
+        [[nodiscard]] bool IsXValid(const size_t index) const
+            {
+            if (index >= GetData()->GetRowCount())
+                { return std::numeric_limits<double>::quiet_NaN(); }
+            // continuous X
+            if (IsXContinuous())
+                { return !std::isnan(m_xColumnContinuous->GetValue(index)); }
+            // categorical X, which in this case anything would be OK (even empty string)
+            else if (IsXCategorical())
+                { return true; }
+            else
+                { return false; }
+            }
+        /// @brief Returns the value at @c index of the X column.
+        /// @param index The row in the X column to retrieve.
+        /// @returns The vale of the given row in the X column.\n
+        ///     Note that this value may be NaN if invalid.
+        [[nodiscard]] double GetXValue(const size_t index) const
+            {
+            if (index >= GetData()->GetRowCount())
+                { return std::numeric_limits<double>::quiet_NaN(); }
+            // continuous X
+            if (IsXContinuous())
+                { return m_xColumnContinuous->GetValue(index); }
+            // categorical X, just want the underlying number code as that is what
+            // goes along the X axis
+            else if (IsXCategorical())
+                { return static_cast<double>(m_xColumnCategorical->GetValue(index)); }
+            else
+                { return std::numeric_limits<double>::quiet_NaN(); }
+            }
+        /** @brief Gets the min and max values of the X column.
+            @returns The X column's min and max value, which can be NaN if invalid.*/
+        [[nodiscard]] std::pair<double, double> GetXMinMax() const
+            {
+            if (GetData()->GetRowCount() == 0)
+                {
+                return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
+                                      std::numeric_limits<double>::quiet_NaN());
+                }
+            // continuous X
+            if (IsXContinuous())
+                {
+                const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
+                    m_xColumnContinuous->GetValues().cbegin(),
+                    m_xColumnContinuous->GetValues().cend());
+                return std::make_pair(*fullXDataMin, *fullXDataMax);
+                }
+            // categorical X, just want the underlying number code as that is what
+            // goes along the X axis
+            else if (IsXCategorical())
+                {
+                const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
+                    m_xColumnCategorical->GetValues().cbegin(),
+                    m_xColumnCategorical->GetValues().cend());
+                return std::make_pair(static_cast<double>(*fullXDataMin),
+                                      static_cast<double>(*fullXDataMax));
+                }
+            else
+                {
+                return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
+                                      std::numeric_limits<double>::quiet_NaN());
+                }
+            }
     private:
+        /// @returns Whether X was loaded from a continuous column.
+        [[nodiscard]] bool IsXContinuous() const noexcept
+            { return (m_xColumnContinuous != GetData()->GetContinuousColumns().cend()); }
+        /// @returns Whether X was loaded from a categorical column.
+        [[nodiscard]] bool IsXCategorical() const noexcept
+            { return (m_xColumnCategorical != GetData()->GetCategoricalColumns().cend()); }
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
@@ -396,20 +458,22 @@ namespace Wisteria::Graphs
                                                  const Data::GroupIdType group) const noexcept;
         void UpdateCanvasForPoints()
             {
-            for (const auto& line : m_lines)
+            const auto avgPointsPerRow = safe_divide<size_t>(GetData()->GetRowCount(),
+                                                             GetLineCount());
+            if (avgPointsPerRow > GetPointsPerDefaultCanvasSize())
                 {
-                if (line.GetData()->GetRowCount() > GetPointsPerDefaultCanvasSize())
-                    {
-                    GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
-                        std::ceil(safe_divide<double>(line.GetData()->GetRowCount(),
-                                                      GetPointsPerDefaultCanvasSize())));
-                    }
+                GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
+                    std::ceil(safe_divide<size_t>(avgPointsPerRow,
+                                                  GetPointsPerDefaultCanvasSize())));
                 }
             }
 
         std::shared_ptr<const Data::Dataset> m_data;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_xColumn;
+        std::vector<Wisteria::Data::Column<double>>::const_iterator m_xColumnContinuous;
+        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_xColumnCategorical;
+        std::vector<Wisteria::Data::Column<double>>::const_iterator m_yColumn;
+        wxString m_yColumnName;
 
         std::vector<Line> m_lines;
         size_t m_pointsPerDefaultCanvasSize{ 100 };

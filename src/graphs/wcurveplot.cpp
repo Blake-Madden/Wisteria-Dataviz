@@ -79,7 +79,7 @@ namespace Wisteria::Graphs
             { return; }
 
         auto [topRangeStart, topRangeEnd] = GetTopXAxis().GetRange();
-        const auto maxXValue = GetMaxXValue();
+        const auto maxXValue = GetXMinMax().second;
         // if last datum collected is at the edge of the range, then add an extra label
         if (maxXValue == topRangeEnd)
             { ++topRangeEnd; }

@@ -206,9 +206,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize));
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lrroadmap.svg", iconSize));
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"))->
@@ -555,7 +555,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
-        // set the data and use the grouping column from the dataset to create separate lines
+        // Set the data and use the grouping column from the dataset to create separate lines.
+        // Also, use a continuous column for the X axis, where we will set the labels
+        // ourselves later.
         linePlot->SetData(linePlotData, L"AVG_GRADE", L"WeeK", L"Gender");
         // after setting the data, customize the appearance of one of the lines by index
         linePlot->GetLine(1).GetPen().SetStyle(wxPenStyle::wxPENSTYLE_DOT_DASH);
@@ -1634,7 +1636,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 Label(wxString::Format(_(L"Week %i"), i)));
             }
 
-        // instead of adding the legend to the canvas, place it on top of the line plot
+        // instead of adding the legend to the canvas, overlay it on top of the line plot
         auto lineLegend = linePlot->CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
         linePlot->AddEmbeddedObject(lineLegend,
