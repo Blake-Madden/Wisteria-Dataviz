@@ -374,6 +374,27 @@ public:
 /// @brief Geometric functions.
 namespace geometry
     {
+    /** @brief Gets the distance between points.
+        @param pt1 The first point.
+        @param pt2 The second point.
+        @returns The distance between the points.
+        @todo Add unit test.*/
+    inline double distance_between_points(const std::pair<double, double> pt1,
+                                          const std::pair<double, double> pt2) noexcept
+        {
+        const double xDiff = pt1.first - pt2.first;
+        const double yDiff = pt1.second - pt2.second;
+        return std::sqrt((xDiff * xDiff) + (yDiff * yDiff));
+        }
+    /** @brief Determines if a point is inside of a circle.
+        @param ctr The center point of the circle.
+        @param radius of the circle.
+        @param pt The point to review.
+        @todo Add a unit test.*/
+    inline bool is_point_inside_circle(const std::pair<double, double> ctr,
+                                       const double radius,
+                                       const std::pair<double, double> pt) noexcept
+        { return (radius >= distance_between_points(ctr, pt)); }
     /** @brief Calculates the width of a rectangle that can fit inside of a circle.
         @param radius The radius of the circle.
         @returns The width of the largest rectangle that can fit inside of the circle.*/
