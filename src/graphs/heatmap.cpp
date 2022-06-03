@@ -304,14 +304,15 @@ namespace Wisteria::Graphs
         // go through the row's columns
         const wxString groupHeaderFormatString = (groupHeaderLabelMultiline ? L"%s\n%zu-%zu" : L"%s %zu-%zu");
         const wxString singleGroupHeaderFormatString = (groupHeaderLabelMultiline ? L"%s\n%zu" : L"%s %zu");
-        for (const auto& column : m_matrix)
+        for (const auto& row : m_matrix)
             {
             if (currentRow == 0 && IsShowingGroupHeaders() && m_useGrouping && m_matrix.size() > 1)
                 {
                 // If only one group in column, then don't show that as a range;
                 // otherwise, show as a range.
                 const wxString headerString =
-                    (currentGroupdStart + 1 == std::min<size_t>(maxRowsWhenGrouping + currentGroupdStart, m_matrix.size())) ?
+                    (currentGroupdStart + 1 == std::min<size_t>(maxRowsWhenGrouping + currentGroupdStart,
+                                                                m_matrix.size())) ?
                     wxString::Format(
                         singleGroupHeaderFormatString, GetGroupHeaderPrefix(),
                         currentGroupdStart + 1) :
@@ -330,7 +331,7 @@ namespace Wisteria::Graphs
                 AddObject(columnHeader);
                 }
             // then the column's cells
-            for (const auto& cell : column)
+            for (const auto& cell : row)
                 {
                 // if no label on cell, then that means this row is jagged and there
                 // are no more cells in it, so go to next row
@@ -352,7 +353,7 @@ namespace Wisteria::Graphs
                 // keep scaling at 1 since this is set to a specific size on the plot
                 auto box = std::make_shared<GraphItems::Polygon>(
                     GraphItems::GraphItemInfo(cell.m_selectionLabel).
-                    Pen(GetPen()).Brush(cellColor).Scaling(GetScaling()),
+                    Pen(GetPen()).Brush(cellColor),
                     pts, std::size(pts));
                 const wxRect boxRect(pts[0], pts[2]);
 
