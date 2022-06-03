@@ -677,7 +677,7 @@ namespace Wisteria::GraphItems
             }
         else if (GetPen().IsOk())
             {
-            wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(GetPen().GetWidth())));
+            wxDCPenChanger pc2(dc, wxPen(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth())));
             wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
