@@ -687,7 +687,6 @@ namespace Wisteria::Data
             std::map<wxString, GroupIdType, StringCmpNoCase> m_strings;
             };
 
-        StringTableBuilder groups;
         std::vector<StringTableBuilder> categoricalVars{ catColumnIndices.size() };
 
         // load the data
