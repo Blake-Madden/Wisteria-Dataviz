@@ -8,6 +8,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
+        // arbitrary ranges, just need to create any sort of plotting area
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
         GetBottomXAxis().Show(false);
@@ -45,37 +46,41 @@ namespace Wisteria::Graphs
                 measuringLabel.SetText(cellText.length() ? cellText : L" ");
                 const auto bBox = measuringLabel.GetBoundingBox(dc);
                 rowHeights[currentRow] = std::max(bBox.GetHeight(), rowHeights[currentRow]);
-                columnWidths[currentColumn] = std::max(bBox.GetWidth(), columnWidths[currentColumn]);
+                columnWidths[currentColumn] = std::max(bBox.GetWidth(),
+                                                       columnWidths[currentColumn]);
                 ++currentColumn;
                 }
             ++currentRow;
             }
 
         auto tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
-        // adjust row heights if they collectively go outside of the drawing area
+        auto tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
+
+        // adjust if row heights collectively go outside of the drawing area
         if (tableHeight > drawArea.GetHeight())
             {
-            const auto heightDiff = tableHeight - drawArea.GetHeight();
-            // take away a proportional amount of the difference from each row
+            const auto heightDiffProportion = safe_divide<double>(drawArea.GetHeight(), tableHeight);
+            // take away a proportional amount of the difference from each row and column
             for (auto& row : rowHeights)
-                {
-                const auto rowProportion = safe_divide<double>(row, tableHeight);
-                row -= (rowProportion * heightDiff);
-                }
+                { row *= heightDiffProportion; }
+            for (auto& col : columnWidths)
+                { col *= heightDiffProportion; }
+            // re-tally everything
             tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
+            tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
             }
-
-        auto tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
-        // adjust column widths if they collectively go outside of the drawing area
+        
+        // adjust if column widths collectively go outside of the drawing area
         if (tableWidth > drawArea.GetWidth())
             {
-            const auto widthDiff = tableWidth - drawArea.GetWidth();
-            // take away a proportional amount of the difference from each column
+            const auto widthDiffProportion = safe_divide<double>(drawArea.GetWidth(), tableWidth);
+            // take away a proportional amount of the difference from each row and column
+            for (auto& row : rowHeights)
+                { row *= widthDiffProportion; }
             for (auto& col : columnWidths)
-                {
-                const auto colProportion = safe_divide<double>(col, tableWidth);
-                col -= (colProportion * widthDiff);
-                }
+                { col *= widthDiffProportion; }
+            // re-tally everything
+            tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
             tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
             }
 
@@ -89,14 +94,11 @@ namespace Wisteria::Graphs
             currentXPos = drawArea.GetX();
             for (const auto& cell : row)
                 {
-                pts[0] = wxPoint(currentXPos,
-                                 currentYPos);
-                pts[1] = wxPoint((currentXPos + columnWidths[currentColumn]),
-                                 currentYPos);
+                pts[0] = wxPoint(currentXPos, currentYPos);
+                pts[1] = wxPoint((currentXPos + columnWidths[currentColumn]), currentYPos);
                 pts[2] = wxPoint((currentXPos + columnWidths[currentColumn]),
                                  (currentYPos + rowHeights[currentRow]));
-                pts[3] = wxPoint(currentXPos,
-                                 (currentYPos + rowHeights[currentRow]));
+                pts[3] = wxPoint(currentXPos, (currentYPos + rowHeights[currentRow]));
 
                 const wxRect boxRect(pts[0], pts[2]);
 
@@ -106,15 +108,18 @@ namespace Wisteria::Graphs
                     Pen(wxNullPen).Padding(5, 5, 5, 5).
                     Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                     FontColor(
-                        (cell.m_color.IsOk() ?
-                            ColorContrast::BlackOrWhiteContrast(cell.m_color) : *wxBLACK)).
-                    FontBackgroundColor(cell.m_color.IsOk() ? cell.m_color : *wxWHITE).
+                        (cell.m_bgColor.IsOk() ?
+                            ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) : *wxBLACK)).
+                    FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE).
                     Anchoring(Anchoring::Center).
                     AnchorPoint(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                         boxRect.GetTop() + (boxRect.GetHeight() / 2))));
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
                 cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-                cellLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                cellLabel->SetPageHorizontalAlignment(
+                    (cell.IsNumeric() ?
+                     PageHorizontalAlignment::RightAligned :
+                     PageHorizontalAlignment::LeftAligned));
 
                 AddObject(cellLabel);
                 currentXPos += columnWidths[currentColumn];
