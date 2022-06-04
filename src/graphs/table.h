@@ -100,6 +100,21 @@ namespace Wisteria::Graphs
                     { m_table[row][column].m_value = value; }
                 }
             }
+        /// @brief Sets the background color for a cell at a given position.
+        /// @param row The row index of the cell.
+        /// @param column The column index of the cell.
+        /// @param bgColor The background color to apply.
+        void SetCellBackgroundColor(const size_t row, const size_t column,
+                                    const wxColour bgColor)
+            {
+            wxASSERT_MSG(row < m_table.size(), L"Invalid row index!");
+            wxASSERT_MSG(column < m_table[row].size(), L"Invalid column index!");
+            if (row < m_table.size())
+                {
+                if (column < m_table[row].size())
+                    { m_table[row][column].m_bgColor = bgColor; }
+                }
+            }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
         /// @param percent The minimum percent of the area's width that the table should consume.
