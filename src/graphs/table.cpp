@@ -84,7 +84,39 @@ namespace Wisteria::Graphs
             tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
             }
 
+        // if requesting minimum width, then stretch it out if needed
+        // (note that row heights are preserved)
+        if (m_minWidthProportion.has_value() &&
+            tableWidth < (drawArea.GetWidth() * m_minWidthProportion.value()))
+            {
+            const auto widthIncreaseProportion = safe_divide<double>(drawArea.GetWidth(), tableWidth);
+            for (auto& col : columnWidths)
+                { col *= widthIncreaseProportion; }
+            tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
+            // may be off by a pixel or so from rounding, so fix that
+            const auto roundingDiff = drawArea.GetWidth() - tableWidth;
+            columnWidths.back() += roundingDiff;
+            tableWidth += roundingDiff;
+            }
+
+        // if requesting minimum height, then stretch it out if needed
+        // (note that column widths are preserved)
+        if (m_minHeightProportion.has_value() &&
+            tableHeight < (drawArea.GetHeight() * m_minHeightProportion.value()))
+            {
+            const auto heightIncreaseProportion = safe_divide<double>(drawArea.GetHeight(), tableHeight);
+            for (auto& row : rowHeights)
+                { row *= heightIncreaseProportion; }
+            tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
+            // may be off by a pixel or so from rounding, so fix that
+            const auto roundingDiff = drawArea.GetHeight() - tableHeight;
+            rowHeights.back() += roundingDiff;
+            tableHeight += roundingDiff;
+            }
+
         // draw the text
+        std::vector<std::shared_ptr<Label>> cellLabels;
+        double smallestTextScaling{ std::numeric_limits<double>::max() };
         currentRow = currentColumn = 0;
         wxCoord currentXPos{ drawArea.GetX() };
         wxCoord currentYPos{ drawArea.GetY() };
@@ -121,12 +153,21 @@ namespace Wisteria::Graphs
                      PageHorizontalAlignment::RightAligned :
                      PageHorizontalAlignment::LeftAligned));
 
-                AddObject(cellLabel);
+                smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
+
+                cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
                 currentXPos += columnWidths[currentColumn];
                 ++currentColumn;
                 }
             currentYPos += rowHeights[currentRow];
             ++currentRow;
+            }
+
+        // homogenize cells' text scaling to the smallest size and add them
+        for (auto& cellLabel : cellLabels)
+            {
+            cellLabel->SetScaling(smallestTextScaling);
+            AddObject(cellLabel);
             }
 
         auto borderLines = std::make_shared<Lines>(GetPen(), GetScaling());

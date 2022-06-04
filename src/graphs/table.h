@@ -100,9 +100,21 @@ namespace Wisteria::Graphs
                     { m_table[row][column].m_value = value; }
                 }
             }
+        /// @brief Sets the minimum percent of the drawing area's width that the
+        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        /// @param percent The minimum percent of the area's width that the table should consume.
+        void SetMinWidthProportion(const double percent)
+            { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
+        /// @brief Sets the minimum percent of the drawing area's height that the
+        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        /// @param percent The minimum percent of the area's height that the table should consume.
+        void SetMinHeightProportion(const double percent)
+            { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
     private:
         void RecalcSizes(wxDC& dc) final;
         std::vector<std::vector<TableCell>> m_table;
+        std::optional<double> m_minWidthProportion;
+        std::optional<double> m_minHeightProportion;
         };
     }
 
