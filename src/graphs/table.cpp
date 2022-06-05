@@ -18,6 +18,101 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::SetData(const std::shared_ptr<const Data::Dataset>& data,
+        const std::initializer_list<wxString>& columns,
+        const bool transpose /*= false*/)
+        {
+        ClearTable();
+
+        if (transpose)
+            {
+            SetTableSize(columns.size(), data->GetRowCount()+1);
+
+            size_t currentRow{ 0 };
+
+            for (const auto& colName : columns)
+                {
+                // the row header
+                GetCell(currentRow, 0).m_value = colName;
+                if (auto continuousCol = data->GetContinuousColumn(colName);
+                    continuousCol != data->GetContinuousColumns().cend())
+                    {
+                    for (size_t i = 0; i < continuousCol->GetValues().size(); ++i)
+                        {
+                        GetCell(currentRow, i+1).m_value = continuousCol->GetValue(i);
+                        }
+                    }
+                else if (auto catCol = data->GetCategoricalColumn(colName);
+                    catCol != data->GetCategoricalColumns().cend())
+                    {
+                    for (size_t i = 0; i < catCol->GetValues().size(); ++i)
+                        {
+                        GetCell(currentRow, i+1).m_value  =
+                            catCol->GetCategoryLabelFromID(catCol->GetValue(i));
+                        }
+                    }
+                else if (auto dateCol = data->GetDateColumn(colName);
+                    dateCol != data->GetDateColumns().cend())
+                    {
+                    for (size_t i = 0; i < dateCol->GetValues().size(); ++i)
+                        {
+                        GetCell(currentRow, i+1).m_value = dateCol->GetValue(i);
+                        }
+                    }
+                else
+                    {
+                    throw std::runtime_error(wxString::Format(
+                        L"'%s': column not found for table.", colName).ToUTF8());
+                    }
+                ++currentRow;
+                }
+            }
+        else
+            {
+            SetTableSize(data->GetRowCount()+1, columns.size());
+
+            size_t currentColumn{ 0 };
+
+            for (const auto& colName : columns)
+                {
+                // the column header
+                GetCell(0, currentColumn).m_value = colName;
+                if (auto continuousCol = data->GetContinuousColumn(colName);
+                    continuousCol != data->GetContinuousColumns().cend())
+                    {
+                    for (size_t i = 0; i < continuousCol->GetValues().size(); ++i)
+                        {
+                        GetCell(i+1, currentColumn).m_value = continuousCol->GetValue(i);
+                        }
+                    }
+                else if (auto catCol = data->GetCategoricalColumn(colName);
+                    catCol != data->GetCategoricalColumns().cend())
+                    {
+                    for (size_t i = 0; i < catCol->GetValues().size(); ++i)
+                        {
+                        GetCell(i+1, currentColumn).m_value =
+                            catCol->GetCategoryLabelFromID(catCol->GetValue(i));
+                        }
+                    }
+                else if (auto dateCol = data->GetDateColumn(colName);
+                    dateCol != data->GetDateColumns().cend())
+                    {
+                    for (size_t i = 0; i < dateCol->GetValues().size(); ++i)
+                        {
+                        GetCell(i+1, currentColumn).m_value = dateCol->GetValue(i);
+                        }
+                    }
+                else
+                    {
+                    throw std::runtime_error(wxString::Format(
+                        L"'%s': column not found for table.", colName).ToUTF8());
+                    }
+                ++currentColumn;
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Table::RecalcSizes(wxDC& dc)
         {
         if (m_table.size() == 0 || m_table[0].size() == 0)
@@ -176,7 +271,7 @@ namespace Wisteria::Graphs
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
                 cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                 cellLabel->SetPageHorizontalAlignment(
-                    (cell.IsNumeric() ?
+                    ((cell.IsNumeric() || cell.IsDate()) ?
                      PageHorizontalAlignment::RightAligned :
                      PageHorizontalAlignment::LeftAligned));
 

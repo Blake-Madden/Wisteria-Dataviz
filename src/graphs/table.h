@@ -22,7 +22,7 @@ namespace Wisteria::Graphs
         {
     public:
         /// @brief Types of values that can be used for a cell.
-        using CellValueType = std::variant<double, wxString>;
+        using CellValueType = std::variant<double, wxString, wxDateTime>;
 
         /// @brief A cell in the table.
         class TableCell
@@ -50,6 +50,12 @@ namespace Wisteria::Graphs
                     return wxNumberFormatter::ToString(*dVal, 0,
                         wxNumberFormatter::Style::Style_WithThousandsSep);
                     }
+                else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) }; dVal)
+                    {
+                    if (!dVal->IsValid())
+                        { return wxEmptyString; }
+                    return dVal->FormatDate();
+                    }
                 else
                     { return wxEmptyString; }
                 }
@@ -60,6 +66,9 @@ namespace Wisteria::Graphs
             /// @returns @c true if the cell is a number.
             [[nodiscard]] bool IsNumeric() const noexcept
                 { return (std::get_if<double>(&m_value) != nullptr); }
+            /// @returns @c true if the cell is a date.
+            [[nodiscard]] bool IsDate() const noexcept
+                { return (std::get_if<wxDateTime>(&m_value) != nullptr); }
 
             /// @brief Sets the value.
             /// @param value The value to set for the cell.
@@ -87,6 +96,18 @@ namespace Wisteria::Graphs
         /// @brief Constructor.
         /// @param canvas The canvas to draw the table on.
         explicit Table(Wisteria::Canvas* canvas);
+
+        /** @brief Set the display across the heatmap.
+            @param data The data.
+            @param columns The columns to display in the table.\n
+                The columns will appear in the order that you specify here.
+            @throws std::runtime_error If any columns can't be found by name,
+             throws an exception.\n
+             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
+             when formatting it for an error message.*/
+        void SetData(const std::shared_ptr<const Data::Dataset>& data,
+                     const std::initializer_list<wxString>& columns,
+                     const bool transpose = false);
 
         /// @brief Sets the size of the table.
         /// @param rows The number of rows.
