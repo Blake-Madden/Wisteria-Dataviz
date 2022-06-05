@@ -20,31 +20,31 @@ namespace Wisteria::Graphs
         if (dateColumn == data->GetDateColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                L"'%s': date column not found for Candlestick plot", dateColumnName).ToUTF8());
+                L"'%s': date column not found for Candlestick plot.", dateColumnName).ToUTF8());
             }
         auto openColumn = data->GetContinuousColumn(openColumnName);
         if (openColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                L"'%s': opening column not found for Candlestick plot", openColumnName).ToUTF8());
+                L"'%s': opening column not found for Candlestick plot.", openColumnName).ToUTF8());
             }
         auto highColumn = data->GetContinuousColumn(highColumnName);
         if (highColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                L"'%s': high column not found for Candlestick plot", highColumnName).ToUTF8());
+                L"'%s': high column not found for Candlestick plot.", highColumnName).ToUTF8());
             }
         auto lowColumn = data->GetContinuousColumn(lowColumnName);
         if (lowColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                L"'%s': low column not found for Candlestick plot", lowColumnName).ToUTF8());
+                L"'%s': low column not found for Candlestick plot.", lowColumnName).ToUTF8());
             }
         auto closeColumn = data->GetContinuousColumn(closeColumnName);
         if (closeColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                L"'%s': closing column not found for Candlestick plot", closeColumnName).ToUTF8());
+                L"'%s': closing column not found for Candlestick plot.", closeColumnName).ToUTF8());
             }
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)
