@@ -21,35 +21,30 @@ namespace Wisteria::Graphs
             {
             throw std::runtime_error(wxString::Format(
                 L"'%s': date column not found for Candlestick plot", dateColumnName).ToUTF8());
-            return;
             }
         auto openColumn = data->GetContinuousColumn(openColumnName);
         if (openColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 L"'%s': opening column not found for Candlestick plot", openColumnName).ToUTF8());
-            return;
             }
         auto highColumn = data->GetContinuousColumn(highColumnName);
         if (highColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 L"'%s': high column not found for Candlestick plot", highColumnName).ToUTF8());
-            return;
             }
         auto lowColumn = data->GetContinuousColumn(lowColumnName);
         if (lowColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 L"'%s': low column not found for Candlestick plot", lowColumnName).ToUTF8());
-            return;
             }
         auto closeColumn = data->GetContinuousColumn(closeColumnName);
         if (closeColumn == data->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 L"'%s': closing column not found for Candlestick plot", closeColumnName).ToUTF8());
-            return;
             }
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)
