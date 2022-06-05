@@ -101,15 +101,55 @@ namespace Wisteria::Graphs
             @param data The data.
             @param columns The columns to display in the table.\n
                 The columns will appear in the order that you specify here.
+            @param transpose @c true to transpose the data (i.e., display the columns
+                from the data as rows).
             @throws std::runtime_error If any columns can't be found by name,
              throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+             The exception's @c what() message is UTF-8 encoded, so pass it to
+             @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const std::initializer_list<wxString>& columns,
                      const bool transpose = false);
-
+        /// @brief Inserts an empty row at the given index.
+        /// @details For example, an index of @c 0 will insert the row at the
+        ///     top of the table.
+        /// @note If the table's size has not been established yet (via SetData()
+        ///     or SetTableSize()), then calls to this will ignored since the
+        ///     number of columns is unknown.
+        /// @param rowIndex Where to insert the row.
+        void InsertRow(const size_t rowIndex)
+            {
+            if (m_table.size())
+                {
+                m_table.insert(m_table.cbegin() +
+                        // clamp indices going beyond the row count to m_table.cend()
+                        std::clamp<size_t>(rowIndex, 0, m_table.size()),
+                    std::vector<TableCell>(m_table[0].size(), TableCell()));
+                }
+            }
+        /// @brief Inserts an empty column at the given index.
+        /// @details For example, an index of @c 0 will insert the column at the
+        ///     left side of the table.
+        /// @note If the table's size has not been established yet (via SetData()
+        ///     or SetTableSize()), then calls to this will ignored since there will
+        ///     be no rows to insert columns into.
+        /// @param colIndex Where to insert the column.
+        void InsertColumn(const size_t colIndex)
+            {
+            if (m_table.size())
+                {
+                for (auto& row : m_table)
+                    {
+                    row.insert(row.cbegin() +
+                        // clamp indices going beyond the column count to row.cend()
+                        std::clamp<size_t>(colIndex, 0, row.size()),
+                        TableCell());
+                    }
+                }
+            }
         /// @brief Sets the size of the table.
+        /// @details This should only be used if building a table from scratch.
+        ///     Prefer using SetData() instead.
         /// @param rows The number of rows.
         /// @param cols The number of columns.
         /// @note If the table is being made smaller, then existing content
