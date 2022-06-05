@@ -46,8 +46,22 @@ namespace Wisteria::Graphs
                 measuringLabel.SetText(cellText.length() ? cellText : L" ");
                 const auto bBox = measuringLabel.GetBoundingBox(dc);
                 rowHeights[currentRow] = std::max(bBox.GetHeight(), rowHeights[currentRow]);
-                columnWidths[currentColumn] = std::max(bBox.GetWidth(),
-                                                       columnWidths[currentColumn]);
+                // if cell consumes multiple columns, then divides its width across them
+                // and set the proceeding columns to the remaining width
+                columnWidths[currentColumn] =
+                    std::max(safe_divide(bBox.GetWidth(), cell.m_columnCount),
+                                         columnWidths[currentColumn]);
+                if (cell.m_columnCount > 1)
+                    {
+                    auto remainingColumns = cell.m_columnCount - 1;
+                    auto nextColumn = currentColumn+1;
+                    while (remainingColumns > 0 && nextColumn < row.size())
+                        {
+                        columnWidths[nextColumn++] =
+                            safe_divide(bBox.GetWidth(), cell.m_columnCount);
+                        --remainingColumns;
+                        }
+                    }
                 ++currentColumn;
                 }
             ++currentRow;
@@ -104,7 +118,8 @@ namespace Wisteria::Graphs
         if (m_minHeightProportion.has_value() &&
             tableHeight < (drawArea.GetHeight() * m_minHeightProportion.value()))
             {
-            const auto heightIncreaseProportion = safe_divide<double>(drawArea.GetHeight(), tableHeight);
+            const auto heightIncreaseProportion = safe_divide<double>(drawArea.GetHeight(),
+                                                                      tableHeight);
             for (auto& row : rowHeights)
                 { row *= heightIncreaseProportion; }
             tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
@@ -120,15 +135,27 @@ namespace Wisteria::Graphs
         currentRow = currentColumn = 0;
         wxCoord currentXPos{ drawArea.GetX() };
         wxCoord currentYPos{ drawArea.GetY() };
+        int columnsToOverwrite{ 0 };
         for (const auto& row : m_table)
             {
             currentColumn = 0;
             currentXPos = drawArea.GetX();
             for (const auto& cell : row)
                 {
+                // skip over rows being eclipsed by the previous one since it's mutli-column
+                if (columnsToOverwrite > 0)
+                    {
+                    --columnsToOverwrite;
+                    currentXPos += columnWidths[currentColumn];
+                    ++currentColumn;
+                    continue;
+                    }
+                columnsToOverwrite = cell.m_columnCount - 1;
+                // top left corner, going clockwise
                 pts[0] = wxPoint(currentXPos, currentYPos);
-                pts[1] = wxPoint((currentXPos + columnWidths[currentColumn]), currentYPos);
-                pts[2] = wxPoint((currentXPos + columnWidths[currentColumn]),
+                pts[1] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
+                                 currentYPos);
+                pts[2] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
                                  (currentYPos + rowHeights[currentRow]));
                 pts[3] = wxPoint(currentXPos, (currentYPos + rowHeights[currentRow]));
 
@@ -175,27 +202,39 @@ namespace Wisteria::Graphs
         currentRow = currentColumn = 0;
         currentXPos = drawArea.GetX();
         currentYPos = drawArea.GetY();
-        for (const auto& row : rowHeights)
+        columnsToOverwrite = 0;
+        for (const auto& rowHeight : rowHeights)
             {
+            currentColumn = 0;
+            currentXPos = drawArea.GetX();
             borderLines->AddLine(wxPoint(drawArea.GetX(), currentYPos),
                                  wxPoint(currentXPos+tableWidth, currentYPos));
-            currentYPos += row;
+            for (const auto& colWidth : columnWidths)
+                {
+                const auto& cell = GetCell(currentRow, currentColumn);
+                // skip over rows being eclipsed by the previous one since it's mutli-column
+                if (columnsToOverwrite > 0)
+                    {
+                    --columnsToOverwrite;
+                    currentXPos += colWidth;
+                    ++currentColumn;
+                    continue;
+                    }
+                columnsToOverwrite = cell.m_columnCount - 1;
+                borderLines->AddLine(wxPoint(currentXPos, currentYPos),
+                                     wxPoint(currentXPos, currentYPos+rowHeight));
+                currentXPos += colWidth;
+                ++currentColumn;
+                }
+            currentYPos += rowHeight;
+            ++currentRow;
             }
+        // bottom and right border
         borderLines->AddLine(wxPoint(drawArea.GetX(), currentYPos),
-                             wxPoint(currentXPos+tableWidth, currentYPos));
+                             wxPoint(drawArea.GetX() + tableWidth, currentYPos));
+        borderLines->AddLine(wxPoint(drawArea.GetX() + tableWidth, drawArea.GetY()),
+                             wxPoint(drawArea.GetX() + tableWidth, drawArea.GetY() + tableHeight));
 
-        // draw the column borders
-        currentRow = currentColumn = 0;
-        currentXPos = drawArea.GetX();
-        currentYPos = drawArea.GetY();
-        for (const auto& col : columnWidths)
-            {
-            borderLines->AddLine(wxPoint(currentXPos, drawArea.GetY()),
-                                 wxPoint(currentXPos, currentYPos+tableHeight));
-            currentXPos += col;
-            }
-        borderLines->AddLine(wxPoint(currentXPos, drawArea.GetY()),
-                             wxPoint(currentXPos, currentYPos+tableHeight));
         AddObject(borderLines);
         }
     }

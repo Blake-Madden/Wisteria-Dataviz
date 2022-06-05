@@ -53,15 +53,35 @@ namespace Wisteria::Graphs
                 else
                     { return wxEmptyString; }
                 }
+
             /// @returns @c true if the cell is text.
             [[nodiscard]] bool IsText() const noexcept
                 { return (std::get_if<wxString>(&m_value) != nullptr); }
             /// @returns @c true if the cell is a number.
             [[nodiscard]] bool IsNumeric() const noexcept
                 { return (std::get_if<double>(&m_value) != nullptr); }
+
+            /// @brief Sets the value.
+            /// @param value The value to set for the cell.
+            void SetValue(const CellValueType& value)
+                { m_value = value; }
+            /// @brief Sets the color.
+            /// @param color The value to set for the cell.
+            void SetBackgroundColor(const wxColour color)
+                { m_bgColor = color; }
+            /// @brief Sets the number of columns that this cell should consume.
+            /// @param colCount The number of cells that this should consume horizontally.
+            void SetColumnCount(const int colCount) noexcept
+                {
+                if (colCount <= 0)
+                    { m_columnCount = 1; }
+                else
+                    { m_columnCount = colCount; }
+                }
         private:
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
             wxColour m_bgColor{ *wxWHITE };
+            int m_columnCount{ 1 };
             };
 
         /// @brief Constructor.
@@ -85,35 +105,25 @@ namespace Wisteria::Graphs
         /// @brief Empties the contents of the table.
         void ClearTable()
             { m_table.clear(); }
-        /// @brief Sets the value for a cell at a given position.
+        /// @brief Accesses the cell at a given position.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
-        /// @param value The value to apply.
-        void SetCellValue(const size_t row, const size_t column,
-                          const CellValueType& value)
+        /// @throws std::runtime_error If row or column index is out of range, throws an exception.\n
+        ///     The exception's @c what() message is UTF-8 encoded, so pass it to
+        ///     @c wxString::FromUTF8() when formatting it for an error message.
+        TableCell& GetCell(const size_t row, const size_t column)
             {
-            wxASSERT_MSG(row < m_table.size(), L"Invalid row index!");
-            wxASSERT_MSG(column < m_table[row].size(), L"Invalid column index!");
-            if (row < m_table.size())
+            wxASSERT_MSG(row < m_table.size(),
+                wxString::Format(L"Invalid row index (%zu)!", row));
+            wxASSERT_MSG(column < m_table[row].size(),
+                wxString::Format(L"Invalid column index (%zu)!", column));
+            if (row >= m_table.size() || column >= m_table[row].size())
                 {
-                if (column < m_table[row].size())
-                    { m_table[row][column].m_value = value; }
+                throw std::runtime_error(
+                    wxString::Format(_(L"Invalid cell index (row %zu, column %zu)."),
+                                     row, column).ToUTF8());
                 }
-            }
-        /// @brief Sets the background color for a cell at a given position.
-        /// @param row The row index of the cell.
-        /// @param column The column index of the cell.
-        /// @param bgColor The background color to apply.
-        void SetCellBackgroundColor(const size_t row, const size_t column,
-                                    const wxColour bgColor)
-            {
-            wxASSERT_MSG(row < m_table.size(), L"Invalid row index!");
-            wxASSERT_MSG(column < m_table[row].size(), L"Invalid column index!");
-            if (row < m_table.size())
-                {
-                if (column < m_table[row].size())
-                    { m_table[row][column].m_bgColor = bgColor; }
-                }
+            return m_table[row][column];
             }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
