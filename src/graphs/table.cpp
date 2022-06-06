@@ -359,7 +359,8 @@ namespace Wisteria::Graphs
                 const auto& cell = GetCell(currentRow, currentColumn);
                 // skip over cells being eclipsed by the previous one above that was multi-row
                 if (rowCellsToSkip.find(std::make_pair(currentRow, currentColumn)) ==
-                    rowCellsToSkip.cend())
+                    rowCellsToSkip.cend() &&
+                    !(currentRow == 0 && !cell.m_showOuterTopBorder))
                     {
                     borderLines->AddLine(wxPoint(currentXPos, currentYPos),
                                          wxPoint(currentXPos+ colWidth, currentYPos));
@@ -373,19 +374,44 @@ namespace Wisteria::Graphs
                     continue;
                     }
                 columnsToOverwrite = cell.m_columnCount - 1;
-                borderLines->AddLine(wxPoint(currentXPos, currentYPos),
-                                     wxPoint(currentXPos, currentYPos+rowHeight));
+                if (!(currentColumn == 0 && !cell.m_showOuterLeftBorder))
+                    {
+                    borderLines->AddLine(wxPoint(currentXPos, currentYPos),
+                                         wxPoint(currentXPos, currentYPos+rowHeight));
+                    }
                 currentXPos += colWidth;
                 ++currentColumn;
                 }
             currentYPos += rowHeight;
             ++currentRow;
             }
-        // bottom and right border
-        borderLines->AddLine(wxPoint(drawArea.GetX(), currentYPos),
-                             wxPoint(drawArea.GetX() + tableWidth, currentYPos));
-        borderLines->AddLine(wxPoint(drawArea.GetX() + tableWidth, drawArea.GetY()),
-                             wxPoint(drawArea.GetX() + tableWidth, drawArea.GetY() + tableHeight));
+        // outer right border
+        currentYPos = drawArea.GetY();
+        currentRow = currentColumn = 0;
+        for (const auto& rowHeight : rowHeights)
+            {
+            const auto& cell = GetCell(currentRow, m_table[0].size()-1);
+            if (cell.m_showOuterRightBorder)
+                {
+                borderLines->AddLine(wxPoint(drawArea.GetX() + tableWidth, currentYPos),
+                                     wxPoint(drawArea.GetX() + tableWidth, currentYPos + rowHeight));
+                }
+            currentYPos += rowHeight;
+            ++currentRow;
+            }
+        // outer bottom border
+        currentXPos = drawArea.GetX();
+        for (const auto& colWidth : columnWidths)
+            {
+            const auto& cell = GetCell(m_table.size()-1, currentColumn);
+            if (cell.m_showOuterBottomBorder)
+                {
+                borderLines->AddLine(wxPoint(currentXPos, drawArea.GetY() + tableHeight),
+                                     wxPoint(currentXPos + colWidth, drawArea.GetY() + tableHeight));
+                }
+            currentXPos += colWidth;
+            ++currentColumn;
+            }
 
         AddObject(borderLines);
         }

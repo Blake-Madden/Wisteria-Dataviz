@@ -96,11 +96,35 @@ namespace Wisteria::Graphs
                 else
                     { m_rowCount = rowCount; }
                 }
+            /// @brief Shows or hides the left border of a cell if it's in the
+            ///     first column.
+            /// @param show @c false to hide the left outer border of a cell.
+            void ShowOuterLeftBorder(const bool show)
+                { m_showOuterLeftBorder = show; }
+            /// @brief Shows or hides the top border of a cell if it's in the
+            ///     first row.
+            /// @param show @c false to hide the top outer border of a cell.
+            void ShowOuterTopBorder(const bool show)
+                { m_showOuterTopBorder = show; }
+            /// @brief Shows or hides the bottom border of a cell if it's in the
+            ///     last row.
+            /// @param show @c false to hide the bottom outer border of a cell.
+            void ShowOuterBottomBorder(const bool show)
+                { m_showOuterBottomBorder = show; }
+            /// @brief Shows or hides the right border of a cell if it's in the
+            ///     last column.
+            /// @param show @c false to hide the right outer border of a cell.
+            void ShowOuterRightBorder(const bool show)
+                { m_showOuterRightBorder = show; }
         private:
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
             wxColour m_bgColor{ *wxWHITE };
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
+            bool m_showOuterLeftBorder{ true };
+            bool m_showOuterTopBorder{ true };
+            bool m_showOuterRightBorder{ true };
+            bool m_showOuterBottomBorder{ true };
             };
 
         /// @brief Constructor.
