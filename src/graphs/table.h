@@ -87,10 +87,20 @@ namespace Wisteria::Graphs
                 else
                     { m_columnCount = colCount; }
                 }
+            /// @brief Sets the number of rows that this cell should consume.
+            /// @param rowCount The number of cells that this should consume vertically.
+            void SetRowCount(const int rowCount) noexcept
+                {
+                if (rowCount <= 0)
+                    { m_rowCount = 1; }
+                else
+                    { m_rowCount = rowCount; }
+                }
         private:
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
             wxColour m_bgColor{ *wxWHITE };
             int m_columnCount{ 1 };
+            int m_rowCount{ 1 };
             };
 
         /// @brief Constructor.

@@ -140,12 +140,27 @@ namespace Wisteria::Graphs
                 const auto cellText = cell.GetDisplayValue();
                 measuringLabel.SetText(cellText.length() ? cellText : L" ");
                 const auto bBox = measuringLabel.GetBoundingBox(dc);
-                rowHeights[currentRow] = std::max(bBox.GetHeight(), rowHeights[currentRow]);
+                // if cell consumes multiple rows, then divides its height across them
+                // and set the cells in the rows beneath to the remaining height
+                rowHeights[currentRow] =
+                    std::max(safe_divide(bBox.GetHeight(), cell.m_rowCount),
+                             rowHeights[currentRow]);
+                if (cell.m_rowCount > 1)
+                    {
+                    auto remainingRows = cell.m_rowCount - 1;
+                    auto nextRow = currentRow+1;
+                    while (remainingRows > 0 && nextRow < m_table.size())
+                        {
+                        rowHeights[nextRow++] =
+                            safe_divide(bBox.GetWidth(), cell.m_rowCount);
+                        --remainingRows;
+                        }
+                    }
                 // if cell consumes multiple columns, then divides its width across them
                 // and set the proceeding columns to the remaining width
                 columnWidths[currentColumn] =
                     std::max(safe_divide(bBox.GetWidth(), cell.m_columnCount),
-                                         columnWidths[currentColumn]);
+                             columnWidths[currentColumn]);
                 if (cell.m_columnCount > 1)
                     {
                     auto remainingColumns = cell.m_columnCount - 1;
@@ -231,14 +246,17 @@ namespace Wisteria::Graphs
         wxCoord currentXPos{ drawArea.GetX() };
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
+        std::set<std::pair<size_t, size_t>> rowCellsToSkip;
         for (const auto& row : m_table)
             {
             currentColumn = 0;
             currentXPos = drawArea.GetX();
             for (const auto& cell : row)
                 {
-                // skip over rows being eclipsed by the previous one since it's mutli-column
-                if (columnsToOverwrite > 0)
+                // skip over rows being eclipsed because of previous cells
+                // being multi-row or multi-column
+                if (columnsToOverwrite > 0 ||
+                    rowCellsToSkip.find(std::make_pair(currentRow, currentColumn)) != rowCellsToSkip.cend())
                     {
                     --columnsToOverwrite;
                     currentXPos += columnWidths[currentColumn];
@@ -246,13 +264,24 @@ namespace Wisteria::Graphs
                     continue;
                     }
                 columnsToOverwrite = cell.m_columnCount - 1;
+                // build a list of cells in the following rows that should be skipped
+                // in the next loop if this one is mutli-row
+                if (cell.m_rowCount > 1)
+                    {
+                    auto rowsToSkip = cell.m_rowCount - 1;
+                    while (rowsToSkip > 0)
+                        {
+                        rowCellsToSkip.insert(std::make_pair(rowsToSkip--, currentColumn));
+                        }
+                    }
                 // top left corner, going clockwise
                 pts[0] = wxPoint(currentXPos, currentYPos);
                 pts[1] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
                                  currentYPos);
                 pts[2] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
-                                 (currentYPos + rowHeights[currentRow]));
-                pts[3] = wxPoint(currentXPos, (currentYPos + rowHeights[currentRow]));
+                                 (currentYPos + (rowHeights[currentRow] * cell.m_rowCount)));
+                pts[3] = wxPoint(currentXPos,
+                                 (currentYPos + (rowHeights[currentRow] * cell.m_rowCount)));
 
                 const wxRect boxRect(pts[0], pts[2]);
 
@@ -292,8 +321,31 @@ namespace Wisteria::Graphs
             AddObject(cellLabel);
             }
 
-        auto borderLines = std::make_shared<Lines>(GetPen(), GetScaling());
         // draw the row borders
+        currentRow = currentColumn = 0;
+        rowCellsToSkip.clear();
+        for (const auto& rowHeight : rowHeights)
+            {
+            currentColumn = 0;
+            for (const auto& colWidth : columnWidths)
+                {
+                const auto& cell = GetCell(currentRow, currentColumn);
+                // build a list of cells in the following rows that should be skipped
+                // in the next loop if this one is mutli-row
+                if (cell.m_rowCount > 1)
+                    {
+                    auto rowsToSkip = cell.m_rowCount - 1;
+                    while (rowsToSkip > 0)
+                        {
+                        rowCellsToSkip.insert(std::make_pair(rowsToSkip--, currentColumn));
+                        }
+                    }
+                ++currentColumn;
+                }
+            ++currentRow;
+            }
+
+        auto borderLines = std::make_shared<Lines>(GetPen(), GetScaling());
         currentRow = currentColumn = 0;
         currentXPos = drawArea.GetX();
         currentYPos = drawArea.GetY();
@@ -302,12 +354,17 @@ namespace Wisteria::Graphs
             {
             currentColumn = 0;
             currentXPos = drawArea.GetX();
-            borderLines->AddLine(wxPoint(drawArea.GetX(), currentYPos),
-                                 wxPoint(currentXPos+tableWidth, currentYPos));
             for (const auto& colWidth : columnWidths)
                 {
                 const auto& cell = GetCell(currentRow, currentColumn);
-                // skip over rows being eclipsed by the previous one since it's mutli-column
+                // skip over cells being eclipsed by the previous one above that was multi-row
+                if (rowCellsToSkip.find(std::make_pair(currentRow, currentColumn)) ==
+                    rowCellsToSkip.cend())
+                    {
+                    borderLines->AddLine(wxPoint(currentXPos, currentYPos),
+                                         wxPoint(currentXPos+ colWidth, currentYPos));
+                    }
+                // skip over cells being eclipsed by the previous one since it's mutli-column
                 if (columnsToOverwrite > 0)
                     {
                     --columnsToOverwrite;
