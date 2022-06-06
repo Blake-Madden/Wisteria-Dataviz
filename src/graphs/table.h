@@ -144,6 +144,46 @@ namespace Wisteria::Graphs
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const std::initializer_list<wxString>& columns,
                      const bool transpose = false);
+
+        /// @name Table Functions
+        /// @brief Functions for editing the table as a whole.
+        /// @{
+
+        /// @brief Sets the size of the table.
+        /// @details This should only be used if building a table from scratch.
+        ///     Prefer using SetData() instead.
+        /// @param rows The number of rows.
+        /// @param cols The number of columns.
+        /// @note If the table is being made smaller, then existing content
+        ///     outside of the new size will be removed; other existing content
+        ///     will be preserved.\n
+        ///     Call ClearTable() to clear any existing content if you wish to
+        ///     reset the table.
+        void SetTableSize(const size_t rows, const size_t cols)
+            {
+            m_table.resize(rows);
+            for (auto& row : m_table)
+                { row.resize(cols); }
+            }
+        /// @brief Empties the contents of the table.
+        void ClearTable()
+            { m_table.clear(); }
+        /// @brief Sets the minimum percent of the drawing area's width that the
+        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        /// @param percent The minimum percent of the area's width that the table should consume.
+        void SetMinWidthProportion(const double percent)
+            { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
+        /// @brief Sets the minimum percent of the drawing area's height that the
+        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        /// @param percent The minimum percent of the area's height that the table should consume.
+        void SetMinHeightProportion(const double percent)
+            { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
+        /// @}
+
+        /// @name Row & Column Functions
+        /// @brief Functions for editing rows and columns.
+        /// @{
+
         /// @brief Inserts an empty row at the given index.
         /// @details For example, an index of @c 0 will insert the row at the
         ///     top of the table.
@@ -181,25 +221,42 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-        /// @brief Sets the size of the table.
-        /// @details This should only be used if building a table from scratch.
-        ///     Prefer using SetData() instead.
-        /// @param rows The number of rows.
-        /// @param cols The number of columns.
-        /// @note If the table is being made smaller, then existing content
-        ///     outside of the new size will be removed; other existing content
-        ///     will be preserved.\n
-        ///     Call ClearTable() to clear any existing content if you wish to
-        ///     reset the table.
-        void SetTableSize(const size_t rows, const size_t cols)
+
+        /// @brief Sets the background color for a given row.
+        /// @param row The row to change.
+        /// @param color The background color to apply to the row.
+        /// @note This will have no affect until the table's dimensions have been specified
+        ///     via SetData() or SetTableSize().
+        void SetRowBackgroundColor(const size_t row, const wxColour color)
             {
-            m_table.resize(rows);
-            for (auto& row : m_table)
-                { row.resize(cols); }
+            if (row < m_table.size())
+                {
+                for (auto& cell : m_table[row])
+                    { cell.m_bgColor = color; }
+                }
             }
-        /// @brief Empties the contents of the table.
-        void ClearTable()
-            { m_table.clear(); }
+        /// @brief Sets the background color for a given column.
+        /// @param column The column to change.
+        /// @param color The background color to apply to the column.
+        /// @note This will have no affect until the table's dimensions have been specified
+        ///     via SetData() or SetTableSize().
+        void SetColumnBackgroundColor(const size_t column, const wxColour color)
+            {
+            if (m_table.size() && column < m_table[0].size())
+                {
+                for (auto& row : m_table)
+                    {
+                    if (column < row.size())
+                        { row[column].m_bgColor = color; }
+                    }
+                }
+            }
+        /// @}
+
+        /// @name Cell Functions
+        /// @brief Functions for editing cells.
+        /// @{
+
         /// @brief Accesses the cell at a given position.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
@@ -220,16 +277,7 @@ namespace Wisteria::Graphs
                 }
             return m_table[row][column];
             }
-        /// @brief Sets the minimum percent of the drawing area's width that the
-        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
-        /// @param percent The minimum percent of the area's width that the table should consume.
-        void SetMinWidthProportion(const double percent)
-            { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
-        /// @brief Sets the minimum percent of the drawing area's height that the
-        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
-        /// @param percent The minimum percent of the area's height that the table should consume.
-        void SetMinHeightProportion(const double percent)
-            { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
+        /// @}
     private:
         void RecalcSizes(wxDC& dc) final;
         std::vector<std::vector<TableCell>> m_table;
