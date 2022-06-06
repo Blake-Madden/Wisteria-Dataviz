@@ -251,6 +251,14 @@ namespace Wisteria::Graphs
                     }
                 }
             }
+
+        /** @brief Across a given row, combines consectutive cells with the same label
+                into one cell.
+            @details For example, if a top row has three cells in a row saying "FY1982,"
+                then this will combine these cells into one with "FY1982" centered in it.
+                This can be useful for showing grouped data or crosstabs.
+            @param row The row to combine cells within.*/
+        void GroupRow(const size_t row);
         /// @}
 
         /// @name Cell Functions

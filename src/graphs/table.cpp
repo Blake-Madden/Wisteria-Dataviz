@@ -113,6 +113,31 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::GroupRow(const size_t row)
+        {
+        if (row < m_table.size())
+            {
+            auto& currentRow = m_table[row];
+            if (currentRow.size() <= 1)
+            { return; }
+            for (size_t i = 0; i < currentRow.size()-1; /*in loop*/)
+                {
+                size_t startingCounter = i;
+                while (i < currentRow.size()-1 &&
+                    currentRow[i].IsText() && currentRow[i+1].IsText()&&
+                    currentRow[i].GetDisplayValue().CmpNoCase(currentRow[i+1].GetDisplayValue()) == 0)
+                    { ++i; }
+                if (i > startingCounter)
+                    {
+                    currentRow[startingCounter].m_columnCount = (i-startingCounter)+1;
+                    }
+                else
+                    { ++i; }
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Table::RecalcSizes(wxDC& dc)
         {
         if (m_table.size() == 0 || m_table[0].size() == 0)
@@ -274,14 +299,36 @@ namespace Wisteria::Graphs
                         rowCellsToSkip.insert(std::make_pair(rowsToSkip--, currentColumn));
                         }
                     }
+                // get the current column's width, factoring in whether it is multi-column
+                wxCoord currentColumnWidth = columnWidths[currentColumn];
+                if (cell.m_columnCount > 1)
+                    {
+                    auto remainingColumns = cell.m_columnCount - 1;
+                    auto nextColumn = currentColumn + 1;
+                    while (remainingColumns && nextColumn < columnWidths.size())
+                        {
+                        currentColumnWidth += columnWidths[nextColumn++];
+                        --remainingColumns;
+                        }
+                    }
+                // do the same for the height if it is multi-row
+                wxCoord currentColumnHeight = rowHeights[currentRow];
+                if (cell.m_rowCount > 1)
+                    {
+                    auto remainingRows = cell.m_rowCount - 1;
+                    auto nextRow = currentRow + 1;
+                    while (remainingRows && nextRow < rowHeights.size())
+                        {
+                        currentColumnHeight += rowHeights[nextRow++];
+                        --remainingRows;
+                        }
+                    }
                 // top left corner, going clockwise
                 pts[0] = wxPoint(currentXPos, currentYPos);
-                pts[1] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
-                                 currentYPos);
-                pts[2] = wxPoint((currentXPos + (columnWidths[currentColumn] * cell.m_columnCount)),
-                                 (currentYPos + (rowHeights[currentRow] * cell.m_rowCount)));
-                pts[3] = wxPoint(currentXPos,
-                                 (currentYPos + (rowHeights[currentRow] * cell.m_rowCount)));
+                pts[1] = wxPoint((currentXPos + currentColumnWidth), currentYPos);
+                pts[2] = wxPoint((currentXPos + currentColumnWidth),
+                                 (currentYPos + currentColumnHeight));
+                pts[3] = wxPoint(currentXPos, (currentYPos + currentColumnHeight));
 
                 const wxRect boxRect(pts[0], pts[2]);
 
@@ -302,6 +349,8 @@ namespace Wisteria::Graphs
                 cellLabel->SetPageHorizontalAlignment(
                     ((cell.IsNumeric() || cell.IsDate()) ?
                      PageHorizontalAlignment::RightAligned :
+                     // if text, center it if multi-column; otherwise, left align
+                     cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
                      PageHorizontalAlignment::LeftAligned));
 
                 smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
