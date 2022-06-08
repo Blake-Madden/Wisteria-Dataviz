@@ -281,16 +281,14 @@ namespace Wisteria::GraphItems
              using the current text font, and the current text foreground and background colours.
             @param dc The device context to draw to.
             @param pt The point to draw the text.\n
-             This coordinate refers to the bottom-left corner of the rectangle bounding the string.
-            @param leftOffset The padding to put on the left of each line.*/
-        void DrawVerticalMultiLineText(wxDC& dc, wxPoint pt, const wxCoord leftOffset) const;
+             This coordinate refers to the bottom-left corner of the rectangle bounding the string.*/
+        void DrawVerticalMultiLineText(wxDC& dc, wxPoint pt) const;
         /** @brief Draws a multi-line text string at the specified point, using the current text font,
              and the current text foreground and background colours.
             @param dc The device context that the text is being drawn on.
             @param pt The point to draw the text.\n
-             This coordinate refers to the top-left corner of the rectangle bounding the string.
-            @param leftOffset The padding to put on the left of each line.*/
-        void DrawMultiLineText(wxDC& dc, wxPoint pt, wxCoord leftOffset) const;
+             This coordinate refers to the top-left corner of the rectangle bounding the string.*/
+        void DrawMultiLineText(wxDC& dc, wxPoint pt) const;
         /// @brief Figures out how many characters are in the longest line of text
         ///  (takes multiline labels into account).
         void CalcLongestLineLength();

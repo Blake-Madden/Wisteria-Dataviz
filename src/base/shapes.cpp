@@ -24,20 +24,22 @@ namespace Wisteria::GraphItems
         dc.DrawCircle(circleCenter, radius);
 
         // lettering on the sign
-        Label goLabel(GraphItemInfo(m_graphInfo.GetText()).Pen(wxNullPen).
+        Label theLabel(GraphItemInfo(m_graphInfo.GetText()).Pen(wxNullPen).
             AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).
             DPIScaling(GetDPIScaleFactor()));
-        goLabel.SetFontColor(*wxWHITE);
-        wxPoint goLabelLabelCorner{ circleCenter };
+        theLabel.SetFontColor(*wxWHITE);
+        wxPoint theLabelCorner{ circleCenter };
         auto rectWithinCircleWidth =
             geometry::radius_to_inner_rect_width(radius);
-        goLabelLabelCorner.x -= rectWithinCircleWidth / 2;
-        goLabelLabelCorner.y -= rectWithinCircleWidth / 2;
-        goLabel.SetBoundingBox(
-            wxRect(goLabelLabelCorner,
+        theLabelCorner.x -= rectWithinCircleWidth / 2;
+        theLabelCorner.y -= rectWithinCircleWidth / 2;
+        theLabel.SetBoundingBox(
+            wxRect(theLabelCorner,
                 wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
             dc, GetScaling());
-        goLabel.Draw(dc);
+        theLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+        theLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+        theLabel.Draw(dc);
         }
     }

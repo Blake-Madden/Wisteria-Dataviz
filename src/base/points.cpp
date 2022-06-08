@@ -448,6 +448,8 @@ namespace Wisteria::GraphItems
                             wxRect(boundingBox.GetLeftTop(),
                                 wxSize(boundingBox.GetWidth(), boundingBox.GetHeight() * .66)),
                             dc, GetScaling());
+                        bangLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                        bangLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                         bangLabel.Draw(dc);
                         }
                     break;
