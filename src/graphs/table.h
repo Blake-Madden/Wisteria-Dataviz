@@ -135,6 +135,10 @@ namespace Wisteria::Graphs
             /// @param color The value to set for the cell.
             void SetBackgroundColor(const wxColour color)
                 { m_bgColor = color; }
+            /// @brief Sets the cell's font.
+            /// @param font The font to use.
+            void SetFont(const wxFont& font)
+                { m_font = font; }
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.
             void SetColumnCount(const int colCount) noexcept
@@ -186,6 +190,7 @@ namespace Wisteria::Graphs
             CellFormat m_valueFormat{ CellFormat::General };
             uint8_t m_precision{ 0 };
             wxColour m_bgColor{ *wxWHITE };
+            wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
             bool m_showOuterLeftBorder{ true };

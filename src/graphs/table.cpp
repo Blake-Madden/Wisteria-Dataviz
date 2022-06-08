@@ -211,6 +211,7 @@ namespace Wisteria::Graphs
                 // row or column will at least have some width or height
                 const auto cellText = cell.GetDisplayValue();
                 measuringLabel.SetText(cellText.length() ? cellText : L" ");
+                measuringLabel.SetFont(cell.m_font);
                 const auto bBox = measuringLabel.GetBoundingBox(dc);
                 // if cell consumes multiple rows, then divides its height across them
                 // and set the cells in the rows beneath to the remaining height
@@ -384,6 +385,7 @@ namespace Wisteria::Graphs
                     GraphItemInfo(cellText.length() ? cellText : L" ").
                     Pen(wxNullPen).Padding(5, 5, 5, 5).
                     Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                    Font(cell.m_font).
                     FontColor(
                         (cell.m_bgColor.IsOk() ?
                             ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) : *wxBLACK)).
