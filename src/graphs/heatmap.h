@@ -121,33 +121,33 @@ namespace Wisteria::Graphs
     public:
         /** @brief Constructor.
             @param canvas The canvas that the plot is plotted on.
-            @param colors The color scheme to apply to the points.
-             Leave as null to use black & white.
+            @param colors The color scheme to apply to the points.\n
+                Leave as null to use black & white.
             @note For the color scheme, the first colors map to the lower values,
-             last colors map to the higher values.
-             The default color scale is white (low values) to black (high values),
-             which creates a grayscale spectrum.*/
+                last colors map to the higher values.\n
+                The default color scale is white (low values) to black (high values),
+                which creates a grayscale spectrum.*/
         explicit HeatMap(Wisteria::Canvas* canvas,
                          std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
-        /** @brief Set the display across the heatmap.
+        /** @brief Set the data across the heatmap.
             @param data The data.
             @param continuousColumnName The data column from the dataset to use for
-             the heatmapping.
+                the heatmapping.
             @param groupColumnName The group column to split the data into
-             (this is optional).
+                (this is optional).
             @param groupColumnCount If grouping, the number of columns to split
-             the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
-             as more than 5 columns would make the boxes too small.
-             Also, this parameter is ignored if @c grouping is `false`.
+                the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
+                as more than 5 columns would make the boxes too small.
+                Also, this parameter is ignored if @c grouping is `false`.
             @warning If grouping the data, the data must be sorted ahead of time
-             (given that ordering is important in a heatmap anyway).
-             It is assumed that it is sorted by the value that the caller
-             wants to display left to right, but then also by group. These
-             groups will be drawn top-to-bottom.
+                (given that ordering is important in a heatmap anyway).
+                It is assumed that it is sorted by the value that the caller
+                wants to display left to right, but then also by group. These
+                groups will be drawn top-to-bottom.
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& continuousColumnName,
             std::optional<const wxString> groupColumnName = std::nullopt,
@@ -168,24 +168,24 @@ namespace Wisteria::Graphs
         void SetGroupHeaderPrefix(const wxString& prefix)
             { m_groupHeaderPrefix = prefix; }
         /// @brief Whether to show group headers over each column.
-        /// @param show `true` to show the column headers.
+        /// @param show @c true to show the column headers.
         /// @note This is only relevant if grouping is being used.
         void ShowGroupHeaders(const bool show) noexcept
             { m_showGroupHeaders = show; }
         /// @brief Whether group headers are shown over each column.
         /// @note This is only relevant if grouping is being used.
-        /// @returns `true` if group column headers are being shown.
+        /// @returns @c true if group column headers are being shown.
         [[nodiscard]] bool IsShowingGroupHeaders() const noexcept
             { return m_showGroupHeaders; }
         /// @}
 
         /// @brief Builds and returns a legend using the current colors spectrum.
         /// @details This can be then be managed by the parent canvas and
-        ///  placed next to the plot.
+        ///     placed next to the plot.
         /// @param hint A hint about where the legend will be placed after construction.
-        ///  This is used for defining the legend's padding, outlining,
-        ///  canvas proportions, etc.
-        /// @param includeHeader `true` to show the continuous column name as the header.
+        ///     This is used for defining the legend's padding, outlining,
+        ///     canvas proportions, etc.
+        /// @param includeHeader @c true to show the continuous column name as the header.
         /// @returns The legend for the plot.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
