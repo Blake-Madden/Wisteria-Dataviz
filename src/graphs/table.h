@@ -21,6 +21,55 @@ namespace Wisteria::Graphs
     class Table final : public Graph2D
         {
     public:
+        /// @brief How to aggregate a row or column.
+        enum class AggregateType
+            {
+            /// @brief Sums a series of values.
+            Total,
+            /// @brief Calculates the change from one value to another (as a percentage).
+            ChangePercent
+            };
+
+        /// @brief Information about how to build an aggregation column.
+        struct AggregateInfo
+            {
+            friend class Table;
+        public:
+            /// @brief Constructor.
+            /// @param type Which type of aggregation to perform.
+            explicit AggregateInfo(const AggregateType type) : m_type(type)
+                {}
+            /// @brief The first column in the series of data.
+            /// @param first The first column.
+            /// @returns A self reference.
+            AggregateInfo& FirstCell(const size_t first) noexcept
+                {
+                m_cell1 = first;
+                return *this;
+                }
+            /// @brief The last column in the series of data.
+            /// @param first The last column.
+            /// @returns A self reference.
+            AggregateInfo& LastCell(const size_t last) noexcept
+                {
+                m_cell2 = last;
+                return *this;
+                }
+        private:
+            AggregateType m_type{ AggregateType::Total };
+            std::optional<size_t> m_cell1;
+            std::optional<size_t> m_cell2;
+            };
+
+        /// @brief How to display a cell's content.
+        enum class CellFormat
+            {
+            /// @brief Displays a number generically.
+            General,
+            /// @brief Displays a value such as @c 0.25 as @c 25%.
+            Percent
+            };
+
         /// @brief Types of values that can be used for a cell.
         using CellValueType = std::variant<double, wxString, wxDateTime>;
 
@@ -47,8 +96,16 @@ namespace Wisteria::Graphs
                     {
                     if (std::isnan(*dVal))
                         { return wxEmptyString; }
-                    return wxNumberFormatter::ToString(*dVal, 0,
-                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    else if (m_valueFormat == CellFormat::Percent)
+                        {
+                        return wxNumberFormatter::ToString((*dVal)*100, m_precision,
+                            wxNumberFormatter::Style::Style_None) + L"%";
+                        }
+                    else
+                        {
+                        return wxNumberFormatter::ToString(*dVal, m_precision,
+                            wxNumberFormatter::Style::Style_WithThousandsSep);
+                        }
                     }
                 else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) }; dVal)
                     {
@@ -117,7 +174,17 @@ namespace Wisteria::Graphs
             void ShowOuterRightBorder(const bool show)
                 { m_showOuterRightBorder = show; }
         private:
+            [[nodiscard]] double GetDoubleValue() const noexcept
+                {
+                const auto dVal{ std::get_if<double>(&m_value) };
+                if (dVal)
+                    { return *dVal; }
+                else
+                    { return std::numeric_limits<double>::quiet_NaN(); }
+                }
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
+            CellFormat m_valueFormat{ CellFormat::General };
+            uint8_t m_precision{ 0 };
             wxColour m_bgColor{ *wxWHITE };
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
@@ -131,16 +198,16 @@ namespace Wisteria::Graphs
         /// @param canvas The canvas to draw the table on.
         explicit Table(Wisteria::Canvas* canvas);
 
-        /** @brief Set the display across the heatmap.
+        /** @brief Set the data for the table.
             @param data The data.
             @param columns The columns to display in the table.\n
                 The columns will appear in the order that you specify here.
             @param transpose @c true to transpose the data (i.e., display the columns
                 from the data as rows).
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to
-             @c wxString::FromUTF8() when formatting it for an error message.*/
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const std::initializer_list<wxString>& columns,
                      const bool transpose = false);
@@ -184,6 +251,15 @@ namespace Wisteria::Graphs
         /// @brief Functions for editing rows and columns.
         /// @{
 
+        /// @returns The number of rows.
+        /// @note This will include the column row (if there is one).
+        [[nodiscard]] size_t GetRowCount() const noexcept
+            { return m_table.size(); }
+        /// @returns The number of columns.
+        /// @note If the imported file was transposed, then this will include the row names column.
+        [[nodiscard]] size_t GetColumnCount() const noexcept
+            { return (m_table.size() == 0) ? 0 : m_table[0].size(); }
+
         /// @brief Inserts an empty row at the given index.
         /// @details For example, an index of @c 0 will insert the row at the
         ///     top of the table.
@@ -208,7 +284,11 @@ namespace Wisteria::Graphs
         ///     or SetTableSize()), then calls to this will ignored since there will
         ///     be no rows to insert columns into.
         /// @param colIndex Where to insert the column.
-        void InsertColumn(const size_t colIndex)
+        /// @param colName An optional value for the first row of the new
+        ///     column, representing a name for the column.
+        ///     This will be overwritten if the top row is not column names
+        ///     (e.g., if the table was transpose).
+        void InsertColumn(const size_t colIndex, std::optional<wxString> colName = std::nullopt)
             {
             if (m_table.size())
                 {
@@ -219,8 +299,18 @@ namespace Wisteria::Graphs
                         std::clamp<size_t>(colIndex, 0, row.size()),
                         TableCell());
                     }
+                if (colName.has_value())
+                    { m_table[0][colIndex].m_value = colName.value(); }
                 }
             }
+        /** @brief Adds an aggregation (e.g., total) column to the end of the table.
+            @param aggInfo Which type of aggregation to use in the column.
+            @param colName An optional value for the first row of the new
+                column, representing a name for the column.\n
+                This will be overwritten if the top row is not column names
+                (e.g., if the table was transpose).*/
+        void AddAggregateColumn(const AggregateInfo& aggInfo,
+                                std::optional<wxString> colName = std::nullopt);
 
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
@@ -255,7 +345,7 @@ namespace Wisteria::Graphs
         /** @brief Across a given row, combines consectutive cells with the same label
                 into one cell.
             @details For example, if a top row has three cells in a row saying "FY1982,"
-                then this will combine these cells into one with "FY1982" centered in it.
+                then this will combine these cells into one with "FY1982" centered in it.\n
                 This can be useful for showing grouped data or crosstabs.
             @param row The row to combine cells within.*/
         void GroupRow(const size_t row);

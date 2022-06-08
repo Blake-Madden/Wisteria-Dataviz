@@ -113,13 +113,60 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::AddAggregateColumn(const AggregateInfo& aggInfo,
+                                   std::optional<wxString> colName /*= std::nullopt*/)
+        {
+        if (m_table.size() && m_table[0].size())
+            {
+            const auto columnIndex = GetColumnCount();
+            InsertColumn(columnIndex, colName);
+
+            size_t currentRow{ 0 };
+            std::vector<double> rowValues;
+            for (auto& row : m_table)
+                {
+                auto& aggCell = GetCell(currentRow, columnIndex);
+                rowValues.clear();
+                // tally values from the whole row, unless a custom range was defined
+                for (size_t i = (aggInfo.m_cell1.has_value() ? aggInfo.m_cell1.value() : 0);
+                     i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : row.size()-1);
+                     ++i)
+                    {
+                    const auto& cell = GetCell(currentRow, i);
+                    if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
+                        {
+                        rowValues.push_back(cell.GetDoubleValue());
+                        }
+                    }
+                if (rowValues.size())
+                    {
+                    if (aggInfo.m_type == AggregateType::Total)
+                        {
+                        aggCell.m_value = std::accumulate(rowValues.cbegin(),
+                                                          rowValues.cend(), 0);
+                        }
+                    else if (aggInfo.m_type == AggregateType::ChangePercent &&
+                        rowValues.size() > 1)
+                        {
+                        const auto oldValue = rowValues.front();
+                        const auto newValue = rowValues.back();
+                        aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
+                        aggCell.m_valueFormat = CellFormat::Percent;
+                        }
+                    }
+                ++currentRow;
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Table::GroupRow(const size_t row)
         {
         if (row < m_table.size())
             {
             auto& currentRow = m_table[row];
             if (currentRow.size() <= 1)
-            { return; }
+                { return; }
             for (size_t i = 0; i < currentRow.size()-1; /*in loop*/)
                 {
                 size_t startingCounter = i;
