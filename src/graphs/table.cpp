@@ -160,6 +160,38 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::ApplyAlternateRowColors(const wxColour alternateColor,
+        const size_t startRow /*= 0*/,
+        std::optional<size_t> startColumn /*= std::nullopt*/,
+        std::optional<size_t> endColumn /*= std::nullopt*/)
+        {
+        bool isAlternate{ false };
+        for (size_t i = startRow; i < GetRowCount(); ++i)
+            {
+            SetRowBackgroundColor(i, (isAlternate ? alternateColor : *wxWHITE),
+                                  startColumn, endColumn);
+            isAlternate = !isAlternate;
+            }
+        }
+
+    //----------------------------------------------------------------
+    void Table::SetRowBackgroundColor(const size_t row, const wxColour color,
+        std::optional<size_t> startColumn /*= std::nullopt*/,
+        std::optional<size_t> endColumn /*= std::nullopt*/)
+        {
+        if (row < m_table.size() && m_table[row].size() > 0)
+            {
+            auto& currentRow = m_table[row];
+            startColumn = startColumn.has_value() ? startColumn.value() : 0;
+            // don't go beyond the last column
+            endColumn = endColumn.has_value() ?
+                std::min(endColumn.value(), currentRow.size()-1) : currentRow.size()-1;
+            for (size_t i = startColumn.value(); i <= endColumn.value(); ++i)
+                { currentRow[i].m_bgColor = color; }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Table::GroupRow(const size_t row)
         {
         if (row < m_table.size())
@@ -177,6 +209,28 @@ namespace Wisteria::Graphs
                 if (i > startingCounter)
                     {
                     currentRow[startingCounter].m_columnCount = (i-startingCounter)+1;
+                    }
+                else
+                    { ++i; }
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void Table::GroupColumn(const size_t column)
+        {
+        if (m_table.size() > 0 && column < m_table[0].size())
+            {
+            for (size_t i = 0; i < m_table.size(); /*in loop*/)
+                {
+                size_t startingCounter = i;
+                while (i < m_table.size()-1 &&
+                    m_table[i][column].IsText() && m_table[i+1][column].IsText()&&
+                    m_table[i][column].GetDisplayValue().CmpNoCase(m_table[i+1][column].GetDisplayValue()) == 0)
+                    { ++i; }
+                if (i > startingCounter)
+                    {
+                    m_table[startingCounter][column].m_rowCount = (i-startingCounter)+1;
                     }
                 else
                     { ++i; }
@@ -211,6 +265,8 @@ namespace Wisteria::Graphs
                 // row or column will at least have some width or height
                 const auto cellText = cell.GetDisplayValue();
                 measuringLabel.SetText(cellText.length() ? cellText : L" ");
+                if (cell.m_suggestedLineLength.has_value())
+                    { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 measuringLabel.SetFont(cell.m_font);
                 const auto bBox = measuringLabel.GetBoundingBox(dc);
                 // if cell consumes multiple rows, then divides its height across them
@@ -337,14 +393,16 @@ namespace Wisteria::Graphs
                     continue;
                     }
                 columnsToOverwrite = cell.m_columnCount - 1;
-                // build a list of cells in the following rows that should be skipped
+                // build a list of cells in the proceeding rows that should be skipped
                 // in the next loop if this one is mutli-row
                 if (cell.m_rowCount > 1)
                     {
                     auto rowsToSkip = cell.m_rowCount - 1;
+                    auto nextRow = currentRow+1;
                     while (rowsToSkip > 0)
                         {
-                        rowCellsToSkip.insert(std::make_pair(rowsToSkip--, currentColumn));
+                        rowCellsToSkip.insert(std::make_pair(nextRow++, currentColumn));
+                        --rowsToSkip;
                         }
                     }
                 // get the current column's width, factoring in whether it is multi-column
@@ -393,14 +451,28 @@ namespace Wisteria::Graphs
                     Anchoring(Anchoring::Center).
                     AnchorPoint(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2),
                         boxRect.GetTop() + (boxRect.GetHeight() / 2))));
+                if (cell.m_suggestedLineLength.has_value())
+                    { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
                 cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-                cellLabel->SetPageHorizontalAlignment(
-                    ((cell.IsNumeric() || cell.IsDate()) ?
-                     PageHorizontalAlignment::RightAligned :
-                     // if text, center it if multi-column; otherwise, left align
-                     cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
-                     PageHorizontalAlignment::LeftAligned));
+                // if an overriding horizontal alignment is in use, then use that
+                if (cell.m_horizontalCellAlignment.has_value())
+                    {
+                    cellLabel->SetPageHorizontalAlignment(cell.m_horizontalCellAlignment.value());
+                    }
+                // otherwise, deduce the best alignment
+                else
+                    {
+                    cellLabel->SetPageHorizontalAlignment(
+                        ((cell.IsNumeric() || cell.IsDate()) ?
+                         PageHorizontalAlignment::RightAligned :
+                         // if text, center it if multi-column; otherwise, left align
+                         cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
+                         PageHorizontalAlignment::LeftAligned));
+                    }
+                // if centered in cell, then center the text also (if multi-line)
+                if (cellLabel->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+                    { cellLabel->SetTextAlignment(TextAlignment::Centered); }
 
                 smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
 
@@ -433,9 +505,11 @@ namespace Wisteria::Graphs
                 if (cell.m_rowCount > 1)
                     {
                     auto rowsToSkip = cell.m_rowCount - 1;
+                    auto nextRow = currentRow+1;
                     while (rowsToSkip > 0)
                         {
-                        rowCellsToSkip.insert(std::make_pair(rowsToSkip--, currentColumn));
+                        rowCellsToSkip.insert(std::make_pair(nextRow++, currentColumn));
+                        --rowsToSkip;
                         }
                     }
                 ++currentColumn;

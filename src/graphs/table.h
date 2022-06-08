@@ -18,6 +18,68 @@
 
 namespace Wisteria::Graphs
     {
+    /** @brief A display of tabular data.
+        @details A table can either be imported from a Dataset or be built from scratch.
+        
+        @par %Data:
+            A table can accept a Data::Dataset, where any type of column can be include.\n
+            Also, which columns from the dataset that are displayed (as well as their order)
+            can be controlled by the caller.\n
+            The table can use the same structure as the dataset, or be transposed so that the
+            columns are then the rows in the table.\n
+            Finally, aggregation columns (e.g., subtotals) can be added to the table (as well
+            as numerous other customizations).
+
+        @par Missing Data:
+            - Any missing data from the dataset will be displayed as an empty cell.
+            
+        @par Example:
+        @code
+         // "this" will be a parent wxWidgets frame or dialog,
+         // "canvas" is a scrolled window derived object
+         // that will hold the line plot
+         auto canvas = new Wisteria::Canvas(this);
+         canvas->SetFixedObjectsGridSize(1, 1);
+
+         auto programAwards = std::make_shared<Data::Dataset>();
+         try
+            {
+            programAwards->ImportCSV(appDir + L"/datasets/Tables/Program Awards.csv",
+                ImportInfo().
+                ContinuousColumns({ L"Doctoral Degrees Awarded",
+                    L"Time to Degree Since Entering Graduate School" }).
+                CategoricalColumns({
+                    { L"School" },
+                    { L"Program" }
+                    }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+         auto tableGraph = std::make_shared<Table>(canvas);
+         tableGraph->SetData(programAwards,
+            { L"School", L"Program",
+              L"Doctoral Degrees Awarded", L"Time to Degree Since Entering Graduate School" });
+         // split some of the cells text into multiple lines
+         tableGraph->GetCell(14, 0).SetSuggestedLineLength(15);
+         tableGraph->GetCell(0, 2).SetSuggestedLineLength(5);
+         tableGraph->GetCell(0, 3).SetSuggestedLineLength(10);
+         // group the schools together in the first row
+         tableGraph->GroupColumn(0);
+         // make the headers and row groups bold (and center the header)
+         tableGraph->BoldRow(0);
+         tableGraph->BoldColumn(0);
+         tableGraph->CenterRowHorizontally(0);
+         // apply a zebra-stripe look
+         tableGraph->ApplyAlternateRowColors(ColorBrewer::GetColor(Color::AzureMist), 1, 1);
+
+         // add the table to the canvas
+         canvas->SetFixedObject(0, 0, tableGraph);
+        @endcode*/
     class Table final : public Graph2D
         {
     public:
@@ -135,6 +197,10 @@ namespace Wisteria::Graphs
             /// @param color The value to set for the cell.
             void SetBackgroundColor(const wxColour color)
                 { m_bgColor = color; }
+            /// @returns Access to the cell's font. This can be useful for changing
+            ///     an attribute of the font, rather than entirely setting a new font.
+            [[nodiscard]] wxFont& GetFont() noexcept
+                { return m_font; }
             /// @brief Sets the cell's font.
             /// @param font The font to use.
             void SetFont(const wxFont& font)
@@ -157,6 +223,10 @@ namespace Wisteria::Graphs
                 else
                     { m_rowCount = rowCount; }
                 }
+            /// @brief Sets the suggested line length for the cell (if text).
+            /// @param lineLength The suggested line length.
+            void SetSuggestedLineLength(const size_t lineLength) noexcept
+                { m_suggestedLineLength = lineLength; }
             /// @brief Shows or hides the left border of a cell if it's in the
             ///     first column.
             /// @param show @c false to hide the left outer border of a cell.
@@ -191,6 +261,8 @@ namespace Wisteria::Graphs
             uint8_t m_precision{ 0 };
             wxColour m_bgColor{ *wxWHITE };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
+            std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
+            std::optional<size_t> m_suggestedLineLength;
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
             bool m_showOuterLeftBorder{ true };
@@ -240,6 +312,19 @@ namespace Wisteria::Graphs
         /// @brief Empties the contents of the table.
         void ClearTable()
             { m_table.clear(); }
+        /** @brief Sets the font for the entire table.
+            @param ft The font to apply.*/
+        void SetTableFont(const wxFont& ft)
+            {
+            if (GetColumnCount() > 0)
+                {
+                for (auto& row : m_table)
+                    {
+                    for (auto& cell : row)
+                        { cell.SetFont(ft); }
+                    }
+                }
+            }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
         /// @param percent The minimum percent of the area's width that the table should consume.
@@ -320,16 +405,15 @@ namespace Wisteria::Graphs
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
         /// @param color The background color to apply to the row.
+        /// @param startColumn An optional column in the row to start from.\n
+        ///     The default is to start from the first column.
+        /// @param endColumn An optional column in the row to end at.\n
+        ///     The default is to end at the last column.
         /// @note This will have no affect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void SetRowBackgroundColor(const size_t row, const wxColour color)
-            {
-            if (row < m_table.size())
-                {
-                for (auto& cell : m_table[row])
-                    { cell.m_bgColor = color; }
-                }
-            }
+        void SetRowBackgroundColor(const size_t row, const wxColour color,
+                                   std::optional<size_t> startColumn = std::nullopt,
+                                   std::optional<size_t> endColumn = std::nullopt);
         /// @brief Sets the background color for a given column.
         /// @param column The column to change.
         /// @param color The background color to apply to the column.
@@ -347,6 +431,70 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /** @brief Makes the specified row use a bold font.
+            @param row The row to make bold.*/
+        void BoldRow(const size_t row)
+            {
+            if (row < m_table.size())
+                {
+                auto& currentRow = m_table[row];
+                for (auto& cell : currentRow)
+                    { cell.GetFont().MakeBold(); }
+                }
+            }
+        /** @brief Makes the specified column use a bold font.
+            @param column The column to make bold.*/
+        void BoldColumn(const size_t column)
+            {
+            if (GetColumnCount() > 0)
+                {
+                for (auto& row : m_table)
+                    {
+                    if (column < row.size())
+                        { row[column].GetFont().MakeBold(); }
+                    }
+                }
+            }
+
+        /** @brief Makes the specified row's cells have horizontally centered content.
+            @param row The row to have horizontally centered cell content.*/
+        void CenterRowHorizontally(const size_t row)
+            {
+            if (row < m_table.size())
+                {
+                auto& currentRow = m_table[row];
+                for (auto& cell : currentRow)
+                    { cell.m_horizontalCellAlignment = PageHorizontalAlignment::Centered; }
+                }
+            }
+        /** @brief Makes the specified column's cells have horizontally centered content.
+            @param column The column to have horizontally centered cell content.*/
+        void CenterColumnHorizontally(const size_t column)
+            {
+            if (GetColumnCount() > 0)
+                {
+                for (auto& row : m_table)
+                    {
+                    if (column < row.size())
+                        { row[column].m_horizontalCellAlignment = PageHorizontalAlignment::Centered; }
+                    }
+                }
+            }
+
+        /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
+        /// @param alternateColor The background color to apply to ever other row.
+        /// @param startRow The row to start from (default is @c 0).
+        /// @param startColumn An optional column in the row to start from.\n
+        ///     The default is to start from the first column.
+        /// @param endColumn An optional column in the row to end at.\n
+        ///     The default is to end at the last column.
+        /// @note This will have no affect until the table's dimensions have been specified
+        ///     via SetData() or SetTableSize().
+        void ApplyAlternateRowColors(const wxColour alternateColor,
+                                     const size_t startRow = 0, 
+                                     std::optional<size_t> startColumn = std::nullopt,
+                                     std::optional<size_t> endColumn = std::nullopt);
+
         /** @brief Across a given row, combines consectutive cells with the same label
                 into one cell.
             @details For example, if a top row has three cells in a row saying "FY1982,"
@@ -354,6 +502,13 @@ namespace Wisteria::Graphs
                 This can be useful for showing grouped data or crosstabs.
             @param row The row to combine cells within.*/
         void GroupRow(const size_t row);
+        /** @brief Down a given column, combines consectutive cells with the same label
+                into one cell.
+            @details For example, if the far left column has three cells in a row saying "Business,"
+                then this will combine these cells into one with "Business" centered in it.\n
+                This can be useful for showing grouped data or crosstabs.
+            @param column The column to combine cells within.*/
+        void GroupColumn(const size_t column);
         /// @}
 
         /// @name Cell Functions
