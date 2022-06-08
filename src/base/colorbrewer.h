@@ -692,7 +692,7 @@ namespace Wisteria::Colors
         /// @param color The base color to contrast other colors against.
         ColorContrast(const wxColour& color) : m_baseColor(color) {}
         /// @returns A variation of @c color that is adjusted to contrast against the base color
-        ///  (that was set in the constructor).
+        ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
         [[nodiscard]] wxColour Contrast(const wxColour& color);
         /// @returns A variation of @c color with a different opacity.
@@ -702,18 +702,18 @@ namespace Wisteria::Colors
             { return wxColor(color.Red(), color.Green(), color.Blue(), opacity); }
         /// @brief Determines whether a color is dark (i.e., luminance is less than 50%).
         /// @param color The color to review.
-        /// @returns `true` if the color's luminance is less than 50%.
+        /// @returns @c true if the color's luminance is less than 50% (and not transparent).
         [[nodiscard]] static bool IsDark(const wxColour& color)
-            { return (color.GetLuminance() < .5f); }
+            { return (color.Alpha() != wxALPHA_TRANSPARENT && color.GetLuminance() < .5f); }
         /// @brief Determines whether a color is light (i.e., luminance is >= 50%).
         /// @param color The color to review.
-        /// @returns `true` if the color's luminance is >= 50%.
+        /// @returns @c true if the color's luminance is >= 50%.
         [[nodiscard]] static bool IsLight(const wxColour& color)
             { return !IsDark(color); }
         /// @returns A darkened version of a color.
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
-        ///  ranging from 0.0 to 1.0 (the lower, the darker).
+        ///     ranging from 0.0 to 1.0 (the lower, the darker).
         [[nodiscard]] static wxColour Shade(wxColour color, const double minimumLuminance = 0.5f)
             {
             int darkenValue{ 100 };
@@ -740,7 +740,7 @@ namespace Wisteria::Colors
         /// @returns Black or white; whichever contrasts better against @c color.
         [[nodiscard]] static wxColour BlackOrWhiteContrast(const wxColour& color)
             { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
-        /// @returns `true` if two colors' luminance values are close.
+        /// @returns @c true if two colors' luminance values are close.
         /// @param color1 First color to compare.
         /// @param color2 Second color to compare.
         /// @param delta The difference threshold to use when comparing.
