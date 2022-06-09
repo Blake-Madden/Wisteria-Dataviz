@@ -390,6 +390,7 @@ namespace geometry
         @param ctr The center point of the circle.
         @param radius of the circle.
         @param pt The point to review.
+        @returns @c true if the point is inside of the circle.
         @todo Add a unit test.*/
     inline bool is_point_inside_circle(const std::pair<double, double> ctr,
                                        const double radius,

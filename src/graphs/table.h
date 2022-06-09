@@ -19,32 +19,39 @@
 namespace Wisteria::Graphs
     {
     /** @brief A display of tabular data.
-        @details A table can either be imported from a Dataset or be built from scratch.
+        @details A table can either be imported from a dataset or be built from scratch.
         
         @par %Data:
-            A table can accept a Data::Dataset, where any type of column can be include.\n
-            Also, which columns from the dataset that are displayed (as well as their order)
-            can be controlled by the caller.\n
-            The table can use the same structure as the dataset, or be transposed so that the
-            columns are then the rows in the table.\n
-            Finally, aggregation columns (e.g., subtotals) can be added to the table (as well
-            as numerous other customizations).
+            A table can accept a Data::Dataset, where any type of column can be include.
+            Which of these columns to include (as well as their order) can be controlled
+            by the caller.\n
+            \n
+            The table can use the same structure as the dataset, or be transposed (so that the
+            columns are then the rows in the table).\n
+            \n
+            Consecutively repeated group labels across the rows and columns can be collapsed
+            into larger cells, given the appearance of grouped data or crosstabs
+            (see GroupRow() and GroupColumn()).
+            Numerous other functions are available for customizing the content and appearance of cells,
+            rows, and columns (e.g., GetCell() or BoldRow()).\n
+            \n
+            Finally, aggregate columns (e.g., subtotals) can be added to the table via AddAggregateColumn().
 
         @par Missing Data:
-            - Any missing data from the dataset will be displayed as an empty cell.
+            Any missing data from the dataset will be displayed as an empty cell.
             
         @par Example:
         @code
          // "this" will be a parent wxWidgets frame or dialog,
          // "canvas" is a scrolled window derived object
-         // that will hold the line plot
+         // that will hold the table
          auto canvas = new Wisteria::Canvas(this);
          canvas->SetFixedObjectsGridSize(1, 1);
 
          auto programAwards = std::make_shared<Data::Dataset>();
          try
             {
-            programAwards->ImportCSV(appDir + L"/datasets/Tables/Program Awards.csv",
+            programAwards->ImportCSV(L"/home/luna/data/Program Awards.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Doctoral Degrees Awarded",
                     L"Time to Degree Since Entering Graduate School" }).
@@ -64,13 +71,13 @@ namespace Wisteria::Graphs
          tableGraph->SetData(programAwards,
             { L"School", L"Program",
               L"Doctoral Degrees Awarded", L"Time to Degree Since Entering Graduate School" });
-         // split some of the cells text into multiple lines
+         // split some of the cells' text into multiple lines
          tableGraph->GetCell(14, 0).SetSuggestedLineLength(15);
          tableGraph->GetCell(0, 2).SetSuggestedLineLength(5);
          tableGraph->GetCell(0, 3).SetSuggestedLineLength(10);
          // group the schools together in the first row
          tableGraph->GroupColumn(0);
-         // make the headers and row groups bold (and center the header)
+         // make the headers and row groups bold (and center the headers)
          tableGraph->BoldRow(0);
          tableGraph->BoldColumn(0);
          tableGraph->CenterRowHorizontally(0);
@@ -110,7 +117,7 @@ namespace Wisteria::Graphs
                 return *this;
                 }
             /// @brief The last column in the series of data.
-            /// @param first The last column.
+            /// @param last The last column.
             /// @returns A self reference.
             AggregateInfo& LastCell(const size_t last) noexcept
                 {
@@ -326,12 +333,12 @@ namespace Wisteria::Graphs
                 }
             }
         /// @brief Sets the minimum percent of the drawing area's width that the
-        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @param percent The minimum percent of the area's width that the table should consume.
         void SetMinWidthProportion(const double percent)
             { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
         /// @brief Sets the minimum percent of the drawing area's height that the
-        ///     table should consume (between 0.0 to 1.0, representing 0% to 100%).
+        ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @param percent The minimum percent of the area's height that the table should consume.
         void SetMinHeightProportion(const double percent)
             { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
@@ -342,11 +349,13 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns The number of rows.
-        /// @note This will include the column row (if there is one).
+        /// @warning This will include the first row which contains the original dataset's
+        ///     column names (unless it was transposed in the call to SetData()).
         [[nodiscard]] size_t GetRowCount() const noexcept
             { return m_table.size(); }
         /// @returns The number of columns.
-        /// @note If the imported file was transposed, then this will include the row names column.
+        /// @warning If the imported file was transposed, then this will also include
+        ///     the first column which contains the dataset's original column names.
         [[nodiscard]] size_t GetColumnCount() const noexcept
             { return (m_table.size() == 0) ? 0 : m_table[0].size(); }
 
@@ -377,7 +386,7 @@ namespace Wisteria::Graphs
         /// @param colName An optional value for the first row of the new
         ///     column, representing a name for the column.
         ///     This will be overwritten if the top row is not column names
-        ///     (e.g., if the table was transpose).
+        ///     (e.g., if the table was transposed).
         void InsertColumn(const size_t colIndex, std::optional<wxString> colName = std::nullopt)
             {
             if (m_table.size())
@@ -393,12 +402,12 @@ namespace Wisteria::Graphs
                     { m_table[0][colIndex].m_value = colName.value(); }
                 }
             }
-        /** @brief Adds an aggregation (e.g., total) column to the end of the table.
+        /** @brief Adds an aggregate (e.g., total) column to the end of the table.
             @param aggInfo Which type of aggregation to use in the column.
             @param colName An optional value for the first row of the new
                 column, representing a name for the column.\n
                 This will be overwritten if the top row is not column names
-                (e.g., if the table was transpose).*/
+                (e.g., if the table was transposed).*/
         void AddAggregateColumn(const AggregateInfo& aggInfo,
                                 std::optional<wxString> colName = std::nullopt);
 
@@ -409,7 +418,7 @@ namespace Wisteria::Graphs
         ///     The default is to start from the first column.
         /// @param endColumn An optional column in the row to end at.\n
         ///     The default is to end at the last column.
-        /// @note This will have no affect until the table's dimensions have been specified
+        /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void SetRowBackgroundColor(const size_t row, const wxColour color,
                                    std::optional<size_t> startColumn = std::nullopt,
@@ -417,7 +426,7 @@ namespace Wisteria::Graphs
         /// @brief Sets the background color for a given column.
         /// @param column The column to change.
         /// @param color The background color to apply to the column.
-        /// @note This will have no affect until the table's dimensions have been specified
+        /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void SetColumnBackgroundColor(const size_t column, const wxColour color)
             {
@@ -481,6 +490,22 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /** @brief Across a given row, combines consecutive cells with the same label
+                into one cell.
+            @details For example, if a top row has three consecutive cells displaying "FY1982,"
+                then this will combine them one with "FY1982" centered in it.\n
+                This can be useful for showing grouped data or crosstabs.
+            @param row The row to combine cells within.*/
+        void GroupRow(const size_t row);
+        /** @brief Down a given column, combines consecutive cells with the same label
+                into one cell.
+            @details For example, if the far-left column has three consecutive cells
+                displaying "Business," then this will combine them one with "Business"
+                centered in it.\n
+                This can be useful for showing grouped data or crosstabs.
+            @param column The column to combine cells within.*/
+        void GroupColumn(const size_t column);
+
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
         /// @param alternateColor The background color to apply to ever other row.
         /// @param startRow The row to start from (default is @c 0).
@@ -488,27 +513,12 @@ namespace Wisteria::Graphs
         ///     The default is to start from the first column.
         /// @param endColumn An optional column in the row to end at.\n
         ///     The default is to end at the last column.
-        /// @note This will have no affect until the table's dimensions have been specified
+        /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void ApplyAlternateRowColors(const wxColour alternateColor,
                                      const size_t startRow = 0, 
                                      std::optional<size_t> startColumn = std::nullopt,
                                      std::optional<size_t> endColumn = std::nullopt);
-
-        /** @brief Across a given row, combines consectutive cells with the same label
-                into one cell.
-            @details For example, if a top row has three cells in a row saying "FY1982,"
-                then this will combine these cells into one with "FY1982" centered in it.\n
-                This can be useful for showing grouped data or crosstabs.
-            @param row The row to combine cells within.*/
-        void GroupRow(const size_t row);
-        /** @brief Down a given column, combines consectutive cells with the same label
-                into one cell.
-            @details For example, if the far left column has three cells in a row saying "Business,"
-                then this will combine these cells into one with "Business" centered in it.\n
-                This can be useful for showing grouped data or crosstabs.
-            @param column The column to combine cells within.*/
-        void GroupColumn(const size_t column);
         /// @}
 
         /// @name Cell Functions
@@ -518,6 +528,7 @@ namespace Wisteria::Graphs
         /// @brief Accesses the cell at a given position.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
+        /// @returns The requested cell.
         /// @throws std::runtime_error If row or column index is out of range, throws an exception.\n
         ///     The exception's @c what() message is UTF-8 encoded, so pass it to
         ///     @c wxString::FromUTF8() when formatting it for an error message.
