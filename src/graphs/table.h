@@ -30,7 +30,7 @@ namespace Wisteria::Graphs
             columns are then the rows in the table).\n
             \n
             Consecutively repeated group labels across the rows and columns can be collapsed
-            into larger cells, given the appearance of grouped data or crosstabs
+            into larger cells, giving the appearance of grouped data
             (see GroupRow() and GroupColumn()).
             Numerous other functions are available for customizing the content and appearance of cells,
             rows, and columns (e.g., GetCell() or BoldRow()).\n
@@ -92,6 +92,47 @@ namespace Wisteria::Graphs
             canvas->GetDefaultCanvasHeightDIPs() * 2);
          canvas->SetCanvasMinWidthDIPs(
             canvas->GetDefaultCanvasWidthDIPs() / 2);
+        @endcode
+        
+        @par Aggregate Row and Column Example:
+        @code
+         auto juniorSeniorMajors = std::make_shared<Data::Dataset>();
+         try
+            {
+            juniorSeniorMajors->ImportCSV(L"/home/isabelle/data/Junior & Senior Majors (Top 20).csv",
+                ImportInfo().
+                ContinuousColumns({ L"Female", L"Male" }).
+                CategoricalColumns({
+                    { L"Division" },
+                    { L"Department" }
+                    }));
+            }
+         catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+         auto tableGraph = std::make_shared<Table>(canvas);
+         tableGraph->SetData(juniorSeniorMajors,
+            { L"Division", L"Department", L"Female", L"Male" });
+         // group the schools together in the first row
+         tableGraph->GroupColumn(0);
+
+         // add ratio aggregate column and group row totals
+         tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
+                                          _(L"Ratio"));
+         tableGraph->InsertRowTotals(ColorBrewer::GetColor(Colors::Color::AshGrey,
+                                                           Settings::GetTranslucencyValue()));
+
+         // make the headers and row groups bold (and center the headers)
+         tableGraph->BoldRow(0);
+         tableGraph->BoldColumn(0);
+         tableGraph->CenterRowHorizontally(0);
+
+         // add the table to the canvas
+         canvas->SetFixedObject(0, 0, tableGraph);
         @endcode*/
     class Table final : public Graph2D
         {
@@ -397,11 +438,15 @@ namespace Wisteria::Graphs
                 This will be overwritten by a calculated value if the left-most column is not text.
             @param rowIndex Where to (optionally) insert the column. The default
                 is to insert as the last row.
+            @param bkColor An optional background for the row.
             @note This should be called after all data has been set because the
-                the aggregation values are calculated as this function is called.*/
+                the aggregation values are calculated as this function is called.
+            @sa InsertRowTotals() for a simplified way to insert a total row
+                (as well as subtotal rows).*/
         void InsertAggregateRow(const AggregateInfo& aggInfo,
                                 std::optional<wxString> rowName = std::nullopt,
-                                std::optional<size_t> rowIndex = std::nullopt);
+                                std::optional<size_t> rowIndex = std::nullopt,
+                                std::optional<wxColour> bkColor = std::nullopt);
         /** @brief Adds an aggregate (e.g., total) column into the table.
             @param aggInfo Which type of aggregation to use in the column.
             @param colName An optional value for the first row of the new
@@ -409,11 +454,21 @@ namespace Wisteria::Graphs
                 This will be overwritten by a calculated value if the top row is not text.
             @param colIndex Where to (optionally) insert the column. The default
                 is to insert as the last column.
+            @param bkColor An optional background for the column.
             @note This should be called after all data has been set because the
                 the aggregation values are calculated as this function is called.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
                                    std::optional<wxString> colName = std::nullopt,
-                                   std::optional<size_t> colIndex = std::nullopt);
+                                   std::optional<size_t> colIndex = std::nullopt,
+                                   std::optional<wxColour> bkColor = std::nullopt);
+        /** @brief Inserts total (and possibly subtotal) rows into a table.
+            @details If the first column contains grouped labels (see GroupColumn())
+                and the second column contains labels, then subtotal rows will be inserted
+                beneath each parent group. Also, a grand total row will be inserted at the
+                bottom of the table.\n
+                Otherwise, a single total row will be inserted at the bottom for all rows.
+            @param bkColor An optional background for the row(s).*/
+        void InsertRowTotals(std::optional<wxColour> bkColor = std::nullopt);
 
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
@@ -525,7 +580,7 @@ namespace Wisteria::Graphs
                 into one cell.
             @details For example, if a top row has three consecutive cells displaying "FY1982,"
                 then this will combine them one with "FY1982" centered in it.\n
-                This can be useful for showing grouped data or crosstabs.
+                This can be useful for showing grouped data.
             @param row The row to combine cells within.*/
         void GroupRow(const size_t row);
         /** @brief Down a given column, combines consecutive cells with the same label
@@ -533,7 +588,7 @@ namespace Wisteria::Graphs
             @details For example, if the far-left column has three consecutive cells
                 displaying "Business," then this will combine them one with "Business"
                 centered in it.\n
-                This can be useful for showing grouped data or crosstabs.
+                This can be useful for showing grouped data.
             @param column The column to combine cells within.*/
         void GroupColumn(const size_t column);
 

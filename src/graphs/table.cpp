@@ -59,7 +59,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
-        GetPen() = ColorBrewer::GetColor(Colors::Color::LightGray,
+        GetPen() = ColorBrewer::GetColor(Colors::Color::AshGrey,
                                          Settings::GetTranslucencyValue());
 
         // arbitrary ranges, just need to create any sort of plotting area
@@ -197,15 +197,65 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::InsertRowTotals(std::optional<wxColour> bkColor /*= std::nullopt*/)
+        {
+        if (GetColumnCount())
+            {
+            std::vector<std::pair<size_t, size_t>> indexAndRowCounts;
+            for (size_t rowIndex = 0; rowIndex < m_table.size(); ++rowIndex)
+                {
+                const auto& row = m_table[rowIndex];
+                if (row.size() && row[0].m_rowCount > 1)
+                    {
+                    indexAndRowCounts.push_back(std::make_pair(rowIndex, row[0].m_rowCount));
+                    }
+                }
+            
+            // has groups, so add grand total and group subtotals
+            if (indexAndRowCounts.size() &&
+                // parent group, sub group, then value columns
+                GetColumnCount() > 2 &&
+                // first two column appear to be grouping labels
+                GetCell(0, 0).IsText() && GetCell(0, 1).IsText())
+                {
+                InsertAggregateRow(Table::AggregateInfo(Table::AggregateType::Total),
+                    _(L"Grand Total"), std::nullopt, bkColor);
+                for (auto rowIter = indexAndRowCounts.crbegin();
+                     rowIter != indexAndRowCounts.crend();
+                     ++rowIter)
+                    {
+                    const auto lastSubgroupRow{ rowIter->first + rowIter->second - 1 };
+                    InsertAggregateRow(
+                        Table::AggregateInfo(Table::AggregateType::Total).
+                            FirstCell(rowIter->first).LastCell(lastSubgroupRow),
+                        std::nullopt, rowIter->first + rowIter->second, bkColor);
+                    // make parent group consume first cell of subtotal row
+                    GetCell(rowIter->first, 0).m_rowCount++;
+                    GetCell(lastSubgroupRow+1, 1).m_value = _(L"Total");
+                    }
+                }
+            // no groups, so just add an overall total row at the bottom
+            else
+                {
+                InsertAggregateRow(Table::AggregateInfo(Table::AggregateType::Total),
+                                   _(L"Total"), std::nullopt, bkColor);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     void Table::InsertAggregateRow(const AggregateInfo& aggInfo,
                                    std::optional<wxString> rowName /*= std::nullopt*/,
-                                   std::optional<size_t> rowIndex /*= std::nullopt*/)
+                                   std::optional<size_t> rowIndex /*= std::nullopt*/,
+                                   std::optional<wxColour> bkColor /*= std::nullopt*/)
         {
         if (GetColumnCount())
             {
             const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
             InsertRow(rIndex, rowName);
             BoldRow(rIndex);
+            if (bkColor.has_value())
+                { SetRowBackgroundColor(rIndex, bkColor.value()); }
 
             std::vector<double> colValues;
             for (size_t currentCol = 0; currentCol < GetColumnCount(); ++currentCol)
@@ -228,13 +278,16 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
                                       std::optional<wxString> colName /*= std::nullopt*/,
-                                      std::optional<size_t> colIndex /*= std::nullopt*/)
+                                      std::optional<size_t> colIndex /*= std::nullopt*/,
+                                      std::optional<wxColour> bkColor /*= std::nullopt*/)
         {
         if (GetColumnCount())
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex, colName);
             BoldColumn(columnIndex);
+            if (bkColor.has_value())
+                { SetColumnBackgroundColor(columnIndex, bkColor.value()); }
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
