@@ -59,6 +59,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
+        GetPen() = ColorBrewer::GetColor(Colors::Color::LightGray,
+                                         Settings::GetTranslucencyValue());
+
         // arbitrary ranges, just need to create any sort of plotting area
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
@@ -164,11 +167,70 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
-                                      std::optional<size_t> colIndex /*= std::nullopt*/,
-                                      std::optional<wxString> colName /*= std::nullopt*/)
+    void Table::CalculateAggregate(const AggregateInfo& aggInfo,
+                                   Table::TableCell& aggCell,
+                                   const std::vector<double>& values)
         {
-        if (m_table.size() && m_table[0].size())
+        if (values.size())
+            {
+            if (aggInfo.m_type == AggregateType::Total)
+                {
+                aggCell.m_value = std::accumulate(values.cbegin(),
+                                                  values.cend(), 0);
+                }
+            else if (aggInfo.m_type == AggregateType::ChangePercent &&
+                values.size() > 1)
+                {
+                const auto oldValue = values.front();
+                const auto newValue = values.back();
+                aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
+                aggCell.m_valueFormat = CellFormat::Percent;
+                }
+            else if (aggInfo.m_type == AggregateType::Ratio &&
+                values.size() > 1)
+                {
+                const auto firstValue = values.front();
+                const auto secondValue = values.back();
+                aggCell.m_value = std::make_pair(firstValue, secondValue);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void Table::InsertAggregateRow(const AggregateInfo& aggInfo,
+                                   std::optional<wxString> rowName /*= std::nullopt*/,
+                                   std::optional<size_t> rowIndex /*= std::nullopt*/)
+        {
+        if (GetColumnCount())
+            {
+            const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
+            InsertRow(rIndex, rowName);
+            BoldRow(rIndex);
+
+            std::vector<double> colValues;
+            for (size_t currentCol = 0; currentCol < GetColumnCount(); ++currentCol)
+                {
+                colValues.clear();
+                // tally values from the whole row, unless a custom range was defined
+                for (size_t currentRow = (aggInfo.m_cell1.has_value() ? aggInfo.m_cell1.value() : 0);
+                     currentRow < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : rIndex);
+                     ++currentRow)
+                    {
+                    const auto& cell = GetCell(currentRow, currentCol);
+                    if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
+                        { colValues.push_back(cell.GetDoubleValue()); }
+                    CalculateAggregate(aggInfo, GetCell(rIndex, currentCol), colValues);
+                    }
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
+                                      std::optional<wxString> colName /*= std::nullopt*/,
+                                      std::optional<size_t> colIndex /*= std::nullopt*/)
+        {
+        if (GetColumnCount())
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex, colName);
@@ -178,42 +240,17 @@ namespace Wisteria::Graphs
             std::vector<double> rowValues;
             for (auto& row : m_table)
                 {
-                auto& aggCell = GetCell(currentRow, columnIndex);
                 rowValues.clear();
                 // tally values from the whole row, unless a custom range was defined
                 for (size_t i = (aggInfo.m_cell1.has_value() ? aggInfo.m_cell1.value() : 0);
-                     i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : row.size()-1);
+                     i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : columnIndex);
                      ++i)
                     {
                     const auto& cell = GetCell(currentRow, i);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
-                        {
-                        rowValues.push_back(cell.GetDoubleValue());
-                        }
+                        { rowValues.push_back(cell.GetDoubleValue()); }
                     }
-                if (rowValues.size())
-                    {
-                    if (aggInfo.m_type == AggregateType::Total)
-                        {
-                        aggCell.m_value = std::accumulate(rowValues.cbegin(),
-                                                          rowValues.cend(), 0);
-                        }
-                    else if (aggInfo.m_type == AggregateType::ChangePercent &&
-                        rowValues.size() > 1)
-                        {
-                        const auto oldValue = rowValues.front();
-                        const auto newValue = rowValues.back();
-                        aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
-                        aggCell.m_valueFormat = CellFormat::Percent;
-                        }
-                    else if (aggInfo.m_type == AggregateType::Ratio &&
-                        rowValues.size() > 1)
-                        {
-                        const auto firstValue = rowValues.front();
-                        const auto secondValue = rowValues.back();
-                        aggCell.m_value = std::make_pair(firstValue, secondValue);
-                        }
-                    }
+                CalculateAggregate(aggInfo, GetCell(currentRow, columnIndex), rowValues);
                 ++currentRow;
                 }
             }
