@@ -6,6 +6,57 @@ using namespace Wisteria::Colors;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
+    wxString Table::TableCell::GetDisplayValue() const
+        {
+        if (const auto strVal{ std::get_if<wxString>(&m_value) }; strVal)
+            { return *strVal; }
+        else if (const auto dVal{ std::get_if<double>(&m_value) }; dVal)
+            {
+            if (std::isnan(*dVal))
+                { return wxEmptyString; }
+            else if (m_valueFormat == CellFormat::Percent)
+                {
+                return wxNumberFormatter::ToString((*dVal)*100, m_precision,
+                    wxNumberFormatter::Style::Style_None) + L"%";
+                }
+            else
+                {
+                return wxNumberFormatter::ToString(*dVal, m_precision,
+                    wxNumberFormatter::Style::Style_WithThousandsSep);
+                }
+            }
+        else if (const auto dVal{ std::get_if<std::pair<double, double>>(&m_value) }; dVal)
+            {
+            if (std::isnan(dVal->first) || std::isnan(dVal->second))
+                { return wxEmptyString; }
+            if (dVal->first > dVal->second)
+                {
+                return wxString::Format(L"%s : 1",
+                    wxNumberFormatter::ToString(
+                        safe_divide(dVal->first, dVal->second), m_precision,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                }
+            else
+                {
+                return wxString::Format(L"1 : %s",
+                    wxNumberFormatter::ToString(
+                        safe_divide(dVal->second, dVal->first), m_precision,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                }
+            }
+        else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) }; dVal)
+            {
+            if (!dVal->IsValid())
+                { return wxEmptyString; }
+            return dVal->FormatDate();
+            }
+        else
+            { return wxEmptyString; }
+        }
+
+    //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
         // arbitrary ranges, just need to create any sort of plotting area
@@ -113,13 +164,15 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::AddAggregateColumn(const AggregateInfo& aggInfo,
-                                   std::optional<wxString> colName /*= std::nullopt*/)
+    void Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
+                                      std::optional<size_t> colIndex /*= std::nullopt*/,
+                                      std::optional<wxString> colName /*= std::nullopt*/)
         {
         if (m_table.size() && m_table[0].size())
             {
-            const auto columnIndex = GetColumnCount();
+            const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex, colName);
+            BoldColumn(columnIndex);
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
@@ -152,6 +205,13 @@ namespace Wisteria::Graphs
                         const auto newValue = rowValues.back();
                         aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
                         aggCell.m_valueFormat = CellFormat::Percent;
+                        }
+                    else if (aggInfo.m_type == AggregateType::Ratio &&
+                        rowValues.size() > 1)
+                        {
+                        const auto firstValue = rowValues.front();
+                        const auto secondValue = rowValues.back();
+                        aggCell.m_value = std::make_pair(firstValue, secondValue);
                         }
                     }
                 ++currentRow;
@@ -466,6 +526,7 @@ namespace Wisteria::Graphs
                     cellLabel->SetPageHorizontalAlignment(
                         ((cell.IsNumeric() || cell.IsDate()) ?
                          PageHorizontalAlignment::RightAligned :
+                         cell.IsRatio() ? PageHorizontalAlignment::Centered :
                          // if text, center it if multi-column; otherwise, left align
                          cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
                          PageHorizontalAlignment::LeftAligned));

@@ -35,7 +35,7 @@ namespace Wisteria::Graphs
             Numerous other functions are available for customizing the content and appearance of cells,
             rows, and columns (e.g., GetCell() or BoldRow()).\n
             \n
-            Finally, aggregate columns (e.g., subtotals) can be added to the table via AddAggregateColumn().
+            Finally, aggregate columns (e.g., subtotals) can be added to the table via InsertAggregateColumn().
 
         @par Missing Data:
             Any missing data from the dataset will be displayed as an empty cell.
@@ -86,6 +86,12 @@ namespace Wisteria::Graphs
 
          // add the table to the canvas
          canvas->SetFixedObject(0, 0, tableGraph);
+
+         // make canvas taller and less wide
+         canvas->SetCanvasMinHeightDIPs(
+            canvas->GetDefaultCanvasHeightDIPs() * 2);
+         canvas->SetCanvasMinWidthDIPs(
+            canvas->GetDefaultCanvasWidthDIPs() / 2);
         @endcode*/
     class Table final : public Graph2D
         {
@@ -96,7 +102,10 @@ namespace Wisteria::Graphs
             /// @brief Sums a series of values.
             Total,
             /// @brief Calculates the change from one value to another (as a percentage).
-            ChangePercent
+            ChangePercent,
+            /// @brief Calculates the ratio between two values
+            ///     (ratios will be rounded to integers if the cell's precision is zero).
+            Ratio
             };
 
         /// @brief Information about how to build an aggregation column.
@@ -140,7 +149,8 @@ namespace Wisteria::Graphs
             };
 
         /// @brief Types of values that can be used for a cell.
-        using CellValueType = std::variant<double, wxString, wxDateTime>;
+        using CellValueType = std::variant<double, wxString, wxDateTime,
+                                           std::pair<double, double>>;
 
         /// @brief A cell in the table.
         class TableCell
@@ -157,34 +167,7 @@ namespace Wisteria::Graphs
             TableCell() = default;
             /// @brief Gets the value as it is displayed in the cell.
             /// @returns The displayable string for the cell.
-            [[nodiscard]] wxString GetDisplayValue() const
-                {
-                if (const auto strVal{ std::get_if<wxString>(&m_value) }; strVal)
-                    { return *strVal; }
-                else if (const auto dVal{ std::get_if<double>(&m_value) }; dVal)
-                    {
-                    if (std::isnan(*dVal))
-                        { return wxEmptyString; }
-                    else if (m_valueFormat == CellFormat::Percent)
-                        {
-                        return wxNumberFormatter::ToString((*dVal)*100, m_precision,
-                            wxNumberFormatter::Style::Style_None) + L"%";
-                        }
-                    else
-                        {
-                        return wxNumberFormatter::ToString(*dVal, m_precision,
-                            wxNumberFormatter::Style::Style_WithThousandsSep);
-                        }
-                    }
-                else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) }; dVal)
-                    {
-                    if (!dVal->IsValid())
-                        { return wxEmptyString; }
-                    return dVal->FormatDate();
-                    }
-                else
-                    { return wxEmptyString; }
-                }
+            [[nodiscard]] wxString GetDisplayValue() const;
 
             /// @returns @c true if the cell is text.
             [[nodiscard]] bool IsText() const noexcept
@@ -195,6 +178,9 @@ namespace Wisteria::Graphs
             /// @returns @c true if the cell is a date.
             [[nodiscard]] bool IsDate() const noexcept
                 { return (std::get_if<wxDateTime>(&m_value) != nullptr); }
+            /// @returns @c true if the cell is a ratio.
+            [[nodiscard]] bool IsRatio() const noexcept
+                { return (std::get_if<std::pair<double, double>>(&m_value) != nullptr); }
 
             /// @brief Sets the value.
             /// @param value The value to set for the cell.
@@ -404,12 +390,17 @@ namespace Wisteria::Graphs
             }
         /** @brief Adds an aggregate (e.g., total) column to the end of the table.
             @param aggInfo Which type of aggregation to use in the column.
+            @param colIndex Where to (optionally) insert the column. The default
+                is to insert as the last column.
             @param colName An optional value for the first row of the new
                 column, representing a name for the column.\n
                 This will be overwritten if the top row is not column names
-                (e.g., if the table was transposed).*/
-        void AddAggregateColumn(const AggregateInfo& aggInfo,
-                                std::optional<wxString> colName = std::nullopt);
+                (e.g., if the table was transposed when imported).
+            @note This should be called after all data has been set because the
+                the aggregation values are calculated as this function is called.*/
+        void InsertAggregateColumn(const AggregateInfo& aggInfo,
+                                   std::optional<size_t> colIndex = std::nullopt,
+                                   std::optional<wxString> colName = std::nullopt);
 
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
@@ -461,6 +452,33 @@ namespace Wisteria::Graphs
                     {
                     if (column < row.size())
                         { row[column].GetFont().MakeBold(); }
+                    }
+                }
+            }
+
+        /** @brief Sets the specified row's precision.
+            @param row The row to edit.
+            @param precision The precision for the row.*/
+        void SetRowPrecision(const size_t row, const uint8_t precision)
+            {
+            if (row < m_table.size())
+                {
+                auto& currentRow = m_table[row];
+                for (auto& cell : currentRow)
+                    { cell.m_precision = precision; }
+                }
+            }
+        /** @brief Sets the specified column's precision.
+            @param column The column to edit.
+            @param precision The precision for the column.*/
+        void SetColumnPrecision(const size_t column, const uint8_t precision)
+            {
+            if (GetColumnCount() > 0)
+                {
+                for (auto& row : m_table)
+                    {
+                    if (column < row.size())
+                        { row[column].m_precision = precision; }
                     }
                 }
             }
