@@ -396,7 +396,11 @@ namespace Wisteria::Graphs
 
         Graph2D::RecalcSizes(dc);
 
-        const wxRect drawArea = GetPlotAreaBoundingBox();
+        wxRect drawArea = GetPlotAreaBoundingBox();
+        // add some padding around the table, unless client is controlling the dimensions
+        if (!m_minWidthProportion.has_value() &&
+            !m_minHeightProportion.has_value())
+            { drawArea.Deflate(ScaleToScreenAndCanvas(5)); }
 
         // calculate the necessary heights of the rows and widths of the column
         wxPoint pts[4];
