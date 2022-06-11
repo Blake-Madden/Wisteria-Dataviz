@@ -506,6 +506,21 @@ namespace Wisteria::Graphs
             tableWidth += roundingDiff;
             }
 
+        // offset the table later if being page aligned within its parent drawing area
+        const wxCoord horizontalAlignment =
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned) ?
+             (drawArea.GetWidth() - tableWidth) :
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
+             safe_divide(drawArea.GetWidth() - tableWidth, 2) :
+            0;
+
+        const wxCoord verticalAlignment =
+            (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned) ?
+             (drawArea.GetHeight() - tableHeight) :
+            (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
+             safe_divide(drawArea.GetHeight() - tableHeight, 2) :
+            0;
+
         // if requesting minimum height, then stretch it out if needed
         // (note that column widths are preserved)
         if (m_minHeightProportion.has_value() &&
@@ -643,6 +658,9 @@ namespace Wisteria::Graphs
         for (auto& cellLabel : cellLabels)
             {
             cellLabel->SetScaling(smallestTextScaling);
+            // if using page alignment other than left aligned, then adjust its position
+            if (horizontalAlignment > 0 || verticalAlignment > 0)
+                { cellLabel->Offset(horizontalAlignment, verticalAlignment); }
             AddObject(cellLabel);
             }
 
@@ -740,6 +758,9 @@ namespace Wisteria::Graphs
             ++currentColumn;
             }
 
+        // if using page alignment other than left aligned, then adjust its position
+        if (horizontalAlignment > 0 || verticalAlignment > 0)
+            { borderLines->Offset(horizontalAlignment, verticalAlignment); }
         AddObject(borderLines);
         }
     }

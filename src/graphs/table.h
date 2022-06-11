@@ -18,8 +18,8 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief A display of tabular data.
-        @details A table can either be imported from a dataset or be built from scratch.
+    /** @brief A display of tabular data, which can either be imported from a dataset
+            or be built from scratch.
         
         @par %Data:
             A table can accept a Data::Dataset, where any type of column can be include.
@@ -39,6 +39,16 @@ namespace Wisteria::Graphs
 
         @par Missing Data:
             Any missing data from the dataset will be displayed as an empty cell.
+
+        @par Table Positioning:
+            By default, the table will be draw with a text scaling of @c 1.0 and be scaled down to
+            fit within the provided graph area is necessary. The table will then be placed in the top-left
+            corner of the graph area, and any extra space remaining will be below and to the right of
+            the table. To change this behavior, you can call SetPageHorizontalAlignment() and
+            SetPageVerticalAlignment() to position the table in a different place within its graph area.
+
+            A table can also be stretched to fit its entire graph area by calling SetMinWidthProportion()
+            or SetMinHeightProportion().
             
         @par Example:
         @code

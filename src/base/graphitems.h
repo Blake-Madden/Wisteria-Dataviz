@@ -1379,30 +1379,38 @@ namespace Wisteria
                 m_itemInfo.m_textAlignment = alignment;
                 }
 
-            /** @returns If a Label, the vertical alignment of the text
-                    (if using a minimum user-defined size).*/
+            /** @returns The vertical alignment of the item's content within its bounding box.*/
             [[nodiscard]] const PageVerticalAlignment& GetPageVerticalAlignment() const noexcept
                 { return m_itemInfo.m_pageVerticalAlignment; }
-            /** @brief If a Label, sets the vertical alignment of the tex
-                    (if using a minimum user-defined size).
-                @param alignment How to align the text.
-                @note This can be used to center or bottom align a legend vertically
-                    if being placed on a canvas (next to its plot).*/
+            /** @brief Sets where an item's content is vertically positioned within its
+                    own bounding box.
+                @details This only applies to Table and Label objects.\n
+                    If a @c Label, sets the vertical alignment of the text
+                    (if using a minimum user-defined size).\n
+                    If a @c Table, sets where the table is vertically placed within
+                    its bouding box.
+                @param alignment How to align the content.
+                @note This can be used to center or right align a legend vertically
+                    if being placed on a canvas (beneath its plot).*/
             void SetPageVerticalAlignment(const PageVerticalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_pageVerticalAlignment = alignment;
                 }
 
-            /** @returns If a Label, the horizontal alignment of the text
-                 (if using a minimum user-defined size).*/
+            /** @returns The horizontal alignment of the item's content within its bounding box.*/
             [[nodiscard]] const PageHorizontalAlignment& GetPageHorizontalAlignment() const noexcept
                 { return m_itemInfo.m_pageHorizontalAlignment; }
-            /** @brief If a @c Label, sets the horizontal alignment of the text
-                 (if using a minimum user-defined size).
-                @param alignment How to align the text.
+            /** @brief Sets where an item's content is horizontally positioned within its
+                    own bounding box.
+                @details This only applies to Table and Label objects.\n
+                    If a @c Label, sets the horizontal alignment of the text
+                    (if using a minimum user-defined size).\n
+                    If a @c Table, sets where the table is horizontally placed within
+                    its bouding box.
+                @param alignment How to align the content.
                 @note This can be used to center or right align a legend horizontally
-                 if being placed on a canvas (beneath its plot).*/
+                    if being placed on a canvas (beneath its plot).*/
             void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
                 {
                 InvalidateCachedBoundingBox();

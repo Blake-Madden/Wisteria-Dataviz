@@ -63,11 +63,11 @@ namespace Wisteria::GraphItems
         /// @param lineStyle The line style.
         void SetLineStyle(const LineStyle lineStyle) noexcept
             { m_lineStyle = lineStyle; }
-    private:
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) final;
+    private:
         /** @brief Draws the points, using the pen and brush connected to this object.
             @param dc The device context to draw to.
             @returns The area that the points are being drawn in.*/
