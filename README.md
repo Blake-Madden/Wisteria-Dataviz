@@ -147,8 +147,7 @@ Building
 
 NOTE: A C++17 compatible compiler is required.
 
-First, you will need to get and build the latest daily snapshot of [wxWidgets](https://github.com/wxWidgets/wxWidgets)
-(dated 2022-05-01 or newer):
+First, you will need to get and build [wxWidgets 3.1.7](https://github.com/wxWidgets/wxWidgets):
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
@@ -210,4 +209,4 @@ variable there.
 Dependencies
 =============================
 
-[wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.1.7 (dated 2022-05-01 or newer)
+[wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.1.7
