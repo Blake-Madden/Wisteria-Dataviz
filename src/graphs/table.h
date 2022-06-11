@@ -121,10 +121,12 @@ namespace Wisteria::Graphs
          tableGraph->GroupColumn(0);
 
          // add ratio aggregate column and group row totals
+         const wxColour aggColumnBkColor =
+            ColorBrewer::GetColor(Colors::Color::LightGray,
+                                  Settings::GetTranslucencyValue());
          tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
-                                          _(L"Ratio"));
-         tableGraph->InsertRowTotals(ColorBrewer::GetColor(Colors::Color::AshGrey,
-                                                           Settings::GetTranslucencyValue()));
+                                           _(L"Ratio"), std::nullopt, aggColumnBkColor);
+         tableGraph->InsertRowTotals(aggColumnBkColor);
 
          // make the headers and row groups bold (and center the headers)
          tableGraph->BoldRow(0);
