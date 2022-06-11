@@ -1,0 +1,21 @@
+Division,Department,Female,Male
+Arts & Humanities,English,73,38
+Arts & Humanities,History,77,109
+Arts & Humanities,"History of Science, Medicine & Public Health",58,9
+Arts & Humanities,Philosophy,11,37
+Life Sciences,Ecology & Evolutionary Biology,36,23
+Life Sciences,Environmental Studies,45,18
+Life Sciences,Molecular Biophysics & Biochemistry,31,29
+Life Sciences,"Molecular, Cellular & Developmental Biology",94,68
+Life Sciences,Neuroscience,55,20
+Physical Sciences & Engineering,Biomedical Engineering,29,25
+Physical Sciences & Engineering,Computer Science,51,133
+Physical Sciences & Engineering,Computer Science & Economics,8,48
+Physical Sciences & Engineering,Mathematics,11,52
+Physical Sciences & Engineering,Physics,20,38
+Physical Sciences & Engineering,Statistics and Data Science,54,55
+Social Sciences,Cognitive Science,54,26
+Social Sciences,Economics,128,234
+Social Sciences,Global Affairs,72,63
+Social Sciences,Political Science,123,114
+Social Sciences,Psychology,104,44
