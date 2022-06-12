@@ -719,6 +719,19 @@ namespace Wisteria::Graphs
     private:
         void RecalcSizes(wxDC& dc) final;
 
+        /** @brief Calculates the table's cell dimensions, overall width and height,
+                adjusted drawing area. This drawing area includes the table and its
+                gutter annotations.
+            @param[out] columnWidths The calculated column widths.
+            @param[out] rowHeights The calculated row heights.
+            @param[in,out] drawArea The initial and updated drawing area for the table.
+            @param dc The DC to measure text labels with.
+            @returns The size of the table proper. Note that the size of @c drawArea may
+                be larger if the table includes annotations along the gutters.*/
+        [[nodiscard]] wxSize CalculateTableSize(std::vector<wxCoord>& columnWidths,
+                                                std::vector<wxCoord>& rowHeights,
+                                                wxRect& drawArea, wxDC& dc) const;
+
         /// @returns The area of a given cell if found; otherwise, an invalid rect.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.

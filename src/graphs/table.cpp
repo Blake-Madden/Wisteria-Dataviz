@@ -529,25 +529,15 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::RecalcSizes(wxDC& dc)
+    wxSize Table::CalculateTableSize(std::vector<wxCoord>& columnWidths,
+                                     std::vector<wxCoord>& rowHeights,
+                                     wxRect& drawArea, wxDC& dc) const
         {
-        if (GetRowCount() == 0 || GetColumnCount() == 0)
-            { return; }
+        columnWidths.clear();
+        columnWidths.resize(GetColumnCount());
+        rowHeights.clear();
+        rowHeights.resize(GetRowCount());
 
-        Graph2D::RecalcSizes(dc);
-
-        m_cachedCellRects.clear();
-
-        wxRect drawArea = GetPlotAreaBoundingBox();
-        // add some padding around the table, unless client is controlling the dimensions
-        if (!m_minWidthProportion.has_value() &&
-            !m_minHeightProportion.has_value())
-            { drawArea.Deflate(ScaleToScreenAndCanvas(5)); }
-
-        // calculate the necessary heights of the rows and widths of the column
-        wxPoint pts[4];
-        std::vector<wxCoord> rowHeights(GetRowCount(), 0);
-        std::vector<wxCoord> columnWidths(GetColumnCount(), 0);
         size_t currentRow{ 0 }, currentColumn{ 0 };
         Label measuringLabel(GraphItemInfo().Pen(*wxBLACK_PEN).
             Padding(5, 5, 5, 5).
@@ -606,8 +596,8 @@ namespace Wisteria::Graphs
             ++currentRow;
             }
 
-        auto tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
         auto tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
+        auto tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
 
         // adjust if row heights collectively go outside of the drawing area
         if (tableHeight > drawArea.GetHeight())
@@ -652,21 +642,6 @@ namespace Wisteria::Graphs
             tableWidth += roundingDiff;
             }
 
-        // offset the table later if being page aligned within its parent drawing area
-        const wxCoord horizontalAlignmentOffset =
-            (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned) ?
-             (drawArea.GetWidth() - tableWidth) :
-            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-             safe_divide(drawArea.GetWidth() - tableWidth, 2) :
-            0;
-
-        const wxCoord verticalAlignmentOffset =
-            (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned) ?
-             (drawArea.GetHeight() - tableHeight) :
-            (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-             safe_divide(drawArea.GetHeight() - tableHeight, 2) :
-            0;
-
         // if requesting minimum height, then stretch it out if needed
         // (note that column widths are preserved)
         if (m_minHeightProportion.has_value() &&
@@ -683,10 +658,54 @@ namespace Wisteria::Graphs
             tableHeight += roundingDiff;
             }
 
+        return wxSize(tableWidth, tableHeight);
+        }
+
+    //----------------------------------------------------------------
+    void Table::RecalcSizes(wxDC& dc)
+        {
+        if (GetRowCount() == 0 || GetColumnCount() == 0)
+            { return; }
+
+        Graph2D::RecalcSizes(dc);
+
+        m_cachedCellRects.clear();
+
+        wxRect drawArea = GetPlotAreaBoundingBox();
+        // add some padding around the table, unless client is controlling the dimensions
+        if (!m_minWidthProportion.has_value() &&
+            !m_minHeightProportion.has_value())
+            { drawArea.Deflate(ScaleToScreenAndCanvas(5)); }
+
+        // calculate the necessary heights of the rows and widths of the column
+        std::vector<wxCoord> columnWidths;
+        std::vector<wxCoord> rowHeights;
+        
+        const auto tableSize = CalculateTableSize(columnWidths, rowHeights, drawArea, dc);
+        const auto tableWidth = tableSize.GetWidth();
+        const auto tableHeight = tableSize.GetHeight();
+
+        // offset the table later if being page aligned within its parent drawing area
+        const wxCoord horizontalAlignmentOffset =
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned) ?
+             (drawArea.GetWidth() - tableWidth) :
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
+             safe_divide(drawArea.GetWidth() - tableWidth, 2) :
+            0;
+
+        const wxCoord verticalAlignmentOffset =
+            (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned) ?
+             (drawArea.GetHeight() - tableHeight) :
+            (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
+             safe_divide(drawArea.GetHeight() - tableHeight, 2) :
+            0;
+
         // draw the text
+        wxPoint pts[4];
         std::vector<std::shared_ptr<Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
-        currentRow = currentColumn = 0;
+        size_t currentRow{ 0 };
+        size_t currentColumn{ 0 };
         wxCoord currentXPos{ drawArea.GetX() };
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
