@@ -296,35 +296,55 @@ namespace Wisteria::Graphs
             /// @param lineLength The suggested line length.
             void SetSuggestedLineLength(const size_t lineLength) noexcept
                 { m_suggestedLineLength = lineLength; }
-            /// @brief Shows or hides the left border of a cell if it's in the
-            ///     first column.
+            /// @brief Shows or hides the left border of a cell if it's in the first column.
             /// @param show @c false to hide the left outer border of a cell.
             void ShowOuterLeftBorder(const bool show)
                 { m_showOuterLeftBorder = show; }
-            /// @brief Shows or hides the top border of a cell if it's in the
-            ///     first row.
+            /// @brief Shows or hides the top border of a cell if it's in the first row.
             /// @param show @c false to hide the top outer border of a cell.
             void ShowOuterTopBorder(const bool show)
                 { m_showOuterTopBorder = show; }
-            /// @brief Shows or hides the bottom border of a cell if it's in the
-            ///     last row.
+            /// @brief Shows or hides the bottom border of a cell if it's in the last row.
             /// @param show @c false to hide the bottom outer border of a cell.
             void ShowOuterBottomBorder(const bool show)
                 { m_showOuterBottomBorder = show; }
-            /// @brief Shows or hides the right border of a cell if it's in the
-            ///     last column.
+            /// @brief Shows or hides the right border of a cell if it's in the last column.
             /// @param show @c false to hide the right outer border of a cell.
             void ShowOuterRightBorder(const bool show)
                 { m_showOuterRightBorder = show; }
         private:
+            /// @brief Returns a double value representing the cell.
+            /// @details This is useful for comparing cells (or aggregating them).
+            /// @returns If numeric, returns the underlying double value.
+            ///     If a ratio, returns the magnitude of larger value compared to
+            ///     the smaller one.\n
+            ///     Otherwise, returns NaN.
             [[nodiscard]] double GetDoubleValue() const noexcept
                 {
-                const auto dVal{ std::get_if<double>(&m_value) };
-                if (dVal)
-                    { return *dVal; }
+                if (IsNumeric())
+                    {
+                    const auto dVal{ std::get_if<double>(&m_value) };
+                    if (dVal)
+                        { return *dVal; }
+                    else
+                        { return std::numeric_limits<double>::quiet_NaN(); }
+                    }
+                else if (IsRatio())
+                    {
+                    const auto rVals{ std::get_if<std::pair<double, double>>(&m_value) };
+                    if (rVals)
+                        {
+                        return (rVals->first >= rVals->second) ?
+                            safe_divide<double>(rVals->first, rVals->second) :
+                            safe_divide<double>(rVals->second, rVals->first);
+                        }
+                    else
+                        { return std::numeric_limits<double>::quiet_NaN(); }
+                    }
                 else
                     { return std::numeric_limits<double>::quiet_NaN(); }
                 }
+
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
             CellFormat m_valueFormat{ CellFormat::General };
             uint8_t m_precision{ 0 };
