@@ -506,8 +506,10 @@ namespace Wisteria::Graphs
                     auto nextRow = currentRow+1;
                     while (remainingRows > 0 && nextRow < GetRowCount())
                         {
-                        rowHeights[nextRow++] =
-                            safe_divide(bBox.GetWidth(), cell.m_rowCount);
+                        rowHeights[nextRow] =
+                            std::max(safe_divide(bBox.GetWidth(), cell.m_rowCount),
+                                     rowHeights[nextRow]);
+                        ++nextRow;
                         --remainingRows;
                         }
                     }
@@ -522,8 +524,10 @@ namespace Wisteria::Graphs
                     auto nextColumn = currentColumn+1;
                     while (remainingColumns > 0 && nextColumn < row.size())
                         {
-                        columnWidths[nextColumn++] =
-                            safe_divide(bBox.GetWidth(), cell.m_columnCount);
+                        columnWidths[nextColumn] =
+                            std::max(safe_divide(bBox.GetWidth(), cell.m_columnCount),
+                                     columnWidths[nextColumn]);
+                        ++nextColumn;
                         --remainingColumns;
                         }
                     }
