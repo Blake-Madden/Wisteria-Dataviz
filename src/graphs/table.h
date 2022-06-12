@@ -251,6 +251,13 @@ namespace Wisteria::Graphs
             /// @param font The font to use.
             void SetFont(const wxFont& font)
                 { m_font = font; }
+            /// @returns @c true if cell is being highlighted.
+            [[nodiscard]] bool IsHighlighted() const noexcept
+                { return m_isHighlighted; }
+            /// @brief Draw a highlighted border around the cell.
+            /// @param highlight @c true to highlight the cell.
+            void Highlight(const bool highlight) noexcept
+                { m_isHighlighted = highlight; }
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.
             void SetColumnCount(const int colCount) noexcept
@@ -309,12 +316,16 @@ namespace Wisteria::Graphs
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
             std::optional<size_t> m_suggestedLineLength;
+
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
+
             bool m_showOuterLeftBorder{ true };
             bool m_showOuterTopBorder{ true };
             bool m_showOuterRightBorder{ true };
             bool m_showOuterBottomBorder{ true };
+
+            bool m_isHighlighted{ false };
             };
 
         /// @brief Constructor.
@@ -341,7 +352,8 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the size of the table.
         /// @details This should only be used if building a table from scratch.
-        ///     Prefer using SetData() instead.
+        ///     Prefer using SetData() instead, unless you plan to manually fill
+        ///     the data cell-by-cell.
         /// @param rows The number of rows.
         /// @param cols The number of columns.
         /// @note If the table is being made smaller, then existing content
@@ -356,7 +368,7 @@ namespace Wisteria::Graphs
                 { row.resize(cols); }
             }
         /// @brief Empties the contents of the table.
-        void ClearTable()
+        void ClearTable() noexcept
             { m_table.clear(); }
         /** @brief Sets the font for the entire table.
             @param ft The font to apply.*/
@@ -381,6 +393,10 @@ namespace Wisteria::Graphs
         /// @param percent The minimum percent of the area's height that the table should consume.
         void SetMinHeightProportion(const double percent)
             { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
+
+        /// @returns The pen used to highlight specific cells (e.g., outliers).
+        [[nodiscard]] wxPen& GetHighlightPen() noexcept
+            { return m_highlightPen; }
         /// @}
 
         /// @name Row & Column Functions
@@ -583,7 +599,9 @@ namespace Wisteria::Graphs
                 for (auto& row : m_table)
                     {
                     if (column < row.size())
-                        { row[column].m_horizontalCellAlignment = PageHorizontalAlignment::Centered; }
+                        {
+                        row[column].m_horizontalCellAlignment = PageHorizontalAlignment::Centered;
+                        }
                     }
                 }
             }
@@ -630,29 +648,31 @@ namespace Wisteria::Graphs
         /// @throws std::runtime_error If row or column index is out of range, throws an exception.\n
         ///     The exception's @c what() message is UTF-8 encoded, so pass it to
         ///     @c wxString::FromUTF8() when formatting it for an error message.
-        TableCell& GetCell(const size_t row, const size_t column)
-            {
-            wxASSERT_MSG(row < m_table.size(),
-                wxString::Format(L"Invalid row index (%zu)!", row));
-            wxASSERT_MSG(column < m_table[row].size(),
-                wxString::Format(L"Invalid column index (%zu)!", column));
-            if (row >= m_table.size() || column >= m_table[row].size())
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"Invalid cell index (row %zu, column %zu)."),
-                                     row, column).ToUTF8());
-                }
-            return m_table[row][column];
-            }
+        TableCell& GetCell(const size_t row, const size_t column);
         /// @}
     private:
         void RecalcSizes(wxDC& dc) final;
+
+        /// @returns If a cell is being eclipsed vertically by the cell above it,
+        ///     then return that cell. Otherwise, return @c std::nullopt.
+        /// @param row The row index of the cell.
+        /// @param column The column index of the cell.
+        [[nodiscard]] std::optional<TableCell> GetParentRowWiseCell(const size_t row,
+                                                                    const size_t column);
+        /// @returns If a cell is being eclipsed horizontally by the cell left of it,
+        ///     then return that cell. Otherwise, return @c std::nullopt.
+        /// @param row The row index of the cell.
+        /// @param column The column index of the cell.
+        [[nodiscard]] std::optional<TableCell> GetParentColumnWiseCell(const size_t row,
+                                                                       const size_t column);
 
         void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
                                 const std::vector<double>& values);
         std::vector<std::vector<TableCell>> m_table;
         std::optional<double> m_minWidthProportion;
         std::optional<double> m_minHeightProportion;
+
+        wxPen m_highlightPen{ wxPen(*wxRED) };
         };
     }
 
