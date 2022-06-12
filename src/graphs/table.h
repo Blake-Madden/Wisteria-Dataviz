@@ -204,6 +204,8 @@ namespace Wisteria::Graphs
         /// @brief Types of values that can be used for a cell.
         using CellValueType = std::variant<double, wxString, wxDateTime,
                                            std::pair<double, double>>;
+        /// @brief The row and column position of a cell.
+        using CellPosition = std::pair<size_t, size_t>;
 
         /// @brief An annocation to add to the table, connected to a set of cells.
         struct CellAnnotation
@@ -211,7 +213,7 @@ namespace Wisteria::Graphs
             /// @brief The note to display in the gutter next to the table.
             wxString m_note;
             /// @brief The cells to highlight and connect the note to.
-            std::vector<std::pair<size_t, size_t>> m_cells;
+            std::vector<CellPosition> m_cells;
             /// @brief Which side of the table that the note should be on.
             /// @note This will be overridden if there the page placement
             ///     of the table conflicts with this option. For example,
@@ -448,7 +450,7 @@ namespace Wisteria::Graphs
         /// @warning If the imported file was transposed, then this will also include
         ///     the first column which contains the dataset's original column names.
         [[nodiscard]] size_t GetColumnCount() const noexcept
-            { return (m_table.size() == 0) ? 0 : m_table[0].size(); }
+            { return (GetRowCount() == 0) ? 0 : m_table[0].size(); }
 
         /// @brief Inserts an empty row at the given index.
         /// @details For example, an index of @c 0 will insert the row at the
@@ -465,8 +467,8 @@ namespace Wisteria::Graphs
                 {
                 auto insertedRow = m_table.insert(m_table.cbegin() +
                         // clamp indices going beyond the row count to m_table.cend()
-                        std::clamp<size_t>(rowIndex, 0, m_table.size()),
-                    std::vector<TableCell>(m_table[0].size(), TableCell()));
+                        std::clamp<size_t>(rowIndex, 0, GetRowCount()),
+                    std::vector<TableCell>(GetColumnCount(), TableCell()));
                 if (rowName.has_value())
                     { insertedRow->at(0).m_value = rowName.value(); }
                 }
@@ -553,7 +555,7 @@ namespace Wisteria::Graphs
         ///     via SetData() or SetTableSize().
         void SetColumnBackgroundColor(const size_t column, const wxColour color)
             {
-            if (m_table.size() && column < m_table[0].size())
+            if (GetRowCount() && column < GetColumnCount())
                 {
                 for (auto& row : m_table)
                     {
@@ -567,7 +569,7 @@ namespace Wisteria::Graphs
             @param row The row to make bold.*/
         void BoldRow(const size_t row)
             {
-            if (row < m_table.size())
+            if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (auto& cell : currentRow)
@@ -593,7 +595,7 @@ namespace Wisteria::Graphs
             @param precision The precision for the row.*/
         void SetRowPrecision(const size_t row, const uint8_t precision)
             {
-            if (row < m_table.size())
+            if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (auto& cell : currentRow)
@@ -619,7 +621,7 @@ namespace Wisteria::Graphs
             @param row The row to have horizontally centered cell content.*/
         void CenterRowHorizontally(const size_t row)
             {
-            if (row < m_table.size())
+            if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (auto& cell : currentRow)
@@ -657,6 +659,26 @@ namespace Wisteria::Graphs
                 This can be useful for showing grouped data.
             @param column The column to combine cells within.*/
         void GroupColumn(const size_t column);
+
+        /** @brief Finds the outliers from the specified column.
+            @details This can be used for highlighting outliers (and possibly annotating them).
+            @sa AddCellAnnotation().
+            @param column The column to review.
+            @param outlierThreshold The z-score threshold for determining if a value
+                is an outlier. Normally this should be @c 3.0 (representing a value
+                being three standard deviations from the mean). A lower value will
+                be more liberal in classifying a value as an outlier; a higher value
+                will be more strict.
+            @returns The cell positions of the outliers.
+            @warning This should not be called on columns with aggregate rows
+                (e.g., subtotals) in them, as these will be most likely be seen as outliers.
+                If you must run this against such a column, be sure to remove these rows
+                from the returned set of cell positions.\n
+                Also, any changes to the structure of the table (e.g., adding aggregate
+                rows or columns) will make the returned postions incorrect. This should be
+                called after all structural changes to the table.*/
+        std::vector<CellPosition> GetOutliers(const size_t column,
+                                              const double outlierThreshold = 3.0);
 
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
         /// @param alternateColor The background color to apply to ever other row.

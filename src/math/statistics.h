@@ -200,7 +200,7 @@ namespace statistics
 
     /** @returns The variance from the specified range.
         @param data The data to analyze.
-        @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
     [[nodiscard]] inline double variance(const std::vector<double>& data, const bool is_sample)
         {
         // sum of squares/N-1
@@ -215,23 +215,34 @@ namespace statistics
 
     /** @returns The standard deviation from the specified range.
         @param data The data to analyze.
-        @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
     [[nodiscard]] inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
         if (data.size() < 2)
             { throw std::invalid_argument("Not enough observations to calculate std. dev."); }
-        //square root of variance
+        // square root of variance
         return std::sqrt(variance(data, is_sample) );
         }
 
+    /** @returns A value, converted to a z-score.
+        @param value The value to convert.
+        @param mean The sample mean.
+        @param stdDev The sample standard deviation.
+        @todo Need unit tests.*/
+    [[nodiscard]] inline double z_score(const double value, const double mean, const double stdDev)
+        {
+        return std::abs(safe_divide<double>(value - mean, stdDev));
+        }
+
     /** @returns The standard error of the mean from the specified range.
-         The standard deviation of all sample mean estimates of a population mean.
-         For example, if multiple samples of size N are taken from a population,
-         the means will more than likely vary between samplings.
-         The standard error will measure the standard deviation of these sample means.
+            The standard deviation of all sample mean estimates of a population mean.
+            For example, if multiple samples of size N are taken from a population,
+            the means will more than likely vary between samplings.
+            The standard error will measure the standard deviation of these sample means.
         @param data The data to analyze.
-        @param is_sample Set to `true` to use sample variance (i.e., N-1).*/
-    [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data, const bool is_sample)
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
+    [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data,
+                                                       const bool is_sample)
         {
         const auto N = valid_n(data);
         if (N < 2)
@@ -241,11 +252,13 @@ namespace statistics
 
     /** @brief Gets the skewness from the specified range.
         @details Skewness measures the asymmetry of the probability distribution.
-         A zero skew indicates a symmetrical balance in the distribution.
-         A negative skew indicates that the left side of the distribution is longer and most of the values are concentrated on the right.
-         A positive skew indicates that the right side of the distribution is longer and most of the values are concentrated on the left.
+            A zero skew indicates a symmetrical balance in the distribution.
+            A negative skew indicates that the left side of the distribution is longer and most
+            of the values are concentrated on the right.
+            A positive skew indicates that the right side of the distribution is longer and most
+            of the values are concentrated on the left.
         @param data The data to analyze.
-        @param is_sample Set to `true` to use sample variance (i.e., N-1).
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @returns The skewness from the specified range.*/
     [[nodiscard]] inline double skewness(const std::vector<double>& data, const bool is_sample)
         {
@@ -261,7 +274,7 @@ namespace statistics
         @details Kurtosis measures the peakedness of a distribution. Zero indicates a normal distribution,
          a positive value represents a sharp curve, and a negative value represents a flat distribution.
         @param data The data to analyze.
-        @param is_sample Set to `true` to use sample variance (i.e., N-1).
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @returns The Kurtosis from the specified range.*/
     [[nodiscard]] inline double kurtosis(const std::vector<double>& data, const bool is_sample)
         {

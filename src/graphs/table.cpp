@@ -493,6 +493,38 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::vector<Table::CellPosition> Table::GetOutliers(const size_t column,
+                                                        const double outlierThreshold /*= 3.0*/)
+        {
+        std::vector<CellPosition> outlierPositions;
+        if (column < GetColumnCount())
+            {
+            std::vector<double> values;
+            values.reserve(GetRowCount());
+            for (size_t row = 0; row < GetRowCount(); ++row)
+                {
+                const auto val = GetCell(row, column).GetDoubleValue();
+                if (!std::isnan(val))
+                    { values.push_back(val); }
+                }
+            const auto meanVal = statistics::mean(values);
+            const auto sdVal = statistics::standard_deviation(values, true);
+            // get the z-scores and see who is an outlier
+            for (size_t row = 0; row < GetRowCount(); ++row)
+                {
+                const auto val = GetCell(row, column).GetDoubleValue();
+                if (!std::isnan(val))
+                    {
+                    const auto zScore = statistics::z_score(val, meanVal, sdVal);
+                    if (zScore > outlierThreshold)
+                        { outlierPositions.push_back(std::make_pair(row, column)); }
+                    }
+                }
+            }
+        return outlierPositions;
+        }
+
+    //----------------------------------------------------------------
     void Table::RecalcSizes(wxDC& dc)
         {
         if (GetRowCount() == 0 || GetColumnCount() == 0)
