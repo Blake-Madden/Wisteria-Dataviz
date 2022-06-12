@@ -188,7 +188,7 @@ namespace Wisteria::Graphs
                 else
                     {
                     throw std::runtime_error(wxString::Format(
-                        L"'%s': column not found for table.", colName).ToUTF8());
+                        _(L"'%s': column not found for table."), colName).ToUTF8());
                     }
                 ++currentRow;
                 }
@@ -231,7 +231,7 @@ namespace Wisteria::Graphs
                 else
                     {
                     throw std::runtime_error(wxString::Format(
-                        L"'%s': column not found for table.", colName).ToUTF8());
+                        _(L"'%s': column not found for table."), colName).ToUTF8());
                     }
                 ++currentColumn;
                 }
@@ -772,10 +772,9 @@ namespace Wisteria::Graphs
         currentXPos = drawArea.GetX();
         currentYPos = drawArea.GetY();
         columnsToOverwrite = 0;
-        bool isPreviousColumnHighlighted{ false };
-        bool isPreviousRowHighlighted{ false };
         for (const auto& rowHeight : rowHeights)
             {
+            bool isPreviousColumnHighlighted{ false };
             currentColumn = 0;
             currentXPos = drawArea.GetX();
             for (const auto& colWidth : columnWidths)
