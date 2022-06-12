@@ -8,9 +8,11 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     wxString Table::TableCell::GetDisplayValue() const
         {
-        if (const auto strVal{ std::get_if<wxString>(&m_value) }; strVal)
+        if (const auto strVal{ std::get_if<wxString>(&m_value) };
+            strVal != nullptr)
             { return *strVal; }
-        else if (const auto dVal{ std::get_if<double>(&m_value) }; dVal)
+        else if (const auto dVal{ std::get_if<double>(&m_value) };
+                 dVal != nullptr)
             {
             if (std::isnan(*dVal))
                 { return wxEmptyString; }
@@ -25,7 +27,8 @@ namespace Wisteria::Graphs
                     wxNumberFormatter::Style::Style_WithThousandsSep);
                 }
             }
-        else if (const auto dVal{ std::get_if<std::pair<double, double>>(&m_value) }; dVal)
+        else if (const auto dVal{ std::get_if<std::pair<double, double>>(&m_value) };
+                 dVal != nullptr)
             {
             if (std::isnan(dVal->first) || std::isnan(dVal->second))
                 { return wxEmptyString; }
@@ -46,7 +49,8 @@ namespace Wisteria::Graphs
                         wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             }
-        else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) }; dVal)
+        else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) };
+                 dVal != nullptr)
             {
             if (!dVal->IsValid())
                 { return wxEmptyString; }
@@ -1011,7 +1015,10 @@ namespace Wisteria::Graphs
             auto noteConnectionLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
             bool useRightGutter = (note.m_side == Side::Right &&
-                                   GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned);
+                                   GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned) ||
+                                  // left side, but table is left aligned and there is no space for it
+                                  (note.m_side == Side::Left &&
+                                   GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned);
             if (useRightGutter)
                 {
                 // draw lines from the middle of the cells to a little bit outside of the
