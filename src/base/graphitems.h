@@ -63,6 +63,15 @@ namespace Wisteria
         Left = West
         };
 
+    /// @brief Which side something is on.
+    enum class Side
+        {
+        /// @brief Left side.
+        Left,
+        /// @brief Right side.
+        Right
+        };
+
     /// @brief The type of influence something can have on a subject.
     /// @details As an example, predictors in a linear regression.
     /// @internal This enum is a bitmap, do not make it strongly typed.

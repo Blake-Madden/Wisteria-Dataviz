@@ -129,6 +129,22 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    wxRect Table::GetCachedCellRect(const size_t row, const size_t column)
+        {
+        wxASSERT_MSG(row < m_cachedCellRects.size(),
+            wxString::Format(L"Invalid row index (%zu)!", row));
+        wxASSERT_MSG(column < m_cachedCellRects[row].size(),
+            wxString::Format(L"Invalid column index (%zu)!", column));
+        if (row >= m_cachedCellRects.size() || column >= m_cachedCellRects[row].size())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"Invalid cell index (row %zu, column %zu)."),
+                                    row, column).ToUTF8());
+            }
+        return m_cachedCellRects[row][column];
+        }
+
+    //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
         GetPen() = ColorBrewer::GetColor(Colors::Color::AshGrey,
@@ -382,6 +398,22 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::AddCellAnnotation(const CellAnnotation& cellNote)
+        {
+        for (const auto& cell : cellNote.m_cells)
+            { GetCell(cell.first, cell.second).Highlight(true); }
+        m_cellAnnotations.emplace_back(cellNote);
+        }
+
+    //----------------------------------------------------------------
+    void Table::AddCellAnnotation(CellAnnotation&& cellNote)
+        {
+        for (const auto& cell : cellNote.m_cells)
+            { GetCell(cell.first, cell.second).Highlight(true); }
+        m_cellAnnotations.emplace_back(cellNote);
+        }
+
+    //----------------------------------------------------------------
     void Table::ApplyAlternateRowColors(const wxColour alternateColor,
         const size_t startRow /*= 0*/,
         std::optional<size_t> startColumn /*= std::nullopt*/,
@@ -467,6 +499,8 @@ namespace Wisteria::Graphs
             { return; }
 
         Graph2D::RecalcSizes(dc);
+
+        m_cachedCellRects.clear();
 
         wxRect drawArea = GetPlotAreaBoundingBox();
         // add some padding around the table, unless client is controlling the dimensions
@@ -583,14 +617,14 @@ namespace Wisteria::Graphs
             }
 
         // offset the table later if being page aligned within its parent drawing area
-        const wxCoord horizontalAlignment =
+        const wxCoord horizontalAlignmentOffset =
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned) ?
              (drawArea.GetWidth() - tableWidth) :
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
              safe_divide(drawArea.GetWidth() - tableWidth, 2) :
             0;
 
-        const wxCoord verticalAlignment =
+        const wxCoord verticalAlignmentOffset =
             (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned) ?
              (drawArea.GetHeight() - tableHeight) :
             (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
@@ -621,6 +655,7 @@ namespace Wisteria::Graphs
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
         std::set<std::pair<size_t, size_t>> rowCellsToSkip;
+        m_cachedCellRects.resize(GetRowCount(), std::vector<wxRect>(GetColumnCount(), wxRect()));
         for (const auto& row : m_table)
             {
             currentColumn = 0;
@@ -699,6 +734,8 @@ namespace Wisteria::Graphs
                 if (cell.m_suggestedLineLength.has_value())
                     { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
+                // cache it for annotations
+                m_cachedCellRects[currentRow][currentColumn] = boxRect;
                 cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                 // if an overriding horizontal alignment is in use, then use that
                 if (cell.m_horizontalCellAlignment.has_value())
@@ -735,8 +772,8 @@ namespace Wisteria::Graphs
             {
             cellLabel->SetScaling(smallestTextScaling);
             // if using page alignment other than left aligned, then adjust its position
-            if (horizontalAlignment > 0 || verticalAlignment > 0)
-                { cellLabel->Offset(horizontalAlignment, verticalAlignment); }
+            if (horizontalAlignmentOffset > 0 || verticalAlignmentOffset > 0)
+                { cellLabel->Offset(horizontalAlignmentOffset, verticalAlignmentOffset); }
             AddObject(cellLabel);
             }
 
@@ -906,13 +943,117 @@ namespace Wisteria::Graphs
             }
 
         // if using page alignment other than left aligned, then adjust its position
-        if (horizontalAlignment > 0 || verticalAlignment > 0)
+        if (horizontalAlignmentOffset > 0 || verticalAlignmentOffset > 0)
             {
-            borderLines->Offset(horizontalAlignment, verticalAlignment);
-            highlightedBorderLines->Offset(horizontalAlignment, verticalAlignment);
+            borderLines->Offset(horizontalAlignmentOffset, verticalAlignmentOffset);
+            highlightedBorderLines->Offset(horizontalAlignmentOffset, verticalAlignmentOffset);
+            for (auto& row : m_cachedCellRects)
+                {
+                for (auto& cell : row)
+                    {
+                    cell.Offset(wxPoint(horizontalAlignmentOffset, verticalAlignmentOffset));
+                    }
+                }
             }
 
         AddObject(borderLines);
         AddObject(highlightedBorderLines);
+
+        // add gutter messages
+        const auto rightGutter = wxRect(
+            wxPoint(drawArea.GetX() + horizontalAlignmentOffset + tableWidth,
+                    drawArea.GetY() + verticalAlignmentOffset),
+            wxSize(drawArea.GetWidth() - (horizontalAlignmentOffset + tableWidth),
+                   drawArea.GetHeight()));
+        const auto leftGutter = wxRect(
+            wxPoint(drawArea.GetX(), drawArea.GetY() + verticalAlignmentOffset),
+            wxSize(horizontalAlignmentOffset, drawArea.GetHeight()));
+        const auto connectionOverhangWidth = ScaleToScreenAndCanvas(10);
+        const auto labelSpacingFromLine = ScaleToScreenAndCanvas(5);
+        for (auto& note : m_cellAnnotations)
+            {
+            // sort by rows, top to bottom
+            std::sort(note.m_cells.begin(), note.m_cells.end(),
+                [](const auto& lv, const auto& rv) noexcept
+                    { return lv.first < rv.first; });
+            auto noteConnectionLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
+            wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
+            bool useRightGutter = (note.m_side == Side::Right &&
+                                   GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned);
+            if (useRightGutter)
+                {
+                // draw lines from the middle of the cells to a little bit outside of the
+                // table going into the right gutter
+                for (const auto& cell : note.m_cells)
+                    {
+                    const auto cellRect = GetCachedCellRect(cell.first, cell.second);
+                    const auto middleOfCellY = cellRect.GetY() + cellRect.GetHeight() / 2;
+                    lowestY = std::min(lowestY, middleOfCellY);
+                    highestY = std::max(highestY, middleOfCellY);
+                    noteConnectionLines->AddLine(
+                        wxPoint(cellRect.GetX() + cellRect.GetWidth(), middleOfCellY),
+                        wxPoint(rightGutter.GetX() + connectionOverhangWidth, middleOfCellY));
+                    }
+                // connect the protruding nubs with a vertical line
+                noteConnectionLines->AddLine(
+                    wxPoint(rightGutter.GetX() + connectionOverhangWidth, lowestY),
+                    wxPoint(rightGutter.GetX() + connectionOverhangWidth, highestY));
+                const auto cellsYMiddle = ((highestY - lowestY) / 2) + lowestY;
+                noteConnectionLines->AddLine(
+                    wxPoint(rightGutter.GetX() + connectionOverhangWidth, cellsYMiddle),
+                    wxPoint(rightGutter.GetX() + connectionOverhangWidth*2, cellsYMiddle));
+                AddObject(noteConnectionLines);
+                // add the note into the gutter
+                auto noteLabel = std::make_shared<Label>(
+                    GraphItemInfo(note.m_note).
+                    Pen(wxNullPen).
+                    // use same text scale as the table
+                    Scaling(smallestTextScaling).DPIScaling(GetDPIScaleFactor()).
+                    Anchoring(Anchoring::BottomLeftCorner).
+                    AnchorPoint(
+                        wxPoint(rightGutter.GetX() + (connectionOverhangWidth * 2) + labelSpacingFromLine,
+                                cellsYMiddle)) );
+                const auto bBox = noteLabel->GetBoundingBox(dc);
+                noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() + wxPoint(0, bBox.GetHeight()/2));
+                AddObject(noteLabel);
+                }
+            else
+                {
+                // draw lines from the middle of the cells to a little bit outside of the
+                // table going into the left gutter
+                for (const auto& cell : note.m_cells)
+                    {
+                    const auto cellRect = GetCachedCellRect(cell.first, cell.second);
+                    const auto middleOfCellY = cellRect.GetY() + cellRect.GetHeight() / 2;
+                    lowestY = std::min(lowestY, middleOfCellY);
+                    highestY = std::max(highestY, middleOfCellY);
+                    noteConnectionLines->AddLine(
+                        wxPoint(cellRect.GetX(), middleOfCellY),
+                        wxPoint(leftGutter.GetRight() - connectionOverhangWidth, middleOfCellY));
+                    }
+                // connect the protruding nubs with a vertical line
+                noteConnectionLines->AddLine(
+                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth, lowestY),
+                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth, highestY));
+                const auto cellsYMiddle = ((highestY - lowestY) / 2) + lowestY;
+                noteConnectionLines->AddLine(
+                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth, cellsYMiddle),
+                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth *2, cellsYMiddle));
+                AddObject(noteConnectionLines);
+                // add the note into the gutter
+                auto noteLabel = std::make_shared<Label>(
+                    GraphItemInfo(note.m_note).
+                    Pen(wxNullPen).
+                    // use same text scale as the table
+                    Scaling(smallestTextScaling).DPIScaling(GetDPIScaleFactor()).
+                    Anchoring(Anchoring::BottomRightCorner).
+                    AnchorPoint(
+                        wxPoint(leftGutter.GetRight() - (connectionOverhangWidth * 2) - labelSpacingFromLine,
+                                cellsYMiddle)) );
+                const auto bBox = noteLabel->GetBoundingBox(dc);
+                noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() + wxPoint(0, bBox.GetHeight()/2));
+                AddObject(noteLabel);
+                }
+            }
         }
     }

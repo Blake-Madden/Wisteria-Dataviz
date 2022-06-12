@@ -205,6 +205,22 @@ namespace Wisteria::Graphs
         using CellValueType = std::variant<double, wxString, wxDateTime,
                                            std::pair<double, double>>;
 
+        /// @brief An annocation to add to the table, connected to a set of cells.
+        struct CellAnnotation
+            {
+            /// @brief The note to display in the gutter next to the table.
+            wxString m_note;
+            /// @brief The cells to highlight and connect the note to.
+            std::vector<std::pair<size_t, size_t>> m_cells;
+            /// @brief Which side of the table that the note should be on.
+            /// @note This will be overridden if there the page placement
+            ///     of the table conflicts with this option. For example,
+            ///     if the table is left aligned in the drawing area,
+            ///     then this value will be ignored and the note will always
+            ///     appear to the right of the table.
+            Side m_side{ Side::Right };
+            };
+
         /// @brief A cell in the table.
         class TableCell
             {
@@ -648,10 +664,24 @@ namespace Wisteria::Graphs
         /// @throws std::runtime_error If row or column index is out of range, throws an exception.\n
         ///     The exception's @c what() message is UTF-8 encoded, so pass it to
         ///     @c wxString::FromUTF8() when formatting it for an error message.
-        TableCell& GetCell(const size_t row, const size_t column);
+        [[nodiscard]] TableCell& GetCell(const size_t row, const size_t column);
+
+        /// @brief Highlights the specified cells and adds a note pointing to them.
+        /// @param cellNote Information about the cell(s) to highlight,
+        ///     the note, and where to place it relative to the table.
+        void AddCellAnnotation(const CellAnnotation& cellNote);
         /// @}
+
+        /// @private
+        void AddCellAnnotation(CellAnnotation&& cellNote);
     private:
         void RecalcSizes(wxDC& dc) final;
+
+        /// @returns The area of a given cell if found; otherwise, an invalid rect.
+        /// @param row The row index of the cell.
+        /// @param column The column index of the cell.
+        /// @warning This should only be called during or after a call to RecalcSizes().
+        [[nodiscard]] wxRect GetCachedCellRect(const size_t row, const size_t column);
 
         /// @returns If a cell is being eclipsed vertically by the cell above it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
@@ -672,7 +702,12 @@ namespace Wisteria::Graphs
         std::optional<double> m_minWidthProportion;
         std::optional<double> m_minHeightProportion;
 
+        std::vector<CellAnnotation> m_cellAnnotations;
+
         wxPen m_highlightPen{ wxPen(*wxRED) };
+
+        // cached values
+        std::vector<std::vector<wxRect>> m_cachedCellRects;
         };
     }
 
