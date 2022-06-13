@@ -1071,12 +1071,12 @@ namespace Wisteria::Graphs
         AddObject(highlightedBorderLines);
 
         // add gutter messages
-        const auto rightGutter = wxRect(
+        auto rightGutter = wxRect(
             wxPoint(drawArea.GetX() + horizontalAlignmentOffset + tableWidth,
                     drawArea.GetY() + verticalAlignmentOffset),
             wxSize(drawArea.GetWidth() - (horizontalAlignmentOffset + tableWidth),
                    drawArea.GetHeight()));
-        const auto leftGutter = wxRect(
+        auto leftGutter = wxRect(
             wxPoint(drawArea.GetX(), drawArea.GetY() + verticalAlignmentOffset),
             wxSize(horizontalAlignmentOffset, drawArea.GetHeight()));
         const auto connectionOverhangWidth = ScaleToScreenAndCanvas(m_connectionOverhangWidth);
@@ -1121,10 +1121,27 @@ namespace Wisteria::Graphs
                     Scaling(smallestTextScaling).DPIScaling(GetDPIScaleFactor()).
                     Anchoring(Anchoring::BottomLeftCorner).
                     AnchorPoint(
-                        wxPoint(rightGutter.GetX() + (connectionOverhangWidth * 2) + labelSpacingFromLine,
+                        wxPoint(rightGutter.GetX() +
+                                (connectionOverhangWidth * 2) + labelSpacingFromLine,
                                 cellsYMiddle)) );
+                // if label is too long to fit, then split it length-wise to fit in the gutter
                 const auto bBox = noteLabel->GetBoundingBox(dc);
-                noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() + wxPoint(0, bBox.GetHeight()/2));
+                rightGutter.SetLeft(rightGutter.GetLeft() +
+                                    (connectionOverhangWidth * 2) + labelSpacingFromLine);
+                rightGutter.SetWidth(rightGutter.GetWidth() -
+                                     (connectionOverhangWidth * 2) - labelSpacingFromLine);
+                if (!Polygon::IsRectInsideRect(bBox, rightGutter))
+                    {
+                    noteLabel->SplitTextToFitBoundingBox(dc, rightGutter.GetSize());
+                    const auto bBox = noteLabel->GetBoundingBox(dc);
+                    noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
+                                              wxPoint(0, bBox.GetHeight() / 2));
+                    }
+                else
+                    {
+                    noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
+                                              wxPoint(0, bBox.GetHeight() / 2));
+                    }
                 AddObject(noteLabel);
                 }
             else
@@ -1158,10 +1175,26 @@ namespace Wisteria::Graphs
                     Scaling(smallestTextScaling).DPIScaling(GetDPIScaleFactor()).
                     Anchoring(Anchoring::BottomRightCorner).
                     AnchorPoint(
-                        wxPoint(leftGutter.GetRight() - (connectionOverhangWidth * 2) - labelSpacingFromLine,
+                        wxPoint(leftGutter.GetRight() -
+                                (connectionOverhangWidth * 2) - labelSpacingFromLine,
                                 cellsYMiddle)) );
+
+                // if label is too long to fit, then split it length-wise to fit in the gutter
                 const auto bBox = noteLabel->GetBoundingBox(dc);
-                noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() + wxPoint(0, bBox.GetHeight()/2));
+                leftGutter.SetWidth(leftGutter.GetWidth() -
+                                    (connectionOverhangWidth * 2) - labelSpacingFromLine);
+                if (!Polygon::IsRectInsideRect(bBox, leftGutter))
+                    {
+                    noteLabel->SplitTextToFitBoundingBox(dc, leftGutter.GetSize());
+                    const auto bBox = noteLabel->GetBoundingBox(dc);
+                    noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
+                                              wxPoint(0, bBox.GetHeight() / 2));
+                    }
+                else
+                    {
+                    noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
+                                              wxPoint(0, bBox.GetHeight() / 2));
+                    }
                 AddObject(noteLabel);
                 }
             }
