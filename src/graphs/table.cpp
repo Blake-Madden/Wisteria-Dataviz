@@ -690,8 +690,9 @@ namespace Wisteria::Graphs
             ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
             0;
 
-        drawArea.SetSize(wxSize(tableWidth + widestLeftNote +
-                                widestRightNote + extraSpaceForCentering, tableHeight));
+        // adjust the drawing area width, but only if it is smaller than it was before
+        const auto newWidth = tableWidth + widestLeftNote + widestRightNote + extraSpaceForCentering;
+        drawArea.SetSize(wxSize(std::min(drawArea.GetWidth(), newWidth), tableHeight));
 
         return wxSize(tableWidth, tableHeight);
         }
