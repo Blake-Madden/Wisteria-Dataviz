@@ -719,6 +719,22 @@ namespace Wisteria::Graphs
     private:
         void RecalcSizes(wxDC& dc) final;
 
+        /** @brief Determines which gutter a note should go into.
+            @details Notes will have its gutter specified, but the tables page
+                placement may conflict with this value. This function will determine
+                if there is such a conflict and return the appropriate gutter.
+            @param note The annotation to review.
+            @returns The gutter that the note should go into.*/
+        [[nodiscard]] Side DeduceGutterSide(const CellAnnotation& note) const noexcept
+            {
+            return ((note.m_side == Side::Right &&
+                     GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned) ||
+                    // left side, but table is left aligned and there is no space for it
+                    (note.m_side == Side::Left &&
+                     GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)) ?
+                    Side::Right : Side::Left;
+            }
+
         /** @brief Calculates the table's cell dimensions, overall width and height,
                 adjusted drawing area. This drawing area includes the table and its
                 gutter annotations.
@@ -752,15 +768,24 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::optional<TableCell> GetParentColumnWiseCell(const size_t row,
                                                                        const size_t column);
 
+        /** @brief Calculates an aggregation from a series of values.
+            @param aggInfo Which type of aggregate calculation to perform.
+            @param aggCell The cell to place the result.
+            @param values The values for the calculation.*/
         void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
                                 const std::vector<double>& values);
+
+        // DIPs for annotation connection lines and space between lines
+        static constexpr wxCoord m_labelSpacingFromLine{ 5 };
+        static constexpr wxCoord m_connectionOverhangWidth{ 10 };
+
         std::vector<std::vector<TableCell>> m_table;
         std::optional<double> m_minWidthProportion;
         std::optional<double> m_minHeightProportion;
 
         std::vector<CellAnnotation> m_cellAnnotations;
 
-        wxPen m_highlightPen{ wxPen(*wxRED) };
+        wxPen m_highlightPen{ wxPen(*wxRED_PEN) };
 
         // cached values
         std::vector<std::vector<wxRect>> m_cachedCellRects;

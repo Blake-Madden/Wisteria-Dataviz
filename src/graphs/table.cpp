@@ -658,7 +658,40 @@ namespace Wisteria::Graphs
             tableHeight += roundingDiff;
             }
 
-        drawArea.SetSize(wxSize(tableWidth, tableHeight));
+        // if there are annotations, add gutters for them
+        wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
+        for (auto& note : m_cellAnnotations)
+            {
+            measuringLabel.SetText(note.m_note);
+            if (DeduceGutterSide(note) == Side::Left)
+                {
+                widestLeftNote = std::max(widestLeftNote,
+                                          measuringLabel.GetBoundingBox(dc).GetWidth());
+                }
+            else
+                {
+                widestRightNote = std::max(widestRightNote,
+                                           measuringLabel.GetBoundingBox(dc).GetWidth());
+                }
+            }
+
+        // if centering table, add extra spacing to keep labels fitting
+        auto extraSpaceForCentering =
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
+            std::abs(widestLeftNote - widestRightNote) :
+            0;
+        // space for connection lines to notes
+        widestLeftNote += (widestLeftNote > 0) ?
+            (ScaleToScreenAndCanvas(m_connectionOverhangWidth)*2) +
+                ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+            0;
+        widestRightNote += (widestRightNote > 0) ?
+            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
+            ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+            0;
+
+        drawArea.SetSize(wxSize(tableWidth + widestLeftNote +
+                                widestRightNote + extraSpaceForCentering, tableHeight));
 
         return wxSize(tableWidth, tableHeight);
         }
@@ -727,8 +760,7 @@ namespace Wisteria::Graphs
         wxPoint pts[4];
         std::vector<std::shared_ptr<Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
-        size_t currentRow{ 0 };
-        size_t currentColumn{ 0 };
+        size_t currentRow{ 0 }, currentColumn{ 0 };
         wxCoord currentXPos{ drawArea.GetX() };
         wxCoord currentYPos{ drawArea.GetY() };
         int columnsToOverwrite{ 0 };
@@ -1046,8 +1078,8 @@ namespace Wisteria::Graphs
         const auto leftGutter = wxRect(
             wxPoint(drawArea.GetX(), drawArea.GetY() + verticalAlignmentOffset),
             wxSize(horizontalAlignmentOffset, drawArea.GetHeight()));
-        const auto connectionOverhangWidth = ScaleToScreenAndCanvas(10);
-        const auto labelSpacingFromLine = ScaleToScreenAndCanvas(5);
+        const auto connectionOverhangWidth = ScaleToScreenAndCanvas(m_connectionOverhangWidth);
+        const auto labelSpacingFromLine = ScaleToScreenAndCanvas(m_labelSpacingFromLine);
         for (auto& note : m_cellAnnotations)
             {
             // sort by rows, top to bottom
@@ -1056,12 +1088,8 @@ namespace Wisteria::Graphs
                     { return lv.first < rv.first; });
             auto noteConnectionLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
-            bool useRightGutter = (note.m_side == Side::Right &&
-                                   GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned) ||
-                                  // left side, but table is left aligned and there is no space for it
-                                  (note.m_side == Side::Left &&
-                                   GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned);
-            if (useRightGutter)
+            auto gutterSide = DeduceGutterSide(note);
+            if (gutterSide == Side::Right)
                 {
                 // draw lines from the middle of the cells to a little bit outside of the
                 // table going into the right gutter
