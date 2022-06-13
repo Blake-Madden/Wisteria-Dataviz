@@ -33,6 +33,10 @@ Basic
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/DonutChart.svg) | ![](docs/doxygen/images/DonutChartSubgrouped.svg) |
 
+| Table (Wisteria::Graphs::Table) |
+| :-------------- |
+| ![](docs/doxygen/images/TableMajors.svg) |
+
 Business
 -----------------------------
 

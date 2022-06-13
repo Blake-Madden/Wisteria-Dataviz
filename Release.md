@@ -3,6 +3,7 @@ Wisteria Dataviz 0.9.1 Release
 
 - Added Linear Regression Roadmap
 - Added Pros & Cons Roadmap
+- Added Table (i.e., presentation of tabular data, with aggregation and annotation support)
 - Added ability to stretch content to fit the entire page when printing
 - Added common axis builder helper class
 - Line plots can now use categorical or continuous columns for X axis values

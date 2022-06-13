@@ -136,6 +136,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_HEATMAP_GROUPED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_MULTIPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ID_NEW_TABLE);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -215,6 +216,10 @@ wxMenuBar* MyFrame::CreateMainMenubar()
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot.svg", iconSize));
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"))->
         SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot-common-axis.svg", iconSize));
+    fileMenu->AppendSeparator();
+
+    fileMenu->Append(MyApp::ID_NEW_TABLE, _(L"Table"))->
+        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_SAVE, _(L"&Save\tCtrl+S"), _(L"Save as Image"));
@@ -1670,6 +1675,88 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 FontColor(ColorBrewer::GetColor(Color::DarkGray)).Pen(wxNullPen).
                 Font(subframe->m_canvas->GetTopTitles().back().GetFont().MakeSmaller())));
         }
+    // Table
+    else if (event.GetId() == MyApp::ID_NEW_TABLE)
+        {
+        subframe->SetTitle(_(L"Table"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto juniorSeniorMajors = std::make_shared<Data::Dataset>();
+        try
+            {
+            juniorSeniorMajors->ImportCSV(appDir + L"/datasets/Tables/Junior & Senior Majors (Top 20).csv",
+                ImportInfo().
+                ContinuousColumns({ L"Female", L"Male" }).
+                CategoricalColumns({
+                    { L"Division" },
+                    { L"Department" }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto tableGraph = std::make_shared<Table>(subframe->m_canvas);
+        tableGraph->SetData(juniorSeniorMajors,
+            { L"Division", L"Department", L"Female", L"Male" });
+        // group the schools together in the first row
+        tableGraph->GroupColumn(0);
+
+        // add ratio aggregate column and group row totals
+        const wxColour aggColumnBkColor =
+            ColorBrewer::GetColor(Colors::Color::LightGray,
+                                  Settings::GetTranslucencyValue());
+        tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
+                                          _(L"Ratio"), std::nullopt, aggColumnBkColor);
+        tableGraph->InsertRowTotals(aggColumnBkColor);
+
+        // make the headers and row groups bold (and center the headers)
+        tableGraph->BoldRow(0);
+        tableGraph->BoldColumn(0);
+        tableGraph->CenterRowHorizontally(0);
+
+        const auto& ratioOutliers =
+            // Find outlier in the female-to-male ratios for the majors.
+            // (Note that we use a more liberal search, considering
+            // z-scores > 2 as being outliers
+            tableGraph->GetOutliers(tableGraph->GetColumnCount()-1, 2);
+        // if any outliers, make a note of it off to the side
+        if (ratioOutliers.size())
+            {
+            tableGraph->AddCellAnnotation(
+                { L"Majors with the most lopsided female-to-male ratios",
+                   ratioOutliers, Side::Right }
+                );
+            }
+
+        // if you also want to place annotations on the left of the table,
+        // then center it within its drawing area like so:
+        // tableGraph->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+
+        // add a title
+        subframe->m_canvas->GetTopTitles().push_back(Label(
+            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)")).
+            Padding(5, 5, 5, 5).Pen(wxNullPen).
+            ChildAlignment(RelativeAlignment::FlushLeft).
+            FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))) );
+
+        tableGraph->GetCaption().SetText(_(L"Source: Office of Institutional Research"));
+        tableGraph->GetCaption().SetPadding(5, 5, 5, 5);
+
+        // add the table to the canvas
+        subframe->m_canvas->SetFixedObject(0, 0, tableGraph);
+
+        // make the canvas tall since we it's a long table, but not very wide
+        subframe->m_canvas->SetCanvasMinHeightDIPs(
+            subframe->m_canvas->GetDefaultCanvasWidthDIPs());
+        subframe->m_canvas->SetCanvasMinWidthDIPs(
+            subframe->m_canvas->GetDefaultCanvasHeightDIPs());
+        // also, fit it to the entire page when printing (preferrably in portait)
+        subframe->m_canvas->FitToPageWhenPrinting(true);
+        }
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -1818,6 +1905,11 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot-common-axis.svg", iconSize),
         _(L"Multiple Plots (Common Axis)"));
+    toolBar->AddSeparator();
+
+    toolBar->AddTool(MyApp::ID_NEW_TABLE, _(L"Table"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize),
+        _(L"Table"));
 
     toolBar->Realize();
     }

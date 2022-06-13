@@ -10,6 +10,8 @@ Wisteria Dataviz is data visualization library based on [wxWidgets](https://gith
 such as:
 
 - Numerous built-in graphs (refer to the `Wisteria::Graphs` namespace for a full list)
+- Interface for displaying tabular data, including support for aggregate columns/rows, cell highlighting,
+  outlier detection, and annotations
 - Built-in [printing](Printing.md) support
 - Built-in copy support
 - [Exporting](Exporting.md) (SVG, PNG, JPEG, GIF, BMP, TGA, and TIFF are supported)
@@ -91,6 +93,10 @@ Basic
 | Pie Chart (Wisteria::Graphs::PieChart) | Donut Chart (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/PieChart.svg) | ![](docs/doxygen/images/DonutChart.svg) |
+
+| Table (Wisteria::Graphs::Table) |
+| :-------------- |
+| ![](docs/doxygen/images/TableMajors.svg) |
 
 Business
 -----------------------------

@@ -17,16 +17,19 @@
 #include <wx/filename.h>
 #include <wx/aboutdlg.h>
 #include <wx/uilocale.h>
+#include "../src/base/image.h"
+#include "../src/base/canvas.h"
+#include "../src/base/commonaxisbuilder.h"
+#include "../src/base/label.h"
+#include "../src/base/spacer.h"
+#include "../src/import/text_matrix.h"
+#include "../src/util/logfile.h"
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
 #include "../src/graphs/histogram.h"
 #include "../src/graphs/ganttchart.h"
-#include "../src/base/image.h"
-#include "../src/base/canvas.h"
 #include "../src/graphs/lineplot.h"
 #include "../src/graphs/wcurveplot.h"
-#include "../src/base/label.h"
-#include "../src/base/commonaxisbuilder.h"
 #include "../src/graphs/heatmap.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/likertchart.h"
@@ -34,9 +37,7 @@
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/lrroadmap.h"
 #include "../src/graphs/proconroadmap.h"
-#include "../src/base/spacer.h"
-#include "../src/import/text_matrix.h"
-#include "../src/util/logfile.h"
+#include "../src/graphs/table.h"
 
 // Define a new application
 class MyApp final : public wxApp
@@ -69,6 +70,7 @@ public:
     static constexpr int ID_NEW_CATEGORICAL_BARCHART_STIPPLED{ wxID_HIGHEST+24 };
     static constexpr int ID_NEW_LR_ROADMAP_GRAPH{ wxID_HIGHEST+25 };
     static constexpr int ID_NEW_PROCON_ROADMAP_GRAPH{ wxID_HIGHEST+26 };
+    static constexpr int ID_NEW_TABLE{ wxID_HIGHEST+27 };
     };
 
 // Define a new frame

@@ -352,6 +352,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the rectangular area of the entire graph area.
             @param rect The rectangle to bound the entire plot to. This is relative to its parent canvas.
+            @param dc Measurement DC, which is not used in this implementation.
             @param parentScaling This parameter is ignored.
             @note Derived classes should not need to call this except for special situations.\n
                 For example, Table uses it to scale itself down so that it doesn't consume

@@ -20,6 +20,10 @@ namespace Wisteria::Graphs
     {
     /** @brief A display of tabular data, which can either be imported from a dataset
             or be built from scratch.
+
+        | %Table with Aggregates      | Styled %Table         |
+        | :-------------- | :-------------------------------- |
+        | @image html TableMajors.svg width=90% | @image html TablePrograms.svg width=90% |
         
         @par %Data:
             A table can accept a Data::Dataset, where any type of column can be include.
@@ -99,9 +103,11 @@ namespace Wisteria::Graphs
 
          // make canvas taller and less wide
          canvas->SetCanvasMinHeightDIPs(
-            canvas->GetDefaultCanvasHeightDIPs() * 2);
+            canvas->GetDefaultCanvasWidthDIPs());
          canvas->SetCanvasMinWidthDIPs(
-            canvas->GetDefaultCanvasWidthDIPs() / 2);
+            canvas->GetDefaultCanvasHeightDIPs());
+         // also, fit it to the entire page when printing (preferrably in portait)
+         canvas->FitToPageWhenPrinting(true);
         @endcode
         
         @par Aggregate Row and Column Example:
@@ -135,7 +141,7 @@ namespace Wisteria::Graphs
             ColorBrewer::GetColor(Colors::Color::LightGray,
                                   Settings::GetTranslucencyValue());
          tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
-                                           _(L"Ratio"), std::nullopt, aggColumnBkColor);
+                                          _(L"Ratio"), std::nullopt, aggColumnBkColor);
          tableGraph->InsertRowTotals(aggColumnBkColor);
 
          // make the headers and row groups bold (and center the headers)
@@ -143,8 +149,44 @@ namespace Wisteria::Graphs
          tableGraph->BoldColumn(0);
          tableGraph->CenterRowHorizontally(0);
 
+         const auto& ratioOutliers =
+            // Find outlier in the female-to-male ratios for the majors.
+            // (Note that we use a more liberal search, considering
+            // z-scores > 2 as being outliers
+            tableGraph->GetOutliers(tableGraph->GetColumnCount()-1, 2);
+         // if any outliers, make a note of it off to the side
+         if (ratioOutliers.size())
+            {
+            tableGraph->AddCellAnnotation(
+                { L"Majors with the most lopsided female-to-male ratios",
+                   ratioOutliers, Side::Right }
+                );
+            }
+
+         // if you also want to place annotations on the left of the table,
+         // then center it within its drawing area like so:
+         // tableGraph->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+
+         // add a title
+         canvas->GetTopTitles().push_back(Label(
+            GraphItemInfo(_(L"Top 20 Majors for Juniors & Seniors (AY2021-22)")).
+            Padding(5, 5, 5, 5).Pen(wxNullPen).
+            ChildAlignment(RelativeAlignment::FlushLeft).
+            FontBackgroundColor(ColorBrewer::GetColor(Color::MossGreen))) );
+
+         tableGraph->GetCaption().SetText(_(L"Source: Office of Institutional Research"));
+         tableGraph->GetCaption().SetPadding(5, 5, 5, 5);
+
          // add the table to the canvas
          canvas->SetFixedObject(0, 0, tableGraph);
+
+         // make the canvas tall since we it's a long table, but not very wide
+         canvas->SetCanvasMinHeightDIPs(
+            canvas->GetDefaultCanvasWidthDIPs());
+         canvas->SetCanvasMinWidthDIPs(
+            canvas->GetDefaultCanvasHeightDIPs());
+
+         canvas->FitToPageWhenPrinting(true);
         @endcode*/
     class Table final : public Graph2D
         {
@@ -670,12 +712,12 @@ namespace Wisteria::Graphs
                 be more liberal in classifying a value as an outlier; a higher value
                 will be more strict.
             @returns The cell positions of the outliers.
-            @warning This should not be called on columns with aggregate rows
-                (e.g., subtotals) in them, as these will be most likely be seen as outliers.
+            @warning This should not be called on columns with subtotal rows
+                (see InsertAggregateRow()), as these will this will break the outlier calculation.
                 If you must run this against such a column, be sure to remove these rows
                 from the returned set of cell positions.\n
-                Also, any changes to the structure of the table (e.g., adding aggregate
-                rows or columns) will make the returned postions incorrect. This should be
+                Also, any changes to the structure of the table (inserting more rows or columns)
+                will make the returned postions incorrect. This should be
                 called after all structural changes to the table.*/
         std::vector<CellPosition> GetOutliers(const size_t column,
                                               const double outlierThreshold = 3.0);
