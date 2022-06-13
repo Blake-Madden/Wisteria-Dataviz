@@ -1117,8 +1117,9 @@ namespace Wisteria::Graphs
                 auto noteLabel = std::make_shared<Label>(
                     GraphItemInfo(note.m_note).
                     Pen(wxNullPen).
-                    // use same text scale as the table
-                    Scaling(smallestTextScaling).DPIScaling(GetDPIScaleFactor()).
+                    // use same text scale as the table (or 1.0 if the table font is really small)
+                    Scaling(std::max(1.0, smallestTextScaling)).
+                    DPIScaling(GetDPIScaleFactor()).
                     Anchoring(Anchoring::BottomLeftCorner).
                     AnchorPoint(
                         wxPoint(rightGutter.GetX() +
