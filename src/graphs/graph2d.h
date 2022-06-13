@@ -350,6 +350,17 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxRect GetContentRect() const noexcept final
             { return GetPlotAreaBoundingBox(); }
 
+        /** @brief Sets the rectangular area of the entire graph area.
+            @param rect The rectangle to bound the entire plot to. This is relative to its parent canvas.
+            @param parentScaling This parameter is ignored.
+            @note Derived classes should not need to call this except for special situations.\n
+                For example, Table uses it to scale itself down so that it doesn't consume
+                more space than needed.*/
+        void SetBoundingBox(const wxRect& rect,
+                            [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) noexcept final
+            { m_rect = rect; }
+
         /** @brief Retrieves the coordinates on the canvas where the given point is at.
             @param xValue The x value of the point.
             @param yValue The y value of the point.
@@ -401,13 +412,6 @@ namespace Wisteria::Graphs
             std::vector<wxPoint> m_interestPts;
             };
 
-        /** @brief Sets the rectangular area of the plot.
-            @param rect The rectangle to bound the entire plot to. This is relative to its parent canvas.
-            @param parentScaling This parameter is ignored.*/
-        void SetBoundingBox(const wxRect& rect,
-                            [[maybe_unused]] wxDC& dc,
-                            [[maybe_unused]] const double parentScaling) noexcept final
-            { m_rect = rect; }
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/

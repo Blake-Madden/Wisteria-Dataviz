@@ -726,8 +726,9 @@ namespace Wisteria::Graphs
             @param[out] rowHeights The calculated row heights.
             @param[in,out] drawArea The initial and updated drawing area for the table.
             @param dc The DC to measure text labels with.
-            @returns The size of the table proper. Note that the size of @c drawArea may
-                be larger if the table includes annotations along the gutters.*/
+            @returns The size of the table proper (i.e., the cells, but not outer annotations).\n
+                Note that the size of @c drawArea may be larger if the table includes
+                annotations along the gutters.*/
         [[nodiscard]] wxSize CalculateTableSize(std::vector<wxCoord>& columnWidths,
                                                 std::vector<wxCoord>& rowHeights,
                                                 wxRect& drawArea, wxDC& dc) const;

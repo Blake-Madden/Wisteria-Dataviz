@@ -658,6 +658,8 @@ namespace Wisteria::Graphs
             tableHeight += roundingDiff;
             }
 
+        drawArea.SetSize(wxSize(tableWidth, tableHeight));
+
         return wxSize(tableWidth, tableHeight);
         }
 
@@ -667,23 +669,44 @@ namespace Wisteria::Graphs
         if (GetRowCount() == 0 || GetColumnCount() == 0)
             { return; }
 
-        Graph2D::RecalcSizes(dc);
-
         m_cachedCellRects.clear();
 
+        Graph2D::RecalcSizes(dc);
+
+        // inflates a rect representing the drawing area if
+        // padding was added to the original drawing area
+        const auto AddPaddingToRect = [&, this](const wxRect& rect)
+            {
+            wxRect adjustedRect = rect;
+            if (!m_minWidthProportion.has_value() &&
+                !m_minHeightProportion.has_value())
+                { adjustedRect.Inflate(ScaleToScreenAndCanvas(5)); }
+            return adjustedRect;
+            };
+
+        wxRect fullGraphArea = GetBoundingBox(dc);
         wxRect drawArea = GetPlotAreaBoundingBox();
+        auto graphDecorationHeight = fullGraphArea.GetHeight() - drawArea.GetHeight();
+        auto graphDecorationWidth = fullGraphArea.GetWidth() - drawArea.GetWidth();
         // add some padding around the table, unless client is controlling the dimensions
         if (!m_minWidthProportion.has_value() &&
             !m_minHeightProportion.has_value())
             { drawArea.Deflate(ScaleToScreenAndCanvas(5)); }
 
-        // calculate the necessary heights of the rows and widths of the column
+        // calculate the necessary heights of the rows and widths of the columns
         std::vector<wxCoord> columnWidths;
         std::vector<wxCoord> rowHeights;
         
         const auto tableSize = CalculateTableSize(columnWidths, rowHeights, drawArea, dc);
         const auto tableWidth = tableSize.GetWidth();
         const auto tableHeight = tableSize.GetHeight();
+
+        // if the needed area for the table proper is less than the available drawing area,
+        // then remove that extra space and recompute the layout
+        fullGraphArea.SetHeight(AddPaddingToRect(drawArea).GetHeight() + graphDecorationHeight);
+        fullGraphArea.SetWidth(AddPaddingToRect(drawArea).GetWidth() + graphDecorationWidth);
+        SetBoundingBox(fullGraphArea, dc, GetScaling());
+        Graph2D::RecalcSizes(dc);
 
         // offset the table later if being page aligned within its parent drawing area
         const wxCoord horizontalAlignmentOffset =
