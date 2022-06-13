@@ -387,6 +387,14 @@ namespace Wisteria::Graphs
         m_currentAssignedId = 0;
         m_plotObjects.clear();
 
+        // If bounding box hasn't been set yet, then set it to the parent
+        // canvas's size. This would only happen if trying to measure the graph
+        // before the window has a size event or is presented.
+        // The normal case for this is when a graph is being meaured for a canvas
+        // to a specific content scaling (e.g., Table).
+        if (GetBoundingBox(dc).IsEmpty())
+            { SetBoundingBox(GetCanvas()->GetCanvasRect(dc), dc, GetScaling()); }
+
         SetDPIScaleFactor(GetDPIScaleFactor());
 
         GetTopXAxis().SetScaling(GetScaling());

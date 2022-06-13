@@ -240,9 +240,10 @@ namespace Wisteria
                 Also, if this object needs canvas margins around it, set those to the
                 object prior to calling this because those are factored into this calculation.*/
         [[nodiscard]] double CalcMinWidthProportion(
-                                 const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+                                 std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
             wxGCDC gdc(this);
+            item->RecalcSizes(gdc);
             return safe_divide<double>(
                 item->GetBoundingBox(gdc).GetWidth() +
                     // canvas margins are not part of the bounding box calculation,
@@ -259,9 +260,10 @@ namespace Wisteria
                 Also, if this object needs canvas margins around it, set those to the
                 object prior to calling this because those are factored into this calculation.*/
         [[nodiscard]] double CalcMinHeightProportion(
-                                 const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& item)
+                                 std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
             wxGCDC gdc(this);
+            item->RecalcSizes(gdc);
             return safe_divide<double>(
                 item->GetBoundingBox(gdc).GetHeight() +
                     gdc.FromDIP(item->GetTopCanvasMargin()) +
@@ -547,6 +549,15 @@ namespace Wisteria
             @param dc The device context to draw on.*/
         void DrawWatermarkLogo(wxDC& dc);
 
+        /// @returns The (scaled) rectangle area of the canvas.
+        /// @param dc The measuring DC.
+        [[nodiscard]] wxRect GetCanvasRect(wxDC& dc) const noexcept
+            {
+            wxRect scaledRect(m_rectDIPs);
+            scaledRect.SetSize(dc.FromDIP(m_rectDIPs.GetSize()));
+            return scaledRect;
+            }
+
         /// @private
         [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
             { return m_printData; }
@@ -628,14 +639,6 @@ namespace Wisteria
         /// @returns The rectangle area of the canvas.
         [[nodiscard]] const wxRect& GetCanvasRectDIPs() const noexcept
             { return m_rectDIPs; }
-
-        /// @returns The (scaled) rectangle area of the canvas.
-        [[nodiscard]] wxRect GetCanvasRect(wxDC& dc) const noexcept
-            {
-            wxRect scaledRect(m_rectDIPs);
-            scaledRect.SetSize(dc.FromDIP(m_rectDIPs.GetSize()));
-            return scaledRect;
-            }
 
         // Events
         void OnResize([[maybe_unused]] wxSizeEvent& event);
