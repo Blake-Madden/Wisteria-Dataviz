@@ -336,10 +336,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // customize the header of the legend and add it to the canvas
         auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true) };
         legend->SetLine(0, _(L"Range of Scores"));
+        subframe->m_canvas->SetFixedObject(0, 1, legend);
+
         // after changing legend's text, recalculate how much of the
         // canvas it should consume
-        legend->SetCanvasWidthProportion(subframe->m_canvas->CalcMinWidthProportion(legend));
-        subframe->m_canvas->SetFixedObject(0, 1, legend);
+        subframe->m_canvas->CalcRowDimensions();
         }
     // Heatmap (grouped)
     else if (event.GetId() == MyApp::ID_NEW_HEATMAP_GROUPED)
@@ -634,9 +635,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // subframe->m_canvas->SetFixedObjectsGridSize(2, 2);
         // legend = linePlot->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph);
         // legend->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
-        // subframe->m_canvas->GetRowInfo(0).HeightProportion(1-subframe->m_canvas->CalcMinHeightProportion(legend));
-        // subframe->m_canvas->GetRowInfo(1).HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend));
         // subframe->m_canvas->SetFixedObject(1, 0, legend);
+        // subframe->m_canvas->CalcRowDimensions();
 
         // add a watermark to the bottom right corner
         subframe->m_canvas->SetWatermarkLogo(
@@ -1234,9 +1234,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // add the legend at the bottom (beneath the explanatory caption)
         auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-        subframe->m_canvas->GetRowInfo(0).HeightProportion(1-subframe->m_canvas->CalcMinHeightProportion(legend));
-        subframe->m_canvas->GetRowInfo(1).HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend));
         subframe->m_canvas->SetFixedObject(1, 0, legend);
+
+        subframe->m_canvas->CalcRowDimensions();
         }
     // SWOT Roadmap
     else if (event.GetId() == MyApp::ID_NEW_PROCON_ROADMAP_GRAPH)
@@ -1299,14 +1299,6 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
         OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
         auto legend = OTroadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-        const auto proportionForEachRoadMap =
-            safe_divide<double>(1 - subframe->m_canvas->CalcMinHeightProportion(legend), 2);
-        subframe->m_canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
-        subframe->m_canvas->GetRowInfo(1).HeightProportion(proportionForEachRoadMap);
-        // calculate the canvas height that the legend needs and lock it
-        subframe->m_canvas->GetRowInfo(2).
-            HeightProportion(subframe->m_canvas->CalcMinHeightProportion(legend)).
-            LockProportion(true);
 
         // add a title with a green banner background and white font
         Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
@@ -1328,6 +1320,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
         subframe->m_canvas->SetFixedObject(1, 0, OTroadmap);
         subframe->m_canvas->SetFixedObject(2, 0, legend);
+
+        subframe->m_canvas->CalcRowDimensions();
 
         // make the canvas tall since we are stacking two graphs on top of each other
         subframe->m_canvas->SetCanvasMinHeightDIPs(
@@ -1582,6 +1576,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Padding(4, 4, 4, 4).
             Scaling(2).
             DPIScaling(subframe->m_canvas->GetDPIScaleFactor()).
+            // will set the proportions of the note's row based on how tall the note is
+            FitCanvasHeightToContent(true).
             Pen(wxNullPen));
         // make the font smaller, and customize the header's appearance
         note->GetFont().MakeSmaller().MakeSmaller();
@@ -1589,12 +1585,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         note->GetHeaderInfo().GetFont().MakeSmaller();
         subframe->m_canvas->SetFixedObject(1, 0, note);
 
-        // in the first column (the donut chart and the note beneath it),
-        // set the proportions of the rows based on how tall the note is
-        subframe->m_canvas->GetRowInfo(0).HeightProportion(
-            1 - subframe->m_canvas->CalcMinHeightProportion(note));
-        subframe->m_canvas->GetRowInfo(1).HeightProportion(
-            subframe->m_canvas->CalcMinHeightProportion(note));
+        // In the first column (the donut chart and the note beneath it),
+        // this sets the proportions of the rows based on how tall the note is.
+        // (This will happen because we enabled the FitCanvasHeightToContent() property
+        //  for the note above.)
+        subframe->m_canvas->CalcRowDimensions();
 
         // set the canvas's print orientation to landscape
         subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);

@@ -791,6 +791,38 @@ namespace Wisteria
                 m_leftCanvasMargin = left;
                 return *this;
                 }
+            /// @brief Tells the canvas that this object's parent row should be as tall as
+            ///     this object's height (at the default scaling) and no more.
+            /// @details By default, this is false and canvases will stretch all of its rows
+            ///     (and the items in them) equally height-wise.
+            /// @param fit @c true for the object to force the row to fit its content height-wise
+            ///     (and no more).
+            /// @note If two items in a given row have this set to @c true, then the row will
+            ///     be the maximum height of the two items. This will result in the smaller
+            ///     item being stretched taller.\n
+            ///     Also, the client will need to call Canvas::CalcRowDimensions() after setting all
+            ///     objects into its grid for this to take effect.
+            /// @returns A self reference.
+            GraphItemInfo& FitCanvasHeightToContent(const bool fit) noexcept
+                {
+                m_fitCanvasRowToContent = fit;
+                return *this;
+                }
+            /// @brief Tells the canvas to allocate just the necessary width for this item's width
+            ///     (at default scaling) within its row, and nothting more.
+            /// @details This is usually used for legends off to the side of a graph.
+            /// @details By default, this is false and canvases will stretch all items in a given
+            ///     row equally width-wise.
+            /// @param fit @c true for the object to consume exactly enough space for its content
+            ///     (and no more).
+            /// @note Client will need to call Canvas::CalcRowDimensions() after setting all objects
+            ///     into its grid for this to take effect.
+            /// @returns A self reference.
+            GraphItemInfo& FitContentWidthToCanvas(const bool fit) noexcept
+                {
+                m_fitContentWidthToCanvas = fit;
+                return *this;
+                }
             /// @brief Sets the percent of the canvas width that this object should consume.
             /// @param canvasWidthProportion The percent of the canvas that this
             ///     object should consume.
@@ -1039,6 +1071,8 @@ namespace Wisteria
             wxCoord m_leftCanvasMargin{ 0 };
             wxCoord m_topCanvasMargin{ 0 };
             wxCoord m_bottomCanvasMargin{ 0 };
+            bool m_fitCanvasRowToContent{ false };
+            bool m_fitContentWidthToCanvas{ false };
             // labels and drawing
             wxPen m_pen{ *wxBLACK_PEN };
             wxBrush m_brush{ *wxWHITE_BRUSH };
@@ -1681,7 +1715,14 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 m_itemInfo.m_topCanvasMargin = margin;
                 }
-
+            /// @returns @c true if this object's parent row should be as tall as
+            ///     this object's height (at the default scaling) and no more.
+            [[nodiscard]] bool IsFittingCanvasRowToContent() const noexcept
+                { return m_itemInfo.m_fitCanvasRowToContent; }
+            /// @returns @c true if this object's width within its row should
+            ///     be its calculated widht (at the default scaling) and no more.
+            [[nodiscard]] bool IsFittingContentWidthToCanvas() const noexcept
+                { return m_itemInfo.m_fitContentWidthToCanvas; }
             /// @returns The percent of the canvas width that this object should consume.
             [[nodiscard]] double GetCanvasWidthProportion() const noexcept
                 { return m_itemInfo.m_canvasWidthProportion; }

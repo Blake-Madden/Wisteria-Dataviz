@@ -194,6 +194,9 @@ auto legend = std::make_shared<GraphItems::Label>(
     GraphItemInfo(_(L"Items:\nFirst item\nSecond Item")).
     // don't show an outline around the legend
     Pen(wxNullPen).
+    // tells the canvas to limit the width for this legend
+    // to its content's calculated width
+    FitContentWidthToCanvas(true).
     // add space for the icons
     Padding(8, 8, 0, Label::GetMinLegendWidth() );
 // set the first line of the text ("Items:"), as the header of the legend
@@ -211,6 +214,9 @@ legend->GetLegendIcons().emplace_back(
 // that the legend will need, and passing this value to SetCanvasWidthProportion()
 // will tell the canvas later what this size is.
 legend->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(legend));
+
+// note that instead of calling the above, you can also call the canvas's
+// CalcRowDimensions() method after adding the legend to it. See example below.
 ```
 
 Note that the text for a legend is one string, where each newline indicates a new item in the legend.
@@ -223,10 +229,12 @@ that will hold a graph and a legend to the right of it:
 ```cpp
 canvas->SetFixedObjectsGridSize(1, 2);
 canvas->SetFixedObject(0, 0, graph);
-
-// calculate its required width and add it
-legend->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(legend));
+// add the legend
 canvas->SetFixedObject(0, 1, legend);
+
+// calculate the layout of the canvas's items, taking into account
+// that the legend should not use more width than its measured width
+canvas->CalcRowDimensions();
 ```
 
 By default, a legend placed next to a graph will be top aligned inside of its area. To center or
@@ -240,8 +248,8 @@ Likewise, a legend beneath or above its graph can be horizontally centered or ri
 via `SetPageHorizontalAlignment()`.
 
 Most graph types have built-in functions to construct a legend, which can be edited prior to moving
-into a canvas. If edits are made to the returned legend, be sure to call `Canvas::CalcMinWidthProportion()`
-(see above) to recalculate its best fit before adding it to a canvas.
+into a canvas. If edits are made to the returned legend, be sure to call `Canvas::CalcRowDimensions()`
+(see above) to recalculate its best fit after adding it to a canvas.
 
 Finally, an extra step is required for legends that are placed above or below a graph. When placing
 a legend on a separate row in a canvas, its row most be specified as having its proportion locked to
@@ -249,17 +257,18 @@ the canvas. Basically, this will tell the canvas to maintain the proportion of t
 original calculation, no matter how much title spacing (or even height adjustments) the
 canvas undergoes.
 
+A canvas's `GetRowInfo().LockProportion()` method will do this if you have manually specified your rows'
+heights. However, if your rows are simply fitting their content or using equally divided heights
+(or a combination of the two), then `CalcRowDimensions()` can handle this.
+
 ```cpp
 auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
-const auto proportionForEachRoadMap =
-    safe_divide<double>(1 - canvas->CalcMinHeightProportion(legend), 2);
-canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);
-canvas->GetRowInfo(1).HeightProportion(proportionForEachRoadMap);
-// calculate the canvas height that the legend needs and lock it
-canvas->GetRowInfo(2).
-    HeightProportion(canvas->CalcMinHeightProportion(legend)).
-    LockProportion(true);
 canvas->SetFixedObject(2, 0, legend);
+
+// This will fit the legend row to its content and then lock its height proportion of the canvas.
+// This way, if the canvas' aspect ratio is altered, the legend will be properly adjusted and not
+// appear stretched.
+canvas->CalcRowDimensions();
 ```
 
 Uniform Widths

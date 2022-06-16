@@ -99,7 +99,8 @@ namespace Wisteria::Graphs
             legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4);
+                CanvasPadding(4, 4, 4, 4).
+                FitContentWidthToCanvas(true);
             legend->GetFont().MakeSmaller();
             legend->GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -110,7 +111,8 @@ namespace Wisteria::Graphs
             legend->AdjustingBoundingBoxToContent(true);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4);
+                CanvasPadding(4, 4, 4, 4).
+                FitContentWidthToCanvas(true);
             legend->GetFont().MakeSmaller();
             legend->GetHeaderInfo().GetFont().MakeSmaller();
             }
@@ -123,7 +125,8 @@ namespace Wisteria::Graphs
             legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
-                CanvasPadding(4, 4, 4, 4);
+                CanvasPadding(4, 4, 4, 4).
+                FitCanvasHeightToContent(true);
             }
         }
 

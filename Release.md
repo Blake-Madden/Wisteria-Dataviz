@@ -5,6 +5,7 @@ Wisteria Dataviz 0.9.1 Release
 - Added Pros & Cons Roadmap
 - Added Table (i.e., presentation of tabular data, with aggregation and annotation support)
 - Added ability to stretch content to fit the entire page when printing
+- Simplified layout of canvas rows when they are fitting their content (see Canvas::CalcRowDimensions())
 - Added common axis builder helper class
 - Line plots can now use categorical or continuous columns for X axis values
 - Added support for aligning pie chart labels flush left or right against the plotting area

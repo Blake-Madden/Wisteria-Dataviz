@@ -1173,6 +1173,67 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void Canvas::CalcRowDimensions()
+        {
+        // this will only work when the canvas is at the default 1.0 scaling
+        // because it needs to call CalcMinHeightProportion()
+        wxASSERT_MSG(compare_doubles(GetScaling(), 1.0),
+                     L"Scaling of canvas must be one when calling CalcRowDimensions()!");
+        if (!compare_doubles(GetScaling(), 1.0))
+            { return; }
+        // clear the current specs, as we will be resetting them here
+        for (auto& rowInfo : m_rowsInfo)
+            { rowInfo.HeightProportion(0); }
+
+        size_t currentRow{ 0 };
+        size_t rowsBeingFit{ 0 };
+        double overallScaling{ 1.0 };
+        for (auto& row : GetFixedObjects())
+            {
+            // Go through the items in the row and see if any having the row fit their content.
+            // If so, use the tallest one in the row when we are done.
+            std::optional<double> rowHeightProportion;
+            size_t currentColumn{ 0 };
+            for (auto& object : row)
+                {
+                if (object != nullptr && object->IsFittingCanvasRowToContent())
+                    {
+                    rowHeightProportion = rowHeightProportion.has_value() ?
+                        std::max(rowHeightProportion.value(), CalcMinHeightProportion(object)) :
+                        CalcMinHeightProportion(object);
+                    // lock in this proportion in case the aspect ratio of the canvas changes
+                    // (happens if fitting to the page when printing, for example)
+                    GetRowInfo(currentRow).LockProportion(true);
+                    }
+                // also readjust the width if being fit with its content width-wise
+                if (object != nullptr && object->IsFittingContentWidthToCanvas())
+                    {
+                    object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
+                    CalcColumnWidths(currentRow, currentColumn, object);
+                    }
+                ++currentColumn;
+                }
+            // set the row height if an item's content is setting its height
+            if (rowHeightProportion.has_value())
+                {
+                GetRowInfo(currentRow).HeightProportion(rowHeightProportion.value());
+                overallScaling -= rowHeightProportion.value();
+                ++rowsBeingFit;
+                }
+            ++currentRow;
+            }
+        // divide the remaining space amonst the rows being auto fit
+        // (i.e., the rows with items whose heights don't need to be a particular value).
+        const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
+        const auto avgAutoFitRowHeight = safe_divide<double>(overallScaling, autoFitRows);
+        for (auto& rowInfo : m_rowsInfo)
+            {
+            if (rowInfo.GetHeightProportion() == 0)
+                { rowInfo.HeightProportion(avgAutoFitRowHeight); }
+            }
+        }
+
+    //---------------------------------------------------
     std::pair<size_t,size_t> Canvas::GetFixedObjectsGridSize() const
         {
         std::pair<size_t,size_t> result(0,0);
@@ -1225,17 +1286,9 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void Canvas::SetFixedObject(const size_t row, const size_t column,
-                                std::shared_ptr<GraphItems::GraphItemBase> object)
+    void Canvas::CalcColumnWidths(const size_t row, const size_t column,
+                                  const std::shared_ptr<GraphItems::GraphItemBase>& object)
         {
-        wxASSERT(object);
-        wxASSERT(GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
-        if (GetFixedObjects().size() == 0 ||
-            row >= GetFixedObjects().size() ||
-            column >= GetFixedObjects().at(0).size())
-            { return; }
-        GetFixedObjects().at(row).at(column) = object;
         // how much of the canvas is being consumed by the row
         // that this item was just added to
         double totalPercent = std::accumulate(GetFixedObjects().at(row).cbegin(),
@@ -1289,6 +1342,21 @@ namespace Wisteria
                     }
                 }
             }
+        }
+
+    //---------------------------------------------------
+    void Canvas::SetFixedObject(const size_t row, const size_t column,
+                                std::shared_ptr<GraphItems::GraphItemBase> object)
+        {
+        wxASSERT(object);
+        wxASSERT(GetFixedObjects().size());
+        wxASSERT(column < GetFixedObjects().at(0).size());
+        if (GetFixedObjects().size() == 0 ||
+            row >= GetFixedObjects().size() ||
+            column >= GetFixedObjects().at(0).size())
+            { return; }
+        GetFixedObjects().at(row).at(column) = object;
+        CalcColumnWidths(row, column, object);
         }
 
     // override the paint event so that we can use double buffering

@@ -235,10 +235,11 @@ namespace Wisteria
                 when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This should be passed to the item's @c SetCanvasWidthProportion()
+            @details This should be passed to the item's @c SetCanvasWidthProportion()
                 method prior to adding to the canvas.\n
                 Also, if this object needs canvas margins around it, set those to the
-                object prior to calling this because those are factored into this calculation.*/
+                object prior to calling this because those are factored into this calculation.
+            @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]] double CalcMinWidthProportion(
                                  std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
@@ -256,9 +257,10 @@ namespace Wisteria
                 when at 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
-            @note This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.
+            @details This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.
                 Also, if this object needs canvas margins around it, set those to the
-                object prior to calling this because those are factored into this calculation.*/
+                object prior to calling this because those are factored into this calculation.
+            @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]] double CalcMinHeightProportion(
                                  std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
@@ -270,6 +272,18 @@ namespace Wisteria
                     gdc.FromDIP(item->GetBottomCanvasMargin()),
                 gdc.FromDIP(GetCanvasMinHeightDIPs()));
             }
+        /// @brief Calculates the proportions of the canvas that each row and column
+        ///     should consume.
+        /// @details This takes into account items (and rows) whose content size will
+        ///     determine the height of the rows and the widths of their columns.\n
+        ///     This will also lock rows' proportions if their heights are controlled
+        ///     by their content, which is useful for when the aspect ratio of the
+        ///     canvas is changed.
+        /// @note This should be called while the canvas is being built and
+        ///     after all items have been added to it (via SetFixedObject()). It will
+        ///     have no effect if called after the windowing framework has taken
+        ///     control of it (i.e., being resized).
+        void CalcRowDimensions();
         /// @}
 
         /** @name Layout Functions
@@ -590,6 +604,13 @@ namespace Wisteria
         [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>
                           GetFixedObject(const size_t row, const size_t column) const;
     private:
+        /// @brief Divides the width of a row into columns, taking into account items
+        ///     whose width should not be more than its content (at default scaling).
+        /// @param row The row to calculate.
+        /// @param column The column of the object altering the column widths.
+        /// @param object The object affecting the colum widths.
+        void CalcColumnWidths(const size_t row, const size_t column,
+                              const std::shared_ptr<GraphItems::GraphItemBase>& object);
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }
