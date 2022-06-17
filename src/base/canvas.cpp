@@ -1175,8 +1175,11 @@ namespace Wisteria
     //---------------------------------------------------
     void Canvas::CalcRowDimensions()
         {
-        // this will only work when the canvas is at the default 1.0 scaling
-        // because it needs to call CalcMinHeightProportion()
+        // In case the aspect ratio changed, reset the area rect so that scaling will be 1.0
+        m_rectDIPs.SetSize(wxSize(GetCanvasMinWidthDIPs(), GetCanvasMinHeightDIPs()));
+        // This will only work when the canvas is at the default 1.0 scaling
+        // because it needs to call CalcMinHeightProportion().
+        // These are just sanity tests, the above should force the scaling to 1.0.
         wxASSERT_MSG(compare_doubles(GetScaling(), 1.0),
                      L"Scaling of canvas must be one when calling CalcRowDimensions()!");
         if (!compare_doubles(GetScaling(), 1.0))

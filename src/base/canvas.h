@@ -280,9 +280,11 @@ namespace Wisteria
         ///     by their content, which is useful for when the aspect ratio of the
         ///     canvas is changed.
         /// @note This should be called while the canvas is being built and
-        ///     after all items have been added to it (via SetFixedObject()). It will
-        ///     have no effect if called after the windowing framework has taken
-        ///     control of it (i.e., being resized).
+        ///     after all items have been added to it (via SetFixedObject()).
+        ///     Likewise, this should be called after changing the canvas's aspect
+        ///     ratio (via SetCanvasMinWidthDIPs()/SetCanvasMinHeightDIPs()).
+        ///     It will have no effect if called after the windowing framework has taken
+        ///     control of it (i.e., be/ing resized).\n
         void CalcRowDimensions();
         /// @}
 
@@ -494,9 +496,9 @@ namespace Wisteria
         /// @details Call this if customizations have been made to a subobject
         ///     (e.g., a plot) and you wish to refresh the content.
         void CalcAllSizes(wxDC& dc);
-        /** @brief The scaling of the canvas's size compared to the default minimum size.
-            @details This is used to see how much fonts and lines need to be increased
-                to match the screen size.
+        /** @brief The scaling of the canvas's size compared to the minimum size.
+            @details This is used to see how much fonts and lines need to be increased to match the
+                current zoom level (i.e., the window size compared to the minimum dimensions).
             @returns The scaling.*/
         [[nodiscard]] double GetScaling() const
             {
