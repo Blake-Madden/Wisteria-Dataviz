@@ -74,6 +74,9 @@ namespace Wisteria
             @param graphs The graphs that will be connected to the common axis.\n
                 Note that these graphs' bottom X axis will have their labels turned off after
                 calling this function.
+            @param applyCommonLeftAxis If @c true, gets the min and max of the graphs' left X
+                axes and sets all the graphs to use that range.\n
+                This is useful for further homogenizing the graphs.
             @returns The common axis for the graphs, which should be added to the canvas
                 (below the graphs).
             @par Example
@@ -88,18 +91,12 @@ namespace Wisteria
              canvas->SetFixedObject(1, 0, linePlotAY2);
              canvas->SetFixedObject(2, 0, commonAxis);
 
-             // subtract the amount of space needed for the axis height-wise from the canvas,
-             // and divide that amongst the two graphs
-             auto proportionPerRow =
-                safe_divide<double>(1 - commonAxis->GetCanvasHeightProportion().value(), 2);
-             canvas->GetRowInfo(0).HeightProportion(proportionPerRow);
-             canvas->GetRowInfo(1).HeightProportion(proportionPerRow);
-             // set the height of the shared axis row
-             canvas->GetRowInfo(2).
-                HeightProportion(commonAxis->GetCanvasHeightProportion().value());
+             // adjust the heights of the rows, auto-fitting the common axis
+             canvas->CalcRowDimensions();
             @endcode*/
         static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildBottomAxis(Canvas* canvas,
-            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs);
+            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs,
+            const bool applyCommonLeftAxis = true);
         };
     };
 
