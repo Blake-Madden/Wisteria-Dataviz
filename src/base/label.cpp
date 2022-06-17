@@ -118,9 +118,7 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { SetAnchorPoint(rect.GetBottomRight()); }
 
-        // start at 0.1 scaling (anything smaller won't look right, but probably won't happen),
-        // and scale up or down to fit the bounding box
-        SetScaling(0.1);
+        // scale up or down to fit the bounding box if necessary
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
         if (// too small in both dimensions, so upscale
