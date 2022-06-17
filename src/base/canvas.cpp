@@ -265,6 +265,7 @@ namespace Wisteria
                     m_canvas->SetSize(
                         m_canvas->FromDIP(wxSize(m_canvas->GetCanvasMinWidthDIPs(),
                                                  m_canvas->GetCanvasMinHeightDIPs())));
+                    m_canvas->CalcRowDimensions();
                     }
                 }
             }
@@ -276,6 +277,7 @@ namespace Wisteria
                 m_canvas->SetCanvasMinWidthDIPs(m_originalMinWidth);
                 m_canvas->SetCanvasMinHeightDIPs(m_originalMinHeight);
                 m_canvas->SetSize(m_originalSize);
+                m_canvas->CalcRowDimensions();
                 }
             }
     private:
@@ -935,12 +937,15 @@ namespace Wisteria
                     auto& previousRow = GetFixedObjects().at(previousRowIndex);
                     for (auto& previousRowObject : previousRow)
                         {
-                        auto bBox = previousRowObject->GetBoundingBox(dc);
-                        bBox.SetHeight(bBox.GetHeight() - rowHeightDiffForPreviousRows);
-                        bBox.Offset(wxPoint(0, -(rowHeightDiffForPreviousRows * previousRowIndex)) );
-                        previousRowObject->SetBoundingBox(bBox, dc, GetScaling());
-                        previousRowObject->RecalcSizes(dc);
-                        previousRowObject->UpdateSelectedItems();
+                        if (previousRowObject != nullptr)
+                            {
+                            auto bBox = previousRowObject->GetBoundingBox(dc);
+                            bBox.SetHeight(bBox.GetHeight() - rowHeightDiffForPreviousRows);
+                            bBox.Offset(wxPoint(0, -(rowHeightDiffForPreviousRows * previousRowIndex)) );
+                            previousRowObject->SetBoundingBox(bBox, dc, GetScaling());
+                            previousRowObject->RecalcSizes(dc);
+                            previousRowObject->UpdateSelectedItems();
+                            }
                         }
                     }
                 }
