@@ -1320,6 +1320,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, SWroadmap);
         subframe->m_canvas->SetFixedObject(1, 0, OTroadmap);
         subframe->m_canvas->SetFixedObject(2, 0, legend);
+        subframe->m_canvas->GetRowInfo(2).LockProportion(true);
 
         subframe->m_canvas->CalcRowDimensions();
 

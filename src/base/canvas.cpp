@@ -1204,9 +1204,6 @@ namespace Wisteria
                     rowHeightProportion = rowHeightProportion.has_value() ?
                         std::max(rowHeightProportion.value(), CalcMinHeightProportion(object)) :
                         CalcMinHeightProportion(object);
-                    // lock in this proportion in case the aspect ratio of the canvas changes
-                    // (happens if fitting to the page when printing, for example)
-                    GetRowInfo(currentRow).LockProportion(true);
                     }
                 // also readjust the width if being fit with its content width-wise
                 if (object != nullptr && object->IsFittingContentWidthToCanvas())
@@ -1233,6 +1230,20 @@ namespace Wisteria
             {
             if (rowInfo.GetHeightProportion() == 0)
                 { rowInfo.HeightProportion(avgAutoFitRowHeight); }
+            }
+        // finally, see if there is any overflow and scale everything down
+        // proportionally to fit
+        const auto totalHeightProportion =
+            std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
+                [](const auto initVal, const auto val) noexcept
+                { return initVal + val.GetHeightProportion(); });
+        if (totalHeightProportion > 1)
+            {
+            const auto proportionDiff = safe_divide<double>(1.0, totalHeightProportion);
+            for (auto& rowInfo : m_rowsInfo)
+                {
+                rowInfo.HeightProportion(rowInfo.GetHeightProportion() * proportionDiff);
+                }
             }
         }
 
