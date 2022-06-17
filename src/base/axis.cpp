@@ -296,6 +296,14 @@ namespace Wisteria::GraphItems
                           dc);
                 }
             }
+
+        // Force titles to fit in this area in the next call to GetBoundingBox().
+        // Because axis label scaling dynamically changes to the best fit, we need to
+        // clip titles within the size used here later.
+        if (IsHorizontal())
+            { m_maxHeight = rect.GetHeight(); }
+        else if (IsVertical())
+            { m_maxWidth = rect.GetWidth(); }
         }
 
     wxRect Axis::GetProtrudingBoundingBox(wxDC& dc) const
@@ -457,12 +465,14 @@ namespace Wisteria::GraphItems
                 if (HasDoubleSidedAxisLabels())
                     { bottomRightCorner.x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
-            if (GetTitle().GetText().length())
+            if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                topLeftCorner.x -= title.GetBoundingBox(dc).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
+                topLeftCorner.x -= title.GetBoundingBox(dc).GetWidth() +
+                                   ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                // title is NOT drawn on the inside if axis is double sided,
+                // that wouldn't really make sense
                 }
             }
         else if (GetAxisType() == AxisType::RightYAxis)
@@ -493,12 +503,14 @@ namespace Wisteria::GraphItems
                 if (HasDoubleSidedAxisLabels())
                     { topLeftCorner.x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
-            if (GetTitle().GetText().length())
+            if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                bottomRightCorner.x += title.GetBoundingBox(dc).GetWidth()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
+                bottomRightCorner.x += title.GetBoundingBox(dc).GetWidth() +
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                // title is NOT drawn on the inside if axis is double sided,
+                // that wouldn't really make sense
                 }
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
@@ -521,12 +533,14 @@ namespace Wisteria::GraphItems
                 if (HasDoubleSidedAxisLabels())
                     { topLeftCorner.y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
-            if (GetTitle().GetText().length())
+            if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                bottomRightCorner.y += title.GetBoundingBox(dc).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
+                bottomRightCorner.y += title.GetBoundingBox(dc).GetHeight() +
+                                       ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                // title is NOT drawn on the inside if axis is double sided,
+                // that wouldn't really make sense
                 }
             }
         else if (GetAxisType() == AxisType::TopXAxis)
@@ -545,12 +559,14 @@ namespace Wisteria::GraphItems
                 if (HasDoubleSidedAxisLabels())
                     { bottomRightCorner.y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
                 }
-            if (GetTitle().GetText().length())
+            if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
                 auto title{ GetTitle() };
                 title.SetScaling(GetScaling());
-                topLeftCorner.y -= title.GetBoundingBox(dc).GetHeight()+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                // title is NOT drawn on the inside if axis is double sided, that wouldn't really make sense
+                topLeftCorner.y -= title.GetBoundingBox(dc).GetHeight() +
+                                   ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                // title is NOT drawn on the inside if axis is double sided,
+                // that wouldn't really make sense
                 }
             }
 
@@ -622,16 +638,27 @@ namespace Wisteria::GraphItems
                     { bottomRightCorner.y = labelBox.GetY()+ labelBox.GetHeight(); }
                 };
 
-            if (GetHeader().GetText().length())
+            if (GetHeader().IsShown() && GetHeader().GetText().length())
                 { adjustMarginForHeaderOrFooter(Label(GetHeader()), true); }
-            if (GetFooter().GetText().length())
+            if (GetFooter().IsShown() && GetFooter().GetText().length())
                 { adjustMarginForHeaderOrFooter(Label(GetFooter()), false); }
             }
 
+        wxRect adjustedRect(topLeftCorner, bottomRightCorner);
+        // if an axis embedded on a canvas, we may need to shrink it back down to make
+        // the titles fit because of how the axis labels and brackets dynamically size
+        // (i.e., not using the parent scaling)
+        if (m_maxHeight.has_value() &&
+            m_maxHeight.value() < adjustedRect.GetHeight())
+            { adjustedRect.SetHeight(m_maxHeight.value()); }
+        if (m_maxWidth.has_value() &&
+            m_maxWidth.value() < adjustedRect.GetWidth())
+            { adjustedRect.SetWidth(m_maxWidth.value()); }
+
         return (GetOutlineSize().IsFullySpecified()) ?
-                wxRect(topLeftCorner, bottomRightCorner).Inflate(ScaleToScreenAndCanvas(GetOutlineSize().GetWidth()),
-                                                                 ScaleToScreenAndCanvas(GetOutlineSize().GetHeight())) :
-                wxRect(topLeftCorner, bottomRightCorner);
+                adjustedRect.Inflate(ScaleToScreenAndCanvas(GetOutlineSize().GetWidth()),
+                                                            ScaleToScreenAndCanvas(GetOutlineSize().GetHeight())) :
+                adjustedRect;
         }
 
     //-------------------------------------------
@@ -1112,7 +1139,7 @@ namespace Wisteria::GraphItems
 
         // draw the title
         Label titleLabel = GetTitle();
-        if (GetTitle().GetText().length())
+        if (GetTitle().IsShown() && GetTitle().GetText().length())
             {
             titleLabel.SetScaling(GetScaling());
 
@@ -1604,7 +1631,7 @@ namespace Wisteria::GraphItems
                                 x = axisRect.GetLeft();
                                 if (GetBrackets().size())
                                     { x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
-                                if (titleLabel.GetText().length())
+                                if (titleLabel.IsShown() && titleLabel.GetText().length())
                                     { x += titleLabel.GetBoundingBox(dc).GetWidth(); }
                                 axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
                                 }
@@ -1649,7 +1676,7 @@ namespace Wisteria::GraphItems
                                 x = axisRect.GetRight();
                                 if (GetBrackets().size())
                                     { x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
-                                if (titleLabel.GetText().length())
+                                if (titleLabel.IsShown() && titleLabel.GetText().length())
                                     { x -= titleLabel.GetBoundingBox(dc).GetWidth(); }
                                 axisLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                                 }
@@ -1805,7 +1832,8 @@ namespace Wisteria::GraphItems
                         const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
                         const wxCoord axisTextHeight = labelSize.GetHeight();
                         const long x = axisPtIter->GetPhysicalCoordinate();
-                        long y = GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+CalcTickMarkOuterWidth();
+                        long y = GetTopPoint().y+(GetBottomPoint().y-GetTopPoint().y) +
+                                 ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())+CalcTickMarkOuterWidth();
                         if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
                             {
                             axisLabel.SetAnchoring(Anchoring::TopLeftCorner);
@@ -1875,9 +1903,14 @@ namespace Wisteria::GraphItems
                             x = axisPtIter->GetPhysicalCoordinate()-safe_divide(axisTextHeight,2);
                             y = axisRect.GetBottom();
                             if (GetBrackets().size())
-                                { y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
-                            if (titleLabel.GetText().length())
-                                { y -= titleLabel.GetBoundingBox(dc).GetHeight(); }
+                                {
+                                y -= CalcBracketsWidth(dc) +
+                                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                                }
+                            if (titleLabel.IsShown() && titleLabel.GetText().length())
+                                {
+                                y -= titleLabel.GetBoundingBox(dc).GetHeight();
+                                }
                             axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             }
                         else // AnchorWithLine
@@ -1916,7 +1949,7 @@ namespace Wisteria::GraphItems
                                 y = axisRect.GetTop();
                                 if (GetBrackets().size())
                                     { y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
-                                if (titleLabel.GetText().length())
+                                if (titleLabel.IsShown() && titleLabel.GetText().length())
                                     { y += titleLabel.GetBoundingBox(dc).GetHeight(); }
                                 axisLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                 }
@@ -1986,7 +2019,7 @@ namespace Wisteria::GraphItems
                     GetTopPoint().x, GetTopPoint().y,
                     wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
                     wxNumberFormatter::ToString(GetAxisLabelScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes))).
-                AnchorPoint(bBox.GetBottomRight()).
+                AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth()/2, bBox.GetBottomRight().y)).
                 FontColor(*wxBLUE).
                 Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
                 FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));

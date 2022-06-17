@@ -1376,6 +1376,9 @@ namespace Wisteria::GraphItems
         // calculated values for the labels
         double m_axisLabelScaling{ 1 };
         wxCoord m_maxLabelWidth{ 0 };
+        // just used when embedded on a canvas
+        std::optional<wxCoord> m_maxHeight;
+        std::optional<wxCoord> m_maxWidth;
         // cached values
         mutable Label m_widestLabel{ Label(GraphItemInfo().Ok(false)) };
         mutable Label m_tallestLabel{ Label(GraphItemInfo().Ok(false)) };
