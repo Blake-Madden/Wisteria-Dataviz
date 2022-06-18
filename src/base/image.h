@@ -291,8 +291,8 @@ namespace Wisteria::GraphItems
                 then length-wise if necessary) to this box.
                 If the image isn't wide enough to fill the bounding box,
                 then it will be anchored within the specified rectangle.\n
-                Call SetAnchoring() to control how it is anchored. SetScaling() must be called
-                prior to calling this to ensure proper resizing calculations.*/
+                Call SetPageVerticalAlignment() and SetPageHorizontalAlignment()
+                to control how it is positioned inside of its bounding box.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final;
         /** @brief Moves the item by the specified x and y values.

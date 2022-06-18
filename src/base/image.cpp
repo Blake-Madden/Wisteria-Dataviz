@@ -643,35 +643,38 @@ namespace Wisteria::GraphItems
                 }
             }
 
+        // position the image inside of its (possibly) larger box
+        wxPoint imgTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
+        // horizontal page alignment
         if ((GetFrameSize() == GetImageSize()) ||
-            (GetAnchoring() == Wisteria::Anchoring::TopLeftCorner))
-            { dc.DrawBitmap(wxBitmap(m_img), GetBoundingBox(dc).GetLeftTop(), true); }
-        else if (GetAnchoring() == Wisteria::Anchoring::Center)
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned))
+            { /*noop*/ }
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
-            dc.DrawBitmap(wxBitmap(m_img),
-                          wxRect(wxPoint(0,0),
-                                 GetImageSize() * GetScaling()).CenterIn(GetBoundingBox(dc)).GetLeftTop(),
-                          true);
+            imgTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+                safe_divide<double>(GetImageSize().GetWidth() * GetScaling(), 2);
             }
-        else if (GetAnchoring() == Wisteria::Anchoring::TopRightCorner)
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
-            wxPoint cornerPt = GetBoundingBox(dc).GetTopRight();
-            cornerPt.x -= GetImageSize().GetWidth()*GetScaling();
-            dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
+            imgTopLeftCorner.x += GetBoundingBox(dc).GetWidth() -
+               GetImageSize().GetWidth() * GetScaling();
             }
-        else if (GetAnchoring() == Wisteria::Anchoring::BottomLeftCorner)
+        // vertical page aligment
+        if ((GetFrameSize() == GetImageSize()) ||
+            (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned))
+            { /*noop*/ }
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
-            wxPoint cornerPt = GetBoundingBox(dc).GetBottomLeft();
-            cornerPt.y -= GetImageSize().GetHeight()*GetScaling();
-            dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
+            imgTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+                safe_divide<double>(GetImageSize().GetHeight() * GetScaling(), 2);
             }
-        else if (GetAnchoring() == Wisteria::Anchoring::BottomRightCorner)
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
-            wxPoint cornerPt = GetBoundingBox(dc).GetBottomRight();
-            cornerPt.y -= GetImageSize().GetHeight()*GetScaling();
-            cornerPt.x -= GetImageSize().GetWidth()*GetScaling();
-            dc.DrawBitmap(wxBitmap(m_img), cornerPt, true);
+            imgTopLeftCorner.y += GetBoundingBox(dc).GetHeight() -
+               GetImageSize().GetHeight() * GetScaling();
             }
+
+        dc.DrawBitmap(wxBitmap(m_img), imgTopLeftCorner, true);
 
         // draw the outline
         wxPoint pts[5];
