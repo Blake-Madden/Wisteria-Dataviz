@@ -671,7 +671,7 @@ namespace Wisteria::GraphItems
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
             imgTopLeftCorner.y += GetBoundingBox(dc).GetHeight() -
-               GetImageSize().GetHeight() * GetScaling();
+               (GetImageSize().GetHeight() * GetScaling());
             }
 
         dc.DrawBitmap(wxBitmap(m_img), imgTopLeftCorner, true);

@@ -273,8 +273,9 @@ namespace Wisteria::GraphItems
             @note This only applies with a call to SetBoundingBox(), which would force
                 the image to fit to a specific size.\n
                 If this size differs from aspect ratio that the image needs to maintain,
-                then the image will be anchored into this box.
-            @sa SetAnchoring().*/
+                then the image will be positioned into this box.
+            @sa SetPageVerticalAlignment() and SetPageHorizontalAlignment() for controlling
+                this positioning.*/
         [[nodiscard]] const wxSize& GetFrameSize() const noexcept
             { return m_frameSize; }
         /** @brief Draws the image onto the given DC.
