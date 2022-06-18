@@ -262,10 +262,14 @@ namespace Wisteria
                 if (scaledHeight > 0) // sanity check in case page size calc failed
                     {
                     m_canvas->SetCanvasMinHeightDIPs(scaledHeight);
+                    // recalculate the row and column dimensions for the new drawing area
+                    m_canvas->CalcRowDimensions();
+                    // set the physical size of the window to the page's aspect ratio;
+                    // this will force a CalcAllSizes and fit all the objects to the
+                    // altered drawing area
                     m_canvas->SetSize(
                         m_canvas->FromDIP(wxSize(m_canvas->GetCanvasMinWidthDIPs(),
-                                                 m_canvas->GetCanvasMinHeightDIPs())));
-                    m_canvas->CalcRowDimensions();
+                            m_canvas->GetCanvasMinHeightDIPs())));
                     }
                 }
             }
@@ -276,8 +280,8 @@ namespace Wisteria
                 {
                 m_canvas->SetCanvasMinWidthDIPs(m_originalMinWidth);
                 m_canvas->SetCanvasMinHeightDIPs(m_originalMinHeight);
-                m_canvas->SetSize(m_originalSize);
                 m_canvas->CalcRowDimensions();
+                m_canvas->SetSize(m_originalSize);
                 }
             }
     private:
