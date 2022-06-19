@@ -273,7 +273,7 @@ namespace Wisteria
                     }
                 }
             }
-        /// @breif Destructor, which resets the canvas back to its original aspect ratio and size.
+        /// @brief Destructor, which resets the canvas back to its original aspect ratio and size.
         ~PrintFitToPageChanger()
             {
             if (m_canvas->IsFittingToPageWhenPrinting())
@@ -903,7 +903,8 @@ namespace Wisteria
                     wxNumberFormatter::Style::Style_WithThousandsSep));
             }
         size_t rowHeightOffset{ 0 };
-        // go through each row of items (e.g., subplots) and resize and move them into their grid area
+        // go through each row of items (e.g., subplots, legends) and resize and
+        // move them into their grid area
         for (auto fixedObjectsRowPos = GetFixedObjects().begin();
              fixedObjectsRowPos != GetFixedObjects().end();
              ++fixedObjectsRowPos)
@@ -921,11 +922,15 @@ namespace Wisteria
                     ScaleToScreenAndCanvas(currentRow.at(0)->GetTopCanvasMargin(), dc) +
                     ScaleToScreenAndCanvas(currentRow.at(0)->GetBottomCanvasMargin(), dc) :
                     0);
-            // is row proportional to the drawing area (the norm), or the entire canvas
+            // is row proportional to the drawing area (the norm), or the entire canvas?
             const size_t rowHeight = (GetRowInfo(currentRowIndex).IsProportionLocked() ?
                 rowHeightFullCanvas : rowHeightGridArea);
-            // if row's proportion is locked to the whole page, then previous items need
-            // to have their layouts adjusted
+            // If row's proportion is locked to the whole page, then previous items need
+            // to have their layouts adjusted.
+            // This is normally just done for the last (or first) items on the page,
+            // and usually something like a legend. This is done to keep the legend close
+            // to its original height calculation; otherwise, canvas titles could steal
+            // real estate for the legend and make it too small.
             if (GetRowInfo(currentRowIndex).IsProportionLocked() && currentRowIndex > 0)
                 {
                 const auto rowHeightDiff = rowHeightFullCanvas - rowHeightGridArea;
@@ -1319,51 +1324,46 @@ namespace Wisteria
             [](const auto initVal, const auto& item) noexcept
             { return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion()); });
         // if more than 100%, then we need to trim the other items in the row
-        if (totalPercent > 1)
+        if (!compare_doubles(totalPercent, 1.0))
             {
+            const size_t nonFixedObjects = std::count_if(GetFixedObjects().at(row).cbegin(),
+                GetFixedObjects().at(row).cend(),
+                [](const auto& obj) noexcept
+                {
+                return (obj != nullptr && !obj->IsFittingContentWidthToCanvas());
+                });
             const double totalDiff{ totalPercent - 1.0 };
-            // this is the only object in the row, but it was set over 100%
-            // for some odd reason, so set it to 100%
+            const auto avgWidthDiff = safe_divide<double>(totalDiff, nonFixedObjects);
+            // this is the only object in the row, but it was set over 100%, so set it to 100%
             if (GetFixedObjects().at(row).size() == 1 &&
                 GetFixedObjects().at(row).at(0) != nullptr)
                 {
                 GetFixedObjects().at(row).at(0)->SetCanvasWidthProportion(1.0);
                 }
-            // a large object and there are other large objects, then
-            // resize everything to fit
-            else if (object && object->GetCanvasWidthProportion() > .5)
-                {
-                const double trimPercent{ safe_divide<double>(totalDiff,
-                                            (GetFixedObjects().at(row).size())) };
-                for (size_t item = 0; item < GetFixedObjects().at(row).size(); ++item)
-                    {
-                    auto& currentItem = GetFixedObjects().at(row).at(item);
-                    if (currentItem != nullptr)
-                        {
-                        currentItem->SetCanvasWidthProportion(
-                            currentItem->GetCanvasWidthProportion()-trimPercent);
-                        }
-                    }
-                }
-            // otherwise, if a smaller object (e.g., a legend), then keep
-            // its size and shrink everything else
+            // resize all (or just non-fixed) objects to fit
             else
                 {
-                // leave the percentage width of the current item the same,
-                // but evenly shrink everything else in the row to get it
-                // down to 100%
-                const double trimPercent{ safe_divide<double>(totalDiff,
-                                            (GetFixedObjects().at(row).size()-1)) };
                 for (size_t item = 0; item < GetFixedObjects().at(row).size(); ++item)
                     {
                     auto& currentItem = GetFixedObjects().at(row).at(item);
-                    if (item != column && currentItem != nullptr)
+                    if (currentItem != nullptr &&
+                        // if all object are width fixed, then adjust all of them;
+                        // otherwise, just adjust non-fixed ones
+                        (!currentItem->IsFittingContentWidthToCanvas() ||
+                          nonFixedObjects == 0))
                         {
                         currentItem->SetCanvasWidthProportion(
-                            currentItem->GetCanvasWidthProportion()-trimPercent);
+                            currentItem->GetCanvasWidthProportion()-avgWidthDiff);
                         }
                     }
                 }
+            wxASSERT_MSG(std::accumulate(GetFixedObjects().at(row).cbegin(),
+                GetFixedObjects().at(row).cend(), 0.0f,
+                [](const auto initVal, const auto& item) noexcept
+                    {
+                    return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion());
+                    }) == 1.0,
+                L"CalcColumnWidths() failed to set the column widths collectively to 100%!");
             }
         }
 
@@ -1379,6 +1379,11 @@ namespace Wisteria
             column >= GetFixedObjects().at(0).size())
             { return; }
         GetFixedObjects().at(row).at(column) = object;
+        // readjust the width if being fit with its content width-wise
+        if (object != nullptr && object->IsFittingContentWidthToCanvas())
+            {
+            object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
+            }
         CalcColumnWidths(row, column, object);
         }
 
