@@ -1319,10 +1319,14 @@ namespace Wisteria
         {
         // how much of the canvas is being consumed by the row
         // that this item was just added to
-        double totalPercent = std::accumulate(GetFixedObjects().at(row).cbegin(),
-                                              GetFixedObjects().at(row).cend(), 0.0f,
-            [](const auto initVal, const auto& item) noexcept
-            { return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion()); });
+        const auto tallyColumnsPercent = [this, &row]()
+            {
+            return std::accumulate(GetFixedObjects().at(row).cbegin(),
+                GetFixedObjects().at(row).cend(), 0.0f,
+                [](const auto initVal, const auto& item) noexcept
+                { return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion()); });
+            };
+        double totalPercent = tallyColumnsPercent();
         // if more than 100%, then we need to trim the other items in the row
         if (!compare_doubles(totalPercent, 1.0))
             {
@@ -1357,13 +1361,10 @@ namespace Wisteria
                         }
                     }
                 }
-            wxASSERT_MSG(std::accumulate(GetFixedObjects().at(row).cbegin(),
-                GetFixedObjects().at(row).cend(), 0.0f,
-                [](const auto initVal, const auto& item) noexcept
-                    {
-                    return initVal + (item == nullptr ? 0 : item->GetCanvasWidthProportion());
-                    }) == 1.0,
-                L"CalcColumnWidths() failed to set the column widths collectively to 100%!");
+            wxASSERT_MSG(compare_doubles(tallyColumnsPercent(), 1.0),
+                wxString::Format(L"CalcColumnWidths() failed to set the column widths "
+                    "collectively to 100%! Percent is %d%%",
+                    static_cast<int>(tallyColumnsPercent() * 100)));
             }
         }
 
