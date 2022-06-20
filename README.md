@@ -51,7 +51,10 @@ such as:
 - Annotations support; story-telling notes can be added to a plot with an arrow pointing to specific data points
 - Text boxes that can be drawn vertically or horizontally
 - Selectable objects; for example, selecting a bar on a bar chart can show a custom label
-- Locale-sensitive number formatting (based on `wxUILocale`'s settings)
+- i18n support
+  - Fully Unicode
+  - Locale-sensitive number formatting (based on `wxUILocale`'s settings)
+  - All UI-facing text is available for translation (via the `gettext` library)
 - An extensible framework for designing custom graphs
   - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](BarChart.md))
   - Uses an object-based API for positioning points, text boxes, polygons, lines, and images

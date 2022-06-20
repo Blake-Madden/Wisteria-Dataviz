@@ -1745,7 +1745,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the table to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, tableGraph);
 
-        // make the canvas tall since we it's a long table, but not very wide
+        // make the canvas tall since it's a long table, but not very wide
         subframe->m_canvas->SetCanvasMinHeightDIPs(
             subframe->m_canvas->GetDefaultCanvasWidthDIPs());
         subframe->m_canvas->SetCanvasMinWidthDIPs(
