@@ -7,3 +7,6 @@
 [submodule "src/nanosvg"]
 	path = src/nanosvg
 	url = https://github.com/wxWidgets/nanosvg.git
+[submodule "src/wxSimpleJSON"]
+	path = src/wxSimpleJSON
+	url = https://github.com/Blake-Madden/wxSimpleJSON.git
