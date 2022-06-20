@@ -21,7 +21,6 @@
 #include "../src/base/canvas.h"
 #include "../src/base/commonaxisbuilder.h"
 #include "../src/base/label.h"
-#include "../src/base/spacer.h"
 #include "../src/import/text_matrix.h"
 #include "../src/util/logfile.h"
 #include "../src/graphs/barchart.h"

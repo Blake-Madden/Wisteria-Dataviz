@@ -284,7 +284,7 @@ namespace Wisteria
         ///     Likewise, this should be called after changing the canvas's aspect
         ///     ratio (via SetCanvasMinWidthDIPs()/SetCanvasMinHeightDIPs()).
         ///     It will have no effect if called after the windowing framework has taken
-        ///     control of it (i.e., be/ing resized).\n
+        ///     control of it (i.e., being resized).\n
         void CalcRowDimensions();
         /// @}
 
@@ -320,7 +320,7 @@ namespace Wisteria
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
-                 as stand alone axes) across a row to have the same height and positions.
+                 (as well as stand-alone axes) across a row to have the same height and positions.
             @param align @c true to align row contents.*/
         void AlignRowContent(const bool align) noexcept
             { m_alignRowContent = align; }
@@ -331,7 +331,7 @@ namespace Wisteria
 
         /** @brief Whether to align the content of items across each column.
             @details For example, this will set the X axes of the plots
-                (as well as stand alone axes) down a column to have the same width and positions.
+                (as well as stand-alone axes) down a column to have the same width and positions.
             @param align @c true to align column contents.
             @note If the grid is jagged, then the content alignment will stop on the first
                 row that has less columns than the top row. For example, if a canvas has three rows,
@@ -428,8 +428,7 @@ namespace Wisteria
         [[nodiscard]] wxPrintData& GetPrinterData() noexcept
             { return m_printData; }
 
-        /// @returns @c true If fitting the canvas's content to the full page
-        ///     when printing.
+        /// @returns @c true If fitting the canvas's content to the full page when printing.
         [[nodiscard]] bool IsFittingToPageWhenPrinting() const noexcept
             { return m_fitToPageWhenPrinting; }
         /** @brief Adjusts the canvas's content to fit the page when printing.
@@ -550,7 +549,7 @@ namespace Wisteria
             /** @brief The text.*/
             wxString m_label;
             /** @brief The text color.*/
-            wxColour m_color{ wxColour(255,0,0,125) };
+            wxColour m_color{ wxColour(255, 0, 0, 125) };
             /// @brief The direction that the text is drawn.
             WatermarkDirection m_direction{ WatermarkDirection::Diagonal };
             };
