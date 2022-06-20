@@ -4,8 +4,8 @@
 SET(WISTERIA_SRC
     src/base/axis.cpp
     src/base/canvas.cpp
-    src/base/commonaxisbuilder.cpp
     src/base/colorbrewer.cpp
+    src/base/commonaxisbuilder.cpp
     src/base/graphitems.cpp
     src/base/image.cpp
     src/base/label.cpp
@@ -28,11 +28,11 @@ SET(WISTERIA_SRC
     src/graphs/histogram.cpp
     src/graphs/likertchart.cpp
     src/graphs/lineplot.cpp
-    src/graphs/piechart.cpp
     src/graphs/lrroadmap.cpp
+    src/graphs/piechart.cpp
+    src/graphs/proconroadmap.cpp
     src/graphs/roadmap.cpp
     src/graphs/table.cpp
-    src/graphs/proconroadmap.cpp
     src/graphs/wcurveplot.cpp
     src/ui/imageexportdlg.cpp
     src/ui/opacitydlg.cpp
@@ -42,4 +42,6 @@ SET(WISTERIA_SRC
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
     src/util/logfile.cpp
-    src/util/memorymappedfile.cpp)
+    src/util/memorymappedfile.cpp
+    src/wxSimpleJSON/src/cJSON/cJSON.c
+    src/wxSimpleJSON/src/wxSimpleJSON.cpp)
