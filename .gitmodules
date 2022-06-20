@@ -9,4 +9,4 @@
 	url = https://github.com/wxWidgets/nanosvg.git
 [submodule "src/wxSimpleJSON"]
 	path = src/wxSimpleJSON
-	url = https://github.com/Blake-Madden/wxSimpleJSON.git
+	url = https://github.com/hosannahighertech/wxSimpleJSON.git
