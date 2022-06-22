@@ -570,9 +570,13 @@ namespace Wisteria::Data
             { return; }
 
         // checks for columns client requested that aren't in the file
-        const auto throwIfColumnNotFound = [&preview](const auto& columnName, const auto& foundIterator)
+        const auto throwIfColumnNotFound = [&preview](const auto& columnName,
+                                                      const auto& foundIterator,
+                                                      const bool allowEmptyColumnName)
             {
-            if (columnName.length() && foundIterator == preview.get_header_names().cend())
+            if (allowEmptyColumnName && columnName.empty())
+                { return; }
+            if (foundIterator == preview.get_header_names().cend())
                 {
                 const wxString errorMsg = wxString::Format(L"'%s': column not found!", columnName.c_str());
                 throw std::runtime_error(errorMsg.ToUTF8());
@@ -601,7 +605,7 @@ namespace Wisteria::Data
             preview.get_header_names().cend(),
             [&info](const auto& item) noexcept
                 { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
-        throwIfColumnNotFound(info.m_idColumn, idColumnIter);
+        throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
         const std::optional<size_t> idColumnIndex = (idColumnIter != preview.get_header_names().cend()) ?
             std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) : std::nullopt;
 
@@ -613,7 +617,7 @@ namespace Wisteria::Data
                 preview.get_header_names().cend(),
                 [&dateColumn](const auto& item) noexcept
                     { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
-            throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter);
+            throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
                 (dateColumnIter != preview.get_header_names().cend()) ?
                 std::optional<dateIndexInfo>(dateIndexInfo{
@@ -630,7 +634,7 @@ namespace Wisteria::Data
                 preview.get_header_names().cend(),
                 [&catColumn](const auto& item) noexcept
                     { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
-            throwIfColumnNotFound(catColumn.m_columnName, catColumnIter);
+            throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
                 (catColumnIter != preview.get_header_names().cend()) ?
                 std::optional<catIndexInfo>(catIndexInfo{
@@ -647,7 +651,7 @@ namespace Wisteria::Data
                 preview.get_header_names().cend(),
                 [&continuousColumn](const auto& item) noexcept
                     { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
-            throwIfColumnNotFound(continuousColumn, continuousColumnIter);
+            throwIfColumnNotFound(continuousColumn, continuousColumnIter, false);
             continuousColumnIndices.push_back(
                 (continuousColumnIter != preview.get_header_names().cend()) ?
                 std::optional<size_t>(continuousColumnIter - preview.get_header_names().cbegin()) :
