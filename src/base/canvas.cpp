@@ -1373,12 +1373,17 @@ namespace Wisteria
                                 std::shared_ptr<GraphItems::GraphItemBase> object)
         {
         wxASSERT(object);
-        wxASSERT(GetFixedObjects().size());
-        wxASSERT(column < GetFixedObjects().at(0).size());
-        if (GetFixedObjects().size() == 0 ||
-            row >= GetFixedObjects().size() ||
-            column >= GetFixedObjects().at(0).size())
-            { return; }
+        // resize the grid, if necessary
+        auto currentColumnCount = (GetFixedObjects().size() == 0 ? 0 : GetFixedObjects().at(0).size());
+        if (row >= GetFixedObjects().size())
+            {
+            SetFixedObjectsGridSize(row + 1, std::max(column + 1, currentColumnCount));
+            currentColumnCount = GetFixedObjects().at(0).size();
+            }
+        if (column >= currentColumnCount)
+            {
+            SetFixedObjectsGridSize(GetFixedObjects().size(), column + 1);
+            }
         GetFixedObjects().at(row).at(column) = object;
         // readjust the width if being fit with its content width-wise
         if (object != nullptr && object->IsFittingContentWidthToCanvas())
