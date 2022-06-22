@@ -39,7 +39,7 @@ namespace Wisteria::Data
     class StringCmpNoCase
         {
     public:
-        [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const noexcept
+        [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const
             { return lhs.CmpNoCase(rhs) < 0; };
         };
 

@@ -1745,7 +1745,6 @@ namespace Wisteria
             ///     (and no more).
             /// @note Client will need to call Canvas::CalcRowDimensions() after setting all objects
             ///     into its grid for this to take effect.
-            /// @returns A self reference.
             void FitContentWidthToCanvas(const bool fit) noexcept
                 { m_itemInfo.m_fitContentWidthToCanvas = fit; }
             /// @returns The percent of the canvas width that this object should consume.
