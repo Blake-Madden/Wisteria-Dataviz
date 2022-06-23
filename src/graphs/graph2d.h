@@ -290,7 +290,7 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend.
             @details This is graph-type specific and must be defined in derived graph classes.
-            @param LegendOptions Options for how to build the legend.
+            @param options Options for how to build the legend.
             @returns The legend for the plot.*/
         virtual std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) = 0;
