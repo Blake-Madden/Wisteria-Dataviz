@@ -407,9 +407,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(
-                                       const LegendCanvasPlacementHint hint,
-                                       const bool includeHeader)
+    std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
         if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return nullptr; }
@@ -432,7 +430,7 @@ namespace Wisteria::Graphs
             Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs()*1.5).
             DPIScaling(GetDPIScaleFactor()).
             Anchoring(Anchoring::TopLeftCorner).LabelAlignment(TextAlignment::FlushLeft));
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legend->SetText(
                 wxString::Format(L"%s\n", m_continuousColumn->GetTitle()) + legend->GetText());
@@ -441,7 +439,7 @@ namespace Wisteria::Graphs
         legend->GetLegendIcons().emplace_back(LegendIcon(m_reversedColorSpectrum));
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

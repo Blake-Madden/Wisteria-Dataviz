@@ -122,9 +122,11 @@ namespace Wisteria::Graphs
 
          // add the line plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, linePlot);
-         canvas->SetFixedObject(0, 1, linePlot->CreateLegend(
-                                          LegendCanvasPlacementHint::RightOrLeftOfGraph,
-                                          true));
+         canvas->SetFixedObject(0, 1,
+            linePlot->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(true).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
     */
     class LinePlot : public Graph2D
@@ -346,14 +348,21 @@ namespace Wisteria::Graphs
         /// @}
 
         /** @brief Builds and returns a legend using the current colors and labels.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction.
-                This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @param includeHeader @c true  to show the group column name as the header.
-            @returns The legend for the chart.*/
+            @details This can then be managed by the parent canvas and placed next to the plot.
+            @param options The options for how to build the legend.\n
+            @returns The legend for the plot.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-                                                         const LegendCanvasPlacementHint hint,
-                                                         const bool includeHeader);
+            const LegendOptions& options) final;
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint,
+            const bool includeHeader)
+            {
+            return CreateLegend(LegendOptions().
+                IncludeHeader(includeHeader).PlacementHint(hint));
+            }
     protected:
         /// @returns The plot's dataset.
         [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept

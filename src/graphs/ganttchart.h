@@ -100,7 +100,10 @@ namespace Wisteria::Graphs
          // Add a legend, showing whom is assigned to which tasks.
          // (If not using a grouping column, then adding a legend will be unnecessary.)
          canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, false));
+            ganttChart->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(false).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         @endcode*/
     class GanttChart final : public BarChart
         {
@@ -174,15 +177,22 @@ namespace Wisteria::Graphs
         /// @param labelDisplay The label display type.
         void SetLabelDisplay(const TaskLabelDisplay labelDisplay) noexcept
             { m_labelDisplay = labelDisplay; }
-        /** @brief Builds and returns a legend using the current colors and labels.
+        /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction.
-             This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @param includeHeader `true` to show the group column name as the header.
-            @returns The legend for the chart. Will return null if grouping was applied to the chart.*/
+            @param options The options for how to build the legend.
+            @returns The legend for the chart.*/
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendOptions& options) final;
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader);
+            const bool includeHeader)
+            {
+            return CreateLegend(
+                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
+            }
     private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it

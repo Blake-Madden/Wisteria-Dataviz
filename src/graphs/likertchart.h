@@ -127,7 +127,9 @@ namespace Wisteria::Graphs
          likertChart->SetBarSizesToRespondentSize(true);
 
          canvas->SetFixedObject(0, 0, likertChart);
-         canvas->SetFixedObject(0, 1, likertChart->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+         canvas->SetFixedObject(0, 1, likertChart->CreateLegend(
+            LegendOptions().
+                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
 
         @par 3-Point Scale Example:
@@ -685,15 +687,18 @@ namespace Wisteria::Graphs
         void AddQuestionsBracket(const QuestionsBracket& qBracket)
             { m_questionBrackets.push_back(qBracket); }
 
-        /// @brief Builds and returns a legend using the current colors and labels.
-        /// @details This can be then be managed by the parent canvas and placed next to the plot.
-        /// @param hint A hint about where the legend will be placed after construction. This is used
-        ///  for defining the legend's padding, outlining, canvas proportions, etc.
-        /// @returns The legend for the chart.
-        /// @note Be sure to set the labels in the dataset prior to calling SetData() if you plan
-        ///  create a legend. Refer to SetLabels(), CreateLabels(), and Simplify() for details.
+        /** @brief Builds and returns a legend.
+            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @param options The options for how to build the legend.
+            @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-                                                         const LegendCanvasPlacementHint hint);
+            const LegendOptions& options) final;
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint)
+            { return CreateLegend(LegendOptions().PlacementHint(hint) ); }
     private:
         /** @brief Determines if a format is categorized (i.e., using a grouping variable).
             @param format The format to review.

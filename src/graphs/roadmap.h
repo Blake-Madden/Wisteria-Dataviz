@@ -84,13 +84,10 @@ namespace Wisteria::Graphs
 
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction.
-                This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @param includeHeader `true` to show the grouping column name as the header.
+            @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader);
+            const LegendOptions& options) final;
 
         /** @brief Sets how to display the labels next to the road stops.
             @param mlDisplay The display method to use.*/
@@ -115,6 +112,18 @@ namespace Wisteria::Graphs
         /// @param magnitude The maximum influence of the road stops.
         void SetMagnitude(const double magnitude) noexcept
             { m_magnitude = magnitude; }
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint,
+            const bool includeHeader)
+            {
+            return CreateLegend(
+                LegendOptions().
+                    IncludeHeader(includeHeader).
+                    PlacementHint(hint) );
+            }
     protected:
         /// @brief Description of icon used for a road stop.
         using RoadStopIcon = std::pair<IconShape, wxColour>;

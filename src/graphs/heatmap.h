@@ -111,7 +111,10 @@ namespace Wisteria::Graphs
           canvas->SetFixedObject(0, 0, plot);
 
           // customize the header of the legend and add it to the canvas
-          auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph, true) };
+          auto legend{ plot->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
           legend->SetLine(0, _(L"Range of Scores"));
           canvas->SetFixedObject(0, 1, legend);
          @endcode
@@ -179,17 +182,22 @@ namespace Wisteria::Graphs
             { return m_showGroupHeaders; }
         /// @}
 
-        /// @brief Builds and returns a legend using the current colors spectrum.
-        /// @details This can be then be managed by the parent canvas and
-        ///     placed next to the plot.
-        /// @param hint A hint about where the legend will be placed after construction.
-        ///     This is used for defining the legend's padding, outlining,
-        ///     canvas proportions, etc.
-        /// @param includeHeader @c true to show the continuous column name as the header.
-        /// @returns The legend for the plot.
+        /** @brief Builds and returns a legend.
+            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @param options The options for how to build the legend.
+            @returns The legend for the chart.*/
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendOptions& options) final;
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader);
+            const bool includeHeader)
+            {
+            return CreateLegend(
+                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
+            }
     private:
         void RecalcSizes(wxDC& dc) final;
 

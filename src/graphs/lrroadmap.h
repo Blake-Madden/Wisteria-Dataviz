@@ -88,7 +88,10 @@ namespace Wisteria::Graphs
          canvas->SetFixedObject(0, 0, roadmap);
 
          // add the legend at the bottom (beneath the explanatory caption)
-         auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+         auto legend = roadmap->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
          canvas->GetRowInfo(0).HeightProportion(1-canvas->CalcMinHeightProportion(legend));
          canvas->GetRowInfo(1).HeightProportion(canvas->CalcMinHeightProportion(legend));
          canvas->SetFixedObject(1, 0, legend);

@@ -140,7 +140,8 @@ namespace Wisteria::Graphs
                         Brush(blockColor).SelectionLabel(blockLabel))
                     },
                     wxEmptyString,
-                    GraphItems::Label(m_categoricalColumn->GetCategoryLabelFromID(blockTable.first.m_bin)),
+                    GraphItems::Label(
+                        m_categoricalColumn->GetCategoryLabelFromID(blockTable.first.m_bin)),
                     GetBarEffect(), GetBarOpacity());
                 AddBar(theBar);
                 }
@@ -156,29 +157,44 @@ namespace Wisteria::Graphs
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
             {
-            const double percentage = safe_divide<double>(bar.GetLength(),m_categoricalColumn->GetRowCount())*100;
-            const wxString labelStr = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+            const double percentage = safe_divide<double>(bar.GetLength(),
+                                                          m_categoricalColumn->GetRowCount()) * 100;
+            const wxString labelStr =
+                (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
                 wxString(wxEmptyString) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) :
+                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                                            Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
-                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
-                    L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)";
+                wxNumberFormatter::ToString(percentage, 0,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                    L"%" :
+                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                                            Settings::GetDefaultNumberFormat()) +
+                    L" (" +
+                    wxNumberFormatter::ToString(percentage, 0,
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                    L"%)";
             bar.GetLabel().SetText(labelStr);
             }
 
         // if grouping, then sort by the labels alphabetically
         if (m_useGrouping)
-            { SortBars(BarChart::BarSortComparison::SortByAxisLabel, SortDirection::SortAscending); }
+            {
+            SortBars(BarChart::BarSortComparison::SortByAxisLabel,
+                     SortDirection::SortAscending);
+            }
         // if no grouping within the bars, then sort the largest counts to the top
         else
-            { SortBars(BarChart::BarSortComparison::SortByBarLength, SortDirection::SortDescending); }
+            {
+            SortBars(BarChart::BarSortComparison::SortByBarLength,
+                     SortDirection::SortDescending);
+            }
         }
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> CategoricalBarChart::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader)
+        const LegendOptions& options)
         {
         if (m_data == nullptr || GetGroupCount() == 0)
             { return nullptr; }
@@ -209,7 +225,7 @@ namespace Wisteria::Graphs
                     LegendIcon(IconShape::SquareIcon, *wxBLACK,
                         GetColorScheme()->GetColor(groupId)));
             }
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legendText.Prepend(
                 wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
@@ -218,7 +234,7 @@ namespace Wisteria::Graphs
         legend->SetText(legendText.Trim());
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

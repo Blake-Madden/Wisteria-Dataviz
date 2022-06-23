@@ -120,15 +120,22 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
 
-        /** @brief Builds and returns a legend using the current colors and labels.
+        /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param hint A hint about where the legend will be placed after construction.
-             This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @param includeHeader `true` to show the grouping column name as the header.
+            @param options The options for how to build the legend.
             @returns The legend for the chart.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendOptions& options) final;
+
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
-            const bool includeHeader);
+            const bool includeHeader)
+            {
+            return CreateLegend(
+                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
+            }
     private:
         struct CatBarBlock
             {

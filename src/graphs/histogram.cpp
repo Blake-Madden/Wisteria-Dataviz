@@ -584,8 +584,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader)
+    std::shared_ptr<GraphItems::Label> Histogram::CreateLegend(const LegendOptions& options)
         {
         if (m_data == nullptr || GetGroupCount() == 0)
             { return nullptr; }
@@ -616,7 +615,7 @@ namespace Wisteria::Graphs
                     LegendIcon(IconShape::SquareIcon, *wxBLACK,
                         GetColorScheme()->GetColor(groupId)));
             }
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legendText.Prepend(
                 wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
@@ -625,7 +624,7 @@ namespace Wisteria::Graphs
         legend->SetText(legendText.Trim());
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

@@ -260,7 +260,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> Roadmap::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader)
+        const LegendOptions& options)
         {
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
@@ -274,7 +274,7 @@ namespace Wisteria::Graphs
                 LegendIcon(GetNegativeIcon().first, *wxBLACK,
                     GetNegativeIcon().second));
 
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legendText.Prepend(_(L"Key\n"));
             legend->GetHeaderInfo().Enable(true).
@@ -283,7 +283,7 @@ namespace Wisteria::Graphs
         legend->SetText(legendText.Trim());
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

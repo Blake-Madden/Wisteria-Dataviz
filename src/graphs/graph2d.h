@@ -24,6 +24,54 @@
 /// @brief Classes for presenting data graphically.
 namespace Wisteria::Graphs
     {
+    /// @brief Options for building a legend.
+    class LegendOptions
+        {
+    public:
+        /// @brief Sets whether to show a header on top of the legend
+        ///     (which is usually the grouping variable name).
+        /// @param includeHeader @c true to include headers.
+        /// @returns A self reference.
+        LegendOptions& IncludeHeader(bool includeHeader) noexcept
+            {
+            m_includeHeader = includeHeader;
+            return *this;
+            }
+        /// @returns @c true if including a header on the legend.
+        [[nodiscard]] bool IsIncludingHeader() const noexcept
+            { return m_includeHeader; }
+        /// @brief Provides a hint about where the legend will be placed
+        ///     relative to its parent graph.
+        /// @param hint A hint about where the legend will be placed
+        ///     after construction.\n
+        ///     This is used for defining the legend's padding, outlining,
+        ///     canvas proportions, etc.
+        /// @returns A self reference.
+        LegendOptions& PlacementHint(LegendCanvasPlacementHint hint) noexcept
+            {
+            m_hint = hint;
+            return *this;
+            }
+        /// @returns How the legend is being placed relative to its graph.
+        LegendCanvasPlacementHint GetPlacementHint() const noexcept
+            { return m_hint; }
+        /// @brief Which ring of a pie-like chart is the legend referring to.
+        /// @param peri Whether the legend is the outer or inner ring of the chart.
+        /// @returns A self reference.
+        LegendOptions& RingPerimeter(Perimeter peri) noexcept
+            {
+            m_perimeter = peri;
+            return *this;
+            }
+        /// @returns Which ring of a pie-like chart is the legend referring to.
+        Perimeter GetRingPerimeter() const noexcept
+            { return m_perimeter; }
+    private:
+        bool m_includeHeader{ false };
+        LegendCanvasPlacementHint m_hint{ LegendCanvasPlacementHint::RightOfGraph };
+        Perimeter m_perimeter{ Perimeter::Outer };
+        };
+
     /// @brief Base class for plotting 2D data.
     class Graph2D : public GraphItems::GraphItemBase
         {
@@ -239,6 +287,13 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxVariant GetPropertyValue(const wxString& key) const
             { return HasProperty(key) ? m_properties.find(key)->second : wxVariant(); }
         /// @}
+
+        /** @brief Builds and returns a legend.
+            @details This is graph-type specific and must be defined in derived graph classes.
+            @param LegendOptions Options for how to build the legend.
+            @returns The legend for the plot.*/
+        virtual std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendOptions& options) = 0;
 
         // Just hiding these from Doxygen. If these are included inside of groupings,
         // then the "private" tag will break the group in the generated help.

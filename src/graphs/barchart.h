@@ -809,6 +809,12 @@ namespace Wisteria::Graphs
             @param barsPerDefaultCanvasSize The number bars to display before requiring
                 the canvas to be made taller.*/
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
+
+        /// @private
+        [[deprecated("Base barcharts do not support legend building.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            [[maybe_unused]] const LegendOptions& options) override
+            { return nullptr; }
     protected:
         /// @returns The number of slots that can hold a bar.
         ///    This is used for calculating the width of the bars.

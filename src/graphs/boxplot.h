@@ -321,16 +321,18 @@ namespace Wisteria::Graphs
             @note This only applies when a displaying single-series box.*/
         void IncludedOverlayingLegend(const bool overlay) noexcept
             { m_overlayLegend = overlay; }
-        /** @brief Builds and returns a legend for single-box plots, showing the various statistics.
-             @details This can be then be managed by the parent canvas and placed next to the plot.
-             @param hint A hint about where the legend will be placed after construction. This is used
-                for defining the legend's padding, outlining, canvas proportions, etc.
-             @returns The legend for the plot.
-             @sa IncludedOverlayingLegend().
-             @note By default, this legend will be created and laid on top of the plot if a single box plot.\n
+        /** @brief Builds and returns a legend for single-box plots,
+                showing the various statistics.
+            @details This can then be managed by the parent canvas and placed next to the plot.
+            @param options The options for how to build the legend.\n
+                Legend placement is the only field used here.
+            @returns The legend for the plot.
+            @sa IncludedOverlayingLegend().
+            @note By default, this legend will be created and laid on top of the plot
+                if a single box plot.\n
                 For multi-group plots, null will be returned.*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint);
+            const LegendOptions& options) final;
         /// @}
 
         /// @name Box Effect Functions
@@ -427,12 +429,17 @@ namespace Wisteria::Graphs
         /// @private
         [[nodiscard]] const BoxAndWhisker& GetBox(const size_t index) const
             { return m_boxes[index]; }
+        /// @private
+        [[deprecated("Use version that takes a LegendOptions parameter.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendCanvasPlacementHint hint)
+            { return CreateLegend(LegendOptions().PlacementHint(hint)); }
     private:
         /** @brief Adds a box to the plot.
             @param box The box to draw.
             @note If only one box is on the plot, then no labels will be shown on the bottom X axis
                 (even if a custom label is provided for where the box is). To override this,
-                call GetBottomXAxis().ShowAxisLabels(true) after adding the box and its custom label.*/
+                call `GetBottomXAxis().ShowAxisLabels(true)` after adding the box and its custom label.*/
         void AddBox(const BoxAndWhisker& box);
         void RecalcSizes(wxDC& dc) final;
 

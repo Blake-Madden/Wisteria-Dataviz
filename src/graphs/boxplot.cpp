@@ -659,7 +659,8 @@ namespace Wisteria::Graphs
         // draw the legend on top of the plot is a single-box plot and was requested
         if (GetBoxCount() == 1 && IsOverlayingLegend())
             {
-            auto legend = BoxPlot::CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph);
+            auto legend = BoxPlot::CreateLegend(
+                LegendOptions().PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
             legend->SetAnchorPoint(wxPoint(GetPlotAreaBoundingBox().GetX() +
                                            GetPlotAreaBoundingBox().GetWidth(),
                                            GetPlotAreaBoundingBox().GetY() +
@@ -672,7 +673,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
-        const LegendCanvasPlacementHint hint)
+            const LegendOptions& options)
         {
         if (m_data == nullptr || GetBoxCount() != 1)
             { return nullptr; }
@@ -697,7 +698,7 @@ namespace Wisteria::Graphs
                                                 3, Settings::GetDefaultNumberFormat())));
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

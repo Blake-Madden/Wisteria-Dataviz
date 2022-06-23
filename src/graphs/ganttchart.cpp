@@ -375,8 +375,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader)
+    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(const LegendOptions& options)
         {
         if (m_legendLines.empty())
             { return nullptr; }
@@ -407,7 +406,7 @@ namespace Wisteria::Graphs
                         legendLine.second));
             ++lineCount;
             }
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legendText.Prepend(wxString::Format(L"%s\n", m_legendTitle));
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
@@ -415,7 +414,7 @@ namespace Wisteria::Graphs
         legend->SetText(legendText.Trim());
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }

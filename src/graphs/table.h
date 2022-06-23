@@ -758,6 +758,11 @@ namespace Wisteria::Graphs
 
         /// @private
         void AddCellAnnotation(CellAnnotation&& cellNote);
+        /// @private
+        [[deprecated("Tables do not support legends.")]]
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            [[maybe_unused]] const LegendOptions& options) override
+            { return nullptr; }
     private:
         void RecalcSizes(wxDC& dc) final;
 

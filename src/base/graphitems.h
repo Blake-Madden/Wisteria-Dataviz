@@ -72,6 +72,15 @@ namespace Wisteria
         Right
         };
 
+    /// @brief Where a ring is within a circle.
+    enum class Perimeter
+        {
+        /// @brief Inner ring.
+        Inner,
+        /// @brief outer ring.
+        Outer
+        };
+
     /// @brief The type of influence something can have on a subject.
     /// @details As an example, predictors in a linear regression.
     /// @internal This enum is a bitmap, do not make it strongly typed.

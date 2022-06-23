@@ -334,7 +334,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true) };
+        auto legend{ plot->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
         legend->SetLine(0, _(L"Range of Scores"));
         subframe->m_canvas->SetFixedObject(0, 1, legend);
 
@@ -378,7 +381,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         // customize the header of the legend and add it to the canvas
-        auto legend{ plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true) };
+        auto legend{ plot->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) };
         subframe->m_canvas->SetFixedObject(0, 1, legend);
         }
     // Histogram
@@ -427,7 +433,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         if (plot->GetGroupCount() > 0)
             {
             subframe->m_canvas->SetFixedObject(0, 1,
-                plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
+                plot->CreateLegend(
+                    LegendOptions().
+                        IncludeHeader(true).
+                        PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
             }
         }
     // Histogram (discrete categories from a grouping variable get their own bars)
@@ -525,7 +534,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
         subframe->m_canvas->SetFixedObject(0, 1,
-            linePlot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
+            linePlot->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(true).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
     // Line Plot (customized)
     else if (event.GetId() == MyApp::ID_NEW_LINEPLOT_CUSTOMIZED)
@@ -626,7 +638,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // add a legend to the side and center it vertically
-        auto legend = linePlot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false);
+        auto legend = linePlot->CreateLegend(
+            LegendOptions().
+                IncludeHeader(false).
+                PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
         legend->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         subframe->m_canvas->SetFixedObject(0, 1, legend);
 
@@ -705,7 +720,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, ganttChart);
         // add a legend, showing whom is assigned to which tasks
         subframe->m_canvas->SetFixedObject(0, 1,
-            ganttChart->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false));
+            ganttChart->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(false).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         }
     else if (event.GetId() == MyApp::ID_NEW_CANDLESTICK_AXIS)
         {
@@ -982,7 +1000,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, plot);
 
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, true));
+            plot->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(true).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
         {
@@ -1136,7 +1157,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOfGraph));
+            plot->CreateLegend(
+                LegendOptions().
+                    RingPerimeter(Perimeter::Inner).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
     // Donut Chart (with Subgroup)
     else if (event.GetId() == MyApp::ID_NEW_DONUTCHART_GROUPED)
@@ -1193,7 +1217,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a legend for the inner ring (i.e., the subgroup column,
         // which will also show headers for their parent groups)
         subframe->m_canvas->SetFixedObject(0, 1,
-            plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOfGraph));
+            plot->CreateLegend(
+                LegendOptions().
+                    RingPerimeter(Perimeter::Inner).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         }
     // Linear Regression Roadmap
     else if (event.GetId() == MyApp::ID_NEW_LR_ROADMAP_GRAPH)
@@ -1233,7 +1260,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, roadmap);
 
         // add the legend at the bottom (beneath the explanatory caption)
-        auto legend = roadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+        auto legend = roadmap->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
         subframe->m_canvas->SetFixedObject(1, 0, legend);
 
         subframe->m_canvas->CalcRowDimensions();
@@ -1298,7 +1328,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the legend at the bottom (beneath the explanatory caption)
         OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
         OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-        auto legend = OTroadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+        auto legend = OTroadmap->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
 
         // add a title with a green banner background and white font
         Label topTitle(GraphItemInfo(_(L"ERP Migration SWOT Analysis\n"
@@ -1378,7 +1411,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add the line plot and its legend to the canvas
         subframe->m_canvas->SetFixedObject(0, 0, WCurve);
         subframe->m_canvas->SetFixedObject(0, 1,
-            WCurve->CreateLegend(LegendCanvasPlacementHint::RightOfGraph, false));
+            WCurve->CreateLegend(
+                LegendOptions().
+                    IncludeHeader(false).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
     // Likert (3-Point)
     else if (event.GetId() == MyApp::ID_NEW_LIKERT_3POINT)
@@ -1501,7 +1537,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(0, 1,
-            likertChart->CreateLegend(LegendCanvasPlacementHint::RightOfGraph));
+            likertChart->CreateLegend(
+                LegendOptions().
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
 
         // when printing, make it landscape and stretch it to fill the entire page
         subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
@@ -1636,7 +1674,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         // instead of adding the legend to the canvas, overlay it on top of the line plot
-        auto lineLegend = linePlot->CreateLegend(LegendCanvasPlacementHint::EmbeddedOnGraph, false);
+        auto lineLegend = linePlot->CreateLegend(
+            LegendOptions().
+                IncludeHeader(false).
+                PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
         linePlot->AddEmbeddedObject(lineLegend,
             wxPoint(linePlot->GetBottomXAxis().GetRange().second,

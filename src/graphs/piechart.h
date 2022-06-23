@@ -254,7 +254,10 @@ namespace Wisteria::Graphs
          // add a legend for the inner ring (i.e., the subgroup column,
          // which will also show headers for their parent groups)
          canvas->SetFixedObject(0, 1,
-                 plot->CreateInnerPieLegend(LegendCanvasPlacementHint::RightOrLeftOfGraph));
+                 plot->CreateLegend(
+                    LegendOptions().
+                        RingPerimeter(Perimeter::Inner).
+                        PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode*/
     class PieChart final : public Graph2D
         {
@@ -484,12 +487,30 @@ namespace Wisteria::Graphs
         /// @brief Functions for creating legends.
         /// @{
 
+        /** @brief Builds and returns a legend.
+            @details This can be then be managed by the parent canvas and placed next to the plot.
+            @param options The options for how to build the legend.
+            @returns The legend for the chart.*/
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+            const LegendOptions& options) final
+            {
+            if (options.GetRingPerimeter() == Perimeter::Inner)
+                {
+                return CreateInnerPieLegend(options.GetPlacementHint());
+                }
+            else
+                {
+                return CreateOuterPieLegend(options.GetPlacementHint());
+                }
+            }
+
         /** @brief Builds and returns a legend for the outer pie
                 (or the only pie, if a single data series).
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.\n
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @returns The legend for the chart.*/
+            @returns The legend for the chart.
+            @note Prefer using CreateLegend().*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateOuterPieLegend(
             const LegendCanvasPlacementHint hint);
 
@@ -497,7 +518,8 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param hint A hint about where the legend will be placed after construction.\n
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
-            @returns The legend for the chart.*/
+            @returns The legend for the chart.
+            @note Prefer using CreateLegend().*/
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateInnerPieLegend(
             const LegendCanvasPlacementHint hint);
         /// @}

@@ -113,7 +113,10 @@ namespace Wisteria::Graphs
          // add the legend at the bottom (beneath the explanatory caption)
          OTroadmap->SetPositiveLegendLabel(_(L"Strengths & Opportunities"));
          OTroadmap->SetNegativeLegendLabel(_(L"Weaknesses & Threats"));
-         auto legend = OTroadmap->CreateLegend(LegendCanvasPlacementHint::AboveOrBeneathGraph, true);
+         auto legend = OTroadmap->CreateLegend(
+            LegendOptions().
+                IncludeHeader(true).
+                PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
          const auto proportionForEachRoadMap =
             safe_divide<double>(1 - canvas->CalcMinHeightProportion(legend), 2);
          canvas->GetRowInfo(0).HeightProportion(proportionForEachRoadMap);

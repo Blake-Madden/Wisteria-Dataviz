@@ -252,8 +252,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(
-        const LegendCanvasPlacementHint hint, const bool includeHeader)
+    std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendOptions& options)
         {
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
@@ -262,7 +261,7 @@ namespace Wisteria::Graphs
         const bool showingMarkers = (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
                                     // multiple lines or one line and it is not using a blank icon
                                     (m_lines.size() > 1 ||
-                                    GetShapeScheme()->GetShape(0) != IconShape::BlankIcon));
+                                     GetShapeScheme()->GetShape(0) != IconShape::BlankIcon));
         wxString legendText;
         size_t lineCount{ 0 };
         for (const auto& line : m_lines)
@@ -296,7 +295,7 @@ namespace Wisteria::Graphs
                 }
             ++lineCount;
             }
-        if (includeHeader)
+        if (options.IsIncludingHeader())
             {
             legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
@@ -304,7 +303,7 @@ namespace Wisteria::Graphs
         legend->SetText(legendText.Trim());
 
         AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, hint);
+        AdjustLegendSettings(legend, options.GetPlacementHint());
         return legend;
         }
     }
