@@ -15,7 +15,7 @@ namespace Wisteria
     //----------------------------------------------------------------
     std::shared_ptr<Axis>
         CommonAxisBuilder::BuildRightAxis(Canvas* canvas,
-            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs)
+            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs)
         {
         if (graphs.size() < 2)
             { return nullptr; }
@@ -54,8 +54,8 @@ namespace Wisteria
     //----------------------------------------------------------------
     std::shared_ptr<Axis>
         CommonAxisBuilder::BuildBottomAxis(Canvas* canvas,
-            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs,
-            const bool applyCommonLeftAxis /*= false*/)
+            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+            const bool useCommonLeftAxis /*= false*/)
         {
         if (graphs.size() < 2)
             { return nullptr; }
@@ -87,7 +87,7 @@ namespace Wisteria
         // tell the canvas to align the plots and stand-alone axes across each column
         canvas->AlignColumnContent(true);
 
-        if (applyCommonLeftAxis)
+        if (useCommonLeftAxis)
             {
             std::optional<std::pair<double, double>> rangesMinMax;
             for (const auto& graph : graphs)

@@ -14,12 +14,13 @@
 
 #include "axis.h"
 #include "../graphs/graph2d.h"
-#include <initializer_list>
+#include <vector>
 
 namespace Wisteria
     {
     /** @brief Constructs a common axis for a canvas, connected to a list of graphs
-            from the same row or column.*/
+            from the same row or column.
+        @todo Add support for left and top common axes.*/
     class CommonAxisBuilder
         {
     public:
@@ -41,6 +42,7 @@ namespace Wisteria
                 calling this function.
             @returns The common axis for the graphs, which should be added to the canvas
                 (to the right of the graphs).
+            @todo Add support for using a common bottom axis.
             @par Example
             @code
              // with "canvas" being the canvas containing the graphs and
@@ -50,12 +52,12 @@ namespace Wisteria
              canvas->SetFixedObject(0, 1, boxPlot);
              canvas->SetFixedObject(0, 2,
                 // construct a common axis connected to the line and box plots,
-                // and add it to the righ of them on the canvas
+                // and add it to the right of them on the canvas
                 CommonAxisBuilder::BuildRightAxis(canvas,
-                    { linePlot, boxPlot}));
+                    { linePlot, boxPlot }));
             @endcode*/
         static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildRightAxis(Canvas* canvas,
-            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs);
+            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs);
         /** @brief Builds a common axis for graphs along a column.
             @details This function will perform the following:
                 - A new axis will be copied from the first graph's bottom axis
@@ -74,7 +76,7 @@ namespace Wisteria
             @param graphs The graphs that will be connected to the common axis.\n
                 Note that these graphs' bottom X axis will have their labels turned off after
                 calling this function.
-            @param applyCommonLeftAxis If @c true, gets the min and max of the graphs' left X
+            @param useCommonLeftAxis If @c true, gets the min and max of the graphs' left X
                 axes and sets all the graphs to use that range.\n
                 This is useful for further homogenizing the graphs.
             @returns The common axis for the graphs, which should be added to the canvas
@@ -95,8 +97,8 @@ namespace Wisteria
              canvas->CalcRowDimensions();
             @endcode*/
         static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildBottomAxis(Canvas* canvas,
-            std::initializer_list<std::shared_ptr<Graphs::Graph2D>> graphs,
-            const bool applyCommonLeftAxis = true);
+            std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
+            const bool useCommonLeftAxis = false);
         };
     };
 
