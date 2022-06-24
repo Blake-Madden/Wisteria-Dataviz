@@ -1223,7 +1223,7 @@ namespace Wisteria
                 if (object != nullptr && object->IsFittingContentWidthToCanvas())
                     {
                     object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
-                    CalcColumnWidths(currentRow, currentColumn, object);
+                    CalcColumnWidths(currentRow, currentColumn);
                     }
                 ++currentColumn;
                 }
@@ -1300,6 +1300,21 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<GraphItems::GraphItemBase>
+        Canvas::FindFixedObject(const long itemId) noexcept
+        {
+        for (const auto& row : GetFixedObjects())
+            {
+            for (const auto& object : row)
+                {
+                if (object != nullptr && object->GetId() == itemId)
+                    { return object; }
+                }
+            }
+        return nullptr;
+        }
+
+    //---------------------------------------------------
     const std::shared_ptr<GraphItems::GraphItemBase>
         Canvas::GetFixedObject(const size_t row, const size_t column) const
         {
@@ -1314,8 +1329,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void Canvas::CalcColumnWidths(const size_t row, const size_t column,
-                                  const std::shared_ptr<GraphItems::GraphItemBase>& object)
+    void Canvas::CalcColumnWidths(const size_t row, const size_t column)
         {
         // how much of the canvas is being consumed by the row
         // that this item was just added to
@@ -1363,7 +1377,7 @@ namespace Wisteria
                 }
             wxASSERT_MSG(compare_doubles(tallyColumnsPercent(), 1.0),
                 wxString::Format(L"CalcColumnWidths() failed to set the column widths "
-                    "collectively to 100%! Percent is %d%%",
+                    "collectively to 100%%! Percent is %d%%",
                     static_cast<int>(tallyColumnsPercent() * 100)));
             }
         }
@@ -1372,7 +1386,6 @@ namespace Wisteria
     void Canvas::SetFixedObject(const size_t row, const size_t column,
                                 std::shared_ptr<GraphItems::GraphItemBase> object)
         {
-        wxASSERT(object);
         // resize the grid, if necessary
         auto currentColumnCount = (GetFixedObjects().size() == 0 ? 0 : GetFixedObjects().at(0).size());
         if (row >= GetFixedObjects().size())
@@ -1390,7 +1403,14 @@ namespace Wisteria
             {
             object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
             }
-        CalcColumnWidths(row, column, object);
+        // recalc layout of column widths, unless the row is currently just
+        // filled with null placeholders
+        const size_t validItemsInRow = std::accumulate(GetFixedObjects().at(row).cbegin(),
+            GetFixedObjects().at(row).cend(), 0,
+            [](const auto initVal, const auto& item) noexcept
+            { return initVal + (item == nullptr ? 0 : 1); });
+        if (validItemsInRow > 0)
+            { CalcColumnWidths(row, column); }
         }
 
     // override the paint event so that we can use double buffering

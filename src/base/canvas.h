@@ -317,6 +317,10 @@ namespace Wisteria
         /// @param column The column of the object.
         [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase>
                           GetFixedObject(const size_t row, const size_t column);
+        /// @returns The fixed object with the given ID, or null if not found.
+        /// @param itemId The ID of the object to look for.
+        [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase>
+            FindFixedObject(const long itemId) noexcept;
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots
@@ -609,9 +613,7 @@ namespace Wisteria
         ///     whose width should not be more than its content (at default scaling).
         /// @param row The row to calculate.
         /// @param column The column of the object altering the column widths.
-        /// @param object The object affecting the colum widths.
-        void CalcColumnWidths(const size_t row, const size_t column,
-                              const std::shared_ptr<GraphItems::GraphItemBase>& object);
+        void CalcColumnWidths(const size_t row, const size_t column);
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }
