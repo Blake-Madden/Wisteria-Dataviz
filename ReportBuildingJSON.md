@@ -54,6 +54,7 @@ At the root level:
       - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
         The options are:
         - @c "line-plot"
+        - @c "common-axis"
       - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
       Note that this is the unique name of the datasource loaded from the report's @c "datasources" section,
       not a filepath.\n
@@ -61,9 +62,26 @@ At the root level:
       - The remaining item properties are object specific. Refer to the following sections
       about the properties available for different object types.
 
+@c "common-axis" properties:
+- @c "axis-type": the type of axis.\n
+  The options are:\n
+  - @c "BottomXAxis"
+  - @c "RightYAxis"
+- @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.
+- @c "common-perpendicular-axis": if "axis-type" is @c "BottomXAxis" and this is @c true,
+  then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
+
+@c "line-plot" properties:
+- @c "variables": an item containing the following properties:
+  - @c "x": the X column.
+  - @c "y": the X column.
+  - @c "group": the grouping column (this is optional).
+
+@c "label" properties:
+- @c "text": the title's text.
+
 Properties common to all graph items:
-- @c "title": the title of the graph, which can contain the following properties:
-  - @c "text": the title's text.
+- @c "title": the title of the graph, which contains @c label properties.
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     The options are:\n
@@ -72,8 +90,8 @@ Properties common to all graph items:
     - @c "top"
     - @c "bottom"
 
-Line plot properties:
-- @c "variables": an item containing the following properties:
-  - @c "x": the X column.
-  - @c "y": the X column.
-  - @c "group": the grouping column (this is optional).
+Properties common to all items:
+- @c "id": a (unique) numeric identifier for the item. This can be referenced by other items in the report.\n
+  An example can be adding an ID to a graph and then inserted a @c "common-axis" to the report that accepts this ID.
+- @c "canvas-padding": a numeric array (one to four numbers), representing the padding item's going clockwise,
+  starting at 12 o'clock.

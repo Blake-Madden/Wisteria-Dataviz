@@ -9,7 +9,13 @@ namespace Wisteria
     std::vector<Canvas*> ReportBuilder::LoadConfigurationFile(const wxString& filePath,
                                                               wxWindow* parent)
         {
+        // reset from previous calls
+        m_commonAxesPlaceholders.clear();
+        m_name.clear();
+        m_datasets.clear();
+
         std::vector<Canvas*> reportPages;
+        std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
 
         wxASSERT_MSG(parent, L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
@@ -66,13 +72,23 @@ namespace Wisteria
                                 for (const auto& item : items)
                                     {
                                     const auto typeProperty = item->GetProperty(L"type");
+                                    // load the item into the grid cell(s)
                                     if (typeProperty->IsOk())
                                         {
                                         try
                                             {
                                             if (typeProperty->GetValueString().CmpNoCase(L"line-plot") == 0)
                                                 {
-                                                LoadLinePlot(item, canvas, currentRow, currentColumn);
+                                                embeddedGraphs.push_back(
+                                                    LoadLinePlot(item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"common-axis") == 0)
+                                                {
+                                                // Common axis cannot be created until we know all its children
+                                                // have been created. Add a placeholder for now and circle back
+                                                // after all other items have been added to the grid.
+                                                canvas->SetFixedObject(currentRow, currentColumn, nullptr);
+                                                LoadCommonAxis(item, currentRow, currentColumn);
                                                 }
                                             }
                                         // show error, but OK to keep going
@@ -88,6 +104,40 @@ namespace Wisteria
                                 }
                             }
                         }
+                    // if there are common axis queued, add them now
+                    if (m_commonAxesPlaceholders.size())
+                        {
+                        for (const auto& commonAxisInfo : m_commonAxesPlaceholders)
+                            {
+                            std::vector<std::shared_ptr<Graphs::Graph2D>> childGraphs;
+                            for (const auto& commonAxisInfo : m_commonAxesPlaceholders)
+                                {
+                                for (const auto& childId : commonAxisInfo.m_childrenIds)
+                                    {
+                                    auto childGraph = std::find_if(embeddedGraphs.begin(), embeddedGraphs.end(),
+                                        [&childId](const auto& graph) noexcept
+                                          {
+                                          return graph->GetId() == static_cast<long>(childId);
+                                          });
+                                    if (childGraph != embeddedGraphs.end() &&
+                                        (*childGraph) != nullptr)
+                                        { childGraphs.push_back(*childGraph); }
+                                    }
+                                if (childGraphs.size())
+                                    {
+                                    canvas->SetFixedObject(
+                                        commonAxisInfo.m_gridPosition.first,
+                                        commonAxisInfo.m_gridPosition.second,
+                                        (commonAxisInfo.m_axisType == AxisType::BottomXAxis) ?
+                                         CommonAxisBuilder::BuildBottomAxis(canvas,
+                                             childGraphs,
+                                             commonAxisInfo.m_commonPerpendicularAxis) :
+                                         CommonAxisBuilder::BuildRightAxis(canvas,
+                                                                           childGraphs));
+                                    }
+                                }
+                            }
+                        }
                     canvas->CalcRowDimensions();
                     reportPages.push_back(canvas);
                     }
@@ -95,6 +145,56 @@ namespace Wisteria
             }
 
         return reportPages;
+        }
+
+    //---------------------------------------------------
+    std::optional<AxisType> ReportBuilder::ConvertAxisType(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static std::map<std::wstring, AxisType> values =
+            {
+            { L"bottomxaxis", AxisType::BottomXAxis },
+            { L"topxaxis", AxisType::TopXAxis },
+            { L"leftyaxis", AxisType::LeftYAxis },
+            { L"rightyaxis", AxisType::RightYAxis }
+            };
+
+        const auto foundValue = values.find(value.Lower().ToStdWstring());
+        return ((foundValue != values.cend()) ?
+            std::optional<AxisType>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadCommonAxis(const wxSimpleJSON::Ptr_t& commonAxisNode,
+                                       const size_t currentRow, const size_t currentColumn)
+        {
+        const auto axisType = ConvertAxisType(
+            commonAxisNode->GetProperty("axis-type")->GetValueString());
+        if (axisType.has_value())
+            {
+            m_commonAxesPlaceholders.push_back(
+                {
+                axisType.value(),
+                std::make_pair(currentRow, currentColumn),
+                commonAxisNode->GetProperty("child-ids")->GetValueArrayNumber(),
+                commonAxisNode->GetProperty("common-perpendicular-axis")->GetValueBool()
+                });
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<GraphItems::Label> ReportBuilder::LoadLabel(const wxSimpleJSON::Ptr_t& labelNode)
+        {
+        if (labelNode->IsOk())
+            {
+            auto label = std::make_shared<GraphItems::Label>(
+                GraphItems::GraphItemInfo(labelNode->GetProperty(L"text")->GetValueString()).
+                Pen(wxNullPen));
+            LoadItem(labelNode, label);
+            return label;
+            }
+        return nullptr;
         }
 
     //---------------------------------------------------
@@ -231,7 +331,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadLinePlot(
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadLinePlot(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
@@ -249,21 +349,46 @@ namespace Wisteria
                     variablesNode->GetProperty(L"y")->GetValueString(),
                     variablesNode->GetProperty(L"x")->GetValueString(),
                     (groupVarName.empty() ? std::nullopt : std::optional<wxString>(groupVarName)));
-                LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+                return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
                 }
             }
+        return nullptr;
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
+    void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
+                                 std::shared_ptr<GraphItems::GraphItemBase> item)
+        {
+        // ID
+        item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
+
+        // padding (going clockwise)
+        const auto paddingSpec = itemNode->GetProperty("canvas-padding")->GetValueArrayNumber();
+        if (paddingSpec.size() > 0)
+            { item->SetTopCanvasMargin(paddingSpec.at(0)); }
+        if (paddingSpec.size() > 1)
+            { item->SetRightCanvasMargin(paddingSpec.at(1)); }
+        if (paddingSpec.size() > 2)
+            { item->SetBottomCanvasMargin(paddingSpec.at(2)); }
+        if (paddingSpec.size() > 3)
+            { item->SetLeftCanvasMargin(paddingSpec.at(3)); }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGraph(
+                                  const wxSimpleJSON::Ptr_t& graphNode,
                                   Canvas* canvas, size_t& currentRow, size_t& currentColumn,
                                   std::shared_ptr<Graphs::Graph2D> graph)
         {
+        LoadItem(graphNode, graph);
+
         // title information
         auto titleProperty = graphNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
-            graph->GetTitle().SetText(titleProperty->GetProperty(L"text")->GetValueString());
+            auto titleLabel = LoadLabel(titleProperty);
+            if (titleLabel != nullptr)
+                { graph->GetTitle() = *titleLabel; }
             }
 
         // is there a legend?
@@ -313,5 +438,6 @@ namespace Wisteria
             {
             canvas->SetFixedObject(currentRow, currentColumn, graph);
             }
+        return graph;
         }
     }
