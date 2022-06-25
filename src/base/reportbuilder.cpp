@@ -13,6 +13,7 @@ namespace Wisteria
         m_commonAxesPlaceholders.clear();
         m_name.clear();
         m_datasets.clear();
+        m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
         std::vector<Canvas*> reportPages;
         std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
@@ -82,6 +83,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
                                                 }
+                                            if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                    LoadLabel(item));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"common-axis") == 0)
                                                 {
                                                 // Common axis cannot be created until we know all its children
@@ -94,7 +100,8 @@ namespace Wisteria
                                         // show error, but OK to keep going
                                         catch (const std::exception& err)
                                             {
-                                            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                                            wxMessageBox(wxString::FromUTF8(
+                                                         wxString::FromUTF8(err.what())),
                                                          _(L"Canvas Item Error"), wxOK|wxICON_ERROR|wxCENTRE);
                                             }
                                         }
@@ -125,15 +132,17 @@ namespace Wisteria
                                     }
                                 if (childGraphs.size())
                                     {
+                                    auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis) ?
+                                        CommonAxisBuilder::BuildBottomAxis(canvas,
+                                            childGraphs,
+                                            commonAxisInfo.m_commonPerpendicularAxis) :
+                                        CommonAxisBuilder::BuildRightAxis(canvas,
+                                            childGraphs);
+                                    LoadItem(commonAxisInfo.m_node, commonAxis);
                                     canvas->SetFixedObject(
                                         commonAxisInfo.m_gridPosition.first,
                                         commonAxisInfo.m_gridPosition.second,
-                                        (commonAxisInfo.m_axisType == AxisType::BottomXAxis) ?
-                                         CommonAxisBuilder::BuildBottomAxis(canvas,
-                                             childGraphs,
-                                             commonAxisInfo.m_commonPerpendicularAxis) :
-                                         CommonAxisBuilder::BuildRightAxis(canvas,
-                                                                           childGraphs));
+                                        commonAxis);
                                     }
                                 }
                             }
@@ -153,16 +162,28 @@ namespace Wisteria
         // use standard string, wxString should not be constructed globally
         static std::map<std::wstring, AxisType> values =
             {
-            { L"bottomxaxis", AxisType::BottomXAxis },
-            { L"topxaxis", AxisType::TopXAxis },
-            { L"leftyaxis", AxisType::LeftYAxis },
-            { L"rightyaxis", AxisType::RightYAxis }
+            { L"bottom-x", AxisType::BottomXAxis },
+            { L"top-x", AxisType::TopXAxis },
+            { L"left-y", AxisType::LeftYAxis },
+            { L"right-y", AxisType::RightYAxis }
             };
 
         const auto foundValue = values.find(value.Lower().ToStdWstring());
         return ((foundValue != values.cend()) ?
             std::optional<AxisType>(foundValue->second) :
             std::nullopt);
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
+        {
+        const auto titleProperty = axisNode->GetProperty(L"title");
+        if (titleProperty->IsOk())
+            {
+            auto titleLabel = LoadLabel(titleProperty);
+            if (titleLabel != nullptr)
+                { axis.GetTitle() = *titleLabel; }
+            }
         }
 
     //---------------------------------------------------
@@ -178,7 +199,8 @@ namespace Wisteria
                 axisType.value(),
                 std::make_pair(currentRow, currentColumn),
                 commonAxisNode->GetProperty("child-ids")->GetValueArrayNumber(),
-                commonAxisNode->GetProperty("common-perpendicular-axis")->GetValueBool()
+                commonAxisNode->GetProperty("common-perpendicular-axis")->GetValueBool(),
+                commonAxisNode
                 });
             }
         }
@@ -190,7 +212,16 @@ namespace Wisteria
             {
             auto label = std::make_shared<GraphItems::Label>(
                 GraphItems::GraphItemInfo(labelNode->GetProperty(L"text")->GetValueString()).
-                Pen(wxNullPen));
+                Pen(wxNullPen).DPIScaling(m_dpiScaleFactor).
+                FitCanvasHeightToContent(true));
+
+            const wxColour bgcolor(labelNode->GetProperty(L"background")->GetValueString());
+            if (bgcolor.IsOk())
+                { label->SetFontBackgroundColor(bgcolor); }
+            const wxColour color(labelNode->GetProperty(L"color")->GetValueString());
+            if (color.IsOk())
+                { label->SetFontColor(color); }
+
             LoadItem(labelNode, label);
             return label;
             }
@@ -359,19 +390,46 @@ namespace Wisteria
     void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
                                  std::shared_ptr<GraphItems::GraphItemBase> item)
         {
+        if (!itemNode->IsOk())
+            { return; }
+
         // ID
         item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
 
+        // child-alignment
+        const auto childPlacement = itemNode->GetProperty("relative-alignment")->GetValueString();
+        if (childPlacement.CmpNoCase(L"flush-left") == 0)
+            { item->SetRelativeAlignment(RelativeAlignment::FlushLeft); }
+        else if (childPlacement.CmpNoCase(L"flush-right") == 0)
+            { item->SetRelativeAlignment(RelativeAlignment::FlushRight); }
+        else if (childPlacement.CmpNoCase(L"flush-top") == 0)
+            { item->SetRelativeAlignment(RelativeAlignment::FlushTop); }
+        else if (childPlacement.CmpNoCase(L"flush-bottom") == 0)
+            { item->SetRelativeAlignment(RelativeAlignment::FlushBottom); }
+        else if (childPlacement.CmpNoCase(L"centered") == 0)
+            { item->SetRelativeAlignment(RelativeAlignment::Centered); }
+
         // padding (going clockwise)
-        const auto paddingSpec = itemNode->GetProperty("canvas-padding")->GetValueArrayNumber();
+        const auto paddingSpec = itemNode->GetProperty("padding")->GetValueArrayNumber();
         if (paddingSpec.size() > 0)
-            { item->SetTopCanvasMargin(paddingSpec.at(0)); }
+            { item->SetTopPadding(paddingSpec.at(0)); }
         if (paddingSpec.size() > 1)
-            { item->SetRightCanvasMargin(paddingSpec.at(1)); }
+            { item->SetRightPadding(paddingSpec.at(1)); }
         if (paddingSpec.size() > 2)
-            { item->SetBottomCanvasMargin(paddingSpec.at(2)); }
+            { item->SetBottomPadding(paddingSpec.at(2)); }
         if (paddingSpec.size() > 3)
-            { item->SetLeftCanvasMargin(paddingSpec.at(3)); }
+            { item->SetLeftPadding(paddingSpec.at(3)); }
+
+        // canvas padding (going clockwise)
+        const auto canvasPaddingSpec = itemNode->GetProperty("canvas-margin")->GetValueArrayNumber();
+        if (canvasPaddingSpec.size() > 0)
+            { item->SetTopCanvasMargin(canvasPaddingSpec.at(0)); }
+        if (canvasPaddingSpec.size() > 1)
+            { item->SetRightCanvasMargin(canvasPaddingSpec.at(1)); }
+        if (canvasPaddingSpec.size() > 2)
+            { item->SetBottomCanvasMargin(canvasPaddingSpec.at(2)); }
+        if (canvasPaddingSpec.size() > 3)
+            { item->SetLeftCanvasMargin(canvasPaddingSpec.at(3)); }
         }
 
     //---------------------------------------------------
@@ -383,7 +441,7 @@ namespace Wisteria
         LoadItem(graphNode, graph);
 
         // title information
-        auto titleProperty = graphNode->GetProperty(L"title");
+        const auto titleProperty = graphNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
             auto titleLabel = LoadLabel(titleProperty);
@@ -391,8 +449,28 @@ namespace Wisteria
                 { graph->GetTitle() = *titleLabel; }
             }
 
+        // axes
+        const auto axesProperty = graphNode->GetProperty(L"axes");
+        if (axesProperty->IsOk())
+            {
+            const auto axesNodes = axesProperty->GetValueArrayObject();
+            for (const auto& axisNode : axesNodes)
+                {
+                const auto axisType = ConvertAxisType(
+                    axisNode->GetProperty("axis-type")->GetValueString());
+                if (axisType.has_value())
+                    {
+                    if (axisType.value() == AxisType::LeftYAxis)
+                        {
+                        LoadAxis(axisNode, graph->GetLeftYAxis());
+                        }
+                    }
+                }
+            }
+        
+
         // is there a legend?
-        auto legendNode = graphNode->GetProperty(L"legend");
+        const auto legendNode = graphNode->GetProperty(L"legend");
         if (legendNode->IsOk())
             {
             auto placement = legendNode->GetProperty(L"placement")->GetValueString();

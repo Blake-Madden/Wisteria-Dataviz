@@ -62,11 +62,18 @@ At the root level:
       - The remaining item properties are object specific. Refer to the following sections
       about the properties available for different object types.
 
-@c "common-axis" properties:
+@c "axis" properties:
 - @c "axis-type": the type of axis.\n
   The options are:\n
-  - @c "BottomXAxis"
-  - @c "RightYAxis"
+  - @c "bottom-x"
+  - @c "right-y"
+  - @c "left-y"
+  - @c "top-y"
+- @c "title": the title of the axis, which contains @c label properties.
+
+@c "common-axis" properties:
+- @c all properties available to "axis".\n
+  Note that @c "axis-type" only supports @c "bottom-x" and @c "right-y".
 - @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.
 - @c "common-perpendicular-axis": if "axis-type" is @c "BottomXAxis" and this is @c true,
   then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
@@ -79,9 +86,12 @@ At the root level:
 
 @c "label" properties:
 - @c "text": the title's text.
+- @c "background": the background color. This can be a either a color name or hex-encoded value.
+- @c "color": the font color. This can be a either a color name or hex-encoded value.
 
 Properties common to all graph items:
 - @c "title": the title of the graph, which contains @c label properties.
+- @c "axes": an array of @c axis objects.
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     The options are:\n
@@ -93,5 +103,14 @@ Properties common to all graph items:
 Properties common to all items:
 - @c "id": a (unique) numeric identifier for the item. This can be referenced by other items in the report.\n
   An example can be adding an ID to a graph and then inserted a @c "common-axis" to the report that accepts this ID.
-- @c "canvas-padding": a numeric array (one to four numbers), representing the padding item's going clockwise,
+- @c "canvas-margin": a numeric array (one to four numbers), representing the item's canvas margin going clockwise,
   starting at 12 o'clock.
+- @c "padding": a numeric array (one to four numbers), representing the item's padding going clockwise,
+  starting at 12 o'clock.
+- @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).
+  The options are:\n
+  - @c "flush-left"
+  - @c "flush-right"
+  - @c "flush-top"
+  - @c "flush-bottom"
+  - @c "centered"

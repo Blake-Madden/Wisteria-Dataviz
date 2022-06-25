@@ -78,8 +78,12 @@ namespace Wisteria
         /// @todo many features still needed!
         std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
-
+        /// @brief Converts a string value to an axis-type enum value.
         [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
+        /// @brief Loads properties from a JSON node into an axis.
+        /// @param axisNode The node to parse.
+        /// @param axis[in,out] The axis to apply the loaded settings to.
+        void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
@@ -98,8 +102,10 @@ namespace Wisteria
             std::pair<size_t, size_t> m_gridPosition;
             std::vector<double> m_childrenIds; // double because that's how cJSON reads numbers
             bool m_commonPerpendicularAxis{ false };
+            const wxSimpleJSON::Ptr_t m_node;
             };
         std::vector<CommonAxisPlaceholder> m_commonAxesPlaceholders;
+        double m_dpiScaleFactor{ 1.0 };
         };
     };
 
