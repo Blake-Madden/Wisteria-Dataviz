@@ -69,7 +69,7 @@ namespace Wisteria
         std::shared_ptr<Graphs::Graph2D> LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
                        Canvas* canvas, size_t& currentRow, size_t& currentColumn,
                        std::shared_ptr<Graphs::Graph2D> graph);
-        /// @brief Loads a line plot node.
+        /// @brief Loads a line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
@@ -84,6 +84,16 @@ namespace Wisteria
         /// @param axisNode The node to parse.
         /// @param axis[in,out] The axis to apply the loaded settings to.
         void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
+
+        /// @brief Loads a image node into the canvas.
+        /// @param imageNode The image node to parse.
+        /// @param canvas The canvas to add the image to.
+        /// @param[in,out] currentRow The row in the canvas where the image will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the image will be placed.
+        /// @returns The image that was added to the canvas, or null upon failure.
+        /// @todo many features still needed!
+        std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.

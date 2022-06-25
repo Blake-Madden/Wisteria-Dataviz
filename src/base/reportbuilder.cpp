@@ -83,10 +83,14 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
                                                 }
-                                            if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
                                                     LoadLabel(item));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"image") == 0)
+                                                {
+                                                LoadImage(item, canvas, currentRow, currentColumn);
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"common-axis") == 0)
                                                 {
@@ -393,6 +397,23 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<GraphItems::Image> ReportBuilder::LoadImage(
+        const wxSimpleJSON::Ptr_t& imageNode,
+        Canvas* canvas, size_t& currentRow, size_t& currentColumn)
+        {
+        auto image = std::make_shared<GraphItems::Image>(
+            imageNode->GetProperty(L"path")->GetValueString());
+        if (image->IsOk())
+            {
+            LoadItem(imageNode, image);
+            canvas->SetFixedObject(currentRow, currentColumn, image);
+            return image;
+            }
+        else
+            { return nullptr; }
+        }
+
+    //---------------------------------------------------
     void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
                                  std::shared_ptr<GraphItems::GraphItemBase> item)
         {
@@ -497,7 +518,6 @@ namespace Wisteria
                 }
             }
         
-
         // is there a legend?
         const auto legendNode = graphNode->GetProperty(L"legend");
         if (legendNode->IsOk())

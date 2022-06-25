@@ -90,6 +90,9 @@ At the root level:
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
 
+@c "image" properties:
+- @c "path": the file path of the image to load.
+
 Properties common to all graph items:
 - @c "title": the title of the graph, which contains @c label properties.
 - @c "axes": an array of @c axis objects.
