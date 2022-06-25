@@ -88,6 +88,7 @@ At the root level:
 - @c "text": the title's text.
 - @c "background": the background color. This can be a either a color name or hex-encoded value.
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
+- @c "bold": @c true to make the text bold.
 
 Properties common to all graph items:
 - @c "title": the title of the graph, which contains @c label properties.
@@ -114,3 +115,17 @@ Properties common to all items:
   - @c "flush-top"
   - @c "flush-bottom"
   - @c "centered"
+- @c "horizontal-page-alignment": how to horizontally align the item within its area.\n
+  The options are:\n
+  - @c "left-aligned"
+  - @c "right-aligned"
+  - @c "centered"
+- @c "vertical-page-alignment": how to vertically align the item within its area.\n
+  The options are:\n
+  - @c "top-aligned"
+  - @c "bottom-aligned"
+  - @c "centered"
+- @c "fit-row-to-content": a boolean value specifying whether the item's calculated height should
+  control how tall its canvas row is.
+- @c "fit-to-content-width": a boolean value specifying whether the item should be constrained
+  to its calculated width within its row.

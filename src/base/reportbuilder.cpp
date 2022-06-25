@@ -139,6 +139,8 @@ namespace Wisteria
                                         CommonAxisBuilder::BuildRightAxis(canvas,
                                             childGraphs);
                                     LoadItem(commonAxisInfo.m_node, commonAxis);
+                                    // force the row to its height and no more
+                                    commonAxis->FitCanvasHeightToContent(true);
                                     canvas->SetFixedObject(
                                         commonAxisInfo.m_gridPosition.first,
                                         commonAxisInfo.m_gridPosition.second,
@@ -148,6 +150,7 @@ namespace Wisteria
                             }
                         }
                     canvas->CalcRowDimensions();
+                    canvas->FitToPageWhenPrinting(true);
                     reportPages.push_back(canvas);
                     }
                 }
@@ -212,8 +215,7 @@ namespace Wisteria
             {
             auto label = std::make_shared<GraphItems::Label>(
                 GraphItems::GraphItemInfo(labelNode->GetProperty(L"text")->GetValueString()).
-                Pen(wxNullPen).DPIScaling(m_dpiScaleFactor).
-                FitCanvasHeightToContent(true));
+                Pen(wxNullPen).DPIScaling(m_dpiScaleFactor));
 
             const wxColour bgcolor(labelNode->GetProperty(L"background")->GetValueString());
             if (bgcolor.IsOk())
@@ -221,6 +223,10 @@ namespace Wisteria
             const wxColour color(labelNode->GetProperty(L"color")->GetValueString());
             if (color.IsOk())
                 { label->SetFontColor(color); }
+
+            // font attributes
+            if (labelNode->GetProperty(L"bold")->GetValueBool())
+                { label->GetFont().MakeBold(); }
 
             LoadItem(labelNode, label);
             return label;
@@ -397,7 +403,7 @@ namespace Wisteria
         item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
 
         // child-alignment
-        const auto childPlacement = itemNode->GetProperty("relative-alignment")->GetValueString();
+        const auto childPlacement = itemNode->GetProperty(L"relative-alignment")->GetValueString();
         if (childPlacement.CmpNoCase(L"flush-left") == 0)
             { item->SetRelativeAlignment(RelativeAlignment::FlushLeft); }
         else if (childPlacement.CmpNoCase(L"flush-right") == 0)
@@ -410,7 +416,7 @@ namespace Wisteria
             { item->SetRelativeAlignment(RelativeAlignment::Centered); }
 
         // padding (going clockwise)
-        const auto paddingSpec = itemNode->GetProperty("padding")->GetValueArrayNumber();
+        const auto paddingSpec = itemNode->GetProperty(L"padding")->GetValueArrayNumber();
         if (paddingSpec.size() > 0)
             { item->SetTopPadding(paddingSpec.at(0)); }
         if (paddingSpec.size() > 1)
@@ -421,7 +427,7 @@ namespace Wisteria
             { item->SetLeftPadding(paddingSpec.at(3)); }
 
         // canvas padding (going clockwise)
-        const auto canvasPaddingSpec = itemNode->GetProperty("canvas-margin")->GetValueArrayNumber();
+        const auto canvasPaddingSpec = itemNode->GetProperty(L"canvas-margin")->GetValueArrayNumber();
         if (canvasPaddingSpec.size() > 0)
             { item->SetTopCanvasMargin(canvasPaddingSpec.at(0)); }
         if (canvasPaddingSpec.size() > 1)
@@ -430,6 +436,29 @@ namespace Wisteria
             { item->SetBottomCanvasMargin(canvasPaddingSpec.at(2)); }
         if (canvasPaddingSpec.size() > 3)
             { item->SetLeftCanvasMargin(canvasPaddingSpec.at(3)); }
+
+        // horizontal page alignment
+        const auto hPageAlignment = itemNode->GetProperty(L"horizontal-page-alignment")->GetValueString();
+        if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
+            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
+        else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
+            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
+        else if (hPageAlignment.CmpNoCase(L"centered") == 0)
+            { item->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
+
+        // vertical page alignment
+        const auto vPageAlignment = itemNode->GetProperty(L"vertical-page-alignment")->GetValueString();
+        if (vPageAlignment.CmpNoCase(L"top-aligned") == 0)
+            { item->SetPageVerticalAlignment(PageVerticalAlignment::TopAligned); }
+        else if (vPageAlignment.CmpNoCase(L"bottom-aligned") == 0)
+            { item->SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned); }
+        else if (vPageAlignment.CmpNoCase(L"centered") == 0)
+            { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
+
+        item->FitContentWidthToCanvas(
+            itemNode->GetProperty(L"fit-to-content-width")->GetValueBool());
+        item->FitCanvasHeightToContent(
+            itemNode->GetProperty(L"fit-row-to-content")->GetValueBool());
         }
 
     //---------------------------------------------------
