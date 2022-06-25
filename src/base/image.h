@@ -61,7 +61,10 @@ namespace Wisteria::GraphItems
     public:
         /// @private
         Image()
-            { SetOk(false); }
+            {
+            SetOk(false);
+            GetPen() = wxNullPen;
+            }
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
             @param img The image to render.
@@ -71,9 +74,7 @@ namespace Wisteria::GraphItems
             m_originalImg(img), m_img(img),
             m_size(img.GetSize()),
             m_frameSize(img.GetSize())
-            {
-            SetOk(m_originalImg.IsOk());
-            }
+            { SetOk(m_originalImg.IsOk()); }
         /** @brief Constructor.
             @param img The image to render.*/
         explicit Image(const wxImage& img) :
@@ -82,6 +83,7 @@ namespace Wisteria::GraphItems
             m_frameSize(img.GetSize())
             {
             SetOk(m_originalImg.IsOk());
+            GetPen() = wxNullPen;
             }
         /** @brief Constructor.
             @param imgPath The image filepath to load.
@@ -97,6 +99,7 @@ namespace Wisteria::GraphItems
                 m_frameSize = img.GetSize();
                 }
             SetOk(m_originalImg.IsOk());
+            GetPen() = wxNullPen;
             }
 
         /// @brief Sets the image to a null image.
