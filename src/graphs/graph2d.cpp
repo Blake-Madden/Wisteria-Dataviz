@@ -302,11 +302,19 @@ namespace Wisteria::Graphs
         m_plotRect.SetHeight(m_plotRect.GetHeight()-(m_calculatedTopPadding+m_calculatedBottomPadding));
 
         // make space for the titles
-        if (GetTitle().GetText().length())
+        if (GetTitle().GetText().length() && GetTitle().IsShown())
             {
+            auto titleRect = GetTitle().GetBoundingBox(dc);
+            // if too wide, shrink down its scaling
+            if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
+                {
+                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
+                    titleRect.GetWidth());
+                GetTitle().SetScaling(GetTitle().GetScaling() * rescaleFactor);
+                titleRect = GetTitle().GetBoundingBox(dc);
+                }
             // if using a background color, stretch it out to the width of the graph area
             // so that it acts as a banner
-            auto titleRect = GetTitle().GetBoundingBox(dc);
             if (GetTitle().GetFontBackgroundColor().IsOk() &&
                 GetTitle().GetFontBackgroundColor() != wxTransparentColor)
                 {
@@ -315,11 +323,19 @@ namespace Wisteria::Graphs
 
             m_plotRect.y += titleRect.GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  GetTitle().GetBoundingBox(dc).GetHeight());
+                                 GetTitle().GetBoundingBox(dc).GetHeight());
             }
-        if (GetSubtitle().GetText().length())
+        if (GetSubtitle().GetText().length() && GetSubtitle().IsShown())
             {
             auto titleRect = GetSubtitle().GetBoundingBox(dc);
+            // if too wide, shrink down its scaling
+            if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
+                {
+                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
+                    titleRect.GetWidth());
+                GetSubtitle().SetScaling(GetSubtitle().GetScaling() * rescaleFactor);
+                titleRect = GetSubtitle().GetBoundingBox(dc);
+                }
             if (GetSubtitle().GetFontBackgroundColor().IsOk() &&
                 GetSubtitle().GetFontBackgroundColor() != wxTransparentColor)
                 {
@@ -328,11 +344,12 @@ namespace Wisteria::Graphs
 
             m_plotRect.y += titleRect.GetHeight();
             m_plotRect.SetHeight(m_plotRect.GetHeight() -
-                                  GetSubtitle().GetBoundingBox(dc).GetHeight());
+                                 GetSubtitle().GetBoundingBox(dc).GetHeight());
             }
         // if both titles, then we need a space above and below them and one between.
         // if only one of the titles, then just a space above and below it.
-        if (GetTitle().GetText().length() || GetSubtitle().GetText().length())
+        if ((GetTitle().GetText().length() && GetTitle().IsShown()) ||
+            (GetSubtitle().GetText().length() && GetSubtitle().IsShown()))
             {
             const auto lineSpacing = ScaleToScreenAndCanvas(GetCaption().GetLineSpacing() *
                 ((GetTitle().GetText().length() && GetSubtitle().GetText().length()) ? 3 : 2));
@@ -340,9 +357,17 @@ namespace Wisteria::Graphs
             m_plotRect.SetHeight(m_plotRect.GetHeight() - lineSpacing);
             }
         // and caption at the bottom
-        if (GetCaption().GetText().length())
+        if (GetCaption().GetText().length() && GetCaption().IsShown())
             {
             auto titleRect = GetCaption().GetBoundingBox(dc);
+            // if too wide, shrink down its scaling
+            if (titleRect.GetWidth() > GetBoundingBox(dc).GetWidth())
+                {
+                const auto rescaleFactor = safe_divide<double>(GetBoundingBox(dc).GetWidth(),
+                    titleRect.GetWidth());
+                GetCaption().SetScaling(GetCaption().GetScaling() * rescaleFactor);
+                titleRect = GetCaption().GetBoundingBox(dc);
+                }
             if (GetCaption().GetFontBackgroundColor().IsOk() &&
                 GetCaption().GetFontBackgroundColor() != wxTransparentColor)
                 {
