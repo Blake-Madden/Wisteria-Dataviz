@@ -77,7 +77,7 @@ namespace Wisteria::Data
             @param val The new value.*/
         void SetValue(const size_t index, const T& val)
             {
-            wxASSERT_MSG(index < m_data.size(), "Invalid index in call to Column::SetValue()");
+            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::SetValue()");
             if (index >= m_data.size())
                 { return; }
             m_data.at(index) = val;
@@ -255,7 +255,9 @@ namespace Wisteria::Data
 
              As an example:
 
-             `info().Continuous({ 3.1, 5.5 })`
+             @code
+             info().Continuous({ 3.1, 5.5 })
+             @endcode
 
              This will result in 3.1 being set for the first continuous column
              and 5.5 for the second continuous column.
@@ -277,7 +279,9 @@ namespace Wisteria::Data
 
              As an example:
 
-             `info().Dates({ dt1, dt2})`
+             @code
+             info().Dates({ dt1, dt2})
+             @endcode
 
              Will result in @c dt1 being used for the first date column and @c dt2
              for the second date column.
@@ -323,11 +327,11 @@ namespace Wisteria::Data
         IsoCombined,         /*!< Parse using the "YYYY-MM-DDTHH:MM:SS" format.*/
         Rfc822,              /*!< Uses @c wxDateTime::ParseRfc822Date(), which will be
                                   "looking for a date formatted according to the RFC 822 in it."*/
-        Automatic,           /*!< Uses @c wxDateTime::ParseDateTime(), which "Parses the string containing
-                                  the date and time in free format. This function tries as hard as it can
-                                  to interpret the given string as date and time."
-                                  If @c ParseDateTime() fails (because a time component isn't found), then
-                                  @c ParseDateTime() will be attempted.*/
+        Automatic,           /*!< Uses @c wxDateTime::ParseDateTime(), which "Parses the string
+                                  containing the date and time in free format. This function tries
+                                  as hard as it can to interpret the given string as date and time."
+                                  If @c ParseDateTime() fails (because a time component isn't found),
+                                  then @c ParseDateTime() will be attempted.*/
         StrptimeFormatString /*!< Parse using a strptime()-like format string (e.g., "%Y-%m-%d").
                                   Please see the description of the ANSI C function @c strftime(3)
                                   for the syntax of the format string.*/
