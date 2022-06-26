@@ -388,6 +388,8 @@ namespace Wisteria::Graphs
                 m_plotObjects.push_back(object);
                 }
             }
+        /** @brief Sets the DPI scaling.
+            @param scaling The DPI scaling.*/
         void SetDPIScaleFactor(const double scaling) override;
 
         /** @brief Draws the plot.
@@ -402,7 +404,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] wxRect GetPlotAreaBoundingBox() const noexcept
             { return m_plotRect; }
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetContentRect() const noexcept final
+        [[nodiscard]] wxRect GetContentRect() const noexcept override
             { return GetPlotAreaBoundingBox(); }
 
         /** @brief Sets the rectangular area of the entire graph area.
