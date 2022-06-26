@@ -722,10 +722,6 @@ namespace Wisteria::Graphs
         wxRect drawArea = GetPlotAreaBoundingBox();
         auto graphDecorationHeight = fullGraphArea.GetHeight() - drawArea.GetHeight();
         auto graphDecorationWidth = fullGraphArea.GetWidth() - drawArea.GetWidth();
-        // add some padding around the table, unless client is controlling the dimensions
-        if (!m_minWidthProportion.has_value() &&
-            !m_minHeightProportion.has_value())
-            { drawArea.Deflate(ScaleToScreenAndCanvas(5)); }
 
         // calculate the necessary heights of the rows and widths of the columns
         std::vector<wxCoord> columnWidths;
