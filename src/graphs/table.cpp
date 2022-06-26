@@ -529,9 +529,10 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    wxSize Table::CalculateTableSize(std::vector<wxCoord>& columnWidths,
-                                     std::vector<wxCoord>& rowHeights,
-                                     wxRect& drawArea, wxDC& dc) const
+    void Table::CalcMainTableSize(std::vector<wxCoord>& columnWidths,
+                                  std::vector<wxCoord>& rowHeights,
+                                  Label& measuringLabel,
+                                  wxDC& dc) const
         {
         columnWidths.clear();
         columnWidths.resize(GetColumnCount());
@@ -539,9 +540,6 @@ namespace Wisteria::Graphs
         rowHeights.resize(GetRowCount());
 
         size_t currentRow{ 0 }, currentColumn{ 0 };
-        Label measuringLabel(GraphItemInfo().Pen(*wxBLACK_PEN).
-            Padding(5, 5, 5, 5).
-            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()));
         for (const auto& row : m_table)
             {
             currentColumn = 0;
@@ -595,6 +593,18 @@ namespace Wisteria::Graphs
                 }
             ++currentRow;
             }
+        }
+
+    //----------------------------------------------------------------
+    wxSize Table::CalculateTableSize(std::vector<wxCoord>& columnWidths,
+                                     std::vector<wxCoord>& rowHeights,
+                                     wxRect& drawArea, wxDC& dc) const
+        {
+        Label measuringLabel(GraphItemInfo().Pen(*wxBLACK_PEN).
+            Padding(5, 5, 5, 5).
+            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()));
+
+        CalcMainTableSize(columnWidths, rowHeights, measuringLabel, dc);
 
         auto tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
         auto tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);

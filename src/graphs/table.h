@@ -765,6 +765,10 @@ namespace Wisteria::Graphs
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
     private:
+        void CalcMainTableSize(std::vector<wxCoord>& columnWidths,
+                               std::vector<wxCoord>& rowHeights,
+                               GraphItems::Label& measuringLabel,
+                               wxDC& dc) const;
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
         [[nodiscard]] wxRect GetContentRect() const noexcept final
             { return wxRect(); }
