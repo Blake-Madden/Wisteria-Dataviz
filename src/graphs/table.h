@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <variant>
+#include <vector>
 #include "graph2d.h"
 
 namespace Wisteria::Graphs
@@ -423,7 +424,7 @@ namespace Wisteria::Graphs
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
-                     const std::initializer_list<wxString>& columns,
+                     const std::vector<wxString>& columns,
                      const bool transpose = false);
 
         /// @name Table Functions
@@ -764,6 +765,9 @@ namespace Wisteria::Graphs
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
     private:
+        /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
+        [[nodiscard]] wxRect GetContentRect() const noexcept final
+            { return wxRect(); }
         void RecalcSizes(wxDC& dc) final;
 
         /** @brief Determines which gutter a note should go into.

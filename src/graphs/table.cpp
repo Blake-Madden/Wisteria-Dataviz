@@ -165,7 +165,7 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void Table::SetData(const std::shared_ptr<const Data::Dataset>& data,
-        const std::initializer_list<wxString>& columns,
+        const std::vector<wxString>& columns,
         const bool transpose /*= false*/)
         {
         ClearTable();
