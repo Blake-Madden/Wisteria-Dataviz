@@ -55,10 +55,9 @@ At the root level:
         The options are:
         - @c "line-plot"
         - @c "common-axis"
-      - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
-      Note that this is the unique name of the datasource loaded from the report's @c "datasources" section,
-      not a filepath.\n
-      Also, this is optional if the item type doesn't require a datasource (e.g., a Wisteria::GraphItems::Label).
+        - @c "label"
+        - @c "table"
+        - @c null: a null value will add a placeholder on the canvas
       - The remaining item properties are object specific. Refer to the following sections
       about the properties available for different object types.
 
@@ -93,8 +92,43 @@ At the root level:
 @c "image" properties:
 - @c "path": the file path of the image to load.
 
+@c "table" properties:
+- @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
+  the rows and vice versa.
+The following properties are executed in the following order:
+- @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
+  - @c "position": where to insert the row. This is a pair of properties:
+    - @c "origin": this is the zero-based index of where to insert the row.
+  - @c "values": an array of strings to fill the row with (left-to-right).
+  - @c "background": the background color of the row.
+- @c "rows-group": a numeric array representing which rows to apply label grouping to.\n
+  Across each provided row, this will combine consecutive cells with the same label into one cell.
+- @c "rows-color": an array of row and color pairs, which contain the following properties:
+  - @c "position": which row to apply a background color.
+  - @c "background": the background color of the row.
+- @c "columns-add-aggregates": an array of column aggregate definitions that will be added to the table.\n
+  Each column aggregate node contains the following properties:
+  - @c "type": the type of aggegate column to add. The options are:
+    - @c "percent-change"
+    - @c "name": the name for the column.
+    - @c "start": the first column that the aggregate column should use.\n
+      This property is optional, and if not included the first numeric column encountered will be used.
+      This consists of the following properties:
+      - @c "origin": this is either the zero-based index of first column, or the string "last-column", which will
+        be interpretted as the last column in the data (prior to adding the aggregate columns).
+      - @c "offset": a numeric value combined with the value for @c "origin". This is optional and is useful
+        for when @c "origin" is interpretted at runtime (for something like @c "last-column").
+    - @c "end": the last column that the aggregate column should use.\n
+      Like @c "start", this is optional an has the same properties.
+
 Properties common to all graph items:
+- @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
+      Note that this is the unique name of the datasource loaded from the report's @c "datasources" section,
+      not a filepath.\n
+      Also, this is optional if the item type doesn't require a datasource (e.g., a Wisteria::GraphItems::Label).
 - @c "title": the title of the graph, which contains @c label properties.
+- @c "sub-title": the subtitle of the graph, which contains @c label properties.
+- @c "caption": the caption of the graph, which contains @c label properties.
 - @c "axes": an array of @c axis objects.
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n

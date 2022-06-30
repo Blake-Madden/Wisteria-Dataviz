@@ -16,6 +16,7 @@
 #include "commonaxisbuilder.h"
 #include "../data/dataset.h"
 #include "../graphs/lineplot.h"
+#include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
@@ -78,12 +79,24 @@ namespace Wisteria
         /// @todo many features still needed!
         std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a table node into the canvas.
+        /// @param graphNode The table node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the table will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the table will be placed.
+        /// @returns The table that was added to the canvas, or null upon failure.
+        /// @todo many features still needed!
+        std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Converts a string value to an axis-type enum value.
         [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
         /// @param axis[in,out] The axis to apply the loaded settings to.
         void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
+
+        std::optional<size_t> LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
+            const size_t columnCount);
 
         /// @brief Loads a image node into the canvas.
         /// @param imageNode The image node to parse.

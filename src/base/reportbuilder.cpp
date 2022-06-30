@@ -92,6 +92,10 @@ namespace Wisteria
                                                 {
                                                 LoadImage(item, canvas, currentRow, currentColumn);
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"table") == 0)
+                                                {
+                                                LoadTable(item, canvas, currentRow, currentColumn);
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"common-axis") == 0)
                                                 {
                                                 // Common axis cannot be created until we know all its children
@@ -99,6 +103,14 @@ namespace Wisteria
                                                 // after all other items have been added to the grid.
                                                 canvas->SetFixedObject(currentRow, currentColumn, nullptr);
                                                 LoadCommonAxis(item, currentRow, currentColumn);
+                                                }
+                                            // explicitly null item is a placeholder,
+                                            // or possibly a blank row that will be consumed by the
+                                            // previous row to make it twice as tall as others
+                                            else if (typeProperty->IsNull())
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                    nullptr);
                                                 }
                                             }
                                         // show error, but OK to keep going
@@ -397,6 +409,121 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos != m_datasets.cend() &&
+            foundPos->second != nullptr)
+            {
+            auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
+
+            auto table = std::make_shared<Graphs::Table>(canvas);
+            table->SetData(foundPos->second, variables,
+                graphNode->GetProperty(L"transpose")->GetValueBool());
+
+            const size_t originalColumnCount = table->GetColumnCount();
+
+            // add rows
+            auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
+            if (rowAddCommands.size())
+                {
+                for (const auto& rowAddCommand : rowAddCommands)
+                    {
+                    const auto position = rowAddCommand->GetProperty("position")->GetValueNumber();
+                    table->InsertRow(position);
+                    // fill the values across the row
+                    const auto values = rowAddCommand->GetProperty("values")->GetValueStringVector();
+                    for (size_t i = 0; i < values.size(); ++i)
+                        { table->GetCell(position, i).SetValue(values[i]); }
+                    const wxColour bgcolor(rowAddCommand->GetProperty(L"background")->GetValueString());
+                    if (bgcolor.IsOk())
+                        { table->SetRowBackgroundColor(position, bgcolor); }
+                    }
+                }
+            // group the rows
+            auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
+            for (const auto& rowGrouping : rowGroupings)
+                { table->GroupRow(rowGrouping); }
+
+            // color the rows
+            auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
+            if (rowColorCommands.size())
+                {
+                for (const auto& rowColorCommand : rowColorCommands)
+                    {
+                    const std::optional<size_t> position =
+                        LoadPosition(rowColorCommand->GetProperty(L"position"), originalColumnCount);
+                    const wxColour bgcolor(rowColorCommand->GetProperty(L"background")->GetValueString());
+                    if (position.has_value() && bgcolor.IsOk())
+                        { table->SetRowBackgroundColor(position.value(), bgcolor); }
+                    }
+                }
+
+            // column aggregates
+            auto columnAggregates = graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
+            if (columnAggregates.size())
+                {
+                for (const auto& columnAggregate : columnAggregates)
+                    {
+                    const auto aggName = columnAggregate->GetProperty(L"name")->GetValueString();
+                    const auto aggType = columnAggregate->GetProperty(L"type")->GetValueString();
+
+                    // starting column
+                    const std::optional<size_t> startColumn =
+                        LoadPosition(columnAggregate->GetProperty(L"start"), originalColumnCount);
+                    // ending column
+                    const std::optional<size_t> endingColumn =
+                        LoadPosition(columnAggregate->GetProperty(L"end"), originalColumnCount);
+
+                    Table::AggregateInfo aggInfo;
+                    if (aggType.CmpNoCase(L"percent-change") == 0)
+                        { aggInfo.Type(Table::AggregateType::ChangePercent); }
+                    if (startColumn.has_value())
+                        { aggInfo.FirstCell(startColumn.value()); }
+                    if (endingColumn.has_value())
+                        { aggInfo.LastCell(endingColumn.value()); }
+                    // invalid agg column type
+                    else
+                        { continue; }
+                    table->InsertAggregateColumn(aggInfo, aggName);
+                    }
+                }
+
+            return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+            }
+        return nullptr;
+        }
+
+    //---------------------------------------------------
+    std::optional<size_t> ReportBuilder::LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
+        const size_t columnCount)
+        {
+        std::optional<size_t> position;
+        const auto origin = positionNode->GetProperty(L"origin");
+        if (origin->IsOk())
+            {
+            if (origin->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                {
+                if (origin->GetValueString().CmpNoCase(L"last-column") == 0)
+                    { position = columnCount-1; }
+                }
+            else if (origin->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                { position = origin->GetValueNumber(); }
+            }
+        std::optional<double> doubleStartOffset =
+            positionNode->GetProperty(L"offset")->IsOk() ?
+            std::optional<double>(positionNode->GetProperty(L"offset")->GetValueNumber()) :
+            std::nullopt;
+        if (position.has_value() && doubleStartOffset.has_value())
+            { position.value() += doubleStartOffset.value(); }
+
+        return position;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<GraphItems::Image> ReportBuilder::LoadImage(
         const wxSimpleJSON::Ptr_t& imageNode,
         Canvas* canvas, size_t& currentRow, size_t& currentColumn)
@@ -497,6 +624,24 @@ namespace Wisteria
             auto titleLabel = LoadLabel(titleProperty);
             if (titleLabel != nullptr)
                 { graph->GetTitle() = *titleLabel; }
+            }
+
+        // subtitle information
+        const auto subtitleProperty = graphNode->GetProperty(L"sub-title");
+        if (subtitleProperty->IsOk())
+            {
+            auto subtitleLabel = LoadLabel(subtitleProperty);
+            if (subtitleLabel != nullptr)
+                { graph->GetSubtitle() = *subtitleLabel; }
+            }
+
+        // caption information
+        const auto captionProperty = graphNode->GetProperty(L"caption");
+        if (captionProperty->IsOk())
+            {
+            auto captionLabel = LoadLabel(captionProperty);
+            if (captionLabel != nullptr)
+                { graph->GetCaption() = *captionLabel; }
             }
 
         // axes
