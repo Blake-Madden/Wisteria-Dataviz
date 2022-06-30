@@ -95,9 +95,21 @@ namespace Wisteria
                 m_lockProportion = locked;
                 return *this;
                 }
+            /// @returns The number of rows that this row should consume.
+            [[nodiscard]] size_t GetRowCount() const noexcept
+                { return m_rowCount; }
+            /// @brief Sets the number of rows that this row should consume.
+            /// @param rCount The number of rows.
+            /// @returns A self reference.
+            CanvasRowInfo& RowCount(const size_t rCount) noexcept
+                {
+                m_rowCount = rCount;
+                return *this;
+                }
         private:
             double m_heightProportion{ 1.0 };
             bool m_lockProportion{ false };
+            size_t m_rowCount{ 1 };
             };
 
         /** @brief Constructor.

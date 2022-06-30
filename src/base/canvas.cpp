@@ -1211,6 +1211,7 @@ namespace Wisteria
             // If so, use the tallest one in the row when we are done.
             std::optional<double> rowHeightProportion;
             size_t currentColumn{ 0 };
+            size_t validObjectsInRow{ 0 };
             for (auto& object : row)
                 {
                 if (object != nullptr && object->IsFittingCanvasRowToContent())
@@ -1219,14 +1220,16 @@ namespace Wisteria
                         std::max(rowHeightProportion.value(), CalcMinHeightProportion(object)) :
                         CalcMinHeightProportion(object);
                     }
-                // also readjust the width if being fit with its content width-wise
+                // also re-adjust the width if being fit with its content width-wise
                 if (object != nullptr && object->IsFittingContentWidthToCanvas())
                     {
                     object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
                     CalcColumnWidths(currentRow, currentColumn);
                     }
+                validObjectsInRow += ((object != nullptr) ? 1 : 0);
                 ++currentColumn;
                 }
+            GetRowInfo(currentRow).RowCount((validObjectsInRow >= 1) ? 1 : 0);
             // set the row height if an item's content is setting its height
             if (rowHeightProportion.has_value())
                 {
@@ -1236,6 +1239,20 @@ namespace Wisteria
                 }
             ++currentRow;
             }
+        for (size_t i = 0; i < m_rowsInfo.size(); ++i)
+            {
+            if (GetRowInfo(i).GetRowCount() == 0 && i > 0)
+                {
+                long reverseI = i - 1;
+                while (reverseI >= 0 &&
+                       GetRowInfo(reverseI).GetRowCount() == 0)
+                    { --reverseI; }
+                if (reverseI >= 0)
+                    {
+                    GetRowInfo(reverseI).RowCount(GetRowInfo(reverseI).GetRowCount() + 1);
+                    }
+                }
+            }
         // divide the remaining space amonst the rows being auto fit
         // (i.e., the rows with items whose heights don't need to be a particular value).
         const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
@@ -1243,7 +1260,7 @@ namespace Wisteria
         for (auto& rowInfo : m_rowsInfo)
             {
             if (rowInfo.GetHeightProportion() == 0)
-                { rowInfo.HeightProportion(avgAutoFitRowHeight); }
+                { rowInfo.HeightProportion(avgAutoFitRowHeight * rowInfo.GetRowCount()); }
             }
         // finally, see if there is any overflow and scale everything down
         // proportionally to fit
