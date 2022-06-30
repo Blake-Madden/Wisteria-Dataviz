@@ -344,7 +344,9 @@ namespace Wisteria::Graphs
         if (GetColumnCount())
             {
             const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
-            InsertRow(rIndex, rowName);
+            InsertRow(rIndex);
+            if (rowName.has_value())
+                { GetCell(rIndex, 0).SetValue(rowName.value()); }
             BoldRow(rIndex);
             if (bkColor.has_value())
                 { SetRowBackgroundColor(rIndex, bkColor.value()); }
@@ -376,7 +378,9 @@ namespace Wisteria::Graphs
         if (GetColumnCount())
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
-            InsertColumn(columnIndex, colName);
+            InsertColumn(columnIndex);
+            if (colName.has_value())
+                { GetCell(0, columnIndex).SetValue(colName.value()); }
             BoldColumn(columnIndex);
             if (bkColor.has_value())
                 { SetColumnBackgroundColor(columnIndex, bkColor.value()); }
@@ -467,6 +471,12 @@ namespace Wisteria::Graphs
                 if (i > startingCounter)
                     {
                     currentRow[startingCounter].m_columnCount = (i-startingCounter)+1;
+                    // clear the cells that are being eclipsed so that they don't
+                    // affect column-width calculations
+                    for (size_t clearCounter = startingCounter + 1;
+                        clearCounter < (startingCounter + 1) + (i - startingCounter);
+                        ++clearCounter)
+                        { currentRow[clearCounter].SetValue(L""); }
                     }
                 else
                     { ++i; }
@@ -489,6 +499,12 @@ namespace Wisteria::Graphs
                 if (i > startingCounter)
                     {
                     m_table[startingCounter][column].m_rowCount = (i-startingCounter)+1;
+                    // clear the cells that are being eclipsed so that they don't
+                    // affect row-width calculations
+                    for (size_t clearCounter = startingCounter + 1;
+                        clearCounter < (startingCounter + 1) + (i - startingCounter);
+                        ++clearCounter)
+                        { m_table[clearCounter][column].SetValue(L""); }
                     }
                 else
                     { ++i; }

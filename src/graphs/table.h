@@ -210,9 +210,19 @@ namespace Wisteria::Graphs
             friend class Table;
         public:
             /// @brief Constructor.
+            AggregateInfo() = default;
+            /// @brief Constructor.
             /// @param type Which type of aggregation to perform.
             explicit AggregateInfo(const AggregateType type) : m_type(type)
                 {}
+            /// @brief The type of aggregate column that this is.
+            /// @param type The column type.
+            /// @returns A self reference.
+            AggregateInfo& Type(const AggregateType type) noexcept
+                {
+                m_type = type;
+                return *this;
+                }
             /// @brief The first column in the series of data.
             /// @param first The first column.
             /// @returns A self reference.
@@ -502,9 +512,7 @@ namespace Wisteria::Graphs
         ///     or SetTableSize()), then calls to this will ignored since the
         ///     number of columns is unknown.
         /// @param rowIndex Where to insert the row.
-        /// @param rowName An optional value for the left-most column of the new
-        ///     row, representing a name for the row.
-        void InsertRow(const size_t rowIndex, std::optional<wxString> rowName = std::nullopt)
+        void InsertRow(const size_t rowIndex)
             {
             if (GetColumnCount())
                 {
@@ -512,8 +520,6 @@ namespace Wisteria::Graphs
                         // clamp indices going beyond the row count to m_table.cend()
                         std::clamp<size_t>(rowIndex, 0, GetRowCount()),
                     std::vector<TableCell>(GetColumnCount(), TableCell()));
-                if (rowName.has_value())
-                    { insertedRow->at(0).m_value = rowName.value(); }
                 }
             }
         /// @brief Inserts an empty column at the given index.
@@ -523,9 +529,7 @@ namespace Wisteria::Graphs
         ///     or SetTableSize()), then calls to this will ignored since there will
         ///     be no rows to insert columns into.
         /// @param colIndex Where to insert the column.
-        /// @param colName An optional value for the first row of the new
-        ///     column, representing a name for the column.
-        void InsertColumn(const size_t colIndex, std::optional<wxString> colName = std::nullopt)
+        void InsertColumn(const size_t colIndex)
             {
             if (GetColumnCount())
                 {
@@ -536,8 +540,6 @@ namespace Wisteria::Graphs
                         std::clamp<size_t>(colIndex, 0, row.size()),
                         TableCell());
                     }
-                if (colName.has_value())
-                    { m_table[0][colIndex].m_value = colName.value(); }
                 }
             }
         /** @brief Adds an aggregate (e.g., total) row to the end of the table.
