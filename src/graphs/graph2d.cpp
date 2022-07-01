@@ -139,11 +139,18 @@ namespace Wisteria::Graphs
  
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
 
+        // Use smaller fonts for the subtitle and caption by default.
+        // Normally, scaling is what controls the font sizes, but these objects
+        // have their scaling set to the parents on RecalcAllSizes().
+        // This way, the client can change the font sizes of these items
+        // if they want without having to deal with scaling.
         GetSubtitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
-        GetSubtitle().GetFont().MakeSmaller();
+        GetSubtitle().GetFont().SetFractionalPointSize(
+            GetTitle().GetFont().GetFractionalPointSize() * .75);
 
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
-        GetCaption().GetFont().MakeSmaller();
+        GetCaption().GetFont().SetFractionalPointSize(
+            GetTitle().GetFont().GetFractionalPointSize() * .75);
         GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
         }
 
@@ -559,7 +566,6 @@ namespace Wisteria::Graphs
                 auto topPt = GetBoundingBox(dc).GetTopLeft();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing());
                 title->SetAnchorPoint(topPt);
-                AddObject(title);
                 }
             else if (title->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
@@ -569,7 +575,6 @@ namespace Wisteria::Graphs
                             safe_divide<double>(title->GetBoundingBox(dc).GetHeight(), 2);
                 topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 title->SetAnchorPoint(topPt);
-                AddObject(title);
                 }
             else if (title->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
@@ -577,8 +582,8 @@ namespace Wisteria::Graphs
                 auto topPt = GetBoundingBox(dc).GetRightTop();
                 topPt.y += ScaleToScreenAndCanvas(title->GetLineSpacing());
                 title->SetAnchorPoint(topPt);
-                AddObject(title);
                 }
+            AddObject(title);
             }
 
         // draw the subtitle
@@ -595,7 +600,6 @@ namespace Wisteria::Graphs
                 auto topPt = GetBoundingBox(dc).GetTopLeft();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing()) + titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
-                AddObject(subtitle);
                 }
             else if (subtitle->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
@@ -605,7 +609,6 @@ namespace Wisteria::Graphs
                     safe_divide<double>(subtitle->GetBoundingBox(dc).GetHeight(), 2) + titleSpacing;
                 topPt.x += GetBoundingBox(dc).GetWidth()/2;
                 subtitle->SetAnchorPoint(topPt);
-                AddObject(subtitle);
                 }
             else if (subtitle->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
@@ -613,8 +616,8 @@ namespace Wisteria::Graphs
                 auto topPt = GetBoundingBox(dc).GetRightTop();
                 topPt.y += ScaleToScreenAndCanvas(subtitle->GetLineSpacing())+titleSpacing;
                 subtitle->SetAnchorPoint(topPt);
-                AddObject(subtitle);
                 }
+            AddObject(subtitle);
             }
 
         // draw the caption
@@ -626,8 +629,7 @@ namespace Wisteria::Graphs
                 caption->SetAnchoring(Anchoring::BottomLeftCorner);
                 auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
-                caption->SetAnchorPoint(bottomPt);
-                AddObject(caption);
+                caption->SetAnchorPoint(bottomPt);                
                 }
             else if (caption->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
@@ -637,7 +639,6 @@ namespace Wisteria::Graphs
                     safe_divide<double>(caption->GetBoundingBox(dc).GetHeight(), 2);
                 bottomPt.x += GetBoundingBox(dc).GetWidth()/2;
                 caption->SetAnchorPoint(bottomPt);
-                AddObject(caption);
                 }
             else if (caption->GetRelativeAlignment() == RelativeAlignment::FlushRight)
                 {
@@ -645,8 +646,8 @@ namespace Wisteria::Graphs
                 auto bottomPt = GetBoundingBox(dc).GetRightBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
                 caption->SetAnchorPoint(bottomPt);
-                AddObject(caption);
                 }
+            AddObject(caption);
             }
 
         // custom axes

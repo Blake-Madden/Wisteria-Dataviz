@@ -119,9 +119,13 @@ namespace Wisteria
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
+        /// @param labelTemplate The template to copy defeault settings from
+        ///     before loading properties.
         /// @returns A Label object, or null upon failure.
         /// @todo many features still needed!
-        std::shared_ptr<GraphItems::Label> LoadLabel(const wxSimpleJSON::Ptr_t& labelNode);
+        std::shared_ptr<GraphItems::Label> LoadLabel(
+            const wxSimpleJSON::Ptr_t& labelNode,
+            const GraphItems::Label labelTemplate);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

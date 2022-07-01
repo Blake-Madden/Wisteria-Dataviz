@@ -476,12 +476,20 @@ namespace Wisteria::Graphs
             }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
+        /// @details The default behavior is for the table to fit its content, with extra
+        ///     space around it (depending how wide it is).
         /// @param percent The minimum percent of the area's width that the table should consume.
+        /// @sa GetPageHorizontalAlignment() for controlling how the table is positioned if this
+        ///     value is less than @c 1.0.
         void SetMinWidthProportion(const double percent)
             { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
         /// @brief Sets the minimum percent of the drawing area's height that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
+        /// @details The default behavior is for the table to fit its content, with extra
+        ///     space around it (depending how tall it is).
         /// @param percent The minimum percent of the area's height that the table should consume.
+        /// @sa GetPageVerticalAlignment() for controlling how the table is positioned if this
+        ///     value is less than @c 1.0.
         void SetMinHeightProportion(const double percent)
             { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
 

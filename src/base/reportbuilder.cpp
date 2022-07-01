@@ -86,7 +86,7 @@ namespace Wisteria
                                             else if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
-                                                    LoadLabel(item));
+                                                    LoadLabel(item, GraphItems::Label()));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"image") == 0)
                                                 {
@@ -199,7 +199,7 @@ namespace Wisteria
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
-            auto titleLabel = LoadLabel(titleProperty);
+            auto titleLabel = LoadLabel(titleProperty, GraphItems::Label());
             if (titleLabel != nullptr)
                 { axis.GetTitle() = *titleLabel; }
             }
@@ -225,13 +225,15 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<GraphItems::Label> ReportBuilder::LoadLabel(const wxSimpleJSON::Ptr_t& labelNode)
+    std::shared_ptr<GraphItems::Label> ReportBuilder::LoadLabel(
+        const wxSimpleJSON::Ptr_t& labelNode, const GraphItems::Label labelTemplate)
         {
         if (labelNode->IsOk())
             {
-            auto label = std::make_shared<GraphItems::Label>(
-                GraphItems::GraphItemInfo(labelNode->GetProperty(L"text")->GetValueString()).
-                Pen(wxNullPen).DPIScaling(m_dpiScaleFactor));
+            auto label = std::make_shared<GraphItems::Label>(labelTemplate);
+            label->SetText(labelNode->GetProperty(L"text")->GetValueString());
+            label->GetPen() = wxNullPen;
+            label->SetDPIScaleFactor(m_dpiScaleFactor);
 
             const wxColour bgcolor(labelNode->GetProperty(L"background")->GetValueString());
             if (bgcolor.IsOk())
@@ -423,6 +425,13 @@ namespace Wisteria
             auto table = std::make_shared<Graphs::Table>(canvas);
             table->SetData(foundPos->second, variables,
                 graphNode->GetProperty(L"transpose")->GetValueBool());
+
+            const auto& minWidthProp = graphNode->GetProperty(L"min-width-proportion");
+            if (minWidthProp->IsOk())
+                { table->SetMinWidthProportion(minWidthProp->GetValueNumber()); }
+            const auto& minHeightProp = graphNode->GetProperty(L"min-height-proportion");
+            if (minHeightProp->IsOk())
+                { table->SetMinHeightProportion(minHeightProp->GetValueNumber()); }
 
             const size_t originalColumnCount = table->GetColumnCount();
             const size_t originalRowCount = table->GetRowCount();
@@ -672,7 +681,7 @@ namespace Wisteria
         const auto titleProperty = graphNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
-            auto titleLabel = LoadLabel(titleProperty);
+            auto titleLabel = LoadLabel(titleProperty, graph->GetTitle());
             if (titleLabel != nullptr)
                 { graph->GetTitle() = *titleLabel; }
             }
@@ -681,7 +690,7 @@ namespace Wisteria
         const auto subtitleProperty = graphNode->GetProperty(L"sub-title");
         if (subtitleProperty->IsOk())
             {
-            auto subtitleLabel = LoadLabel(subtitleProperty);
+            auto subtitleLabel = LoadLabel(subtitleProperty, graph->GetSubtitle());
             if (subtitleLabel != nullptr)
                 { graph->GetSubtitle() = *subtitleLabel; }
             }
@@ -690,7 +699,7 @@ namespace Wisteria
         const auto captionProperty = graphNode->GetProperty(L"caption");
         if (captionProperty->IsOk())
             {
-            auto captionLabel = LoadLabel(captionProperty);
+            auto captionLabel = LoadLabel(captionProperty, graph->GetCaption());
             if (captionLabel != nullptr)
                 { graph->GetCaption() = *captionLabel; }
             }

@@ -102,7 +102,11 @@ Properties for @c "label" nodes:
 Properties for @c "table" nodes:
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
-     The following properties are executed in the following order:
+- @c "min-width-proportion": the minimum percent of the drawing area's width that the table should consume
+     (between @c 0.0 to @c 1.0, representing 0% to 100%).
+- @c "min-height-proportion": the minimum percent of the drawing area's height that the table should consume
+     (between @c 0.0 to @c 1.0, representing 0% to 100%).
+The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
        Refer to the [position](#position-properties) properties that are available.
@@ -116,7 +120,7 @@ Properties for @c "table" nodes:
   - @c "background": the background color of the row.
 - @c "columns-add-aggregates": an array of column aggregate definitions that will be added to the table.\n
      Each column aggregate node contains the following properties:
-  - @c "type": the type of aggegate column to add. The options are:
+  - @c "type": the type of aggregate column to add. The options are:
     - @c "percent-change"
   - @c "name": the name for the column.
   - @c "start": the first column that the aggregate column should use.\n
@@ -139,9 +143,9 @@ Properties for @c "table" nodes:
 Properties for row or column positions:
 - @c "origin": this is either the zero-based index of row/column, or a string.\n
      The string values available are @c "last-row" or @c "last-column",
-     which will be interpretted as the last row or column in the data, respectively.
+     which will be interpreted as the last row or column in the data, respectively.
 - @c "offset": a numeric value combined with the value for @c "origin".\n
-     This is optional and is useful for when @c "origin" is interpretted at runtime
+     This is optional and is useful for when @c "origin" is interpreted at runtime
      (for something like @c "last-row").
 
 ## Graphs {#graph-properties}
