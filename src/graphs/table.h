@@ -95,7 +95,7 @@ namespace Wisteria::Graphs
          // make the headers and row groups bold (and center the headers)
          tableGraph->BoldRow(0);
          tableGraph->BoldColumn(0);
-         tableGraph->CenterRowHorizontally(0);
+         tableGraph->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
          // apply a zebra-stripe look
          tableGraph->ApplyAlternateRowColors(ColorBrewer::GetColor(Color::AzureMist), 1, 1);
 
@@ -148,7 +148,7 @@ namespace Wisteria::Graphs
          // make the headers and row groups bold (and center the headers)
          tableGraph->BoldRow(0);
          tableGraph->BoldColumn(0);
-         tableGraph->CenterRowHorizontally(0);
+         tableGraph->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
 
          const auto& ratioOutliers =
             // Find outlier in the female-to-male ratios for the majors.
@@ -351,22 +351,26 @@ namespace Wisteria::Graphs
             /// @param lineLength The suggested line length.
             void SetSuggestedLineLength(const size_t lineLength) noexcept
                 { m_suggestedLineLength = lineLength; }
-            /// @brief Shows or hides the left border of a cell if it's in the first column.
+            /// @brief Shows or hides the left border of a cell.
             /// @param show @c false to hide the left outer border of a cell.
-            void ShowOuterLeftBorder(const bool show)
-                { m_showOuterLeftBorder = show; }
-            /// @brief Shows or hides the top border of a cell if it's in the first row.
+            void ShowLeftBorder(const bool show)
+                { m_showLeftBorder = show; }
+            /// @brief Shows or hides the top border of a cell.
             /// @param show @c false to hide the top outer border of a cell.
-            void ShowOuterTopBorder(const bool show)
-                { m_showOuterTopBorder = show; }
-            /// @brief Shows or hides the bottom border of a cell if it's in the last row.
+            void ShowTopBorder(const bool show)
+                { m_showTopBorder = show; }
+            /// @brief Shows or hides the bottom border of a cell.
             /// @param show @c false to hide the bottom outer border of a cell.
-            void ShowOuterBottomBorder(const bool show)
-                { m_showOuterBottomBorder = show; }
-            /// @brief Shows or hides the right border of a cell if it's in the last column.
+            void ShowBottomBorder(const bool show)
+                { m_showBottomBorder = show; }
+            /// @brief Shows or hides the right border of a cell.
             /// @param show @c false to hide the right outer border of a cell.
-            void ShowOuterRightBorder(const bool show)
-                { m_showOuterRightBorder = show; }
+            void ShowRightBorder(const bool show)
+                { m_showRightBorder = show; }
+            /** @brief Sets how to horizontally position the cell's content.
+                @param alignment How to align the content.*/
+            void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
+                { m_horizontalCellAlignment = alignment; }
         private:
             /// @brief Returns a double value representing the cell.
             /// @details This is useful for comparing cells (or aggregating them).
@@ -411,10 +415,10 @@ namespace Wisteria::Graphs
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
 
-            bool m_showOuterLeftBorder{ true };
-            bool m_showOuterTopBorder{ true };
-            bool m_showOuterRightBorder{ true };
-            bool m_showOuterBottomBorder{ true };
+            bool m_showLeftBorder{ true };
+            bool m_showTopBorder{ true };
+            bool m_showRightBorder{ true };
+            bool m_showBottomBorder{ true };
 
             bool m_isHighlighted{ false };
             };
@@ -439,6 +443,7 @@ namespace Wisteria::Graphs
 
         /// @name Table Functions
         /// @brief Functions for editing the table as a whole.
+        /// @note Use `GetPen()` to change the outline of the table's cells.
         /// @{
 
         /// @brief Sets the size of the table.
@@ -670,29 +675,31 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /** @brief Makes the specified row's cells have horizontally centered content.
-            @param row The row to have horizontally centered cell content.*/
-        void CenterRowHorizontally(const size_t row)
+        /** @brief Sets the specified row's cells' horizontal content alginment.
+            @param row The row to have horizontally centered cell content.
+            @param alignment How to align the content within the row's cells.*/
+        void SetRowHorizontalPageAlignment(const size_t row,
+                                           const PageHorizontalAlignment alignment)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
                 for (auto& cell : currentRow)
-                    { cell.m_horizontalCellAlignment = PageHorizontalAlignment::Centered; }
+                    { cell.SetPageHorizontalAlignment(alignment); }
                 }
             }
-        /** @brief Makes the specified column's cells have horizontally centered content.
-            @param column The column to have horizontally centered cell content.*/
-        void CenterColumnHorizontally(const size_t column)
+        /** @brief Sets the specified column's cells' horizontal content alginment.
+            @param column The column to have horizontally centered cell content.
+            @param alignment How to align the content within the column's cells.*/
+        void SetColumnHorizontalPageAlignment(const size_t column,
+                                              const PageHorizontalAlignment alignment)
             {
             if (GetColumnCount() > 0)
                 {
                 for (auto& row : m_table)
                     {
                     if (column < row.size())
-                        {
-                        row[column].m_horizontalCellAlignment = PageHorizontalAlignment::Centered;
-                        }
+                        { row[column].SetPageHorizontalAlignment(alignment); }
                     }
                 }
             }

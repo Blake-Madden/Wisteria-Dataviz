@@ -151,8 +151,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
-        GetPen() = ColorBrewer::GetColor(Colors::Color::AshGrey,
-                                         Settings::GetTranslucencyValue());
+        GetPen() = ColorBrewer::GetColor(Colors::Color::AshGrey);
 
         // arbitrary ranges, just need to create any sort of plotting area
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
@@ -744,7 +743,8 @@ namespace Wisteria::Graphs
             return adjustedRect;
             };
 
-        wxRect fullGraphArea = GetBoundingBox(dc);
+        const wxRect originalFullGraphArea = GetBoundingBox(dc);
+        wxRect fullGraphArea = originalFullGraphArea;
         wxRect drawArea = GetPlotAreaBoundingBox();
         auto graphDecorationHeight = fullGraphArea.GetHeight() - drawArea.GetHeight();
         auto graphDecorationWidth = fullGraphArea.GetWidth() - drawArea.GetWidth();
@@ -759,8 +759,14 @@ namespace Wisteria::Graphs
 
         // if the needed area for the table proper is less than the available drawing area,
         // then remove that extra space and recompute the layout
-        fullGraphArea.SetHeight(AddPaddingToRect(drawArea).GetHeight() + graphDecorationHeight);
-        fullGraphArea.SetWidth(AddPaddingToRect(drawArea).GetWidth() + graphDecorationWidth);
+        fullGraphArea.SetHeight(
+            std::min(
+                AddPaddingToRect(drawArea).GetHeight() + graphDecorationHeight,
+                fullGraphArea.GetHeight()));
+        fullGraphArea.SetWidth(
+            std::min(
+                AddPaddingToRect(drawArea).GetWidth() + graphDecorationWidth,
+                fullGraphArea.GetWidth()));
         SetBoundingBox(fullGraphArea, dc, GetScaling());
         Graph2D::RecalcSizes(dc);
 
@@ -968,7 +974,12 @@ namespace Wisteria::Graphs
                 // skip over cells being eclipsed by the previous one above that was multi-row
                 if (rowCellsToSkip.find(std::make_pair(currentRow, currentColumn)) ==
                     rowCellsToSkip.cend() &&
-                    !(currentRow == 0 && !cell.m_showOuterTopBorder))
+                    // if top row and top border is turned off, then don't draw the line
+                    !(currentRow == 0 && !cell.m_showTopBorder) &&
+                    // if top border is not be drawn and cell above's bottom border is also
+                    // not drawn, then don't draw the line
+                    !(currentRow > 0 && !cell.m_showTopBorder &&
+                      !GetCell(currentRow - 1, currentColumn).m_showBottomBorder))
                     {
                     if (cell.IsHighlighted() || aboveCellHighlighted ||
                         (parentColumnCell.has_value() && parentColumnCell.value().IsHighlighted()))
@@ -993,7 +1004,9 @@ namespace Wisteria::Graphs
                     }
                 columnsToOverwrite = cell.m_columnCount - 1;
                 // draw vertical line to the left of the cell
-                if (!(currentColumn == 0 && !cell.m_showOuterLeftBorder))
+                if (!(currentColumn == 0 && !cell.m_showLeftBorder) &&
+                    !(currentColumn > 0 && !cell.m_showLeftBorder &&
+                      !GetCell(currentRow, currentColumn - 1).m_showRightBorder))
                     {
                     auto parentCell = GetParentRowWiseCell(currentRow, currentColumn);
                     if (cell.IsHighlighted() ||
@@ -1021,7 +1034,7 @@ namespace Wisteria::Graphs
             currentYPos += rowHeight;
             ++currentRow;
             }
-        // outer right border
+        // outer-right border
         currentYPos = drawArea.GetY();
         currentRow = currentColumn = 0;
         for (const auto& rowHeight : rowHeights)
@@ -1029,7 +1042,7 @@ namespace Wisteria::Graphs
             const auto& cell = GetCell(currentRow, GetColumnCount() - 1);
             auto parentRowCell = GetParentRowWiseCell(currentRow, GetColumnCount() - 1);
             auto parentColumnCell = GetParentColumnWiseCell(currentRow, GetColumnCount() - 1);
-            if (cell.m_showOuterRightBorder)
+            if (cell.m_showRightBorder)
                 {
                 if (cell.IsHighlighted() ||
                     (parentRowCell.has_value() && parentRowCell.value().IsHighlighted()) ||
@@ -1049,13 +1062,13 @@ namespace Wisteria::Graphs
             currentYPos += rowHeight;
             ++currentRow;
             }
-        // outer bottom border
+        // outer-bottom border
         currentXPos = drawArea.GetX();
         for (const auto& colWidth : columnWidths)
             {
             const auto& cell = GetCell(GetRowCount()-1, currentColumn);
             auto parentColumnCell = GetParentColumnWiseCell(GetRowCount() - 1, currentColumn);
-            if (cell.m_showOuterBottomBorder)
+            if (cell.m_showBottomBorder)
                 {
                 if (cell.IsHighlighted() ||
                     (parentColumnCell.has_value() && parentColumnCell.value().IsHighlighted()))
@@ -1105,7 +1118,7 @@ namespace Wisteria::Graphs
         const auto labelSpacingFromLine = ScaleToScreenAndCanvas(m_labelSpacingFromLine);
         for (auto& note : m_cellAnnotations)
             {
-            // sort by rows, top to bottom
+            // sort by rows, top-to-bottom
             std::sort(note.m_cells.begin(), note.m_cells.end(),
                 [](const auto& lv, const auto& rv) noexcept
                     { return lv.first < rv.first; });
