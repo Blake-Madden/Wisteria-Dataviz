@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
 
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().SetFractionalPointSize(
-            GetTitle().GetFont().GetFractionalPointSize() * .75);
+            GetTitle().GetFont().GetFractionalPointSize() * .5);
         GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
         }
 
@@ -629,7 +629,7 @@ namespace Wisteria::Graphs
                 caption->SetAnchoring(Anchoring::BottomLeftCorner);
                 auto bottomPt = GetBoundingBox(dc).GetLeftBottom();
                 bottomPt.y -= ScaleToScreenAndCanvas(caption->GetLineSpacing());
-                caption->SetAnchorPoint(bottomPt);                
+                caption->SetAnchorPoint(bottomPt);
                 }
             else if (caption->GetRelativeAlignment() == RelativeAlignment::Centered)
                 {
