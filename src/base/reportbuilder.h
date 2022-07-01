@@ -95,8 +95,17 @@ namespace Wisteria
         /// @param axis[in,out] The axis to apply the loaded settings to.
         void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
 
+        /// @brief Loads a row or column position from a node.
+        /// @details This support loading the @c origin and @c offset properties.
+        /// @param positionNode The node to parse.
+        /// @param columnCount The column count in the table.\n
+        ///     This is what the constant @c "last-column" is expanded into (minus one).
+        /// @param columnRow The row count in the table.\n
+        ///     This is what the constant @c "last-row" is expanded into (minus one).
+        /// @returns The row or column position.
         std::optional<size_t> LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
-            const size_t columnCount);
+            const size_t columnCount,
+            const size_t columnRow);
 
         /// @brief Loads a image node into the canvas.
         /// @param imageNode The image node to parse.

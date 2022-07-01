@@ -425,6 +425,7 @@ namespace Wisteria
                 graphNode->GetProperty(L"transpose")->GetValueBool());
 
             const size_t originalColumnCount = table->GetColumnCount();
+            const size_t originalRowCount = table->GetRowCount();
 
             // add rows
             auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
@@ -432,15 +433,19 @@ namespace Wisteria
                 {
                 for (const auto& rowAddCommand : rowAddCommands)
                     {
-                    const auto position = rowAddCommand->GetProperty("position")->GetValueNumber();
-                    table->InsertRow(position);
+                    const std::optional<size_t> position =
+                        LoadPosition(rowAddCommand->GetProperty(L"position"),
+                            originalColumnCount, originalRowCount);
+                    if (!position.has_value())
+                        { continue; }
+                    table->InsertRow(position.value());
                     // fill the values across the row
-                    const auto values = rowAddCommand->GetProperty("values")->GetValueStringVector();
+                    const auto values = rowAddCommand->GetProperty(L"values")->GetValueStringVector();
                     for (size_t i = 0; i < values.size(); ++i)
-                        { table->GetCell(position, i).SetValue(values[i]); }
+                        { table->GetCell(position.value(), i).SetValue(values[i]); }
                     const wxColour bgcolor(rowAddCommand->GetProperty(L"background")->GetValueString());
                     if (bgcolor.IsOk())
-                        { table->SetRowBackgroundColor(position, bgcolor); }
+                        { table->SetRowBackgroundColor(position.value(), bgcolor); }
                     }
                 }
             // group the rows
@@ -455,7 +460,8 @@ namespace Wisteria
                 for (const auto& rowColorCommand : rowColorCommands)
                     {
                     const std::optional<size_t> position =
-                        LoadPosition(rowColorCommand->GetProperty(L"position"), originalColumnCount);
+                        LoadPosition(rowColorCommand->GetProperty(L"position"),
+                            originalColumnCount, originalRowCount);
                     const wxColour bgcolor(rowColorCommand->GetProperty(L"background")->GetValueString());
                     if (position.has_value() && bgcolor.IsOk())
                         { table->SetRowBackgroundColor(position.value(), bgcolor); }
@@ -473,10 +479,12 @@ namespace Wisteria
 
                     // starting column
                     const std::optional<size_t> startColumn =
-                        LoadPosition(columnAggregate->GetProperty(L"start"), originalColumnCount);
+                        LoadPosition(columnAggregate->GetProperty(L"start"),
+                            originalColumnCount, originalRowCount);
                     // ending column
                     const std::optional<size_t> endingColumn =
-                        LoadPosition(columnAggregate->GetProperty(L"end"), originalColumnCount);
+                        LoadPosition(columnAggregate->GetProperty(L"end"),
+                            originalColumnCount, originalRowCount);
 
                     Table::AggregateInfo aggInfo;
                     if (aggType.CmpNoCase(L"percent-change") == 0)
@@ -492,6 +500,47 @@ namespace Wisteria
                     }
                 }
 
+            // cell updating
+            auto cellUpdates = graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
+            if (cellUpdates.size())
+                {
+                for (const auto& cellUpdate : cellUpdates)
+                    {
+                    // last column and row will be the last aggregates at this point
+                    // (if applicable)
+                    const std::optional<size_t> rowPosition =
+                        LoadPosition(cellUpdate->GetProperty(L"row"),
+                            table->GetColumnCount(),
+                            table->GetRowCount());
+                    const std::optional<size_t> columnPosition =
+                        LoadPosition(cellUpdate->GetProperty(L"column"),
+                            table->GetColumnCount(),
+                            table->GetRowCount());
+                    if (rowPosition.has_value() && columnPosition.has_value() &&
+                        rowPosition.value() < table->GetRowCount() &&
+                        columnPosition.value() < table->GetColumnCount())
+                        {
+                        auto& currentCell = table->GetCell(rowPosition.value(), columnPosition.value());
+                        // column count
+                        const auto& columnCountProperty =
+                            cellUpdate->GetProperty(L"column-count");
+                        if (columnCountProperty->IsOk())
+                            {
+                            if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                                columnCountProperty->GetValueString().CmpNoCase(L"all") == 0)
+                                {
+                                currentCell.SetColumnCount(table->GetColumnCount());
+                                }
+                            else if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                                {
+                                currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
+                                }
+                            }
+                        
+                        }
+                    }
+                }
+
             return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
             }
         return nullptr;
@@ -499,7 +548,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<size_t> ReportBuilder::LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
-        const size_t columnCount)
+        const size_t columnCount, const size_t columnRow)
         {
         std::optional<size_t> position;
         const auto origin = positionNode->GetProperty(L"origin");
@@ -509,6 +558,8 @@ namespace Wisteria
                 {
                 if (origin->GetValueString().CmpNoCase(L"last-column") == 0)
                     { position = columnCount-1; }
+                else if (origin->GetValueString().CmpNoCase(L"last-row") == 0)
+                    { position = columnRow-1; }
                 }
             else if (origin->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
                 { position = origin->GetValueNumber(); }
