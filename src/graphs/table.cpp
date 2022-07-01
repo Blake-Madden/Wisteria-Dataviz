@@ -151,7 +151,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Table::Table(Wisteria::Canvas* canvas) : Graph2D(canvas)
         {
-        GetPen() = ColorBrewer::GetColor(Colors::Color::AshGrey);
+        GetPen() = ColorBrewer::GetColor(Colors::Color::Almond);
 
         // arbitrary ranges, just need to create any sort of plotting area
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
