@@ -210,15 +210,15 @@ namespace Wisteria
                                        const size_t currentRow, const size_t currentColumn)
         {
         const auto axisType = ConvertAxisType(
-            commonAxisNode->GetProperty("axis-type")->GetValueString());
+            commonAxisNode->GetProperty(L"axis-type")->GetValueString());
         if (axisType.has_value())
             {
             m_commonAxesPlaceholders.push_back(
                 {
                 axisType.value(),
                 std::make_pair(currentRow, currentColumn),
-                commonAxisNode->GetProperty("child-ids")->GetValueArrayNumber(),
-                commonAxisNode->GetProperty("common-perpendicular-axis")->GetValueBool(),
+                commonAxisNode->GetProperty(L"child-ids")->GetValueArrayNumber(),
+                commonAxisNode->GetProperty(L"common-perpendicular-axis")->GetValueBool(),
                 commonAxisNode
                 });
             }
@@ -477,6 +477,38 @@ namespace Wisteria
                     }
                 }
 
+            // change rows' content alignent
+            auto rowContentCommands =
+                graphNode->GetProperty(L"rows-content-align")->GetValueArrayObject();
+            if (rowContentCommands.size())
+                {
+                for (const auto& rowContentCommand : rowContentCommands)
+                    {
+                    const std::optional<size_t> position =
+                        LoadPosition(rowContentCommand->GetProperty(L"position"),
+                            originalColumnCount, originalRowCount);
+                    if (!position.has_value())
+                        { continue; }
+                    const auto hPageAlignment =
+                        rowContentCommand->GetProperty(L"horizontal-page-alignment")->GetValueString();
+                    if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::LeftAligned);
+                        }
+                    else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::RightAligned);
+                        }
+                    else if (hPageAlignment.CmpNoCase(L"centered") == 0)
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::Centered);
+                        }
+                    }
+                }
+
             // column aggregates
             auto columnAggregates = graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
             if (columnAggregates.size())
@@ -545,7 +577,59 @@ namespace Wisteria
                                 currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
                                 }
                             }
-                        
+                        // row count
+                        const auto& rowCountProperty =
+                            cellUpdate->GetProperty(L"row-count");
+                        if (rowCountProperty->IsOk())
+                            {
+                            if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                                rowCountProperty->GetValueString().CmpNoCase(L"all") == 0)
+                                {
+                                currentCell.SetRowCount(table->GetRowCount());
+                                }
+                            else if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                                {
+                                currentCell.SetRowCount(rowCountProperty->GetValueNumber());
+                                }
+                            }
+                        // value
+                        const auto& valueProperty = cellUpdate->GetProperty(L"value");
+                        if (valueProperty->IsOk())
+                            {
+                            if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                                {
+                                currentCell.SetValue(valueProperty->GetValueString());
+                                }
+                            else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                                { currentCell.SetValue(valueProperty->GetValueNumber()); }
+                            else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+                                { currentCell.SetValue(wxEmptyString); }
+                            }
+                        // background color
+                        const wxColour bgcolor(cellUpdate->GetProperty(L"background")->GetValueString());
+                        if (bgcolor.IsOk())
+                            { currentCell.SetBackgroundColor(bgcolor); }
+                        // outer border toggles
+                        const auto outerBorderToggles =
+                            cellUpdate->GetProperty(L"show-borders")->GetValueArrayBool();
+                        if (outerBorderToggles.size() >= 1)
+                            { currentCell.ShowTopBorder(outerBorderToggles[0]); }
+                        if (outerBorderToggles.size() >= 2)
+                            { currentCell.ShowRightBorder(outerBorderToggles[1]); }
+                        if (outerBorderToggles.size() >= 3)
+                            { currentCell.ShowBottomBorder(outerBorderToggles[2]); }
+                        if (outerBorderToggles.size() >= 4)
+                            { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
+
+                        // horizontal page alignment
+                        const auto hPageAlignment =
+                            cellUpdate->GetProperty(L"horizontal-page-alignment")->GetValueString();
+                        if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
+                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
+                        else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
+                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
+                        else if (hPageAlignment.CmpNoCase(L"centered") == 0)
+                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
                         }
                     }
                 }
@@ -663,6 +747,14 @@ namespace Wisteria
         else if (vPageAlignment.CmpNoCase(L"centered") == 0)
             { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
 
+        const auto penNode = itemNode->GetProperty(L"pen");
+        if (penNode->IsOk())
+            {
+            const wxColour penColor(penNode->GetProperty(L"color")->GetValueString());
+            if (penColor.IsOk())
+                { item->GetPen().SetColour(penColor); }
+            }
+
         item->FitContentWidthToCanvas(
             itemNode->GetProperty(L"fit-to-content-width")->GetValueBool());
         item->FitCanvasHeightToContent(
@@ -712,7 +804,7 @@ namespace Wisteria
             for (const auto& axisNode : axesNodes)
                 {
                 const auto axisType = ConvertAxisType(
-                    axisNode->GetProperty("axis-type")->GetValueString());
+                    axisNode->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
                     if (axisType.value() == AxisType::LeftYAxis)

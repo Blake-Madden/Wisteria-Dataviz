@@ -118,6 +118,14 @@ The remaining properties are executed in the following order:
   - @c "position": which row to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the row.
+- @c "rows-content-align": an array of commands to align the content inside of the cells across a row.
+  - @c "position": which row to change the content alignment in.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "horizontal-page-alignment": how to horizontally align the cells' content.\n
+       The options are:\n
+    - @c "left-aligned"
+    - @c "right-aligned"
+    - @c "centered"
 - @c "columns-add-aggregates": an array of column aggregate definitions that will be added to the table.\n
      Each column aggregate node contains the following properties:
   - @c "type": the type of aggregate column to add. The options are:
@@ -136,6 +144,17 @@ The remaining properties are executed in the following order:
        Refer to the [position](#position-properties) properties that are available.
   - @c "column-count": the number of columns that this cell should consume.\n
        The can either be a number, or the string @c "all" (meaning all columns).
+  - @c "row-count": the number of rows that this cell should consume.\n
+       The can either be a number, or the string @c "all" (meaning all rows).
+  - @c "value": a numeric, string, or null value to assign to the cell.
+  - @c "background": the background color. This can be a either a color name or hex-encoded value.
+  - @c "show-borders": an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "horizontal-page-alignment": how to horizontally align the item within its area.\n
+       The options are:\n
+    - @c "left-aligned"
+    - @c "right-aligned"
+    - @c "centered"
 
 # Base-level Properties
 
@@ -175,6 +194,8 @@ Properties common to all items:
   starting at 12 o'clock.
 - @c "padding": a numeric array (one to four numbers), representing the item's padding going clockwise,
   starting at 12 o'clock.
+- @c "pen": the item's pen, which includes these properties:
+  - @c "color": the pen color. This can be a either a color name or hex-encoded value.
 - @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).\n
   The options are:\n
   - @c "flush-left"
