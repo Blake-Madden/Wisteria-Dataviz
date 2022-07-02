@@ -240,6 +240,10 @@ namespace Wisteria
             @brief Functions related to width and height measurements of the canvas.*/
         /// @{
 
+        /// @brief Sets the aspect ratio of the canvas to its printer settings.
+        /// @details Call this after setting the paper size and orientation via SetPrinterData().
+        /// @sa SetPrinterData().
+        void SetSizeFromPaperSize();
         /// @returns The minimum width that the canvas can be, it will be forced to be this
         ///     wide even as its parent is resized.
         [[nodiscard]] int GetCanvasMinWidthDIPs() const noexcept

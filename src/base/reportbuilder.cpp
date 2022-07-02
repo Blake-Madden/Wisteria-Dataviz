@@ -167,6 +167,7 @@ namespace Wisteria
                         }
                     canvas->CalcRowDimensions();
                     canvas->FitToPageWhenPrinting(true);
+                    canvas->SetSizeFromPaperSize();
                     reportPages.push_back(canvas);
                     }
                 }

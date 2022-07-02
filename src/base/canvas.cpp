@@ -292,6 +292,34 @@ namespace Wisteria
         };
 
     //------------------------------------------------------
+    void Canvas::SetSizeFromPaperSize()
+        {
+        auto printOut = std::make_unique<CanvasPrintout>(this, GetLabel());
+    #if defined(__WXMSW__) || defined(__WXOSX__)
+        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
+    #else
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
+    #endif
+        printOut->SetUp(dc);
+
+        const auto orginalMinWidth = GetCanvasMinWidthDIPs();
+
+        int w{ 0 }, h{ 0 };
+        printOut->GetPageSizePixels(&w, &h);
+        const auto canvasInDIPs = ToDIP(wxSize(w, h));
+        const auto scaledHeight =
+            geometry::calculate_rescale_height(std::make_pair(w, h), orginalMinWidth);
+
+        if (scaledHeight > 0) // sanity check in case page size calc failed
+            {
+            SetCanvasMinHeightDIPs(scaledHeight);
+            // recalculate the row and column proportions for the new drawing area
+            CalcRowDimensions();
+            CalcAllSizes(dc);
+            }
+        }
+
+    //------------------------------------------------------
     void Canvas::OnPrint([[maybe_unused]] wxCommandEvent& event)
         {
         auto printOut = std::make_unique<CanvasPrintout>(this, GetLabel());
