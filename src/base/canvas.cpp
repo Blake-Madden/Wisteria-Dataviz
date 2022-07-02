@@ -1402,8 +1402,15 @@ namespace Wisteria
     void Canvas::SetFixedObject(const size_t row, const size_t column,
                                 std::shared_ptr<GraphItems::GraphItemBase> object)
         {
+        // cache the orginal scaling in case when need to recalulcate
+        // new canvas dimensions later
+        if (object != nullptr)
+            {
+            object->SetOriginalCanvasScaling(object->GetScaling());
+            }
         // resize the grid, if necessary
-        auto currentColumnCount = (GetFixedObjects().size() == 0 ? 0 : GetFixedObjects().at(0).size());
+        auto currentColumnCount = (GetFixedObjects().size() == 0 ? 0 :
+                                   GetFixedObjects().at(0).size());
         if (row >= GetFixedObjects().size())
             {
             SetFixedObjectsGridSize(row + 1, std::max(column + 1, currentColumnCount));

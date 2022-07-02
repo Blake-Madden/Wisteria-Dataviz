@@ -31,6 +31,7 @@
 namespace Wisteria
     {
     class Canvas;
+    class CanvasItemScalingChanger;
     }
 
 namespace Wisteria::Graphs
@@ -1055,6 +1056,11 @@ namespace Wisteria
             /// @returns The scaling.
             [[nodiscard]] double GetScaling() const noexcept
                 { return m_scaling; }
+            /// @returns The scaling when the item was first embedded onto a canvas.
+            /// @note This is only relavant for object embedded into a canvas's grid
+            ///     and should only be used by canvases internally.
+            [[nodiscard]] double GetOriginalCanvasScaling() const noexcept
+                { return m_originalCanvasScaling; }
             /// @returns The DPI scaling.
             [[nodiscard]] std::optional<double> GetDPIScaleFactor() const noexcept
                 { return m_dpiScaleFactor; }
@@ -1114,6 +1120,7 @@ namespace Wisteria
             wxPoint m_point{ 0, 0 };
             // scaling
             double m_scaling{ 1 };
+            double m_originalCanvasScaling{ 1 };
             std::optional<double> m_dpiScaleFactor{ std::nullopt };
             };
 
@@ -1121,6 +1128,7 @@ namespace Wisteria
         class GraphItemBase
             {
             friend class Wisteria::Canvas;
+            friend class Wisteria::CanvasItemScalingChanger;
             friend class Graphs::Graph2D;
             friend class Graphs::PieChart;
         public:
@@ -1994,6 +2002,23 @@ namespace Wisteria
             void SetContentRight(const std::optional<wxCoord>& pt) noexcept
                 { m_contentRight = pt; }
         private:
+            /** @brief Sets the original scaling of the element when it was first
+                    embedded onto a canvas.
+                @details This is only used by a canvas for when its dimensions change and it
+                    needs to recalculate how much space this item needs.
+                @param scaling The object's initial scaling factor.*/
+             void SetOriginalCanvasScaling(const double scaling)
+                {
+                wxASSERT_LEVEL_2_MSG(scaling > 0,
+                                     L"Scaling in canvas object is less than or equal to zero?!");
+                if (scaling <= 0)
+                    { return; }
+                m_itemInfo.m_originalCanvasScaling = scaling;
+                }
+            /** @returns The orignal canvas scaling of the element.*/
+            [[nodiscard]] double GetOriginalCanvasScaling() const noexcept
+                { return m_itemInfo.m_originalCanvasScaling; }
+
             GraphItemInfo m_itemInfo;
 
             // These are used internally for common alignment with other

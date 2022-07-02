@@ -50,8 +50,30 @@ DECLARE_EVENT_TYPE(EVT_WISTERIA_CANVAS_DCLICK, -1)
 
 namespace Wisteria
     {
-    /// @brief %Canvas for drawing, movable objects, etc.
-    class Canvas : public wxScrolledWindow
+    /// @private
+    /// @brief This is only used by canvases to properly measure how much space
+    ///     an embedded object needs.
+    /// @sa Canvas::CalcMinWidthProportion() and Canvas::CalcMinHeightProportion().
+    class CanvasItemScalingChanger
+        {
+    public:
+        /// @brief Constructor; switches an object to use its initial scaling
+        ///     when it was added to the canvas.
+        /// @param object The object to change.
+        /// @sa Canvas::SetFixedObject() for when an object's initial scaling is cached.
+        CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object) :
+            m_obj(object), m_originalScaling(object->GetScaling())
+            { m_obj->SetScaling(m_obj->GetOriginalCanvasScaling()); }
+        /// @brief Destructor; resets the object back to its original scaling.
+        ~CanvasItemScalingChanger()
+            { m_obj->SetScaling(m_originalScaling); }
+    private:
+        double m_originalScaling{ 1.0 };
+        std::shared_ptr<GraphItems::GraphItemBase> m_obj{ nullptr };
+        };
+
+    /// @brief %Canvas for drawing, movable objects.
+    class Canvas final : public wxScrolledWindow
         {
     public:
         friend class CanvasPrintout;
@@ -143,7 +165,7 @@ namespace Wisteria
             }
 
         /// @private
-        void OnDraw(wxDC& dc) override;
+        void OnDraw(wxDC& dc) final;
 
         // standard events
         /// @private
@@ -256,6 +278,13 @@ namespace Wisteria
                                  std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
             wxGCDC gdc(this);
+            // switch the object to (temporarily) use its original scaling from the client
+            // (not the current window's scaling) so that we measure it correctly against
+            // a 1.0 scaled canvas
+            CanvasItemScalingChanger sc(item);
+            // also, reset any previous min size information for a call to the object's
+            // SetBoundingBox(), as we will be resizing this item from scratch
+            item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             item->RecalcSizes(gdc);
             return safe_divide<double>(
                 item->GetBoundingBox(gdc).GetWidth() +
@@ -277,6 +306,8 @@ namespace Wisteria
                                  std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
             wxGCDC gdc(this);
+            CanvasItemScalingChanger sc(item);
+            item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             item->RecalcSizes(gdc);
             return safe_divide<double>(
                 item->GetBoundingBox(gdc).GetHeight() +
