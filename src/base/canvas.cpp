@@ -262,10 +262,10 @@ namespace Wisteria
                 if (scaledHeight > 0) // sanity check in case page size calc failed
                     {
                     m_canvas->SetCanvasMinHeightDIPs(scaledHeight);
-                    // recalculate the row and column dimensions for the new drawing area
+                    // recalculate the row and column proportions for the new drawing area
                     m_canvas->CalcRowDimensions();
                     // set the physical size of the window to the page's aspect ratio;
-                    // this will force a CalcAllSizes and fit all the objects to the
+                    // this will force a call to CalcAllSizes() and fit all the objects to the
                     // altered drawing area
                     m_canvas->SetSize(
                         m_canvas->FromDIP(wxSize(m_canvas->GetCanvasMinWidthDIPs(),
@@ -836,7 +836,6 @@ namespace Wisteria
             m_rectDIPs.SetWidth(gdc.ToDIP(m_rectDIPs.GetWidth()));
             m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
             CalcAllSizes(gdc);
-            SetVirtualSize(GetCanvasRect(gdc).GetSize());
             }
         }
 
@@ -1937,7 +1936,6 @@ namespace Wisteria
         m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() * ZOOM_FACTOR);
 
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }
@@ -1955,7 +1953,6 @@ namespace Wisteria
         m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / ZOOM_FACTOR);
         
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }
@@ -1974,7 +1971,6 @@ namespace Wisteria
         m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
 
         CalcAllSizes(gdc);
-        SetVirtualSize(GetCanvasRect(gdc).GetSize());
         Refresh();
         Update();
         }
