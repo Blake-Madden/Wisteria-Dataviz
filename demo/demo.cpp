@@ -1753,7 +1753,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // make the headers and row groups bold (and center the headers)
         tableGraph->BoldRow(0);
         tableGraph->BoldColumn(0);
-        tableGraph->CenterRowHorizontally(0);
+        tableGraph->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
 
         const auto& ratioOutliers =
             // Find outlier in the female-to-male ratios for the majors.
