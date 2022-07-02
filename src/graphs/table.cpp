@@ -1233,6 +1233,15 @@ namespace Wisteria::Graphs
                     }
                 AddObject(noteLabel);
                 }
+            // Base graph resets the scaling for caption to 1.0 and it's a
+            // template object that's copied, so you need to adjust the font size
+            // instead of the scaling.
+            // By default, captions are 75% of the title's font size, so use that
+            // and downscale that to what is being used for the cells' and annotations'
+            // text, making a consistent look.
+            GetCaption().GetFont().SetFractionalPointSize(
+                (GetTitle().GetFont().GetFractionalPointSize() * .75) *
+                 std::max(1.0, smallestTextScaling));
             }
         }
     }

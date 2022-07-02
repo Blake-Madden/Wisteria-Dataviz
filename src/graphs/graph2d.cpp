@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
 
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().SetFractionalPointSize(
-            GetTitle().GetFont().GetFractionalPointSize() * .5);
+            GetTitle().GetFont().GetFractionalPointSize() * .75);
         GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
         }
 
