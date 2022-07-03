@@ -23,12 +23,13 @@ namespace Wisteria
         {
     public:
         /// @brief Constructor.
-        CanvasPrintout(Canvas* cvs, const wxString& title) : wxPrintout(title), m_canvas(cvs)
-            {}
+        CanvasPrintout(Canvas* canvas, const wxString& title) : wxPrintout(title)
+            { m_canvases.push_back(canvas); }
         /** @returns @c true if specified page number is within the range of pages being printed.
-            @param pageNum The page number to check for.*/
+            @param pageNum The page number to check for.
+            @note Page # is 1-indexed.*/
         bool HasPage(int pageNum) noexcept final
-            { return (pageNum == 1); }
+            { return (pageNum > 0 && pageNum <= m_canvases.size()); }
         /** @brief Retrieves page information for printing.
             @param[out] minPage The lowest possible page index.
             @param[out] maxPage The highest possible page index.
@@ -36,10 +37,11 @@ namespace Wisteria
             @param[out] selPageTo The ending page.*/
         void GetPageInfo(int *minPage, int *maxPage, int *selPageFrom, int *selPageTo) final
             {
-            *minPage = 1;
-            *maxPage = 1;
-            *selPageFrom = 1;
-            *selPageTo = 1;
+            wxASSERT_MSG(m_canvases.size(), L"No pages in CanvasPrintout!");
+            *minPage = (m_canvases.size() ? 1 : 0);
+            *maxPage = (m_canvases.size() ? m_canvases.size() : 0);
+            *selPageFrom = (m_canvases.size() ? 1 : 0);
+            *selPageTo = (m_canvases.size() ? m_canvases.size() : 0);
             }
         /** @brief Prints the specified page number.
             @param page The page to print.
@@ -47,18 +49,21 @@ namespace Wisteria
         bool OnPrintPage(int page) final
             {
             wxDC* dc = GetDC();
-            if (dc && (page == 1))
+            auto canvas = GetCanvasFromPageNumber(page);
+            wxASSERT_MSG(dc, L"Invalid printing DC!");
+            wxASSERT_MSG(canvas, L"Invalid page when printing report!");
+            if (dc != nullptr && canvas != nullptr)
                 {
                 dc->SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
                 // get the size of the canvas
                 wxGCDC gdc;
-                wxCoord maxX = m_canvas->GetCanvasRect(gdc).GetWidth(),
-                        maxY = m_canvas->GetCanvasRect(gdc).GetHeight();
+                wxCoord maxX = canvas->GetCanvasRect(gdc).GetWidth(),
+                        maxY = canvas->GetCanvasRect(gdc).GetHeight();
 
                 // Let's have at least 10 device units margin
-                const float marginX = GetMarginPadding();
-                const float marginY = GetMarginPadding();
+                const float marginX = GetMarginPadding(page);
+                const float marginY = GetMarginPadding(page);
 
                 // add the margin to the graphic size
                 maxX += static_cast<wxCoord>(2*marginX);
@@ -68,16 +73,16 @@ namespace Wisteria
                 // measure a standard line of text
                 const auto textHeight = dc->GetTextExtent(L"Aq").GetHeight();
                 long headerFooterUsedHeight{ 0 };
-                if (m_canvas->GetLeftPrinterHeader().length() ||
-                    m_canvas->GetCenterPrinterHeader().length() ||
-                    m_canvas->GetRightPrinterHeader().length())
+                if (canvas->GetLeftPrinterHeader().length() ||
+                    canvas->GetCenterPrinterHeader().length() ||
+                    canvas->GetRightPrinterHeader().length())
                     {
                     maxY += textHeight;
                     headerFooterUsedHeight += textHeight;
                     }
-                if (m_canvas->GetLeftPrinterFooter().length() ||
-                    m_canvas->GetCenterPrinterFooter().length() ||
-                    m_canvas->GetRightPrinterFooter().length())
+                if (canvas->GetLeftPrinterFooter().length() ||
+                    canvas->GetCenterPrinterFooter().length() ||
+                    canvas->GetRightPrinterFooter().length())
                     {
                     maxY += textHeight;
                     headerFooterUsedHeight += textHeight;
@@ -102,8 +107,9 @@ namespace Wisteria
 
                 wxBitmap previewImg;
                 previewImg.CreateWithDIPSize(
-                    wxSize(m_canvas->ToDIP(dcWidth), m_canvas->ToDIP(dcHeight)),
-                    m_canvas->GetDPIScaleFactor());
+                    wxSize(canvas->ToDIP(dcWidth),
+                           canvas->ToDIP(dcHeight)),
+                    canvas->GetDPIScaleFactor());
                 wxMemoryDC memDc(previewImg);
                 memDc.Clear();
     #ifdef __WXMSW__
@@ -122,7 +128,7 @@ namespace Wisteria
                     gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
                     gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
-                    m_canvas->OnDraw(gcdc);
+                    canvas->OnDraw(gcdc);
                     }
                 else
                     {
@@ -131,7 +137,7 @@ namespace Wisteria
                     gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
                     gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
-                    m_canvas->OnDraw(gcdc);
+                    canvas->OnDraw(gcdc);
                     }
     #else
                 wxGCDC gcdc(memDc);
@@ -148,61 +154,61 @@ namespace Wisteria
                 dc->SetUserScale(scaleX, scaleY);
                 dc->SetDeviceOrigin(0, 0);
                 dc->SetMapMode(wxMM_TEXT);
-                if (m_canvas->GetLeftPrinterHeader().length() ||
-                    m_canvas->GetCenterPrinterHeader().length() ||
-                    m_canvas->GetRightPrinterHeader().length())
+                if (canvas->GetLeftPrinterHeader().length() ||
+                    canvas->GetCenterPrinterHeader().length() ||
+                    canvas->GetRightPrinterHeader().length())
                     {
-                    if (m_canvas->GetLeftPrinterHeader().length())
+                    if (canvas->GetLeftPrinterHeader().length())
                         {
-                        dc->DrawText(ExpandPrintString(m_canvas->GetLeftPrinterHeader()),
+                        dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterHeader(), page),
                             static_cast<wxCoord>(marginX),
                             static_cast<wxCoord>(marginY));
                         }
-                    if (m_canvas->GetCenterPrinterHeader().length())
+                    if (canvas->GetCenterPrinterHeader().length())
                         {
                         dc->GetTextExtent(ExpandPrintString(
-                            m_canvas->GetCenterPrinterHeader()), &width, &height);
-                        dc->DrawText(ExpandPrintString(m_canvas->GetCenterPrinterHeader()),
+                            canvas->GetCenterPrinterHeader(), page), &width, &height);
+                        dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterHeader(), page),
                             static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
                                                  safe_divide<float>(width,2)),
                             static_cast<wxCoord>(marginY));
                         }
-                    if (m_canvas->GetRightPrinterHeader().length())
+                    if (canvas->GetRightPrinterHeader().length())
                         {
                         dc->GetTextExtent(ExpandPrintString(
-                            m_canvas->GetRightPrinterHeader()), &width, &height);
-                        dc->DrawText(ExpandPrintString(m_canvas->GetRightPrinterHeader()),
+                            canvas->GetRightPrinterHeader(), page), &width, &height);
+                        dc->DrawText(ExpandPrintString(canvas->GetRightPrinterHeader(), page),
                             static_cast<wxCoord>((dcWidth*scaleXReciprical) - (marginX+width)),
                             static_cast<wxCoord>(marginY));
                         }
                     }
                 // draw the footers
-                if (m_canvas->GetLeftPrinterFooter().length() ||
-                    m_canvas->GetCenterPrinterFooter().length() ||
-                    m_canvas->GetRightPrinterFooter().length())
+                if (canvas->GetLeftPrinterFooter().length() ||
+                    canvas->GetCenterPrinterFooter().length() ||
+                    canvas->GetRightPrinterFooter().length())
                     {
                     dc->GetTextExtent(L"MeasurementTestString", &width, &height);
                     const long yPos = (dcHeight*scaleYReciprical)-(marginY+height);
-                    if (m_canvas->GetLeftPrinterFooter().length())
+                    if (canvas->GetLeftPrinterFooter().length())
                         {
-                        dc->DrawText(ExpandPrintString(m_canvas->GetLeftPrinterFooter()),
+                        dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterFooter(), page),
                             static_cast<wxCoord>(marginX),
                             yPos);
                         }
-                    if (m_canvas->GetCenterPrinterFooter().length())
+                    if (canvas->GetCenterPrinterFooter().length())
                         {
                         dc->GetTextExtent(ExpandPrintString(
-                            m_canvas->GetCenterPrinterFooter()), &width, &height);
-                        dc->DrawText(ExpandPrintString(m_canvas->GetCenterPrinterFooter()),
+                            canvas->GetCenterPrinterFooter(), page), &width, &height);
+                        dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterFooter(), page),
                             static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
                                 safe_divide<float>(width,2)),
                             yPos);
                         }
-                    if (m_canvas->GetRightPrinterFooter().length())
+                    if (canvas->GetRightPrinterFooter().length())
                         {
                         dc->GetTextExtent(ExpandPrintString(
-                            m_canvas->GetRightPrinterFooter()), &width, &height);
-                        dc->DrawText(ExpandPrintString(m_canvas->GetRightPrinterFooter()),
+                            canvas->GetRightPrinterFooter(), page), &width, &height);
+                        dc->DrawText(ExpandPrintString(canvas->GetRightPrinterFooter(), page),
                             static_cast<wxCoord>(((dcWidth*scaleXReciprical) - (marginX+width))),
                             yPos);
                         }
@@ -214,25 +220,53 @@ namespace Wisteria
             }
     private:
         /// @returns The margin around the printing area.
-        [[nodiscard]] wxCoord GetMarginPadding() const
-            { return 10*m_canvas->GetDPIScaleFactor(); }
-        wxString ExpandPrintString(const wxString& printString) const
+        [[nodiscard]] wxCoord GetMarginPadding(const size_t pageNumber) const
             {
+            if (GetCanvasFromPageNumber(pageNumber) == nullptr)
+                { return 0; }
+            return 10 * GetCanvasFromPageNumber(pageNumber)->GetDPIScaleFactor();
+            }
+        [[nodiscard]] wxString ExpandPrintString(
+            const wxString& printString, const int pageNumber) const
+            {
+            // page out of range, so don't do anything
+            if (GetCanvasFromPageNumber(pageNumber) == nullptr)
+                { return printString; }
             wxString expandedString = printString;
 
-            // it's always just one page
-            expandedString.Replace(L"@PAGENUM@", L"1", true);
-            expandedString.Replace(L"@PAGESCNT@", L"1", true);
+            expandedString.Replace(L"@PAGENUM@",
+                wxNumberFormatter::ToString(pageNumber, 0,
+                                            wxNumberFormatter::Style::Style_WithThousandsSep),
+                true);
+            expandedString.Replace(L"@PAGESCNT@",
+                wxNumberFormatter::ToString(m_canvases.size(), 0,
+                                            wxNumberFormatter::Style::Style_WithThousandsSep),
+                true);
 
             const wxDateTime now = wxDateTime::Now();
-            expandedString.Replace(L"@TITLE@", m_canvas->GetLabel(), true);
+            expandedString.Replace(L"@TITLE@", GetCanvasFromPageNumber(pageNumber)->GetLabel(), true);
             expandedString.Replace(L"@DATE@", now.FormatDate(), true);
             expandedString.Replace(L"@TIME@", now.FormatTime(), true);
 
             return expandedString;
             }
+        /// @brief Gets the canvas associated with a page #.
+        /// @details Page numbers are 1-indexed, so we need to take that into account.
+        [[nodiscard]] Canvas* GetCanvasFromPageNumber(const int pageNumber)
+            {
+            if (pageNumber <= 0 || static_cast<size_t>(pageNumber-1) >= m_canvases.size())
+                { return nullptr; }
+            return m_canvases.at(static_cast<size_t>(pageNumber - 1));
+            }
 
-        Canvas* m_canvas{ nullptr };
+        [[nodiscard]] const Canvas* GetCanvasFromPageNumber(const int pageNumber) const
+            {
+            if (pageNumber <= 0 || static_cast<size_t>(pageNumber-1) >= m_canvases.size())
+                { return nullptr; }
+            return m_canvases.at(static_cast<size_t>(pageNumber - 1));
+            }
+
+        std::vector<Canvas*> m_canvases;
         };
 
     /// @brief Temporarily changes a canvas's aspect ratio to fit the page when printing.
