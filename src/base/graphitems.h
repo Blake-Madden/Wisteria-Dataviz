@@ -222,6 +222,7 @@ namespace Wisteria
         };
 
     /// @brief The types of shapes that can be drawn on a legend or plot.
+    /// @internal Update the constant map in @c ReportBuilder::LoadIconScheme when added a new icon.
     enum class IconShape
         {
         BlankIcon,                     /*!< Don't draw any icon.*/
@@ -479,6 +480,13 @@ namespace Wisteria
     class IconShapeScheme
         {
     public:
+        /// @brief Constructor.
+        /// @param shapes The vector of shapes to fill the scheme with.
+        explicit IconShapeScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes)
+            {}
+        /// @private
+        explicit IconShapeScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes))
+            {}
         /// @brief Constructor.
         /// @param shapes The initializer list of shapes to fill the scheme with.
         explicit IconShapeScheme(std::initializer_list<IconShape> shapes) : m_shapes(shapes)

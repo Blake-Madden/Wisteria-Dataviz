@@ -128,8 +128,17 @@ namespace Wisteria
             const wxSimpleJSON::Ptr_t& labelNode,
             const GraphItems::Label labelTemplate);
 
+        /// @brief Loads a color scheme from a node.
+        /// @param colorSchemeNode Tne node to parse.
+        /// @return The loaded color scheme, or null upon failure.
         std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
+
+        /// @brief Loads an icon scheme from a node.
+        /// @param iconSchemeNode Tne node to parse.
+        /// @return The loaded icon scheme, or null upon failure.
+        std::shared_ptr<IconShapeScheme> LoadIconScheme(
+            const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

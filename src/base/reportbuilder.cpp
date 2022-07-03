@@ -413,7 +413,8 @@ namespace Wisteria
                 auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
 
                 auto linePlot = std::make_shared<LinePlot>(canvas,
-                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                    LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
                 linePlot->SetData(foundPos->second,
                     variablesNode->GetProperty(L"y")->GetValueString(),
                     variablesNode->GetProperty(L"x")->GetValueString(),
@@ -686,12 +687,58 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& colorSchemeNode)
         {
         std::vector<wxColour> colors;
-        const auto colorValues = colorSchemeNode->GetValueArrayString();
+        const auto colorValues = colorSchemeNode->GetValueStringVector();
         if (colorValues.size() == 0)
             { return nullptr; }
         for (auto& color : colorValues)
             { colors.emplace_back(wxColour(color)); }
         return std::make_shared<Colors::Schemes::ColorScheme>(colors);
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<IconShapeScheme> ReportBuilder::LoadIconScheme(
+        const wxSimpleJSON::Ptr_t& iconSchemeNode)
+        {
+        // use standard string, wxString should not be constructed globally
+        static std::map<std::wstring_view, IconShape> values =
+            {
+            { L"blank-icon", IconShape::BlankIcon },
+            { L"horizontal-line-icon", IconShape::HorizontalLineIcon },
+            { L"arrow-right-icon", IconShape::ArrowRightIcon },
+            { L"circle-icon", IconShape::CircleIcon },
+            { L"image-icon", IconShape::ImageIcon },
+            { L"horizontal-separator", IconShape::HorizontalSeparator },
+            { L"horizontal-arrow-right-separator", IconShape::HorizontalArrowRightSeparator },
+            { L"image-wholelegend", IconShape::ImageWholeLegend },
+            { L"color-gradient-icon", IconShape::ColorGradientIcon },
+            { L"square-icon", IconShape::SquareIcon },
+            { L"triangle-upward-icon", IconShape::TriangleUpwardIcon },
+            { L"triangle-downward-icon", IconShape::TriangleDownwardIcon },
+            { L"triangle-right-icon", IconShape::TriangleRightIcon },
+            { L"triangle-left-icon", IconShape::TriangleLeftIcon },
+            { L"diamond-icon", IconShape::DiamondIcon },
+            { L"cross-icon", IconShape::CrossIcon },
+            { L"asterisk-icon", IconShape::AsteriskIcon },
+            { L"hexagon-icon", IconShape::HexagonIcon },
+            { L"box-plot-icon", IconShape::BoxPlotIcon },
+            { L"location-marker", IconShape::LocationMarker },
+            { L"go-road-sign", IconShape::GoRoadSign },
+            { L"warning-road-sign", IconShape::WarningRoadSign }
+            };
+
+        std::vector<IconShape> icons;
+        const auto iconValues = iconSchemeNode->GetValueStringVector();
+        if (iconValues.size() == 0)
+            { return nullptr; }
+        for (auto& icon : iconValues)
+            {
+            auto foundPos = values.find(std::wstring_view(icon.wc_str()));
+            if (foundPos != values.cend())
+                { icons.emplace_back(foundPos->second); }
+            }
+        if (icons.size() == 0)
+            { return nullptr; }
+        return std::make_shared<IconShapeScheme>(icons);
         }
 
     //---------------------------------------------------
