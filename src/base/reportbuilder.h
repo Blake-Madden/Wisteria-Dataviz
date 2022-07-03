@@ -68,7 +68,7 @@ namespace Wisteria
         /// @warning The node's graph-specific loading function should be called first, then
         ///     this should be called to finalize it and add it to the canvas.
         /// @todo many features still needed!
-        std::shared_ptr<Graphs::Graph2D> LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
                        Canvas* canvas, size_t& currentRow, size_t& currentColumn,
                        std::shared_ptr<Graphs::Graph2D> graph);
         /// @brief Loads a line plot node into the canvas.
@@ -78,7 +78,7 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
-        std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
@@ -104,7 +104,7 @@ namespace Wisteria
         /// @param columnRow The row count in the table.\n
         ///     This is what the constant @c "last-row" is expanded into (minus one).
         /// @returns The row or column position.
-        std::optional<size_t> LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
+        [[nodiscard]] std::optional<size_t> LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
             const size_t columnCount,
             const size_t columnRow);
 
@@ -124,21 +124,27 @@ namespace Wisteria
         ///     before loading properties.
         /// @returns A Label object, or null upon failure.
         /// @todo many features still needed!
-        std::shared_ptr<GraphItems::Label> LoadLabel(
+        [[nodiscard]] std::shared_ptr<GraphItems::Label> LoadLabel(
             const wxSimpleJSON::Ptr_t& labelNode,
             const GraphItems::Label labelTemplate);
 
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode Tne node to parse.
         /// @return The loaded color scheme, or null upon failure.
-        std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
+        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
         /// @brief Loads an icon scheme from a node.
         /// @param iconSchemeNode Tne node to parse.
         /// @return The loaded icon scheme, or null upon failure.
-        std::shared_ptr<IconShapeScheme> LoadIconScheme(
+        [[nodiscard]] std::shared_ptr<IconShapeScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
+
+        /// @brief Loads a color from a string.
+        /// @param colorStr The string to parse and converted into a color.
+        /// @returns The loaded color. Check with @c IsOk() to verify that the color
+        ///     was successfully loaded.
+        [[nodiscard]] static wxColour ConvertColor(wxString colorStr);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

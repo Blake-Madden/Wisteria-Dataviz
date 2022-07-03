@@ -172,11 +172,35 @@ Properties common to all graph items:
 - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
       Note that this is the unique name of the datasource loaded from the report's @c "datasources" section,
       not a filepath.\n
-      Also, this is optional if the item type doesn't require a datasource (e.g., a Wisteria::GraphItems::Label).
+      Also, this is optional if the item type doesn't require a datasource (e.g., a @c Wisteria::GraphItems::Label).
 - @c "title": the title of the graph, which contains ["label"](#label-properties) properties.
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
 - @c "axes": an array of ["axis"](#axis-properties) objects.
+- @c "icon-scheme": for graphs that support icon/marker schemes only.\n
+     This is an array of icon strings (which can be recycled):
+  - @c "blank-icon"
+  - @c "horizontal-line-icon"
+  - @c "arrow-right-icon"
+  - @c "circle-icon"
+  - @c "image-icon"
+  - @c "horizontal-separator"
+  - @c "horizontal-arrow-right-separator"
+  - @c "image-wholelegend"
+  - @c "color-gradient-icon"
+  - @c "square-icon"
+  - @c "triangle-upward-icon"
+  - @c "triangle-downward-icon"
+  - @c "triangle-right-icon"
+  - @c "triangle-left-icon"
+  - @c "diamond-icon"
+  - @c "cross-icon"
+  - @c "asterisk-icon"
+  - @c "hexagon-icon"
+  - @c "box-plot-icon"
+  - @c "location-marker"
+  - @c "go-road-sign"
+  - @c "warning-road-sign"
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     The options are:\n
@@ -217,3 +241,7 @@ Properties common to all items:
   control how tall its canvas row is.
 - @c "fit-to-content-width": a boolean value specifying whether the item should be constrained
   to its calculated width within its row.
+
+# Notes
+Color values can be either hex encoded (e.g., "#FF0000" for red) or a named value ("pumpkin"). For a full list
+of color names available, refer to the @c Wisteria::Colors::Color enumeration.

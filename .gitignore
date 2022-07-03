@@ -3,7 +3,8 @@
 /build/
 /docs/doxygen/html/
 CMakeSettings.json
-tools/ColorCode.txt
+/tools/ColorCode.txt
+/tools/ColorReportMap.txt
 
 # any documents
 *.docx

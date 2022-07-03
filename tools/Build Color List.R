@@ -9,8 +9,10 @@ library(janitor)
 # and be sure to add a hex-encoded value next to it [tab between the color name
 # and hex value].)
 #
-# After running this, copy the contents of ColorCode.txt into ColorBrewer.h
-# and ColorBrewer.cpp.
+# After running this, copy the contents of ColorCode.txt into colorbrewer.h
+# and colorbrewer.cpp.
+# Also, copy the content of ColorReportMap.txt into the constant map in
+# ReportBuilder::ConvertColor() (reportbuilder.cpp)
 
 dataFolder <- dirname(rstudioapi::getSourceEditorContext()$path)
 
@@ -20,8 +22,8 @@ previousColorData <- read_delim(str_glue("{dataFolder}/Colors.txt"),
                           trim_ws = TRUE, lazy = FALSE) %>%
   mutate("Hex"=stringi::stri_trans_toupper(`Hex`))
 
-# uncomment this to re-read content from colorhexa,
-# although the list used maintained now removed a few colors that seemed redundant
+# uncomment this to re-read content from colorhexa.
+# Not recommended though, as the current list removed a few colors that seemed redundant.
 #colorData <- html_table(read_html("https://www.colorhexa.com/color-names"))[[1]] %>%
 # dplyr::select(c("Color name", "Hex")) %>%
 #  mutate("Color name"=stringi::stri_trans_general(`Color name`, 'Latin-ASCII')) %>%
@@ -43,6 +45,7 @@ colorData <- previousColorData %>%
 
 colorData %<>%
   arrange(`Color name`) %>%
+  mutate(FullColorName = str_glue('Colors::Color::{`Color name`}')) %>%
   mutate("Values"=str_glue('L"{`Hex`}", ')) %>%
   mutate("Enum"=str_glue("{`Color name`},{strrep(' ', (max(nchar(`Color name`))+1)-nchar(`Color name`))}///< \\htmlonly <div style='background-color:{`Hex`}; width:50px;'>&nbsp;</div> \\endhtmlonly"))
 
@@ -66,3 +69,8 @@ write_tsv(colorData %>% dplyr::select(c("Color name", "Hex")), str_glue("{dataFo
 
 # this is where the content for the ColorBrewer class will go
 write_file(str_glue("{enumsStr}\r\n{valuesStr}"), str_glue("{dataFolder}/ColorCode.txt"))
+
+# the map file ReportBuilder
+write_file(str_flatten(str_glue('{ L"[str_to_lower(colorData$`Color name`)]", [colorData$FullColorName] },\r\n',
+                    .open='[', .close=']')),
+                    str_glue("{dataFolder}/ColorReportMap.txt"))
