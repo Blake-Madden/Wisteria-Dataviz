@@ -411,7 +411,9 @@ namespace Wisteria
             if (variablesNode->IsOk())
                 {
                 auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
-                auto linePlot = std::make_shared<LinePlot>(canvas);
+
+                auto linePlot = std::make_shared<LinePlot>(canvas,
+                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
                 linePlot->SetData(foundPos->second,
                     variablesNode->GetProperty(L"y")->GetValueString(),
                     variablesNode->GetProperty(L"x")->GetValueString(),
@@ -677,6 +679,19 @@ namespace Wisteria
             { position.value() += doubleStartOffset.value(); }
 
         return position;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Colors::Schemes::ColorScheme> ReportBuilder::LoadColorScheme(
+        const wxSimpleJSON::Ptr_t& colorSchemeNode)
+        {
+        std::vector<wxColour> colors;
+        const auto colorValues = colorSchemeNode->GetValueArrayString();
+        if (colorValues.size() == 0)
+            { return nullptr; }
+        for (auto& color : colorValues)
+            { colors.emplace_back(wxColour(color)); }
+        return std::make_shared<Colors::Schemes::ColorScheme>(colors);
         }
 
     //---------------------------------------------------

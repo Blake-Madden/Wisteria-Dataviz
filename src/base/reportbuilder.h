@@ -14,6 +14,7 @@
 
 #include "canvas.h"
 #include "commonaxisbuilder.h"
+#include "colorbrewer.h"
 #include "../data/dataset.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/table.h"
@@ -126,6 +127,9 @@ namespace Wisteria
         std::shared_ptr<GraphItems::Label> LoadLabel(
             const wxSimpleJSON::Ptr_t& labelNode,
             const GraphItems::Label labelTemplate);
+
+        std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
+            const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

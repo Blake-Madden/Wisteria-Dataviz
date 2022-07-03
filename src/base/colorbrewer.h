@@ -781,8 +781,17 @@ namespace Wisteria::Colors
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
-                 be added to this list of colors, essentially double the color count.*/
+                    be added to this list of colors, essentially double the color count.*/
             ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors)
+                {}
+            /** @brief Constructor.
+                @param colors The initializer list of colors to fill the scheme with.
+                @note A series of shaded or tinted versions of these colors will also
+                    be added to this list of colors, essentially double the color count.*/
+            ColorScheme(const std::vector<wxColour>& colors) : m_colors(colors)
+                {}
+            /// @private
+            ColorScheme(std::vector<wxColour>&& colors) : m_colors(std::move(colors))
                 {}
             /** @brief Gets the list of colors from the scheme.
                 @returns The colors.*/
@@ -808,7 +817,7 @@ namespace Wisteria::Colors
                     (index < m_colors.size()) ?
                     m_colors.at(index) :
                     (index < m_colors.size()*2) ?
-                    ColorContrast::ShadeOrTint(m_colors.at(index%m_colors.size())) :
+                    ColorContrast::ShadeOrTint(m_colors.at(index % m_colors.size())) :
                     *wxBLACK;
                 }
             /** @brief Gets the color from a given index and applies an opacity value to it.
