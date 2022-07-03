@@ -15,13 +15,15 @@ namespace Wisteria
         m_datasets.clear();
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
+        m_configFilePath = filePath;
+
         std::vector<Canvas*> reportPages;
         std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
 
         wxASSERT_MSG(parent, L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
             { return reportPages; }
-        auto json = wxSimpleJSON::LoadFile(filePath);
+        auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
             { return reportPages; }
 
@@ -264,7 +266,7 @@ namespace Wisteria
                 if (datasource->IsOk())
                     {
                     const wxString dsName = datasource->GetProperty(L"name")->GetValueString();
-                    const wxString path = datasource->GetProperty(L"path")->GetValueString();
+                    wxString path = datasource->GetProperty(L"path")->GetValueString();
                     const wxString parser = datasource->GetProperty(L"parser")->GetValueString();
                     // read the variables info
                     //------------------------
@@ -360,6 +362,15 @@ namespace Wisteria
                         throw std::runtime_error(
                             wxString(_(L"Dataset must have a valid parser type specified.")).
                                     ToUTF8());
+                        }
+                    if (!wxFileName::FileExists(path))
+                        {
+                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                        if (!wxFileName::FileExists(path))
+                            {
+                            throw std::runtime_error(
+                                wxString(_(L"Dataset not found.")).ToUTF8());
+                            }
                         }
                     if (parser.CmpNoCase(L"csv") == 0)
                         {
@@ -673,8 +684,22 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& imageNode,
         Canvas* canvas, size_t& currentRow, size_t& currentColumn)
         {
-        auto image = std::make_shared<GraphItems::Image>(
-            imageNode->GetProperty(L"path")->GetValueString());
+        auto path = imageNode->GetProperty(L"path")->GetValueString();
+        if (path.empty())
+            {
+            throw std::runtime_error(
+                wxString(_(L"image must have a filepath.")).ToUTF8());
+            }
+        if (!wxFileName::FileExists(path))
+            {
+            path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+            if (!wxFileName::FileExists(path))
+                {
+                throw std::runtime_error(
+                    wxString(_(L"image not found.")).ToUTF8());
+                }
+            }
+        auto image = std::make_shared<GraphItems::Image>(path);
         if (image->IsOk())
             {
             LoadItem(imageNode, image);

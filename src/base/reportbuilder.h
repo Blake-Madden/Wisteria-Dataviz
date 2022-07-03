@@ -142,6 +142,8 @@ namespace Wisteria
             };
         std::vector<CommonAxisPlaceholder> m_commonAxesPlaceholders;
         double m_dpiScaleFactor{ 1.0 };
+
+        wxString m_configFilePath;
         };
     };
 
