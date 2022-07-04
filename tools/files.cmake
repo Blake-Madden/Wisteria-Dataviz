@@ -13,6 +13,7 @@ SET(WISTERIA_SRC
     src/base/points.cpp
     src/base/polygon.cpp
     src/base/reportbuilder.cpp
+    src/base/reportprintout.cpp
     src/base/shapes.cpp
     src/data/dataset.cpp
     src/data/textclassifier.cpp

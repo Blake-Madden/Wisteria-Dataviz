@@ -76,7 +76,7 @@ namespace Wisteria
     class Canvas final : public wxScrolledWindow
         {
     public:
-        friend class CanvasPrintout;
+        friend class ReportPrintout;
 
         /// @brief Class describing a row of items on the canvas.
         class CanvasRowInfo
