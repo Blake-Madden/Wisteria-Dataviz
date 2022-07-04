@@ -219,7 +219,7 @@ Properties common to all graph items:
 ## All Items {#item-properties}
 Properties common to all items:
 - @c "id": a (unique) numeric identifier for the item. This can be referenced by other items in the report.\n
-  An example can be adding an ID to a graph and then inserted a ["common-axis](#common-axis-properties) to the
+  An example can be adding an ID to a graph and then inserted a ["common-axis"](#common-axis-properties) to the
   report that accepts this ID.
 - @c "canvas-margin": a numeric array (one to four numbers), representing the item's canvas margin going clockwise,
   starting at 12 o'clock.
@@ -250,5 +250,5 @@ Properties common to all items:
   to its calculated width within its row.
 
 # Notes
-Color values can be either hex encoded (e.g., "#FF0000" for red) or a named value ("pumpkin"). For a full list
+Color values can either be hex encoded (e.g., "#FF0000" for red) or a named value ("pumpkin"). For a full list
 of color names available, refer to the @c Wisteria::Colors::Color enumeration.
