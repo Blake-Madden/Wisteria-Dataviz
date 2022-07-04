@@ -100,13 +100,14 @@ MyFrame::MyFrame()
     InitToolBar(GetToolBar());
 
     // Accelerators
-    wxAcceleratorEntry entries[6];
+    wxAcceleratorEntry entries[7];
     entries[0].Set(wxACCEL_CTRL, L'N', wxID_NEW);
     entries[1].Set(wxACCEL_CTRL, L'X', wxID_EXIT);
     entries[2].Set(wxACCEL_CTRL, L'A', wxID_ABOUT);
     entries[3].Set(wxACCEL_CTRL, L'S', wxID_SAVE);
     entries[4].Set(wxACCEL_CTRL, L'P', wxID_PRINT);
     entries[5].Set(wxACCEL_CTRL, L'C', wxID_COPY);
+    entries[6].Set(wxACCEL_CTRL, L'O', wxID_OPEN);
     wxAcceleratorTable accel(std::size(entries), entries);
     SetAcceleratorTable(accel);
 
@@ -140,6 +141,7 @@ MyFrame::MyFrame()
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
+    Bind(wxEVT_MENU, &MyFrame::OnOpenProject, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MyFrame::OnSaveWindow, this, wxID_SAVE);
     Bind(wxEVT_MENU, &MyFrame::OnPrintWindow, this, wxID_PRINT);
     Bind(wxEVT_MENU, &MyFrame::OnCopyWindow, this, wxID_COPY);
@@ -260,12 +262,21 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     wxAboutBox(aboutInfo, this);
     }
 
+void MyFrame::OnOpenProject(wxCommandEvent& event)
+    {
+    // create and show another child frame
+    MyChild* subframe = new MyChild(this, L"c:/users/madin/desktop/project.json");
+
+    subframe->Maximize(true);
+    subframe->Show(true);
+    }
+
 void MyFrame::OnNewWindow(wxCommandEvent& event)
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
 
     // create and show another child frame
-    MyChild* subframe = new MyChild(this);
+    MyChild* subframe = new MyChild(this, std::nullopt);
 
     // Box Plot
     if (event.GetId() == MyApp::ID_NEW_BOXPLOT)
@@ -1955,10 +1966,29 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
 // MyChild
 // ---------------------------------------------------------------------------
 
-MyChild::MyChild(wxMDIParentFrame *parent)
+MyChild::MyChild(wxMDIParentFrame *parent, std::optional<wxString> configFile)
        : wxMDIChildFrame(parent, wxID_ANY, L"")
     {
-    m_canvas = new Wisteria::Canvas{ this };
+    if (configFile.has_value())
+        {
+        wxFileDialog dialog(this, _(L"Open Project"), wxEmptyString, GetLabel(),
+            _(L"Project File (*.json)|*.json"),
+            wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+
+        if (dialog.ShowModal() != wxID_OK)
+            { return; }
+
+        ReportBuilder rb;
+        auto report = rb.LoadConfigurationFile(dialog.GetPath(), this);
+        // failed to load any pages
+        if (report.size() == 0)
+            { return; }
+
+        // currently, this demo will just show the first page from the report
+        m_canvas = report[0];
+        }
+    else
+        { m_canvas = new Wisteria::Canvas{ this }; }
 
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
     const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");

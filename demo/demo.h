@@ -17,26 +17,27 @@
 #include <wx/filename.h>
 #include <wx/aboutdlg.h>
 #include <wx/uilocale.h>
-#include "../src/base/image.h"
 #include "../src/base/canvas.h"
 #include "../src/base/commonaxisbuilder.h"
+#include "../src/base/image.h"
 #include "../src/base/label.h"
-#include "../src/import/text_matrix.h"
-#include "../src/util/logfile.h"
+#include "../src/base/reportbuilder.h"
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
-#include "../src/graphs/histogram.h"
-#include "../src/graphs/ganttchart.h"
-#include "../src/graphs/lineplot.h"
-#include "../src/graphs/wcurveplot.h"
-#include "../src/graphs/heatmap.h"
-#include "../src/graphs/piechart.h"
-#include "../src/graphs/likertchart.h"
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
+#include "../src/graphs/ganttchart.h"
+#include "../src/graphs/heatmap.h"
+#include "../src/graphs/histogram.h"
+#include "../src/graphs/likertchart.h"
+#include "../src/graphs/lineplot.h"
 #include "../src/graphs/lrroadmap.h"
+#include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/table.h"
+#include "../src/graphs/wcurveplot.h"
+#include "../src/import/text_matrix.h"
+#include "../src/util/logfile.h"
 
 // Define a new application
 class MyApp final : public wxApp
@@ -84,6 +85,7 @@ private:
 
     void OnAbout([[maybe_unused]]wxCommandEvent& event);
     void OnNewWindow(wxCommandEvent& event);
+    void OnOpenProject(wxCommandEvent& event);
     void OnQuit([[maybe_unused]]wxCommandEvent& event);
     void OnCloseAll([[maybe_unused]]wxCommandEvent& event);
     void OnClose([[maybe_unused]]wxCommandEvent& event);
@@ -96,7 +98,7 @@ class MyChild final : public wxMDIChildFrame
     {
     friend MyFrame;
 public:
-    MyChild(wxMDIParentFrame* parent);
+    MyChild(wxMDIParentFrame* parent, std::optional<wxString> configFile);
 private:
     Wisteria::Canvas* m_canvas{ nullptr };
     };
