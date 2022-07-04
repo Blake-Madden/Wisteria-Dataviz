@@ -30,7 +30,7 @@ namespace Wisteria
             @param pageNum The page number to check for.
             @note Page # is 1-indexed.*/
         bool HasPage(int pageNum) noexcept final
-            { return (pageNum > 0 && pageNum <= m_canvases.size()); }
+            { return (pageNum > 0 && static_cast<size_t>(pageNum) <= m_canvases.size()); }
         /** @brief Retrieves page information for printing.
             @param[out] minPage The lowest possible page index.
             @param[out] maxPage The highest possible page index.
