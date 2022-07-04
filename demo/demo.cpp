@@ -1553,7 +1553,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
 
         // when printing, make it landscape and stretch it to fill the entire page
-        subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
+        subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
     // Multiple plots
@@ -1642,7 +1642,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->CalcRowDimensions();
 
         // set the canvas's print orientation to landscape
-        subframe->m_canvas->GetPrinterData().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
+        subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
         }
     // multiple plots with a common axis
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS)

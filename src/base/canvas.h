@@ -241,8 +241,8 @@ namespace Wisteria
         /// @{
 
         /// @brief Sets the aspect ratio of the canvas to its printer settings.
-        /// @details Call this after setting the paper size and orientation via SetPrinterData().
-        /// @sa SetPrinterData().
+        /// @details Call this after setting the paper size and orientation via SetPrinterSettings().
+        /// @sa SetPrinterSettings().
         void SetSizeFromPaperSize();
         /// @returns The minimum width that the canvas can be, it will be forced to be this
         ///     wide even as its parent is resized.
@@ -471,12 +471,12 @@ namespace Wisteria
 
         /** @brief Sets the printer data, which includes paper size, orientation, etc.
             @param printData The printer data (i.e., system print settings).*/
-        void SetPrinterData(const wxPrintData& printData) noexcept
+        void SetPrinterSettings(const wxPrintData& printData) noexcept
             { m_printData = printData; }
         /** @brief Access the printer data. This is useful for changing the print
                 settings for the canvas (e.g., changing the paper orientation).
             @returns The printer data.*/
-        [[nodiscard]] wxPrintData& GetPrinterData() noexcept
+        [[nodiscard]] wxPrintData& GetPrinterSettings() noexcept
             { return m_printData; }
 
         /// @returns @c true If fitting the canvas's content to the full page when printing.
@@ -625,7 +625,7 @@ namespace Wisteria
             }
 
         /// @private
-        [[nodiscard]] const wxPrintData& GetPrinterData() const noexcept
+        [[nodiscard]] const wxPrintData& GetPrinterSettings() const noexcept
             { return m_printData; }
         /// @private
         void SetBackgroundImage(wxBitmapBundle&& backgroundImage,
@@ -659,8 +659,7 @@ namespace Wisteria
         /// @brief Divides the width of a row into columns, taking into account items
         ///     whose width should not be more than its content (at default scaling).
         /// @param row The row to calculate.
-        /// @param column The column of the object altering the column widths.
-        void CalcColumnWidths(const size_t row, const size_t column);
+        void CalcColumnWidths(const size_t row);
         /// @returns The background image being drawn on the canvas.
         [[nodiscard]] wxBitmapBundle& GetBackgroundImage() noexcept
             { return m_bgImage; }

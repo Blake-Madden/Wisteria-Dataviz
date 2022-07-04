@@ -24,9 +24,9 @@ namespace Wisteria
         {
         auto printOut = std::make_unique<ReportPrintout>(std::vector<Canvas*>{ this }, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
-        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
+        wxPrinterDC dc = wxPrinterDC(GetPrinterSettings());
     #else
-        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterSettings());
     #endif
         printOut->SetUp(dc);
 
@@ -52,9 +52,9 @@ namespace Wisteria
         {
         auto printOut = std::make_unique<ReportPrintout>(std::vector<Canvas*>{ this }, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
-        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
+        wxPrinterDC dc = wxPrinterDC(GetPrinterSettings());
     #else
-        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterSettings());
     #endif
         printOut->SetUp(dc);
 
@@ -62,7 +62,7 @@ namespace Wisteria
         PrintFitToPageChanger fpc(this, printOut.get());
 
         wxPrinter printer;
-        printer.GetPrintDialogData().SetPrintData(GetPrinterData());
+        printer.GetPrintDialogData().SetPrintData(GetPrinterSettings());
         if (!printer.Print(this, printOut.get(), true) )
             {
             // just show a message if a real error occurred. They may have just cancelled.
@@ -73,7 +73,7 @@ namespace Wisteria
                                 _(L"Print"), wxOK|wxICON_WARNING);
                 }
             }
-        SetPrinterData(printer.GetPrintDialogData().GetPrintData());
+        SetPrinterSettings(printer.GetPrintDialogData().GetPrintData());
         }
 
     //------------------------------------------------------
@@ -88,11 +88,11 @@ namespace Wisteria
         ReportPrintout* printOutForPrinting =
             new ReportPrintout(std::vector<Canvas*>{ this }, GetLabel());
     #if defined(__WXMSW__) || defined(__WXOSX__)
-        wxPrinterDC dc = wxPrinterDC(GetPrinterData());
-        wxPrinterDC dc2 = wxPrinterDC(GetPrinterData());
+        wxPrinterDC dc = wxPrinterDC(GetPrinterSettings());
+        wxPrinterDC dc2 = wxPrinterDC(GetPrinterSettings());
     #else
-        wxPostScriptDC dc = wxPostScriptDC(GetPrinterData());
-        wxPostScriptDC dc2 = wxPostScriptDC(GetPrinterData());
+        wxPostScriptDC dc = wxPostScriptDC(GetPrinterSettings());
+        wxPostScriptDC dc2 = wxPostScriptDC(GetPrinterSettings());
     #endif
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
@@ -102,7 +102,7 @@ namespace Wisteria
 
         // wxPreviewFrame make take ownership, don't use smare pointer here
         wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting,
-                                                     &GetPrinterData());
+                                                     &GetPrinterSettings());
         if (!preview->IsOk())
             {
             wxDELETE(preview);
@@ -719,7 +719,8 @@ namespace Wisteria
             if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
                 {
                 m_debugInfo += wxString::Format(L"Row %s: height %s, proportion %s\n",
-                                wxNumberFormatter::ToString(currentRowIndex),
+                                wxNumberFormatter::ToString(currentRowIndex, 0,
+                                                            wxNumberFormatter::Style::Style_None),
                                 wxNumberFormatter::ToString(rowHeight, 0,
                                     wxNumberFormatter::Style::Style_WithThousandsSep),
                                 wxNumberFormatter::ToString(
@@ -981,7 +982,7 @@ namespace Wisteria
                 if (object != nullptr && object->IsFittingContentWidthToCanvas())
                     {
                     object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
-                    CalcColumnWidths(currentRow, currentColumn);
+                    CalcColumnWidths(currentRow);
                     }
                 validObjectsInRow += ((object != nullptr) ? 1 : 0);
                 ++currentColumn;
@@ -1103,7 +1104,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void Canvas::CalcColumnWidths(const size_t row, const size_t column)
+    void Canvas::CalcColumnWidths(const size_t row)
         {
         // how much of the canvas is being consumed by the row
         // that this item was just added to
@@ -1191,7 +1192,7 @@ namespace Wisteria
             [](const auto initVal, const auto& item) noexcept
             { return initVal + (item == nullptr ? 0 : 1); });
         if (validItemsInRow > 0)
-            { CalcColumnWidths(row, column); }
+            { CalcColumnWidths(row); }
         }
 
     // override the paint event so that we can use double buffering
