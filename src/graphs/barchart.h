@@ -811,7 +811,7 @@ namespace Wisteria::Graphs
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
 
         /// @private
-        [[deprecated("Base barcharts do not support legend building.")]]
+        /// @brief Base barcharts do not support legend building.
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
