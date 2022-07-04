@@ -2,6 +2,7 @@
 
 using namespace Wisteria::Data;
 using namespace Wisteria::Graphs;
+using namespace Wisteria::GraphItems;
 
 namespace Wisteria
     {
@@ -156,6 +157,7 @@ namespace Wisteria
                                             commonAxisInfo.m_commonPerpendicularAxis) :
                                         CommonAxisBuilder::BuildRightAxis(canvas,
                                             childGraphs);
+                                    LoadAxis(commonAxisInfo.m_node, *commonAxis);
                                     LoadItem(commonAxisInfo.m_node, commonAxis);
                                     // force the row to its height and no more
                                     commonAxis->FitCanvasHeightToContent(true);
@@ -199,12 +201,28 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
         {
+        static const std::map<std::wstring_view, Axis::TickMark::DisplayType> values =
+            {
+            { L"inner", Axis::TickMark::DisplayType::Inner },
+            { L"outer", Axis::TickMark::DisplayType::Outer },
+            { L"crossed", Axis::TickMark::DisplayType::Crossed },
+            { L"no-display", Axis::TickMark::DisplayType::NoDisplay }
+            };
+
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
             auto titleLabel = LoadLabel(titleProperty, GraphItems::Label());
             if (titleLabel != nullptr)
                 { axis.GetTitle() = *titleLabel; }
+            }
+        const auto tickmarksProperty = axisNode->GetProperty(L"tickmarks");
+        if (tickmarksProperty->IsOk())
+            {
+            const auto display = tickmarksProperty->GetProperty(L"display")->GetValueString().Lower();
+            auto foundPos = values.find(std::wstring_view(display.wc_str()));
+            if (foundPos != values.cend())
+                { axis.SetTickMarkDisplay(foundPos->second); }
             }
         }
 

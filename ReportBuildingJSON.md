@@ -71,6 +71,13 @@ Properties for @c "axis" nodes:
   - @c "left-y"
   - @c "top-y"
 - @c "title": the title of the axis, which contains ["label"](#label-properties) properties.
+- @c "tickmarks": tickmarks settings, which contains the following properties:
+  - @c "display": a string, indicating how to display the tickmarks.\n
+     The options are:
+    - @c "inner"
+    - @c "outer"
+    - @c "crossed"
+    - @c "no-display"
 
 ## Common Axis {#common-axis-properties}
 Properties for @c "common-axis" nodes:
