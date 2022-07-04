@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "heatmap.h"
-#include "../util/frequency_set.h"
+#include "../util/frequencymap.h"
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::GraphItems;

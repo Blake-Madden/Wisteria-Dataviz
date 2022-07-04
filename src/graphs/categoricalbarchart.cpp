@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "categoricalbarchart.h"
-#include "../util/frequency_set.h"
+#include "../util/frequencymap.h"
 #include "../math/statistics.h"
 
 using namespace Wisteria::GraphItems;

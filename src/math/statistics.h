@@ -22,10 +22,10 @@
 #include <execution>
 #include "mathematics.h"
 #include "safe_math.h"
-#include "../util/frequency_set.h"
+#include "../util/frequencymap.h"
 #include "../debug/debug_assert.h"
 
-/// Namespace for statistics classes.
+/// @brief Namespace for statistics classes.
 namespace statistics
     {
     /** @returns The valid (non-NaN) number of observations from the specified range.

@@ -15,7 +15,7 @@
 #include <algorithm>
 #include "../math/safe_math.h"
 #include "../math/mathematics.h"
-#include "../util/frequency_set.h"
+#include "../util/frequencymap.h"
 #include "../base/graphitems.h"
 #include "../base/axis.h"
 

@@ -13,7 +13,7 @@
 #define __WISTERIA_TEXT_CLASSIFIER_H__
 
 #include "dataset.h"
-#include "../util/frequency_set.h"
+#include "../util/frequencymap.h"
 
 namespace Wisteria::Data
     {
