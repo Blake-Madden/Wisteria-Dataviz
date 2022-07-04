@@ -95,7 +95,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling)
+    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc, [[maybe_unused]] const double parentScaling)
         {
         InvalidateCachedBoundingBox();
 
@@ -719,7 +719,7 @@ namespace Wisteria::GraphItems
                              std::max(scaledIconPen.GetWidth(), 2) :
                              scaledIconPen.GetWidth())) );
                     }
-                wxDCPenChanger pc2(dc, scaledIconPen);
+                wxDCPenChanger pc3(dc, scaledIconPen);
                 wxDCBrushChanger bc2(dc, iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush());
                 const size_t currentIndex = (iconPos-GetLegendIcons().begin());
                 wxCoord middleOfCurrentRow =
@@ -769,7 +769,7 @@ namespace Wisteria::GraphItems
                         break;
                     case IconShape::WarningRoadSign:
                         {
-                        wxDCPenChanger pc3(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
+                        wxDCPenChanger pc4(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
                         const auto circleCenter = contentBoundingBox.GetLeftTop() +
                             wxPoint(iconMiddleX, middleOfCurrentRow);
                         polygonPoints[0] = circleCenter + wxPoint(0, -iconRadius);
@@ -807,7 +807,7 @@ namespace Wisteria::GraphItems
                             iconRadius);
                         // inner ring
                             {
-                            wxDCPenChanger pc3(dc,
+                            wxDCPenChanger pc4(dc,
                                 ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
                             wxDCBrushChanger bc3(dc,
                                 ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
@@ -817,7 +817,7 @@ namespace Wisteria::GraphItems
                             }
                         // center (1/3 the size of outer ring)
                             {
-                            wxDCPenChanger pc3(dc, *wxWHITE_PEN);
+                            wxDCPenChanger pc4(dc, *wxWHITE_PEN);
                             wxDCBrushChanger bc3(dc, *wxWHITE_BRUSH);
                             dc.DrawCircle(contentBoundingBox.GetLeftTop() +
                                 wxPoint(iconMiddleX, middleOfCurrentRow),

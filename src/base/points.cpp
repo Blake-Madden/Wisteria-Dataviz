@@ -508,7 +508,7 @@ namespace Wisteria::GraphItems
                         ScaleToScreenAndCanvas(GetRadius()));
                     // secondary ring
                         {
-                        wxDCPenChanger pc(dc,
+                        wxDCPenChanger pc2(dc,
                             wxPen(ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4),
                                   ScaleToScreenAndCanvas(1)));
                         wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));

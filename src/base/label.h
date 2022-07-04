@@ -171,7 +171,7 @@ namespace Wisteria::GraphItems
              If the label isn't wide/tall enough to fill the bounding box precisely
              width- and length-wise, then it will be anchored.\n
              Call SetAnchoring() to control how it is anchored.*/
-        void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, wxDC& dc, [[maybe_unused]] const double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.

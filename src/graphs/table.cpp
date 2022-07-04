@@ -27,16 +27,16 @@ namespace Wisteria::Graphs
                     wxNumberFormatter::Style::Style_WithThousandsSep);
                 }
             }
-        else if (const auto dVal{ std::get_if<std::pair<double, double>>(&m_value) };
-                 dVal != nullptr)
+        else if (const auto doubleVal{ std::get_if<std::pair<double, double>>(&m_value) };
+                 doubleVal != nullptr)
             {
-            if (std::isnan(dVal->first) || std::isnan(dVal->second))
+            if (std::isnan(doubleVal->first) || std::isnan(doubleVal->second))
                 { return wxEmptyString; }
-            if (dVal->first > dVal->second)
+            if (doubleVal->first > doubleVal->second)
                 {
                 return wxString::Format(L"%s : 1",
                     wxNumberFormatter::ToString(
-                        safe_divide(dVal->first, dVal->second), m_precision,
+                        safe_divide(doubleVal->first, doubleVal->second), m_precision,
                         wxNumberFormatter::Style::Style_WithThousandsSep |
                         wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
@@ -44,17 +44,17 @@ namespace Wisteria::Graphs
                 {
                 return wxString::Format(L"1 : %s",
                     wxNumberFormatter::ToString(
-                        safe_divide(dVal->second, dVal->first), m_precision,
+                        safe_divide(doubleVal->second, doubleVal->first), m_precision,
                         wxNumberFormatter::Style::Style_WithThousandsSep |
                         wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             }
-        else if (const auto dVal{ std::get_if<wxDateTime>(&m_value) };
-                 dVal != nullptr)
+        else if (const auto doubleVal2{ std::get_if<wxDateTime>(&m_value) };
+                 doubleVal2 != nullptr)
             {
-            if (!dVal->IsValid())
+            if (!doubleVal2->IsValid())
                 { return wxEmptyString; }
-            return dVal->FormatDate();
+            return doubleVal2->FormatDate();
             }
         else
             { return wxEmptyString; }
@@ -84,7 +84,6 @@ namespace Wisteria::Graphs
             row < GetRowCount() &&
             column < m_table[row].size())
             {
-            const auto& cell = GetCell(row, column);
             int parentRow = row - 1;
             while (parentRow >= 0)
                 {
@@ -112,7 +111,6 @@ namespace Wisteria::Graphs
             column < GetColumnCount() &&
             row < GetRowCount())
             {
-            const auto& cell = GetCell(row, column);
             int parentColumn = column - 1;
             while (parentColumn >= 0)
                 {
@@ -386,7 +384,7 @@ namespace Wisteria::Graphs
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
-            for (auto& row : m_table)
+            for (const auto& row : m_table)
                 {
                 rowValues.clear();
                 // tally values from the whole row, unless a custom range was defined
@@ -1169,9 +1167,9 @@ namespace Wisteria::Graphs
                 if (!Polygon::IsRectInsideRect(bBox, rightGutter))
                     {
                     noteLabel->SplitTextToFitBoundingBox(dc, rightGutter.GetSize());
-                    const auto bBox = noteLabel->GetBoundingBox(dc);
+                    const auto boundBox = noteLabel->GetBoundingBox(dc);
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
-                                              wxPoint(0, bBox.GetHeight() / 2));
+                                              wxPoint(0, boundBox.GetHeight() / 2));
                     }
                 else
                     {
@@ -1222,9 +1220,9 @@ namespace Wisteria::Graphs
                 if (!Polygon::IsRectInsideRect(bBox, leftGutter))
                     {
                     noteLabel->SplitTextToFitBoundingBox(dc, leftGutter.GetSize());
-                    const auto bBox = noteLabel->GetBoundingBox(dc);
+                    const auto boundBox = noteLabel->GetBoundingBox(dc);
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
-                                              wxPoint(0, bBox.GetHeight() / 2));
+                                              wxPoint(0, boundBox.GetHeight() / 2));
                     }
                 else
                     {
