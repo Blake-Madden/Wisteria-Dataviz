@@ -510,6 +510,16 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxImage Image::LoadFile(const wxString& filePath)
         {
+        // if SVG, load it as such (using the embedded size and aspect ratio)
+        if (const wxFileName fn(filePath); fn.GetExt().MakeLower().CmpNoCase(L"svg") == 0)
+            {
+            const wxSize svgSize = GetSVGSize(filePath);
+
+            return wxBitmapBundle::FromSVGFile(filePath, svgSize).
+                GetBitmap(svgSize).ConvertToImage();
+            }
+
+        // otherwise, load as a raster image file
         try
             {
             MemoryMappedFile mappedImg(filePath, true, true);
