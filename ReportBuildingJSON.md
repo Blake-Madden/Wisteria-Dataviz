@@ -104,6 +104,8 @@ Properties for @c "label" nodes:
 - @c "background": the background color. This can be a either a color name or hex-encoded value.
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
+- @c "header": attributes to apply to the first row of the label.\nThe following sub-properties are available:
+  - @c "bold": @c true to make the header bold.
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
@@ -113,6 +115,9 @@ Properties for @c "table" nodes:
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
 - @c "min-height-proportion": the minimum percent of the drawing area's height that the table should consume
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
+- @c "highlight-pen": the pen used for highlighting cells, which includes these properties:
+  - @c "color": the pen color. This can be a either a color name or hex-encoded value.
+  - @c "width": the width of the pen's line.
 The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
@@ -155,6 +160,8 @@ The remaining properties are executed in the following order:
        The can either be a number, or the string @c "all" (meaning all rows).
   - @c "value": a numeric, string, or null value to assign to the cell.
   - @c "background": the background color. This can be a either a color name or hex-encoded value.
+  - @c "bold": @c true to make the cell bold.
+  - @c "highlight": @c true to highlight the cell.
   - @c "show-borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "horizontal-page-alignment": how to horizontally align the item within its area.\n
@@ -227,6 +234,7 @@ Properties common to all items:
   starting at 12 o'clock.
 - @c "pen": the item's pen, which includes these properties:
   - @c "color": the pen color. This can be a either a color name or hex-encoded value.
+  - @c "width": the width of the pen's line.
 - @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).\n
   The options are:\n
   - @c "flush-left"

@@ -199,6 +199,22 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen)
+        {
+        if (penNode->IsOk())
+            {
+            const wxColour penColor(
+                ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
+            if (penColor.IsOk())
+                { pen.SetColour(penColor); }
+            if (penNode->GetProperty(L"width")->IsOk())
+                {
+                pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1));
+                }
+            }
+        }
+
+    //---------------------------------------------------
     void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
         {
         static const std::map<std::wstring_view, Axis::TickMark::DisplayType> values =
@@ -266,8 +282,25 @@ namespace Wisteria
                 { label->SetFontColor(color); }
 
             // font attributes
-            if (labelNode->GetProperty(L"bold")->GetValueBool())
-                { label->GetFont().MakeBold(); }
+            if (labelNode->GetProperty(L"bold")->IsOk())
+                {
+                labelNode->GetProperty(L"bold")->GetValueBool() ?
+                    label->GetFont().MakeBold() :
+                    label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                }
+
+            // header info
+            auto headerNode = labelNode->GetProperty(L"header");
+            if (headerNode->IsOk())
+                {
+                label->GetHeaderInfo().Enable(true);
+                if (headerNode->GetProperty(L"bold")->IsOk())
+                    {
+                    headerNode->GetProperty(L"bold")->GetValueBool() ?
+                        label->GetHeaderInfo().GetFont().MakeBold() :
+                        label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                    }
+                }
 
             LoadItem(labelNode, label);
             return label;
@@ -468,6 +501,8 @@ namespace Wisteria
             if (minHeightProp->IsOk())
                 { table->SetMinHeightProportion(minHeightProp->GetValueNumber()); }
 
+            LoadPen(graphNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
+
             const size_t originalColumnCount = table->GetColumnCount();
             const size_t originalRowCount = table->GetRowCount();
 
@@ -647,6 +682,22 @@ namespace Wisteria
                             ConvertColor(cellUpdate->GetProperty(L"background")->GetValueString()));
                         if (bgcolor.IsOk())
                             { currentCell.SetBackgroundColor(bgcolor); }
+
+                        // is it highlighted
+                        if (cellUpdate->GetProperty(L"highlight")->IsOk())
+                            {
+                            currentCell.Highlight(
+                                cellUpdate->GetProperty(L"highlight")->GetValueBool());
+                            }
+
+                        // font attributes
+                        if (cellUpdate->GetProperty(L"bold")->IsOk())
+                            {
+                            cellUpdate->GetProperty(L"bold")->GetValueBool() ?
+                                currentCell.GetFont().MakeBold() :
+                                currentCell.GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                            }
+
                         // outer border toggles
                         const auto outerBorderToggles =
                             cellUpdate->GetProperty(L"show-borders")->GetValueArrayBool();
@@ -1398,14 +1449,7 @@ namespace Wisteria
         else if (vPageAlignment.CmpNoCase(L"centered") == 0)
             { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
 
-        const auto penNode = itemNode->GetProperty(L"pen");
-        if (penNode->IsOk())
-            {
-            const wxColour penColor(
-                ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
-            if (penColor.IsOk())
-                { item->GetPen().SetColour(penColor); }
-            }
+        LoadPen(itemNode->GetProperty(L"pen"), item->GetPen());
 
         item->FitContentWidthToCanvas(
             itemNode->GetProperty(L"fit-to-content-width")->GetValueBool());

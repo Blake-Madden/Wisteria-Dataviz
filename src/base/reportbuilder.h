@@ -96,6 +96,11 @@ namespace Wisteria
         /// @param axis[in,out] The axis to apply the loaded settings to.
         void LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis);
 
+        /// @brief Loads properties from a JSON node into a pen.
+        /// @param penNode The node to parse.
+        /// @param pen[in,out] The pen to apply the loaded settings to.
+        void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen);
+
         /// @brief Loads a row or column position from a node.
         /// @details This support loading the @c origin and @c offset properties.
         /// @param positionNode The node to parse.
