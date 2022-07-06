@@ -251,7 +251,10 @@ namespace Wisteria::Graphs
             /// @brief Displays a number generically.
             General,
             /// @brief Displays a value such as @c 0.25 as @c 25%.
-            Percent
+            Percent,
+            /// @brief Displays numbers in accounting format.
+            /// @details For examle, a negative value would appear as `$    (5,000.00)`.
+            Accounting
             };
 
         /// @brief Types of values that can be used for a cell.
@@ -329,6 +332,15 @@ namespace Wisteria::Graphs
             /// @param highlight @c true to highlight the cell.
             void Highlight(const bool highlight) noexcept
                 { m_isHighlighted = highlight; }
+            /// @returns The character shown on the left edge of the cell.
+            [[nodiscard]] const wxString& GetPrefix() const noexcept
+                { return m_prefix; }
+            /// @brief Adds a character to be shown on the left edge of the cell.
+            /// @details This is usually something like a '$' (when using accounting formatting),
+            ///     where the character is separated from the main cell value.
+            /// @param prefix The character to display.
+            void SetPrefix(const wxString& prefix) noexcept
+                { m_prefix = prefix; }
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.
             void SetColumnCount(const int colCount) noexcept
@@ -371,6 +383,30 @@ namespace Wisteria::Graphs
                 @param alignment How to align the content.*/
             void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
                 { m_horizontalCellAlignment = alignment; }
+
+            /// @brief Sets the display format of the cell.
+            void SetFormat(const CellFormat cellFormat) noexcept
+                {
+                m_valueFormat = cellFormat;
+                if (m_valueFormat == CellFormat::General)
+                    {
+                    m_precision = 0;
+                    m_prefix.clear();
+                    m_horizontalCellAlignment = std::nullopt;
+                    }
+                else if (m_valueFormat == CellFormat::Percent)
+                    {
+                    m_precision = 0;
+                    m_prefix.clear();
+                    m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
+                    }
+                else if (m_valueFormat == CellFormat::Accounting)
+                    {
+                    m_precision = 2;
+                    m_prefix = L"$";
+                    m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
+                    }
+                }
         private:
             /// @brief Returns a double value representing the cell.
             /// @details This is useful for comparing cells (or aggregating them).
@@ -409,6 +445,8 @@ namespace Wisteria::Graphs
             uint8_t m_precision{ 0 };
             wxColour m_bgColor{ *wxWHITE };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
+            wxString m_prefix;
+
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
             std::optional<size_t> m_suggestedLineLength;
 

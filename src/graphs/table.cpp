@@ -21,6 +21,14 @@ namespace Wisteria::Graphs
                 return wxNumberFormatter::ToString((*dVal)*100, m_precision,
                     wxNumberFormatter::Style::Style_None) + L"%";
                 }
+            else if (m_valueFormat == CellFormat::Accounting)
+                {
+                return
+                    ((*dVal < 0) ? L"(" : L"") +
+                    wxNumberFormatter::ToString(*dVal, m_precision,
+                        wxNumberFormatter::Style::Style_WithThousandsSep) +
+                    ((*dVal < 0) ? L")" : L"");
+                }
             else
                 {
                 return wxNumberFormatter::ToString(*dVal, m_precision,
@@ -273,7 +281,7 @@ namespace Wisteria::Graphs
                 const auto oldValue = values.front();
                 const auto newValue = values.back();
                 aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
-                aggCell.m_valueFormat = CellFormat::Percent;
+                aggCell.SetFormat(CellFormat::Percent);
                 }
             else if (aggInfo.m_type == AggregateType::Ratio &&
                 values.size() > 1)
@@ -561,11 +569,14 @@ namespace Wisteria::Graphs
                 // make empty cells at least a space so that an empty
                 // row or column will at least have some width or height
                 const auto cellText = cell.GetDisplayValue();
-                measuringLabel.SetText(cellText.length() ? cellText : L" ");
+                measuringLabel.SetText((cellText.length() ? cellText : L" ") + cell.GetPrefix());
                 if (cell.m_suggestedLineLength.has_value())
                     { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 measuringLabel.SetFont(cell.m_font);
-                const auto bBox = measuringLabel.GetBoundingBox(dc);
+                auto bBox = measuringLabel.GetBoundingBox(dc);
+                // prefix will need 5 DPIs added to each side
+                if (cell.GetPrefix().length())
+                    { bBox.Inflate(wxSize(ScaleToScreenAndCanvas(5), 0)); }
                 // if cell consumes multiple rows, then divides its height across them
                 // and set the cells in the rows beneath to the remaining height
                 rowHeights[currentRow] =
@@ -705,7 +716,7 @@ namespace Wisteria::Graphs
             0;
         // space for connection lines to notes
         widestLeftNote += (widestLeftNote > 0) ?
-            (ScaleToScreenAndCanvas(m_connectionOverhangWidth)*2) +
+            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
                 ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
             0;
         widestRightNote += (widestRightNote > 0) ?
@@ -853,7 +864,13 @@ namespace Wisteria::Graphs
                                  (currentYPos + currentColumnHeight));
                 pts[3] = wxPoint(currentXPos, (currentYPos + currentColumnHeight));
 
-                const wxRect boxRect(pts[0], pts[2]);
+                wxRect boxRect(pts[0], pts[2]);
+                // if box is going outside of the table by a pixel or so, then trim that off
+                if (boxRect.GetRight() > drawArea.GetRight())
+                    {
+                    const auto rightEdgeOverhang = boxRect.GetRight() - drawArea.GetRight();
+                    boxRect.SetWidth(boxRect.GetWidth() - rightEdgeOverhang);
+                    }
 
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_shared<Label>(
@@ -871,7 +888,7 @@ namespace Wisteria::Graphs
                 if (cell.m_suggestedLineLength.has_value())
                     { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
-                // cache it for annotations
+                // cache it for annotations and highlights
                 m_cachedCellRects[currentRow][currentColumn] = boxRect;
                 cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                 // if an overriding horizontal alignment is in use, then use that
@@ -897,6 +914,27 @@ namespace Wisteria::Graphs
                 smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
 
                 cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
+
+                // special character at the far-left edge (e.g., '$' in accounting formatting)
+                if (cell.GetPrefix().length())
+                    {
+                    auto cellPrefixLabel = std::make_shared<Label>(
+                    GraphItemInfo(cell.GetPrefix()).
+                        Pen(wxNullPen).Padding(5, 5, 5, 5).
+                        Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                        Font(cell.m_font).
+                        FontColor(
+                            (cell.m_bgColor.IsOk() ?
+                                ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) : *wxBLACK)).
+                        FontBackgroundColor(wxTransparentColour).
+                        Anchoring(Anchoring::TopLeftCorner).
+                        AnchorPoint(boxRect.GetLeftTop()));
+                    cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
+                    cellPrefixLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                    cellPrefixLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
+                    cellLabels.push_back(cellPrefixLabel);
+                    }
+
                 currentXPos += columnWidths[currentColumn];
                 ++currentColumn;
                 }
