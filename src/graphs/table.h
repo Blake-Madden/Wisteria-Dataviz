@@ -397,7 +397,7 @@ namespace Wisteria::Graphs
                 else if (m_valueFormat == CellFormat::Percent)
                     {
                     m_precision = 0;
-                    m_prefix.clear();
+                    m_prefix = L"\x25B2"; // up arrow
                     m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
                     }
                 else if (m_valueFormat == CellFormat::Accounting)
@@ -446,6 +446,8 @@ namespace Wisteria::Graphs
             wxColour m_bgColor{ *wxWHITE };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             wxString m_prefix;
+            // setting to true will make the prefix red if the value is negative
+            bool m_colorCodePrefix{ false };
 
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
             std::optional<size_t> m_suggestedLineLength;

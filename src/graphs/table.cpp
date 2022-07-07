@@ -282,6 +282,7 @@ namespace Wisteria::Graphs
                 const auto newValue = values.back();
                 aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
                 aggCell.SetFormat(CellFormat::Percent);
+                aggCell.m_colorCodePrefix = true;
                 }
             else if (aggInfo.m_type == AggregateType::Ratio &&
                 values.size() > 1)
@@ -918,8 +919,11 @@ namespace Wisteria::Graphs
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (cell.GetPrefix().length())
                     {
+                    const wxString prefix = (cell.m_valueFormat == CellFormat::Percent) ?
+                        (cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
+                        cell.GetPrefix();
                     auto cellPrefixLabel = std::make_shared<Label>(
-                    GraphItemInfo(cell.GetPrefix()).
+                    GraphItemInfo(prefix).
                         Pen(wxNullPen).Padding(5, 5, 5, 5).
                         Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                         Font(cell.m_font).
@@ -929,6 +933,13 @@ namespace Wisteria::Graphs
                         FontBackgroundColor(wxTransparentColour).
                         Anchoring(Anchoring::TopLeftCorner).
                         AnchorPoint(boxRect.GetLeftTop()));
+                    if (cell.m_colorCodePrefix)
+                        {
+                        cellPrefixLabel->SetFontColor(
+                            (cell.GetDoubleValue() < 0) ?
+                            *wxRED :
+                            ColorBrewer::GetColor(Colors::Color::HunterGreen));
+                        }
                     cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
                     cellPrefixLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
                     cellPrefixLabel->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
