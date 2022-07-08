@@ -284,10 +284,17 @@ namespace Wisteria
             // font attributes
             if (labelNode->GetProperty(L"bold")->IsOk())
                 {
-                labelNode->GetProperty(L"bold")->GetValueBool() ?
-                    label->GetFont().MakeBold() :
-                    label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                if (labelNode->GetProperty(L"bold")->IsOk())
+                    {
+                    labelNode->GetProperty(L"bold")->GetValueBool() ?
+                        label->GetFont().MakeBold() :
+                        label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                    }
                 }
+
+            label->GetFont().SetFractionalPointSize(
+                label->GetFont().GetFractionalPointSize() *
+                labelNode->GetProperty(L"scaling")->GetValueNumber(1));
 
             // header info
             auto headerNode = labelNode->GetProperty(L"header");
@@ -300,6 +307,13 @@ namespace Wisteria
                         label->GetHeaderInfo().GetFont().MakeBold() :
                         label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
                     }
+                const wxColour color(
+                    ConvertColor(headerNode->GetProperty(L"color")->GetValueString()));
+                if (color.IsOk())
+                    { label->GetHeaderInfo().FontColor(color); }
+                label->GetHeaderInfo().GetFont().SetFractionalPointSize(
+                    label->GetHeaderInfo().GetFont().GetFractionalPointSize() *
+                    headerNode->GetProperty(L"scaling")->GetValueNumber(1));
                 }
 
             LoadItem(labelNode, label);
