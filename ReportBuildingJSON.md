@@ -104,13 +104,18 @@ Properties for @c "label" nodes:
 - @c "background": the background color. This can be a either a color name or hex-encoded value.
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
-- @c "scaling": numeric value of how much to scale the font size. For example, @c 2.0 will double the
-     label's default font size.
+- @c "text-alignment": how to align the label's text.\nThe available options are:
+  @c "flush-left" or "ragged-right".
+  @c "flush-right" or "ragged-left".
+  @c "centered".
+  @c "justified".
 - @c "header": attributes to apply to the first row of the label.\nThe following sub-properties are available:
   - @c "bold": @c true to make the header bold.
   - @c "color": the font color for the header. This can be a either a color name or hex-encoded value.
   - @c "scaling": numeric value of how much to scale the header's font size. For example, @c 2.0 will double the
-     header's default font size.
+     header's default font size.\n
+     Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-leve
+     @c "scaling" property.
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
@@ -240,6 +245,8 @@ Properties common to all items:
 - @c "pen": the item's pen, which includes these properties:
   - @c "color": the pen color. This can be a either a color name or hex-encoded value.
   - @c "width": the width of the pen's line.
+- @c "scaling": numeric value of how much to scale the object's size. For example, @c 2.0 will double the
+     its default size.
 - @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).\n
   The options are:\n
   - @c "flush-left"

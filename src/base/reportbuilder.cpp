@@ -292,9 +292,17 @@ namespace Wisteria
                     }
                 }
 
-            label->GetFont().SetFractionalPointSize(
-                label->GetFont().GetFractionalPointSize() *
-                labelNode->GetProperty(L"scaling")->GetValueNumber(1));
+            auto textAlignment = labelNode->GetProperty("text-alignment")->GetValueString();
+            if (textAlignment.CmpNoCase(L"flush-left") == 0 ||
+                textAlignment.CmpNoCase(L"ragged-right") == 0)
+                { label->SetTextAlignment(TextAlignment::FlushLeft); }
+            else if (textAlignment.CmpNoCase(L"flush-right") == 0 ||
+                textAlignment.CmpNoCase(L"ragged-left") == 0)
+                { label->SetTextAlignment(TextAlignment::FlushRight); }
+            else if (textAlignment.CmpNoCase(L"centered") == 0)
+                { label->SetTextAlignment(TextAlignment::Centered); }
+            else if (textAlignment.CmpNoCase(L"justified") == 0)
+                { label->SetTextAlignment(TextAlignment::Justified); }
 
             // header info
             auto headerNode = labelNode->GetProperty(L"header");
@@ -311,9 +319,24 @@ namespace Wisteria
                     ConvertColor(headerNode->GetProperty(L"color")->GetValueString()));
                 if (color.IsOk())
                     { label->GetHeaderInfo().FontColor(color); }
+                // not actually setting the scaling of the header (since the label
+                // that it is part of has its own scaling), but instead set the scaling
+                // of the header's font size.
                 label->GetHeaderInfo().GetFont().SetFractionalPointSize(
                     label->GetHeaderInfo().GetFont().GetFractionalPointSize() *
                     headerNode->GetProperty(L"scaling")->GetValueNumber(1));
+
+                const auto textAlignment = headerNode->GetProperty("text-alignment")->GetValueString();
+                if (textAlignment.CmpNoCase(L"flush-left") == 0 ||
+                    textAlignment.CmpNoCase(L"ragged-right") == 0)
+                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft); }
+                else if (textAlignment.CmpNoCase(L"flush-right") == 0 ||
+                    textAlignment.CmpNoCase(L"ragged-left") == 0)
+                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight); }
+                else if (textAlignment.CmpNoCase(L"centered") == 0)
+                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::Centered); }
+                else if (textAlignment.CmpNoCase(L"justified") == 0)
+                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::Justified); }
                 }
 
             LoadItem(labelNode, label);
@@ -1462,6 +1485,8 @@ namespace Wisteria
             { item->SetPageVerticalAlignment(PageVerticalAlignment::BottomAligned); }
         else if (vPageAlignment.CmpNoCase(L"centered") == 0)
             { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
+
+        item->SetScaling(itemNode->GetProperty(L"scaling")->GetValueNumber(1));
 
         LoadPen(itemNode->GetProperty(L"pen"), item->GetPen());
 
