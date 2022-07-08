@@ -1159,46 +1159,47 @@ namespace Wisteria::GraphItems
             }
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
-        std::vector<wxString> tokenizedLineWords;
+        std::vector<wxString> tokenizedLineLetters;
 
-        // Measure 10 hair spaces and divide by 10 to fairly precise
-        // measure of how wide one is. Measuring just one will double
-        // up and cause the calculation to be way off.
         constexpr wchar_t hairSpace{ 0x200A };
-        const double hairSpaceWidth = safe_divide<double>(
-            dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
 
         const auto trackTextLine = [&](wxString& textLine)
             {
-            tokenizedLineWords.clear();
+            // Measure 10 hair spaces (with the current font)
+            // and divide by 10 to more precisely measure of how wide one is.
+            // Measuring just one will double up and cause the calculation to be way off.
+            double hairSpaceWidth = safe_divide<double>(
+                dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
+            tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
             // more spaces (spread evenly throughout) until it fits
             if (dc.GetTextExtent(textLine).GetWidth() < fullTextSz.GetHeight())
                 {
-                wxStringTokenizer wordTokenizer(textLine, L" ", wxTOKEN_RET_EMPTY);
                 wxString wordStr;
-                while (wordTokenizer.HasMoreTokens())
+                for (const auto letter : textLine)
                     {
-                    tokenizedLineWords.emplace_back(wordTokenizer.GetNextToken());
-                    wordStr += tokenizedLineWords.back();
+                    tokenizedLineLetters.emplace_back(letter);
+                    wordStr += letter;
                     }
-                // need at least two words for justifying text
-                if (tokenizedLineWords.size() < 2)
+                // need at least two letters for justifying text
+                if (tokenizedLineLetters.size() < 2)
                     { return; }
-                // use hair spaces between words for more precise tracking
+                // use hair spaces between letters for more precise tracking
                 auto lineDiff = fullTextSz.GetHeight() - dc.GetTextExtent(wordStr).GetWidth();
-                const auto hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
-                const auto wordSpaces = tokenizedLineWords.size() - 1;
-                const auto thinSpacesPerWordPair = std::max(1.0,
-                    std::floor(safe_divide<double>(hairSpacesNeeded, wordSpaces)));
-                auto extraSpaces = hairSpacesNeeded - (thinSpacesPerWordPair*wordSpaces);
-                // rebuild the text line with more spaces in it
+                long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
+                const auto letterSpaces = tokenizedLineLetters.size() - 1;
+                const auto hairSpacesPerWordPair = std::max(1.0,
+                    std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
+                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair*letterSpaces);
+                // rebuild the text line with more (hair) spaces in it
                 textLine.clear();
-                for (const auto& word : tokenizedLineWords)
+                for (const auto& letter : tokenizedLineLetters)
                     {
-                    textLine.append(word).append(thinSpacesPerWordPair +
-                                                 (extraSpaces > 0 ? 1 : 0), L' ');
+                    textLine.append(letter).append(
+                                                 (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
+                                                 (extraSpaces > 0 ? 1 : 0), hairSpace);
                     --extraSpaces;
+                    hairSpacesNeeded -= hairSpacesPerWordPair;
                     }
                 }
             else
@@ -1308,53 +1309,50 @@ namespace Wisteria::GraphItems
             }
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
-        std::vector<wxString> tokenizedLineWords;
+        std::vector<wxString> tokenizedLineLetters;
 
-        // Measure 10 hair spaces and divide by 10 to fairly precise
-        // measure of how wide one is. Measuring just one will double
-        // up and cause the calculation to be way off.
         constexpr wchar_t hairSpace{ 0x200A };
-        const double hairSpaceWidth = safe_divide<double>(
-            dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
 
         const auto trackTextLine = [&](wxString& textLine)
             {
-            tokenizedLineWords.clear();
+            // Measure 10 hair spaces (with the current font)
+            // and divide by 10 to more precisely measure of how wide one is.
+            // Measuring just one will double up and cause the calculation to be way off.
+            double hairSpaceWidth = safe_divide<double>(
+                dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
+            tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
-            // more spaces (spread evenly throughout) until it fits
+            // hair spaces (spread evenly throughout) until it fits
             if (dc.GetTextExtent(textLine).GetWidth() < fullTextSz.GetWidth())
                 {
-                // wxTOKEN_RET_EMPTY will preserve any extra (e.g., leading) spaces
-                // from the original line; we will want that, in case the client
-                // is simulating tabbing
-                wxStringTokenizer wordTokenizer(textLine, L" ", wxTOKEN_RET_EMPTY);
+                // break the line into separate letters
                 wxString wordStr;
-                while (wordTokenizer.HasMoreTokens())
+                for (const auto letter : textLine)
                     {
-                    tokenizedLineWords.emplace_back(wordTokenizer.GetNextToken());
-                    wordStr += tokenizedLineWords.back();
+                    tokenizedLineLetters.emplace_back(letter);
+                    wordStr += letter;
                     }
-                // need at least two words for justifying text
-                if (tokenizedLineWords.size() < 2)
+                // need at least two letters for justifying text
+                if (tokenizedLineLetters.size() < 2)
                     { return; }
-                // use hair spaces between words for more precise tracking
+                // use hair spaces between letters for more precise tracking
                 auto lineDiff = fullTextSz.GetWidth() - dc.GetTextExtent(wordStr).GetWidth();
-                const auto hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
-                const auto wordSpaces = tokenizedLineWords.size() - 1;
+                long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
+                const auto letterSpaces = tokenizedLineLetters.size() - 1;
                 const auto hairSpacesPerWordPair = std::max(1.0,
-                    std::floor(safe_divide<double>(hairSpacesNeeded, wordSpaces)));
-                // the last gap between words may not need as many spaces as the others
-                auto extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair*wordSpaces);
+                    std::floor(safe_divide<double>(hairSpacesNeeded, letterSpaces)));
+                // the last gap between letters may not need as many spaces as the others
+                long extraSpaces = hairSpacesNeeded - (hairSpacesPerWordPair*letterSpaces);
                 // rebuild the text line with more (hair) spaces in it
                 textLine.clear();
-                for (const auto& word : tokenizedLineWords)
+                for (const auto& letter : tokenizedLineLetters)
                     {
-                    textLine.append(word).append(hairSpacesPerWordPair +
+                    textLine.append(letter).append(
+                                                 (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
                                                  (extraSpaces > 0 ? 1 : 0), hairSpace);
                     --extraSpaces;
+                    hairSpacesNeeded -= hairSpacesPerWordPair;
                     }
-                lineDiff = dc.GetTextExtent(textLine).GetWidth();
-                lineDiff = fullTextSz.GetWidth() - dc.GetTextExtent(textLine).GetWidth();
                 }
             else
                 { return; }
