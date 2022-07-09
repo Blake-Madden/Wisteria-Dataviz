@@ -258,6 +258,8 @@ namespace Wisteria::Graphs
         GetLeftYAxis().Show(false);
         GetRightYAxis().Show(false);
 
+        GetPen() = wxNullPen;
+
         GetDonutHoleLabel().GetGraphItemInfo().LabelAlignment(TextAlignment::Justified);
         }
 
@@ -582,7 +584,7 @@ namespace Wisteria::Graphs
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
                 Brush(m_pieColors->GetColor(i)).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
-                Pen(wxNullPen),
+                Pen(GetPen()),
                 drawArea,
                 startAngle, startAngle + (GetOuterPie().at(i).m_percent * 360),
                 GetOuterPie().at(i).m_value, GetOuterPie().at(i).m_percent);
@@ -1017,7 +1019,7 @@ namespace Wisteria::Graphs
                 GraphItemInfo().Brush(GetDonutHoleColor()).
                 DPIScaling(GetDPIScaleFactor()).
                 Selectable(false).
-                Pen(*wxTRANSPARENT_PEN).
+                Pen(GetPen()).
                 Anchoring(Anchoring::Center).
                 AnchorPoint(centerPt),
                 0);

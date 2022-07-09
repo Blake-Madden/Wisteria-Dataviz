@@ -337,7 +337,9 @@ namespace Wisteria::Graphs
             @param aggregateColumnName The (optional) aggregate count column.\n
                 These are the values accumulated into the respective labels from
                 the group column(s). If this column is not provided, then frequency counts
-                of the labels from the group column(s) are used.
+                of the labels from the group column(s) are used.\n
+                This is useful for when you have pre-computed values for each group and the
+                data just consists of unique labels and their respective totals.
             @param groupColumn1Name The main grouping ring.
             @param groupColumn2Name The (optional) second grouping ring.\n
                 This inner ring will be shown as subgroups within each slice
