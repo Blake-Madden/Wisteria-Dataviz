@@ -429,7 +429,7 @@ namespace Wisteria::Graphs
             @param lStyle The line style to use.
             @note If label placement is LabelPlacement::Flush, then this will be overridden
                 to use LineStyle::Lines.\n
-                This is because the connection will need to drawn as
+                This is because the connection will need to be drawn as
                 two lines (one going from the inner slice to outside the pie, and then one going
                 from there to the label against the edge of the pie area). Using a style such as
                 LineStyle::Arrows will look odd in this situation, so LineStyle::Lines will
@@ -471,8 +471,8 @@ namespace Wisteria::Graphs
             { return m_donutHoleProportion; }
         /// @brief Sets the proportion of the pie that the donut hole consumes.
         /// @param prop The proportion of the pie used for the hole.\n
-        ///     Value should be between @c 0.0 and @c 0.95 (i.e., 0 - 95%). This value is clamped
-        ///     to 95% since a hole shouldn't consume the entire pie.
+        ///     Value should be between @c 0.0 and @c 0.95 (i.e., 0 - 95%). (This value is clamped
+        ///     to 95% since a hole shouldn't consume the entire pie.)
         void SetDonutHoleProportion(const double prop) noexcept
             { m_donutHoleProportion = std::clamp(prop, 0.0, .95); }
 
