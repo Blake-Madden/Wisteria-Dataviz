@@ -117,6 +117,23 @@ Properties for @c "label" nodes:
      Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-leve
      @c "scaling" property.
 
+## Pie Chart {#pie-chart-properties}
+Properties for @c "pie-chart" nodes:
+- @c "variables": an item containing the following properties:
+  - @c "aggregate": The (optional) aggregate count column.\n
+       These are the values accumulated into the respective labels from the group column(s).\n
+       If this column is not provided, then frequency counts of the labels from the group column(s) are used.
+  - @c "group-1": the inner-ring grouping column (or only, if @c "group-2" isn't used).
+  - @c "group-2": the outer-ring grouping column (this is optional).
+- @c "label-placement": string specifying where to align the outer labels.\nThe options are:
+  - @c "flush"
+  - @c "next-to-parent"
+- @c "donut-hole": donut hole properties, which include:
+  - @c "proportion": a value between @c 0.0 and @c 0.95, specifying how much of the pie the hole should consume.
+  - @c "label": the ["label"](#line-plot-properties) shown in the middle of the hole.\n
+        Note that this label will be implicitly justified and centered within the hole.
+  - @c "color": the color of the donut hole.
+
 ## Table {#table-properties}
 Properties for @c "table" nodes:
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become

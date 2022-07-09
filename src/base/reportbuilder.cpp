@@ -86,6 +86,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"pie-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadPieChart(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
                                                 {
                                                 canvas->SetFixedObject(currentRow, currentColumn,
@@ -178,6 +183,22 @@ namespace Wisteria
             }
 
         return reportPages;
+        }
+
+    //---------------------------------------------------
+    std::optional<LabelPlacement> ReportBuilder::ConvertLabelPlacement(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring, LabelPlacement> values =
+            {
+            { L"next-to-parent", LabelPlacement::NextToParent },
+            { L"flush", LabelPlacement::Flush }
+            };
+
+        const auto foundValue = values.find(value.Lower().ToStdWstring());
+        return ((foundValue != values.cend()) ?
+            std::optional<LabelPlacement>(foundValue->second) :
+            std::nullopt);
         }
 
     //---------------------------------------------------
@@ -508,8 +529,63 @@ namespace Wisteria
                 linePlot->SetData(foundPos->second,
                     variablesNode->GetProperty(L"y")->GetValueString(),
                     variablesNode->GetProperty(L"x")->GetValueString(),
-                    (groupVarName.empty() ? std::nullopt : std::optional<wxString>(groupVarName)));
+                    (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
                 return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+                }
+            }
+        return nullptr;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadPieChart(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos != m_datasets.cend() &&
+            foundPos->second != nullptr)
+            {
+            auto variablesNode = graphNode->GetProperty(L"variables");
+            if (variablesNode->IsOk())
+                {
+                const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+                const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
+                const auto groupVar2Name = variablesNode->GetProperty(L"group-2")->GetValueString();
+
+                auto pieChart = std::make_shared<PieChart>(canvas,
+                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+                pieChart->SetData(foundPos->second,
+                    (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
+                    groupVar1Name,
+                    (groupVar2Name.length() ?std::optional<wxString>(groupVar2Name) : std::nullopt));
+
+                const auto labelPlacement =
+                    ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                if (labelPlacement.has_value())
+                    { pieChart->SetLabelPlacement(labelPlacement.value()); }
+
+                // donut hole info
+                const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");
+                if (donutHoleNode->IsOk())
+                    {
+                    pieChart->IncludeDonutHole(true);
+                    const auto labelProperty = donutHoleNode->GetProperty(L"label");
+                    if (labelProperty->IsOk())
+                        {
+                        auto holeLabel = LoadLabel(labelProperty, pieChart->GetDonutHoleLabel());
+                        if (holeLabel != nullptr)
+                            { pieChart->GetDonutHoleLabel() = *holeLabel; }
+                        }
+                    const auto propNode = donutHoleNode->GetProperty(L"proportion");
+                    if (propNode->IsOk())
+                        { pieChart->SetDonutHoleProportion(propNode->GetValueNumber()); }
+                    const wxColour color(
+                        ConvertColor(donutHoleNode->GetProperty(L"color")->GetValueString()));
+                    if (color.IsOk())
+                        { pieChart->SetDonutHoleColor(color); }
+                    }
+                return LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
                 }
             }
         return nullptr;

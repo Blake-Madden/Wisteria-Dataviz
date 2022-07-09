@@ -17,6 +17,7 @@
 #include "colorbrewer.h"
 #include "../data/dataset.h"
 #include "../graphs/lineplot.h"
+#include "../graphs/piechart.h"
 #include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
@@ -80,6 +81,15 @@ namespace Wisteria
         /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a pie chart node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        /// @todo many features still needed!
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadPieChart(const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -89,8 +99,7 @@ namespace Wisteria
         /// @todo many features still needed!
         std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
-        /// @brief Converts a string value to an axis-type enum value.
-        [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
+
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
         /// @param axis[in,out] The axis to apply the loaded settings to.
@@ -145,6 +154,10 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<IconShapeScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
+        /// @brief Converts a string value to a label-placeent enum value.
+        [[nodiscard]] static std::optional<LabelPlacement> ConvertLabelPlacement(const wxString& value);
+        /// @brief Converts a string value to an axis-type enum value.
+        [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
