@@ -394,6 +394,11 @@ namespace Wisteria::Graphs
         /// @returns Where the outer labels are placed.
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
+
+        /** @brief Shows or hides the outside labels of the outer (or main) pie.
+            @param show @c true to show the labels, @c false to hide them.
+            @note This should be called after SetData().*/
+        void ShowOuterPieLabels(const bool show);
         /// @}
 
         /// @name Inner Pie Functions
@@ -446,6 +451,12 @@ namespace Wisteria::Graphs
         /// @param display What to display.
         void SetInnerPieMidPointLabelDisplay(const BinLabelDisplay display) noexcept
             { m_innerPieMidPointLabelDisplay = display; }
+
+        /** @brief Shows or hides the outside labels of the inner pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @note This should be called after SetData().*/
+        void ShowInnerPieLabels(const bool show);
         /// @}
 
         /// @name Donut Hole Functions

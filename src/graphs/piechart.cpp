@@ -1050,6 +1050,24 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::ShowOuterPieLabels(const bool show)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                { slice.ShowGroupLabel(show); }
+            );
+        }
+
+     //----------------------------------------------------------------
+    void PieChart::ShowInnerPieLabels(const bool show)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                { slice.ShowGroupLabel(show); }
+            );
+        }
+
+    //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> PieChart::CreateInnerPieLegend(
         const LegendCanvasPlacementHint hint)
         {

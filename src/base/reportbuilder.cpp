@@ -593,6 +593,18 @@ namespace Wisteria
                 if (innerPieMidLabel.has_value())
                     { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
 
+                if (graphNode->HasProperty(L"include-inner-pie-labels"))
+                    {
+                    pieChart->ShowInnerPieLabels(
+                        graphNode->GetProperty(L"include-inner-pie-labels")->GetValueBool());
+                    }
+
+                if (graphNode->HasProperty(L"include-outer-pie-labels"))
+                    {
+                    pieChart->ShowOuterPieLabels(
+                        graphNode->GetProperty(L"include-outer-pie-labels")->GetValueBool());
+                    }
+
                 // donut hole info
                 const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");
                 if (donutHoleNode->IsOk())
