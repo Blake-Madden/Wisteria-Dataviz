@@ -202,6 +202,24 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<BinLabelDisplay> ReportBuilder::ConvertBinLabelDisplay(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring, BinLabelDisplay> values =
+            {
+            { L"percentage", BinLabelDisplay::BinPercentage },
+            { L"value", BinLabelDisplay::BinValue },
+            { L"value-and-percentage", BinLabelDisplay::BinValueAndPercentage },
+            { L"no-display", BinLabelDisplay::NoDisplay }
+            };
+
+        const auto foundValue = values.find(value.Lower().ToStdWstring());
+        return ((foundValue != values.cend()) ?
+            std::optional<BinLabelDisplay>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<AxisType> ReportBuilder::ConvertAxisType(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally
@@ -564,6 +582,16 @@ namespace Wisteria
                     ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
                 if (labelPlacement.has_value())
                     { pieChart->SetLabelPlacement(labelPlacement.value()); }
+
+                const auto outerPieMidLabel = ConvertBinLabelDisplay(
+                    graphNode->GetProperty(L"outer-pie-midpoint-label-display")->GetValueString());
+                if (outerPieMidLabel.has_value())
+                    { pieChart->SetOuterPieMidPointLabelDisplay(outerPieMidLabel.value()); }
+
+                const auto innerPieMidLabel = ConvertBinLabelDisplay(
+                    graphNode->GetProperty(L"inner-pie-midpoint-label-display")->GetValueString());
+                if (innerPieMidLabel.has_value())
+                    { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
 
                 // donut hole info
                 const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");

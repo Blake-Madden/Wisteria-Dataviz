@@ -52,6 +52,7 @@ At the root level:
         The options are:
         - ["line-plot"](#line-plot-properties)
         - ["common-axis"](#common-axis-properties)
+        - ["pie-chart"](#pie-chart-properties)
         - ["label"](#label-properties)
         - ["table"](#table-properties)
         - @c null: a null value will add a placeholder on the canvas.\n
@@ -125,9 +126,21 @@ Properties for @c "pie-chart" nodes:
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - @c "group-1": the inner-ring grouping column (or only, if @c "group-2" isn't used).
   - @c "group-2": the outer-ring grouping column (this is optional).
-- @c "label-placement": string specifying where to align the outer labels.\nThe options are:
+- @c "label-placement": a string specifying where to align the outer labels.\nThe options are:
   - @c "flush"
   - @c "next-to-parent"
+- @c "inner-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
+     of the pie slices (within the inner pie).\nAvailable options are:
+  - @c "value"
+  - @c "percentage"
+  - @c "value-and-percentage"
+  - @c "no-display"
+- @c "outer-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
+     of the pie slices (within the outer pie, or pie if only one grouping variable is in use).\nAvailable options are:
+  - @c "value"
+  - @c "percentage"
+  - @c "value-and-percentage"
+  - @c "no-display"
 - @c "donut-hole": donut hole properties, which include:
   - @c "proportion": a value between @c 0.0 and @c 0.95, specifying how much of the pie the hole should consume.
   - @c "label": the ["label"](#line-plot-properties) shown in the middle of the hole.\n

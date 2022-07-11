@@ -154,10 +154,12 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<IconShapeScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
-        /// @brief Converts a string value to a label-placeent enum value.
+        /// @brief Converts a string value to a LabelPlaceent enum value.
         [[nodiscard]] static std::optional<LabelPlacement> ConvertLabelPlacement(const wxString& value);
-        /// @brief Converts a string value to an axis-type enum value.
+        /// @brief Converts a string value to an AxisType enum value.
         [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
+        /// @brief Converts a string value to a BinLabelDisplay enum value.
+        [[nodiscard]] static std::optional<BinLabelDisplay> ConvertBinLabelDisplay(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
