@@ -42,6 +42,11 @@ namespace Wisteria
         ///     referencing them by name.
         /// @param datasourcesNode The datasources node.
         void LoadDatasources(const wxSimpleJSON::Ptr_t& datasourcesNode);
+        /// @brief Loads the values node into @c m_values.
+        /// @details This is a key/value mape used by objects throughout the report,
+        ///     referencing them by name.
+        /// @param valuesNode The values node.
+        void LoadValues(const wxSimpleJSON::Ptr_t& valuesNode);
         /// @brief Loads a common axis node into @c m_commonAxesPostions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then
@@ -166,8 +171,15 @@ namespace Wisteria
         ///     was successfully loaded.
         [[nodiscard]] static wxColour ConvertColor(wxString colorStr);
 
+        /** @brief Expands embedded placeholders in strings into their values.
+            @param str The full string to expand.
+            @returns The original string, with any placeholders in it replaced with the user-defined values.*/
+        [[nodiscard]] wxString ExpandValues(wxString str) const;
+
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;
+        using ValuesType = std::variant<wxString, double>;
+        std::map<wxString, ValuesType, Data::StringCmpNoCase> m_values;
         wxString m_name;
 
         // cached locations of common axes

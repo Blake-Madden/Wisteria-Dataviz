@@ -44,6 +44,8 @@ namespace Wisteria
             return reportPages;
             }
 
+        LoadValues(json->GetProperty(L"values"));
+
         // start loading the pages
         auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
@@ -307,7 +309,7 @@ namespace Wisteria
         if (labelNode->IsOk())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
-            label->SetText(labelNode->GetProperty(L"text")->GetValueString());
+            label->SetText(ExpandValues(labelNode->GetProperty(L"text")->GetValueString()));
             label->GetPen() = wxNullPen;
             label->SetDPIScaleFactor(m_dpiScaleFactor);
 
@@ -382,6 +384,26 @@ namespace Wisteria
             return label;
             }
         return nullptr;
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadValues(const wxSimpleJSON::Ptr_t& valuesNode)
+        {
+        if (valuesNode->IsOk())
+            {
+            auto values = valuesNode->GetValueArrayObject();
+            for (const auto& value : values)
+                {
+                if (value->IsOk())
+                    {
+                    const wxString vName = value->GetProperty(L"name")->GetValueString();
+                    m_values.insert_or_assign(vName,
+                        value->GetProperty(L"value")->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                        ValuesType(value->GetProperty(L"value")->GetValueString()) :
+                        ValuesType(value->GetProperty(L"value")->GetValueNumber()) );
+                    }
+                }
+            }
         }
 
     //---------------------------------------------------
@@ -520,7 +542,7 @@ namespace Wisteria
                             CategoricalColumns(catInfo));
                         }
                     
-                    m_datasets.insert(std::make_pair(dsName, dataset));
+                    m_datasets.insert_or_assign(dsName, dataset);
                     }
                 }
             }
@@ -879,6 +901,55 @@ namespace Wisteria
             return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
             }
         return nullptr;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::ExpandValues(wxString str) const
+        {
+        wxRegEx re(L"{{([[:alnum:]\\-]+)}}");
+        size_t start{ 0 }, len{ 0 };
+        std::wstring_view processText(str.wc_str());
+        std::map<wxString, wxString> replacements;
+        while (re.Matches(processText.data()))
+            {
+            // catalog all the placeholders and their replacements
+            re.GetMatch(&start, &len, 0);
+            const auto foundVal = m_values.find(
+                re.GetMatch(processText.data(), 1));
+            if (foundVal != m_values.cend())
+                {
+                if (const auto strVal{ std::get_if<wxString>(&foundVal->second) };
+                    strVal != nullptr)
+                    {
+                    replacements.insert_or_assign(
+                        std::wstring(processText.substr(start, len)), *strVal);
+                    }
+                else if (const auto dVal{ std::get_if<double>(&foundVal->second) };
+                         dVal != nullptr)
+                    {
+                    if (std::isnan(*dVal))
+                        {
+                        replacements.insert_or_assign(
+                            std::wstring(processText.substr(start, len)), wxEmptyString);
+                        }
+                    else
+                        {
+                        replacements.insert_or_assign(
+                            std::wstring(processText.substr(start, len)),
+                            wxNumberFormatter::ToString(*dVal, 2,
+                                wxNumberFormatter::Style::Style_WithThousandsSep|
+                                wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                        }
+                    }
+                }
+            processText = processText.substr(start + len);
+            }
+
+        // now, replace the placeholders with the user-defined values mapped to them
+        for (const auto& rep : replacements)
+            { str.Replace(rep.first, rep.second); }
+
+        return str;
         }
 
     //---------------------------------------------------

@@ -44,6 +44,11 @@ At the root level:
       - @c "strptime-format"
       - @c "automatic" (if not specified, this will be the default)
     - @c "format": if @c "parser" is set to @c "strptime-format", then this is the user-defined format to parse with.
+- @c "values": contains an array of key and value pairs, which are referenced by other items in the reports.\n
+     Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
+     titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
+  - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
+  - @c "value": either a string or numeric value to associate with the key.
 - @c "pages": contains an array of pages.
   - @c "name": contains a string value, representing the name of the page.
   - @c "rows": an array of rows, containing items to draw on the canvas.
@@ -141,6 +146,8 @@ Properties for @c "pie-chart" nodes:
   - @c "percentage"
   - @c "value-and-percentage"
   - @c "no-display"
+- @c "include-outer-pie-labels": @c true to show the outer labels for the outer pie (or main pie, if only using one grouping variable).
+- @c "include-inner-pie-labels": @c true to show the outer labels for the inner pie (if a second grouping variable is in use).
 - @c "donut-hole": donut hole properties, which include:
   - @c "proportion": a value between @c 0.0 and @c 0.95, specifying how much of the pie the hole should consume.
   - @c "label": the ["label"](#line-plot-properties) shown in the middle of the hole.\n
