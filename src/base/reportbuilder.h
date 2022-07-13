@@ -178,9 +178,10 @@ namespace Wisteria
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced
                 with the user-defined values.*/
-        [[nodiscard]] wxString ExpandValues(wxString str) const
+        [[nodiscard]] wxString ExpandValues(wxString str) const;
         [[nodiscard]] wxString CalcFormula(const wxString& formula);
         [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula);
+        [[nodiscard]] wxString CalcValidNValue(const wxString& formula);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

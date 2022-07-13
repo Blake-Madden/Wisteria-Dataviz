@@ -409,9 +409,55 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::CalcFormula(const wxString& formula)
         {
-        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\(");
+        wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
         if (re.Matches(formula))
-            { return CalcMinMaxValue(formula); }
+            {
+            const auto funcName = re.GetMatch(formula, 1).MakeLower();
+            if (funcName.CmpNoCase(L"min") == 0 ||
+                funcName.CmpNoCase(L"max") == 0)
+                { return CalcMinMaxValue(formula); }
+            else if (funcName.CmpNoCase(L"n") == 0)
+                { return CalcValidNValue(formula); }
+            }
+        return formula;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcValidNValue(const wxString& formula)
+        {
+        wxRegEx re(L"(?i)^[ ]*(n)[ ]*\\(([[:alnum:]\\-_ ]*)[$]([[:alnum:]\\-_ ]*)\\)");
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 4)
+                {
+                const auto funcName = re.GetMatch(formula, 1).MakeLower();
+                const auto dsName = re.GetMatch(formula, 2);
+                const auto columnName = re.GetMatch(formula, 3);
+                const auto foundPos = m_datasets.find(dsName);
+                if (foundPos != m_datasets.cend() &&
+                    foundPos->second != nullptr)
+                    {
+                    if (foundPos->second->GetCategoricalColumn(columnName) !=
+                        foundPos->second->GetCategoricalColumns().cend())
+                        {
+                        return wxNumberFormatter::ToString(
+                            foundPos->second->GetCategoricalColumnValidN(columnName), 0,
+                            wxNumberFormatter::Style::Style_WithThousandsSep);
+                        }
+                    else if (foundPos->second->GetContinuousColumn(columnName) !=
+                        foundPos->second->GetContinuousColumns().cend())
+                        {
+                        return wxNumberFormatter::ToString(
+                            foundPos->second->GetContinuousColumnValidN(columnName), 0,
+                            wxNumberFormatter::Style::Style_WithThousandsSep);
+                        }
+                    }
+                }
+            // datasource or column name missing
+            else
+                { return formula; }
+            }
         return formula;
         }
 

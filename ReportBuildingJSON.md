@@ -56,6 +56,9 @@ At the root level:
        - `max(dataset$column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section),
           and @c column is the column name from the dataset. This will return the maximum value of the given column
           from the dataset.
+       - `n(dataset$column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section),
+          and @c column is the column name from the dataset. This will return the valid number of observations in the given column
+          from the dataset.
 - @c "pages": contains an array of pages.
   - @c "name": contains a string value, representing the name of the page.
   - @c "rows": an array of rows, containing items to draw on the canvas.
