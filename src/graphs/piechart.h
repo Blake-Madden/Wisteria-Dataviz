@@ -410,11 +410,11 @@ namespace Wisteria::Graphs
         ///     Use this to edit the labels for slices.
         /// @returns The inner pie.
         /// @code
-        /// // example showing how to turn off all outer labels for the inner ring
+        /// // example showing how to uppercase all outer labels for the inner ring
         /// // (where "plot" is a pie chart object)
         /// std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
         ///               [](auto& slice) noexcept
-        ///               { slice.SetGroupLabel(false); });
+        ///               { slice.SetGroupLabel(slice.GetGroupLabel().Upper()); });
         /// @endcode
         [[nodiscard]] PieInfo& GetInnerPie() noexcept
             { return m_innerPie; }
