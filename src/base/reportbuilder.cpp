@@ -425,15 +425,22 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::CalcValidNValue(const wxString& formula)
         {
-        wxRegEx re(L"(?i)^[ ]*(n)[ ]*\\(([[:alnum:]\\-_ ]*)[$]([[:alnum:]\\-_ ]*)\\)");
-        if (re.Matches(formula))
+        wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\("
+                          "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                          "([[:alnum:]\\-_ ]+)\\)");
+        wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\("
+                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                            "(([[:alnum:]\\-_ ]+|{{[[:alnum:]\\-_ \\(\\),]+}}))\\)");
+        if (reSimple.Matches(formula))
             {
-            const auto paramPartsCount = re.GetMatchCount();
+            const auto paramPartsCount = reSimple.GetMatchCount();
             if (paramPartsCount >= 4)
                 {
-                const auto funcName = re.GetMatch(formula, 1).MakeLower();
-                const auto dsName = re.GetMatch(formula, 2);
-                const auto columnName = re.GetMatch(formula, 3);
+                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower().Trim(true).Trim(false);
+                const wxString dsName = reSimple.GetMatch(formula, 2).Trim(true).Trim(false);
+                const wxString columnName = reSimple.GetMatch(formula, 3).Trim(true).Trim(false);
                 const auto foundPos = m_datasets.find(dsName);
                 if (foundPos != m_datasets.cend() &&
                     foundPos->second != nullptr)
@@ -458,13 +465,68 @@ namespace Wisteria
             else
                 { return formula; }
             }
+        else if (reExtended.Matches(formula))
+            {
+            const auto paramPartsCount = reExtended.GetMatchCount();
+            if (paramPartsCount >= 6)
+                {
+                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower().Trim(true).Trim(false);
+                const wxString dsName = reExtended.GetMatch(formula, 2).Trim(true).Trim(false);
+                const wxString columnName = reExtended.GetMatch(formula, 3).Trim(true).Trim(false);
+                const wxString groupName = reExtended.GetMatch(formula, 4).Trim(true).Trim(false);
+                wxString groupValue = reExtended.GetMatch(formula, 5).Trim(true).Trim(false);
+                // if the group value is an embedded formula, then calculate it
+                if (groupValue.starts_with(L"{{") && groupValue.ends_with(L"}}"))
+                    {
+                    groupValue = groupValue.substr(2, groupValue.length() - 4);
+                    groupValue = CalcFormula(groupValue);
+                    }
+                const auto foundPos = m_datasets.find(dsName);
+                if (foundPos != m_datasets.cend() &&
+                    foundPos->second != nullptr)
+                    {
+                    // get the group column and the numeric code for the value
+                    const auto groupColumn = foundPos->second->GetCategoricalColumn(groupName);
+                    if (groupColumn == foundPos->second->GetCategoricalColumns().cend())
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: group column not found."), groupName).ToUTF8());
+                        }
+                    const auto groupID = groupColumn->GetIDFromCategoryLabel(groupValue);
+                    if (!groupID)
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"Group ID for '%s' not found."), groupValue).ToUTF8());
+                        }
+                    if (foundPos->second->GetCategoricalColumn(columnName) !=
+                        foundPos->second->GetCategoricalColumns().cend())
+                        {
+                        return wxNumberFormatter::ToString(
+                            foundPos->second->GetCategoricalColumnValidN(columnName, groupName, groupID.value()), 0,
+                            wxNumberFormatter::Style::Style_WithThousandsSep);
+                        }
+                    else if (foundPos->second->GetContinuousColumn(columnName) !=
+                        foundPos->second->GetContinuousColumns().cend())
+                        {
+                        return wxNumberFormatter::ToString(
+                            foundPos->second->GetContinuousColumnValidN(columnName, groupName, groupID.value()), 0,
+                            wxNumberFormatter::Style::Style_WithThousandsSep);
+                        }
+                    }
+                }
+            // datasource or something missing
+            else
+                { return formula; }
+            }
         return formula;
         }
 
     //---------------------------------------------------
     wxString ReportBuilder::CalcMinMaxValue(const wxString& formula)
         {
-        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\(([[:alnum:]\\-_ ]*)[$]([[:alnum:]\\-_ ]*)\\)");
+        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\("
+                    "([[:alnum:]\\-_ ]*)[ ]*,[ ]*"
+                    "([[:alnum:]\\-_ ]*)\\)");
         if (re.Matches(formula))
             {
             const auto paramPartsCount = re.GetMatchCount();
