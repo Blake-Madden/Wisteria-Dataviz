@@ -7,14 +7,16 @@ These reports can consist of a single page (i.e., a canvas), or a series of mult
 On each page, items such as tables, plots, notes, etc. are embedded, and the configuration file
 specifies how these items are laid out.
 
-Along with the objects on the pages, a configuration file can also define the datasources used
-by report's objects, per-page printer settings, etc.
+Along with the objects on the pages, a configuration file can also define the datasources and
+user-defined values used by report's objects, printer settings, etc.
 
 The following details the available options for JSON configuration files.
 
-At the root level:
-
+# Root-level Items
 - @c "name": contains a string value, representing the name of the report.
+
+## Datasources {#datasources-properties}
+Properties for the @c "datasources" node:
 - @c "datasources": contains an array of datasources, which are referenced by other items in the report.
   - @c "name": the name of the datasource.\n
   This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
@@ -44,27 +46,39 @@ At the root level:
       - @c "strptime-format"
       - @c "automatic" (if not specified, this will be the default)
     - @c "format": if @c "parser" is set to @c "strptime-format", then this is the user-defined format to parse with.
+
+## Values {#values-properties}
+Properties for the @c "values" node:
 - @c "values": contains an array of key and value pairs, which are referenced by other items in the reports.\n
      Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
-     titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
+     titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": either a string or numeric value to associate with the key.\n
        If a string, then it can be a literal string or a formula. The following formulas are available:\n
-       - `min(dataset, column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section)
-          and @c column is the column name from the dataset.\n
+       - `min(dataset, column)`, where:
+          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+          - @c column is the column name from the dataset.\n
           This will return the minimum value of the given column from the dataset.
-       - `max(dataset, column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section)
-          and @c column is the column name from the dataset.\n
+       - `max(dataset, column)`, where:
+          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+          - @c column is the column name from the dataset.\n
           This will return the maximum value of the given column from the dataset.
-       - `n(dataset, column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section)
-          and @c column is the column name from the dataset.\n
+       - `n(dataset, column)`, where:
+          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+          - @c column is the column name from the dataset.\n
           This will return the valid number of observations in the given column from the dataset.
-       - `n(dataset, column, groupColum, groupId)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section),
-          @c column is the column name from the dataset, @c groupColum is a group column to filter on, and @c groupId is the group ID to filter on.\n
-          Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).
+       - `n(dataset, column, groupColum, groupId)`, where:
+          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+          - @c column is the column name from the dataset.
+          - @c groupColum is a group column to filter on.
+          - @c groupId is the group ID to filter on.\n
+          Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
           For example, the group ID can be a formula getting the highest label from the grouping column:\n
           `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
           This will return the valid number of observations in the given column from the dataset.
+
+## Pages {#pages-properties}
+Properties for the @c "pages" node:
 - @c "pages": contains an array of pages.
   - @c "name": contains a string value, representing the name of the page.
   - @c "rows": an array of rows, containing items to draw on the canvas.
@@ -122,21 +136,25 @@ Properties for @c "line-plot" nodes:
 
 ## Label {#label-properties}
 Properties for @c "label" nodes:
-- @c "text": the title's text.
+- @c "text": the title's text.\n
+  Note that this property supports embedded formulas that can reference user-defined values loaded from the
+  ["values"](#values-properties) section.
 - @c "background": the background color. This can be a either a color name or hex-encoded value.
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
-- @c "text-alignment": how to align the label's text.\nThe available options are:
-  @c "flush-left" or "ragged-right".
-  @c "flush-right" or "ragged-left".
-  @c "centered".
-  @c "justified".
-- @c "header": attributes to apply to the first row of the label.\nThe following sub-properties are available:
+- @c "text-alignment": how to align the label's text.\n
+  The available options are:
+  - @c "flush-left" or "ragged-right".
+  - @c "flush-right" or "ragged-left".
+  - @c "centered".
+  - @c "justified".
+- @c "header": attributes to apply to the first row of the label.\n
+  The following sub-properties are available:
   - @c "bold": @c true to make the header bold.
   - @c "color": the font color for the header. This can be a either a color name or hex-encoded value.
   - @c "scaling": numeric value of how much to scale the header's font size. For example, @c 2.0 will double the
      header's default font size.\n
-     Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-leve
+     Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
      @c "scaling" property.
 
 ## Pie Chart {#pie-chart-properties}
@@ -147,17 +165,20 @@ Properties for @c "pie-chart" nodes:
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - @c "group-1": the inner-ring grouping column (or only, if @c "group-2" isn't used).
   - @c "group-2": the outer-ring grouping column (this is optional).
-- @c "label-placement": a string specifying where to align the outer labels.\nThe options are:
+- @c "label-placement": a string specifying where to align the outer labels.\n
+  The options are:
   - @c "flush"
   - @c "next-to-parent"
 - @c "inner-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
-     of the pie slices (within the inner pie).\nAvailable options are:
+     of the pie slices (within the inner pie).\n
+     Available options are:
   - @c "value"
   - @c "percentage"
   - @c "value-and-percentage"
   - @c "no-display"
 - @c "outer-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
-     of the pie slices (within the outer pie, or pie if only one grouping variable is in use).\nAvailable options are:
+     of the pie slices (within the outer pie, or pie if only one grouping variable is in use).\n
+     Available options are:
   - @c "value"
   - @c "percentage"
   - @c "value-and-percentage"
@@ -181,6 +202,7 @@ Properties for @c "table" nodes:
 - @c "highlight-pen": the pen used for highlighting cells, which includes these properties:
   - @c "color": the pen color. This can be a either a color name or hex-encoded value.
   - @c "width": the width of the pen's line.
+
 The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
@@ -237,12 +259,13 @@ The remaining properties are executed in the following order:
 
 ## Positions {#position-properties}
 Properties for row or column positions:
-- @c "origin": this is either the zero-based index of row/column, or a string.\n
+- @c "origin": this is either the zero-based index of the row/column, or a string.\n
      The string values available are @c "last-row" or @c "last-column",
      which will be interpreted as the last row or column in the data, respectively.
 - @c "offset": a numeric value combined with the value for @c "origin".\n
-     This is optional and is useful for when @c "origin" is interpreted at runtime
-     (for something like @c "last-row").
+     This is optional and is useful for when @c "origin" is interpreted at run-time.\n
+     For example, if @c origin is @c "last-row" and @c offset is -1, then this will
+     result in the second-to-last row.
 
 ## Graphs {#graph-properties}
 Properties common to all graph items:

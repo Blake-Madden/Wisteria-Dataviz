@@ -385,6 +385,7 @@ namespace Wisteria::Graphs
                 { m_horizontalCellAlignment = alignment; }
 
             /// @brief Sets the display format of the cell.
+            /// @param cellFormat The format settings to apply.
             void SetFormat(const CellFormat cellFormat) noexcept
                 {
                 m_valueFormat = cellFormat;
