@@ -154,6 +154,128 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    std::pair<wxString, wxString> Dataset::GetCategoricalMinMax(const wxString& column,
+        const std::optional<wxString>& groupColumn,
+        const std::optional<GroupIdType> groupId) const
+        {
+        // check columns being analyzed
+        if (groupColumn.has_value() && column.CmpNoCase(groupColumn.value()) == 0)
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping column and categorical column cannot be the same."),
+                groupColumn.value()).ToUTF8());
+            }
+        const auto catColumnIterator = GetCategoricalColumn(column);
+        if (catColumnIterator == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+            }
+
+        // check grouping parameters
+        const auto groupColumnIterator = (groupColumn.has_value() ?
+            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        wxASSERT_MSG(!groupColumn || groupId,
+                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping column not found when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+        if (groupColumn && !groupId)
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+
+        // No rows or all empty? Then return a range of empties
+        if (GetCategoricalColumnValidN(column, groupColumn, groupId) == 0)
+            { return std::make_pair(wxEmptyString, wxEmptyString); }
+
+        const auto MDCode = ColumnWithStringTable::FindMissingDataCode(
+            catColumnIterator->GetStringTable());
+        std::set<wxString, StringCmpNoCase> strings;
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if ((!MDCode.has_value() ||
+                 catColumnIterator->GetValue(i) != MDCode.value()) &&
+                ((groupColumnIterator == GetCategoricalColumns().cend()) ||
+                  groupColumnIterator->GetValue(i) == groupId.value()))
+                {
+                strings.insert(
+                    catColumnIterator->GetCategoryLabelFromID(catColumnIterator->GetValue(i)));
+                }
+            }
+        if (strings.empty())
+            { return std::make_pair(wxEmptyString, wxEmptyString); }
+
+        // if there are strings, then return their min and max
+        // (the first and last elements in the already sorted set)
+        return std::make_pair(*strings.cbegin(), *strings.crbegin());
+        }
+
+    //----------------------------------------------
+    size_t Dataset::GetCategoricalColumnValidN(const wxString& column,
+        const std::optional<wxString>& groupColumn,
+        const std::optional<GroupIdType> groupId) const
+        {
+        // check columns being analyzed
+        if (groupColumn.has_value() && column.CmpNoCase(groupColumn.value()) == 0)
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping column and categorical column cannot be the same."),
+                groupColumn.value()).ToUTF8());
+            }
+        const auto catColumnIterator = GetCategoricalColumn(column);
+        if (catColumnIterator == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+            }
+
+        // check grouping parameters
+        const auto groupColumnIterator = (groupColumn.has_value() ?
+            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        wxASSERT_MSG(!groupColumn || groupId,
+                 L"Group ID must be provided if using grouping for GetCategoricalColumnValidN()!");
+        if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping column not found when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+        if (groupColumn && !groupId)
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+
+        size_t validN{ 0 };
+        const auto MDCode = ColumnWithStringTable::FindMissingDataCode(
+            catColumnIterator->GetStringTable());
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if (groupColumnIterator != GetCategoricalColumns().cend())
+                {
+                if (groupColumnIterator->GetValue(i) == groupId.value() &&
+                    (!MDCode.has_value() ||
+                     catColumnIterator->GetValue(i) != MDCode.value()) )
+                    { ++validN; }
+                }
+            else
+                {
+                if (!MDCode.has_value() ||
+                    catColumnIterator->GetValue(i) != MDCode.value())
+                    { ++validN; }
+                }
+            }
+        return validN;
+        }
+
+    //----------------------------------------------
     std::pair<double, double> Dataset::GetContinuousMinMax(const wxString& column,
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const

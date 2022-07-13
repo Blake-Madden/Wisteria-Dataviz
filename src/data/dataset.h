@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <algorithm>
 #include <optional>
 #include <limits>
@@ -34,8 +35,8 @@
 /** @brief %Data management classes for graphs.*/
 namespace Wisteria::Data
     {
-    // Helper functor to compare wxStrings case insensitively.
-    // This is useful as a predicate for maps and sets.
+    /// @brief Helper functor to compare wxStrings case insensitively.
+    /// @details This is useful as a predicate for maps and sets.
     class StringCmpNoCase
         {
     public:
@@ -185,7 +186,7 @@ namespace Wisteria::Data
             }
         /// @returns The key value from a string table that's represents missing data
         ///  (i.e., empty string), or @c std::nullopt if not found.
-        /// @param stringTable The string table to reivew.
+        /// @param stringTable The string table to review.
         [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
             const StringTableType& stringTable)
             {
@@ -197,7 +198,7 @@ namespace Wisteria::Data
             return std::nullopt;
             }
         /** @returns The next group ID that can be inserted into a string table.
-            @param stringTable The string table to reivew.*/
+            @param stringTable The string table to review.*/
         [[nodiscard]] static GroupIdType GetNextKey(const StringTableType& stringTable)
             {
             if (stringTable.size())
@@ -758,9 +759,9 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a continuous column by name.
             @param columnName The name of the continuous column to look for.
             @returns An iterator to the group column if found,
-             `GetContinuousColumns().cend()` otherwise.
+                `GetContinuousColumns().cend()` otherwise.
             @note Check the return against `GetContinuousColumns().cend()`
-             to confirm that the column was found prior to using it.*/
+                to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetContinuousColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetContinuousColumns().cbegin(),
@@ -785,7 +786,7 @@ namespace Wisteria::Data
             }
         /** @brief Removes a column name(s) from a list of columns.
             @details As an example, this is useful for removing a grouping column from a list
-             of other categoricals returned from GetCategoricalColumnNames().
+                of other categoricals returned from GetCategoricalColumnNames().
             @param[in,out] colNames The list of column names.
             @param colsToRemove The column name(s) to remove.
             @sa GetContinuousColumnNames(), GetCategoricalColumnNames(), GetDateColumnNames().*/
@@ -805,32 +806,66 @@ namespace Wisteria::Data
             colNames.erase(endOfColumns, colNames.end());
             }
 
-        /** @brief Gets the min and max values from the specified continuous column
-             where the group ID is @c groupId.
+        /** @brief Gets the min and max string values from the specified categorical column,
+                (optionally) where the group ID is @c groupId.
+            @param column The name of the categorical column.
+            @param groupColumn The (optional) group column to filter with.
+            @param groupId The grouping ID to filter on (if a grouping column is being used).\n
+                If there is no grouping being used, then the full categorical column is reviewed.
+            @returns The min and max string values.
+            @note If there are no valid values, then will return a pair of empty strings.\n
+                Also, the comparison being performed is involves comparing the string values
+                in the string table (case-insensitively), not the underlying (numeric) codes.
+            @throws std::runtime_error If provided columns cannot be found or if a grouping
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]] std::pair<wxString, wxString> GetCategoricalMinMax(const wxString& column,
+            const std::optional<wxString>& groupColumn = std::nullopt,
+            const std::optional<GroupIdType> groupId = std::nullopt) const;
+        /** @brief Returns the valid N (i.e., non-empty strings) of the specified categorical column,
+                (optionally) where the group ID is @c groupId.
+            @param column The name of the categorical column.
+            @param groupColumn The (optional) group column to filter with.\n
+                If there is no grouping being used, then the full categorical column is reviewed.
+            @param groupId The group ID to filter on (if a grouping column was supplied).
+            @returns The number of valid N for the given categorical column,
+                filtered by group (if provided).
+            @throws std::runtime_error If provided columns cannot be found or if a grouping
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]] size_t GetCategoricalColumnValidN(const wxString& column,
+            const std::optional<wxString>& groupColumn = std::nullopt,
+            const std::optional<GroupIdType> groupId = std::nullopt) const;
+
+        /** @brief Gets the min and max values from the specified continuous column,
+                (optionally) where the group ID is @c groupId.
             @param column The name of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
-             If there is no grouping being used, then the full continuous column is reviewed.
+                If there is no grouping being used, then the full continuous column is reviewed.
             @returns The min and max values.
             @note If there are no valid values, then will return a pair of NaNs.
             @throws std::runtime_error If provided columns cannot be found or if a grouping
-             column is provided without a group ID, then throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]] std::pair<double, double> GetContinuousMinMax(const wxString& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
-        /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column.
+        /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column,
+                (optionally) where the group ID is @c groupId.
             @param column The name of the continuous column.
             @param groupColumn The (optional) group column to filter with.\n
-             If there is no grouping being used, then the full continuous column is reviewed.
+                If there is no grouping being used, then the full continuous column is reviewed.
             @param groupId The group ID to filter on (if a grouping column was supplied).
             @returns The number of valid N for the given continuous column,
-             filtered by group (if provided).
+                filtered by group (if provided).
             @throws std::runtime_error If provided columns cannot be found or if a grouping
-             column is provided without a group ID, then throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]] size_t GetContinuousColumnValidN(const wxString& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
