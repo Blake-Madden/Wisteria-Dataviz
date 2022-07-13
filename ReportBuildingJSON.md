@@ -48,7 +48,14 @@ At the root level:
      Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
      titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
-  - @c "value": either a string or numeric value to associate with the key.
+  - @c "value": either a string or numeric value to associate with the key.\n
+       If a string, then it can be a literal string or a formula. The following formulas are available:\n
+       - `min(dataset$column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section),
+          and @c column is the column name from the dataset. This will return the minimum value of the given column
+          from the dataset.
+       - `max(dataset$column)`, where @c dataset is the name of the dataset (loaded from the @c "datasources" section),
+          and @c column is the column name from the dataset. This will return the maximum value of the given column
+          from the dataset.
 - @c "pages": contains an array of pages.
   - @c "name": contains a string value, representing the name of the page.
   - @c "rows": an array of rows, containing items to draw on the canvas.

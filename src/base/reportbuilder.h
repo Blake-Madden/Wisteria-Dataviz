@@ -160,11 +160,14 @@ namespace Wisteria
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Converts a string value to a LabelPlaceent enum value.
-        [[nodiscard]] static std::optional<LabelPlacement> ConvertLabelPlacement(const wxString& value);
+        [[nodiscard]] static std::optional<LabelPlacement>
+            ConvertLabelPlacement(const wxString& value);
         /// @brief Converts a string value to an AxisType enum value.
-        [[nodiscard]] static std::optional<AxisType> ConvertAxisType(const wxString& value);
+        [[nodiscard]] static std::optional<AxisType>
+            ConvertAxisType(const wxString& value);
         /// @brief Converts a string value to a BinLabelDisplay enum value.
-        [[nodiscard]] static std::optional<BinLabelDisplay> ConvertBinLabelDisplay(const wxString& value);
+        [[nodiscard]] static std::optional<BinLabelDisplay>
+            ConvertBinLabelDisplay(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
@@ -173,8 +176,11 @@ namespace Wisteria
 
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
-            @returns The original string, with any placeholders in it replaced with the user-defined values.*/
-        [[nodiscard]] wxString ExpandValues(wxString str) const;
+            @returns The original string, with any placeholders in it replaced
+                with the user-defined values.*/
+        [[nodiscard]] wxString ExpandValues(wxString str) const
+        [[nodiscard]] wxString CalcFormula(const wxString& formula);
+        [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

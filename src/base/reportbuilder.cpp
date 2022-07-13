@@ -399,11 +399,62 @@ namespace Wisteria
                     const wxString vName = value->GetProperty(L"name")->GetValueString();
                     m_values.insert_or_assign(vName,
                         value->GetProperty(L"value")->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                        ValuesType(value->GetProperty(L"value")->GetValueString()) :
+                        ValuesType(CalcFormula(value->GetProperty(L"value")->GetValueString())) :
                         ValuesType(value->GetProperty(L"value")->GetValueNumber()) );
                     }
                 }
             }
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcFormula(const wxString& formula)
+        {
+        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\(");
+        if (re.Matches(formula))
+            { return CalcMinMaxValue(formula); }
+        return formula;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcMinMaxValue(const wxString& formula)
+        {
+        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\(([[:alnum:]\\-_ ]*)[$]([[:alnum:]\\-_ ]*)\\)");
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 4)
+                {
+                const auto funcName = re.GetMatch(formula, 1).MakeLower();
+                const auto dsName = re.GetMatch(formula, 2);
+                const auto columnName = re.GetMatch(formula, 3);
+                const auto foundPos = m_datasets.find(dsName);
+                if (foundPos != m_datasets.cend() &&
+                    foundPos->second != nullptr)
+                    {
+                    if (foundPos->second->GetCategoricalColumn(columnName) !=
+                        foundPos->second->GetCategoricalColumns().cend())
+                        {
+                        const auto [minVal, maxVal] =
+                            foundPos->second->GetCategoricalMinMax(columnName);
+                        return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
+                        }
+                    else if (foundPos->second->GetContinuousColumn(columnName) !=
+                        foundPos->second->GetContinuousColumns().cend())
+                        {
+                        const auto [minVal, maxVal] =
+                            foundPos->second->GetContinuousMinMax(columnName);
+                        return wxNumberFormatter::ToString(
+                            (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal), 2,
+                            wxNumberFormatter::Style::Style_WithThousandsSep |
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                        }
+                    }
+                }
+            // datasource or column name missing
+            else
+                { return formula; }
+            }
+        return formula;
         }
 
     //---------------------------------------------------
