@@ -158,13 +158,7 @@ namespace Wisteria::Data
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const
         {
-        // check columns being analyzed
-        if (groupColumn.has_value() && column.CmpNoCase(groupColumn.value()) == 0)
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column and categorical column cannot be the same."),
-                groupColumn.value()).ToUTF8());
-            }
+        // check column being analyzed
         const auto catColumnIterator = GetCategoricalColumn(column);
         if (catColumnIterator == GetCategoricalColumns().cend())
             {
@@ -221,13 +215,7 @@ namespace Wisteria::Data
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const
         {
-        // check columns being analyzed
-        if (groupColumn.has_value() && column.CmpNoCase(groupColumn.value()) == 0)
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': grouping column and categorical column cannot be the same."),
-                groupColumn.value()).ToUTF8());
-            }
+        // check column being analyzed
         const auto catColumnIterator = GetCategoricalColumn(column);
         if (catColumnIterator == GetCategoricalColumns().cend())
             {

@@ -173,7 +173,7 @@ namespace Wisteria::Data
         [[nodiscard]] const StringTableType& GetStringTable() const noexcept
             { return m_stringTable; }
         /** @brief Gets the label from the string table given the numeric code,
-             or the code formatted as a string if not found.
+                or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
             @param code The ID to look up.*/
         [[nodiscard]] wxString GetCategoryLabelFromID(const GroupIdType code) const
@@ -184,8 +184,21 @@ namespace Wisteria::Data
             else
                 { return std::to_wstring(code); }
             }
+        /** @brief Gets the underlying numeric code from the string table given the label,
+                or @c std::nullopt if not found.
+            @returns The ID from the string table, or @c std::nullopt if not found.
+            @param str The string value to look up.*/
+        [[nodiscard]] std::optional<GroupIdType> GetIDFromCategoryLabel(const wxString& str) const
+            {
+            for (const auto& [key, value] : m_stringTable)
+                {
+                if (value.CmpNoCase(str) == 0)
+                    { return key; }
+                }
+            return std::nullopt;
+            }
         /// @returns The key value from a string table that's represents missing data
-        ///  (i.e., empty string), or @c std::nullopt if not found.
+        ///     (i.e., empty string), or @c std::nullopt if not found.
         /// @param stringTable The string table to review.
         [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
             const StringTableType& stringTable)
