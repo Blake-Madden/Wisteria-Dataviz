@@ -1751,13 +1751,59 @@ namespace Wisteria
     std::shared_ptr<Colors::Schemes::ColorScheme> ReportBuilder::LoadColorScheme(
         const wxSimpleJSON::Ptr_t& colorSchemeNode)
         {
-        std::vector<wxColour> colors;
-        const auto colorValues = colorSchemeNode->GetValueStringVector();
-        if (colorValues.size() == 0)
-            { return nullptr; }
-        for (auto& color : colorValues)
-            { colors.emplace_back(ConvertColor(color)); }
-        return std::make_shared<Colors::Schemes::ColorScheme>(colors);
+        static const std::map<std::wstring_view, std::shared_ptr<Colors::Schemes::ColorScheme>> colorSchemes =
+            {
+            { L"Dusk", std::make_shared<Colors::Schemes::Dusk>() },
+            { L"EarthTones", std::make_shared<Colors::Schemes::EarthTones>() },
+            { L"Decade1920s", std::make_shared<Colors::Schemes::Decade1920s>() },
+            { L"Decade1940s", std::make_shared<Colors::Schemes::Decade1940s>() },
+            { L"Decade1950s", std::make_shared<Colors::Schemes::Decade1950s>() },
+            { L"Decade1960s", std::make_shared<Colors::Schemes::Decade1960s>() },
+            { L"Decade1970s", std::make_shared<Colors::Schemes::Decade1970s>() },
+            { L"Decade1980s", std::make_shared<Colors::Schemes::Decade1980s>() },
+            { L"Decade1990s", std::make_shared<Colors::Schemes::Decade1990s>() },
+            { L"Decade2000s", std::make_shared<Colors::Schemes::Decade2000s>() },
+            { L"October", std::make_shared<Colors::Schemes::October>() },
+            { L"Slytherin", std::make_shared<Colors::Schemes::Slytherin>() },
+            { L"Campfire", std::make_shared<Colors::Schemes::Campfire>() },
+            { L"CoffeeShop", std::make_shared<Colors::Schemes::CoffeeShop>() },
+            { L"ArticChill", std::make_shared<Colors::Schemes::ArticChill>() },
+            { L"BackToSchool", std::make_shared<Colors::Schemes::BackToSchool>() },
+            { L"BoxOfChocolates", std::make_shared<Colors::Schemes::BoxOfChocolates>() },
+            { L"Cosmopolitan", std::make_shared<Colors::Schemes::Cosmopolitan>() },
+            { L"DayAndNight", std::make_shared<Colors::Schemes::DayAndNight>() },
+            { L"FreshFlowers", std::make_shared<Colors::Schemes::FreshFlowers>() },
+            { L"IceCream", std::make_shared<Colors::Schemes::IceCream>() },
+            { L"UrbanOasis", std::make_shared<Colors::Schemes::UrbanOasis>() },
+            { L"Typewriter", std::make_shared<Colors::Schemes::Typewriter>() },
+            { L"TastyWaves", std::make_shared<Colors::Schemes::TastyWaves>() },
+            { L"Spring", std::make_shared<Colors::Schemes::Spring>() },
+            { L"ShabbyChic", std::make_shared<Colors::Schemes::ShabbyChic>() },
+            { L"RollingThunder", std::make_shared<Colors::Schemes::RollingThunder>() },
+            { L"ProduceSection", std::make_shared<Colors::Schemes::ProduceSection>() },
+            { L"Nautical", std::make_shared<Colors::Schemes::Nautical>() },
+            { L"MeadowSunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
+            };
+        
+        if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+            {
+            std::vector<wxColour> colors;
+            const auto colorValues = colorSchemeNode->GetValueStringVector();
+            if (colorValues.size() == 0)
+                { return nullptr; }
+            for (auto& color : colorValues)
+                { colors.emplace_back(ConvertColor(color)); }
+            return std::make_shared<Colors::Schemes::ColorScheme>(colors);
+            }
+        else if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+            {
+            auto foundPos = colorSchemes.find(
+                std::wstring_view(colorSchemeNode->GetValueString().MakeLower().wc_str()));
+            if (foundPos != colorSchemes.cend())
+                { return foundPos->second; }
+            }
+
+        return nullptr;
         }
 
     //---------------------------------------------------
@@ -1765,7 +1811,7 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
         // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring_view, IconShape> values =
+        static const std::map<std::wstring_view, IconShape> iconEnums =
             {
             { L"blank-icon", IconShape::BlankIcon },
             { L"horizontal-line-icon", IconShape::HorizontalLineIcon },
@@ -1797,8 +1843,8 @@ namespace Wisteria
             { return nullptr; }
         for (auto& icon : iconValues)
             {
-            auto foundPos = values.find(std::wstring_view(icon.MakeLower().wc_str()));
-            if (foundPos != values.cend())
+            auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
+            if (foundPos != iconEnums.cend())
                 { icons.emplace_back(foundPos->second); }
             }
         if (icons.size() == 0)

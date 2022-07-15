@@ -89,9 +89,11 @@ Properties for the @c "pages" node:
       - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
         The options are:
         - ["line-plot"](#line-plot-properties)
+        - ["categorical-bar-chart"](#categorical-bar-chart-properties)
         - ["common-axis"](#common-axis-properties)
-        - ["pie-chart"](#pie-chart-properties)
+        - ["image"](#image-properties)
         - ["label"](#label-properties)
+        - ["pie-chart"](#pie-chart-properties)
         - ["table"](#table-properties)
         - @c null: a null value will add a placeholder on the canvas.\n
           If an entire row contains nulls, then the previous row will consume that row
@@ -157,8 +159,8 @@ Properties for @c "label" nodes:
 - @c "bold": @c true to make the text bold.
 - @c "text-alignment": how to align the label's text.\n
   The available options are:
-  - @c "flush-left" or "ragged-right".
-  - @c "flush-right" or "ragged-left".
+  - @c "flush-left" or @c "ragged-right".
+  - @c "flush-right" or @c "ragged-left".
   - @c "centered".
   - @c "justified".
 - @c "header": attributes to apply to the first row of the label.\n
@@ -284,7 +286,7 @@ Properties for row or column positions:
      which will be interpreted as the last row or column in the data, respectively.
 - @c "offset": a numeric value combined with the value for @c "origin".\n
      This is optional and is useful for when @c "origin" is interpreted at run-time.\n
-     For example, if @c origin is @c "last-row" and @c offset is -1, then this will
+     For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will
      result in the second-to-last row.
 
 ## Graphs {#graph-properties}
@@ -296,9 +298,12 @@ Properties common to all graph items:
 - @c "title": the title of the graph, which contains ["label"](#label-properties) properties.
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
-- @c "axes": an array of ["axis"](#axis-properties) objects.
+- @c "axes": an array of [axis](#axis-properties) objects.
+- @c "color-scheme": for graphs that support color schemes only.\n
+  This can either be an array of color strings or the name of the color scheme.\n
+  Refer to Wisteria::Colors::Schemes for a list of color schemes.
 - @c "icon-scheme": for graphs that support icon/marker schemes only.\n
-     This is an array of icon strings (which can be recycled):
+  This is an array of icon strings (which can be recycled):
   - @c "blank-icon"
   - @c "horizontal-line-icon"
   - @c "arrow-right-icon"
