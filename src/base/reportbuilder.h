@@ -18,6 +18,7 @@
 #include "../data/dataset.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/piechart.h"
+#include "../graphs/categoricalbarchart.h"
 #include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
@@ -94,6 +95,15 @@ namespace Wisteria
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadPieChart(const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a categorical barchart node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        /// @todo many features still needed!
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadCategoricalBarChart(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.

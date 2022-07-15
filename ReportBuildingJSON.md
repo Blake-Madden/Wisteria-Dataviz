@@ -21,7 +21,8 @@ Properties for the @c "datasources" node:
   - @c "name": the name of the datasource.\n
   This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
   - @c "path": the full file path of the datasource.
-  - @c "parser": how to parse the datasource.\n The options are:
+  - @c "parser": how to parse the datasource.\n
+    The options are:
     - @c "tsv"
     - @c "csv"
   - @c "id-column": the ID column.\n
@@ -32,19 +33,21 @@ Properties for the @c "datasources" node:
        This property is optional.\n
   Each of the properties in this array consist of the following:
     - @c "name": the name of the column.
-    - @c "parser": how to read the column.\n The options are:\n
+    - @c "parser": how to read the column.\n
+      The options are:\n
       - @c "as-integers"
-      - @c "as-strings" (if not specified, this will be the default)
+      - @c "as-strings" (if not specified, this will be the default).
   - @c "date-columns": an array of column name/parser/format structures from the data representing date variables.\n
        This property is optional.\n
        Each of the properties in this array consist of the following:
     - @c "name": the name of the column.
-    - @c "parser": how to parse the column's date strings.\n The options are:
+    - @c "parser": how to parse the column's date strings.\n
+      The options are:
       - @c "iso-date"
       - @c "iso-combined"
       - @c "rfc822"
       - @c "strptime-format"
-      - @c "automatic" (if not specified, this will be the default)
+      - @c "automatic" (if not specified, this will be the default).
     - @c "format": if @c "parser" is set to @c "strptime-format", then this is the user-defined format to parse with.
 
 ## Values {#values-properties}
@@ -55,27 +58,27 @@ Properties for the @c "values" node:
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": either a string or numeric value to associate with the key.\n
        If a string, then it can be a literal string or a formula. The following formulas are available:\n
-       - `min(dataset, column)`, where:
-          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+       - `min(dataset, column)`:
+          Returns the minimum value of the given column from the dataset.
+          - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
           - @c column is the column name from the dataset.\n
-          This will return the minimum value of the given column from the dataset.
-       - `max(dataset, column)`, where:
-          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+       - `max(dataset, column)`:
+          Returns the maximum value of the given column from the dataset.
+          - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
           - @c column is the column name from the dataset.\n
-          This will return the maximum value of the given column from the dataset.
-       - `n(dataset, column)`, where:
-          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+       - `n(dataset, column)`:
+          Returns the valid number of observations in the given column from the dataset.
+          - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
           - @c column is the column name from the dataset.\n
-          This will return the valid number of observations in the given column from the dataset.
-       - `n(dataset, column, groupColum, groupId)`, where:
-          - @c dataset is the name of the dataset (loaded from the @c "datasources" section).
+       - `n(dataset, column, groupColum, groupId)`:
+          Returns the valid number of observations in the given column from the dataset, using group filtering.
+          - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
           - @c column is the column name from the dataset.
           - @c groupColum is a group column to filter on.
           - @c groupId is the group ID to filter on.\n
           Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
           For example, the group ID can be a formula getting the highest label from the grouping column:\n
           `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
-          This will return the valid number of observations in the given column from the dataset.
 
 ## Pages {#pages-properties}
 Properties for the @c "pages" node:
@@ -99,7 +102,7 @@ Properties for the @c "pages" node:
 # Canvas Items
 
 ## Axis {#axis-properties}
-Properties for @c "axis" nodes:
+Properties for @c "axes" nodes:
 - @c "axis-type": the type of axis.\n
   The options are:\n
   - @c "bottom-x"
@@ -109,11 +112,24 @@ Properties for @c "axis" nodes:
 - @c "title": the title of the axis, which contains ["label"](#label-properties) properties.
 - @c "tickmarks": tickmarks settings, which contains the following properties:
   - @c "display": a string, indicating how to display the tickmarks.\n
-     The options are:
+    The options are:
     - @c "inner"
     - @c "outer"
     - @c "crossed"
     - @c "no-display"
+- @c "label-diplay": what to display for the labels along the axis.\n
+  The options are:
+  - @c "custom-labels-or-values"
+  - @c "only-custom-labels"
+  - @c "custom-labels-and-values"
+  - @c "no-display"
+
+## Categorical Bar Chart {#categorical-bar-chart-properties}
+Properties for @c "categorical-bar-chart" nodes:
+- @c "bar-orientation": string specifying the orientation of the bars.\n
+     Available options are:
+  - @c "vertical"
+  - @c "horizontal"
 
 ## Common Axis {#common-axis-properties}
 Properties for @c "common-axis" nodes:
@@ -127,18 +143,15 @@ Properties for @c "common-axis" nodes:
 Properties for @c "image" nodes:
 - @c "path": the file path of the image to load.
 
-## Line Plot {#line-plot-properties}
-Properties for @c "line-plot" nodes:
-- @c "variables": an item containing the following properties:
-  - @c "x": the X column.
-  - @c "y": the X column.
-  - @c "group": the grouping column (this is optional).
-
 ## Label {#label-properties}
 Properties for @c "label" nodes:
 - @c "text": the title's text.\n
   Note that this property supports embedded formulas that can reference user-defined values loaded from the
   ["values"](#values-properties) section.
+- @c "orientation": string specifying the orientation of the text.\n
+  Available options are:
+  - @c "vertical"
+  - @c "horizontal"
 - @c "background": the background color. This can be a either a color name or hex-encoded value.
 - @c "color": the font color. This can be a either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
@@ -156,6 +169,13 @@ Properties for @c "label" nodes:
      header's default font size.\n
      Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
      @c "scaling" property.
+
+## Line Plot {#line-plot-properties}
+Properties for @c "line-plot" nodes:
+- @c "variables": an item containing the following properties:
+  - @c "x": the X column.
+  - @c "y": the X column.
+  - @c "group": the grouping column (this is optional).
 
 ## Pie Chart {#pie-chart-properties}
 Properties for @c "pie-chart" nodes:
@@ -240,9 +260,9 @@ The remaining properties are executed in the following order:
   - @c "row": the row position of the cell to update.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "column-count": the number of columns that this cell should consume.\n
-       The can either be a number, or the string @c "all" (meaning all columns).
+       This can either be a number, or the string @c "all" (meaning all columns).
   - @c "row-count": the number of rows that this cell should consume.\n
-       The can either be a number, or the string @c "all" (meaning all rows).
+       This can either be a number, or the string @c "all" (meaning all rows).
   - @c "value": a numeric, string, or null value to assign to the cell.
   - @c "background": the background color. This can be a either a color name or hex-encoded value.
   - @c "bold": @c true to make the cell bold.
@@ -270,7 +290,7 @@ Properties for row or column positions:
 ## Graphs {#graph-properties}
 Properties common to all graph items:
 - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
-      Note that this is the unique name of the datasource loaded from the report's @c "datasources" section,
+      Note that this is the unique name of the datasource loaded from the report's ["datasources"](#datasources-properties) section,
       not a filepath.\n
       Also, this is optional if the item type doesn't require a datasource (e.g., a @c Wisteria::GraphItems::Label).
 - @c "title": the title of the graph, which contains ["label"](#label-properties) properties.

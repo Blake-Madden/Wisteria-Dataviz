@@ -40,11 +40,20 @@ namespace Wisteria
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Datasource Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                         _(L"Datasource Section Error"), wxOK|wxICON_ERROR|wxCENTRE);
             return reportPages;
             }
 
-        LoadValues(json->GetProperty(L"values"));
+        try
+            {
+            LoadValues(json->GetProperty(L"values"));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Values Section Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return reportPages;
+            }
 
         // start loading the pages
         auto pagesProperty = json->GetProperty(L"pages");
@@ -92,6 +101,11 @@ namespace Wisteria
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadPieChart(item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"categorical-bar-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadCategoricalBarChart(item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"label") == 0)
                                                 {
@@ -258,12 +272,20 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadAxis(const wxSimpleJSON::Ptr_t& axisNode, GraphItems::Axis& axis)
         {
-        static const std::map<std::wstring_view, Axis::TickMark::DisplayType> values =
+        static const std::map<std::wstring_view, Axis::TickMark::DisplayType> tickmarkValues =
             {
             { L"inner", Axis::TickMark::DisplayType::Inner },
             { L"outer", Axis::TickMark::DisplayType::Outer },
             { L"crossed", Axis::TickMark::DisplayType::Crossed },
             { L"no-display", Axis::TickMark::DisplayType::NoDisplay }
+            };
+
+        static const std::map<std::wstring_view, AxisLabelDisplay> labelDisplayValues =
+            {
+            { L"custom-labels-or-values", AxisLabelDisplay::DisplayCustomLabelsOrValues },
+            { L"only-custom-labels", AxisLabelDisplay::DisplayOnlyCustomLabels },
+            { L"custom-labels-and-values", AxisLabelDisplay::DisplayCustomLabelsAndValues },
+            { L"no-display", AxisLabelDisplay::NoDisplay }
             };
 
         const auto titleProperty = axisNode->GetProperty(L"title");
@@ -277,10 +299,14 @@ namespace Wisteria
         if (tickmarksProperty->IsOk())
             {
             const auto display = tickmarksProperty->GetProperty(L"display")->GetValueString().Lower();
-            auto foundPos = values.find(std::wstring_view(display.wc_str()));
-            if (foundPos != values.cend())
+            auto foundPos = tickmarkValues.find(std::wstring_view(display.wc_str()));
+            if (foundPos != tickmarkValues.cend())
                 { axis.SetTickMarkDisplay(foundPos->second); }
             }
+        const auto display = axisNode->GetProperty(L"label-diplay")->GetValueString().Lower();
+        auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
+        if (foundPos != labelDisplayValues.cend())
+            { axis.SetLabelDisplay(foundPos->second); }
         }
 
     //---------------------------------------------------
@@ -321,6 +347,12 @@ namespace Wisteria
                 ConvertColor(labelNode->GetProperty(L"color")->GetValueString()));
             if (color.IsOk())
                 { label->SetFontColor(color); }
+
+            const auto orientation = labelNode->GetProperty(L"orientation")->GetValueString();
+            if (orientation.CmpNoCase(L"horizontal") == 0)
+                { label->SetTextOrientation(Orientation::Horizontal); }
+            else if (orientation.CmpNoCase(L"vertical") == 0)
+                { label->SetTextOrientation(Orientation::Vertical); }
 
             // font attributes
             if (labelNode->GetProperty(L"bold")->IsOk())
@@ -730,6 +762,42 @@ namespace Wisteria
                     variablesNode->GetProperty(L"x")->GetValueString(),
                     (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
                 return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+                }
+            }
+        return nullptr;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadCategoricalBarChart(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos != m_datasets.cend() &&
+            foundPos->second != nullptr)
+            {
+            auto variablesNode = graphNode->GetProperty(L"variables");
+            if (variablesNode->IsOk())
+                {
+                const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+                const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
+                const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
+
+                auto barChart = std::make_shared<CategoricalBarChart>(canvas,
+                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+                
+                const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
+                if (bOrientation.CmpNoCase(L"horizontal") == 0)
+                    { barChart->SetBarOrientation(Orientation::Horizontal); }
+                else if (bOrientation.CmpNoCase(L"vertical") == 0)
+                    { barChart->SetBarOrientation(Orientation::Vertical); }
+
+                barChart->SetData(foundPos->second, categoryName,
+                    (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
+                    (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt));
+
+                return LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
                 }
             }
         return nullptr;
@@ -1889,9 +1957,13 @@ namespace Wisteria
                 if (axisType.has_value())
                     {
                     if (axisType.value() == AxisType::LeftYAxis)
-                        {
-                        LoadAxis(axisNode, graph->GetLeftYAxis());
-                        }
+                        { LoadAxis(axisNode, graph->GetLeftYAxis()); }
+                    else if (axisType.value() == AxisType::RightYAxis)
+                        { LoadAxis(axisNode, graph->GetRightYAxis()); }
+                    else if (axisType.value() == AxisType::BottomXAxis)
+                        { LoadAxis(axisNode, graph->GetBottomXAxis()); }
+                    else if (axisType.value() == AxisType::TopXAxis)
+                        { LoadAxis(axisNode, graph->GetTopXAxis()); }
                     }
                 }
             }
