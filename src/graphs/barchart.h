@@ -739,7 +739,7 @@ namespace Wisteria::Graphs
             { return m_barOrientation; }
         /// @brief Sets whether the bars are laid out vertically or horizontally across the plot.
         /// @param orient Which orientation to use for the bars.
-        /// @warning Call this prior to any calls to AddBar().
+        /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).
         void SetBarOrientation(const Orientation orient);
         /// @}
 

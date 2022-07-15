@@ -75,6 +75,27 @@ namespace Wisteria::Graphs
 
         Calculate();
 
+        // improve the scaling interval
+        if (GetBars().size())
+            {
+            const auto& tallestBar = *std::max_element(
+                GetBars().cbegin(), GetBars().cend(),
+                [](const auto lhv, const auto rhv) noexcept
+                { return lhv.GetLength() < rhv.GetLength(); });
+            if (tallestBar.GetLength() > 300 && tallestBar.GetLength() < 1'500)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(tallestBar.GetLength(), 3),
+                    GetScalingAxis().GetPrecision(), 100, 1);
+                }
+            else if (tallestBar.GetLength() >= 1'500)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(tallestBar.GetLength(), 4),
+                    GetScalingAxis().GetPrecision(), 500, 1);
+                }
+            }
+
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
