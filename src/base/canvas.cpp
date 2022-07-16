@@ -580,21 +580,32 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void Canvas::OnResize([[maybe_unused]] wxSizeEvent& event)
+    void Canvas::OnResize(wxSizeEvent& event)
         {
         wxGCDC gdc(this);
-        // if the new size is larger than the canvas itself, then turn off zooming.
+        // if the new size is larger than the canvas itself, then turn off zooming
         if (GetClientRect().GetWidth() > GetCanvasRect(gdc).GetWidth() &&
             GetClientRect().GetHeight() > GetCanvasRect(gdc).GetHeight())
             { m_zoomLevel = 0; }
-        // don't resize if canvas is zoomed into
+        // resize if canvas isn't zoomed into
         if (m_zoomLevel <= 0)
             {
             m_rectDIPs = GetClientRect();
             m_rectDIPs.SetWidth(gdc.ToDIP(m_rectDIPs.GetWidth()));
-            m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight()));
+
+            if (IsMaintainingAspectRatio())
+                {
+                const auto heightToWidthRatio =
+                    safe_divide<double>(GetCanvasMinHeightDIPs(), GetCanvasMinWidthDIPs());
+                m_rectDIPs.SetHeight(m_rectDIPs.GetWidth() * heightToWidthRatio);
+                }
+            else
+                { m_rectDIPs.SetHeight(gdc.ToDIP(m_rectDIPs.GetHeight())); }
+
             CalcAllSizes(gdc);
             }
+
+        event.Skip();
         }
 
     //---------------------------------------------------

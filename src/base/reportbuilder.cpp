@@ -193,6 +193,7 @@ namespace Wisteria
                     canvas->CalcRowDimensions();
                     canvas->FitToPageWhenPrinting(true);
                     canvas->SetSizeFromPaperSize();
+                    canvas->MaintainAspectRatio(true);
                     reportPages.push_back(canvas);
                     }
                 }
