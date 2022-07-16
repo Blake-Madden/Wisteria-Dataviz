@@ -543,9 +543,9 @@ namespace geometry
         @param size The initial size to be downscaled.
         @param boundingSize The bounding box to fit the size into.
         @note The assumption here is that @c size is either wider or taller (or both) than
-         @c boundingSize and that it is being scaled down to fit inside of @c boundingSize.
-         If it is already small enough to fit in @c boundingSize, then the original size is returned.*/
-    [[nodiscard]] inline std::pair<double,double> calculate_downscaled_size(
+            @c boundingSize and that it is being scaled down to fit inside of @c boundingSize.
+            If it is already small enough to fit in @c boundingSize, then the original size is returned.*/
+    [[nodiscard]] inline std::pair<double, double> calculate_downscaled_size(
                                                 const std::pair<double,double> size,
                                                 const std::pair<double,double> boundingSize) noexcept
         {
@@ -590,10 +590,10 @@ namespace geometry
         @param size The initial size to be upscaled.
         @param boundingSize The bounding box to fit the size into.
         @note The assumption here is that @c size is either narrower or shorter (or both) than
-         @c boundingSize and that it is being upscaled down to fit inside of @c boundingSize.
-         If it is already larger enough to consume on of the dimensions of @c boundingSize,
-         then the original size is returned.*/
-    [[nodiscard]] inline std::pair<double,double> calculate_upscaled_size(
+            @c boundingSize and that it is being upscaled to fit inside of @c boundingSize.
+            If it is already larger enough to consume one of the dimensions of @c boundingSize,
+            then the original size is returned.*/
+    [[nodiscard]] inline std::pair<double, double> calculate_upscaled_size(
                                     const std::pair<double,double> size,
                                     const std::pair<double,double> boundingSize) noexcept
         {
