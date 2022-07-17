@@ -64,11 +64,26 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
+                    // paper (i.e., print) settings
+                    const auto paperNode = page->GetProperty(L"print");
+                    if (paperNode->IsOk())
+                        {
+                        const auto orientation = paperNode->GetProperty(L"orientation")->GetValueString();
+                        if (orientation.CmpNoCase(L"horizontal") == 0 ||
+                            orientation.CmpNoCase(L"landscape") == 0)
+                            { canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE); }
+                        else if (orientation.CmpNoCase(L"vertical") == 0 ||
+                            orientation.CmpNoCase(L"portrait") == 0)
+                            { canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxPORTRAIT); }
+                        }
+
+                    size_t rowCount{ 0 };
                     const auto rowsProperty = page->GetProperty(L"rows");
                     if (rowsProperty->IsOk())
                         {
                         size_t currentRow{ 0 }, currentColumn{ 0 };
                         const auto rows = rowsProperty->GetValueArrayObject();
+                        rowCount = rows.size();
                         // Empty page? Go to next one.
                         if (rows.size() == 0)
                             { continue; }
@@ -189,7 +204,9 @@ namespace Wisteria
                     canvas->CalcRowDimensions();
                     canvas->FitToPageWhenPrinting(true);
                     canvas->SetSizeFromPaperSize();
-                    canvas->MaintainAspectRatio(true);
+                    // if multiple rows, then treat it as a report that maintains
+                    // the aspect ratio of its content
+                    canvas->MaintainAspectRatio(rowCount > 1);
                     reportPages.push_back(canvas);
                     }
                 }
