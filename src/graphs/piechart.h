@@ -35,6 +35,15 @@ namespace Wisteria::GraphItems
             m_pieArea(pieRect), m_startAngle(startAngle), m_endAngle(endAngle),
             m_value(value), m_percent(percent)
             { GetGraphItemInfo() = info; }
+        
+        /// @returns The pen used for the outer arc of the slice, if different
+        ///     from the pen used for the sides.
+        [[nodiscard]] const std::optional<wxPen>& GetArcPen() const noexcept
+            { return m_arcPen; }
+        /** @brief Sets a different pen to use for the outer arc of the slice.
+            @pen The pen to use for the arc.*/
+        void SetArcPen(const std::optional<wxPen>& pen)
+            { m_arcPen = pen; }
         /** @brief Creates a label to display in the middle of the slice.\n
                 This is usually a raw count of observations in the slice, or its percentage of the
                 overall pie.
@@ -75,7 +84,7 @@ namespace Wisteria::GraphItems
     private:
         wxRect Draw(wxDC& dc) const final;
 
-        bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
@@ -99,6 +108,8 @@ namespace Wisteria::GraphItems
         double m_endAngle{ 0 };
         double m_value{ 0 };
         double m_percent{ 0 };
+
+        std::optional<wxPen> m_arcPen;
         };
     }
 

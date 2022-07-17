@@ -202,26 +202,40 @@ namespace Wisteria::GraphItems
         wxDCBrushChanger bCh(dc, GetBrush());
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-        wxDCPenChanger pc(dc, scaledPen);
 
         const wxPoint centerPoint{ m_pieArea.GetWidth() / 2 + m_pieArea.GetLeft(),
                                    m_pieArea.GetHeight() / 2 + m_pieArea.GetTop() };
 
         // outer arc
-        dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(),
-                           m_startAngle, m_endAngle);
+            {
+            wxPen scaledArcPen(
+                (GetArcPen().has_value() && GetArcPen().value().IsOk()) ?
+                 GetArcPen().value() :
+                 GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
+            scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
+
+            wxDCPenChanger pc(dc, scaledArcPen);
+            dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(),
+                               m_startAngle, m_endAngle);
+            }
         // line from the pie center to the start of the arc
         auto arcStart = geometry::calc_arc_vertex(std::make_pair(
             m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_startAngle);
         arcStart.first += m_pieArea.GetTopLeft().x;
         arcStart.second += m_pieArea.GetTopLeft().y;
-        dc.DrawLine(centerPoint, wxPoint(arcStart.first, arcStart.second));
+            {
+            wxDCPenChanger pc(dc, scaledPen);
+            dc.DrawLine(centerPoint, wxPoint(arcStart.first, arcStart.second));
+            }
         // line from the pie center to the end of the arc
         auto arcEnd = geometry::calc_arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_endAngle);
         arcEnd.first += m_pieArea.GetTopLeft().x;
         arcEnd.second += m_pieArea.GetTopLeft().y;
-        dc.DrawLine(centerPoint, wxPoint(arcEnd.first, arcEnd.second));
+            {
+            wxDCPenChanger pc(dc, scaledPen);
+            dc.DrawLine(centerPoint, wxPoint(arcEnd.first, arcEnd.second));
+            }
 
         if (IsSelected())
             {
@@ -665,10 +679,11 @@ namespace Wisteria::Graphs
             const double donutHoleInnerProportion = safe_divide<double>(
                 (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), sliceProportion);
 
-            // outline for all inner slices within the current group
-            const auto sliceLineColor{
-                ColorContrast::ShadeOrTint(
-                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup), 0.4) };
+            // outline of inner slices' sides, which will be half as thick as the
+            // outer ring's slice sides
+            auto sliceLine{ GetPen() };
+            sliceLine.SetWidth(std::max(1.0,
+                                        safe_divide<double>(sliceLine.GetWidth(),2)));
             // slightly adjusted color based on the parent slice color
             sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
@@ -680,10 +695,11 @@ namespace Wisteria::Graphs
                 GraphItemInfo(GetInnerPie().at(i).GetGroupLabel()).
                 Brush(sliceColor).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
-                Pen(sliceLineColor),
+                Pen(sliceLine),
                 innerDrawArea,
                 startAngle, startAngle + (GetInnerPie().at(i).m_percent * 360),
                 GetInnerPie().at(i).m_value, GetInnerPie().at(i).m_percent);
+            pSlice->SetArcPen(GetPen());
             if (GetInnerPie().at(i).m_description.length())
                 {
                 pSlice->SetText(GetInnerPie().at(i).GetGroupLabel() + L"\n" +
