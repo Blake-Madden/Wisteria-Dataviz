@@ -245,7 +245,7 @@ namespace Wisteria
         /// @sa SetPrinterSettings(), MaintainAspectRatio(), FitToPageWhenPrinting().
         void SetSizeFromPaperSize();
 
-        /// @returns @true if the aspect ratio of the drawing area is maintained when the window
+        /// @returns @c true if the aspect ratio of the drawing area is maintained when the window
         ///     is resized.
         [[nodiscard]] bool IsMaintainingAspectRatio() const noexcept
             { return m_maintainAspectRatio; }
@@ -254,7 +254,7 @@ namespace Wisteria
         /// @details The aspect ratio is controlled by SetCanvasMinWidthDIPs()/SetCanvasMinHeightDIPs()
         ///     or SetSizeFromPaperSize().\n
         ///     This is useful for reports (i.e., canvases with multiple items on it).
-        /// @param maintain @true to maintain the aspect ratio when resizing.
+        /// @param maintain @c true to maintain the aspect ratio when resizing.
         void MaintainAspectRatio(const bool maintain) noexcept
             { m_maintainAspectRatio = maintain; }
         /// @returns The minimum width that the canvas can be, it will be forced to be this
