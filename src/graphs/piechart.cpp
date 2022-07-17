@@ -406,7 +406,8 @@ namespace Wisteria::Graphs
                     innerPieSliceGroup.second.end(),
                     [&parentGroupIndex](auto& slice) noexcept
                     { slice.m_parentSliceGroup = parentGroupIndex; });
-                GetInnerPie().insert(GetInnerPie().end(), innerPieSliceGroup.second.cbegin(),
+                GetInnerPie().insert(GetInnerPie().end(),
+                                     innerPieSliceGroup.second.cbegin(),
                                      innerPieSliceGroup.second.cend());
                 ++parentGroupIndex;
                 }
@@ -1022,7 +1023,7 @@ namespace Wisteria::Graphs
                 drawArea.GetTop() + (drawArea.GetHeight() / 2));
             auto donutHole = std::make_shared<Point2D>(
                 GraphItemInfo().Brush(GetDonutHoleColor()).
-                DPIScaling(GetDPIScaleFactor()).
+                DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Selectable(false).
                 Pen(GetPen()).
                 Anchoring(Anchoring::Center).
