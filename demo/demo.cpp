@@ -1197,7 +1197,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // show one of the outer labels for the inner ring
         // and add a custom description to it
         std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
-            [](auto& slice) noexcept
+            [](auto& slice)
                 {
                 if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
                     {

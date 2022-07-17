@@ -242,15 +242,16 @@ namespace Wisteria::Graphs
             foundSlice->SetDescription(
                 _(L"Includes both literary and composition courses"));
             }
-         // turn off all but one of the outer labels for the inner ring,
-         // and also add a custom description to one of the inner slices
+         // show one of the outer labels for the inner ring
+         // and add a custom description to it
          std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
-            [](auto& slice) noexcept
+            [](auto& slice)
                 {
-                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") != 0)
-                    { slice.ShowGroupLabel(false); }
-                else
-                    { slice.SetDescription(_(L"Drop this from the catalog?")); }
+                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
+                    {
+                    slice.ShowGroupLabel(true);
+                    slice.SetDescription(_(L"Drop this from the catalog?"));
+                    }
                 }
             );
 
