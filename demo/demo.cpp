@@ -1153,13 +1153,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             { foundSlice->SetDescription(_(L"Includes both literary and composition courses")); }
         // turn off all but one of the outer labels for the inner ring
         // to draw attention to it
-        std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
-            [](auto& slice) noexcept
-                {
-                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") != 0)
-                    { slice.ShowGroupLabel(false); }
-                }
-            );
+        plot->ShowInnerPieLabels(true, { L"Visual Basic.NET" });
 
         // apply the slice's colors to its respective outside label
         plot->UseColorLabels(true);
@@ -1199,19 +1193,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // hide all outer labels for the main (i.e., outer) ring
-        std::for_each(plot->GetOuterPie().begin(), plot->GetOuterPie().end(),
-            [](auto& slice) noexcept
-                { slice.ShowGroupLabel(false); }
-            );
-        // turn off all but one of the outer labels for the inner ring,
-        // and also add a custom description to one of the inner slices
+        plot->ShowOuterPieLabels(false);
+        // show one of the outer labels for the inner ring
+        // and add a custom description to it
         std::for_each(plot->GetInnerPie().begin(), plot->GetInnerPie().end(),
             [](auto& slice) noexcept
                 {
-                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") != 0)
-                    { slice.ShowGroupLabel(false); }
-                else
-                    { slice.SetDescription(_(L"Drop this from the catalog?")); }
+                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") == 0)
+                    {
+                    slice.ShowGroupLabel(true);
+                    slice.SetDescription(_(L"Drop this from the catalog?"));
+                    }
                 }
             );
         // place the label around the pie, not off to the side
@@ -1595,19 +1587,11 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
         // turn off all outer ring labels
-        std::for_each(groupedPieChart->GetOuterPie().begin(), groupedPieChart->GetOuterPie().end(),
-            [](auto& slice) noexcept
-                { slice.ShowGroupLabel(false); }
-            );
+        groupedPieChart->ShowOuterPieLabels(false);
         // turn off all but one of the outer labels for the inner ring
         // to draw attention to it
-        std::for_each(groupedPieChart->GetInnerPie().begin(), groupedPieChart->GetInnerPie().end(),
-            [](auto& slice) noexcept
-                {
-                if (slice.GetGroupLabel().CmpNoCase(L"Visual Basic.NET") != 0)
-                    { slice.ShowGroupLabel(false); }
-                }
-            );
+        groupedPieChart->ShowInnerPieLabels(true, { L"Visual Basic.NET" });
+
         groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 
         // apply the slice's colors to its respective outside label

@@ -68,12 +68,12 @@ namespace Wisteria::GraphItems
                           wxDC& dc, const wxRect& pieArea);
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
-        ///     For example, `.5` would be an arc in the middle of the pie, and `1` would be the outer
+        ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1 would be the outer
         ///     arc of the pie.
         [[nodiscard]] std::pair<double, double> GetMiddleOfArc(const double pieProportion) const noexcept;
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
-        ///     For example, `.5` would be an arc in the middle of the pie, and `1` would be the outer
+        ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1 would be the outer
         ///     arc of the pie.
         /// @param pieArea A custom area to align the point with. This is useful for moving an outer label
         ///     further out from the slice.
@@ -317,10 +317,10 @@ namespace Wisteria::Graphs
                 { m_showText = show; }
 
             /// @private
-            [[nodiscard]] bool operator==(const SliceInfo& that) const noexcept
+            [[nodiscard]] bool operator==(const SliceInfo& that) const
                 { return m_groupLabel.CmpNoCase(that.m_groupLabel) == 0; }
             /// @private
-            [[nodiscard]] bool operator<(const SliceInfo& that) const noexcept
+            [[nodiscard]] bool operator<(const SliceInfo& that) const
                 { return m_groupLabel.CmpNoCase(that.m_groupLabel) < 0; }
         private:
             wxString m_groupLabel;
@@ -410,6 +410,13 @@ namespace Wisteria::Graphs
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().*/
         void ShowOuterPieLabels(const bool show);
+        /** @brief Shows or hides the outside labels of the outer (or main) pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @param labelsToShow Which labels to either show or hide.\n
+                Slice labels not in this list will have the opposite of @c show applied to them.
+            @note This should be called after SetData().*/
+        void ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow);
         /// @}
 
         /// @name Inner Pie Functions
@@ -468,6 +475,13 @@ namespace Wisteria::Graphs
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().*/
         void ShowInnerPieLabels(const bool show);
+        /** @brief Shows or hides the outside labels of the inner pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @param labelsToShow Which labels to either show or hide.\n
+                Slice labels not in this list will have the opposite of @c show applied to them.
+            @note This should be called after SetData().*/
+        void ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow);
         /// @}
 
         /// @name Donut Hole Functions

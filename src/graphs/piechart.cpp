@@ -682,8 +682,8 @@ namespace Wisteria::Graphs
             // outline of inner slices' sides, which will be half as thick as the
             // outer ring's slice sides
             auto sliceLine{ GetPen() };
-            sliceLine.SetWidth(std::max(1.0,
-                                        safe_divide<double>(sliceLine.GetWidth(),2)));
+            sliceLine.SetWidth(std::max(1,
+                (sliceLine.IsOk()? sliceLine.GetWidth() : 2) / 2));
             // slightly adjusted color based on the parent slice color
             sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
@@ -1080,12 +1080,42 @@ namespace Wisteria::Graphs
             );
         }
 
-     //----------------------------------------------------------------
+    //----------------------------------------------------------------
+    void PieChart::ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToShow.cbegin(), labelsToShow.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+                }
+            );
+        }
+
+    //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
             [&](auto& slice) noexcept
                 { slice.ShowGroupLabel(show); }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToShow.cbegin(), labelsToShow.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
+                slice.ShowGroupLabel(inList ? show : !show);
+                }
             );
         }
 
