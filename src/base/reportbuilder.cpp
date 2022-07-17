@@ -24,42 +24,38 @@ namespace Wisteria
         wxASSERT_MSG(parent, L"Parent window must not be null when building a canvas!");
         if (parent == nullptr)
             { return reportPages; }
-        auto json = wxSimpleJSON::LoadFile(m_configFilePath);
+        const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
             { return reportPages; }
 
-        auto reportNameNode = json->GetProperty(L"name");
+        const auto reportNameNode = json->GetProperty(L"name");
         if (reportNameNode->IsOk())
             { m_name = reportNameNode->GetValueString(); }
 
-        auto datasourcesNode = json->GetProperty(L"datasources");
+        const auto datasourcesNode = json->GetProperty(L"datasources");
         try
-            {
-            LoadDatasources(datasourcesNode);
-            }
+            { LoadDatasources(datasourcesNode); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Datasource Section Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                         _(L"Datasource Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
             return reportPages;
             }
 
         try
-            {
-            LoadValues(json->GetProperty(L"values"));
-            }
+            { LoadValues(json->GetProperty(L"values")); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Values Section Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                         _(L"Values Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
             return reportPages;
             }
 
         // start loading the pages
-        auto pagesProperty = json->GetProperty(L"pages");
+        const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
             {
-            auto pages = pagesProperty->GetValueArrayObject();
+            const auto pages = pagesProperty->GetValueArrayObject();
             for (const auto& page : pages)
                 {
                 if (page->IsOk())
@@ -68,18 +64,18 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
-                    auto rowsProperty = page->GetProperty(L"rows");
+                    const auto rowsProperty = page->GetProperty(L"rows");
                     if (rowsProperty->IsOk())
                         {
                         size_t currentRow{ 0 }, currentColumn{ 0 };
-                        auto rows = rowsProperty->GetValueArrayObject();
+                        const auto rows = rowsProperty->GetValueArrayObject();
                         // Empty page? Go to next one.
                         if (rows.size() == 0)
                             { continue; }
                         canvas->SetFixedObjectsGridSize(rows.size(), 1);
                         for (const auto& row : rows)
                             {
-                            auto itemsProperty = row->GetProperty(L"items");
+                            const auto itemsProperty = row->GetProperty(L"items");
                             if (itemsProperty->IsOk())
                                 {
                                 currentColumn = 0;
@@ -142,7 +138,7 @@ namespace Wisteria
                                             {
                                             wxMessageBox(wxString::FromUTF8(
                                                          wxString::FromUTF8(err.what())),
-                                                         _(L"Canvas Item Error"), wxOK|wxICON_ERROR|wxCENTRE);
+                                                         _(L"Canvas Item Error"), wxOK|wxICON_WARNING|wxCENTRE);
                                             }
                                         }
                                     ++currentColumn;
@@ -304,7 +300,7 @@ namespace Wisteria
             if (foundPos != tickmarkValues.cend())
                 { axis.SetTickMarkDisplay(foundPos->second); }
             }
-        const auto display = axisNode->GetProperty(L"label-diplay")->GetValueString().Lower();
+        const auto display = axisNode->GetProperty(L"label-display")->GetValueString().Lower();
         auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
         if (foundPos != labelDisplayValues.cend())
             { axis.SetLabelDisplay(foundPos->second); }
@@ -610,7 +606,7 @@ namespace Wisteria
                     {
                     const wxString dsName = datasource->GetProperty(L"name")->GetValueString();
                     wxString path = datasource->GetProperty(L"path")->GetValueString();
-                    const wxString parser = datasource->GetProperty(L"parser")->GetValueString();
+                    const wxString importer = datasource->GetProperty(L"importer")->GetValueString();
                     // read the variables info
                     //------------------------
                     // ID column
@@ -698,14 +694,6 @@ namespace Wisteria
                         throw std::runtime_error(
                             wxString(_(L"Dataset must have a filepath.")).ToUTF8());
                         }
-                    if (parser.empty() ||
-                        !(parser.CmpNoCase(L"tsv") == 0 ||
-                            parser.CmpNoCase(L"csv") == 0))
-                        {
-                        throw std::runtime_error(
-                            wxString(_(L"Dataset must have a valid parser type specified.")).
-                                    ToUTF8());
-                        }
                     if (!wxFileName::FileExists(path))
                         {
                         path = wxFileName(m_configFilePath).GetPathWithSep() + path;
@@ -715,7 +703,10 @@ namespace Wisteria
                                 wxString(_(L"Dataset not found.")).ToUTF8());
                             }
                         }
-                    if (parser.CmpNoCase(L"csv") == 0)
+                    // import using the user-provided parser or deduce from the file extension
+                    const auto fileExt(wxFileName(path).GetExt());                        
+                    if (importer.CmpNoCase(L"csv") == 0 ||
+                        fileExt.CmpNoCase(L"csv") == 0)
                         {
                         dataset->ImportCSV(path,
                             ImportInfo().
@@ -724,7 +715,9 @@ namespace Wisteria
                             ContinuousColumns(continuousVars).
                             CategoricalColumns(catInfo));
                         }
-                    else if (parser.CmpNoCase(L"tsv") == 0)
+                    else if (importer.CmpNoCase(L"tsv") == 0 ||
+                        fileExt.CmpNoCase(L"tsv") == 0 ||
+                        fileExt.CmpNoCase(L"txt") == 0)
                         {
                         dataset->ImportTSV(path,
                             ImportInfo().
@@ -732,6 +725,12 @@ namespace Wisteria
                             DateColumns(dateInfo).
                             ContinuousColumns(continuousVars).
                             CategoricalColumns(catInfo));
+                        }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString(_(L"Dataset must have a valid importer specified.")).
+                                    ToUTF8());
                         }
                     
                     m_datasets.insert_or_assign(dsName, dataset);
@@ -747,25 +746,32 @@ namespace Wisteria
         {
         const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
-        if (foundPos != m_datasets.cend() &&
-            foundPos->second != nullptr)
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
             {
-            auto variablesNode = graphNode->GetProperty(L"variables");
-            if (variablesNode->IsOk())
-                {
-                auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
-
-                auto linePlot = std::make_shared<LinePlot>(canvas,
-                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
-                    LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
-                linePlot->SetData(foundPos->second,
-                    variablesNode->GetProperty(L"y")->GetValueString(),
-                    variablesNode->GetProperty(L"x")->GetValueString(),
-                    (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
-                return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
-                }
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
             }
-        return nullptr;
+
+        auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            auto linePlot = std::make_shared<LinePlot>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
+            linePlot->SetData(foundPos->second,
+                variablesNode->GetProperty(L"y")->GetValueString(),
+                variablesNode->GetProperty(L"x")->GetValueString(),
+                (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
+            return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for line plot.").ToUTF8());
+            }
         }
 
     //---------------------------------------------------
@@ -775,33 +781,40 @@ namespace Wisteria
         {
         const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
-        if (foundPos != m_datasets.cend() &&
-            foundPos->second != nullptr)
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
             {
-            auto variablesNode = graphNode->GetProperty(L"variables");
-            if (variablesNode->IsOk())
-                {
-                const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-                const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
-                const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
-
-                auto barChart = std::make_shared<CategoricalBarChart>(canvas,
-                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-                
-                const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
-                if (bOrientation.CmpNoCase(L"horizontal") == 0)
-                    { barChart->SetBarOrientation(Orientation::Horizontal); }
-                else if (bOrientation.CmpNoCase(L"vertical") == 0)
-                    { barChart->SetBarOrientation(Orientation::Vertical); }
-
-                barChart->SetData(foundPos->second, categoryName,
-                    (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
-                    (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt));
-
-                return LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
-                }
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
             }
-        return nullptr;
+
+        auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+            const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
+
+            auto barChart = std::make_shared<CategoricalBarChart>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+                
+            const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
+            if (bOrientation.CmpNoCase(L"horizontal") == 0)
+                { barChart->SetBarOrientation(Orientation::Horizontal); }
+            else if (bOrientation.CmpNoCase(L"vertical") == 0)
+                { barChart->SetBarOrientation(Orientation::Vertical); }
+
+            barChart->SetData(foundPos->second, categoryName,
+                (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
+                (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt));
+
+            return LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for categorical bar chart.").ToUTF8());
+            }
         }
 
     //---------------------------------------------------
@@ -811,74 +824,81 @@ namespace Wisteria
         {
         const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
-        if (foundPos != m_datasets.cend() &&
-            foundPos->second != nullptr)
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
             {
-            auto variablesNode = graphNode->GetProperty(L"variables");
-            if (variablesNode->IsOk())
-                {
-                const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-                const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
-                const auto groupVar2Name = variablesNode->GetProperty(L"group-2")->GetValueString();
-
-                auto pieChart = std::make_shared<PieChart>(canvas,
-                    LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
-                pieChart->SetData(foundPos->second,
-                    (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
-                    groupVar1Name,
-                    (groupVar2Name.length() ?std::optional<wxString>(groupVar2Name) : std::nullopt));
-
-                const auto labelPlacement =
-                    ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
-                if (labelPlacement.has_value())
-                    { pieChart->SetLabelPlacement(labelPlacement.value()); }
-
-                const auto outerPieMidLabel = ConvertBinLabelDisplay(
-                    graphNode->GetProperty(L"outer-pie-midpoint-label-display")->GetValueString());
-                if (outerPieMidLabel.has_value())
-                    { pieChart->SetOuterPieMidPointLabelDisplay(outerPieMidLabel.value()); }
-
-                const auto innerPieMidLabel = ConvertBinLabelDisplay(
-                    graphNode->GetProperty(L"inner-pie-midpoint-label-display")->GetValueString());
-                if (innerPieMidLabel.has_value())
-                    { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
-
-                if (graphNode->HasProperty(L"include-inner-pie-labels"))
-                    {
-                    pieChart->ShowInnerPieLabels(
-                        graphNode->GetProperty(L"include-inner-pie-labels")->GetValueBool());
-                    }
-
-                if (graphNode->HasProperty(L"include-outer-pie-labels"))
-                    {
-                    pieChart->ShowOuterPieLabels(
-                        graphNode->GetProperty(L"include-outer-pie-labels")->GetValueBool());
-                    }
-
-                // donut hole info
-                const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");
-                if (donutHoleNode->IsOk())
-                    {
-                    pieChart->IncludeDonutHole(true);
-                    const auto labelProperty = donutHoleNode->GetProperty(L"label");
-                    if (labelProperty->IsOk())
-                        {
-                        auto holeLabel = LoadLabel(labelProperty, pieChart->GetDonutHoleLabel());
-                        if (holeLabel != nullptr)
-                            { pieChart->GetDonutHoleLabel() = *holeLabel; }
-                        }
-                    const auto propNode = donutHoleNode->GetProperty(L"proportion");
-                    if (propNode->IsOk())
-                        { pieChart->SetDonutHoleProportion(propNode->GetValueNumber()); }
-                    const wxColour color(
-                        ConvertColor(donutHoleNode->GetProperty(L"color")->GetValueString()));
-                    if (color.IsOk())
-                        { pieChart->SetDonutHoleColor(color); }
-                    }
-                return LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
-                }
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
             }
-        return nullptr;
+
+        auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+            const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
+            const auto groupVar2Name = variablesNode->GetProperty(L"group-2")->GetValueString();
+
+            auto pieChart = std::make_shared<PieChart>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+            pieChart->SetData(foundPos->second,
+                (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
+                groupVar1Name,
+                (groupVar2Name.length() ?std::optional<wxString>(groupVar2Name) : std::nullopt));
+
+            const auto labelPlacement =
+                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+            if (labelPlacement.has_value())
+                { pieChart->SetLabelPlacement(labelPlacement.value()); }
+
+            const auto outerPieMidLabel = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"outer-pie-midpoint-label-display")->GetValueString());
+            if (outerPieMidLabel.has_value())
+                { pieChart->SetOuterPieMidPointLabelDisplay(outerPieMidLabel.value()); }
+
+            const auto innerPieMidLabel = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"inner-pie-midpoint-label-display")->GetValueString());
+            if (innerPieMidLabel.has_value())
+                { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
+
+            if (graphNode->HasProperty(L"include-inner-pie-labels"))
+                {
+                pieChart->ShowInnerPieLabels(
+                    graphNode->GetProperty(L"include-inner-pie-labels")->GetValueBool());
+                }
+
+            if (graphNode->HasProperty(L"include-outer-pie-labels"))
+                {
+                pieChart->ShowOuterPieLabels(
+                    graphNode->GetProperty(L"include-outer-pie-labels")->GetValueBool());
+                }
+
+            // donut hole info
+            const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");
+            if (donutHoleNode->IsOk())
+                {
+                pieChart->IncludeDonutHole(true);
+                const auto labelProperty = donutHoleNode->GetProperty(L"label");
+                if (labelProperty->IsOk())
+                    {
+                    auto holeLabel = LoadLabel(labelProperty, pieChart->GetDonutHoleLabel());
+                    if (holeLabel != nullptr)
+                        { pieChart->GetDonutHoleLabel() = *holeLabel; }
+                    }
+                const auto propNode = donutHoleNode->GetProperty(L"proportion");
+                if (propNode->IsOk())
+                    { pieChart->SetDonutHoleProportion(propNode->GetValueNumber()); }
+                const wxColour color(
+                    ConvertColor(donutHoleNode->GetProperty(L"color")->GetValueString()));
+                if (color.IsOk())
+                    { pieChart->SetDonutHoleColor(color); }
+                }
+            return LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for pie chart.").ToUTF8());
+            }
         }
 
     //---------------------------------------------------
@@ -888,247 +908,249 @@ namespace Wisteria
         {
         const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
-        if (foundPos != m_datasets.cend() &&
-            foundPos->second != nullptr)
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
             {
-            auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
-
-            auto table = std::make_shared<Graphs::Table>(canvas);
-            table->SetData(foundPos->second, variables,
-                graphNode->GetProperty(L"transpose")->GetValueBool());
-
-            const auto& minWidthProp = graphNode->GetProperty(L"min-width-proportion");
-            if (minWidthProp->IsOk())
-                { table->SetMinWidthProportion(minWidthProp->GetValueNumber()); }
-            const auto& minHeightProp = graphNode->GetProperty(L"min-height-proportion");
-            if (minHeightProp->IsOk())
-                { table->SetMinHeightProportion(minHeightProp->GetValueNumber()); }
-
-            LoadPen(graphNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
-
-            const size_t originalColumnCount = table->GetColumnCount();
-            const size_t originalRowCount = table->GetRowCount();
-
-            // add rows
-            auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
-            if (rowAddCommands.size())
-                {
-                for (const auto& rowAddCommand : rowAddCommands)
-                    {
-                    const std::optional<size_t> position =
-                        LoadPosition(rowAddCommand->GetProperty(L"position"),
-                            originalColumnCount, originalRowCount);
-                    if (!position.has_value())
-                        { continue; }
-                    table->InsertRow(position.value());
-                    // fill the values across the row
-                    const auto values = rowAddCommand->GetProperty(L"values")->GetValueStringVector();
-                    for (size_t i = 0; i < values.size(); ++i)
-                        { table->GetCell(position.value(), i).SetValue(values[i]); }
-                    const wxColour bgcolor(
-                        ConvertColor(rowAddCommand->GetProperty(L"background")->GetValueString()));
-                    if (bgcolor.IsOk())
-                        { table->SetRowBackgroundColor(position.value(), bgcolor); }
-                    }
-                }
-            // group the rows
-            auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
-            for (const auto& rowGrouping : rowGroupings)
-                { table->GroupRow(rowGrouping); }
-
-            // color the rows
-            auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
-            if (rowColorCommands.size())
-                {
-                for (const auto& rowColorCommand : rowColorCommands)
-                    {
-                    const std::optional<size_t> position =
-                        LoadPosition(rowColorCommand->GetProperty(L"position"),
-                            originalColumnCount, originalRowCount);
-                    const wxColour bgcolor(
-                        ConvertColor(rowColorCommand->GetProperty(L"background")->GetValueString()));
-                    if (position.has_value() && bgcolor.IsOk())
-                        { table->SetRowBackgroundColor(position.value(), bgcolor); }
-                    }
-                }
-
-            // change rows' content alignent
-            auto rowContentCommands =
-                graphNode->GetProperty(L"rows-content-align")->GetValueArrayObject();
-            if (rowContentCommands.size())
-                {
-                for (const auto& rowContentCommand : rowContentCommands)
-                    {
-                    const std::optional<size_t> position =
-                        LoadPosition(rowContentCommand->GetProperty(L"position"),
-                            originalColumnCount, originalRowCount);
-                    if (!position.has_value())
-                        { continue; }
-                    const auto hPageAlignment =
-                        rowContentCommand->GetProperty(L"horizontal-page-alignment")->GetValueString();
-                    if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-                        {
-                        table->SetRowHorizontalPageAlignment(position.value(),
-                            PageHorizontalAlignment::LeftAligned);
-                        }
-                    else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-                        {
-                        table->SetRowHorizontalPageAlignment(position.value(),
-                            PageHorizontalAlignment::RightAligned);
-                        }
-                    else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-                        {
-                        table->SetRowHorizontalPageAlignment(position.value(),
-                            PageHorizontalAlignment::Centered);
-                        }
-                    }
-                }
-
-            // column aggregates
-            auto columnAggregates = graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
-            if (columnAggregates.size())
-                {
-                for (const auto& columnAggregate : columnAggregates)
-                    {
-                    const auto aggName = columnAggregate->GetProperty(L"name")->GetValueString();
-                    const auto aggType = columnAggregate->GetProperty(L"type")->GetValueString();
-
-                    // starting column
-                    const std::optional<size_t> startColumn =
-                        LoadPosition(columnAggregate->GetProperty(L"start"),
-                            originalColumnCount, originalRowCount);
-                    // ending column
-                    const std::optional<size_t> endingColumn =
-                        LoadPosition(columnAggregate->GetProperty(L"end"),
-                            originalColumnCount, originalRowCount);
-
-                    Table::AggregateInfo aggInfo;
-                    if (aggType.CmpNoCase(L"percent-change") == 0)
-                        { aggInfo.Type(Table::AggregateType::ChangePercent); }
-                    if (startColumn.has_value())
-                        { aggInfo.FirstCell(startColumn.value()); }
-                    if (endingColumn.has_value())
-                        { aggInfo.LastCell(endingColumn.value()); }
-                    // invalid agg column type
-                    else
-                        { continue; }
-                    table->InsertAggregateColumn(aggInfo, aggName);
-                    }
-                }
-
-            // cell updating
-            auto cellUpdates = graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
-            if (cellUpdates.size())
-                {
-                for (const auto& cellUpdate : cellUpdates)
-                    {
-                    // last column and row will be the last aggregates at this point
-                    // (if applicable)
-                    const std::optional<size_t> rowPosition =
-                        LoadPosition(cellUpdate->GetProperty(L"row"),
-                            table->GetColumnCount(),
-                            table->GetRowCount());
-                    const std::optional<size_t> columnPosition =
-                        LoadPosition(cellUpdate->GetProperty(L"column"),
-                            table->GetColumnCount(),
-                            table->GetRowCount());
-                    if (rowPosition.has_value() && columnPosition.has_value() &&
-                        rowPosition.value() < table->GetRowCount() &&
-                        columnPosition.value() < table->GetColumnCount())
-                        {
-                        auto& currentCell = table->GetCell(rowPosition.value(), columnPosition.value());
-                        // column count
-                        const auto& columnCountProperty =
-                            cellUpdate->GetProperty(L"column-count");
-                        if (columnCountProperty->IsOk())
-                            {
-                            if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
-                                columnCountProperty->GetValueString().CmpNoCase(L"all") == 0)
-                                {
-                                currentCell.SetColumnCount(table->GetColumnCount());
-                                }
-                            else if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                                {
-                                currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
-                                }
-                            }
-                        // row count
-                        const auto& rowCountProperty =
-                            cellUpdate->GetProperty(L"row-count");
-                        if (rowCountProperty->IsOk())
-                            {
-                            if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
-                                rowCountProperty->GetValueString().CmpNoCase(L"all") == 0)
-                                {
-                                currentCell.SetRowCount(table->GetRowCount());
-                                }
-                            else if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                                {
-                                currentCell.SetRowCount(rowCountProperty->GetValueNumber());
-                                }
-                            }
-                        // value
-                        const auto& valueProperty = cellUpdate->GetProperty(L"value");
-                        if (valueProperty->IsOk())
-                            {
-                            if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING)
-                                {
-                                currentCell.SetValue(valueProperty->GetValueString());
-                                }
-                            else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                                { currentCell.SetValue(valueProperty->GetValueNumber()); }
-                            else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NULL)
-                                { currentCell.SetValue(wxEmptyString); }
-                            }
-                        // background color
-                        const wxColour bgcolor(
-                            ConvertColor(cellUpdate->GetProperty(L"background")->GetValueString()));
-                        if (bgcolor.IsOk())
-                            { currentCell.SetBackgroundColor(bgcolor); }
-
-                        // is it highlighted
-                        if (cellUpdate->GetProperty(L"highlight")->IsOk())
-                            {
-                            currentCell.Highlight(
-                                cellUpdate->GetProperty(L"highlight")->GetValueBool());
-                            }
-
-                        // font attributes
-                        if (cellUpdate->GetProperty(L"bold")->IsOk())
-                            {
-                            cellUpdate->GetProperty(L"bold")->GetValueBool() ?
-                                currentCell.GetFont().MakeBold() :
-                                currentCell.GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
-                            }
-
-                        // outer border toggles
-                        const auto outerBorderToggles =
-                            cellUpdate->GetProperty(L"show-borders")->GetValueArrayBool();
-                        if (outerBorderToggles.size() >= 1)
-                            { currentCell.ShowTopBorder(outerBorderToggles[0]); }
-                        if (outerBorderToggles.size() >= 2)
-                            { currentCell.ShowRightBorder(outerBorderToggles[1]); }
-                        if (outerBorderToggles.size() >= 3)
-                            { currentCell.ShowBottomBorder(outerBorderToggles[2]); }
-                        if (outerBorderToggles.size() >= 4)
-                            { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
-
-                        // horizontal page alignment
-                        const auto hPageAlignment =
-                            cellUpdate->GetProperty(L"horizontal-page-alignment")->GetValueString();
-                        if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
-                        else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
-                        else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-                            { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
-                        }
-                    }
-                }
-
-            return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
             }
-        return nullptr;
+
+        auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
+
+        auto table = std::make_shared<Graphs::Table>(canvas);
+        table->SetData(foundPos->second, variables,
+            graphNode->GetProperty(L"transpose")->GetValueBool());
+
+        const auto& minWidthProp = graphNode->GetProperty(L"min-width-proportion");
+        if (minWidthProp->IsOk())
+            { table->SetMinWidthProportion(minWidthProp->GetValueNumber()); }
+        const auto& minHeightProp = graphNode->GetProperty(L"min-height-proportion");
+        if (minHeightProp->IsOk())
+            { table->SetMinHeightProportion(minHeightProp->GetValueNumber()); }
+
+        LoadPen(graphNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
+
+        const size_t originalColumnCount = table->GetColumnCount();
+        const size_t originalRowCount = table->GetRowCount();
+
+        // add rows
+        auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
+        if (rowAddCommands.size())
+            {
+            for (const auto& rowAddCommand : rowAddCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(rowAddCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+                if (!position.has_value())
+                    { continue; }
+                table->InsertRow(position.value());
+                // fill the values across the row
+                const auto values = rowAddCommand->GetProperty(L"values")->GetValueStringVector();
+                for (size_t i = 0; i < values.size(); ++i)
+                    { table->GetCell(position.value(), i).SetValue(values[i]); }
+                const wxColour bgcolor(
+                    ConvertColor(rowAddCommand->GetProperty(L"background")->GetValueString()));
+                if (bgcolor.IsOk())
+                    { table->SetRowBackgroundColor(position.value(), bgcolor); }
+                }
+            }
+        // group the rows
+        auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
+        for (const auto& rowGrouping : rowGroupings)
+            { table->GroupRow(rowGrouping); }
+
+        // color the rows
+        auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
+        if (rowColorCommands.size())
+            {
+            for (const auto& rowColorCommand : rowColorCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(rowColorCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+                const wxColour bgcolor(
+                    ConvertColor(rowColorCommand->GetProperty(L"background")->GetValueString()));
+                if (position.has_value() && bgcolor.IsOk())
+                    { table->SetRowBackgroundColor(position.value(), bgcolor); }
+                }
+            }
+
+        // change rows' content alignent
+        auto rowContentCommands =
+            graphNode->GetProperty(L"rows-content-align")->GetValueArrayObject();
+        if (rowContentCommands.size())
+            {
+            for (const auto& rowContentCommand : rowContentCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(rowContentCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+                if (!position.has_value())
+                    { continue; }
+                const auto hPageAlignment =
+                    rowContentCommand->GetProperty(L"horizontal-page-alignment")->GetValueString();
+                if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
+                    {
+                    table->SetRowHorizontalPageAlignment(position.value(),
+                        PageHorizontalAlignment::LeftAligned);
+                    }
+                else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
+                    {
+                    table->SetRowHorizontalPageAlignment(position.value(),
+                        PageHorizontalAlignment::RightAligned);
+                    }
+                else if (hPageAlignment.CmpNoCase(L"centered") == 0)
+                    {
+                    table->SetRowHorizontalPageAlignment(position.value(),
+                        PageHorizontalAlignment::Centered);
+                    }
+                }
+            }
+
+        // column aggregates
+        auto columnAggregates = graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
+        if (columnAggregates.size())
+            {
+            for (const auto& columnAggregate : columnAggregates)
+                {
+                const auto aggName = columnAggregate->GetProperty(L"name")->GetValueString();
+                const auto aggType = columnAggregate->GetProperty(L"type")->GetValueString();
+
+                // starting column
+                const std::optional<size_t> startColumn =
+                    LoadPosition(columnAggregate->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount);
+                // ending column
+                const std::optional<size_t> endingColumn =
+                    LoadPosition(columnAggregate->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount);
+
+                Table::AggregateInfo aggInfo;
+                if (aggType.CmpNoCase(L"percent-change") == 0)
+                    { aggInfo.Type(Table::AggregateType::ChangePercent); }
+                if (startColumn.has_value())
+                    { aggInfo.FirstCell(startColumn.value()); }
+                if (endingColumn.has_value())
+                    { aggInfo.LastCell(endingColumn.value()); }
+                // invalid agg column type
+                else
+                    { continue; }
+                table->InsertAggregateColumn(aggInfo, aggName);
+                }
+            }
+
+        // cell updating
+        auto cellUpdates = graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
+        if (cellUpdates.size())
+            {
+            for (const auto& cellUpdate : cellUpdates)
+                {
+                // last column and row will be the last aggregates at this point
+                // (if applicable)
+                const std::optional<size_t> rowPosition =
+                    LoadPosition(cellUpdate->GetProperty(L"row"),
+                        table->GetColumnCount(),
+                        table->GetRowCount());
+                const std::optional<size_t> columnPosition =
+                    LoadPosition(cellUpdate->GetProperty(L"column"),
+                        table->GetColumnCount(),
+                        table->GetRowCount());
+                if (rowPosition.has_value() && columnPosition.has_value() &&
+                    rowPosition.value() < table->GetRowCount() &&
+                    columnPosition.value() < table->GetColumnCount())
+                    {
+                    auto& currentCell = table->GetCell(rowPosition.value(), columnPosition.value());
+                    // column count
+                    const auto& columnCountProperty =
+                        cellUpdate->GetProperty(L"column-count");
+                    if (columnCountProperty->IsOk())
+                        {
+                        if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                            columnCountProperty->GetValueString().CmpNoCase(L"all") == 0)
+                            {
+                            currentCell.SetColumnCount(table->GetColumnCount());
+                            }
+                        else if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                            {
+                            currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
+                            }
+                        }
+                    // row count
+                    const auto& rowCountProperty =
+                        cellUpdate->GetProperty(L"row-count");
+                    if (rowCountProperty->IsOk())
+                        {
+                        if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                            rowCountProperty->GetValueString().CmpNoCase(L"all") == 0)
+                            {
+                            currentCell.SetRowCount(table->GetRowCount());
+                            }
+                        else if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                            {
+                            currentCell.SetRowCount(rowCountProperty->GetValueNumber());
+                            }
+                        }
+                    // value
+                    const auto& valueProperty = cellUpdate->GetProperty(L"value");
+                    if (valueProperty->IsOk())
+                        {
+                        if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                            {
+                            currentCell.SetValue(valueProperty->GetValueString());
+                            }
+                        else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                            { currentCell.SetValue(valueProperty->GetValueNumber()); }
+                        else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+                            { currentCell.SetValue(wxEmptyString); }
+                        }
+                    // background color
+                    const wxColour bgcolor(
+                        ConvertColor(cellUpdate->GetProperty(L"background")->GetValueString()));
+                    if (bgcolor.IsOk())
+                        { currentCell.SetBackgroundColor(bgcolor); }
+
+                    // is it highlighted
+                    if (cellUpdate->GetProperty(L"highlight")->IsOk())
+                        {
+                        currentCell.Highlight(
+                            cellUpdate->GetProperty(L"highlight")->GetValueBool());
+                        }
+
+                    // font attributes
+                    if (cellUpdate->GetProperty(L"bold")->IsOk())
+                        {
+                        cellUpdate->GetProperty(L"bold")->GetValueBool() ?
+                            currentCell.GetFont().MakeBold() :
+                            currentCell.GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                        }
+
+                    // outer border toggles
+                    const auto outerBorderToggles =
+                        cellUpdate->GetProperty(L"show-borders")->GetValueArrayBool();
+                    if (outerBorderToggles.size() >= 1)
+                        { currentCell.ShowTopBorder(outerBorderToggles[0]); }
+                    if (outerBorderToggles.size() >= 2)
+                        { currentCell.ShowRightBorder(outerBorderToggles[1]); }
+                    if (outerBorderToggles.size() >= 3)
+                        { currentCell.ShowBottomBorder(outerBorderToggles[2]); }
+                    if (outerBorderToggles.size() >= 4)
+                        { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
+
+                    // horizontal page alignment
+                    const auto hPageAlignment =
+                        cellUpdate->GetProperty(L"horizontal-page-alignment")->GetValueString();
+                    if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
+                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
+                    else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
+                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
+                    else if (hPageAlignment.CmpNoCase(L"centered") == 0)
+                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
+                    }
+                }
+            }
+
+        return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
         }
 
     //---------------------------------------------------
@@ -1786,6 +1808,8 @@ namespace Wisteria
             { L"MeadowSunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
             };
         
+        if (!colorSchemeNode->IsOk())
+            { return nullptr; }
         if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
             {
             std::vector<wxColour> colors;
@@ -1821,7 +1845,7 @@ namespace Wisteria
             { L"image-icon", IconShape::ImageIcon },
             { L"horizontal-separator", IconShape::HorizontalSeparator },
             { L"horizontal-arrow-right-separator", IconShape::HorizontalArrowRightSeparator },
-            { L"image-wholelegend", IconShape::ImageWholeLegend },
+            { L"image-whole-legend", IconShape::ImageWholeLegend },
             { L"color-gradient-icon", IconShape::ColorGradientIcon },
             { L"square-icon", IconShape::SquareIcon },
             { L"triangle-upward-icon", IconShape::TriangleUpwardIcon },
