@@ -410,6 +410,11 @@ namespace Wisteria::Graphs
                                      innerPieSliceGroup.second.cend());
                 ++parentGroupIndex;
                 }
+
+            // Don't show their labels on the outside by default though,
+            // may overlap the outer pie's labels and be too cluttered;
+            // client can turn these on after setting the data.
+            ShowInnerPieLabels(false);
             }
         }
 
