@@ -600,9 +600,13 @@ namespace Wisteria::Graphs
         int smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
+            const wxColour sliceColor =
+                (GetOuterPie().at(i).m_ghost ?
+                    ColorContrast::ChangeOpacity(m_pieColors->GetColor(i), m_ghostOpacity) :
+                    m_pieColors->GetColor(i));
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
-                Brush(m_pieColors->GetColor(i)).
+                Brush(sliceColor).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Pen(GetPen()),
                 drawArea,
@@ -689,11 +693,15 @@ namespace Wisteria::Graphs
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
                 ColorContrast::ShadeOrTint(
                     m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, 0.1));
+            const wxColour sliceColorForBrush =
+                (GetInnerPie().at(i).m_ghost ?
+                    ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity) :
+                    sliceColor);
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
 
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetInnerPie().at(i).GetGroupLabel()).
-                Brush(sliceColor).
+                Brush(sliceColorForBrush).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Pen(sliceLine),
                 innerDrawArea,
@@ -1069,6 +1077,54 @@ namespace Wisteria::Graphs
                 AddObject(donutHoleLabel);
                 }
             }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::GhostOuterPieSlices(const bool ghost)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                { slice.m_ghost = ghost; }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToGhost.cbegin(), labelsToGhost.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
+                slice.m_ghost = (inList ? ghost : !ghost);
+                }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::GhostInnerPieSlices(const bool ghost)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                { slice.m_ghost = ghost; }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToGhost.cbegin(), labelsToGhost.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
+                slice.m_ghost = (inList ? ghost : !ghost);
+                }
+            );
         }
 
     //----------------------------------------------------------------

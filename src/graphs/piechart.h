@@ -326,6 +326,7 @@ namespace Wisteria::Graphs
         private:
             wxString m_groupLabel;
             wxString m_description;
+            bool m_ghost{ false };
             bool m_showText{ true };
             double m_value{ 0.0 };
             double m_percent{ 0.0 };
@@ -407,12 +408,22 @@ namespace Wisteria::Graphs
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
+        /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
+            @param ghost @c true to make the slices translucent, @c false to make them opaque.
+            @note This should be called after SetData().*/
+        void GhostOuterPieSlices(const bool ghost);
+        /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
+            @param ghost @c true to make the slices translucent, @c false to make them opaque.
+            @param labelsToGhost Which slices to ghost or unghost.\n
+                Slice labels not in this list will have the opposite of @c ghost applied to them.
+            @note This should be called after SetData().*/
+        void GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost);
+
         /** @brief Shows or hides the outside labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().*/
         void ShowOuterPieLabels(const bool show);
-        /** @brief Shows or hides the outside labels of the outer (or main) pie
-                (if using a secondary grouping variable).
+        /** @brief Shows or hides the outside labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
                 Slice labels not in this list will have the opposite of @c show applied to them.
@@ -470,6 +481,25 @@ namespace Wisteria::Graphs
         /// @param display What to display.
         void SetInnerPieMidPointLabelDisplay(const BinLabelDisplay display) noexcept
             { m_innerPieMidPointLabelDisplay = display; }
+
+        /** @brief Ghosts or unghosts the slices of the inner pie
+                (if using a secondary grouping variable).
+            @param ghost @c true to make the slices translucent, @c false to make them opaque.
+            @note This should be called after SetData().\n
+                Also, inner slices should only be ghosted its parent slice is ghosted also;
+                otherwise, its opaque parent slice will simply show through it.*/
+        void GhostInnerPieSlices(const bool ghost);
+        /** @brief Ghosts or unghosts the slices of the inner pie
+                (if using a secondary grouping variable).
+            @details This is useful for pushing most slices to the background and drawing
+                attention to the ones that are not ghosted.
+            @param ghost @c true to make the slices translucent, @c false to make them opaque.
+            @param labelsToGhost Which slices to ghost or unghost.\n
+                Slice labels not in this list will have the opposite of @c ghost applied to them.
+            @note This should be called after SetData().\n
+                Also, inner slices should only be ghosted its parent slice is ghosted also;
+                otherwise, its opaque parent slice will simply show through it.*/
+        void GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost);
 
         /** @brief Shows or hides the outside labels of the inner pie
                 (if using a secondary grouping variable).
@@ -595,6 +625,8 @@ namespace Wisteria::Graphs
         std::shared_ptr<Colors::Schemes::ColorScheme> m_pieColors;
 
         bool m_useColorLabels{ false };
+
+        const uint8_t m_ghostOpacity{ 64 };
 
         // donut hole
         bool m_includeDonutHole{ false };
