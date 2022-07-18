@@ -310,6 +310,13 @@ namespace Wisteria::Graphs
             /// @param desc The description.
             void SetDescription(const wxString& desc)
                 { m_description = desc; }
+            /// @returns @c true if the slice being made translucent.
+            [[nodiscard]] bool IsGhosted() const noexcept
+                { return m_ghost; }
+            /// @brief Sets the slice to be translucent.
+            /// @param ghost @c true to make the slice translucent.
+            void Ghost(const bool ghost) noexcept
+                { m_ghost = ghost; }
             /// @brief Whether to display the slice's label outside the outer ring of the pie.
             /// @param show @c true to show the label.
             /// @note Setting this to @c false will also hide the description.
@@ -379,6 +386,8 @@ namespace Wisteria::Graphs
         /// @name Outer Pie Functions
         /// @brief Functions for customizing the outer ring of the pie chart.\n
         ///     If subgrouping is not being used, then this will be the only pie ring.
+        /// @note For functions which accept lists of slices (by label name) such as
+        ///     GhostOuterPieSlices() can be used functions such as GetLargestOuterPieSlices().
         /// @{
 
         /// @brief Accesses the outer pie (or the only pie if a single series chart).\n
@@ -407,6 +416,15 @@ namespace Wisteria::Graphs
         /// @returns Where the outer labels are placed.
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
+
+        /** @brief Gets the labels of the largest slice(s) along the outer (or only) pie.
+            @note In the case of ties, multiple labels will be returned.
+            @returns The labels of the largest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetLargestOuterPieSlices() const;
+        /** @brief Gets the labels of the smallest slice(s) along the outer (or only) pie.
+            @note In the case of ties, multiple labels will be returned.
+            @returns The labels of the smallest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetSmallestOuterPieSlices() const;
 
         /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
@@ -481,6 +499,17 @@ namespace Wisteria::Graphs
         /// @param display What to display.
         void SetInnerPieMidPointLabelDisplay(const BinLabelDisplay display) noexcept
             { m_innerPieMidPointLabelDisplay = display; }
+
+        /** @brief Gets the labels of the largest slice(s) along the inner pie
+                (if using a secondary grouping variable).
+            @note In the case of ties, multiple labels will be returned.
+            @returns The labels of the largest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetLargestInnerPieSlices() const;
+        /** @brief Gets the labels of the smallest slice(s) along the inner pie
+                (if using a secondary grouping variable).
+            @note In the case of ties, multiple labels will be returned.
+            @returns The labels of the smallest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetSmallestInnerPieSlices() const;
 
         /** @brief Ghosts or unghosts the slices of the inner pie
                 (if using a secondary grouping variable).

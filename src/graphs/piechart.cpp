@@ -1080,6 +1080,106 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetLargestOuterPieSlices() const
+        {
+        std::vector<wxString> pieLabels;
+        if (GetOuterPie().size() == 0)
+            { return pieLabels; }
+
+        // find largest percentage
+        const auto& maxPie = *std::max_element(GetOuterPie().cbegin(), GetOuterPie().cend(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
+            );
+
+        // in case of ties, grab all pie slices with same percentage as the largest one
+        std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
+            [&](const auto& slice) noexcept
+                {
+                if (compare_doubles(slice.m_percent, maxPie.m_percent, 1e-2))
+                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                }
+            );
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetSmallestOuterPieSlices() const
+        {
+        std::vector<wxString> pieLabels;
+        if (GetOuterPie().size() == 0)
+            { return pieLabels; }
+
+        // find smallest percentage
+        const auto& minPie = *std::min_element(GetOuterPie().cbegin(), GetOuterPie().cend(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
+            );
+
+        // in case of ties, grab all pie slices with same percentage as the largest one
+        std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
+            [&](const auto& slice) noexcept
+                {
+                if (compare_doubles(slice.m_percent, minPie.m_percent, 1e-2))
+                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                }
+            );
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetLargestInnerPieSlices() const
+        {
+        std::vector<wxString> pieLabels;
+        if (GetInnerPie().size() == 0)
+            { return pieLabels; }
+
+        // find largest percentage
+        const auto& maxPie = *std::max_element(GetInnerPie().cbegin(), GetInnerPie().cend(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
+            );
+
+        // in case of ties, grab all pie slices with same percentage as the largest one
+        std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
+            [&](const auto& slice) noexcept
+                {
+                if (compare_doubles(slice.m_percent, maxPie.m_percent, 1e-2))
+                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                }
+            );
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetSmallestInnerPieSlices() const
+        {
+        std::vector<wxString> pieLabels;
+        if (GetInnerPie().size() == 0)
+            { return pieLabels; }
+
+        // find smallest percentage
+        const auto& minPie = *std::min_element(GetInnerPie().cbegin(), GetInnerPie().cend(),
+            [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
+            );
+
+        // in case of ties, grab all pie slices with same percentage as the largest one
+        std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
+            [&](const auto& slice) noexcept
+                {
+                if (compare_doubles(slice.m_percent, minPie.m_percent, 1e-2))
+                    { pieLabels.emplace_back(slice.m_groupLabel); }
+                }
+            );
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
     void PieChart::GhostOuterPieSlices(const bool ghost)
         {
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),

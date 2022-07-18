@@ -1589,10 +1589,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // turn off all outer ring labels
         groupedPieChart->ShowOuterPieLabels(false);
         groupedPieChart->GhostOuterPieSlices(true);
-        // turn off all but one of the outer labels for the inner ring
+        // turn off all but one of the inner ring slices
         // to draw attention to it
-        groupedPieChart->ShowInnerPieLabels(true, { L"Visual Basic.NET" });
-        groupedPieChart->GhostInnerPieSlices(false, { L"Visual Basic.NET" });
+        groupedPieChart->ShowInnerPieLabels(true, groupedPieChart->GetSmallestInnerPieSlices());
+        groupedPieChart->GhostInnerPieSlices(false, groupedPieChart->GetSmallestInnerPieSlices());
 
         groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 
