@@ -272,7 +272,7 @@ namespace Wisteria::Graphs
         GetLeftYAxis().Show(false);
         GetRightYAxis().Show(false);
 
-        GetPen() = wxNullPen;
+        GetPen() = *wxWHITE_PEN;
 
         GetDonutHoleLabel().GetGraphItemInfo().LabelAlignment(TextAlignment::Justified);
         }
@@ -1191,13 +1191,13 @@ namespace Wisteria::Graphs
         size_t currentLine{ 0 };
 
         // space in line is needed for SVG exporting; otherwise, the blank line gets removed
-        wxString legendText { GetOuterPie().at(0).GetGroupLabel() + L"\n \n" };
+        wxString legendText{ GetOuterPie().at(0).GetGroupLabel() + L"\n \n" };
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::BlankIcon, *wxBLACK, m_pieColors->GetColor(0)));
+            LegendIcon(IconShape::HorizontalLineIcon, *wxBLACK_PEN, m_pieColors->GetColor(0)));
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::HorizontalSeparator, *wxBLACK, *wxBLACK));
+            LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
 
         size_t lineCount{ 0 };
         size_t currentParentSliceIndex{ 0 };
@@ -1233,18 +1233,18 @@ namespace Wisteria::Graphs
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::BlankIcon,
-                        *wxBLACK,
+                    LegendIcon(IconShape::HorizontalLineIcon,
+                        *wxBLACK_PEN,
                         m_pieColors->GetColor(currentParentSliceIndex)));
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::HorizontalSeparator, *wxBLACK, *wxBLACK));
+                    LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
                 }
 
             // add icon and text (after group separator, if needed)
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK, sliceColor));
+                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK_PEN, sliceColor));
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -1282,7 +1282,7 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK,
+                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK_PEN,
                         GetColorScheme()->GetColor(i)));
             }
         legend->SetText(legendText.Trim());

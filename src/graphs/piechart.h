@@ -486,7 +486,7 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
             @note This should be called after SetData().\n
-                Also, inner slices should only be ghosted its parent slice is ghosted also;
+                Also, inner slices should only be ghosted if its parent slice is ghosted also;
                 otherwise, its opaque parent slice will simply show through it.*/
         void GhostInnerPieSlices(const bool ghost);
         /** @brief Ghosts or unghosts the slices of the inner pie
@@ -497,7 +497,7 @@ namespace Wisteria::Graphs
             @param labelsToGhost Which slices to ghost or unghost.\n
                 Slice labels not in this list will have the opposite of @c ghost applied to them.
             @note This should be called after SetData().\n
-                Also, inner slices should only be ghosted its parent slice is ghosted also;
+                Also, inner slices should only be ghosted if its parent slice is ghosted also;
                 otherwise, its opaque parent slice will simply show through it.*/
         void GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost);
 
