@@ -112,19 +112,22 @@ namespace Wisteria::Graphs
         // calculate how many observations are in each group
         aggregate_frequency_set<CatBarBlock> groups;
 
+        double grandTotal{ 0 };
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
             if (m_useValueColumn &&
                 std::isnan(m_continuousColumn->GetValue(i)))
                 { continue; }
+            const double groupTotal = (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1);
+            grandTotal += groupTotal;
             groups.insert(
                 // the current category ID (and group, if applicable)
                 CatBarBlock{
                     m_categoricalColumn->GetValue(i),
                     (m_useGrouping ?
                         m_groupColumn->GetValue(i) : static_cast<Data::GroupIdType>(0)) },
-                (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1));
+                groupTotal);
             }
 
         // add the bars (block-by-block)
@@ -178,8 +181,7 @@ namespace Wisteria::Graphs
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
             {
-            const double percentage = safe_divide<double>(bar.GetLength(),
-                                                          m_categoricalColumn->GetRowCount()) * 100;
+            const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
             const wxString labelStr =
                 (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
                 wxString(wxEmptyString) :
