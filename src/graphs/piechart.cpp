@@ -482,36 +482,14 @@ namespace Wisteria::Graphs
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
-                bool outerLabelIsTooSmall{ false };
-                std::vector<wxPoint> plotAreaPts(4);
-                Polygon::GetRectPoints(GetPlotAreaBoundingBox(), &plotAreaPts[0]);
-                for (;;)
+                const auto labelBox = outerLabel->GetBoundingBox(dc);
+                if (!Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()) )
                     {
-                    auto labelBox = outerLabel->GetBoundingBox(dc);
-                    if (Polygon::IsInsidePolygon(
-                            labelBox.GetTopLeft(), &plotAreaPts[0], plotAreaPts.size()) &&
-                        Polygon::IsInsidePolygon(
-                            labelBox.GetBottomLeft(), &plotAreaPts[0], plotAreaPts.size()) &&
-                        Polygon::IsInsidePolygon(
-                            labelBox.GetTopRight(), &plotAreaPts[0], plotAreaPts.size()) &&
-                        Polygon::IsInsidePolygon(
-                            labelBox.GetBottomRight(), &plotAreaPts[0], plotAreaPts.size()))
-                        { break; }
-                    else
-                        {
-                        const auto currentFontSize = outerLabel->GetFont().GetFractionalPointSize();
-                        // wxFont::MakeSmaller is a little too aggressive, use Scale directly
-                        // with a less aggressive value
-                        outerLabel->GetFont().Scale(.95f);
-                        outerLabel->GetHeaderInfo().GetFont().Scale(.95f);
-                        if (outerLabel->GetFont().GetPointSize() <= 4 ||
-                            compare_doubles(outerLabel->GetFont().GetFractionalPointSize(),
-                                            currentFontSize))
-                            {
-                            outerLabelIsTooSmall = true;
-                            break;
-                            }
-                        }
+                    const auto currentFontSize = outerLabel->GetFont().GetFractionalPointSize();
+                    const auto& [widthInside, heightInside] =
+                        Polygon::GetPercentInsideRect(labelBox, GetPlotAreaBoundingBox());
+                    const auto smallerScale = std::min(widthInside, heightInside);
+                    outerLabel->GetFont().SetFractionalPointSize(currentFontSize * smallerScale);
                     }
                 smallestOuterLabelFontSize =
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
