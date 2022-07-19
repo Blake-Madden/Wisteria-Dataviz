@@ -255,14 +255,21 @@ namespace Wisteria::Graphs
         for (auto& bar : GetBars())
             {
             const double percentage = safe_divide<double>(bar.GetLength(), m_validN)*100;
-            const wxString labelStr = (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                wxString(wxEmptyString) :
+            const wxString labelStr =
+                (bar.GetLength() == 0 ||
+                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+                    wxString(wxEmptyString) :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
+                    bar.GetAxisLabel().GetText() :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) :
+                    wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
-                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
-                L" (" + wxNumberFormatter::ToString(percentage, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)";
+                    wxNumberFormatter::ToString(percentage, 0,
+                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+                    wxNumberFormatter::ToString(bar.GetLength(), 0,
+                                                Settings::GetDefaultNumberFormat()) +
+                    L" (" + wxNumberFormatter::ToString(percentage, 0,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)";
             bar.GetLabel().SetText(labelStr);
             }
         m_binCount = groups.get_data().size();
@@ -457,21 +464,27 @@ namespace Wisteria::Graphs
                 if (block.second.second.size() > 1)
                     {
                     theBlock.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
-                    theBlock.GetSelectionLabel().GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::Centered);
+                    theBlock.GetSelectionLabel().GetHeaderInfo().
+                        Enable(true).LabelAlignment(TextAlignment::Centered);
                     }
 
                 theBar.AddBlock(theBlock);
                 }
 
             const double barValue = currentBarBlocksTotal;
-            const double percentage = safe_divide<double>(barValue,total) * 100;
-            const wxString barLabel = (barValue == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ? wxString(wxEmptyString) :
+            const double percentage = safe_divide<double>(barValue, total) * 100;
+            const wxString barLabel =
+                (barValue == 0 ||
+                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay ||
+                 // for ranges, there is no concept of group name
+                 GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
+                    wxString(wxEmptyString) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                     wxNumberFormatter::ToString(barValue, 0, Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                     wxNumberFormatter::ToString(percentage, 0,
-                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
-                wxNumberFormatter::ToString(barValue, 0,
+                                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
+                    wxNumberFormatter::ToString(barValue, 0,
                     Settings::GetDefaultNumberFormat()) +
                     L" (" +
                     wxNumberFormatter::ToString(percentage, 0,

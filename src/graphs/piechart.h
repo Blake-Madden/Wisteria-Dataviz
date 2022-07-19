@@ -567,11 +567,15 @@ namespace Wisteria::Graphs
         /// @param byGroup If @c true, will highlight the largest inner slice(s) within each main
         ///     group from the outer pie. @c false will only highlight the largest slice(s)
         ///     along the entire inner pie.
+        /// @param showOuterPieMidPointLabels @c true to show the mid-point labels on the outer pie.\n
+        ///     Setting this to @c false is useful if you wish to more aggressively hide
+        ///     the outer pie.
         /// @note This is only relevant if using multiple group columns.
-        void ShowcaseLargestInnerPieSlices(const bool byGroup)
+        void ShowcaseLargestInnerPieSlices(const bool byGroup,
+                                           const bool showOuterPieMidPointLabels)
             {
             ShowOuterPieLabels(false);
-            ShowOuterPieMidPointLabels(false);
+            ShowOuterPieMidPointLabels(showOuterPieMidPointLabels);
             GhostOuterPieSlices(true);
 
             const std::vector<wxString> highlightSlices = byGroup ?
@@ -587,11 +591,15 @@ namespace Wisteria::Graphs
         /// @param byGroup If @c true, will highlight the smallest inner slice(s) within each main
         ///     group from the outer pie. @c false will only highlight the smallest slice(s)
         ///     along the entire inner pie.
+        /// @param showOuterPieMidPointLabels @c true to show the mid-point labels on the outer pie.\n
+        ///     Setting this to @c false is useful if you wish to more aggressively hide
+        ///     the outer pie.
         /// @note This is only relevant if using multiple group columns.
-        void ShowcaseSmallestInnerPieSlices(const bool byGroup)
+        void ShowcaseSmallestInnerPieSlices(const bool byGroup,
+                                            const bool showOuterPieMidPointLabels)
             {
             ShowOuterPieLabels(false);
-            ShowOuterPieMidPointLabels(false);
+            ShowOuterPieMidPointLabels(showOuterPieMidPointLabels);
             GhostOuterPieSlices(true);
 
             const std::vector<wxString> highlightSlices = byGroup ?

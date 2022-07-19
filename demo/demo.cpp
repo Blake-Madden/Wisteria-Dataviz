@@ -1081,7 +1081,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
-     // Donut Chart
+    // Donut Chart
     else if (event.GetId() == MyApp::ID_NEW_DONUTCHART)
         {
         subframe->SetTitle(_(L"Donut Chart"));
@@ -1586,8 +1586,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto groupedPieChart = std::make_shared<PieChart>(subframe->m_canvas);
         groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
+        groupedPieChart->SetOuterPieMidPointLabelDisplay(BinLabelDisplay::BinName);
+
         // bring attention to the smallest slices within each group
-        groupedPieChart->ShowcaseSmallestInnerPieSlices(true);
+        groupedPieChart->ShowcaseSmallestInnerPieSlices(true, true);
 
         groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 

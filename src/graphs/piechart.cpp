@@ -39,9 +39,12 @@ namespace Wisteria::GraphItems
             pieLabel->SetText(wxNumberFormatter::ToString((m_percent * 100), 0) + L"%");
             break;
         case BinLabelDisplay::NoDisplay:
+            pieLabel->SetText(wxEmptyString);
+            break;
+        case BinLabelDisplay::BinName:
             [[fallthrough]];
         default:
-            pieLabel->SetText(wxEmptyString);
+            // leave as the name of the slice
             break;
             }
 
