@@ -240,7 +240,8 @@ namespace Wisteria
             { L"percentage", BinLabelDisplay::BinPercentage },
             { L"value", BinLabelDisplay::BinValue },
             { L"value-and-percentage", BinLabelDisplay::BinValueAndPercentage },
-            { L"no-display", BinLabelDisplay::NoDisplay }
+            { L"no-display", BinLabelDisplay::NoDisplay },
+            { L"bin-name", BinLabelDisplay::BinName }
             };
 
         const auto foundValue = values.find(value.Lower().ToStdWstring());
@@ -272,13 +273,18 @@ namespace Wisteria
         {
         if (penNode->IsOk())
             {
-            const wxColour penColor(
-                ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
-            if (penColor.IsOk())
-                { pen.SetColour(penColor); }
-            if (penNode->GetProperty(L"width")->IsOk())
+            if (penNode->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+                { pen = wxNullPen; }
+            else
                 {
-                pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1));
+                const wxColour penColor(
+                    ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
+                if (penColor.IsOk())
+                    { pen.SetColour(penColor); }
+                if (penNode->GetProperty(L"width")->IsOk())
+                    {
+                    pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1));
+                    }
                 }
             }
         }
@@ -887,6 +893,42 @@ namespace Wisteria
                 {
                 pieChart->ShowOuterPieLabels(
                     graphNode->GetProperty(L"include-outer-pie-labels")->GetValueBool());
+                }
+
+            if (graphNode->HasProperty(L"color-labels"))
+                {
+                pieChart->UseColorLabels(
+                    graphNode->GetProperty(L"color-labels")->GetValueBool());
+                }
+
+            // showcase of slices
+            const auto showcaseNode = graphNode->GetProperty(L"showcase-slices");
+            if (showcaseNode->IsOk())
+                {
+                const auto pieType = showcaseNode->GetProperty(L"pie")->GetValueString();
+                const auto categoryType = showcaseNode->GetProperty(L"category")->GetValueString();
+                if (pieType.CmpNoCase(L"inner") == 0)
+                    {
+                    if (categoryType.CmpNoCase(L"smallest") == 0)
+                        {
+                        pieChart->ShowcaseSmallestInnerPieSlices(
+                            showcaseNode->GetProperty(L"by-group")->GetValueBool(),
+                            showcaseNode->GetProperty(L"show-outer-pie-labels")->GetValueBool() );
+                        }
+                    else if (categoryType.CmpNoCase(L"largest") == 0)
+                        {
+                        pieChart->ShowcaseLargestInnerPieSlices(
+                            showcaseNode->GetProperty(L"by-group")->GetValueBool(),
+                            showcaseNode->GetProperty(L"show-outer-pie-labels")->GetValueBool() );
+                        }
+                    }
+                if (pieType.CmpNoCase(L"outer") == 0)
+                    {
+                    if (categoryType.CmpNoCase(L"smallest") == 0)
+                        { pieChart->ShowcaseSmallestOuterPieSlices(); }
+                    else if (categoryType.CmpNoCase(L"largest") == 0)
+                        { pieChart->ShowcaseLargestOuterPieSlices(); }
+                    }
                 }
 
             // donut hole info
@@ -1960,7 +2002,7 @@ namespace Wisteria
             { item->SetLeftPadding(paddingSpec.at(3)); }
 
         // canvas padding (going clockwise)
-        const auto canvasPaddingSpec = itemNode->GetProperty(L"canvas-margin")->GetValueArrayNumber();
+        const auto canvasPaddingSpec = itemNode->GetProperty(L"canvas-margins")->GetValueArrayNumber();
         if (canvasPaddingSpec.size() > 0)
             { item->SetTopCanvasMargin(canvasPaddingSpec.at(0)); }
         if (canvasPaddingSpec.size() > 1)
