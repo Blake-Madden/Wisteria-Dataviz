@@ -500,16 +500,62 @@ namespace Wisteria::Graphs
         void SetInnerPieMidPointLabelDisplay(const BinLabelDisplay display) noexcept
             { m_innerPieMidPointLabelDisplay = display; }
 
+        /// @brief Brings to focus the largest slice(s) along the inner pie.
+        /// @details This will make all other slices (including the outer pie) translucent
+        ///     and hide their outer labels.
+        /// @param byGroup If @c true, will highlight the largest inner slice(s) within each main
+        ///     group from the outer pie. @c false will only highlight the largest slice(s)
+        ///     along the entire inner pie.
+        /// @note This is only relevant if using multiple group columns.
+        void ShowcaseLargestInnerPieSlices(const bool byGroup)
+            {
+            ShowOuterPieLabels(false);
+            GhostOuterPieSlices(true);
+            const std::vector<wxString> highlightSlices = byGroup ?
+                GetLargestInnerPieSlicesByGroup() :
+                GetLargestInnerPieSlices();
+            ShowInnerPieLabels(true, highlightSlices);
+            GhostInnerPieSlices(false, highlightSlices);
+            }
+        /// @brief Brings to focus the smallest slice(s) along the inner pie.
+        /// @details This will make all other slices (including the outer pie) translucent
+        ///     and hide their outer labels.
+        /// @param byGroup If @c true, will highlight the smallest inner slice(s) within each main
+        ///     group from the outer pie. @c false will only highlight the smallest slice(s)
+        ///     along the entire inner pie.
+        /// @note This is only relevant if using multiple group columns.
+        void ShowcaseSmallestInnerPieSlices(const bool byGroup)
+            {
+            ShowOuterPieLabels(false);
+            GhostOuterPieSlices(true);
+            const std::vector<wxString> highlightSlices = byGroup ?
+                GetSmallestInnerPieSlicesByGroup() :
+                GetSmallestInnerPieSlices();
+            ShowInnerPieLabels(true, highlightSlices);
+            GhostInnerPieSlices(false, highlightSlices);
+            }
         /** @brief Gets the labels of the largest slice(s) along the inner pie
                 (if using a secondary grouping variable).
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the largest pie slice(s).*/
         [[nodiscard]] std::vector<wxString> GetLargestInnerPieSlices() const;
+        /** @brief Gets the labels of the largest slice(s) along the inner pie for each group
+                (i.e., parent pie slice).
+            @details This only applies if using a secondary grouping variable.
+            @note In the case of ties within a group, multiple labels will be returned.
+            @returns The labels of the largest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetLargestInnerPieSlicesByGroup() const;
         /** @brief Gets the labels of the smallest slice(s) along the inner pie
                 (if using a secondary grouping variable).
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the smallest pie slice(s).*/
         [[nodiscard]] std::vector<wxString> GetSmallestInnerPieSlices() const;
+        /** @brief Gets the labels of the smallest slice(s) along the inner pie for each group
+                (i.e., parent pie slice).
+            @details This only applies if using a secondary grouping variable.
+            @note In the case of ties within a group, multiple labels will be returned.
+            @returns The labels of the smallest pie slice(s).*/
+        [[nodiscard]] std::vector<wxString> GetSmallestInnerPieSlicesByGroup() const;
 
         /** @brief Ghosts or unghosts the slices of the inner pie
                 (if using a secondary grouping variable).

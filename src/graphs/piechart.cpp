@@ -1117,7 +1117,7 @@ namespace Wisteria::Graphs
                 { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
             );
 
-        // in case of ties, grab all pie slices with same percentage as the largest one
+        // in case of ties, grab all pie slices with same percentage as the smallest one
         std::for_each(GetOuterPie().cbegin(), GetOuterPie().cend(),
             [&](const auto& slice) noexcept
                 {
@@ -1155,6 +1155,43 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetLargestInnerPieSlicesByGroup() const
+        {
+        std::vector<wxString> pieLabels;
+        for (size_t i = 0; i < GetOuterPie().size(); ++i)
+            {
+            // get the inner slices within the current parent slice
+            std::vector<const SliceInfo*> innerSlicesForCurrentGroup;
+            std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
+                [&](const auto& slice)
+                {
+                if (slice.m_parentSliceGroup == i)
+                    { innerSlicesForCurrentGroup.push_back(&slice); }
+                }
+                );
+            if (innerSlicesForCurrentGroup.size() == 0)
+                { continue; }
+            // find largest percentage within the subgroup of slices
+            const auto maxPie = *std::max_element(
+                innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+                [](const auto& lhv, const auto& rhv) noexcept
+                    { return compare_doubles_less(lhv->m_percent, rhv->m_percent, 1e-2); }
+                );
+
+            // in case of ties, grab all pie slices with same percentage as the largest one
+            std::for_each(innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+                [&](const auto& slice) noexcept
+                    {
+                    if (compare_doubles(slice->m_percent, maxPie->m_percent, 1e-2))
+                        { pieLabels.emplace_back(slice->m_groupLabel); }
+                    }
+                );
+            }
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
     std::vector<wxString> PieChart::GetSmallestInnerPieSlices() const
         {
         std::vector<wxString> pieLabels;
@@ -1167,7 +1204,7 @@ namespace Wisteria::Graphs
                 { return compare_doubles_less(lhv.m_percent, rhv.m_percent, 1e-2); }
             );
 
-        // in case of ties, grab all pie slices with same percentage as the largest one
+        // in case of ties, grab all pie slices with same percentage as the smallest one
         std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
             [&](const auto& slice) noexcept
                 {
@@ -1175,6 +1212,43 @@ namespace Wisteria::Graphs
                     { pieLabels.emplace_back(slice.m_groupLabel); }
                 }
             );
+
+        return pieLabels;
+        }
+
+    //----------------------------------------------------------------
+    std::vector<wxString> PieChart::GetSmallestInnerPieSlicesByGroup() const
+        {
+        std::vector<wxString> pieLabels;
+        for (size_t i = 0; i < GetOuterPie().size(); ++i)
+            {
+            // get the inner slices within the current parent slice
+            std::vector<const SliceInfo*> innerSlicesForCurrentGroup;
+            std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
+                [&](const auto& slice)
+                {
+                if (slice.m_parentSliceGroup == i)
+                    { innerSlicesForCurrentGroup.push_back(&slice); }
+                }
+                );
+            if (innerSlicesForCurrentGroup.size() == 0)
+                { continue; }
+            // find smallest percentage within the subgroup of slices
+            const auto minPie = *std::min_element(
+                innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+                [](const auto& lhv, const auto& rhv) noexcept
+                    { return compare_doubles_less(lhv->m_percent, rhv->m_percent, 1e-2); }
+                );
+
+            // in case of ties, grab all pie slices with same percentage as the smallest one
+            std::for_each(innerSlicesForCurrentGroup.cbegin(), innerSlicesForCurrentGroup.cend(),
+                [&](const auto& slice) noexcept
+                    {
+                    if (compare_doubles(slice->m_percent, minPie->m_percent, 1e-2))
+                        { pieLabels.emplace_back(slice->m_groupLabel); }
+                    }
+                );
+            }
 
         return pieLabels;
         }

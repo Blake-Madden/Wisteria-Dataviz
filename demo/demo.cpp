@@ -1586,13 +1586,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto groupedPieChart = std::make_shared<PieChart>(subframe->m_canvas);
         groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
-        // turn off all outer ring labels
-        groupedPieChart->ShowOuterPieLabels(false);
-        groupedPieChart->GhostOuterPieSlices(true);
-        // turn off all but one of the inner ring slices
-        // to draw attention to it
-        groupedPieChart->ShowInnerPieLabels(true, groupedPieChart->GetSmallestInnerPieSlices());
-        groupedPieChart->GhostInnerPieSlices(false, groupedPieChart->GetSmallestInnerPieSlices());
+        // bring attention to the largest slices within each group
+        groupedPieChart->ShowcaseLargestInnerPieSlices(true);
 
         groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 
