@@ -92,6 +92,20 @@ namespace Wisteria::Graphs
             GetScalingAxis().SetRange(0, m_longestBarLength, 0,
                 // add a little extra padding to the scaling axis if we are using labels.
                 IsShowingBarLabels());
+
+            // tweak scaling, if possible
+            if (m_longestBarLength > 300 && m_longestBarLength < 1'500)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 3),
+                    GetScalingAxis().GetPrecision(), 100, 1);
+                }
+            else if (m_longestBarLength >= 1'500)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 4),
+                    GetScalingAxis().GetPrecision(), 500, 1);
+                }
             }
 
         UpdateCanvasForBars();
