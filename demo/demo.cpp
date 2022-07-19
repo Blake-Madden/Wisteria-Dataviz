@@ -100,7 +100,7 @@ MyFrame::MyFrame()
     InitToolBar(GetToolBar());
 
     // Accelerators
-    wxAcceleratorEntry entries[7];
+    wxAcceleratorEntry entries[7]{ 0 };
     entries[0].Set(wxACCEL_CTRL, L'N', wxID_NEW);
     entries[1].Set(wxACCEL_CTRL, L'X', wxID_EXIT);
     entries[2].Set(wxACCEL_CTRL, L'A', wxID_ABOUT);
@@ -1586,8 +1586,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto groupedPieChart = std::make_shared<PieChart>(subframe->m_canvas);
         groupedPieChart->SetData(pieData, L"Enrollment", L"COLLEGE", L"Course");
 
-        // bring attention to the largest slices within each group
-        groupedPieChart->ShowcaseLargestInnerPieSlices(true);
+        // bring attention to the smallest slices within each group
+        groupedPieChart->ShowcaseSmallestInnerPieSlices(true);
 
         groupedPieChart->SetLabelPlacement(LabelPlacement::NextToParent);
 

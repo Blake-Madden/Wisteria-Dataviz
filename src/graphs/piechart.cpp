@@ -38,8 +38,10 @@ namespace Wisteria::GraphItems
         case BinLabelDisplay::BinPercentage:
             pieLabel->SetText(wxNumberFormatter::ToString((m_percent * 100), 0) + L"%");
             break;
+        case BinLabelDisplay::NoDisplay:
+            [[fallthrough]];
         default:
-            // no display
+            pieLabel->SetText(wxEmptyString);
             break;
             }
 
@@ -601,7 +603,7 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
             const wxColour sliceColor =
-                (GetOuterPie().at(i).m_ghost ?
+                (GetOuterPie().at(i).IsGhosted() ?
                     ColorContrast::ChangeOpacity(m_pieColors->GetColor(i), m_ghostOpacity) :
                     m_pieColors->GetColor(i));
             auto pSlice = std::make_shared<PieSlice>(
@@ -612,6 +614,7 @@ namespace Wisteria::Graphs
                 drawArea,
                 startAngle, startAngle + (GetOuterPie().at(i).m_percent * 360),
                 GetOuterPie().at(i).m_value, GetOuterPie().at(i).m_percent);
+            pSlice->SetMidPointLabelDisplay(GetOuterPie().at(i).GetMidPointLabelDisplay());
             if (GetOuterPie().at(i).m_description.length())
                 {
                 pSlice->SetText(GetOuterPie().at(i).GetGroupLabel() + L"\n" +
@@ -639,7 +642,9 @@ namespace Wisteria::Graphs
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
             auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
-                                                        GetOuterPieMidPointLabelDisplay());
+                (pSlice->GetMidPointLabelDisplay().has_value() ?
+                    pSlice->GetMidPointLabelDisplay().value() :
+                    GetOuterPieMidPointLabelDisplay()) );
             if (middleLabel != nullptr)
                 {
                 middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
@@ -694,7 +699,7 @@ namespace Wisteria::Graphs
                 ColorContrast::ShadeOrTint(
                     m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, 0.1));
             const wxColour sliceColorForBrush =
-                (GetInnerPie().at(i).m_ghost ?
+                (GetInnerPie().at(i).IsGhosted() ?
                     ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity) :
                     sliceColor);
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
@@ -707,7 +712,8 @@ namespace Wisteria::Graphs
                 innerDrawArea,
                 startAngle, startAngle + (GetInnerPie().at(i).m_percent * 360),
                 GetInnerPie().at(i).m_value, GetInnerPie().at(i).m_percent);
-            pSlice->SetArcPen(GetPen());
+            pSlice->SetMidPointLabelDisplay(GetInnerPie().at(i).GetMidPointLabelDisplay());
+            pSlice->GetArcPen() = GetPen();
             if (GetInnerPie().at(i).m_description.length())
                 {
                 pSlice->SetText(GetInnerPie().at(i).GetGroupLabel() + L"\n" +
@@ -731,8 +737,10 @@ namespace Wisteria::Graphs
             auto middleLabel = pSlice->CreateMiddleLabel(dc,
                 // take into account the hole consuming a larger % of the inner
                 // area compared to the full pie area
-                safe_divide(1 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,
-                GetInnerPieMidPointLabelDisplay());
+                safe_divide(1.0 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,
+                (pSlice->GetMidPointLabelDisplay().has_value() ?
+                    pSlice->GetMidPointLabelDisplay().value() :
+                    GetInnerPieMidPointLabelDisplay()) );
             if (middleLabel != nullptr)
                 {
                 middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
@@ -1258,7 +1266,7 @@ namespace Wisteria::Graphs
         {
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
             [&](auto& slice) noexcept
-                { slice.m_ghost = ghost; }
+                { slice.Ghost(ghost); }
             );
         }
 
@@ -1272,7 +1280,7 @@ namespace Wisteria::Graphs
                     labelsToGhost.cbegin(), labelsToGhost.cend(),
                     [&slice](const auto& label)
                     { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
-                slice.m_ghost = (inList ? ghost : !ghost);
+                slice.Ghost(inList ? ghost : !ghost);
                 }
             );
         }
@@ -1282,7 +1290,7 @@ namespace Wisteria::Graphs
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
             [&](auto& slice) noexcept
-                { slice.m_ghost = ghost; }
+                { slice.Ghost(ghost); }
             );
         }
 
@@ -1296,7 +1304,7 @@ namespace Wisteria::Graphs
                     labelsToGhost.cbegin(), labelsToGhost.cend(),
                     [&slice](const auto& label)
                     { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
-                slice.m_ghost = (inList ? ghost : !ghost);
+                slice.Ghost(inList ? ghost : !ghost);
                 }
             );
         }
@@ -1326,6 +1334,34 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::ShowOuterPieMidPointLabels(const bool show)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                { slice.SetMidPointLabelDisplay(show ?
+                    std::nullopt :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay)); }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowOuterPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow)
+        {
+        std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToShow.cbegin(), labelsToShow.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
+                slice.SetMidPointLabelDisplay(inList ?
+                    std::nullopt :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                }
+            );
+        }
+
+    //----------------------------------------------------------------
     void PieChart::ShowInnerPieLabels(const bool show)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
@@ -1345,6 +1381,34 @@ namespace Wisteria::Graphs
                     [&slice](const auto& label)
                     { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
                 slice.ShowGroupLabel(inList ? show : !show);
+                }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowInnerPieMidPointLabels(const bool show)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                { slice.SetMidPointLabelDisplay(show ?
+                    std::nullopt :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay)); }
+            );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowInnerPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow)
+        {
+        std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
+            [&](auto& slice) noexcept
+                {
+                const bool inList = (std::find_if(
+                    labelsToShow.cbegin(), labelsToShow.cend(),
+                    [&slice](const auto& label)
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
+                slice.SetMidPointLabelDisplay(inList ?
+                    std::nullopt :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
                 }
             );
         }

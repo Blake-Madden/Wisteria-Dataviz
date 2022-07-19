@@ -38,12 +38,11 @@ namespace Wisteria::GraphItems
         
         /// @returns The pen used for the outer arc of the slice, if different
         ///     from the pen used for the sides.
+        [[nodiscard]] std::optional<wxPen>& GetArcPen() noexcept
+            { return m_arcPen; }
+        /// @private
         [[nodiscard]] const std::optional<wxPen>& GetArcPen() const noexcept
             { return m_arcPen; }
-        /** @brief Sets a different pen to use for the outer arc of the slice.
-            @pen The pen to use for the arc.*/
-        void SetArcPen(const std::optional<wxPen>& pen)
-            { m_arcPen = pen; }
         /** @brief Creates a label to display in the middle of the slice.\n
                 This is usually a raw count of observations in the slice, or its percentage of the
                 overall pie.
@@ -66,6 +65,14 @@ namespace Wisteria::GraphItems
             @returns The label, which will already be anchored to the middle of the slices's outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
                           wxDC& dc, const wxRect& pieArea);
+        /// @returns The custom midpoint display, specific to this slice.
+        [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
+            { return m_midPointLabelDisplay; }
+        /// @brief Sets the custom midpoint display, specific to this slice.
+        /// @param blDisplay The display to use.
+        /// @note This is usually @c std::nullopt and the parent pie's display is applied.
+        void SetMidPointLabelDisplay(const std::optional<BinLabelDisplay>& blDisplay) noexcept
+            { m_midPointLabelDisplay = blDisplay; }
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
         ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1 would be the outer
@@ -98,10 +105,10 @@ namespace Wisteria::GraphItems
         // obligatory virtual interfaces that aren't implemented
         [[deprecated("Not implemented")]]
         void SetBoundingBox(const wxRect&, wxDC& dc, const double) final
-            { wxFAIL_MSG("Not implemented for PieSlice"); }
+            { wxFAIL_MSG(L"Not implemented for PieSlice"); }
         [[deprecated("Not implemented")]]
         void Offset(const int, const int) final
-            { wxFAIL_MSG("Not implemented for PieSlice"); }
+            { wxFAIL_MSG(L"Not implemented for PieSlice"); }
 
         wxRect m_pieArea;
         double m_startAngle{ 0 };
@@ -110,6 +117,7 @@ namespace Wisteria::GraphItems
         double m_percent{ 0 };
 
         std::optional<wxPen> m_arcPen;
+        std::optional<BinLabelDisplay> m_midPointLabelDisplay;
         };
     }
 
@@ -323,6 +331,14 @@ namespace Wisteria::Graphs
             ///     The label and description will still be shown if the slice is selected.
             void ShowGroupLabel(const bool show) noexcept
                 { m_showText = show; }
+            /// @returns The custom midpoint display, specific to this slice.
+            [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
+                { return m_midPointLabelDisplay; }
+            /// @brief Sets the custom midpoint display, specific to this slice.
+            /// @param blDisplay The display to use.
+            /// @note This is usually @c std::nullopt and the parent pie's display is applied.
+            void SetMidPointLabelDisplay(const std::optional<BinLabelDisplay>& blDisplay) noexcept
+                { m_midPointLabelDisplay = blDisplay; }
 
             /// @private
             [[nodiscard]] bool operator==(const SliceInfo& that) const
@@ -338,6 +354,7 @@ namespace Wisteria::Graphs
             double m_value{ 0.0 };
             double m_percent{ 0.0 };
             Wisteria::Data::GroupIdType m_parentSliceGroup{ 0 };
+            std::optional<BinLabelDisplay> m_midPointLabelDisplay;
             };
 
         /// @brief A vector of informational blocks about a pie ring's slices.
@@ -417,6 +434,35 @@ namespace Wisteria::Graphs
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
+        /// @brief Brings to focus the largest slice(s) along the outer (or only) pie.
+        /// @details This will make all other slices (including the inner pie) translucent
+        ///     and hide their labels.
+        void ShowcaseLargestOuterPieSlices()
+            {
+            const std::vector<wxString> highlightSlices = GetLargestOuterPieSlices();
+            ShowOuterPieLabels(true, highlightSlices);
+            ShowOuterPieMidPointLabels(true, highlightSlices);
+            GhostOuterPieSlices(false, highlightSlices);
+
+            ShowInnerPieLabels(false);
+            ShowInnerPieMidPointLabels(false);
+            GhostInnerPieSlices(true);
+            }
+        /// @brief Brings to focus the smallest slice(s) along the outer (or only) pie.
+        /// @details This will make all other slices (including the inner pie) translucent
+        ///     and hide their labels.
+        void ShowcaseSmallestOuterPieSlices()
+            {
+            const std::vector<wxString> highlightSlices = GetSmallestOuterPieSlices();
+            ShowOuterPieLabels(true, highlightSlices);
+            ShowOuterPieMidPointLabels(true, highlightSlices);
+            GhostOuterPieSlices(false, highlightSlices);
+
+            ShowInnerPieLabels(false);
+            ShowInnerPieMidPointLabels(false);
+            GhostInnerPieSlices(true);
+            }
+
         /** @brief Gets the labels of the largest slice(s) along the outer (or only) pie.
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the largest pie slice(s).*/
@@ -447,6 +493,21 @@ namespace Wisteria::Graphs
                 Slice labels not in this list will have the opposite of @c show applied to them.
             @note This should be called after SetData().*/
         void ShowOuterPieLabels(const bool show, const std::vector<wxString>& labelsToShow);
+
+        /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
+            @param show @c true to show the labels, @c false to hide them.
+            @note This should be called after SetData().\n
+                Also, if @c show is @c true, then the outer pie's mid-point display will be used.
+                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+        void ShowOuterPieMidPointLabels(const bool show);
+        /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
+            @param show @c true to show the labels, @c false to hide them.
+            @param labelsToShow Which labels to either show or hide.\n
+                Slice labels not in this list will have the opposite of @c show applied to them.
+            @note This should be called after SetData().\n
+                Also, if @c show is @c true, then the outer pie's mid-point display will be used.
+                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+        void ShowOuterPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow);
         /// @}
 
         /// @name Inner Pie Functions
@@ -502,7 +563,7 @@ namespace Wisteria::Graphs
 
         /// @brief Brings to focus the largest slice(s) along the inner pie.
         /// @details This will make all other slices (including the outer pie) translucent
-        ///     and hide their outer labels.
+        ///     and hide their labels.
         /// @param byGroup If @c true, will highlight the largest inner slice(s) within each main
         ///     group from the outer pie. @c false will only highlight the largest slice(s)
         ///     along the entire inner pie.
@@ -510,16 +571,19 @@ namespace Wisteria::Graphs
         void ShowcaseLargestInnerPieSlices(const bool byGroup)
             {
             ShowOuterPieLabels(false);
+            ShowOuterPieMidPointLabels(false);
             GhostOuterPieSlices(true);
+
             const std::vector<wxString> highlightSlices = byGroup ?
                 GetLargestInnerPieSlicesByGroup() :
                 GetLargestInnerPieSlices();
             ShowInnerPieLabels(true, highlightSlices);
+            ShowInnerPieMidPointLabels(true, highlightSlices);
             GhostInnerPieSlices(false, highlightSlices);
             }
         /// @brief Brings to focus the smallest slice(s) along the inner pie.
         /// @details This will make all other slices (including the outer pie) translucent
-        ///     and hide their outer labels.
+        ///     and hide their labels.
         /// @param byGroup If @c true, will highlight the smallest inner slice(s) within each main
         ///     group from the outer pie. @c false will only highlight the smallest slice(s)
         ///     along the entire inner pie.
@@ -527,11 +591,14 @@ namespace Wisteria::Graphs
         void ShowcaseSmallestInnerPieSlices(const bool byGroup)
             {
             ShowOuterPieLabels(false);
+            ShowOuterPieMidPointLabels(false);
             GhostOuterPieSlices(true);
+
             const std::vector<wxString> highlightSlices = byGroup ?
                 GetSmallestInnerPieSlicesByGroup() :
                 GetSmallestInnerPieSlices();
             ShowInnerPieLabels(true, highlightSlices);
+            ShowInnerPieMidPointLabels(true, highlightSlices);
             GhostInnerPieSlices(false, highlightSlices);
             }
         /** @brief Gets the labels of the largest slice(s) along the inner pie
@@ -588,6 +655,23 @@ namespace Wisteria::Graphs
                 Slice labels not in this list will have the opposite of @c show applied to them.
             @note This should be called after SetData().*/
         void ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow);
+
+        /** @brief Shows or hides the mid-point labels of the inner pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @note This should be called after SetData().\n
+                Also, if @c show is @c true, then the inner pie's mid-point display will be used.
+                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+        void ShowInnerPieMidPointLabels(const bool show);
+        /** @brief Shows or hides the mid-point labels of the inner pie
+                (if using a secondary grouping variable).
+            @param show @c true to show the labels, @c false to hide them.
+            @param labelsToShow Which labels to either show or hide.\n
+                Slice labels not in this list will have the opposite of @c show applied to them.
+            @note This should be called after SetData().\n
+                Also, if @c show is @c true, then the inner pie's mid-point display will be used.
+                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+        void ShowInnerPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow);
         /// @}
 
         /// @name Donut Hole Functions
