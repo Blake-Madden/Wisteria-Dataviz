@@ -469,7 +469,7 @@ namespace Wisteria::Graphs
 
             /** @name %Label Functions
                 @brief Functions related to the labelling of the bar.
-                @note To draw text directly on a bar, use the built-in decal on the bar blocks.*/
+                @note To draw text directly on a bar, use the built-in decals on the bar blocks.*/
              /// @{
 
             /// @brief Gets/sets the text displayed on the axis beneath the bar.

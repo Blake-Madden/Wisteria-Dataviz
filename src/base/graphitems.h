@@ -401,6 +401,7 @@ namespace Wisteria
         BinPercentage,           /*!< The percentage of items in each bin.*/
         BinValueAndPercentage,   /*!< Both the percentage and number of items in each bin.*/
         NoDisplay,               /*!< Don't display labels on the bins.*/
+        BinName,                 /*!< The name of the bin (e.g., the group name).*/
         /// @private
         BIN_LABEL_DISPLAY_COUNT
         };

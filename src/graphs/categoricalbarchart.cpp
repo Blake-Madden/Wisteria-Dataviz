@@ -183,16 +183,19 @@ namespace Wisteria::Graphs
             {
             const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
             const wxString labelStr =
-                (bar.GetLength() == 0 || GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                wxString(wxEmptyString) :
+                (bar.GetLength() == 0 ||
+                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+                    wxString(wxEmptyString) :
+                (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
+                    bar.GetAxisLabel().GetText() :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                    wxNumberFormatter::ToString(bar.GetLength(), 0,
                                             Settings::GetDefaultNumberFormat()) :
                 (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                wxNumberFormatter::ToString(percentage, 0,
+                    wxNumberFormatter::ToString(percentage, 0,
                                             wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                     L"%" :
-                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                    wxNumberFormatter::ToString(bar.GetLength(), 0,
                                             Settings::GetDefaultNumberFormat()) +
                     L" (" +
                     wxNumberFormatter::ToString(percentage, 0,
