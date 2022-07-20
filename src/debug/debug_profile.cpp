@@ -47,7 +47,8 @@ namespace __debug
         m_endtime = std::chrono::high_resolution_clock::now();
         const auto totalTime = (m_endtime-m_starttime)-m_total_pause_duration;
 
-        const auto [iterator, inserted] = __profile_reporter__.m_profiles.emplace(m_block_name.c_str(), totalTime, m_extra_info.c_str() );
+        const auto [iterator, inserted] = __profile_reporter__.m_profiles.emplace(
+            m_block_name.c_str(), totalTime, m_extra_info.c_str() );
         // if it was already in the table, then add the current duration time to it
         if (!inserted)
             {
@@ -88,7 +89,9 @@ namespace __debug
             for (const auto& pos : m_profiles)
                 { totalTime += pos.m_total_duration_time; }
             // write a header
-            std::string header = "Name\tTimes calls\tTotal time (in milliseconds)\tTotal time (%)\tLowest call time\tHighest call time\tAverage call time\tExtra Info (from highest call time)\n";
+            std::string header = "Name\tTimes calls\tTotal time (in milliseconds)\t"
+                                 "Total time (%)\tLowest call time\tHighest call time\t"
+                                 "Average call time\tExtra Info (from highest call time)\n";
             if (output.is_open())
                 { output << header.c_str(); }
             std::wcout << header.c_str();

@@ -142,7 +142,7 @@ Properties for @c "categorical-bar-chart" nodes:
   Available options are:
   - @c "vertical"
   - @c "horizontal"
-- @c Some base properties available to [graphs](#graph-properties).
+- Some base properties available to [graphs](#graph-properties).
 
 ## Common Axis {#common-axis-properties}
 Properties for @c "common-axis" nodes:
@@ -189,7 +189,7 @@ Properties for @c "line-plot" nodes:
   - @c "x": the X column.
   - @c "y": the X column.
   - @c "group": the grouping column (this is optional).
-- @c Some base properties available to [graphs](#graph-properties).
+- Some base properties available to [graphs](#graph-properties).
 
 ## Pie Chart {#pie-chart-properties}
 Properties for @c "pie-chart" nodes:
@@ -239,7 +239,7 @@ Properties for @c "pie-chart" nodes:
   - @c "label": the [label](#label-properties) shown in the middle of the hole.\n
         Note that this label will be implicitly justified and centered within the hole.
   - @c "color": the color of the donut hole.
-- @c Some base properties available to [graphs](#graph-properties).
+- Some base properties available to [graphs](#graph-properties).
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
@@ -252,7 +252,7 @@ Properties for @c "table" nodes:
 - @c "highlight-pen": the pen used for highlighting cells. Set to @c null to turn off the pen, or use the following properties:
   - @c "color": the pen color. This can be either a color name or hex-encoded value.
   - @c "width": the width of the pen's line.
-- @c Some base properties available to [graphs](#graph-properties).
+- Some base properties available to [graphs](#graph-properties).
 
 The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:

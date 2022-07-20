@@ -282,9 +282,7 @@ namespace Wisteria
                 if (penColor.IsOk())
                     { pen.SetColour(penColor); }
                 if (penNode->GetProperty(L"width")->IsOk())
-                    {
-                    pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1));
-                    }
+                    { pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1)); }
                 }
             }
         }

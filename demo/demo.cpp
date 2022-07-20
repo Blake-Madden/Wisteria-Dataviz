@@ -1577,7 +1577,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         donutChart->UseColorLabels(true);
         // add a donut hole
         donutChart->IncludeDonutHole(true);
-        donutChart->GetDonutHoleLabel().SetText(L"Enrollment\nFall 2023");
+        donutChart->GetDonutHoleLabel().SetText(_(L"Enrollment\nFall 2023"));
         donutChart->SetDonutHoleProportion(.5);
 
         subframe->m_canvas->SetFixedObject(0, 0, donutChart);

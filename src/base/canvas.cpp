@@ -313,8 +313,6 @@ namespace Wisteria
 
         wxCoord width = GetCanvasRectDIPs().GetWidth(), height = GetCanvasRectDIPs().GetHeight();
 
-        const wxCoord originalWidth = width;
-        const wxCoord originalHeight = height;
         // use custom size for image if supplied by caller; otherwise, just use the client size
         if (options.m_imageSize.GetWidth() > 0)
             { width = options.m_imageSize.GetWidth(); }

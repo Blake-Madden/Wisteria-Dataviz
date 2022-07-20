@@ -511,7 +511,7 @@ namespace Wisteria::GraphItems
                         wxDCPenChanger pc2(dc,
                             wxPen(ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4),
                                   ScaleToScreenAndCanvas(1)));
-                        wxDCBrushChanger bc(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
+                        wxDCBrushChanger bc2(dc, ColorContrast::ShadeOrTint(GetBrush().GetColour(), .4));
                         dc.DrawCircle(boundingBox.GetLeftTop() +
                             wxSize(boundingBox.GetWidth() / 2, boundingBox.GetHeight() * .33),
                             // 1/3 the size of outer ring
