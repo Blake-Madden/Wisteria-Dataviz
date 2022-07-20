@@ -264,8 +264,15 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
 
 void MyFrame::OnOpenProject(wxCommandEvent& event)
     {
+    wxFileDialog fileDlg(this, _(L"Open Project"), wxEmptyString, GetLabel(),
+            _(L"Project File (*.json)|*.json"),
+            wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+
+    if (fileDlg.ShowModal() != wxID_OK)
+        { return; }
+
     // create and show another child frame
-    MyChild* subframe = new MyChild(this, L"c:/users/madin/desktop/project.json");
+    MyChild* subframe = new MyChild(this, fileDlg.GetPath());
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -1954,15 +1961,8 @@ MyChild::MyChild(wxMDIParentFrame *parent, std::optional<wxString> configFile)
     {
     if (configFile.has_value())
         {
-        wxFileDialog dialog(this, _(L"Open Project"), wxEmptyString, GetLabel(),
-            _(L"Project File (*.json)|*.json"),
-            wxFD_OPEN|wxFD_FILE_MUST_EXIST);
-
-        if (dialog.ShowModal() != wxID_OK)
-            { return; }
-
         ReportBuilder rb;
-        auto report = rb.LoadConfigurationFile(dialog.GetPath(), this);
+        auto report = rb.LoadConfigurationFile(configFile.value(), this);
         // failed to load any pages
         if (report.size() == 0)
             { return; }
