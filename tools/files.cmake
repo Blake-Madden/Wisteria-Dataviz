@@ -36,7 +36,9 @@ SET(WISTERIA_SRC
     src/graphs/roadmap.cpp
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
+    src/ui/app.cpp
     src/ui/imageexportdlg.cpp
+    src/ui/mainframe.cpp
     src/ui/opacitydlg.cpp
     src/ui/printerheaderfooterdlg.cpp
     src/ui/radioboxdlg.cpp

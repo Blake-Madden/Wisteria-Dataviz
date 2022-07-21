@@ -38,7 +38,7 @@ PROJECT(Wisteria)
 # Windows: set wxWidgets_ROOT_DIR to the wxWidgets root path
 
 # Find wxWidgets and select its components
-FIND_PACKAGE(wxWidgets REQUIRED core base adv html OPTIONAL_COMPONENTS net)
+FIND_PACKAGE(wxWidgets REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
 # Include the wxWidgets use file to initialize various settings
 INCLUDE(${wxWidgets_USE_FILE})
 MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
