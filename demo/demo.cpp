@@ -144,6 +144,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnOpenProject, this, wxID_OPEN);
     Bind(wxEVT_MENU, &MyFrame::OnSaveWindow, this, wxID_SAVE);
     Bind(wxEVT_MENU, &MyFrame::OnPrintWindow, this, wxID_PRINT);
+    Bind(wxEVT_MENU, &MyFrame::OnPrintAll, this, MyApp::ID_PRINT_ALL);
     Bind(wxEVT_MENU, &MyFrame::OnCopyWindow, this, wxID_COPY);
     Bind(wxEVT_MENU, &MyFrame::OnQuit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::OnCloseAll, this, wxID_CLOSE_ALL);
@@ -226,6 +227,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
 
     fileMenu->Append(wxID_SAVE, _(L"&Save\tCtrl+S"), _(L"Save as Image"));
     fileMenu->Append(wxID_PRINT, _(L"&Print\tCtrl+P"), _(L"Print"));
+    fileMenu->Append(MyApp::ID_PRINT_ALL, _(L"&Print All"), _(L"Print All"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_CLOSE, _(L"&Close child\tCtrl+F4"));
@@ -1816,6 +1818,44 @@ void MyFrame::OnPrintWindow(wxCommandEvent& event)
         { return; }
 
     pChild->m_canvas->OnPrint(event);
+    }
+
+void MyFrame::OnPrintAll(wxCommandEvent& event)
+    {
+    // get all the open canvases
+    std::vector<Canvas*> canvases;
+    const auto& windows = GetChildren();
+    for (const auto& window : windows)
+        {
+        auto pChild = dynamic_cast<MyChild*>(window);
+        if (pChild == nullptr)
+            { continue; }
+        canvases.push_back(pChild->m_canvas);
+        }
+    if (canvases.size() == 0)
+        { return; }
+
+    // add them to a report printer (using the first canvas's print settings)
+    auto printOut = std::make_unique<ReportPrintout>(canvases, GetLabel());
+#if defined(__WXMSW__) || defined(__WXOSX__)
+    wxPrinterDC dc = wxPrinterDC(canvases[0]->GetPrinterSettings());
+#else
+    wxPostScriptDC dc = wxPostScriptDC(canvases[0]->GetPrinterSettings());
+#endif
+    printOut->SetUp(dc);
+
+    wxPrinter printer;
+    printer.GetPrintDialogData().SetPrintData(canvases[0]->GetPrinterSettings());
+    if (!printer.Print(this, printOut.get(), true) )
+        {
+        // just show a message if a real error occurred. They may have just cancelled.
+        if (printer.GetLastError() == wxPRINTER_ERROR)
+            {
+            wxMessageBox(_(L"An error occurred while printing.\n"
+                            "Your default printer may not be set correctly."),
+                            _(L"Print"), wxOK|wxICON_WARNING);
+            }
+        }
     }
 
 void MyFrame::OnCopyWindow(wxCommandEvent& event)
