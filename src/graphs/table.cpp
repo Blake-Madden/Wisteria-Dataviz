@@ -629,6 +629,38 @@ namespace Wisteria::Graphs
             Padding(5, 5, 5, 5).
             Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()));
 
+        // if there are annotations, add gutters for them
+        wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
+        for (auto& note : m_cellAnnotations)
+            {
+            measuringLabel.SetText(note.m_note);
+            if (DeduceGutterSide(note) == Side::Left)
+                {
+                widestLeftNote = std::max(widestLeftNote,
+                                          measuringLabel.GetBoundingBox(dc).GetWidth());
+                }
+            else
+                {
+                widestRightNote = std::max(widestRightNote,
+                                           measuringLabel.GetBoundingBox(dc).GetWidth());
+                }
+            }
+
+        // if centering table, add extra spacing to keep labels fitting
+        auto extraSpaceForCentering =
+            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
+            std::abs(widestLeftNote - widestRightNote) :
+            0;
+        // space for connection lines to notes
+        widestLeftNote += (widestLeftNote > 0) ?
+            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
+                ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+            0;
+        widestRightNote += (widestRightNote > 0) ?
+            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
+            ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
+            0;
+
         CalcMainTableSize(columnWidths, rowHeights, measuringLabel, dc);
 
         auto tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
@@ -649,9 +681,12 @@ namespace Wisteria::Graphs
             }
         
         // adjust if column widths collectively go outside of the drawing area
-        if (tableWidth > drawArea.GetWidth())
+        if (tableWidth + (widestLeftNote + widestRightNote + extraSpaceForCentering) >
+            drawArea.GetWidth())
             {
-            const auto widthDiffProportion = safe_divide<double>(drawArea.GetWidth(), tableWidth);
+            const auto widthDiffProportion =
+                safe_divide<double>(drawArea.GetWidth(),
+                                    tableWidth + (widestLeftNote + widestRightNote + extraSpaceForCentering));
             // take away a proportional amount of the difference from each row and column
             for (auto& row : rowHeights)
                 { row *= widthDiffProportion; }
@@ -693,41 +728,10 @@ namespace Wisteria::Graphs
             tableHeight += roundingDiff;
             }
 
-        // if there are annotations, add gutters for them
-        wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
-        for (auto& note : m_cellAnnotations)
-            {
-            measuringLabel.SetText(note.m_note);
-            if (DeduceGutterSide(note) == Side::Left)
-                {
-                widestLeftNote = std::max(widestLeftNote,
-                                          measuringLabel.GetBoundingBox(dc).GetWidth());
-                }
-            else
-                {
-                widestRightNote = std::max(widestRightNote,
-                                           measuringLabel.GetBoundingBox(dc).GetWidth());
-                }
-            }
-
-        // if centering table, add extra spacing to keep labels fitting
-        auto extraSpaceForCentering =
-            (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-            std::abs(widestLeftNote - widestRightNote) :
-            0;
-        // space for connection lines to notes
-        widestLeftNote += (widestLeftNote > 0) ?
-            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
-                ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
-            0;
-        widestRightNote += (widestRightNote > 0) ?
-            (ScaleToScreenAndCanvas(m_connectionOverhangWidth) * 2) +
-            ScaleToScreenAndCanvas(m_labelSpacingFromLine) :
-            0;
-
         // adjust the drawing area width, but only if it is smaller than it was before
-        const auto newWidth = tableWidth + widestLeftNote + widestRightNote + extraSpaceForCentering;
-        drawArea.SetSize(wxSize(std::min(drawArea.GetWidth(), newWidth), tableHeight));
+        drawArea.SetSize(wxSize(std::min(drawArea.GetWidth(),
+                                         tableWidth + widestLeftNote + widestRightNote + extraSpaceForCentering),
+                                tableHeight));
 
         return wxSize(tableWidth, tableHeight);
         }
