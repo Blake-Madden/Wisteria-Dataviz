@@ -55,10 +55,12 @@ Properties for the @c "datasources" node:
 Properties for the @c "values" node:
 - @c "values": contains an array of key and value pairs, which are referenced by other items in the reports.\n
   Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
-  titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
+  titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": either a string or numeric value to associate with the key.\n
-    If a string, then it can be a literal string or a formula. The following formulas are available:\n
+    If a number, then it will be formatted to the current locale when displayed in the report.\n
+    If a string, then it can be a literal string or a formula.\n
+    The following formulas are available:\n
     - `min(dataset, column)`:
       Returns the minimum value of the given column from the dataset.
       - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
@@ -101,14 +103,16 @@ The @c "pages" node will contain an array of definitions for all pages, each con
       - ["label"](#label-properties)
       - ["pie-chart"](#pie-chart-properties)
       - ["table"](#table-properties)
-      - @c null: a null value will add a placeholder on the page.\n
+      - @c null: a null value will act as a placeholder for the previous column.\n
         If an entire row contains nulls, then the previous row will consume that row
         (meaning it will grow that much in height).
 
 # Canvas Items
 
 ## Axis {#axis-properties}
-Properties for @c "axes" nodes:
+@c "axes" nodes can either be part of a graph node definition or a ["common-axis"](#common-axis-properties) node.\n
+  For the former, this can define properties for the various axes in the graph.\n
+  @c "axes" nodes contain an array of axis objects, each with the following properties:
 - @c "axis-type": the type of axis.\n
   Available options are:
   - @c "bottom-x"
@@ -146,9 +150,10 @@ Properties for @c "categorical-bar-chart" nodes:
 
 ## Common Axis {#common-axis-properties}
 Properties for @c "common-axis" nodes:
-- All properties available to ["common-axis"](#axis-properties) are included.\n
+- All properties available to [axis](#axis-properties) nodes are included.\n
   Note that for @c "axis-type", common axes only support @c "bottom-x" and @c "right-y".
-- @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.
+- @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.\n
+  IDs are assigned to graphs using the @c "id" property, which should be numeric.
 - @c "common-perpendicular-axis": if @c "axis-type" is @c "bottom-x" and this is @c true,
      then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
 
@@ -232,8 +237,10 @@ Properties for @c "pie-chart" nodes:
   - @c "by-group": if showcasing the inner pie, @c true will show the smallerst/largest slice for within each group.
   - @c "show-outer-pie-labels": if showcasing the inner pie, @c true keep the outer pie labels shown.
 - @c "color-labels": @c true to apply the slice colors to their respective outer labels.
-- @c "include-outer-pie-labels": @c true to show the outer labels for the outer pie (or main pie, if only using one grouping variable).
-- @c "include-inner-pie-labels": @c true to show the outer labels for the inner pie (if a second grouping variable is in use).
+- @c "include-outer-pie-labels": @c true to show the outer labels for the outer pie
+     (or main pie, if only using one grouping variable).
+- @c "include-inner-pie-labels": @c true to show the outer labels for the inner pie
+     (if a second grouping variable is in use).
 - @c "donut-hole": donut hole properties, which include:
   - @c "proportion": a value between @c 0.0 and @c 0.95, specifying how much of the pie the hole should consume.
   - @c "label": the [label](#label-properties) shown in the middle of the hole.\n
@@ -315,7 +322,7 @@ Properties for row or column positions:
      The string values available are @c "last-row" or @c "last-column",
      which will be interpreted as the last row or column in the data, respectively.
 - @c "offset": a numeric value combined with the value for @c "origin".\n
-     This is optional and is useful for when @c "origin" is interpreted at run-time.\n
+     This is optional and is useful for when @c "origin" is interpreted at runtime.\n
      For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will
      result in the second-to-last row.
 
@@ -331,7 +338,7 @@ Properties common to all graph items:
 - @c "axes": an array of [axis](#axis-properties) objects.
 - @c "color-scheme": for graphs that support color schemes only.\n
      This can either be an array of color strings or the name of the color scheme.\n
-     Refer to Wisteria::Colors::Schemes for a list of color schemes.
+     Refer to @c Wisteria::Colors::Schemes for a list of color schemes.
 - @c "icon-scheme": for graphs that support icon/marker schemes only.\n
   This is an array of icon strings (which can be recycled):
   - @c "blank-icon"
@@ -400,6 +407,6 @@ Properties common to all items:
 - @c "fit-to-content-width": a boolean value specifying whether the item should be constrained
      to its calculated width within its row.
 
-# Notes
+# Notes {#notes}
 Color values can either be hex encoded (e.g., "#FF0000" for red) or a named value ("pumpkin"). For a full list
 of color names available, refer to the @c Wisteria::Colors::Color enumeration.
