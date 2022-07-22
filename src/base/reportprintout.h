@@ -88,7 +88,7 @@ namespace Wisteria
         ///     it to fit the specified printout's paper size.
         /// @param canvas The canvas to adjust.
         /// @param printOut The printout containing the paper size.
-        PrintFitToPageChanger(Canvas* canvas, ReportPrintout* printOut);
+        PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut);
         /// @brief Destructor, which resets the canvas back to its original aspect ratio and size.
         ~PrintFitToPageChanger();
     private:

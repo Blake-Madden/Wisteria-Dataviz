@@ -58,9 +58,6 @@ namespace Wisteria
     #endif
         printOut->SetUp(dc);
 
-        wxWindowUpdateLocker wl(this);
-        PrintFitToPageChanger fpc(this, printOut.get());
-
         wxPrinter printer;
         printer.GetPrintDialogData().SetPrintData(GetPrinterSettings());
         if (!printer.Print(this, printOut.get(), true) )
@@ -97,10 +94,7 @@ namespace Wisteria
         printOut->SetUp(dc);
         printOutForPrinting->SetUp(dc2);
 
-        wxWindowUpdateLocker wl(this);
-        PrintFitToPageChanger fpc(this, printOut);
-
-        // wxPreviewFrame make take ownership, don't use smare pointer here
+        // wxPreviewFrame make take ownership, don't use smart pointer here
         wxPrintPreview* preview = new wxPrintPreview(printOut, printOutForPrinting,
                                                      &GetPrinterSettings());
         if (!preview->IsOk())

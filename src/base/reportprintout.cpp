@@ -9,6 +9,9 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
     wxASSERT_MSG(canvas, L"Invalid page when printing report!");
     if (dc != nullptr && canvas != nullptr)
         {
+        wxWindowUpdateLocker wl(canvas);
+        PrintFitToPageChanger fpc(canvas, this);
+
         dc->SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
         // get the size of the canvas
@@ -201,7 +204,7 @@ wxString Wisteria::ReportPrintout::ExpandPrintString(
     }
 
 //------------------------------------------------------
-Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, ReportPrintout* printOut) :
+Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut) :
     m_canvas(canvas),
     m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
     m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
