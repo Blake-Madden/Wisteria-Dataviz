@@ -101,7 +101,7 @@ class MyChild final : public wxMDIChildFrame
     {
     friend MyFrame;
 public:
-    MyChild(wxMDIParentFrame* parent, std::optional<wxString> configFile);
+    MyChild(wxMDIParentFrame* parent);
 private:
     Wisteria::Canvas* m_canvas{ nullptr };
     };

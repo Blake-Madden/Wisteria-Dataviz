@@ -273,11 +273,17 @@ void MyFrame::OnOpenProject(wxCommandEvent& event)
     if (fileDlg.ShowModal() != wxID_OK)
         { return; }
 
-    // create and show another child frame
-    MyChild* subframe = new MyChild(this, fileDlg.GetPath());
+    ReportBuilder rb;
+    auto report = rb.LoadConfigurationFile(fileDlg.GetPath(), this);
 
-    subframe->Maximize(true);
-    subframe->Show(true);
+    for (auto& page : report)
+        {
+        // create and show a child frame for each page
+        MyChild* subframe = new MyChild(this);
+        page->Reparent(subframe);
+        subframe->m_canvas = page;
+        subframe->Show(true);
+        }
     }
 
 void MyFrame::OnNewWindow(wxCommandEvent& event)
@@ -285,7 +291,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
 
     // create and show another child frame
-    MyChild* subframe = new MyChild(this, std::nullopt);
+    MyChild* subframe = new MyChild(this);
+
+    subframe->m_canvas = new Wisteria::Canvas(subframe);
 
     // Box Plot
     if (event.GetId() == MyApp::ID_NEW_BOXPLOT)
@@ -1996,23 +2004,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
 // MyChild
 // ---------------------------------------------------------------------------
 
-MyChild::MyChild(wxMDIParentFrame *parent, std::optional<wxString> configFile)
+MyChild::MyChild(wxMDIParentFrame *parent)
        : wxMDIChildFrame(parent, wxID_ANY, L"")
     {
-    if (configFile.has_value())
-        {
-        ReportBuilder rb;
-        auto report = rb.LoadConfigurationFile(configFile.value(), this);
-        // failed to load any pages
-        if (report.size() == 0)
-            { return; }
-
-        // currently, this demo will just show the first page from the report
-        m_canvas = report[0];
-        }
-    else
-        { m_canvas = new Wisteria::Canvas{ this }; }
-
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
     const wxSize iconSize = Image::GetSVGSize(appDir + L"/res/wisteria.svg");
 
