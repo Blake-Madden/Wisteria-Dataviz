@@ -178,10 +178,6 @@ void Wisteria::UI::BaseMainFrame::OpenFileNew(const wxString& path)
 void Wisteria::UI::BaseMainFrame::OnHelpContents([[maybe_unused]] wxCommandEvent& event)
     { DisplayHelp(); }
 
-//-------------------------------------------------------
-void Wisteria::UI::BaseMainFrame::SetAboutDialogImage(const wxBitmap& bmp)
-    { m_aboutBmp = bmp; }
-
 //----------------------------------------------------------
 bool Wisteria::UI::DropFiles::OnDropFiles([[maybe_unused]] wxCoord x, [[maybe_unused]] wxCoord y,
                             const wxArrayString& filenames)

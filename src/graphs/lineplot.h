@@ -104,7 +104,7 @@ namespace Wisteria::Graphs
 
          // add a note
          auto note = std::make_shared<Label>(
-            GraphItemInfo(L"What happened this week?\nAre we sure this is correct???").
+            GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
             Pen(*wxLIGHT_GREY).FontBackgroundColor(*wxWHITE).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
          linePlot->AddEmbeddedObject(note,
