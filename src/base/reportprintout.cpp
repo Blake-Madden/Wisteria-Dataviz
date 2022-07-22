@@ -29,21 +29,22 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
 
         // add space for the headers and footers (if being used)
         // measure a standard line of text
+        // (and add 50% for padding)
         const auto textHeight = dc->GetTextExtent(L"Aq").GetHeight();
         long headerFooterUsedHeight{ 0 };
         if (canvas->GetLeftPrinterHeader().length() ||
             canvas->GetCenterPrinterHeader().length() ||
             canvas->GetRightPrinterHeader().length())
             {
-            maxY += textHeight;
-            headerFooterUsedHeight += textHeight;
+            maxY += textHeight * 1.5;
+            headerFooterUsedHeight += textHeight * 1.5;
             }
         if (canvas->GetLeftPrinterFooter().length() ||
             canvas->GetCenterPrinterFooter().length() ||
             canvas->GetRightPrinterFooter().length())
             {
-            maxY += textHeight;
-            headerFooterUsedHeight += textHeight;
+            maxY += textHeight * 1.5;
+            headerFooterUsedHeight += textHeight * 1.5;
             }
 
         // Get the size of the DC's drawing area in pixels
@@ -82,7 +83,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
             wxGCDC gcdc(context);
 
             /* Set the scale and origin.
-                Note that we use the same scale factor for x and y to maintain aspect ratio*/
+               Note that we use the same scale factor for x and y to maintain aspect ratio*/
             gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
             gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
@@ -105,13 +106,20 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
 
         m_canvas->OnDraw(gcdc);
 #endif
-        dc->Blit(0,0,dcWidth,dcHeight,&memDc,0,0);
+        dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
 
-        // draw the headers
-        wxCoord width{0}, height{0};
+        // draw decorations around canvas content
+        double userScalingXBackup{ 0 }, userScalingYBackup{ 0 };
+        dc->GetUserScale(&userScalingXBackup, &userScalingYBackup);
+        const auto deviceOriginBackup = dc->GetDeviceOrigin();
+        const auto mapModeBackup = dc->GetMapMode();
+
         dc->SetUserScale(scaleX, scaleY);
         dc->SetDeviceOrigin(0, 0);
         dc->SetMapMode(wxMM_TEXT);
+        wxCoord width{ 0 }, height{ 0 };
+
+        // draw the headers
         if (canvas->GetLeftPrinterHeader().length() ||
             canvas->GetCenterPrinterHeader().length() ||
             canvas->GetRightPrinterHeader().length())
@@ -171,6 +179,11 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
                     yPos);
                 }
             }
+
+        // restore for next page
+        dc->SetUserScale(userScalingXBackup, userScalingYBackup);
+        dc->SetDeviceOrigin(deviceOriginBackup.x, deviceOriginBackup.y);
+        dc->SetMapMode(mapModeBackup);
 
         return true;
         }
