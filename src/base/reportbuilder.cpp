@@ -64,11 +64,11 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
-                    // paper (i.e., print) settings
-                    const auto paperNode = page->GetProperty(L"print");
-                    if (paperNode->IsOk())
+                    // print settings
+                    const auto printNode = page->GetProperty(L"print");
+                    if (printNode->IsOk())
                         {
-                        const auto orientation = paperNode->GetProperty(L"orientation")->GetValueString();
+                        const auto orientation = printNode->GetProperty(L"orientation")->GetValueString();
                         if (orientation.CmpNoCase(L"horizontal") == 0 ||
                             orientation.CmpNoCase(L"landscape") == 0)
                             { canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE); }

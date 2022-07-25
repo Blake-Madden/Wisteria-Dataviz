@@ -88,6 +88,8 @@ A page is a grid-based container, where items (e.g., plots, labels) are layed ou
 The @c "pages" node will contain an array of definitions for all pages, each containing the following:
 - @c "name": contains a string value, representing the name of the page.
 - @c "print": properties related to printer settings.\n
+  Note that the print settings from the first page in the report will be used for the remaining pages.\n
+  Available options are:
   - @c "orientation": string specifying the print orientation.
     Available options are:
     - @c "landscape" or @c "horizontal"

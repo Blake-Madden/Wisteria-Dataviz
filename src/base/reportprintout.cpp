@@ -19,7 +19,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
         wxCoord maxX = canvas->GetCanvasRect(gdc).GetWidth(),
                 maxY = canvas->GetCanvasRect(gdc).GetHeight();
 
-        // Let's have at least 10 device units margin
+        // let's have at least 10 device units margin
         const float marginX = GetMarginPadding(page);
         const float marginY = GetMarginPadding(page);
 
@@ -47,17 +47,17 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
             headerFooterUsedHeight += textHeight * 1.5;
             }
 
-        // Get the size of the DC's drawing area in pixels
+        // get the size of the DC's drawing area in pixels
         int dcWidth{ 0 }, dcHeight{ 0 };
         dc->GetSize(&dcWidth, &dcHeight);
 
-        // Calculate a suitable scaling factor
+        // calculate a suitable scaling factor
         const float scaleX = safe_divide<float>(dcWidth, maxX);
         const float scaleY = safe_divide<float>(dcHeight, maxY);
         const float scaleXReciprical = safe_divide<float>(1.0f, scaleX);
         const float scaleYReciprical = safe_divide<float>(1.0f, scaleY);
 
-        // Calculate the position on the DC for centring the graphic
+        // calculate the position on the DC for centring the graphic
         const float posX = safe_divide<float>(
             (dcWidth -((maxX-(2*marginX))* std::min(scaleX,scaleY))), 2);
         const float posY = safe_divide<float>(
@@ -187,7 +187,8 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
 
         return true;
         }
-    else return false;
+    else
+        { return false; }
     }
 
 //------------------------------------------------------
