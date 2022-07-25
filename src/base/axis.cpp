@@ -2594,6 +2594,17 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
+    std::optional<double> Axis::FindCustomLabel(const wxString& label) const
+        {
+        for (const auto& customLabel : m_customAxisLabels)
+            {
+            if (label.CmpNoCase(customLabel.second.GetText()) == 0)
+                { return customLabel.first; }
+            }
+        return std::nullopt;
+        }
+
+    //--------------------------------------
     bool Axis::PointHasLabel(const double value) const
         {
         const auto labelIter = std::find(m_axisLabels.cbegin(),

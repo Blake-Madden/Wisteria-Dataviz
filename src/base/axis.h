@@ -42,7 +42,8 @@ namespace Wisteria::GraphItems
     public:
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
-        /// @param axisPosition Where on the parent axis to start the line.
+        /// @param axisPosition Where on the parent axis to start the line.\n
+        ///     Note that `Axes::FindCustomLabel()` can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
         /// @param lineColor The color of the line.
         /// @param linePenStyle The pen style to use for the line.
@@ -69,8 +70,8 @@ namespace Wisteria::GraphItems
         };
 
     /// @brief Draws two lines across the graph, showing reference values on its parent axis,
-    ///  and fills in the area between them with a color. An example of this could be adding
-    ///  a recession to a financial plot.
+    ///     and fills in the area between them with a color. An example of this could be adding
+    ///     a recession to a financial plot.
     /// @details This is used by a Graph2D::AddReferenceArea().
     class ReferenceArea: public ReferenceLine
         {
@@ -78,10 +79,12 @@ namespace Wisteria::GraphItems
     public:
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
-        /// @param axisPosition1 Where on the parent axis to start the area.
+        /// @param axisPosition1 Where on the parent axis to start the area.\n
+        ///     Note that `Axes::FindCustomLabel()` can be used to find the position of a label.
         /// @param axisPosition2 Where on the parent axis to end the area.
         /// @param label The label to describe what the line represents.
-        /// @param lineColor The color of the line.
+        /// @param lineColor The color of the line and area.\n
+        ///     The area color will be a translucent version of the line color.
         /// @param linePenStyle The pen style to use for the line.
         ReferenceArea(const AxisType axisType,
             const double axisPosition1, const double axisPosition2,
@@ -132,14 +135,18 @@ namespace Wisteria::GraphItems
             /// @returns The tickmark display method.
             [[nodiscard]] const DisplayType& GetTickMarkDisplay() const noexcept
                 { return m_displayType; }
-            DisplayType m_displayType{ DisplayType::NoDisplay }; /*!< @brief The display of the tickmark.*/
-            double m_position{ 0 };                              /*!< @brief Value on the axis.*/
-            wxCoord m_lineLength{ 0 };                           /*!< @brief Length of the line, protruding from the axis.*/
-            wxCoord m_physicalCoordinate{ -1 };                  /*!< @brief Actual pixel coordinate on the graph.*/
+            /// @brief The display of the tickmark.
+            DisplayType m_displayType{ DisplayType::NoDisplay };
+            /// @brief Value on the axis.
+            double m_position{ 0 };
+            /// @brief Length of the line, protruding from the axis.
+            wxCoord m_lineLength{ 0 };
+            /// @brief Actual pixel coordinate on the graph.
+            wxCoord m_physicalCoordinate{ -1 };
             };
 
         /** @brief Bracket that can be drawn next to an axis,
-             showing what a particular range of values on the axis means.*/
+                showing what a particular range of values on the axis means.*/
         class AxisBracket
             {
             /// Parent axis needs full access to this object.
@@ -155,12 +162,16 @@ namespace Wisteria::GraphItems
                 };
 
             /** @brief Constructor.
-                @param pos1 The starting position (relative to its parent axis) of where to place the bracket.
-                @param pos2 The ending position (relative to its parent axis) of where to place the bracket.
-                @param labelPos The position (relative to its axis) of where to place the bracket's label.
+                @param pos1 The starting position (relative to its parent axis) of
+                    where to place the bracket.
+                @param pos2 The ending position (relative to its parent axis) of
+                    where to place the bracket.
+                @param labelPos The position (relative to its axis) of where to
+                    place the bracket's label.
                 @param label The label to display next to the brackets.
                 @param color The color of the lines and label.
-                 The font color can be overridden via GetLabel(), and the line via GetLinePen().*/
+                    The font color can be overridden via GetLabel(),
+                    and the line via GetLinePen().*/
             AxisBracket(const double pos1, const double pos2, const double labelPos,
                         const wxString label, const wxColour color = *wxBLACK) :
                 m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
@@ -173,7 +184,7 @@ namespace Wisteria::GraphItems
 
             /// @name Range Functions
             /// @brief Functions relating to the bracket's starting and ending point
-            ///  (relative to its parent axis).
+            ///     (relative to its parent axis).
             /// @{
 
             /// @returns The starting position (relative to the parent axis).
@@ -185,18 +196,23 @@ namespace Wisteria::GraphItems
             /// @}
 
             /** @brief Indicates whether the bracket is only pointing to one spot on the axis.
-                @returns `true` if the bracket is really just a single line pointing from a bracket label to the axis.
+                @returns `true` if the bracket is really just a single line pointing from a
+                    bracket label to the axis.
                 @note This is true if the start and end points of the bracket are the same.
                 @sa GetStartPosition(), GetEndPosition().*/
             [[nodiscard]] bool IsSingleLine() const noexcept
                 { return compare_doubles(GetStartPosition(), GetEndPosition()); }
 
-            /// @returns The width of the padding between the bracket label and the parent axis (not including the connection line).
-            /// @warning This will need to be scaled when being drawn or measured. (This is normally managed by the parent axis.)
+            /// @returns The width of the padding between the bracket label and the parent axis
+            ///     (not including the connection line).
+            /// @warning This will need to be scaled when being drawn or measured.
+            ///     (This is normally managed by the parent axis.)
             [[nodiscard]] wxCoord GetPadding() const noexcept
                 { return m_padding; }
-            /// @brief Sets the width of the padding between the bracket label and the parent axis (not including the connection line).
-            /// @param padding The width of the padding. This is a pixel value that the framework will scale to the screen for you.
+            /// @brief Sets the width of the padding between the bracket label and the parent axis
+            ///     (not including the connection line).
+            /// @param padding The width of the padding. This is a pixel value that the framework
+            ///     will scale to the screen for you.
             ///  (The parent axis will also scale this as the graph's scaling changes.)
             void SetPadding(const wxCoord padding) noexcept
                 { m_padding = padding; }
@@ -206,7 +222,7 @@ namespace Wisteria::GraphItems
             /// @{
 
             /// @returns The bracket's label.
-            /// Call this to edit the label's font, color, etc.
+            ///     Call this to edit the label's font, color, etc.
             [[nodiscard]] Label& GetLabel() noexcept
                 { return m_label; }
 
@@ -215,11 +231,11 @@ namespace Wisteria::GraphItems
                 { return m_labelPosition; }
 
             /// @returns How the labels are aligned, either against the connection
-            ///  lines or the outer boundary of the brackets.
+            ///     lines or the outer boundary of the brackets.
             [[nodiscard]] const AxisLabelAlignment& GetPerpendicularLabelConnectionLinesAlignment() const noexcept
                 { return m_axisLabelAlignment; }
             /// @brief Sets how the labels are aligned, either against the lines
-            ///  (connecting to the parent axis) or the outer boundary.
+            ///     (connecting to the parent axis) or the outer boundary.
             /// @param alignment How to alignment the labels within the bracket section.
             /// @note Has no effect if axis labels are parallel to the connection lines.
             void SetPerpendicularLabelConnectionLinesAlignment(const AxisLabelAlignment alignment) noexcept
@@ -232,19 +248,22 @@ namespace Wisteria::GraphItems
 
             /** @brief Gets/sets the line pen.
                 @returns The pen used to draw the bracket's line.
-                 Call this to edit the line's color, style, width, etc.
-                 (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)*/
+                    Call this to edit the line's color, style, width, etc.
+                    (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)*/
             [[nodiscard]] wxPen& GetLinePen() noexcept
                 { return m_linePen; }
 
-            /// @returns The length of the tickmarks between the main line of the bracket and the parent axis.
+            /// @returns The length of the tickmarks between the main line of the
+            ///     bracket and the parent axis.
             /// @warning This will need to be scaled when being drawn or measured.
-            ///  (This is normally managed by the parent axis.)
+            ///     (This is normally managed by the parent axis.)
             [[nodiscard]] wxCoord GetTickmarkLength() const noexcept
                 { return m_tickMarkLength; }
-            /// @brief Sets the length of the connection line between the bracket label and the parent axis.
-            /// @param length The length of the tickmarks. This is a pixel value that the framework will scale to the screen for you.
-            ///  (The parent axis will also scale this as the graph's scaling changes.)
+            /// @brief Sets the length of the connection line between the bracket label
+            ///     and the parent axis.
+            /// @param length The length of the tickmarks.
+            ///     This is a pixel value that the framework will scale to the screen for you.
+            ///     (The parent axis will also scale this as the graph's scaling changes.)
             void SetTickmarkLength(const wxCoord length) noexcept
                 { m_tickMarkLength = length; }
             /// @returns The type of line being draw for the bracket.
@@ -287,7 +306,7 @@ namespace Wisteria::GraphItems
             /// @returns The space between the bracket label and outer area of parent axis.
             ///  This is how much space is needed to draw the bracket lines.
             /// @note If lines aren't being drawn, then will return a recommended amount of padding between
-            ///  bracket label and axis labels.
+            ///     bracket label and axis labels.
             [[nodiscard]] wxCoord GetLineSpacing() const noexcept
                 {
                 return (GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine) ?
@@ -372,7 +391,7 @@ namespace Wisteria::GraphItems
             /** @brief Sets the point on the parent axis at the specified coordinate.
                 @param coordinate The axis coordinate to place the point.
                 @note This function is normally handled by the parent plot, use SetValue()
-                 (or constructor) to set the axis value where the point should be.*/
+                    (or constructor) to set the axis value where the point should be.*/
             void SetPhysicalCoordinate(const double coordinate) noexcept
                 { m_physicalCoordinate = coordinate; }
             /// @returns The point's physical coordinates along the parent axis.
@@ -487,7 +506,7 @@ namespace Wisteria::GraphItems
             @param startDate The start date of the range.
             @param endDate The end date of the range.
             @param displayInterval The date interval to display along the axis.
-            @param FYtype If @c displayInterval is fiscal year based, then this is the type of
+            @param FYtype If @c displayInterval is fiscal-year based, then this is the type of
              fiscal year to use; otherwise, it will be ignored.
             @note The date interval and fiscal year type specified can affect the
              starting and ending points of the dates. For example, using FY quarters will cause the
@@ -506,14 +525,14 @@ namespace Wisteria::GraphItems
         /** @brief Returns the start and end dates of the range.
             @returns The start and end date of the range.
             @note This will return invalid dates unless the version of SetRange()
-             using dates is called.*/
+                using dates is called.*/
         [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetRangeDates() const noexcept
             { return std::make_pair(m_firstDay, m_lastDay); }
         /// @returns The point on the axis corresponding to the provided date,
-        ///  or @c std::nullopt if not found.
+        ///     or @c std::nullopt if not found.
         /// @param date The date to search for along the axis.
         /// @note The axis must be initialized with a series of dates from SetRange(); otherwise,
-        ///  this will return @c std::nullopt.
+        ///     this will return @c std::nullopt.
         [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept;
         /** @brief Adds a point at value/label to the axis.
             @details This function should only be called if you need to fill the axis with
@@ -539,7 +558,7 @@ namespace Wisteria::GraphItems
         /// @brief Whether the axis begins at zero.
         /// @returns `true` if set to begin at zero.
         /// @note If the range is set to start at a value less than zero, then that value will be used.
-        ///  This is only a request for when the starting value of the data is over zero.
+        ///     This is only a request for when the starting value of the data is over zero.
         [[nodiscard]] bool IsStartingAtZero() const noexcept
             { return m_startAtZero; }
         /// @brief Sets whether the axis should start at a minimum of zero when SetRange() is called.
@@ -558,11 +577,11 @@ namespace Wisteria::GraphItems
         [[nodiscard]] size_t GetDisplayInterval() const noexcept
             { return m_displayInterval; }
         /** @brief Sets how often a label should be displayed on the ticks.
-             Specifying "2" means that every other axis tick will have a label on it.
+                Specifying "2" means that every other axis tick will have a label on it.
             @param interval How often a label should be displayed on the ticks.
             @param offset The starting point on the axis from where to start labeling ticks.
             @warning This must be called after setting the axis labels. Also, this will override
-             ShowDefaultLabels() if it had been set to `false`.*/
+                ShowDefaultLabels() if it had been set to `false`.*/
         void SetDisplayInterval(const size_t interval, const size_t offset = 0);
         /// @}
 
@@ -581,14 +600,16 @@ namespace Wisteria::GraphItems
 
              Whether default labels, custom labels, or both are shown can be controlled by SetLabelDisplay().
 
-             Finally, the axis's title, header, footer, and brackets manage their own font attributes. To change these,
-             edit them via GetHeader(), GetFooter(), GetTitle(), and GetBrackets().*/
+             Finally, the axis's title, header, footer, and brackets manage their own font attributes.
+             To change these, edit them via GetHeader(), GetFooter(), GetTitle(), and GetBrackets().*/
         /// @{
 
-        /// @returns The number of axis points along the axis. This includes any points that may show tickmarks or labels,
-        ///  not just the ones showing them.
-        /// @note This, combined with GetDisplayInterval(), can be useful for filling the axis with custom labels.
-        ///  It can also be useful when measuring how wide objects can be if there are ones being drawn at every axis point.
+        /// @returns The number of axis points along the axis.
+        ///     This includes any points that may show tickmarks or labels,
+        ///     not just the ones showing them.
+        /// @note This, combined with GetDisplayInterval(), can be useful for filling
+        ///     the axis with custom labels. It can also be useful when measuring how wide
+        ///     objects can be if there are ones being drawn at every axis point.
         [[nodiscard]] size_t GetAxisPointsCount() const noexcept
             { return m_axisLabels.size(); }
         /// @returns The major axis points (generated by SetRange()).
@@ -610,6 +631,11 @@ namespace Wisteria::GraphItems
         /** @returns The custom label for a specific tick, or empty string if one hasn't been assigned.
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]] const Label& GetCustomLabel(const double value) const;
+        /** @brief Finds a custom label along the access, returning its numeric position.
+            @param label The string to look for.
+            @returns The numeric position on the axis of where the label is,
+                or @c std::nullopt if not found.*/
+        [[nodiscard]] std::optional<double> FindCustomLabel(const wxString& label) const;
         /// @brief Sets the length (in terms of character count) of each line of any new labels to the specified length.
         /// @param suggestedMaxLengthPerLine The length that each line of the labels should be shortened to.
         void SetLabelLineLength(const size_t suggestedMaxLengthPerLine);
@@ -630,10 +656,10 @@ namespace Wisteria::GraphItems
         [[nodiscard]] const AxisLabelDisplay& GetLabelDisplay() const noexcept
             { return m_labelDisplay; }
         /// @brief Sets how the labels are aligned, either flush right against the axis line,
-        ///  flush left against the edge of the axis area, or centered on the axis line itself.
+        ///     flush left against the edge of the axis area, or centered on the axis line itself.
         /// @param alignment How to align the labels against the axis.
         /// @note Has no effect if axis labels are parallel to the axis. Also, the double-sided option
-        ///  will be ignored if this is set to @c CenterOnAxisLine.
+        ///     will be ignored if this is set to @c CenterOnAxisLine.
         /// @todo Not currently implemented for horizontal axes.
         void SetPerpendicularLabelAxisAlignment(const AxisLabelAlignment alignment) noexcept
             { m_axisLabelAlignment = alignment; }
@@ -647,11 +673,12 @@ namespace Wisteria::GraphItems
         /** @brief How the labels are aligned with its respective axis point.
             @param alignment The alignment.
             @note This only applies when labels are parallel to the axis, see SetAxisLabelOrientation().
-             To control how the text within the axis labels are aligned, call SetTextAlignment().*/
+                To control how the text within the axis labels are aligned, call SetTextAlignment().*/
         void SetParallelLabelAlignment(const RelativeAlignment alignment) noexcept
             { m_labelAlignmet = alignment;}
-        /** @brief Sets whether the first and last axis labels should be shown (the outer lines of the plot).
-             This should be called after the labels and scaling have been set.
+        /** @brief Sets whether the first and last axis labels should be shown
+                (the outer lines of the plot).
+                This should be called after the labels and scaling have been set.
             @param display Whether or not outer labels should be displayed.*/
         void ShowOuterLabels(bool display = true) noexcept
             {
@@ -677,7 +704,7 @@ namespace Wisteria::GraphItems
             { m_stackLabelsToFit = stacked; }
         /** @brief Sets whether to enable auto stacking labels.
             @details If `true`, the axis will set labels to auto stack
-             if it is determined that that is the best way to fit them along the axis.
+                if it is determined that that is the best way to fit them along the axis.
             @param enable Whether to enable auto stacking.
             @note By default, this is turned on for horizontal axes, but turned off for vertical axes.
              Stacking labels on a vertical axis can look a bit odd (especially with text labels), so
@@ -782,13 +809,13 @@ namespace Wisteria::GraphItems
 
         /** @brief Gets/sets the pen used for the main axis line and tickmarks.
             @returns The axis line pen.
-            @note Set to `wxNullPen` or transparent to turn off the main axis line and tickmarks.*/
+            @note Set to @c wxNullPen or transparent to turn off the main axis line and tickmarks.*/
         [[nodiscard]] wxPen& GetAxisLinePen() noexcept
             { return m_axisLinePen; }
 
         /** @brief Gets/sets the gridline pen.
             @returns The gridline pen.
-            @note Set to `wxNullPen` or transparent to turn off gridlines.*/
+            @note Set to @c wxNullPen or transparent to turn off gridlines.*/
         [[nodiscard]] wxPen& GetGridlinePen() noexcept
             { return m_gridlinePen; }
 
@@ -915,7 +942,7 @@ namespace Wisteria::GraphItems
         /** @brief Adds a series of brackets, based on the specified bracket type.
             @param bracketType The type of bracket series to add.
             @note If using fiscal year related brackets, you can specify how to define the fiscal
-             year's dates via @c SetFiscalYearType() or @c SetFiscalYearStart().*/
+                year's dates via @c SetFiscalYearType() or @c SetFiscalYearStart().*/
         void AddBrackets(const BracketType bracketType);
         /// @brief Removes all the brackets.
         void ClearBrackets() noexcept
@@ -927,7 +954,7 @@ namespace Wisteria::GraphItems
 
         /** @name Custom Axis Functions
             @brief Functions related to positioning this axis as a custom axis
-             (i.e., an axis branching off of the traditional X or Y axes).*/
+                (i.e., an axis branching off of the traditional X or Y axes).*/
         /// @{
 
         /// @returns The custom position (in respect to the main x axes); these only relate to custom axes.
@@ -969,7 +996,7 @@ namespace Wisteria::GraphItems
         void SetPhysicalCustomYPosition(const double y) noexcept
             { m_physicalCustomYPosition = y; }
         /// @returns The physical y position on the canvas of the axis.
-        ///  (Should only be used if using custom positioning along a parent axis.)
+        ///     (Should only be used if using custom positioning along a parent axis.)
         [[nodiscard]] double GetPhysicalCustomYPosition() const noexcept
             { return m_physicalCustomYPosition; }
         /** @brief Sets the physical x position on the canvas.
@@ -1112,7 +1139,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] DateInterval GetDateDisplayInterval() const noexcept
             { return m_dateDisplayInterval; }
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
-        ///  used by canvas to set the axis to a common size with plots next to it.
+        ///     used by canvas to set the axis to a common size with plots next to it.
         void RecalcSizes(wxDC& dc) final
             {
             if (IsVertical() && GetContentTop() && GetContentBottom())
@@ -1140,7 +1167,7 @@ namespace Wisteria::GraphItems
             }
 
         /// @returns The rectangular area of the axis line area.
-        ///  This is relative to its parent canvas.
+        ///     This is relative to its parent canvas.
         [[nodiscard]] wxRect GetContentRect() const noexcept final
             {
             if (IsVertical())
