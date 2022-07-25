@@ -2100,23 +2100,20 @@ namespace Wisteria
         const auto legendNode = graphNode->GetProperty(L"legend");
         if (legendNode->IsOk())
             {
-            auto placement = legendNode->GetProperty(L"placement")->GetValueString();
-            if (placement.CmpNoCase(L"right") == 0)
-                {
-                canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(currentRow, ++currentColumn,
-                    graph->CreateLegend(
-                        LegendOptions().
-                            IncludeHeader(true).
-                            PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
-                }
-            else if (placement.CmpNoCase(L"left") == 0)
+            const auto ringPerimeterStr = legendNode->GetProperty(L"ring")->GetValueString();
+            const auto ringPerimeter = (ringPerimeterStr.CmpNoCase(L"inner") == 0 ?
+                                        Perimeter::Inner :
+                                        Perimeter::Outer);
+            const auto includeHeader = legendNode->GetProperty(L"include-header")->GetValueBool(true);
+            const auto placement = legendNode->GetProperty(L"placement")->GetValueString();
+            if (placement.CmpNoCase(L"left") == 0)
                 {
                 canvas->SetFixedObject(currentRow, currentColumn+1, graph);
                 canvas->SetFixedObject(currentRow, currentColumn++,
                     graph->CreateLegend(
                         LegendOptions().
-                            IncludeHeader(true).
+                            RingPerimeter(ringPerimeter).
+                            IncludeHeader(includeHeader).
                             PlacementHint(LegendCanvasPlacementHint::LeftOfGraph)) );
                 }
             else if (placement.CmpNoCase(L"bottom") == 0)
@@ -2125,7 +2122,8 @@ namespace Wisteria
                 canvas->SetFixedObject(++currentRow, currentColumn,
                     graph->CreateLegend(
                         LegendOptions().
-                            IncludeHeader(true).
+                            RingPerimeter(ringPerimeter).
+                            IncludeHeader(includeHeader).
                             PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
                 }
             else if (placement.CmpNoCase(L"top") == 0)
@@ -2134,8 +2132,19 @@ namespace Wisteria
                 canvas->SetFixedObject(currentRow++, currentColumn,
                     graph->CreateLegend(
                         LegendOptions().
-                            IncludeHeader(true).
+                            RingPerimeter(ringPerimeter).
+                            IncludeHeader(includeHeader).
                             PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
+                }
+            else // right, the default
+                {
+                canvas->SetFixedObject(currentRow, currentColumn, graph);
+                canvas->SetFixedObject(currentRow, ++currentColumn,
+                    graph->CreateLegend(
+                        LegendOptions().
+                            RingPerimeter(ringPerimeter).
+                            IncludeHeader(includeHeader).
+                            PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
                 }
             }
         // no legend, so just add the graph

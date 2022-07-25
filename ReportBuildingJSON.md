@@ -367,9 +367,14 @@ Properties common to all graph items:
   - @c "placement": where to place the legend.\n
     Available options are:
     - @c "left"
-    - @c "right"
+    - @c "right" (the default)
     - @c "top"
     - @c "bottom"
+  - @c "include-header": @c true to include a header (the default), @c false to not.
+  - @c "ring": for pie charts, which ring to use for the legend.\n
+    Available options are:
+    - @c "outer": only the outer (or only) ring is included. (This is the default.)
+    - @c "inner" : the inner and outer rings are included in the legend.
 
 ## All Items {#item-properties}
 Properties common to all items:
