@@ -271,6 +271,18 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen)
         {
+        static const std::map<std::wstring, wxPenStyle> styleValues =
+            {
+            { L"dot", wxPenStyle::wxPENSTYLE_DOT },
+            { L"dot-dash", wxPenStyle::wxPENSTYLE_DOT_DASH },
+            { L"long-dash", wxPenStyle::wxPENSTYLE_LONG_DASH },
+            { L"short-dash", wxPenStyle::wxPENSTYLE_SHORT_DASH },
+            { L"solid", wxPenStyle::wxPENSTYLE_SOLID },
+            { L"cross-hatch", wxPenStyle::wxPENSTYLE_CROSS_HATCH },
+            { L"horizontal-hatch", wxPenStyle::wxPENSTYLE_HORIZONTAL_HATCH },
+            { L"vertical-hatch", wxPenStyle::wxPENSTYLE_VERTICAL_HATCH }
+            };
+
         if (penNode->IsOk())
             {
             if (penNode->GetType() == wxSimpleJSON::JSONType::IS_NULL)
@@ -281,8 +293,14 @@ namespace Wisteria
                     ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
                 if (penColor.IsOk())
                     { pen.SetColour(penColor); }
+
                 if (penNode->GetProperty(L"width")->IsOk())
                     { pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1)); }
+
+                const auto style = styleValues.find(
+                    penNode->GetProperty(L"style")->GetValueString().Lower().ToStdWstring());
+                if (style != styleValues.cend())
+                    { pen.SetStyle(style->second); }
                 }
             }
         }
@@ -2092,6 +2110,113 @@ namespace Wisteria
                         { LoadAxis(axisNode, graph->GetBottomXAxis()); }
                     else if (axisType.value() == AxisType::TopXAxis)
                         { LoadAxis(axisNode, graph->GetTopXAxis()); }
+                    }
+                }
+            }
+
+        // reference lines
+        const auto referenceLinesNode = graphNode->GetProperty(L"reference-lines");
+        if (referenceLinesNode->IsOk())
+            {
+            const auto refLines = referenceLinesNode->GetValueArrayObject();
+            for (const auto& refLine : refLines)
+                {
+                const auto axisType = ConvertAxisType(
+                    refLine->GetProperty(L"axis-type")->GetValueString());
+                if (axisType.has_value())
+                    {
+                    wxPen pen(*wxBLACK, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    LoadPen(refLine->GetProperty(L"pen"), pen);
+
+                    auto& axis = (axisType == AxisType::BottomXAxis ?
+                        graph->GetBottomXAxis() :
+                        axisType == AxisType::TopXAxis ?
+                        graph->GetTopXAxis() :
+                        axisType == AxisType::LeftYAxis ?
+                        graph->GetLeftYAxis() :
+                        axisType == AxisType::RightYAxis ?
+                        graph->GetRightYAxis() :
+                        graph->GetBottomXAxis());
+                    const auto positionNode = refLine->GetProperty(L"position");
+                    std::optional<double> axisPos;
+                    if (positionNode->IsOk() &&
+                        positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                        {
+                        axisPos = axis.FindCustomLabel(positionNode->GetValueString());
+                        }
+                    else if (positionNode->IsOk() &&
+                        positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        {
+                        axisPos = positionNode->GetValueNumber();
+                        }
+
+                    if (axisPos.has_value())
+                        {
+                        graph->AddReferenceLine(
+                            ReferenceLine(axisType.value(), axisPos.value(),
+                                refLine->GetProperty(L"label")->GetValueString(),
+                                pen.GetColour(), pen.GetStyle()));
+                        }
+                    }
+                }
+            }
+
+        // reference areas
+        const auto referenceAreasNode = graphNode->GetProperty(L"reference-areas");
+        if (referenceAreasNode->IsOk())
+            {
+            const auto refAreas = referenceAreasNode->GetValueArrayObject();
+            for (const auto& refArea : refAreas)
+                {
+                const auto axisType = ConvertAxisType(
+                    refArea->GetProperty(L"axis-type")->GetValueString());
+                if (axisType.has_value())
+                    {
+                    wxPen pen(*wxBLACK, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    LoadPen(refArea->GetProperty(L"pen"), pen);
+
+                    auto& axis = (axisType == AxisType::BottomXAxis ?
+                        graph->GetBottomXAxis() :
+                        axisType == AxisType::TopXAxis ?
+                        graph->GetTopXAxis() :
+                        axisType == AxisType::LeftYAxis ?
+                        graph->GetLeftYAxis() :
+                        axisType == AxisType::RightYAxis ?
+                        graph->GetRightYAxis() :
+                        graph->GetBottomXAxis());
+                    const auto position1Node = refArea->GetProperty(L"position-1");
+                    std::optional<double> axisPos1;
+                    if (position1Node->IsOk() &&
+                        position1Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                        {
+                        axisPos1 = axis.FindCustomLabel(position1Node->GetValueString());
+                        }
+                    else if (position1Node->IsOk() &&
+                        position1Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        {
+                        axisPos1 = position1Node->GetValueNumber();
+                        }
+
+                    const auto position2Node = refArea->GetProperty(L"position-2");
+                    std::optional<double> axisPos2;
+                    if (position2Node->IsOk() &&
+                        position2Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                        {
+                        axisPos2 = axis.FindCustomLabel(position2Node->GetValueString());
+                        }
+                    else if (position2Node->IsOk() &&
+                        position2Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        {
+                        axisPos2 = position2Node->GetValueNumber();
+                        }
+
+                    if (axisPos1.has_value() && axisPos2.has_value())
+                        {
+                        graph->AddReferenceArea(
+                            ReferenceArea(axisType.value(), axisPos1.value(), axisPos2.value(),
+                                refArea->GetProperty(L"label")->GetValueString(),
+                                pen.GetColour(), pen.GetStyle()));
+                        }
                     }
                 }
             }

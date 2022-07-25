@@ -258,9 +258,8 @@ Properties for @c "table" nodes:
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
 - @c "min-height-proportion": the minimum percent of the drawing area's height that the table should consume
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
-- @c "highlight-pen": the pen used for highlighting cells. Set to @c null to turn off the pen, or use the following properties:
-  - @c "color": the pen color. This can be either a color name or hex-encoded value.
-  - @c "width": the width of the pen's line.
+- @c "highlight-pen": the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
+  
 - Some base properties available to [graphs](#graph-properties).
 
 The remaining properties are executed in the following order:
@@ -328,6 +327,22 @@ Properties for row or column positions:
      For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will
      result in the second-to-last row.
 
+## Pen (#pen-properties)
+Properties for pens:
+- @c "color": the pen color. This can be either a color name or hex-encoded value.
+- @c "width": the width of the pen's line.
+- @c "style": the pen's style, which includes the following:
+  - @c "dot"
+  - @c "dot-dash"
+  - @c "long-dot"
+  - @c "short-dot"
+  - @c "solid" (the default)
+  - @c "cross-hatch"
+  - @c "horizontal-hatch"
+  - @c "vertical-hatch"
+
+Note that pens can be set to @c null to turn it off.
+
 ## Graphs {#graph-properties}
 Properties common to all graph items:
 - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
@@ -338,6 +353,27 @@ Properties common to all graph items:
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
 - @c "axes": an array of [axis](#axis-properties) objects.
+- @c "reference-lines": an array of reference line definitions, which contain the following properties:
+  - @c "axis-type": the axis to add the reference line to.\n
+    Available options are:
+    - @c "bottom-x"
+    - @c "right-y"
+    - @c "left-y"
+    - @c "top-y"
+  - @c "position": the axis position for the line. This can either be a numeric position or the axis label.
+  - @c "label": the text to display on the legend referring to line.
+  - @c "pen": the definition for the [pen](#pen-properties) properties.
+- @c "reference-areas": an array of reference area definitions, which contain the following properties:
+  - @c "axis-type": the axis to add the reference area to.\n
+    Available options are:
+    - @c "bottom-x"
+    - @c "right-y"
+    - @c "left-y"
+    - @c "top-y"
+  - @c "position-1": the starting axis position for the area. This can either be a numeric position or the axis label.
+  - @c "position-2": the ending axis position for the area. This can either be a numeric position or the axis label.
+  - @c "label": the text to display on the legend referring to area.
+  - @c "pen": the definition for the [pen](#pen-properties) properties.
 - @c "color-scheme": for graphs that support color schemes only.\n
      This can either be an array of color strings or the name of the color scheme.\n
      Refer to @c Wisteria::Colors::Schemes for a list of color schemes.
@@ -387,9 +423,7 @@ Properties common to all items:
      starting at 12 o'clock.
 - @c "padding": a numeric array (one to four numbers), representing the item's padding going clockwise,
      starting at 12 o'clock.
-- @c "pen": the item's pen. Set to @c null to turn off the pen, or use the following properties:
-  - @c "color": the pen color. This can be either a color name or hex-encoded value.
-  - @c "width": the width of the pen's line.
+- @c "pen": the item's pen, which includes [pen](#pen-properties) properties
 - @c "scaling": numeric value of how much to scale the object's size. For example, @c 2.0 will double the
      its default size.
 - @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).\n
