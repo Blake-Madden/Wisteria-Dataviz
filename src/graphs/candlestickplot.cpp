@@ -161,7 +161,7 @@ namespace Wisteria::Graphs
                    wxNumberFormatter::ToString(ohlc.m_close, Settings::GetDefaultNumberFormat()));
 
             wxPoint lowPt, hiPt;
-            const auto datePos = GetBottomXAxis().GetPointFromDate(ohlc.m_date);
+            const auto datePos = GetBottomXAxis().FindDatePosition(ohlc.m_date);
             if (!datePos.has_value() ||
                 !GetPhyscialCoordinates(datePos.value(), ohlc.m_low, lowPt) ||
                 !GetPhyscialCoordinates(datePos.value(), ohlc.m_high, hiPt))

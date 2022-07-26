@@ -2594,7 +2594,7 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
-    std::optional<double> Axis::FindCustomLabel(const wxString& label) const
+    std::optional<double> Axis::FindCustomLabelPosition(const wxString& label) const
         {
         for (const auto& customLabel : m_customAxisLabels)
             {
@@ -2676,7 +2676,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    std::optional<double> Axis::GetPointFromDate(const wxDateTime& date) const noexcept
+    std::optional<double> Axis::FindDatePosition(const wxDateTime& date) const noexcept
         {
         if (!m_firstDay.IsValid() || !date.IsValid())
             { return std::nullopt; }

@@ -43,7 +43,7 @@ namespace Wisteria::GraphItems
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
         /// @param axisPosition Where on the parent axis to start the line.\n
-        ///     Note that `Axes::FindCustomLabel()` can be used to find the position of a label.
+        ///     Note that `Axes::FindCustomLabelPosition()` can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
         /// @param lineColor The color of the line.
         /// @param linePenStyle The pen style to use for the line.
@@ -80,7 +80,7 @@ namespace Wisteria::GraphItems
         /// @brief Constructor.
         /// @param axisType The parent axis to anchor the line to.
         /// @param axisPosition1 Where on the parent axis to start the area.\n
-        ///     Note that `Axes::FindCustomLabel()` can be used to find the position of a label.
+        ///     Note that `Axes::FindCustomLabelPosition()` can be used to find the position of a label.
         /// @param axisPosition2 Where on the parent axis to end the area.
         /// @param label The label to describe what the line represents.
         /// @param lineColor The color of the line and area.\n
@@ -196,7 +196,7 @@ namespace Wisteria::GraphItems
             /// @}
 
             /** @brief Indicates whether the bracket is only pointing to one spot on the axis.
-                @returns `true` if the bracket is really just a single line pointing from a
+                @returns @c true if the bracket is really just a single line pointing from a
                     bracket label to the axis.
                 @note This is true if the start and end points of the bracket are the same.
                 @sa GetStartPosition(), GetEndPosition().*/
@@ -425,7 +425,8 @@ namespace Wisteria::GraphItems
         /// @private
         Axis() = delete;
 
-        /** @brief Sets the DPI scaling for the axis.
+        /** @private
+            @brief Sets the DPI scaling for the axis.
             @param scaling The DPI scaling to use.*/
         void SetDPIScaleFactor(const double scaling) final
             {
@@ -447,7 +448,8 @@ namespace Wisteria::GraphItems
                                       want to ensure that all custom labels are cleared first.*/
             Brackets,            /*!< @brief Removes the brackets.*/
             TitleHeaderFooter,   /*!< @brief Removes the title, header, and footer.*/
-            AllSettings          /*!< @brief Resets all settings, calculated range information, and axis labels.*/
+            AllSettings          /*!< @brief Resets all settings, calculated range information,
+                                       and axis labels.*/
             };
         /** @brief Resets the settings for the axis.
             @param level Which level of settings and values should be reset.*/
@@ -460,19 +462,19 @@ namespace Wisteria::GraphItems
         /// @returns The type of axis that this is.
         [[nodiscard]] const AxisType& GetAxisType() const noexcept
             { return m_type; }
-        /// @returns `true` if a left or right Y axis.
+        /// @returns @c true if a left or right Y axis.
         [[nodiscard]] bool IsVertical() const noexcept
             { return (GetAxisType() == AxisType::LeftYAxis || GetAxisType() == AxisType::RightYAxis); }
-        /// @returns `true` if a bottom or top X axis.
+        /// @returns @c true if a bottom or top X axis.
         [[nodiscard]] bool IsHorizontal() const noexcept
             { return (GetAxisType() == AxisType::BottomXAxis || GetAxisType() == AxisType::TopXAxis); }
 
         /// @returns Whether the scaling of the axis is reversed.
-        ///  If it is reversed, then the values on the axis go from largest to smaller from the origin.
+        ///     If it is reversed, then the values on the axis go from largest to smaller from the origin.
         [[nodiscard]] bool IsReversed() const noexcept
             { return m_scaledReserved; }
         /** @brief Flips the axis. Call this after setting up the range and intervals.
-            @param reverse `true` to reverse the scale, `false` to reset it.*/
+            @param reverse @c true to reverse the scale, @c false to reset it.*/
         void ReverseScale(bool reverse);
         /// @}
 
@@ -528,12 +530,6 @@ namespace Wisteria::GraphItems
                 using dates is called.*/
         [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetRangeDates() const noexcept
             { return std::make_pair(m_firstDay, m_lastDay); }
-        /// @returns The point on the axis corresponding to the provided date,
-        ///     or @c std::nullopt if not found.
-        /// @param date The date to search for along the axis.
-        /// @note The axis must be initialized with a series of dates from SetRange(); otherwise,
-        ///     this will return @c std::nullopt.
-        [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept;
         /** @brief Adds a point at value/label to the axis.
             @details This function should only be called if you need to fill the axis with
              uneven values that have uniform spacing between them.
@@ -556,13 +552,13 @@ namespace Wisteria::GraphItems
         ///  GetAxisPoints() or AddUnevenAxisPoint().
         void AdjustRangeToLabels();
         /// @brief Whether the axis begins at zero.
-        /// @returns `true` if set to begin at zero.
+        /// @returns @c true if set to begin at zero.
         /// @note If the range is set to start at a value less than zero, then that value will be used.
         ///     This is only a request for when the starting value of the data is over zero.
         [[nodiscard]] bool IsStartingAtZero() const noexcept
             { return m_startAtZero; }
         /// @brief Sets whether the axis should start at a minimum of zero when SetRange() is called.
-        /// @param startAtZero `true` to force the axis to start at a minimum of zero.
+        /// @param startAtZero @c true to force the axis to start at a minimum of zero.
         void StartAtZero(const bool startAtZero) noexcept
             {
             m_startAtZero = startAtZero;
@@ -577,31 +573,36 @@ namespace Wisteria::GraphItems
         [[nodiscard]] size_t GetDisplayInterval() const noexcept
             { return m_displayInterval; }
         /** @brief Sets how often a label should be displayed on the ticks.
-                Specifying "2" means that every other axis tick will have a label on it.
+                Specifying @c 2 means that every other axis tick will have a label on it.
             @param interval How often a label should be displayed on the ticks.
             @param offset The starting point on the axis from where to start labeling ticks.
             @warning This must be called after setting the axis labels. Also, this will override
-                ShowDefaultLabels() if it had been set to `false`.*/
+                ShowDefaultLabels() if it had been set to @c false.*/
         void SetDisplayInterval(const size_t interval, const size_t offset = 0);
         /// @}
 
         /** @name Label & Value Functions
             @brief Functions related to the labels and axis points spread across the axis.
-            @details The axis labels are managed by default labels generated by SetRange() or AddUnevenAxisPoint(),
-             and by custom labels. Custom labels can be placed anywhere along the axis and can override default axis points.
+            @details The axis labels are managed by default labels generated by SetRange() or
+                AddUnevenAxisPoint(), and by custom labels. Custom labels can be placed
+                anywhere along the axis and can override default axis points.
 
-             To set the padding for axis labels, call SetPadding(), SetTopPadding(),
-             SetRightPadding(), SetBottomPadding(), or SetLeftPadding()
-             (this will only affect the axis labels, not the actual axis).
+                 To set the padding for axis labels, call SetPadding(), SetTopPadding(),
+                 SetRightPadding(), SetBottomPadding(), or SetLeftPadding()
+                 (this will only affect the axis labels, not the actual axis).
 
-             To change the font attributes of the axis labels, call SetFontBackgroundColor(), SetFontColor(), and GetFont().
-             Setting the background color of the labels will display background boxes behind the labels that take up as much space
-             as possible on the axis. Calling SetTextAlignment() will then control how the text is aligned within these boxes.
+                 To change the font attributes of the axis labels, call SetFontBackgroundColor(),
+                 SetFontColor(), and GetFont(). Setting the background color of the labels will
+                 display background boxes behind the labels that take up as much space as possible
+                 on the axis. Calling SetTextAlignment() will then control how the text is aligned
+                 within these boxes.
 
-             Whether default labels, custom labels, or both are shown can be controlled by SetLabelDisplay().
+                 Whether default labels, custom labels, or both are shown can be controlled
+                 by SetLabelDisplay().
 
-             Finally, the axis's title, header, footer, and brackets manage their own font attributes.
-             To change these, edit them via GetHeader(), GetFooter(), GetTitle(), and GetBrackets().*/
+                 Finally, the axis's title, header, footer, and brackets manage their own font
+                 attributes. To change these, edit them via GetHeader(), GetFooter(), GetTitle(),
+                 and GetBrackets().*/
         /// @{
 
         /// @returns The number of axis points along the axis.
@@ -628,21 +629,32 @@ namespace Wisteria::GraphItems
             @param tickValue The tick on the axis to label.
             @param label The label to show on the tick.*/
         void SetCustomLabel(const double tickValue, const Label& label);
-        /** @returns The custom label for a specific tick, or empty string if one hasn't been assigned.
+        /** @returns The custom label for a specific tick, or empty string if one hasn't been assigned.\n
+                Will return an invalid label object if not found, so check it with @c IsOk().
             @param value The tick value to retrieve the custom label for.*/
         [[nodiscard]] const Label& GetCustomLabel(const double value) const;
-        /** @brief Finds a custom label along the access, returning its numeric position.
+        /** @brief Finds a custom label along the axis, returning its numeric position.
             @param label The string to look for.
             @returns The numeric position on the axis of where the label is,
                 or @c std::nullopt if not found.*/
-        [[nodiscard]] std::optional<double> FindCustomLabel(const wxString& label) const;
-        /// @brief Sets the length (in terms of character count) of each line of any new labels to the specified length.
-        /// @param suggestedMaxLengthPerLine The length that each line of the labels should be shortened to.
+        [[nodiscard]] std::optional<double> FindCustomLabelPosition(const wxString& label) const;
+        /// @brief Finds a date along the axis, returning its numeric position.
+        /// @returns The point on the axis corresponding to the provided date,
+        ///     or @c std::nullopt if not found.
+        /// @param date The date to search for along the axis.
+        /// @note The axis must be initialized with a series of dates from SetRange();
+        ///     otherwise, this will return @c std::nullopt.
+        [[nodiscard]] std::optional<double> FindDatePosition(const wxDateTime& date) const noexcept;
+        /// @brief Sets the length (in terms of character count) of each line of any new labels to
+        ///     the specified length.
+        /// @param suggestedMaxLengthPerLine The length that each line of the labels should be
+        ///     shortened to.
         void SetLabelLineLength(const size_t suggestedMaxLengthPerLine);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.
         /// @param dc The DC to measure the text with.
         [[nodiscard]] bool ShouldLabelsBeStackedToFit(wxDC& dc) const;
-        /// @returns `true` if the specified value as a label associated to it. This checks for both generated labels and custom labels.
+        /// @returns @c true if the specified value as a label associated to it.
+        ///     This checks for both generated labels and custom labels.
         /// @param value The axis value to check.
         [[nodiscard]] bool PointHasLabel(const double value) const;
         /// @brief Sets how the numbers and custom labels should be shown.
@@ -693,7 +705,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] bool IsShowingOuterLabels() const noexcept
             { return m_axisLabels.size() ? m_axisLabels.front().IsShown() : true; }
 
-        /// @returns `true` if the labels are being stacked.
+        /// @returns @c true if the labels are being stacked.
         /// @sa EnableAutoStacking().
         [[nodiscard]] bool IsStackingLabels() const noexcept
             { return m_stackLabelsToFit; }
@@ -703,15 +715,16 @@ namespace Wisteria::GraphItems
         void StackLabels(bool stacked = true) noexcept
             { m_stackLabelsToFit = stacked; }
         /** @brief Sets whether to enable auto stacking labels.
-            @details If `true`, the axis will set labels to auto stack
+            @details If @c true, the axis will set labels to auto stack
                 if it is determined that that is the best way to fit them along the axis.
             @param enable Whether to enable auto stacking.
-            @note By default, this is turned on for horizontal axes, but turned off for vertical axes.
-             Stacking labels on a vertical axis can look a bit odd (especially with text labels), so
-             caller should explicitly enable this for vertical axes if they really want it.*/
+            @note By default, this is turned on for horizontal axes, but turned off for vertical axes.\n
+                 Stacking labels on a vertical axis can look a bit odd (especially with text labels),
+                 so caller should explicitly enable this for vertical axes if they really want it.*/
         void EnableAutoStacking(const bool enable) noexcept
             { m_enableAutoStacking = enable; }
-        /// @returns `true` if axis can override label stacking if it determines that is the best way to get them to fit.
+        /// @returns @c true if axis can override label stacking if it determines that is the
+        ///     best way to get them to fit.
         [[nodiscard]] bool IsAutoStackingEnabled() const noexcept
             { return m_enableAutoStacking; }
 
@@ -793,13 +806,13 @@ namespace Wisteria::GraphItems
         /** @name Plotting Functions
             @brief Functions related to plotting points.
             @details These functions are generally only used by Graph2D classes,
-             and may only be relevant to when you are designing a new graph type.*/
+                and may only be relevant to when you are designing a new graph type.*/
         /// @{
 
         /** @brief Returns the physical point of an axis value, relative to the parent plot.
             @param value The axis value to search for.
             @param[out] result The physical coordinate of where the value is, relative to the parent plot.
-            @returns `true` if the physical coordinate is found (`false` when value isn't on the axis).*/
+            @returns @c true if the physical coordinate is found (@c false when value isn't on the axis).*/
         bool GetPhysicalCoordinate(const double value, wxCoord& result) const;
         /// @}
 
@@ -1088,6 +1101,10 @@ namespace Wisteria::GraphItems
         /// @private
         [[nodiscard]] const std::vector<AxisPoint>& GetAxisPoints() const noexcept
             { return m_axisLabels; }
+        /// @private
+        [[deprecated("Use FindDatePosition() instead.")]]
+        [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
+            { return FindDatePosition(date); }
     private:
         // Most of the following functionality is only used by Graph2D-derived classes and
         // shouldn't be part of the client API. They are still properly documented here,
@@ -1216,7 +1233,7 @@ namespace Wisteria::GraphItems
         /** @brief Retrieves the value along the axis from a physical (relative to parent plot) coordinate.
             @param coordinate The physical coordinate to look up.
             @param[out] value The axis value connected to the coordinate.
-            @returns `true` if coordinate is on the axis and a value can be found; `false` otherwise.*/
+            @returns @c true if coordinate is on the axis and a value can be found; @c false otherwise.*/
         [[nodiscard]] bool GetValueFromPhysicalCoordinate(const wxCoord coordinate, double& value) const noexcept;
         /// @brief Sets the width of spacing between labels.
         /// @param width The width of spacing between labels.
@@ -1244,7 +1261,7 @@ namespace Wisteria::GraphItems
         /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
             @param dc The DC to measure with.*/
         [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& dc) const;
-        /** @returns `true` if the given point is inside of this point.
+        /** @returns @c true if the given point is inside of this point.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }

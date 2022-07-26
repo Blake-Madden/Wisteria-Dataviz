@@ -2142,7 +2142,7 @@ namespace Wisteria
                     if (positionNode->IsOk() &&
                         positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos = axis.FindCustomLabel(positionNode->GetValueString());
+                        axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
                         }
                     else if (positionNode->IsOk() &&
                         positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
@@ -2189,7 +2189,7 @@ namespace Wisteria
                     if (position1Node->IsOk() &&
                         position1Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos1 = axis.FindCustomLabel(position1Node->GetValueString());
+                        axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
                         }
                     else if (position1Node->IsOk() &&
                         position1Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
@@ -2202,7 +2202,7 @@ namespace Wisteria
                     if (position2Node->IsOk() &&
                         position2Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos2 = axis.FindCustomLabel(position2Node->GetValueString());
+                        axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
                         }
                     else if (position2Node->IsOk() &&
                         position2Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)

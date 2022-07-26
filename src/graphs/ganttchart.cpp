@@ -181,8 +181,8 @@ namespace Wisteria::Graphs
 
                 const GraphItems::Label axisLabel(taskInfo.m_name);
 
-                const auto startPt = GetScalingAxis().GetPointFromDate(taskInfo.m_start);
-                const auto endPt = GetScalingAxis().GetPointFromDate(taskInfo.m_end);
+                const auto startPt = GetScalingAxis().FindDatePosition(taskInfo.m_start);
+                const auto endPt = GetScalingAxis().FindDatePosition(taskInfo.m_end);
                 wxASSERT_MSG(startPt.has_value() && endPt.has_value(),
                     L"Valid dates not found on axis in Gantt chart?!");
                 if (!startPt.has_value() || !endPt.has_value())
@@ -291,8 +291,8 @@ namespace Wisteria::Graphs
                 {
                 const GraphItems::Label axisLabel(taskInfo.m_name);
 
-                const auto startPoint = GetScalingAxis().GetPointFromDate(taskInfo.m_start);
-                const auto endPoint = GetScalingAxis().GetPointFromDate(taskInfo.m_end);
+                const auto startPoint = GetScalingAxis().FindDatePosition(taskInfo.m_start);
+                const auto endPoint = GetScalingAxis().FindDatePosition(taskInfo.m_end);
                 const auto daysDiff =
                     (endPoint.has_value() ? endPoint.value() : GetScalingAxis().GetRange().second) -
                     (startPoint.has_value() ? startPoint.value() : GetScalingAxis().GetRange().first);

@@ -93,7 +93,9 @@ namespace Wisteria::Graphs
             @param pt The X and Y coordinates of the object. These coordinates are relative to the
                 plot's X and Y axes, not physical coordinates on the canvas.\n
                 Note that if one (or both) of the axes are date-based, you can call
-                @c GetPointFromDate() to find its point to use here.
+                @c FindDatePosition() to find its point to use here.\n
+                @c FindCustomLabelPosition() can also be used to locate a point along either axis
+                using a label.
             @param interestPts An optional collection of points on the plot to draw a line from
                 this object's anchor point to.
                 For example, this can draw a line from a data point to an annotation.

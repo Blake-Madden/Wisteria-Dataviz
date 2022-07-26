@@ -327,7 +327,7 @@ Properties for row or column positions:
      For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will
      result in the second-to-last row.
 
-## Pen (#pen-properties)
+## Pen {#pen-properties}
 Properties for pens:
 - @c "color": the pen color. This can be either a color name or hex-encoded value.
 - @c "width": the width of the pen's line.

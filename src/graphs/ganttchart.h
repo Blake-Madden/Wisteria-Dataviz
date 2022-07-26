@@ -75,7 +75,7 @@ namespace Wisteria::Graphs
             L"Resource", L"Description", L"Completion", L"Resource");
 
          // add deadlines
-         auto releaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+         auto releaseDate = ganttChart->GetScalingAxis().FindDatePosition(
             wxDateTime(25, wxDateTime::Dec, 2022));
          if (releaseDate)
             {
@@ -84,7 +84,7 @@ namespace Wisteria::Graphs
                 ColorBrewer::GetColor(Colors::Color::TractorRed)) );
             }
 
-         auto updateReleaseDate = ganttChart->GetScalingAxis().GetPointFromDate(
+         auto updateReleaseDate = ganttChart->GetScalingAxis().FindDatePosition(
             wxDateTime(15, wxDateTime::Mar, 2023));
          if (updateReleaseDate)
             {
