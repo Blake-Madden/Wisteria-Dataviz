@@ -50,8 +50,13 @@ namespace Wisteria::Graphs
             m_xColumnCategorical = GetData()->GetCategoricalColumn(xColumnName);
             if (m_xColumnCategorical == GetData()->GetCategoricalColumns().cend())
                 {
-                throw std::runtime_error(wxString::Format(
-                    _(L"'%s': X column not found for line plot."), xColumnName).ToUTF8());
+                // try date columns
+                m_xColumnDate = GetData()->GetDateColumn(xColumnName);
+                if (m_xColumnDate == GetData()->GetDateColumns().cend())
+                    {
+                    throw std::runtime_error(wxString::Format(
+                        _(L"'%s': X column not found for line plot."), xColumnName).ToUTF8());
+                    }
                 }
             }
         m_lines.clear();
@@ -125,9 +130,11 @@ namespace Wisteria::Graphs
                                          const Data::GroupIdType group) const noexcept
         {
         wxASSERT_MSG(data, L"Null dataset passed to IsDataSingleDirection()");
-        if (data == nullptr)
-            { return false; }
-        if (data->GetRowCount() == 0)
+        // this only makes sense with numeric data
+        if (data == nullptr ||
+            data->GetRowCount() == 0 ||
+            IsXDates() ||
+            IsXCategorical())
             { return true; }
         double currentX{ std::numeric_limits<double>::lowest() };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
@@ -169,8 +176,6 @@ namespace Wisteria::Graphs
         const auto [yStartCurrent, yEndCurrent] = GetLeftYAxis().GetRange();
         const auto [yStart, yEnd] = adjust_intervals(minYValue, maxYValue);
 
-        const auto [xStartCurrent, xEndCurrent] = GetBottomXAxis().GetRange();
-
         GetLeftYAxis().SetRange(
             (GetLineCount() > 1 ? std::min(yStart, yStartCurrent) : yStart),
             (GetLineCount() > 1 ? std::max(yEnd, yEndCurrent) : yEnd),
@@ -178,25 +183,41 @@ namespace Wisteria::Graphs
             ((get_mantissa(yStart) == 0 && get_mantissa(yEnd) == 0) ? 0 : 1),
             false);
 
-        const auto [minXValue, maxXValue] = GetXMinMax();
+        // X axis
+        //-------
 
-        GetBottomXAxis().SetRange(
-            (GetLineCount() > 1 ? std::min(minXValue, xStartCurrent) : minXValue),
-            (GetLineCount() > 1 ? std::max(maxXValue, xEndCurrent) : maxXValue),
-            ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1),
-            false);
-
-        // if we have a string table to work with, use that for the X axis labels
-        if (IsXCategorical() &&
-            m_xColumnCategorical->GetStringTable().size() > 0)
+        if (IsXDates())
             {
-            GetBottomXAxis().ClearCustomLabels();
-            GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
-            // customize the X axis labels
-            for (const auto& label : m_xColumnCategorical->GetStringTable())
+            const auto [xStartCurrent, xEndCurrent] = GetBottomXAxis().GetRangeDates();
+
+            const auto [minXValue, maxXValue] = GetXMinMaxDates();
+
+            GetBottomXAxis().SetRange(minXValue, maxXValue);
+            }
+        else
+            {
+            const auto [xStartCurrent, xEndCurrent] = GetBottomXAxis().GetRange();
+
+            const auto [minXValue, maxXValue] = GetXMinMax();
+
+            GetBottomXAxis().SetRange(
+                (GetLineCount() > 1 ? std::min(minXValue, xStartCurrent) : minXValue),
+                (GetLineCount() > 1 ? std::max(maxXValue, xEndCurrent) : maxXValue),
+                ((get_mantissa(minXValue) == 0 && get_mantissa(maxXValue) == 0) ? 0 : 1),
+                false);
+
+            // if we have a string table to work with, use that for the X axis labels
+            if (IsXCategorical() &&
+                m_xColumnCategorical->GetStringTable().size() > 0)
                 {
-                GetBottomXAxis().SetCustomLabel(label.first,
-                    Label(label.second));
+                GetBottomXAxis().ClearCustomLabels();
+                GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
+                // customize the X axis labels
+                for (const auto& label : m_xColumnCategorical->GetStringTable())
+                    {
+                    GetBottomXAxis().SetCustomLabel(label.first,
+                        Label(label.second));
+                    }
                 }
             }
 

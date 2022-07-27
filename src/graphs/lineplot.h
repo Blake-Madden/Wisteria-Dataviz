@@ -244,10 +244,10 @@ namespace Wisteria::Graphs
                 and line style to use.
             @param data The data to use for the line plot.
             @param yColumnName The Y column data (a continuous column).
-            @param xColumnName The X column data (a continuous or categorical column).\n
+            @param xColumnName The X column data (a continuous, categorical, or date column).\n
                 If a categorical column, the columns labels will be assigned to the X axis.
                 Also, the categories will be placed along the X axis in the order of their
-                underlying numeric values.
+                underlying numeric values (usually the order that they were read from a file).
             @param groupColumnName The (optional) categorical column to use for grouping.
                 This will split the data into separate lines based on this grouping column.
             @note To add missing points to the data so that a gap in the line will appear,
@@ -384,6 +384,11 @@ namespace Wisteria::Graphs
             // categorical X, which in this case anything would be OK (even empty string)
             else if (IsXCategorical())
                 { return true; }
+            else if (IsXDates())
+                {
+                return GetBottomXAxis().FindDatePosition(
+                    m_xColumnDate->GetValue(index)).has_value();
+                }
             else
                 { return false; }
             }
@@ -402,13 +407,31 @@ namespace Wisteria::Graphs
             // goes along the X axis
             else if (IsXCategorical())
                 { return static_cast<double>(m_xColumnCategorical->GetValue(index)); }
+            else if (IsXDates())
+                {
+                const auto foundDate =
+                    GetBottomXAxis().FindDatePosition(m_xColumnDate->GetValue(index));
+                return (foundDate.has_value() ? foundDate.value() :
+                        std::numeric_limits<double>::quiet_NaN());
+                }
             else
                 { return std::numeric_limits<double>::quiet_NaN(); }
             }
+        /** @brief Gets the min and max values of the X column (if a date axis).
+            @returns The X column's min and max dates, which can be @c wxInvalidDateTime if invalid.*/
+        [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
+            {
+            wxASSERT_MSG(IsXDates(), L"GetXMinMaxDates() should only be called if X axis is date based!");
+            const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
+                    m_xColumnDate->GetValues().cbegin(),
+                    m_xColumnDate->GetValues().cend());
+            return std::make_pair(*fullXDataMin, *fullXDataMax);
+            }
         /** @brief Gets the min and max values of the X column.
-            @returns The X column's min and max value, which can be NaN if invalid.*/
+            @returns The X column's min and max values, which can be NaN if invalid.*/
         [[nodiscard]] std::pair<double, double> GetXMinMax() const
             {
+            wxASSERT_MSG(!IsXDates(), L"GetXMinMaxDates() should be called instead!");
             if (GetData()->GetRowCount() == 0)
                 {
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
@@ -422,7 +445,7 @@ namespace Wisteria::Graphs
                     m_xColumnContinuous->GetValues().cend());
                 return std::make_pair(*fullXDataMin, *fullXDataMax);
                 }
-            // categorical X, just want the underlying number code as that is what
+            // categorical X, just want the underlying numeric code as that is what
             // goes along the X axis
             else if (IsXCategorical())
                 {
@@ -445,6 +468,9 @@ namespace Wisteria::Graphs
         /// @returns Whether X was loaded from a categorical column.
         [[nodiscard]] bool IsXCategorical() const noexcept
             { return (m_xColumnCategorical != GetData()->GetCategoricalColumns().cend()); }
+        /// @returns Whether X was loaded from a date column.
+        [[nodiscard]] bool IsXDates() const noexcept
+            { return (m_xColumnDate != GetData()->GetDateColumns().cend()); }
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
@@ -463,6 +489,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
             { return m_linePenStyles; }
 
+        /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]] bool IsDataSingleDirection(std::shared_ptr<const Data::Dataset>& data,
                                                  const Data::GroupIdType group) const noexcept;
         void UpdateCanvasForPoints()
@@ -481,6 +508,7 @@ namespace Wisteria::Graphs
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_xColumnContinuous;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_xColumnCategorical;
+        std::vector<Wisteria::Data::Column<wxDateTime>>::const_iterator m_xColumnDate;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_yColumn;
         wxString m_yColumnName;
 
