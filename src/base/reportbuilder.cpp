@@ -181,7 +181,7 @@ namespace Wisteria
                                         (*childGraph) != nullptr)
                                         { childGraphs.push_back(*childGraph); }
                                     }
-                                if (childGraphs.size())
+                                if (childGraphs.size() > 1)
                                     {
                                     auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis) ?
                                         CommonAxisBuilder::BuildBottomAxis(canvas,
@@ -343,6 +343,38 @@ namespace Wisteria
         auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
         if (foundPos != labelDisplayValues.cend())
             { axis.SetLabelDisplay(foundPos->second); }
+
+        // pens
+        LoadPen(axisNode->GetProperty(L"axis-pen"), axis.GetAxisLinePen());
+        LoadPen(axisNode->GetProperty(L"gridline-pen"), axis.GetGridlinePen());
+
+        // brackets
+        const auto bracketsNode = axisNode->GetProperty(L"brackets");
+        if (bracketsNode->IsOk())
+            {
+            const wxString dsName = bracketsNode->GetProperty(L"datasource")->GetValueString();
+            const auto foundDataset = m_datasets.find(dsName);
+            if (foundDataset == m_datasets.cend() ||
+                foundDataset->second == nullptr)
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                }
+
+            const auto variablesNode = bracketsNode->GetProperty(L"variables");
+            if (variablesNode->IsOk())
+                {
+                const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
+                const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
+
+                axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                }
+            else
+                {
+                throw std::runtime_error(
+                    _(L"Variables not defined for brackets").ToUTF8());
+                }
+            }
         }
 
     //---------------------------------------------------
@@ -389,6 +421,8 @@ namespace Wisteria
                 { label->SetTextOrientation(Orientation::Horizontal); }
             else if (orientation.CmpNoCase(L"vertical") == 0)
                 { label->SetTextOrientation(Orientation::Vertical); }
+
+            label->SetLineSpacing(labelNode->GetProperty(L"line-spacing")->GetValueNumber(1));
 
             // font attributes
             if (labelNode->GetProperty(L"bold")->IsOk())
@@ -480,7 +514,7 @@ namespace Wisteria
         wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
         if (re.Matches(formula))
             {
-            const auto funcName = re.GetMatch(formula, 1).MakeLower();
+            const wxString funcName = re.GetMatch(formula, 1).MakeLower();
             if (funcName.CmpNoCase(L"min") == 0 ||
                 funcName.CmpNoCase(L"max") == 0)
                 { return CalcMinMaxValue(formula); }
@@ -600,9 +634,9 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 4)
                 {
-                const auto funcName = re.GetMatch(formula, 1).MakeLower();
-                const auto dsName = re.GetMatch(formula, 2);
-                const auto columnName = re.GetMatch(formula, 3);
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                const wxString dsName = re.GetMatch(formula, 2);
+                const wxString columnName = re.GetMatch(formula, 3);
                 const auto foundPos = m_datasets.find(dsName);
                 if (foundPos != m_datasets.cend() &&
                     foundPos->second != nullptr)
@@ -1102,12 +1136,13 @@ namespace Wisteria
                         originalColumnCount, originalRowCount);
 
                 Table::AggregateInfo aggInfo;
-                if (aggType.CmpNoCase(L"percent-change") == 0)
-                    { aggInfo.Type(Table::AggregateType::ChangePercent); }
                 if (startColumn.has_value())
                     { aggInfo.FirstCell(startColumn.value()); }
                 if (endingColumn.has_value())
                     { aggInfo.LastCell(endingColumn.value()); }
+
+                if (aggType.CmpNoCase(L"percent-change") == 0)
+                    { aggInfo.Type(Table::AggregateType::ChangePercent); }
                 // invalid agg column type
                 else
                     { continue; }
@@ -1851,36 +1886,38 @@ namespace Wisteria
         {
         static const std::map<std::wstring_view, std::shared_ptr<Colors::Schemes::ColorScheme>> colorSchemes =
             {
-            { L"Dusk", std::make_shared<Colors::Schemes::Dusk>() },
-            { L"EarthTones", std::make_shared<Colors::Schemes::EarthTones>() },
-            { L"Decade1920s", std::make_shared<Colors::Schemes::Decade1920s>() },
-            { L"Decade1940s", std::make_shared<Colors::Schemes::Decade1940s>() },
-            { L"Decade1950s", std::make_shared<Colors::Schemes::Decade1950s>() },
-            { L"Decade1960s", std::make_shared<Colors::Schemes::Decade1960s>() },
-            { L"Decade1970s", std::make_shared<Colors::Schemes::Decade1970s>() },
-            { L"Decade1980s", std::make_shared<Colors::Schemes::Decade1980s>() },
-            { L"Decade1990s", std::make_shared<Colors::Schemes::Decade1990s>() },
-            { L"Decade2000s", std::make_shared<Colors::Schemes::Decade2000s>() },
-            { L"October", std::make_shared<Colors::Schemes::October>() },
-            { L"Slytherin", std::make_shared<Colors::Schemes::Slytherin>() },
-            { L"Campfire", std::make_shared<Colors::Schemes::Campfire>() },
-            { L"CoffeeShop", std::make_shared<Colors::Schemes::CoffeeShop>() },
-            { L"ArticChill", std::make_shared<Colors::Schemes::ArticChill>() },
-            { L"BackToSchool", std::make_shared<Colors::Schemes::BackToSchool>() },
-            { L"BoxOfChocolates", std::make_shared<Colors::Schemes::BoxOfChocolates>() },
-            { L"Cosmopolitan", std::make_shared<Colors::Schemes::Cosmopolitan>() },
-            { L"DayAndNight", std::make_shared<Colors::Schemes::DayAndNight>() },
-            { L"FreshFlowers", std::make_shared<Colors::Schemes::FreshFlowers>() },
-            { L"IceCream", std::make_shared<Colors::Schemes::IceCream>() },
-            { L"UrbanOasis", std::make_shared<Colors::Schemes::UrbanOasis>() },
-            { L"Typewriter", std::make_shared<Colors::Schemes::Typewriter>() },
-            { L"TastyWaves", std::make_shared<Colors::Schemes::TastyWaves>() },
-            { L"Spring", std::make_shared<Colors::Schemes::Spring>() },
-            { L"ShabbyChic", std::make_shared<Colors::Schemes::ShabbyChic>() },
-            { L"RollingThunder", std::make_shared<Colors::Schemes::RollingThunder>() },
-            { L"ProduceSection", std::make_shared<Colors::Schemes::ProduceSection>() },
-            { L"Nautical", std::make_shared<Colors::Schemes::Nautical>() },
-            { L"MeadowSunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
+            { L"dusk", std::make_shared<Colors::Schemes::Dusk>() },
+            { L"earthtones", std::make_shared<Colors::Schemes::EarthTones>() },
+            { L"decade1920s", std::make_shared<Colors::Schemes::Decade1920s>() },
+            { L"decade1940s", std::make_shared<Colors::Schemes::Decade1940s>() },
+            { L"decade1950s", std::make_shared<Colors::Schemes::Decade1950s>() },
+            { L"decade1960s", std::make_shared<Colors::Schemes::Decade1960s>() },
+            { L"decade1970s", std::make_shared<Colors::Schemes::Decade1970s>() },
+            { L"decade1980s", std::make_shared<Colors::Schemes::Decade1980s>() },
+            { L"decade1990s", std::make_shared<Colors::Schemes::Decade1990s>() },
+            { L"decade2000s", std::make_shared<Colors::Schemes::Decade2000s>() },
+            { L"october", std::make_shared<Colors::Schemes::October>() },
+            { L"slytherin", std::make_shared<Colors::Schemes::Slytherin>() },
+            { L"campfire", std::make_shared<Colors::Schemes::Campfire>() },
+            { L"coffeeshop", std::make_shared<Colors::Schemes::CoffeeShop>() },
+            { L"articchill", std::make_shared<Colors::Schemes::ArticChill>() },
+            { L"backtoschool", std::make_shared<Colors::Schemes::BackToSchool>() },
+            { L"boxofchocolates", std::make_shared<Colors::Schemes::BoxOfChocolates>() },
+            { L"cosmopolitan", std::make_shared<Colors::Schemes::Cosmopolitan>() },
+            { L"dayandnight", std::make_shared<Colors::Schemes::DayAndNight>() },
+            { L"freshflowers", std::make_shared<Colors::Schemes::FreshFlowers>() },
+            { L"icecream", std::make_shared<Colors::Schemes::IceCream>() },
+            { L"urbanoasis", std::make_shared<Colors::Schemes::UrbanOasis>() },
+            { L"typewriter", std::make_shared<Colors::Schemes::Typewriter>() },
+            { L"tastywaves", std::make_shared<Colors::Schemes::TastyWaves>() },
+            { L"spring", std::make_shared<Colors::Schemes::Spring>() },
+            { L"shabbychic", std::make_shared<Colors::Schemes::ShabbyChic>() },
+            { L"rollingthunder", std::make_shared<Colors::Schemes::RollingThunder>() },
+            { L"producesection", std::make_shared<Colors::Schemes::ProduceSection>() },
+            { L"nautical", std::make_shared<Colors::Schemes::Nautical>() },
+            { L"semesters", std::make_shared<Colors::Schemes::Semesters>() },
+            { L"seasons", std::make_shared<Colors::Schemes::Seasons>() },
+            { L"meadowsunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
             };
         
         if (!colorSchemeNode->IsOk())
@@ -1934,7 +1971,9 @@ namespace Wisteria
             { L"box-plot-icon", IconShape::BoxPlotIcon },
             { L"location-marker", IconShape::LocationMarker },
             { L"go-road-sign", IconShape::GoRoadSign },
-            { L"warning-road-sign", IconShape::WarningRoadSign }
+            { L"warning-road-sign", IconShape::WarningRoadSign },
+            { L"sun-icon", IconShape::SunIcon }
+
             };
 
         std::vector<IconShape> icons;
@@ -1961,7 +2000,7 @@ namespace Wisteria
         if (path.empty())
             {
             throw std::runtime_error(
-                wxString(_(L"image must have a filepath.")).ToUTF8());
+                wxString(_(L"Image must have a filepath.")).ToUTF8());
             }
         if (!wxFileName::FileExists(path))
             {
@@ -1969,7 +2008,7 @@ namespace Wisteria
             if (!wxFileName::FileExists(path))
                 {
                 throw std::runtime_error(
-                    wxString(_(L"image not found.")).ToUTF8());
+                    wxString::Format(_(L"%s :image not found."), path).ToUTF8());
                 }
             }
         auto image = std::make_shared<GraphItems::Image>(path);
@@ -2142,7 +2181,23 @@ namespace Wisteria
                     if (positionNode->IsOk() &&
                         positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                        // see if it's a date
+                        wxDateTime dt;
+                        if (dt.ParseDateTime(positionNode->GetValueString()) ||
+                            dt.ParseDate(positionNode->GetValueString()))
+                            {
+                            axisPos = axis.FindDatePosition(dt);
+                            // looks like a date, but couldn't be found on the axis,
+                            // so just show it as a string
+                            if (!axisPos.has_value())
+                                {
+                                axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                                }
+                            }
+                        else
+                            {
+                            axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                            }
                         }
                     else if (positionNode->IsOk() &&
                         positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
@@ -2189,7 +2244,23 @@ namespace Wisteria
                     if (position1Node->IsOk() &&
                         position1Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
+                        // see if it's a date
+                        wxDateTime dt;
+                        if (dt.ParseDateTime(position1Node->GetValueString()) ||
+                            dt.ParseDate(position1Node->GetValueString()))
+                            {
+                            axisPos1 = axis.FindDatePosition(dt);
+                            // looks like a date, but couldn't be found on the axis,
+                            // so just show it as a string
+                            if (!axisPos1.has_value())
+                                {
+                                axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
+                                }
+                            }
+                        else
+                            {
+                            axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
+                            }
                         }
                     else if (position1Node->IsOk() &&
                         position1Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
@@ -2202,7 +2273,23 @@ namespace Wisteria
                     if (position2Node->IsOk() &&
                         position2Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
                         {
-                        axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
+                        // see if it's a date
+                        wxDateTime dt;
+                        if (dt.ParseDateTime(position2Node->GetValueString()) ||
+                            dt.ParseDate(position2Node->GetValueString()))
+                            {
+                            axisPos2 = axis.FindDatePosition(dt);
+                            // looks like a date, but couldn't be found on the axis,
+                            // so just show it as a string
+                            if (!axisPos2.has_value())
+                                {
+                                axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
+                                }
+                            }
+                        else
+                            {
+                            axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
+                            }
                         }
                     else if (position2Node->IsOk() &&
                         position2Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)

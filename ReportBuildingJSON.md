@@ -122,6 +122,8 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "left-y"
   - @c "top-y"
 - @c "title": the title of the axis, which contains ["label"](#label-properties) properties.
+- @c "axis-pen": the pen for the axis line, which includes [pen](#pen-properties) properties.
+- @c "gridline-pen": the pen for the gridlines, which includes [pen](#pen-properties) properties.
 - @c "tickmarks": tickmarks settings, which contains the following properties:
   - @c "display": a string, indicating how to display the tickmarks.\n
     Available options are:
@@ -135,6 +137,11 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "only-custom-labels"
   - @c "custom-labels-and-values"
   - @c "no-display"
+- @c "brackets": adds brackets to the axis, which included the following properties:
+  - @c "datasource": the name of the datasource to read the columns from.
+  - @c "variables": which include the following properties:
+    - @c "label": the labels column.
+    - @c "value": the values column. (This can be either a continous, categorical, or date column.)
 
 ## Categorical Bar Chart {#categorical-bar-chart-properties}
 Properties for @c "categorical-bar-chart" nodes:
@@ -155,7 +162,7 @@ Properties for @c "common-axis" nodes:
 - All properties available to [axis](#axis-properties) nodes are included.\n
   Note that for @c "axis-type", common axes only support @c "bottom-x" and @c "right-y".
 - @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.\n
-  IDs are assigned to graphs using the @c "id" property, which should be numeric.
+     IDs are assigned to graphs using the @c "id" property, which should be numeric.
 - @c "common-perpendicular-axis": if @c "axis-type" is @c "bottom-x" and this is @c true,
      then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
 
@@ -175,6 +182,7 @@ Properties for @c "label" nodes:
 - @c "background": the background color. This can be either a color name or hex-encoded value.
 - @c "color": the font color. This can be either a color name or hex-encoded value.
 - @c "bold": @c true to make the text bold.
+- @c "line-spacing": a number representing the spaces between lines (if text is multiline).
 - @c "text-alignment": how to align the label's text.\n
   The available options are:
   - @c "flush-left" or @c "ragged-right"
@@ -189,6 +197,9 @@ Properties for @c "label" nodes:
        header's default font size.\n
        Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
        @c "scaling" property.
+
+Note that it is recommended to set @c "fit-row-to-content" to @c true if the label is a separate
+object on the canvas (i.e., not a label on another object).
 
 ## Line Plot {#line-plot-properties}
 Properties for @c "line-plot" nodes:
@@ -252,6 +263,7 @@ Properties for @c "pie-chart" nodes:
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
+- @c "variables": an array of column names to use from the dataset.
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
 - @c "min-width-proportion": the minimum percent of the drawing area's width that the table should consume
@@ -259,8 +271,9 @@ Properties for @c "table" nodes:
 - @c "min-height-proportion": the minimum percent of the drawing area's height that the table should consume
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
 - @c "highlight-pen": the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
-  
 - Some base properties available to [graphs](#graph-properties).
+
+Note that it is recommended to set @c "fit-row-to-content" to @c true for shorter tables to better fit them to the page.
 
 The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
@@ -346,8 +359,8 @@ Note that pens can be set to @c null to turn it off.
 ## Graphs {#graph-properties}
 Properties common to all graph items:
 - @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
-     Note that this is the unique name of the datasource loaded from the report's ["datasources"](#datasources-properties) section,
-     not a filepath.\n
+     Note that this is the unique name of the datasource loaded from the report's
+     ["datasources"](#datasources-properties) section, not a filepath.\n
      Also, this is optional if the item type doesn't require a datasource (e.g., a @c Wisteria::GraphItems::Label).
 - @c "title": the title of the graph, which contains ["label"](#label-properties) properties.
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
@@ -360,7 +373,8 @@ Properties common to all graph items:
     - @c "right-y"
     - @c "left-y"
     - @c "top-y"
-  - @c "position": the axis position for the line. This can either be a numeric position or the axis label.
+  - @c "position": the axis position for the line.\n
+       This can either be a numeric position, a date (as a string), or an axis label.
   - @c "label": the text to display on the legend referring to line.
   - @c "pen": the definition for the [pen](#pen-properties) properties.
 - @c "reference-areas": an array of reference area definitions, which contain the following properties:
@@ -370,8 +384,10 @@ Properties common to all graph items:
     - @c "right-y"
     - @c "left-y"
     - @c "top-y"
-  - @c "position-1": the starting axis position for the area. This can either be a numeric position or the axis label.
-  - @c "position-2": the ending axis position for the area. This can either be a numeric position or the axis label.
+  - @c "position-1": the starting axis position for the area.\n
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - @c "position-2": the ending axis position for the area.\n
+       This can either be a numeric position, a date (as a string), or an axis label.
   - @c "label": the text to display on the legend referring to area.
   - @c "pen": the definition for the [pen](#pen-properties) properties.
 - @c "color-scheme": for graphs that support color schemes only.\n
@@ -401,6 +417,7 @@ Properties common to all graph items:
   - @c "location-marker"
   - @c "go-road-sign"
   - @c "warning-road-sign"
+  - @c "sun-icon"
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     Available options are:
@@ -449,5 +466,5 @@ Properties common to all items:
      to its calculated width within its row.
 
 # Notes {#notes}
-Color values can either be hex encoded (e.g., "#FF0000" for red) or a named value ("pumpkin"). For a full list
+Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
 of color names available, refer to the @c Wisteria::Colors::Color enumeration.

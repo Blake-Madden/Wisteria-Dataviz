@@ -45,8 +45,8 @@ namespace Wisteria::GraphItems
         /// @param rect The area to bind the circle within.
         /// @param dc The DC to draw to.
         void DrawCircularSign(const wxRect rect, wxDC& dc);
-        /// @brief Draws a sun shape (yellow circle with sunbeams).
-        /// @param rect The area to bind the circle within.
+        /// @brief Draws a sun shape (circle with sunbeams).
+        /// @param rect The area to bind the sun within.
         /// @param dc The DC to draw to.
         void DrawSun(const wxRect rect, wxDC& dc);
     private:
