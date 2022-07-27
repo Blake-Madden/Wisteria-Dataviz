@@ -445,25 +445,31 @@ namespace Wisteria::GraphItems
 
         if (GetAxisType() == AxisType::LeftYAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x-(CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel), GetTopPoint().y);
+            topLeftCorner = wxPoint(GetTopPoint().x -
+                (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel), GetTopPoint().y);
             bottomRightCorner = wxPoint(GetBottomPoint().x +
                 (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
-                GetBottomPoint().y);//the line, tickmarks, and space after that
+                GetBottomPoint().y); // the line, tickmarks, and space after that
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
                 { bottomRightCorner.x += textMeasurement/2;}
             topLeftCorner.x -= (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
                                 0 :
                                 IsStackingLabels() ? textMeasurement*2 : textMeasurement;
-            if (HasDoubleSidedAxisLabels() && (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
+            if (HasDoubleSidedAxisLabels() &&
+                (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
                 { bottomRightCorner.x += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
             CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.x -= CalcBracketsWidth(dc) +
+                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { bottomRightCorner.x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    {
+                    bottomRightCorner.x += CalcBracketsWidth(dc) +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                    }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
@@ -485,23 +491,29 @@ namespace Wisteria::GraphItems
                 topLeftCorner.x -= (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0));
                 }
 
-            bottomRightCorner = wxPoint(GetBottomPoint().x+(CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel),
-                                        GetBottomPoint().y);//the line, tickmarks, and space after that
+            bottomRightCorner = wxPoint(GetBottomPoint().x +
+                (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel),
+                                        GetBottomPoint().y); // the line, tickmarks, and space after that
             bottomRightCorner.x += (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
                                     0 :
                                     IsStackingLabels() ? textMeasurement*2 : textMeasurement;
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
                 { bottomRightCorner.x += textMeasurement/2;}
-            if (HasDoubleSidedAxisLabels() && (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
+            if (HasDoubleSidedAxisLabels() &&
+                (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
                 { topLeftCorner.x -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
 
             CalcVerticalLabelOverhang(dc, topLeftCorner, bottomRightCorner);
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.x += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.x += CalcBracketsWidth(dc) +
+                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { topLeftCorner.x -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    {
+                    topLeftCorner.x -= CalcBracketsWidth(dc) +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                    }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
@@ -516,7 +528,8 @@ namespace Wisteria::GraphItems
         else if (GetAxisType() == AxisType::BottomXAxis)
             {
             topLeftCorner = wxPoint(GetTopPoint().x,
-                                    GetTopPoint().y - (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
+                                    GetTopPoint().y -
+                                    (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
                                         spaceBetweenAxisAndLabel : 0)));
             bottomRightCorner = wxPoint(GetBottomPoint().x,
                                         // include the line, tickmarks, and space after that
@@ -529,9 +542,13 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                bottomRightCorner.y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                bottomRightCorner.y += CalcBracketsWidth(dc) +
+                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { topLeftCorner.y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    {
+                    topLeftCorner.y -= CalcBracketsWidth(dc) +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                    }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
@@ -545,8 +562,13 @@ namespace Wisteria::GraphItems
             }
         else if (GetAxisType() == AxisType::TopXAxis)
             {
-            topLeftCorner = wxPoint(GetTopPoint().x, GetTopPoint().y-(CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));
-            bottomRightCorner = wxPoint(GetBottomPoint().x, GetBottomPoint().y+(CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)));//the line, tickmarks, and space after that
+            topLeftCorner = wxPoint(GetTopPoint().x,
+                                    GetTopPoint().y - (CalcTickMarkOuterWidth()+spaceBetweenAxisAndLabel));
+            bottomRightCorner = wxPoint(GetBottomPoint().x,
+                                        GetBottomPoint().y +
+                                        (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ?
+                                            // the line, tickmarks, and space after that
+                                            spaceBetweenAxisAndLabel : 0)));
             topLeftCorner.y -= IsStackingLabels() ? textMeasurement*2 : textMeasurement;
             if (HasDoubleSidedAxisLabels())
                 { bottomRightCorner.y += IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
@@ -555,9 +577,13 @@ namespace Wisteria::GraphItems
 
             if (GetBrackets().size())
                 {
-                topLeftCorner.y -= CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                topLeftCorner.y -= CalcBracketsWidth(dc) +
+                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
                 if (HasDoubleSidedAxisLabels())
-                    { bottomRightCorner.y += CalcBracketsWidth(dc)+ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()); }
+                    {
+                    bottomRightCorner.y += CalcBracketsWidth(dc) +
+                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
+                    }
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
@@ -3028,6 +3054,104 @@ namespace Wisteria::GraphItems
         bracket.SetOrientation(IsHorizontal() ?
             Orientation::Horizontal : Orientation::Vertical);
         GetBrackets().emplace_back(bracket);
+        }
+
+    //-------------------------------------------
+    void Axis::AddBrackets(const std::shared_ptr<const Data::Dataset>& data,
+        const wxString& labelColumn, const wxString& valueColumn)
+        {
+        const auto labelCol = data->GetCategoricalColumn(labelColumn);
+        if (labelCol == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': label column not found for line plot."), labelColumn).ToUTF8());
+            }
+
+        const auto valueDateCol = data->GetDateColumn(valueColumn);
+        const auto valueContinuousCol = data->GetContinuousColumn(valueColumn);
+        const auto valueCatCol = data->GetCategoricalColumn(valueColumn);
+        if (valueContinuousCol != data->GetContinuousColumns().cend())
+            {
+            // build a map of labels and the values associated with them
+            multi_value_aggregate_map<wxString, double> brackets;
+            for (size_t i = 0; i < data->GetRowCount(); ++i)
+                {
+                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                                valueContinuousCol->GetValue(i), 1);
+                }
+            for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
+                {
+                if (bracketValues.first.size())
+                    {
+                    // add a bracket stretching from the lowest and highest
+                    // values associated with the label
+                    const auto [minVal, maxVal] =
+                        std::minmax_element(bracketValues.first.cbegin(),
+                                            bracketValues.first.cend());
+                    const auto pos1 = *minVal;
+                    const auto pos2 = *maxVal;
+                    if (!std::isnan(pos1) && !std::isnan(pos2))
+                        {
+                        AddBracket(AxisBracket(pos1, pos2,
+                            safe_divide<double>(pos1 + pos2, 2),
+                            bracketLabel));
+                        }
+                    }
+                }
+            }
+        else if (valueCatCol != data->GetCategoricalColumns().cend())
+            {
+            // build a map of labels and the cat. codes (underlying codes) associated with them
+            multi_value_aggregate_map<wxString, Data::GroupIdType> brackets;
+            for (size_t i = 0; i < data->GetRowCount(); ++i)
+                {
+                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                                valueCatCol->GetValue(i), 1);
+                }
+            for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
+                {
+                if (bracketValues.first.size())
+                    {
+                    // add a bracket stretching from the lowest and highest
+                    // cat. codes (their underlying numeric values) associated with the label
+                    const auto [minVal, maxVal] =
+                        std::minmax_element(bracketValues.first.cbegin(),
+                                            bracketValues.first.cend());
+                    AddBracket(AxisBracket(*minVal, *maxVal,
+                        safe_divide<double>(*minVal + *maxVal, 2),
+                        bracketLabel));
+                    }
+                }
+            }
+        else if (valueDateCol != data->GetDateColumns().cend())
+            {
+            // build a map of labels and the dates associated with them
+            multi_value_aggregate_map<wxString, wxDateTime> brackets;
+            for (size_t i = 0; i < data->GetRowCount(); ++i)
+                {
+                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                                valueDateCol->GetValue(i), 1);
+                }
+            for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
+                {
+                if (bracketValues.first.size())
+                    {
+                    // add a bracket stretching from the lowest and highest
+                    // dates associated with the label
+                    const auto [minVal, maxVal] =
+                        std::minmax_element(bracketValues.first.cbegin(),
+                                            bracketValues.first.cend());
+                    const auto pos1 = FindDatePosition(*minVal);
+                    const auto pos2 = FindDatePosition(*maxVal);
+                    if (pos1.has_value() && pos2.has_value())
+                        {
+                        AddBracket(AxisBracket(pos1.value(), pos2.value(),
+                            safe_divide<double>(pos1.value() + pos2.value(), 2),
+                            bracketLabel));
+                        }
+                    }
+                }
+            }
         }
 
     //-------------------------------------------
