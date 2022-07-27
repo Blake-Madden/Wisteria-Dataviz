@@ -2291,6 +2291,18 @@ namespace Wisteria::GraphItems
         }
 
     //--------------------------------------
+    void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate)
+        {
+        const auto numberOfDays = endDate.Subtract(startDate).GetDays();
+        SetRange(startDate, endDate,
+            (numberOfDays <= 10 ? DateInterval::Daily :
+                numberOfDays <= 70 ? DateInterval::Weekly :
+                numberOfDays <= 500 ? DateInterval::Monthly :
+                DateInterval::FiscalQuarterly),
+             FiscalYear::USBusiness);
+        }
+
+    //--------------------------------------
     void Axis::SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                         const DateInterval displayInterval, const FiscalYear FYtype)
         {
@@ -2337,25 +2349,27 @@ namespace Wisteria::GraphItems
             while (m_firstDay.GetDay() != 1)
                 { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
             m_lastDay.SetToLastMonthDay();
+            m_lastDay.Add(wxDateSpan(0, 0, 0, 1));
             }
         // or adjust to weeks
         else if (GetDateDisplayInterval() == DateInterval::Weekly)
             {
             while (m_firstDay.GetWeekDay() != firstWeekDay)
                 { m_firstDay.Subtract(wxDateSpan(0, 0, 0, 1)); }
-            // move to start of following week and step back
+            // move to start of following week
             while (m_lastDay.GetWeekDay() != firstWeekDay)
                 { m_lastDay.Add(wxDateSpan(0, 0, 0, 1)); }
-            m_lastDay.Subtract(wxDateSpan(0, 0, 0, 1));
             }
+
+        const auto numberOfDays = (m_lastDay - m_firstDay).GetDays();
 
         // quarterly intervals
         if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly )
             {
-            SetRange(0, (m_lastDay-m_firstDay).GetDays(), 0, 1, 1);
+            SetRange(0, numberOfDays, 0, 1, 1);
             long currentDate = 0;
             wxDateTime dateLabel = m_firstDay;
-            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+            while (currentDate <= numberOfDays)
                 {
                 // only show first and last month of quarters if using FYs
                 if (GetDateDisplayInterval() == DateInterval::FiscalQuarterly &&
@@ -2375,12 +2389,12 @@ namespace Wisteria::GraphItems
                 }
             }
         // monthly
-        if (GetDateDisplayInterval() == DateInterval::Monthly)
+        else if (GetDateDisplayInterval() == DateInterval::Monthly)
             {
-            SetRange(0, (m_lastDay-m_firstDay).GetDays(), 0, 1, 1);
+            SetRange(0, numberOfDays, 0, 1, 1);
             long currentDate = 0;
             wxDateTime dateLabel = m_firstDay;
-            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+            while (currentDate <= numberOfDays)
                 {
                 // only show first of the months
                 if (dateLabel.GetDay() == 1)
@@ -2393,7 +2407,7 @@ namespace Wisteria::GraphItems
         // weekly intervals
         else if (GetDateDisplayInterval() == DateInterval::Weekly)
             {
-            SetRange(0, (m_lastDay-m_firstDay).GetDays(), 0, 1, 7);
+            SetRange(0, numberOfDays, 0, 1, 7);
             long currentDate = 0;
             wxDateTime dateLabel = m_firstDay;
             // move next label to the start of the next week,
@@ -2404,12 +2418,12 @@ namespace Wisteria::GraphItems
                 ++currentDate;
                 }
             // add the rest
-            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+            while (currentDate <= numberOfDays)
                 {
                 SetCustomLabel(currentDate,
                                GraphItems::Label(dateLabel.FormatDate()));
                 currentDate += 7;
-                if (currentDate > (m_lastDay-m_firstDay).GetDays())
+                if (currentDate > numberOfDays)
                     { break; }
                 dateLabel.Add(wxDateSpan(0, 0, 1, 0));
                 }
@@ -2417,15 +2431,15 @@ namespace Wisteria::GraphItems
         // daily
         else if (GetDateDisplayInterval() == DateInterval::Daily)
             {
-            SetRange(0, (m_lastDay - m_firstDay).GetDays(), 0, 1, 1);
+            SetRange(0, numberOfDays, 0, 1, 1);
             long currentDate = 0;
             wxDateTime dateLabel = m_firstDay;
-            while (currentDate <= (m_lastDay-m_firstDay).GetDays())
+            while (currentDate <= numberOfDays)
                 {
                 SetCustomLabel(currentDate,
                                GraphItems::Label(dateLabel.FormatDate()));
                 ++currentDate;
-                if (currentDate > (m_lastDay-m_firstDay).GetDays())
+                if (currentDate > numberOfDays)
                     { break; }
                 dateLabel.Add(wxDateSpan(0, 0, 0, 1));
                 }

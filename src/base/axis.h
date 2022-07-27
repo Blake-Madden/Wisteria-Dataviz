@@ -520,6 +520,13 @@ namespace Wisteria::GraphItems
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate,
                       const DateInterval displayInterval,
                       const FiscalYear FYtype);
+        /** @brief Sets the range of data for the axis, using a series of dates.
+            @param startDate The start date of the range.
+            @param endDate The end date of the range.
+            @note This is simplified version of SetRange() that deduced the best
+                interval based on the date range.
+            @sa GetRangeDates().*/
+        void SetRange(const wxDateTime& startDate, const wxDateTime& endDate);
         /** @returns A pair representing the first and last value on the axis.
             @warning The direction that this range is drawn will be reversed if the axis is reversed.*/
         [[nodiscard]] auto GetRange() const noexcept
