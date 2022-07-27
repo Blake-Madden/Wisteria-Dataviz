@@ -41,7 +41,11 @@ namespace Wisteria::Graphs
             }
         // set the X column, which will be access through various GetX functions later
         // (do not reference these iterators after setting them here)
-        m_xColumnCategorical = GetData()->GetCategoricalColumns().cend(); // reset
+
+        // reset iterators
+        m_xColumnContinuous = GetData()->GetContinuousColumns().cend();
+        m_xColumnCategorical = GetData()->GetCategoricalColumns().cend();
+        m_xColumnDate = GetData()->GetDateColumns().cend();
         // look for it as a continuous variable first
         m_xColumnContinuous = GetData()->GetContinuousColumn(xColumnName);
         if (m_xColumnContinuous == GetData()->GetContinuousColumns().cend())
