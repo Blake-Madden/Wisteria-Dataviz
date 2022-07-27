@@ -2424,10 +2424,10 @@ namespace Wisteria::GraphItems
                 {
                 SetCustomLabel(currentDate,
                                GraphItems::Label(dateLabel.FormatDate()));
-                currentDate += 7;
+                ++currentDate;
                 if (currentDate > (m_lastDay-m_firstDay).GetDays())
                     { break; }
-                dateLabel.Add(wxDateSpan(0, 0, 1, 0));
+                dateLabel.Add(wxDateSpan(0, 0, 0, 1));
                 }
             }
 
