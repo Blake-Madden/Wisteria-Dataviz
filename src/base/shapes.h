@@ -13,6 +13,7 @@
 #define __WISTERIA_SHAPES_H__
 
 #include "graphitems.h"
+#include "colorbrewer.h"
 
 namespace Wisteria::GraphItems
     {
@@ -44,6 +45,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to bind the circle within.
         /// @param dc The DC to draw to.
         void DrawCircularSign(const wxRect rect, wxDC& dc);
+        /// @brief Draws a sun shape (yellow circle with sunbeams).
+        /// @param rect The area to bind the circle within.
+        /// @param dc The DC to draw to.
+        void DrawSun(const wxRect rect, wxDC& dc);
     private:
         [[nodiscard]] double GetScaling() const noexcept
             { return m_graphInfo.GetScaling(); }

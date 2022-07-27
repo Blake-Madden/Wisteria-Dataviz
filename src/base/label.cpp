@@ -801,6 +801,14 @@ namespace Wisteria::GraphItems
                             dc);
                         }
                         break;
+                    case IconShape::SunIcon:
+                        {
+                        sh.DrawSun(wxRect(contentBoundingBox.GetTopLeft() +
+                                          wxPoint(iconMiddleX, middleOfCurrentRow),
+                                          wxSize(1, 1)).Inflate(iconRadius),
+                            dc);
+                        }
+                        break;
                     case IconShape::LocationMarker:
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +
                             wxPoint(iconMiddleX, middleOfCurrentRow),

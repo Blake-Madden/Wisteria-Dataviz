@@ -255,8 +255,9 @@ namespace Wisteria
         LocationMarker,                /*!< A marker indicating a location on a map.*/
         GoRoadSign,                    /*!< A circular sign that says 'Go' on it,
                                             with a sign post beneath it.*/
-        WarningRoadSign                /*!< A triangular sign containing an exclamation point,
+        WarningRoadSign,               /*!< A triangular sign containing an exclamation point,
                                             with a sign post beneath it.*/
+        SunIcon                        /*!< A sun (with sunbeams).*/
         };
 
     /// @brief The orientation of an item (e.g., a vertically drawn label).

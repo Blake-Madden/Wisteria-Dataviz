@@ -486,6 +486,9 @@ namespace Wisteria::GraphItems
                         sh.DrawCircularSign(signRect, dc);
                         }
                     break;
+                case IconShape::SunIcon:
+                        sh.DrawSun(boundingBox, dc);
+                        break;
                 case IconShape::LocationMarker:
                     // pin
                         {

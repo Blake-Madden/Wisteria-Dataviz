@@ -9,8 +9,11 @@
 #include "shapes.h"
 #include "label.h"
 
+using namespace Wisteria::Colors;
+
 namespace Wisteria::GraphItems
     {
+    //---------------------------------------------------
     void Shapes::DrawCircularSign(const wxRect rect, wxDC& dc)
         {
         const auto radius =
@@ -41,5 +44,27 @@ namespace Wisteria::GraphItems
         theLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
         theLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
         theLabel.Draw(dc);
+        }
+
+    //---------------------------------------------------
+    void Shapes::DrawSun(const wxRect rect, wxDC& dc)
+        {
+        const auto radius =
+            safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 3);
+        wxDCPenChanger pc(dc, wxPen(m_graphInfo.GetBrush().GetColour(),
+                          ScaleToScreenAndCanvas(1)));
+        wxDCBrushChanger bc(dc, m_graphInfo.GetBrush());
+
+        dc.DrawLine(rect.GetTopLeft(), rect.GetBottomRight());
+        dc.DrawLine(rect.GetTopRight(), rect.GetBottomLeft());
+        dc.DrawLine(rect.GetTopLeft() + wxPoint(rect.GetWidth()/2, 0),
+                    rect.GetBottomLeft() + wxPoint(rect.GetWidth()/2, 0));
+        dc.DrawLine(rect.GetTopLeft() + wxPoint(0, rect.GetHeight()/2),
+                    rect.GetBottomRight() - wxPoint(0, rect.GetHeight()/2));
+
+        const auto circleCenter = rect.GetLeftTop() +
+            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+
+        dc.DrawCircle(circleCenter, radius);
         }
     }
