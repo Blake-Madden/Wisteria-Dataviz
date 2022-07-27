@@ -1462,6 +1462,41 @@ namespace Wisteria::Colors
                 ColorBrewer::GetColor(Color::Sunset) })
                 {}
             };
+
+        /** @brief Semesters color scheme, representing fall, spring, and summer.
+            @details Note that there is no such thing as a winter semester.
+             \htmlonly
+             <div style='background-color:#FF7518; width:50px;'>&nbsp;</div>
+             <div style='background-color:#00FF7F; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FFBB00; width:50px;'>&nbsp;</div>
+             \endhtmlonly*/
+        class Semesters : public ColorScheme
+            {
+        public:
+            Semesters() : ColorScheme({
+                ColorBrewer::GetColor(Color::Pumpkin),
+                ColorBrewer::GetColor(Color::SpringGreen),
+                ColorBrewer::GetColor(Color::Sunflower) })
+                {}
+            };
+
+        /** @brief Seasons color scheme, representing fall, winter, spring, and summer.
+             \htmlonly
+             <div style='background-color:#FF7518; width:50px;'>&nbsp;</div>
+             <div style='background-color:#A1D6E2; width:50px;'>&nbsp;</div>
+             <div style='background-color:#00FF7F; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FFBB00; width:50px;'>&nbsp;</div>
+             \endhtmlonly*/
+        class Seasons : public ColorScheme
+            {
+        public:
+            Seasons() : ColorScheme({
+                ColorBrewer::GetColor(Color::Pumpkin),
+                ColorBrewer::GetColor(Color::Ice),
+                ColorBrewer::GetColor(Color::SpringGreen),
+                ColorBrewer::GetColor(Color::Sunflower) })
+                {}
+            };
         }
 
     /// @private
