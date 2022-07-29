@@ -45,6 +45,11 @@ namespace Wisteria::Graphs
 
 namespace Wisteria::GraphItems
     {
+    class Shapes;
+    }
+
+namespace Wisteria::GraphItems
+    {
     /** @brief An image that can be placed on a graph.
         @details Also includes image loading and effect functions. For example,
             LoadFile() will load a JPEG and adjust its orientation (if necessary).
@@ -58,6 +63,7 @@ namespace Wisteria::GraphItems
         friend class Wisteria::Graphs::Graph2D;
         friend class Wisteria::Canvas;
         friend class Wisteria::UI::Thumbnail;
+        friend class Wisteria::GraphItems::Shapes;
     public:
         /// @private
         Image()
@@ -238,6 +244,15 @@ namespace Wisteria::GraphItems
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);
+        /// @returns How the image's size is adjusted when its boudning box is changed.
+        [[nodiscard]] ResizeMethod GetResizeMethod() const noexcept
+            { return m_resizeMethod; }
+        /** @brief Sets how the image's size is adjusted when its boudning box is changed.
+            @details The default it to either upscale or downscale the image as necessary,
+                which will lead to fidelity loss.
+            @param resizeMethod How to resize the image.*/
+        void SetResizeMethod(ResizeMethod resizeMethod) noexcept
+            { m_resizeMethod = resizeMethod; }
         /// @}
 
         /** @name Image Effect Functions
@@ -318,6 +333,7 @@ namespace Wisteria::GraphItems
         wxSize m_size{ 0, 0};
         wxSize m_frameSize{ 0, 0 };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
+        ResizeMethod m_resizeMethod{ ResizeMethod::DownscaleOrUpscale };
         };
     }
 

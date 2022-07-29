@@ -255,19 +255,19 @@ namespace Wisteria::GraphItems
                                      const Orientation direction)
         {
         wxBitmap background(fillSize);
-        wxMemoryDC memDc(background);
-        //fill with the color
-        memDc.GradientFillLinear(wxRect(fillSize), color, color.ChangeLightness(140),
+        wxMemoryDC memDC(background);
+        // fill with the color
+        memDC.GradientFillLinear(wxRect(fillSize), color, color.ChangeLightness(140),
                                  (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
-        //create a shiny overlay
-        memDc.GradientFillLinear(wxRect(0, 0,
+        // create a shiny overlay
+        memDC.GradientFillLinear(wxRect(0, 0,
                                     (direction == Orientation::Vertical) ?
                                         fillSize.GetWidth() : fillSize.GetWidth()*.25,
                                     (direction == Orientation::Vertical) ?
                                         fillSize.GetHeight()*.25 : fillSize.GetHeight()),
                                  color.ChangeLightness(115),color.ChangeLightness(155),
                                  (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
-        memDc.SelectObject(wxNullBitmap);
+        memDC.SelectObject(wxNullBitmap);
 
         return background.ConvertToImage();
         }
@@ -293,8 +293,8 @@ namespace Wisteria::GraphItems
             { return wxNullImage; }
         wxBitmap background(fillSize);
         SetOpacity(background, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDc(background);
-        memDc.Clear();
+        wxMemoryDC memDC(background);
+        memDC.Clear();
 
         if (direction == Orientation::Horizontal)
             {
@@ -332,8 +332,8 @@ namespace Wisteria::GraphItems
             for (int i = 0; i < canvasSize.GetWidth(); i += scaledStipple.GetWidth()+1)
                 {
                 if (includeShadow)
-                    { memDc.DrawBitmap(scaledStippleShadow, i, yOffset+shadowSize); }
-                memDc.DrawBitmap(scaledStipple, i, yOffset);
+                    { memDC.DrawBitmap(scaledStippleShadow, i, yOffset+shadowSize); }
+                memDC.DrawBitmap(scaledStipple, i, yOffset);
                 }
             }
         else
@@ -371,14 +371,14 @@ namespace Wisteria::GraphItems
                 {
                 if (includeShadow)
                     {
-                    memDc.DrawBitmap(scaledStippleShadow, xOffset+shadowSize,
+                    memDC.DrawBitmap(scaledStippleShadow, xOffset+shadowSize,
                                      i-scaledStipple.GetHeight()+1);
                     }
-                memDc.DrawBitmap(scaledStipple, xOffset, i-scaledStipple.GetHeight()+1);
+                memDC.DrawBitmap(scaledStipple, xOffset, i-scaledStipple.GetHeight()+1);
                 }
             }
 
-        memDc.SelectObject(wxNullBitmap);
+        memDC.SelectObject(wxNullBitmap);
 
         return background.ConvertToImage();
         }
@@ -464,17 +464,34 @@ namespace Wisteria::GraphItems
         else if (GetAnchoring() == Anchoring::BottomRightCorner)
             { SetAnchorPoint(rect.GetBottomRight()); }
         // adjust the height to fit the bounding box
-        m_size = wxSize(geometry::calculate_rescale_width(
-            std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(),
-                                           m_originalImg.GetSize().GetHeight()),
-            rect.GetHeight()), rect.GetHeight());
-        // height adjusted to the rect, but if it is too wide now then we need to
-        // adjust the width to the rect and rescale the height to this new width
-        if (m_size.GetWidth() > rect.GetWidth())
+        if (GetResizeMethod() == ResizeMethod::DownscaleOrUpscale)
             {
-            m_size = wxSize(rect.GetWidth(), geometry::calculate_rescale_height(
-                std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()),
-                                               rect.GetWidth()));
+            m_size = wxSize(geometry::calculate_rescale_width(
+                std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(),
+                                               m_originalImg.GetSize().GetHeight()),
+                rect.GetHeight()), rect.GetHeight());
+            // height adjusted to the rect, but if it is too wide now then we need to
+            // adjust the width to the rect and rescale the height to this new width
+            if (m_size.GetWidth() > rect.GetWidth())
+                {
+                m_size = wxSize(rect.GetWidth(), geometry::calculate_rescale_height(
+                    std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()),
+                                                   rect.GetWidth()));
+                }
+            }
+        else if (GetResizeMethod() == ResizeMethod::DownscaleOnly)
+            {
+            auto downSize = geometry::calculate_downscaled_size(
+                    std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
+                    std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+            m_size = wxSize(downSize.first, downSize.second);
+            }
+        else if (GetResizeMethod() == ResizeMethod::UpscaleOnly)
+            {
+            auto downSize = geometry::calculate_upscaled_size(
+                    std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
+                    std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+            m_size = wxSize(downSize.first, downSize.second);
             }
         m_size *= safe_divide<double>(1.0f, GetScaling());
         m_frameSize = rect.GetSize()*safe_divide<double>(1.0f, GetScaling());
