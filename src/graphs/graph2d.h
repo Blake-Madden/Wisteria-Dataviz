@@ -168,7 +168,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() noexcept
             { return m_referenceAreas; }
 
-        /// @returns `true` if a copy of the bottom X axis is being displayed on the top of the graph.
+        /// @returns @c true if a copy of the bottom X axis is being displayed on the top of the graph.
         [[nodiscard]] bool IsXAxisMirrored() const noexcept
             { return m_mirrorXAxis; }
         /** @brief Sets whether to display a copy of the bottom X axis on the top of the graph.
@@ -176,7 +176,7 @@ namespace Wisteria::Graphs
         void MirrorXAxis(const bool mirror) noexcept
             { m_mirrorXAxis = mirror; }
 
-        /// @returns `true` if a copy of the left Y axis is being displayed on the right side of the graph.
+        /// @returns @c true if a copy of the left Y axis is being displayed on the right side of the graph.
         [[nodiscard]] bool IsYAxisMirrored() const noexcept
             { return m_mirrorYAxis; }
         /** @brief Sets whether to display a copy of the left Y axis on the right side of the graph.
@@ -426,7 +426,7 @@ namespace Wisteria::Graphs
             @param yValue The y value of the point.
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
                 within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
-            @returns `true` if the point could be found within the plot.*/
+            @returns @c true if the point could be found within the plot.*/
         bool GetPhyscialCoordinates(const double xValue, const double yValue, wxPoint& resultPt) const
             {
             if (GetBottomXAxis().GetPhysicalCoordinate(xValue, resultPt.x) &&
@@ -443,7 +443,7 @@ namespace Wisteria::Graphs
             @param point The point to search for.
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
                 within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
-            @returns `true` if the point could be found within the plot.*/
+            @returns @c true if the point could be found within the plot.*/
         bool GetPhyscialCoordinates(const wxPoint& point, wxPoint& resultPt) const
             { return GetPhyscialCoordinates(point.x, point.y, resultPt); };
 
@@ -519,14 +519,14 @@ namespace Wisteria::Graphs
             if (m_lastHitPointEmbeddedObjectIndex < m_embeddedObjects.size())
                 { m_embeddedObjects.at(m_lastHitPointEmbeddedObjectIndex).m_object->SetSelected(selected); }
             }
-        /** @returns `true` if @c pt is inside of plot area.
+        /** @returns @c true if @c pt is inside of plot area.
             @param pt The point to see that is in the plot.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Selects the object at the given point (relative to the parent canvas),
                 if there is an object at that point.
             @param pt The point to hit test.
-            @returns `true` if something was selected at the given point.
+            @returns @c true if something was selected at the given point.
             @note This will toggle the selection of an object, if it was selected before
                 then it will become unselected.*/
         [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;

@@ -29,14 +29,14 @@ namespace lily_of_the_valley
             @param text A wide character stream t to parse.
             @param headerRowDelimiter The delimiter to use to determine the number of columns when
              parsing the header.
-            @param ignoreBlankLines Specifies whether or not to count empty rows as lines. If set to `true`,
+            @param ignoreBlankLines Specifies whether or not to count empty rows as lines. If set to @c true,
              then consecutive line ends will be skipped when counting the lines in the file. Note that
              a row of column delimiters (with no data) will be seen as a row however because we aren't using
              advanced column parsing logic in here.
             @param storeRowInfo Specifies whether to store the beginning and end of each line (as an index
              into the text block) into a map. This is useful if the caller needs to further review a preview
              line-by-line.
-            @warning Setting @c storeRowInfo to `true` will impact the preview's performance.*/
+            @warning Setting @c storeRowInfo to @c true will impact the preview's performance.*/
         [[nodiscard]] size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
                           const bool ignoreBlankLines,
                           const bool storeRowInfo)
@@ -107,7 +107,7 @@ namespace lily_of_the_valley
         [[nodiscard]] const std::vector<std::wstring>& get_header_names() const noexcept
             { return m_header_names; }
         /// @returns The definition information of the lines.
-        /// @warning If the parameter @c storeRowInfo in the preview call was `false`, then this
+        /// @warning If the parameter @c storeRowInfo in the preview call was @c false, then this
         ///  will be empty.
         [[nodiscard]] const std::map<const wchar_t*, const wchar_t*>& get_line_info() const noexcept
             { return m_lines; }

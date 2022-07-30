@@ -60,9 +60,9 @@ namespace Wisteria::GraphItems
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
     private:
-        /** @returns `true` if the given point is inside of this point.
+        /** @returns @c true if the given point is inside of this point.
             @note This does a hit test within a bounding box of the point, not the point itself.
-                So it may return `true` if slightly at the corner outside of the point.
+                So it may return @c true if slightly at the corner outside of the point.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
@@ -70,7 +70,7 @@ namespace Wisteria::GraphItems
             @param dc The canvas to draw the point on.
             @returns The box that the point is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
-        /// @returns `true` if center point is valid.
+        /// @returns @c true if center point is valid.
         [[nodiscard]] bool IsOk() const noexcept
             { return GetAnchorPoint().IsFullySpecified(); }
         /** @brief Moves the point by the specified x and y values.
@@ -222,7 +222,7 @@ namespace Wisteria::GraphItems
                 { point.Offset(xToMove,yToMove); }
             m_boundingBox.Offset(wxPoint(xToMove, yToMove));
             }
-        /** @returns `true` if the given point is inside any of the points in this collection.
+        /** @returns @c true if the given point is inside any of the points in this collection.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
         std::vector<Point2D> m_points;

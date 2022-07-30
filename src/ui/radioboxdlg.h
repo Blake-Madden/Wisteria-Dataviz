@@ -39,7 +39,7 @@ namespace Wisteria::UI
             @param caption The title of the export dialog.
             @param choices The choices for the radio buttons.
             @param descriptions Descriptions for the choices.
-            @param showHelpButton `true` to show a help button.
+            @param showHelpButton @c true to show a help button.
             @param id The window ID.
             @param pos The screen position of the window.
             @param size The window size.

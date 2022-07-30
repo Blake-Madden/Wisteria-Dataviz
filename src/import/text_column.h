@@ -21,8 +21,8 @@ namespace lily_of_the_valley
         {
     public:
         /// @brief Constructor.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_parser(const bool read_text) noexcept : m_read_text(read_text)
             {}
         /** @brief Reads the next column(s) from the current row of text.
@@ -54,13 +54,13 @@ namespace lily_of_the_valley
             return text;
             }
         /** @brief Indicates whether this parser is actually reading anything back into the parent parser.
-            @details If this is `false`, then the parser is simply skipping this column.
-            @returns `true` if text that is parsed for this column is fed back into the parent parser.*/
+            @details If this is @c false, then the parser is simply skipping this column.
+            @returns @c true if text that is parsed for this column is fed back into the parent parser.*/
         [[nodiscard]] inline bool is_reading_text() const noexcept
             { return m_read_text; }
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns `true` if @c character is a delimiter.*/
+            @returns @c true if @c character is a delimiter.*/
         [[nodiscard]] virtual bool is_delimiter(const wchar_t character) const noexcept = 0;
     protected:
         /// @brief Functor for determining and end-of-line.
@@ -75,8 +75,8 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param width The number of characters in the fixed-width column.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_fixed_parser(const size_t width, const bool read_text = true)
             : text_column_parser(read_text), m_width(width)
             {}
@@ -108,14 +108,14 @@ namespace lily_of_the_valley
         {
     public:
         /// @brief Constructor.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_standard_delimiter_parser(const bool read_text = true) noexcept
             : text_column_parser(read_text)
             {}
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns `true` if @c character is a delimiter.*/
+            @returns @c true if @c character is a delimiter.*/
         [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
@@ -128,14 +128,14 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param delim The delimiter to determine where a column ends.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_delimited_character_parser(const wchar_t delim, const bool read_text = true) noexcept
             : text_column_parser(read_text), is_delim(delim)
             {}
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns `true` if @c character is a delimiter.*/
+            @returns @c true if @c character is a delimiter.*/
         [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
@@ -148,14 +148,14 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param delims The delimiters to determine where a column ends.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_delimited_multiple_character_parser(const wchar_t* delims, const bool read_text = true)
             : text_column_parser(read_text), is_delim(delims)
             {}
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
-            @returns `true` if @c character is a delimiter.*/
+            @returns @c true if @c character is a delimiter.*/
         [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
@@ -167,8 +167,8 @@ namespace lily_of_the_valley
         {
     public:
         /// @brief Constructor.
-        /// @param read_text Set to `true` to feed the parsed text back to the parent parser,
-        ///  or `false` to simply skip to the end of line.
+        /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
+        ///  or @c false to simply skip to the end of line.
         explicit text_column_to_eol_parser(const bool read_text = true) noexcept
             : text_column_parser(read_text)
             {}

@@ -199,7 +199,7 @@ namespace Wisteria::GraphItems
         /** @brief Creates a silhouette (all black copy) of an image.
             @param image The image to create the silhouette from.
             @param opaque Whether the silhouette should be a fully opaque shadow.
-                If `false`, then it will be translucent.
+                If @c false, then it will be translucent.
             @returns The silhouette of the image.*/
         [[nodiscard]] static wxImage CreateSilhouette(const wxImage& image, const bool opaque = true);
         /** @brief Renders a glassy surface across a box.
@@ -273,14 +273,14 @@ namespace Wisteria::GraphItems
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.
-            @param preserveTransparentPixels Set to `true` to not alter pixels
+            @param preserveTransparentPixels Set to @c true to not alter pixels
                 that are already transparent in the image.*/
         static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
                                const bool preserveTransparentPixels = false);
         /** @brief Sets the opacity of an image.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.
-            @param preserveTransparentPixels Set to `true` to not alter pixels that
+            @param preserveTransparentPixels Set to @c true to not alter pixels that
                 are already transparent in the image.*/
         static void SetOpacity(wxImage& image, const uint8_t opacity,
                               const bool preserveTransparentPixels);
@@ -319,7 +319,7 @@ namespace Wisteria::GraphItems
             @param yToMove the amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) noexcept final
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
-        /** @returns `true` if the given point is inside of the image.
+        /** @returns @c true if the given point is inside of the image.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }

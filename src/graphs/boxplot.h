@@ -151,7 +151,7 @@ namespace Wisteria::Graphs
             /// @brief Functions relating to how labels and points are displayed.
             /// @{
 
-            /// @returns `true` if displaying labels on the hinges, midpoint, and outliers.
+            /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
             [[nodiscard]] bool IsShowingLabels() const noexcept
                 { return m_displayLabels; }
             /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
@@ -159,7 +159,7 @@ namespace Wisteria::Graphs
             void ShowLabels(const bool display = true) noexcept
                 { m_displayLabels = display; }
 
-            /// @returns `true` if all data points are being displayed.
+            /// @returns @c true if all data points are being displayed.
             [[nodiscard]] bool IsShowingAllPoints() const noexcept
                 { return m_showAllPoints; }
             /// @brief Specifies whether to display all data points on the boxes and whiskers.
@@ -188,7 +188,7 @@ namespace Wisteria::Graphs
                 @param data The data to assign to the box.
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
                 @param groupId The group ID for this box. Data points from @c data will only be used for
-                    his box if their group ID is @c groupId. Has no effect if @c useGrouping if `false`.
+                    his box if their group ID is @c groupId. Has no effect if @c useGrouping if @c false.
                 @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                     The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
                     when formatting it for an error message.*/
@@ -317,7 +317,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] bool IsOverlayingLegend() const noexcept
             { return m_overlayLegend; }
         /** @brief Overlays a legend on top of the plot.
-            @param overlay `true` to include the legend on the plot.
+            @param overlay @c true to include the legend on the plot.
             @note This only applies when a displaying single-series box.*/
         void IncludedOverlayingLegend(const bool overlay) noexcept
             { m_overlayLegend = overlay; }
@@ -392,7 +392,7 @@ namespace Wisteria::Graphs
         /// @brief Functions relating to how labels and points are displayed.
         /// @{
 
-        /// @returns `true` if displaying labels on the hinges, midpoint, and outliers.
+        /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
         [[nodiscard]] bool IsShowingLabels() const noexcept
             { return m_displayLabels; }
         /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
@@ -404,7 +404,7 @@ namespace Wisteria::Graphs
             m_displayLabels = display;
             }
 
-        /// @returns `true` if all data points are being displayed.
+        /// @returns @c true if all data points are being displayed.
         [[nodiscard]] bool IsShowingAllPoints() const noexcept
             { return m_showAllPoints; }
         /// @brief Specifies whether to display all data points on the boxes and whiskers.

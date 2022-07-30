@@ -141,7 +141,7 @@ namespace Wisteria::Graphs
             @param groupColumnCount If grouping, the number of columns to split
                 the sub-heatmaps into. Must be between 1-5 (and will be clamped otherwise),
                 as more than 5 columns would make the boxes too small.
-                Also, this parameter is ignored if @c grouping is `false`.
+                Also, this parameter is ignored if @c grouping is @c false.
             @warning If grouping the data, the data must be sorted ahead of time
                 (given that ordering is important in a heatmap anyway).
                 It is assumed that it is sorted by the value that the caller

@@ -122,7 +122,7 @@ namespace Wisteria
             }
         /// @brief Determines if a debug flag is enabled.
         /// @param flag The flag to check for.
-        /// @returns `true` if the given flag is enabled.
+        /// @returns @c true if the given flag is enabled.
         [[nodiscard]] static bool IsDebugFlagEnabled(const int flag) noexcept
             { return (m_debugSettings & flag) == flag; }
         /// @returns No trailing zeroes and thousands separator format

@@ -50,7 +50,7 @@ namespace math_constants
     constexpr double two_thirds = third * 2;
     }
 
-/// @returns `true` if a value is within a given range.
+/// @returns @c true if a value is within a given range.
 /// @param value The value to review.
 /// @param first The start of the comparison range.
 /// @param second The end of the comparison range.
@@ -61,7 +61,7 @@ template<typename T>
     return (value >= first && value <= second);
     }
 
-/// @returns `true` if @c value is within a given the @c range.
+/// @returns @c true if @c value is within a given the @c range.
 /// @param range The comparison range.
 /// @param value The value to review.
 template<typename T>
@@ -83,7 +83,7 @@ public:
         : m_range_begin(rangeBegin), m_range_end(rangeEnd)
         {}
     within() = delete;
-    /** @returns `true` if @c value is within the valid range of values.
+    /** @returns @c true if @c value is within the valid range of values.
         @param value The value to review.*/
     [[nodiscard]] inline bool operator()(T value) const noexcept
         { return is_within(std::make_pair(m_range_begin, m_range_end), value); }
@@ -115,12 +115,12 @@ public:
         first = that.first;
         second = that.second;
         }
-    /** @returns `true` if this is less than another pair.
+    /** @returns @c true if this is less than another pair.
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared.*/
     [[nodiscard]] bool operator<(const comparable_first_pair<T1,T2>& that) const
         { return first < that.first; }
-    /** @returns `true` if this is equal to another pair.
+    /** @returns @c true if this is equal to another pair.
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared. The second items can be different.
          This is a key difference from `std::pair`.*/

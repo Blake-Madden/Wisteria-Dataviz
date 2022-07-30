@@ -885,7 +885,7 @@ namespace Wisteria::Data
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
         /** @brief Determines if there are any valid IDs in the ID column.
-            @returns `true` if there are any ID values in the ID column.*/
+            @returns @c true if there are any ID values in the ID column.*/
         [[nodiscard]] bool HasValidIdData() const;
 
         /** @brief Reads the column names from a file and deduces their data types.

@@ -332,7 +332,7 @@ public:
          where you would have to copy, edit, delete, and then insert the copy back in.
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
-         (will be `false` if value was already in the map).*/
+         (will be @c false if value was already in the map).*/
     [[nodiscard]] std::pair<const_iterator, bool> insert(const value_type& value)
         { return m_table.try_emplace(value); }
     /** @brief Insert an already constructed item with its values and counts loaded.
@@ -340,7 +340,7 @@ public:
          where you would have to copy, edit, delete, and then insert the copy back in.
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
-         (will be `false` if value was already in the map).*/
+         (will be @c false if value was already in the map).*/
     [[nodiscard]] std::pair<const_iterator, bool> insert(value_type&& value)
         { return m_table.try_emplace(value); }
     /// @returns The map of pairs and their respective frequency counts.

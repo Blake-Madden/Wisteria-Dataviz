@@ -100,7 +100,7 @@ namespace Wisteria::UI
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).
-            @returns `true` if creation was successful.*/
+            @returns @c true if creation was successful.*/
         bool Create(wxWindow* parent, const wxBitmapType bitmapType, wxWindowID id = wxID_ANY,
                     const wxString& caption = _(L"Image Export Options"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,

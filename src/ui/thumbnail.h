@@ -83,7 +83,7 @@ namespace Wisteria::UI
 
         /** @brief Loads an image (from path) into the thumbnail.
             @param filePath The path to the image.
-            @returns `true` if the image was successfully loaded.
+            @returns @c true if the image was successfully loaded.
             @note The image will be scaled down to the current size of the control
              (based on the image originally passed to the constructor).*/
         bool LoadImage(const wxString& filePath);

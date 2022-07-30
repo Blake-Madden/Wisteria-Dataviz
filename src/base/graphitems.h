@@ -55,13 +55,21 @@ namespace Wisteria
     /// @brief The direction to fill (paint) with a gradient brush.
     enum class FillDirection
         {
+        /// @brief fill upward.
         North,
+        /// @brief fill downward.
         South,
+        /// @brief fill to the right.
         East,
+        /// @brief fill to the left.
         West,
+        /// @brief fill upward.
         Up = North,
+        /// @brief fill downward.
         Down = South,
+        /// @brief fill to the right.
         Right = East,
+        /// @brief fill to the left.
         Left = West
         };
 
@@ -85,7 +93,7 @@ namespace Wisteria
 
     /// @brief The type of influence something can have on a subject.
     /// @details As an example, predictors in a linear regression.
-    /// @internal This enum is a bitmap, do not make it strongly typed.
+    /// @internal This enum is a bitmask, do not make it strongly typed.
     enum Influence
         {
         /// @brief IVs with coefficients > 0.
@@ -309,7 +317,7 @@ namespace Wisteria
         };
 
     /// @brief The type of cap (i.e., head) that an axis line displays at its ending point
-    ///  (right for horizontal, top for vertical).
+    ///     (right for horizontal, top for vertical).
     enum class AxisCapStyle
         {
         Arrow, /*!< The top or right end of the axis line is an arrow.*/
@@ -395,7 +403,7 @@ namespace Wisteria
 
     /// @brief Lamba to return a color if a point's
     ///     X and/or Y values meet a certain set of criteria.\n
-    ///     Should return an invalid color if values to not the criteria.
+    /// @details Should return an invalid color if values do not meet the criteria.
     using PointColorCriteria = std::function<wxColour(double x, double y)>;
 
     /// @brief Base class for a list of line styles to use for groups.
@@ -419,7 +427,8 @@ namespace Wisteria
             m_lineStyles(penStyles)
             {}
         /// @returns The vector of pen & line styles from the scheme.
-        [[nodiscard]] const std::vector<std::pair<wxPenStyle, LineStyle>>& GetLineStyles() const noexcept
+        [[nodiscard]] const std::vector<std::pair<wxPenStyle, LineStyle>>&
+            GetLineStyles() const noexcept
             { return m_lineStyles; }
         /** @returns The line style from a given index.
             @param index The index into the line style list to return. If index is outside
@@ -427,7 +436,8 @@ namespace Wisteria
                 For example, if there are 2 line styles, index 1 will return 1;
                 however, index 2 will wrap around and return line style 0 and
                 index 3 will return line style 1.*/
-        [[nodiscard]] const std::pair<wxPenStyle,LineStyle>& GetLineStyle(const size_t index) const
+        [[nodiscard]] const std::pair<wxPenStyle,LineStyle>&
+            GetLineStyle(const size_t index) const
             { return m_lineStyles.at(index%m_lineStyles.size()); }
         /** @brief Adds a line style to the scheme.
             @param penStyle The line style.
@@ -438,13 +448,13 @@ namespace Wisteria
         void Clear() noexcept
             { m_lineStyles.clear(); }
     private:
-        std::vector<std::pair<wxPenStyle,LineStyle>> m_lineStyles;
+        std::vector<std::pair<wxPenStyle, LineStyle>> m_lineStyles;
         };
 
     /// @brief Standard line styles.
     /// @details This iterates through all pen styles with straight connection lines,
     ///     then goes through the pen styles again with arrow connection lines.
-    /// @note Splines are not used here in an effect to keep a consistent look of
+    /// @note Splines are not used here in an effort to keep a consistent look of
     ///     straight lines.
     class StandardLineStyles : public LineStyleScheme
         {
@@ -490,14 +500,16 @@ namespace Wisteria
             GradientFill() = default;
             /** @brief Constructor.
                 @param col The color to paint with.*/
-            GradientFill(const wxColour& col) : m_color1(col) {}
+            explicit GradientFill(const wxColour& col) : m_color1(col)
+                {}
             /** @brief Constructor, which will paint with a gradient.
                 @param col1 The first color of the gradient.
                 @param col2 The second color of the gradient.
                 @param dir The direction of the gradient.*/
             GradientFill(const wxColour& col1, const wxColour& col2,
                          const FillDirection dir) noexcept :
-                m_color1(col1), m_color2(col2), m_direction(dir) {}
+                m_color1(col1), m_color2(col2), m_direction(dir)
+                {}
             /// @returns @c true if the primary color has been specified.
             [[nodiscard]] bool IsOk() const
                 { return m_color1.IsOk(); }//we use either the first color or both
@@ -575,7 +587,7 @@ namespace Wisteria
                 m_font = font;
                 return *this;
                 }
-            /** @brief Gets/set the top line's font.
+            /** @brief Gets/sets the top line's font.
                 @returns The top line font.*/
             [[nodiscard]] wxFont& GetFont() noexcept
                 { return m_font; }

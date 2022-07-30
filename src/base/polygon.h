@@ -193,7 +193,7 @@ namespace Wisteria::GraphItems
             { return wxPoint(coordPair.first, coordPair.second); }
         /// @}
     private:
-        /** @returns `true` if the given point is inside of this polygon.
+        /** @returns @c true if the given point is inside of this polygon.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
         /** @brief Draws the polygon.

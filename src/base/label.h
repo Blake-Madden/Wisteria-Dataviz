@@ -276,7 +276,7 @@ namespace Wisteria::GraphItems
                 L"Longest line length in label was not calculated!");
             return m_longestLineLength;
             }
-        /** @returns `true` if the given point is inside of the label.
+        /** @returns @c true if the given point is inside of the label.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }

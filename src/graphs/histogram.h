@@ -221,11 +221,11 @@ namespace Wisteria::Graphs
              so that a custom bin range label (for integer range mode) or a midpoint label
              (non-integer mode) is shown at the bottom of the bar.
             @param blDisplay Which type of labels to display for the bars.
-            @param showFullRangeOfValues `true` if a place for each bin is included on the axis,
+            @param showFullRangeOfValues @c true if a place for each bin is included on the axis,
              even if they have no items.
              This specifies whether the axis should display each step
              (even if no bin is associated with a step) or if it should only display steps that
-             have categories on them. Setting this to `false` will put all the bars
+             have categories on them. Setting this to @c false will put all the bars
              together, but might have an uneven step size on the axis and fit lines
              won't be able to be drawn.
              This is only used if you are categorizing by unique values.
@@ -314,10 +314,10 @@ namespace Wisteria::Graphs
         /** Specifies whether the axis should display each step
             (even if no bin is associated with a step) or if it should display steps that
             have categories on them.
-            Setting this to `false` will put all of the bars together, but might have an
+            Setting this to @c false will put all of the bars together, but might have an
             uneven step size on the axis and fit lines won't be able to be drawn.
             This is only used if you are categorizing by unique (non-integer) values.
-            @param display `true` to display the full range of values.*/
+            @param display @c true to display the full range of values.*/
         void ShowFullRangeOfValues(const bool display = true) noexcept
             { m_displayFullRangeOfValues = display; }
         /// @brief Specifies how to categorize and classify the data.
@@ -349,7 +349,7 @@ namespace Wisteria::Graphs
         /// @param display The bin label display to use.
         void SetBinLabelDisplay(const BinLabelDisplay display) noexcept
             { m_binLabelDisplay = display; }
-        /// @returns `true` if a place for each bin is included on the axis,
+        /// @returns @c true if a place for each bin is included on the axis,
         ///  even if they have no items.
         /// @sa ShowFullRangeOfValues().
         [[nodiscard]] bool IsShowingFullRangeOfValues() const noexcept

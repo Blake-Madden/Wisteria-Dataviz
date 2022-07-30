@@ -70,7 +70,7 @@ template<typename T>
     @param expected The expected value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
-    @returns `true` if the value matches the expected value.*/
+    @returns @c true if the value matches the expected value.*/
 [[nodiscard]] inline bool compare_doubles(const double actual, const double expected, const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
@@ -82,7 +82,7 @@ template<typename T>
     @param right The other value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
-    @returns `true` if the value is less than the other value.*/
+    @returns @c true if the value is less than the other value.*/
 [[nodiscard]] inline bool compare_doubles_less(const double left, const double right, const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
@@ -94,7 +94,7 @@ template<typename T>
     @param right The other value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
-    @returns `true` if the value is less than or equal to the other value.*/
+    @returns @c true if the value is less than or equal to the other value.*/
 [[nodiscard]] inline bool compare_doubles_less_or_equal(const double left, const double right, const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
@@ -106,7 +106,7 @@ template<typename T>
     @param right The other value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
-    @returns `true` if the value is greater than the other value.*/
+    @returns @c true if the value is greater than the other value.*/
 [[nodiscard]] inline bool compare_doubles_greater(const double left, const double right, const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
@@ -120,7 +120,7 @@ public:
     /** @brief Compares two doubles.
         @param left The left value.
         @param right The right value.
-        @returns `true` if @c left is less than @c right.*/
+        @returns @c true if @c left is less than @c right.*/
     [[nodiscard]] inline bool operator()(const double& left, const double& right) const noexcept
         { return compare_doubles_less(left, right); }
     };
@@ -136,9 +136,9 @@ template<typename T>
 [[nodiscard]] constexpr bool int_to_bool(const T intVal) noexcept
     { return (intVal != 0); }
 
-/// @brief Converts a boolean to integer (e.g., `true` = 1, `false` = 0).
+/// @brief Converts a boolean to integer (e.g., @c true = 1, @c false = 0).
 /// @param boolVal The boolean value to review.
-/// @returns 1 if @c boolVal is `true`, 0 if `false`.
+/// @returns 1 if @c boolVal is @c true, 0 if @c false.
 [[nodiscard]] constexpr int bool_to_int(const bool boolVal) noexcept
     { return (boolVal ? 1 : 0); }
 

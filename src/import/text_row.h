@@ -44,15 +44,15 @@ namespace lily_of_the_valley
             m_values = nullptr;
             }
         /// @brief Sets whether consecutive column separators (e.g., tabs) should be treated as one.
-        ///     If `true`, then three delimiters next to each other would be seen a one delimiter
-        ///     and not interpreted as blank columns. If `false`, then this will result in two empty
+        ///     If @c true, then three delimiters next to each other would be seen a one delimiter
+        ///     and not interpreted as blank columns. If @c false, then this will result in two empty
         ///     columns being read.
-        /// @param allow Set to `true` to treat consecutive delimiters as one.
+        /// @param allow Set to @c true to treat consecutive delimiters as one.
         void treat_consecutive_delimitors_as_one(const bool allow = true) noexcept
             { m_treat_consecutive_delimitors_as_one = allow; }
         /// @brief Sets whether the row may have an unknown number of columns before parsing.
-        /// @param allow `true` enable column resizing for the row.
-        ///     If `true`, then the row will dynamically add columns while parsing.
+        /// @param allow @c true enable column resizing for the row.
+        ///     If @c true, then the row will dynamically add columns while parsing.
         /// @note This is turned off by default, so the caller should enable this if the data
         ///     may be jagged or column count is unknown.
         void allow_column_resizing(const bool allow = true) noexcept
@@ -114,8 +114,8 @@ namespace lily_of_the_valley
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
-        /// @returns `true` if any of the row's columns definitions are set to read in data.
-        ///     This can be `false` if all column parsers are meant to simply skip, essentially
+        /// @returns @c true if any of the row's columns definitions are set to read in data.
+        ///     This can be @c false if all column parsers are meant to simply skip, essentially
         ///     reading in nothing for this row.
         [[nodiscard]] inline bool is_reading_text() const noexcept
             { return m_read_text; }

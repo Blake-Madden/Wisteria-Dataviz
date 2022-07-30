@@ -110,7 +110,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Determines if character is either CR or LF.
         /// @param character The character to review.
-        /// @returns `true` if character is either CR or LF.
+        /// @returns @c true if character is either CR or LF.
         [[nodiscard]] inline constexpr bool operator()(const wchar_t character) const noexcept
             { return (character == 10 || character == 13); }
         };
@@ -122,7 +122,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Determines if character is either whitespace, a semicolor, or comma.
         /// @param character The character to review.
-        /// @returns `true` if character is either whitespace, a semicolor, or comma.
+        /// @returns @c true if character is either whitespace, a semicolor, or comma.
         [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
             {
             return (iswspace(character) ||
@@ -141,7 +141,7 @@ namespace lily_of_the_valley
         is_single_delimiter() = delete;
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.
-        /// @returns `true` if character is a delimiter.
+        /// @returns @c true if character is a delimiter.
         [[nodiscard]] inline constexpr bool operator()(const wchar_t character) const noexcept
             { return (character == m_delim); }
     private:
@@ -159,7 +159,7 @@ namespace lily_of_the_valley
         is_one_of_multiple_delimiters() = delete;
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.
-        /// @returns `true` if character is a delimiter.
+        /// @returns @c true if character is a delimiter.
         [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
             { return (m_delims.find(character) != std::wstring::npos); }
     private:

@@ -245,7 +245,7 @@ namespace Wisteria::Graphs
                 return *this;
                 }
             /// @brief Sets whether the block should be displayed.
-            /// @param show `true` to show the block.
+            /// @param show @c true to show the block.
             /// @returns A self reference.
             BarBlockInfo& Show(const bool show) noexcept
                 {
@@ -326,13 +326,13 @@ namespace Wisteria::Graphs
             [[nodiscard]] Wisteria::GraphItems::Label& GetSelectionLabel() noexcept
                 { return m_selectionLabel; }
             /// @brief Whether the block is being drawn.
-            /// @details Set to `false` to treat the block like a placeholder
+            /// @details Set to @c false to treat the block like a placeholder
             ///    in the parent bar.
-            /// @returns `true` if being displayed.
+            /// @returns @c true if being displayed.
             [[nodiscard]] bool IsShown() const noexcept
                 { return m_show; }
             /// @brief Sets whether the block is being drawn.
-            /// @param show Set to `false` to treat the block like a placeholder
+            /// @param show Set to @c false to treat the block like a placeholder
             ///    in the parent bar.
             void Show(const bool show) noexcept
                 { m_show = show; }
@@ -383,7 +383,7 @@ namespace Wisteria::Graphs
             Wisteria::GraphItems::Label m_selectionLabel;
             /// The decal being drawn across the bar.
             Wisteria::GraphItems::Label m_decal;
-            /// Whether the block should be display. If `false`, then it acts like a placeholder.
+            /// Whether the block should be display. If @c false, then it acts like a placeholder.
             bool m_show{ true };
             /// An optional tag to identify or classify the block.
             wxString m_tag;
@@ -629,13 +629,13 @@ namespace Wisteria::Graphs
 
         /** @brief Adds a bar to the chart.
             @param bar The bar to add.
-            @param adjustScalingAxis `true` to adjust the scaling axis to fit the bar.
-             `false` is only recommended if you will be setting the scaling axis manually
+            @param adjustScalingAxis @c true to adjust the scaling axis to fit the bar.
+             @c false is only recommended if you will be setting the scaling axis manually
              and don't want the chart adjusting it for you.*/
         void AddBar(Bar bar, const bool adjustScalingAxis = true);
         /// @brief Removes all bars from the chart.
-        /// @param resetAxes `true` to reset axes. `true` is recommended if you will be adding
-        ///    new bars and want the chart to adjust the axes as you add them. `false` is
+        /// @param resetAxes @c true to reset axes. @c true is recommended if you will be adding
+        ///    new bars and want the chart to adjust the axes as you add them. @c false is
         ///    recommended only if you are manually setting the axes prior to adding new bars.
         void ClearBars(const bool resetAxes = true)
             {
@@ -753,7 +753,7 @@ namespace Wisteria::Graphs
         ///    going top-to-bottom or left-to-right.
         ///    SortDescending to sort largest-to-smallest (A-Z).
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
-        /// @returns `true` if the bars can be sorted (i.e., reordered) in terms of bar length.
+        /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept
             { return m_isSortable; }
         /// @returns The direction that the bars are being sorted.

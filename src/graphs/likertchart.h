@@ -702,7 +702,7 @@ namespace Wisteria::Graphs
     private:
         /** @brief Determines if a format is categorized (i.e., using a grouping variable).
             @param format The format to review.
-            @returns `true` if the specified format is categorized.*/
+            @returns @c true if the specified format is categorized.*/
         [[nodiscard]] static bool IsCategorized(const LikertSurveyQuestionFormat format) noexcept;
         /// @brief Draws the brackets connected to questions.
         void AddQuestionBrackets();
