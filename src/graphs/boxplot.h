@@ -263,7 +263,7 @@ namespace Wisteria::Graphs
                 Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<IconShapeScheme> shapes = nullptr);
+            std::shared_ptr<IconScheme> shapes = nullptr);
 
         /** @brief Sets the data.
             @details Also sets the percentiles used for the box range (must be between 1 and 49)

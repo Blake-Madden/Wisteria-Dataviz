@@ -541,7 +541,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
             // turn off markers by using a shape scheme filled with blank icons
             // (having just one icon in this scheme will get recycled for each line)
-            std::make_shared<IconShapeScheme>(IconShapeScheme{IconShape::BlankIcon}));
+            std::make_shared<IconScheme>(IconScheme{IconShape::BlankIcon}));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -594,7 +594,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                      ColorBrewer::GetColor(Colors::Color::Auburn),
                      ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
             // use custom markers
-            std::make_shared<IconShapeScheme>(IconShapeScheme
+            std::make_shared<IconScheme>(IconScheme
                 {IconShape::DiamondIcon, IconShape::HexagonIcon }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
@@ -1671,7 +1671,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas, colors,
             // use custom markers
-            std::make_shared<IconShapeScheme>(IconShapeScheme
+            std::make_shared<IconScheme>(IconScheme
                 { IconShape::DiamondIcon, IconShape::HexagonIcon }));
 
         // set the data and use the grouping column from the dataset to create separate lines

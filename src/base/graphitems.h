@@ -479,25 +479,25 @@ namespace Wisteria
         };
 
     /// @brief Base class for a list of shapes to use for groups.
-    class IconShapeScheme
+    class IconScheme
         {
     public:
         /// @brief Constructor.
         /// @param shapes The vector of shapes to fill the scheme with.
-        explicit IconShapeScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes)
+        explicit IconScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes)
             {}
         /// @private
-        explicit IconShapeScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes))
+        explicit IconScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes))
             {}
         /// @brief Constructor.
         /// @param shapes The initializer list of shapes to fill the scheme with.
-        explicit IconShapeScheme(std::initializer_list<IconShape> shapes) : m_shapes(shapes)
+        explicit IconScheme(std::initializer_list<IconShape> shapes) : m_shapes(shapes)
             {}
         /// @brief Constructor.
         /// @param shapes The list of shapes to fill the scheme with.
         /// @param images The list of images to use for the points if point is
         ///     using IconShape::ImageIcon.
-        IconShapeScheme(std::initializer_list<IconShape> shapes,
+        IconScheme(std::initializer_list<IconShape> shapes,
             std::initializer_list<wxBitmapBundle> images) :
             m_shapes(shapes), m_iconImages(images)
             {}
@@ -543,10 +543,10 @@ namespace Wisteria
         };
 
     /// @brief Standard shapes.
-    class StandardShapes : public IconShapeScheme
+    class StandardShapes : public IconScheme
         {
     public:
-        StandardShapes() : IconShapeScheme({ IconShape::CircleIcon,
+        StandardShapes() : IconScheme({ IconShape::CircleIcon,
                                              IconShape::SquareIcon,
                                              IconShape::HexagonIcon,
                                              IconShape::DiamondIcon,
@@ -561,7 +561,7 @@ namespace Wisteria
 
     /// @brief Base class for a list of line styles to use for groups.
     /// @details This is used for line plots and includes the line's pen style and
-    ///  how points between the lines are connected (e.g., arrow lines, splines, etc.).
+    ///     how points between the lines are connected (e.g., arrow lines, splines, etc.).
     class LineStyleScheme
         {
     public:

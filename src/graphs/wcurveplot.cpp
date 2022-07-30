@@ -17,10 +17,10 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     WCurvePlot::WCurvePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-            std::shared_ptr<IconShapeScheme> shapes /*= nullptr*/,
+            std::shared_ptr<IconScheme> shapes /*= nullptr*/,
             std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/) :
             LinePlot(canvas, colors,
-                shapes != nullptr ? shapes : std::make_shared<IconShapeScheme>(IconShapeScheme{ IconShape::BlankIcon }),
+                shapes != nullptr ? shapes : std::make_shared<IconScheme>(IconScheme{ IconShape::BlankIcon }),
                 linePenStyles != nullptr ? linePenStyles :
                     std::make_shared<LineStyleScheme>(LineStyleScheme{
                         { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },

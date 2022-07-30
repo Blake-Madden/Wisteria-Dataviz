@@ -78,7 +78,7 @@ namespace Wisteria::Graphs
 
             // turn off markers by using a shape scheme filled with blank icons
             // (having just one icon in this scheme will get recycled for each line)
-            std::make_shared<IconShapeScheme>(IconShapeScheme{ IconShape::BlankIcon }));
+            std::make_shared<IconScheme>(IconScheme{ IconShape::BlankIcon }));
          // add padding around the plot
          linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -201,15 +201,15 @@ namespace Wisteria::Graphs
                 show markers for certain lines/groups.
             @code
              // to turn off markers, pass this in as the shape scheme argument
-             std::make_shared<IconShapeScheme>(IconShapeScheme{IconShape::BlankIcon}));
+             std::make_shared<IconScheme>(IconScheme{IconShape::BlankIcon}));
 
              // to show an image as the point markers, use this
-             std::make_shared<IconShapeScheme>(IconShapeScheme({IconShape::ImageIcon},
+             std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
                 wxBitmapBundle::FromSVGFile(L"logo.svg",
                     Image::GetSVGSize(L"logo.svg"))) ));
 
             // or show a different image for each group
-            std::make_shared<IconShapeScheme>(IconShapeScheme({IconShape::ImageIcon},
+            std::make_shared<IconScheme>(IconScheme({IconShape::ImageIcon},
                 { wxBitmapBundle::FromSVGFile(L"hs.svg",
                     Image::GetSVGSize(L"hs.svg")),
                   wxBitmapBundle::FromSVGFile(L"university.svg",
@@ -221,13 +221,13 @@ namespace Wisteria::Graphs
                 to not show any lines.*/
         explicit LinePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<IconShapeScheme> shapes = nullptr,
+            std::shared_ptr<IconScheme> shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr) :
             Graph2D(canvas),
             m_colorScheme(colors != nullptr ? colors :
                 Settings::GetDefaultColorScheme()),
             m_shapeScheme(shapes != nullptr ? shapes :
-                std::make_shared<IconShapeScheme>(StandardShapes())),
+                std::make_shared<IconScheme>(StandardShapes())),
             m_linePenStyles(linePenStyles != nullptr ?
                 linePenStyles :
                 std::make_shared<LineStyleScheme>(
@@ -478,7 +478,7 @@ namespace Wisteria::Graphs
         void RecalcSizes(wxDC& dc) final;
         /// @brief Get the shape scheme used for the points.
         /// @returns The shape scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<IconShapeScheme>& GetShapeScheme() const noexcept
+        [[nodiscard]] const std::shared_ptr<IconScheme>& GetShapeScheme() const noexcept
             { return m_shapeScheme; }
 
         /// @brief Get the color scheme used for the points.
@@ -518,7 +518,7 @@ namespace Wisteria::Graphs
         bool m_autoSpline{ true };
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        std::shared_ptr<IconShapeScheme> m_shapeScheme;
+        std::shared_ptr<IconScheme> m_shapeScheme;
         std::shared_ptr<LineStyleScheme> m_linePenStyles;
 
         PointColorCriteria m_colorIf;

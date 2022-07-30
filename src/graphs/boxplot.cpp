@@ -132,7 +132,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     BoxPlot::BoxPlot(Canvas* canvas,
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
-                     std::shared_ptr<IconShapeScheme> shapes /*= nullptr*/) :
+                     std::shared_ptr<IconScheme> shapes /*= nullptr*/) :
         Graph2D(canvas)
         {
         GetRightYAxis().Show(false);
