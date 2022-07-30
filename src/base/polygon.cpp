@@ -282,10 +282,10 @@ namespace Wisteria::GraphItems
                 // @bug SVG exporting of this will lack the gradient
                 else
                     {
-                    if (dc.IsKindOf(CLASSINFO(wxGCDC)))
+                    if (dc.IsKindOf(wxCLASSINFO(wxGCDC)))
                         {
                         wxGraphicsContext* gc = dynamic_cast<wxGCDC&>(dc).GetGraphicsContext();
-                        wxASSERT_LEVEL_2(gc);
+                        wxASSERT_MSG(gc, L"Failed to get graphics context from polygon renderer!");
                         if (gc)
                             {
                             wxPoint start;
