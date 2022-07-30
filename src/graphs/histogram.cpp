@@ -11,6 +11,8 @@
 #include "../math/statistics.h"
 
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria::Graphs
     {

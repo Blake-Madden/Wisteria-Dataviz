@@ -11,12 +11,15 @@
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;
+using namespace Wisteria::Colors::Schemes;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     WCurvePlot::WCurvePlot(Canvas* canvas,
-            std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
+            std::shared_ptr<ColorScheme> colors /*= nullptr*/,
             std::shared_ptr<IconScheme> shapes /*= nullptr*/,
             std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/) :
             LinePlot(canvas, colors,

@@ -61,9 +61,9 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for sun icon!");
         if (gc)
             {
-            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::Sunflower),
+            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::SunsetOrange),
                        ScaleToScreenAndCanvas(1)));
-            gc->SetBrush(ColorBrewer::GetColor(Color::Sunflower));
+            gc->SetBrush(ColorBrewer::GetColor(Color::SunsetOrange));
             // a line going from the middle of the left side to the middle of the right
             const std::array<wxPoint2DDouble, 2> points =
                 {

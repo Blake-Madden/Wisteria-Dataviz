@@ -3,6 +3,8 @@
 using namespace Wisteria::Data;
 using namespace Wisteria::Graphs;
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria
     {
@@ -1922,7 +1924,7 @@ namespace Wisteria
         
         if (!colorSchemeNode->IsOk())
             { return nullptr; }
-        if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+        else if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
             {
             std::vector<wxColour> colors;
             const auto colorValues = colorSchemeNode->GetValueStringVector();
@@ -1944,7 +1946,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<IconScheme> ReportBuilder::LoadIconScheme(
+    std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> ReportBuilder::LoadIconScheme(
         const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
         // use standard string, wxString should not be constructed globally
@@ -1977,19 +1979,41 @@ namespace Wisteria
             { L"fall-leaf-icon", IconShape::FallLeafIcon }
             };
 
-        std::vector<IconShape> icons;
-        auto iconValues = iconSchemeNode->GetValueStringVector();
-        if (iconValues.size() == 0)
-            { return nullptr; }
-        for (auto& icon : iconValues)
+        static const std::map<std::wstring_view, std::shared_ptr<IconScheme>> iconSchemes =
             {
-            auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
-            if (foundPos != iconEnums.cend())
-                { icons.emplace_back(foundPos->second); }
-            }
-        if (icons.size() == 0)
+            { L"standardshapes", std::make_shared<StandardShapes>() },
+            { L"semesters", std::make_shared<Semesters>() }
+            };
+
+        if (!iconSchemeNode->IsOk())
             { return nullptr; }
-        return std::make_shared<IconScheme>(icons);
+        // a list of icons
+        else if (iconSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+            {
+            std::vector<IconShape> icons;
+            auto iconValues = iconSchemeNode->GetValueStringVector();
+            if (iconValues.size() == 0)
+                { return nullptr; }
+            for (auto& icon : iconValues)
+                {
+                auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
+                if (foundPos != iconEnums.cend())
+                    { icons.emplace_back(foundPos->second); }
+                }
+            if (icons.size() == 0)
+                { return nullptr; }
+            return std::make_shared<IconScheme>(icons);
+            }
+        // a pre-defined icon scheme
+        else if (iconSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+            {
+            auto foundPos = iconSchemes.find(
+            std::wstring_view(iconSchemeNode->GetValueString().MakeLower().wc_str()));
+            if (foundPos != iconSchemes.cend())
+                { return foundPos->second; }
+            }
+
+        return nullptr;
         }
 
     //---------------------------------------------------

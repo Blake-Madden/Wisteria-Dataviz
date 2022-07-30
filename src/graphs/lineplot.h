@@ -221,13 +221,14 @@ namespace Wisteria::Graphs
                 to not show any lines.*/
         explicit LinePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<IconScheme> shapes = nullptr,
+            std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr) :
             Graph2D(canvas),
             m_colorScheme(colors != nullptr ? colors :
                 Settings::GetDefaultColorScheme()),
             m_shapeScheme(shapes != nullptr ? shapes :
-                std::make_shared<IconScheme>(StandardShapes())),
+                std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                    Wisteria::Icons::Schemes::StandardShapes())),
             m_linePenStyles(linePenStyles != nullptr ?
                 linePenStyles :
                 std::make_shared<LineStyleScheme>(
@@ -478,12 +479,14 @@ namespace Wisteria::Graphs
         void RecalcSizes(wxDC& dc) final;
         /// @brief Get the shape scheme used for the points.
         /// @returns The shape scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<IconScheme>& GetShapeScheme() const noexcept
+        [[nodiscard]] const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>&
+            GetShapeScheme() const noexcept
             { return m_shapeScheme; }
 
         /// @brief Get the color scheme used for the points.
         /// @returns The color scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
+        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>&
+            GetColorScheme() const noexcept
             { return m_colorScheme; }
 
         [[nodiscard]] const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
@@ -518,7 +521,7 @@ namespace Wisteria::Graphs
         bool m_autoSpline{ true };
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        std::shared_ptr<IconScheme> m_shapeScheme;
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_shapeScheme;
         std::shared_ptr<LineStyleScheme> m_linePenStyles;
 
         PointColorCriteria m_colorIf;

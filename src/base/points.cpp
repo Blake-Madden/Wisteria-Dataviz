@@ -12,6 +12,7 @@
 #include "shapes.h"
 
 using namespace Wisteria::Colors;
+using namespace Wisteria::Icons;
 
 namespace Wisteria::GraphItems
     {

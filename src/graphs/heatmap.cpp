@@ -10,15 +10,18 @@
 #include "../util/frequencymap.h"
 
 using namespace Wisteria::Colors;
+using namespace Wisteria::Colors::Schemes;
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    HeatMap::HeatMap(Wisteria::Canvas* canvas, std::shared_ptr<Schemes::ColorScheme> colors /*= nullptr*/) :
+    HeatMap::HeatMap(Wisteria::Canvas* canvas, std::shared_ptr<ColorScheme> colors /*= nullptr*/) :
         Graph2D(canvas),
         m_colorSpectrum(colors != nullptr ? colors :
-            std::make_shared<Schemes::ColorScheme>(Schemes::ColorScheme{ *wxWHITE, *wxBLACK }))
+            std::make_shared<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }))
         {
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);

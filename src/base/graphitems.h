@@ -25,6 +25,7 @@
 #include <wx/uilocale.h>
 #include <wx/numformatter.h>
 #include "settings.h"
+#include "icons.h"
 #include "../math/mathematics.h"
 
 // forward declares
@@ -221,47 +222,6 @@ namespace Wisteria
         LABEL_STYLE_COUNT
         };
 
-    /// @brief The types of shapes that can be drawn on a legend or plot.
-    /// @internal Update the constant map in @c ReportBuilder::LoadIconScheme when added a new icon.
-    enum class IconShape
-        {
-        BlankIcon,                     /*!< Don't draw any icon.*/
-        HorizontalLineIcon,            /*!< A horizontal line.*/
-        ArrowRightIcon,                /*!< An arrow pointing right.*/
-        CircleIcon,                    /*!< A circle.*/
-        ImageIcon,                     /*!< An image, shrunk down to the height of its line
-                                            (legend) or point size (point).*/
-        HorizontalSeparator,           /*!< A horizontal line going across the entire legend
-                                            and text area of a label.\n
-                                            Only applicable for legends.*/
-        HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend
-                                            and text area of a label.\n
-                                            Only applicable for legends.*/
-        ImageWholeLegend,              /*!< An image which fills the entire legend.
-                                            Only one should be used per legend.
-                                            Only applicable for legends.*/
-        ColorGradientIcon,             /*!< A color gradient which fills the entire legend.
-                                            Only applicable for legends.*/
-        SquareIcon,                    /*!< A square.*/
-        TriangleUpwardIcon,            /*!< A triangle pointing upward.*/
-        TriangleDownwardIcon,          /*!< A triangle pointing downward.*/
-        TriangleRightIcon,             /*!< A triangle pointing right.*/
-        TriangleLeftIcon,              /*!< A triangle pointing left.*/
-        DiamondIcon,                   /*!< A diamond.*/
-        CrossIcon,                     /*!< A cross.*/
-        AsteriskIcon,                  /*!< An asterisk.*/
-        HexagonIcon,                   /*!< A hexagon.*/
-        BoxPlotIcon,                   /*!< A box & whisker plot.*/
-        LocationMarker,                /*!< A marker indicating a location on a map.*/
-        GoRoadSign,                    /*!< A circular sign that says 'Go' on it,
-                                            with a sign post beneath it.*/
-        WarningRoadSign,               /*!< A triangular sign containing an exclamation point,
-                                            with a sign post beneath it.*/
-        SunIcon,                       /*!< A sun (with sunbeams).*/
-        FlowerIcon,                    /*!< A flower (stigma and petals).*/
-        FallLeafIcon                   /*!< A red leaf.*/
-        };
-
     /// @brief The orientation of an item (e.g., a vertically drawn label).
     enum class Orientation
         {
@@ -425,11 +385,11 @@ namespace Wisteria
         {
         /// @brief Make the item smaller or larger to fit the bouding box.
         DownscaleOrUpscale,
-        /// @breif Only make items smaller if necessary.
+        /// @brief Only make items smaller if necessary.
         DownscaleOnly,
-        /// @breif Only make items larger if necessary.
+        /// @brief Only make items larger if necessary.
         UpscaleOnly,
-        /// @breif Don't rescale the item.
+        /// @brief Don't rescale the item.
         NoResize
         };
 
@@ -438,142 +398,6 @@ namespace Wisteria
     ///     Should return an invalid color if values to not the criteria.
     using PointColorCriteria = std::function<wxColour(double x, double y)>;
 
-    /// @brief Item to draw on a legend.
-    /// @details This can include shapes, images, or blanks for the shape
-    ///  and also includes control of the color.
-    struct LegendIcon
-        {
-        /** @brief Constructs a color gradient legend.
-            @param colors The color gradient to use (must contain at least two colors).
-            @note The colors are drawn top to bottom, starting from the first color.*/
-        explicit LegendIcon(const std::vector<wxColour>& colors) :
-            m_shape(IconShape::ColorGradientIcon), m_colors(colors)
-            {
-            wxASSERT_LEVEL_2_MSG(m_colors.size() >= 2,
-                L"Color gradient legend created with only one color!");
-            }
-        /** @brief Constructs legend icon.
-            @param icon The type of image icon shape to use.
-             Must be either ImageIcon or ImageWholeLegend.
-            @param img The image to draw as an icon.*/
-        LegendIcon(const IconShape icon, const wxImage& img) :
-            m_shape(icon), m_img(img)
-            {
-            wxASSERT_LEVEL_2_MSG((m_shape == IconShape::ImageIcon) ||
-                                 (m_shape == IconShape::ImageWholeLegend),
-                                 L"LegendIcon constructed with an image, "
-                                  "but its shape isn't set to image. Is this intentional?");
-            }
-        /** @brief Constructor.
-            @param icon The icon type.
-            @param pen The pen to outline the icon with.
-            @param brush The brush to paint with.*/
-        LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush) :
-            m_shape(icon), m_pen(pen), m_brush(brush), m_img(wxNullImage)
-            {}
-        /// @private
-        LegendIcon() = delete;
-
-        IconShape m_shape{ IconShape::BlankIcon }; /*!< The icon type.*/
-        wxPen m_pen;                               /*!< The pen to draw with.*/
-        wxBrush m_brush;                           /*!< The brush to paint with.*/
-        /// @brief The image to draw (if shape is set to ImageIcon).
-        wxImage m_img;
-        /// @brief The color gradient to draw (if shape is set to @c ColorGradientIcon).
-        std::vector<wxColour> m_colors;
-
-        /// @returns The minimum width that should be used for legend icons.
-        /// @note  This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
-        ///     which use DIPs.
-        [[nodiscard]] static constexpr double GetIconWidthDIPs() noexcept
-            { return 16; }
-        /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
-        ///     in DIPs.
-        [[nodiscard]] static wxSize GetArrowheadSizeDIPs()
-            { return wxSize(2, 2); }
-        };
-
-    /// @brief Base class for a list of shapes to use for groups.
-    class IconScheme
-        {
-    public:
-        /// @brief Constructor.
-        /// @param shapes The vector of shapes to fill the scheme with.
-        explicit IconScheme(const std::vector<IconShape>& shapes) : m_shapes(shapes)
-            {}
-        /// @private
-        explicit IconScheme(std::vector<IconShape>&& shapes) : m_shapes(std::move(shapes))
-            {}
-        /// @brief Constructor.
-        /// @param shapes The initializer list of shapes to fill the scheme with.
-        explicit IconScheme(std::initializer_list<IconShape> shapes) : m_shapes(shapes)
-            {}
-        /// @brief Constructor.
-        /// @param shapes The list of shapes to fill the scheme with.
-        /// @param images The list of images to use for the points if point is
-        ///     using IconShape::ImageIcon.
-        IconScheme(std::initializer_list<IconShape> shapes,
-            std::initializer_list<wxBitmapBundle> images) :
-            m_shapes(shapes), m_iconImages(images)
-            {}
-        /// @returns The list of shapes from the scheme.
-        [[nodiscard]] const std::vector<IconShape>& GetShapes() const noexcept
-            { return m_shapes; }
-        /** @returns The shape from a given index.\n
-                If no shapes are available, returns a blank icon.
-            @param index The index into the shape list to return. If index is outside
-                number of shapes, then it will recycle (i.e., wrap around).
-                For example, if there are 2 shapes, index 1 will return 1;
-                however, index 2 will wrap around and return shape 0 and
-                index 3 will return shape 1.*/
-        [[nodiscard]] IconShape GetShape(const size_t index) const
-            {
-            return (m_shapes.size() == 0) ?
-                IconShape::BlankIcon : m_shapes.at(index % m_shapes.size());
-            }
-        /** @brief Adds a shape to the scheme.
-            @param shape The shape to add.*/
-        void AddShape(const IconShape shape)
-            { m_shapes.push_back(shape); }
-        /** @returns The image used for icons (if shape is set to @c IconShape::ImageIcon).\n
-                If no image(s) is available, returns an empty image (be sure to call @c IsOK()).
-            @param index The index into the image list to return. If index is outside
-                number of images, then it will recycle (i.e., wrap around).
-                For example, if there are 2 images, index 1 will return 1;
-                however, index 2 will wrap around and return image 0 and
-                index 3 will return image 1.*/
-        [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
-            {
-            return (m_iconImages.size() == 0) ?
-                m_emptyImage :
-                m_iconImages.at(index % m_iconImages.size());
-            }
-        /// @brief Removes all shapes from the collection.
-        void Clear() noexcept
-            { m_shapes.clear(); }
-    private:
-        std::vector<IconShape> m_shapes;
-        std::vector<wxBitmapBundle> m_iconImages;
-        wxBitmapBundle m_emptyImage;
-        };
-
-    /// @brief Standard shapes.
-    class StandardShapes : public IconScheme
-        {
-    public:
-        StandardShapes() : IconScheme({ IconShape::CircleIcon,
-                                        IconShape::SquareIcon,
-                                        IconShape::HexagonIcon,
-                                        IconShape::DiamondIcon,
-                                        IconShape::TriangleUpwardIcon,
-                                        IconShape::TriangleDownwardIcon,
-                                        IconShape::CrossIcon,
-                                        IconShape::AsteriskIcon,
-                                        IconShape::TriangleRightIcon,
-                                        IconShape::TriangleLeftIcon })
-            {}
-        };
-
     /// @brief Base class for a list of line styles to use for groups.
     /// @details This is used for line plots and includes the line's pen style and
     ///     how points between the lines are connected (e.g., arrow lines, splines, etc.).
@@ -581,8 +405,17 @@ namespace Wisteria
         {
     public:
         /// @brief Constructor.
+        /// @param penStyles The list of pen & line styles to fill the scheme with.
+        explicit LineStyleScheme(const std::vector<std::pair<wxPenStyle, LineStyle>>& penStyles) :
+            m_lineStyles(penStyles)
+            {}
+        /// @private
+        explicit LineStyleScheme(std::vector<std::pair<wxPenStyle, LineStyle>>&& penStyles) :
+            m_lineStyles(std::move(penStyles))
+            {}
+        /// @brief Constructor.
         /// @param penStyles The initializer list of pen & line styles to fill the scheme with.
-        explicit LineStyleScheme(std::initializer_list<std::pair<wxPenStyle, LineStyle>> penStyles) :
+        explicit LineStyleScheme(const std::initializer_list<std::pair<wxPenStyle, LineStyle>>& penStyles) :
             m_lineStyles(penStyles)
             {}
         /// @returns The vector of pen & line styles from the scheme.
@@ -590,10 +423,10 @@ namespace Wisteria
             { return m_lineStyles; }
         /** @returns The line style from a given index.
             @param index The index into the line style list to return. If index is outside
-             number of line styles, then it will recycle (i.e., wrap around).
-             For example, if there are 2 line styles, index 1 will return 1;
-             however, index 2 will wrap around and return line style 0 and
-             index 3 will return line style 1.*/
+                number of line styles, then it will recycle (i.e., wrap around).
+                For example, if there are 2 line styles, index 1 will return 1;
+                however, index 2 will wrap around and return line style 0 and
+                index 3 will return line style 1.*/
         [[nodiscard]] const std::pair<wxPenStyle,LineStyle>& GetLineStyle(const size_t index) const
             { return m_lineStyles.at(index%m_lineStyles.size()); }
         /** @brief Adds a line style to the scheme.
@@ -610,9 +443,9 @@ namespace Wisteria
 
     /// @brief Standard line styles.
     /// @details This iterates through all pen styles with straight connection lines,
-    ///  then goes through the pen styles again with arrow connection lines.
+    ///     then goes through the pen styles again with arrow connection lines.
     /// @note Splines are not used here in an effect to keep a consistent look of
-    ///  straight lines.
+    ///     straight lines.
     class StandardLineStyles : public LineStyleScheme
         {
     public:
@@ -1140,7 +973,7 @@ namespace Wisteria
             bool m_isOk{ true };
             /*!< @todo Expand support for this for Label.*/
             ShadowType m_shadowType{ ShadowType::NoShadow };
-            std::vector<LegendIcon> m_legendIcons;
+            std::vector<Wisteria::Icons::LegendIcon> m_legendIcons;
             // center point
             wxPoint m_point{ 0, 0 };
             // scaling
@@ -1516,7 +1349,7 @@ namespace Wisteria
             /** @returns If a @c Label, the collection of icons (optionally) being drawn.
                 @note Call SetLeftPadding() to make space for these icons
                     (with a minimum of 16 pixels).*/
-            [[nodiscard]] std::vector<LegendIcon>& GetLegendIcons() noexcept
+            [[nodiscard]] std::vector<Wisteria::Icons::LegendIcon>& GetLegendIcons() noexcept
                 {
                 InvalidateCachedBoundingBox();
                 return m_itemInfo.m_legendIcons;
@@ -1530,9 +1363,9 @@ namespace Wisteria
                 {
                 for (const auto& icon : GetLegendIcons())
                     {
-                    if (icon.m_shape != IconShape::BlankIcon &&
-                        icon.m_shape != IconShape::HorizontalSeparator &&
-                        icon.m_shape != IconShape::HorizontalArrowRightSeparator)
+                    if (icon.m_shape != Wisteria::Icons::IconShape::BlankIcon &&
+                        icon.m_shape != Wisteria::Icons::IconShape::HorizontalSeparator &&
+                        icon.m_shape != Wisteria::Icons::IconShape::HorizontalArrowRightSeparator)
                         { return true; }
                     }
                 return false;
@@ -1859,7 +1692,7 @@ namespace Wisteria
             [[nodiscard]] const HeaderInfo& GetHeaderInfo() const noexcept
                 { return m_itemInfo.m_headerInfo; }
             /// @private
-            [[nodiscard]] const std::vector<LegendIcon>& GetLegendIcons() const noexcept
+            [[nodiscard]] const std::vector<Wisteria::Icons::LegendIcon>& GetLegendIcons() const noexcept
                 { return m_itemInfo.m_legendIcons; }
             /// @private
             [[nodiscard]] const std::optional<wxRect>& GetClippingRect() const noexcept

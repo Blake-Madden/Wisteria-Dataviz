@@ -128,7 +128,7 @@ namespace Wisteria::Graphs
              to not show any lines.*/
         explicit WCurvePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
-            std::shared_ptr<IconScheme> shapes = nullptr,
+            std::shared_ptr<Icons::Schemes::IconScheme > shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr);
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines will be created based on

@@ -400,7 +400,9 @@ Properties common to all graph items:
      This can either be an array of color strings or the name of the color scheme.\n
      Refer to @c Wisteria::Colors::Schemes for a list of color schemes.
 - @c "icon-scheme": for graphs that support icon/marker schemes only.\n
-  This is an array of icon strings (which can be recycled):
+  This an either be an icon scheme name or an array of icon strings (which can be recycled)\n
+  Refer to @c Wisteria::Icons::Schemes for a list of icon schemes.\n
+  The following individual icons are available:
   - @c "blank-icon"
   - @c "horizontal-line-icon"
   - @c "arrow-right-icon"

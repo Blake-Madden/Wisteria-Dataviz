@@ -11,6 +11,8 @@
 using namespace Wisteria::Colors;
 using namespace Wisteria::Data;
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria::Graphs
     {

@@ -108,7 +108,10 @@ namespace Wisteria::GraphItems
         /// @returns The minimum width needed for the left padding if including a legend.
         /// @sa SetLeftPadding().
         [[nodiscard]] static wxCoord GetMinLegendWidthDIPs() noexcept
-            { return LegendIcon::GetIconWidthDIPs() + 2/* 1 DIP on each side of icon*/; }
+            {
+            return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
+                   2/* 1 DIP on each side of icon*/;
+            }
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
         [[nodiscard]] double GetLineSpacing() const noexcept

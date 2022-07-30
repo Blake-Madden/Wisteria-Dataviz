@@ -126,7 +126,7 @@ namespace Wisteria::Graphs
             }
     protected:
         /// @brief Description of icon used for a road stop.
-        using RoadStopIcon = std::pair<IconShape, wxColour>;
+        using RoadStopIcon = std::pair<Wisteria::Icons::IconShape, wxColour>;
         /// @brief A "stop on the road" (i.e., an IV from the multiple regression formula,
         ///     strength from a SWOT analysis, etc.), which causes a curve in the road
         ///     based on its influence.
@@ -200,9 +200,9 @@ namespace Wisteria::Graphs
         [[nodiscard]] RoadStopIcon GetNegativeIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?
-                std::make_pair(IconShape::LocationMarker,
+                std::make_pair(Wisteria::Icons::IconShape::LocationMarker,
                                Colors::ColorBrewer::GetColor(Colors::Color::Tomato)) :
-                std::make_pair(IconShape::WarningRoadSign,
+                std::make_pair(Wisteria::Icons::IconShape::WarningRoadSign,
                                Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow));
             }
 
@@ -210,9 +210,9 @@ namespace Wisteria::Graphs
         [[nodiscard]] RoadStopIcon GetPositiveIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?
-                std::make_pair(IconShape::LocationMarker,
+                std::make_pair(Wisteria::Icons::IconShape::LocationMarker,
                                Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen)) :
-                std::make_pair(IconShape::GoRoadSign,
+                std::make_pair(Wisteria::Icons::IconShape::GoRoadSign,
                                Colors::ColorBrewer::GetColor(Colors::Color::KellyGreen));
             }
 

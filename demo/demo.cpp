@@ -15,6 +15,8 @@ using namespace Wisteria::Colors;
 using namespace Wisteria::Graphs;
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Data;
+using namespace Wisteria::Icons;
+using namespace Wisteria::Icons::Schemes;
 
 wxIMPLEMENT_APP(MyApp);
 
