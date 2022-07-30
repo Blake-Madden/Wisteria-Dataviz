@@ -136,7 +136,7 @@ namespace Wisteria::Graphs
             // If there are 10 or less items, then just keep them all on one row.
             const size_t cellColumnCount = (m_continuousColumn->GetRowCount() <= 10) ?
                 10 :
-                std::ceil(std::sqrt(m_continuousColumn->GetRowCount()))*golden_ratio;
+                std::ceil(std::sqrt(m_continuousColumn->GetRowCount())) * math_constants::golden_ratio;
             const size_t cellRowCount = std::ceil(
                 safe_divide<double>(m_continuousColumn->GetRowCount(), cellColumnCount));
 

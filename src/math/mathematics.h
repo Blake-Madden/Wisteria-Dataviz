@@ -28,8 +28,27 @@
     #define M_PI 3.1415926535897932384626433832795
 #endif
 
-/// @brief Golden ratio
-constexpr double golden_ratio = 1.618;
+/// @brief Math constants.
+namespace math_constants
+    {
+    /// @brief Golden ratio
+    constexpr double golden_ratio = 1.618;
+
+    /// @brief Quarter (i.e., 25%).
+    constexpr double quarter = 0.25;
+
+    /// @brief Half (i.e., 50%).
+    constexpr double half = 0.5;
+
+    /// @brief Three quarters (i.e., 75%).
+    constexpr double three_quarters = 0.75;
+
+    /// @brief Third (i.e., 33% or 1/3).
+    constexpr double third = 1/static_cast<double>(3);
+
+    /// @brief Two thirds (i.e., 66% or 2/3).
+    constexpr double two_thirds = third * 2;
+    }
 
 /// @returns `true` if a value is within a given range.
 /// @param value The value to review.
