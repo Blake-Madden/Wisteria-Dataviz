@@ -257,7 +257,9 @@ namespace Wisteria
                                             with a sign post beneath it.*/
         WarningRoadSign,               /*!< A triangular sign containing an exclamation point,
                                             with a sign post beneath it.*/
-        SunIcon                        /*!< A sun (with sunbeams).*/
+        SunIcon,                       /*!< A sun (with sunbeams).*/
+        FlowerIcon,                    /*!< A flower (stigma and petals).*/
+        FallLeafIcon                   /*!< A red leaf.*/
         };
 
     /// @brief The orientation of an item (e.g., a vertically drawn label).
@@ -418,6 +420,19 @@ namespace Wisteria
         ROUNDING_METHOD_COUNT
         };
 
+    /// @brief How an object resized to fit into a new bounding box.
+    enum class ResizeMethod
+        {
+        /// @brief Make the item smaller or larger to fit the bouding box.
+        DownscaleOrUpscale,
+        /// @breif Only make items smaller if necessary.
+        DownscaleOnly,
+        /// @breif Only make items larger if necessary.
+        UpscaleOnly,
+        /// @breif Don't rescale the item.
+        NoResize
+        };
+
     /// @brief Lamba to return a color if a point's
     ///     X and/or Y values meet a certain set of criteria.\n
     ///     Should return an invalid color if values to not the criteria.
@@ -547,15 +562,15 @@ namespace Wisteria
         {
     public:
         StandardShapes() : IconScheme({ IconShape::CircleIcon,
-                                             IconShape::SquareIcon,
-                                             IconShape::HexagonIcon,
-                                             IconShape::DiamondIcon,
-                                             IconShape::TriangleUpwardIcon,
-                                             IconShape::TriangleDownwardIcon,
-                                             IconShape::CrossIcon,
-                                             IconShape::AsteriskIcon,
-                                             IconShape::TriangleRightIcon,
-                                             IconShape::TriangleLeftIcon })
+                                        IconShape::SquareIcon,
+                                        IconShape::HexagonIcon,
+                                        IconShape::DiamondIcon,
+                                        IconShape::TriangleUpwardIcon,
+                                        IconShape::TriangleDownwardIcon,
+                                        IconShape::CrossIcon,
+                                        IconShape::AsteriskIcon,
+                                        IconShape::TriangleRightIcon,
+                                        IconShape::TriangleLeftIcon })
             {}
         };
 

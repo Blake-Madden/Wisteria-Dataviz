@@ -1944,7 +1944,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<IconShapeScheme> ReportBuilder::LoadIconScheme(
+    std::shared_ptr<IconScheme> ReportBuilder::LoadIconScheme(
         const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
         // use standard string, wxString should not be constructed globally
@@ -1972,8 +1972,9 @@ namespace Wisteria
             { L"location-marker", IconShape::LocationMarker },
             { L"go-road-sign", IconShape::GoRoadSign },
             { L"warning-road-sign", IconShape::WarningRoadSign },
-            { L"sun-icon", IconShape::SunIcon }
-
+            { L"sun-icon", IconShape::SunIcon },
+            { L"flower-icon", IconShape::FlowerIcon },
+            { L"fall-leaf-icon", IconShape::FallLeafIcon }
             };
 
         std::vector<IconShape> icons;
@@ -1988,7 +1989,7 @@ namespace Wisteria
             }
         if (icons.size() == 0)
             { return nullptr; }
-        return std::make_shared<IconShapeScheme>(icons);
+        return std::make_shared<IconScheme>(icons);
         }
 
     //---------------------------------------------------
@@ -1996,6 +1997,14 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& imageNode,
         Canvas* canvas, size_t& currentRow, size_t& currentColumn)
         {
+        static const std::map<std::wstring_view, ResizeMethod> resizeValues =
+            {
+            { L"downscale-only", ResizeMethod::DownscaleOnly },
+            { L"downscale-or-upscale", ResizeMethod::DownscaleOrUpscale },
+            { L"upscale-only", ResizeMethod::UpscaleOnly },
+            { L"no-resize", ResizeMethod::NoResize },
+            };
+
         auto path = imageNode->GetProperty(L"path")->GetValueString();
         if (path.empty())
             {
@@ -2014,6 +2023,10 @@ namespace Wisteria
         auto image = std::make_shared<GraphItems::Image>(path);
         if (image->IsOk())
             {
+            auto foundPos = resizeValues.find(std::wstring_view(
+                imageNode->GetProperty(L"resize-method")->GetValueString().MakeLower().wc_str()));
+            if (foundPos != resizeValues.cend())
+                { image->SetResizeMethod(foundPos->second); }
             LoadItem(imageNode, image);
             canvas->SetFixedObject(currentRow, currentColumn, image);
             return image;

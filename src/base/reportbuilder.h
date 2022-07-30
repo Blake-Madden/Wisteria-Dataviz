@@ -165,7 +165,7 @@ namespace Wisteria
         /// @brief Loads an icon scheme from a node.
         /// @param iconSchemeNode Tne node to parse.
         /// @return The loaded icon scheme, or null upon failure.
-        [[nodiscard]] std::shared_ptr<IconShapeScheme> LoadIconScheme(
+        [[nodiscard]] std::shared_ptr<IconScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Converts a string value to a LabelPlaceent enum value.

@@ -169,6 +169,12 @@ Properties for @c "common-axis" nodes:
 ## Image {#image-properties}
 Properties for @c "image" nodes:
 - @c "path": the file path of the image to load.
+- @c "resize-method": How the image's size is adjusted when its boudning box is changed.\n
+  Available options are:
+  - @c "downscale-only"
+  - @c "downscale-or-upscale"
+  - @c "upscale-only"
+  - @c "no-resize"
 
 ## Label {#label-properties}
 Properties for @c "label" nodes:
@@ -418,6 +424,8 @@ Properties common to all graph items:
   - @c "go-road-sign"
   - @c "warning-road-sign"
   - @c "sun-icon"
+  - @c "flower-icon"
+  - @c "fall-leaf-icon"
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     Available options are:

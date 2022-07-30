@@ -32,8 +32,6 @@ namespace Wisteria::GraphItems
             @param itemInfo Extended information to construct this item with.*/
         explicit Shapes(const GraphItemInfo& itemInfo) : m_graphInfo(itemInfo)
             {}
-        /// @private
-        Shapes() = delete;
         /// @brief Gets/sets the shape's underlying information (e.g., brush color, pen, etc.).
         /// @details This is useful for changing the shape's settings when preparing to
         ///     draw different shapes.
@@ -45,11 +43,33 @@ namespace Wisteria::GraphItems
         /// @param rect The area to bind the circle within.
         /// @param dc The DC to draw to.
         void DrawCircularSign(const wxRect rect, wxDC& dc);
-        /// @brief Draws a sun shape (circle with sunbeams).
+        /// @brief Draws a yellow sun shape (circle with sunbeams).
         /// @param rect The area to bind the sun within.
         /// @param dc The DC to draw to.
         void DrawSun(const wxRect rect, wxDC& dc);
+        /// @brief Draws a purple flower shape (stigma and petals).
+        /// @param rect The area to bind the flower within.
+        /// @param dc The DC to draw to.
+        void DrawFlower(const wxRect rect, wxDC& dc);
+        /// @brief Draws a ref leaf.
+        /// @param rect The area to bind the leaf within.
+        /// @param dc The DC to draw to.
+        void DrawFallLeaf(const wxRect rect, wxDC& dc);
     private:
+        /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
+        [[nodiscard]] double GetXPosFromLeft(const wxRect rect, const double percentFromLeft) noexcept
+            {
+            wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
+                L"Percent should be between 0.0 and 1.0!");
+            return rect.GetLeft() + (rect.GetWidth() * percentFromLeft);
+            };
+        /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
+        [[nodiscard]] double GetYPosFromTop(const wxRect rect, const double percentFromLeft) noexcept
+            {
+            wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
+                L"Percent should be between 0.0 and 1.0!");
+            return rect.GetTop() + (rect.GetHeight() * percentFromLeft);
+            };
         [[nodiscard]] double GetScaling() const noexcept
             { return m_graphInfo.GetScaling(); }
 

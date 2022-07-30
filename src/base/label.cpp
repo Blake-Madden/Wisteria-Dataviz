@@ -18,7 +18,7 @@ namespace Wisteria::GraphItems
     void Label::SetLine(const size_t line, const wxString& lineText)
         {
         wxString newString;
-        size_t currentRow{0};
+        size_t currentRow{ 0 };
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         while (lineTokenizer.HasMoreTokens() )
             {
@@ -793,21 +793,29 @@ namespace Wisteria::GraphItems
                         }
                         break;
                     case IconShape::GoRoadSign:
-                        {
                         sh.GetGraphItemInfo().Text(_(L"GO"));
                         sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
                                                    wxPoint(iconMiddleX, middleOfCurrentRow),
                             wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * 0.5)),
                             dc);
-                        }
                         break;
                     case IconShape::SunIcon:
-                        {
                         sh.DrawSun(wxRect(contentBoundingBox.GetTopLeft() +
                                           wxPoint(iconMiddleX, middleOfCurrentRow),
                                           wxSize(1, 1)).Inflate(iconRadius),
                             dc);
-                        }
+                        break;
+                    case IconShape::FlowerIcon:
+                        sh.DrawFlower(wxRect(contentBoundingBox.GetTopLeft() +
+                                             wxPoint(iconMiddleX, middleOfCurrentRow),
+                                             wxSize(1, 1)).Inflate(iconRadius),
+                            dc);
+                        break;
+                    case IconShape::FallLeafIcon:
+                        sh.DrawFallLeaf(wxRect(contentBoundingBox.GetTopLeft() +
+                                               wxPoint(iconMiddleX, middleOfCurrentRow),
+                                               wxSize(1, 1)).Inflate(iconRadius),
+                            dc);
                         break;
                     case IconShape::LocationMarker:
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +

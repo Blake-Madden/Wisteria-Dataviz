@@ -489,6 +489,12 @@ namespace Wisteria::GraphItems
                 case IconShape::SunIcon:
                         sh.DrawSun(boundingBox, dc);
                         break;
+                case IconShape::FlowerIcon:
+                        sh.DrawFlower(boundingBox, dc);
+                        break;
+                case IconShape::FallLeafIcon:
+                        sh.DrawFallLeaf(boundingBox, dc);
+                        break;
                 case IconShape::LocationMarker:
                     // pin
                         {
