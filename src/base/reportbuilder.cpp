@@ -28,7 +28,11 @@ namespace Wisteria
             { return reportPages; }
         const auto json = wxSimpleJSON::LoadFile(m_configFilePath);
         if (!json->IsOk())
-            { return reportPages; }
+            {
+            wxMessageBox(json->GetLastError(),
+                         _(L"Configuration File Parsing Error"), wxOK|wxICON_WARNING|wxCENTRE);
+            return reportPages;
+            }
 
         const auto reportNameNode = json->GetProperty(L"name");
         if (reportNameNode->IsOk())
