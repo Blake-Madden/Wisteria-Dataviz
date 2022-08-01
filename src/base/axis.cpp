@@ -696,8 +696,9 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Axis::CopySettings(const Axis& that)
         {
-        // note that we won't copy over the brackets, title, footer, or header; these are not technically part of the axis
-        // (they're an add on), and client may not want that to be copied from axis to axis
+        // note that we won't copy over the brackets, title, footer, or header;
+        // these are not technically part of the axis (they're an add on),
+        // and client may not want that to be copied from axis to axis
         m_axisLabels = that.m_axisLabels;
         m_customAxisLabels = that.m_customAxisLabels;
 
@@ -814,9 +815,17 @@ namespace Wisteria::GraphItems
     void Axis::CalcLabelPositions() noexcept
         {
         if (IsVertical())
-            { SetLabelPhysicalOffset(safe_divide<double>(std::abs(GetBottomPoint().y-GetTopPoint().y), (GetAxisPointsCount()-1))); }
+            {
+            SetLabelPhysicalOffset(
+                safe_divide<double>(std::abs(GetBottomPoint().y-GetTopPoint().y),
+                                             (GetAxisPointsCount()-1)));
+            }
         else if (IsHorizontal())
-            { SetLabelPhysicalOffset(safe_divide<double>(std::abs(GetRightPoint().x-GetLeftPoint().x), (GetAxisPointsCount()-1))); }
+            {
+            SetLabelPhysicalOffset(
+                safe_divide<double>(std::abs(GetRightPoint().x-GetLeftPoint().x),
+                                             (GetAxisPointsCount()-1)));
+            }
         }
 
     //---------------------------------------------------------------
@@ -837,9 +846,10 @@ namespace Wisteria::GraphItems
             else
                 { axisPen.SetWidth(ScaleToScreenAndCanvas(GetAxisLinePen().GetWidth())); }
             }
-        wxPen tickMarkPen(axisPen);
+        const wxPen tickMarkPen(axisPen);
 
-        if (GetAxisType() == AxisType::LeftYAxis && GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
+        if (GetAxisType() == AxisType::LeftYAxis &&
+            GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
@@ -850,17 +860,21 @@ namespace Wisteria::GraphItems
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                        (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
+                    dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
                         GetTopPoint().x, tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                    dc.DrawLine(GetTopPoint().x - ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
+                        (GetTopPoint().x + ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 }
             // custom tick marks
@@ -871,21 +885,26 @@ namespace Wisteria::GraphItems
                 if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
+                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
                         GetTopPoint().x, tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
-                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                    dc.DrawLine(GetTopPoint().x-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
+                        (GetTopPoint().x+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 }
             }
-        else if (GetAxisType() == AxisType::RightYAxis && GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
+        else if (GetAxisType() == AxisType::RightYAxis &&
+                 GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
@@ -896,17 +915,21 @@ namespace Wisteria::GraphItems
                 if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Outer)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
+                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
                         (GetTopPoint().x), tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->GetTickMarkDisplay() == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
+                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 }
             // custom tick marks
@@ -917,21 +940,26 @@ namespace Wisteria::GraphItems
                 if (tickIter->m_displayType == TickMark::DisplayType::Inner)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                        ((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Outer)
                     {
                     dc.DrawLine(GetTopPoint().x, tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 else if (tickIter->m_displayType == TickMark::DisplayType::Crossed)
                     {
-                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength), tickIter->m_physicalCoordinate,
-                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)), tickIter->m_physicalCoordinate);
+                    dc.DrawLine((GetTopPoint().x)-ScaleToScreenAndCanvas(tickIter->m_lineLength),
+                        tickIter->m_physicalCoordinate,
+                        ((GetTopPoint().x)+ScaleToScreenAndCanvas(tickIter->m_lineLength)),
+                        tickIter->m_physicalCoordinate);
                     }
                 }
             }
-        else if (GetAxisType() == AxisType::BottomXAxis && GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
+        else if (GetAxisType() == AxisType::BottomXAxis &&
+                 GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
@@ -992,7 +1020,8 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
-        else if (GetAxisType() == AxisType::TopXAxis && GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
+        else if (GetAxisType() == AxisType::TopXAxis &&
+                 GetTickMarkDisplay() != TickMark::DisplayType::NoDisplay)
             {
             wxDCPenChanger dcPenCh(dc, tickMarkPen);
             // regular tick marks
@@ -1291,7 +1320,7 @@ namespace Wisteria::GraphItems
                 connectionXDoubleSided += (labelWidth + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
-                wxCoord position1(0), position2(0), position3(0);
+                wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
@@ -1301,21 +1330,21 @@ namespace Wisteria::GraphItems
                         if (bracket.IsSingleLine())
                             {
                             bracket.DrawConnectionLine(dc,
-                                                       // bracket needs to know what the scaling is, so this is how we do it
-                                                       ScaleToScreenAndCanvas(1),
-                                                       wxPoint(connectionX, position1),
-                                                       wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                // bracket needs to know what the scaling is, so this is how we do it
+                                ScaleToScreenAndCanvas(1),
+                                wxPoint(connectionX, position1),
+                                wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             }
                         else
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionX, position1),
-                                                            wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                wxPoint(connectionX, position1),
+                                wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             dc.DrawLine(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
                                         connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionX, position3),
-                                                            wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                wxPoint(connectionX, position3),
+                                wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
                             }
                         }
 
@@ -1375,7 +1404,7 @@ namespace Wisteria::GraphItems
                 connectionXDoubleSided -= (labelWidth + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
-                wxCoord position1(0), position2(0), position3(0);
+                wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
@@ -1457,7 +1486,7 @@ namespace Wisteria::GraphItems
                 connectionYDoubleSided -= (labelHeight + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*spaceAreasNeeded));
 
-                wxCoord position1(0), position2(0), position3(0);
+                wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
@@ -1540,7 +1569,7 @@ namespace Wisteria::GraphItems
                 connectionYDoubleSided += (labelHeight + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
 
-                wxCoord position1(0), position2(0), position3(0);
+                wxCoord position1{ 0 }, position2{ 0 }, position3{ 0 };
                 if (GetPhysicalCoordinate(bracket.GetStartPosition(), position1) &&
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
@@ -1650,7 +1679,7 @@ namespace Wisteria::GraphItems
                         const wxSize labelSize = axisLabel.GetBoundingBox(dc).GetSize();
                         const wxCoord axisTextWidth = labelSize.GetWidth();
                         const wxCoord axisTextHeight = labelSize.GetHeight();
-                        wxCoord x(0), y(0);
+                        wxCoord x{ 0 }, y{ 0 };
                         // y will be the same for left and right Y axes
                         y = (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::AlignWithBoundary && !IsStackingLabels()) ?
                                 static_cast<wxCoord>(axisPtIter->GetPhysicalCoordinate())-safe_divide(axisTextHeight,2) :
@@ -1933,8 +1962,7 @@ namespace Wisteria::GraphItems
                         const wxCoord axisTextWidth = labelSize.GetHeight();
                         const wxCoord axisTextHeight = labelSize.GetWidth();
 
-                        long x(0);
-                        long y(0);
+                        long x{ 0 }, y{ 0 };
                         if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::AlignWithBoundary &&
                             !IsStackingLabels())
                             {
@@ -2131,8 +2159,9 @@ namespace Wisteria::GraphItems
         {
         wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
         wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
-        const size_t plotSize = IsVertical() ?
-            std::abs(GetTopPoint().y - GetBottomPoint().y) : std::abs(GetBottomPoint().x - GetTopPoint().x);
+        const auto plotSize = IsVertical() ?
+            std::abs(GetTopPoint().y - GetBottomPoint().y) :
+            std::abs(GetBottomPoint().x - GetTopPoint().x);
 
         long displayedLabelsCount{ 0 };
         for (const auto& axisPt : GetAxisPoints())
@@ -2141,8 +2170,10 @@ namespace Wisteria::GraphItems
                 { ++displayedLabelsCount; }
             }
         if (displayedLabelsCount > 2 && GetAxisPoints().size() > 2 && IsShowingOuterLabels() &&
-            GetAxisPoints().begin()->IsShown() && GetDisplayableValue(*GetAxisPoints().begin()).GetText().length() &&
-            (GetAxisPoints().end()-1)->IsShown() && GetDisplayableValue(*(GetAxisPoints().end()-1)).GetText().length())
+            GetAxisPoints().begin()->IsShown() &&
+            GetDisplayableValue(*GetAxisPoints().begin()).GetText().length() &&
+            (GetAxisPoints().end()-1)->IsShown() &&
+            GetDisplayableValue(*(GetAxisPoints().end()-1)).GetText().length())
             { --displayedLabelsCount; }
 
         m_maxLabelWidth = safe_divide<wxCoord>(plotSize, displayedLabelsCount)-ScaleToScreenAndCanvas(2);
@@ -2155,14 +2186,16 @@ namespace Wisteria::GraphItems
     double Axis::CalcBestScalingToFitLabels(wxDC& dc)
         {
         // no labels?
-        if (GetAxisPointsCount() == 0)
+        if (GetAxisPointsCount() == 0 ||
+            GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
             { return GetScaling(); }
 
         wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
         wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
 
-        // If the biggest label is bigger than the width of the graph divided by the number of displayed labels,
-        // then suggest a lower font-size scaling  (also account for a little extra padding around the labels)
+        // If the biggest label is bigger than the width of the graph divided
+        // by the number of displayed labels, then suggest a lower font-size scaling
+        // (also account for a little extra padding around the labels)
         CalcMaxLabelWidth();
 
         if (m_maxLabelWidth <= 0)
@@ -2216,12 +2249,16 @@ namespace Wisteria::GraphItems
         wxASSERT_LEVEL_2(GetTopPoint().IsFullySpecified());
         wxASSERT_LEVEL_2(GetBottomPoint().IsFullySpecified());
 
+        // nothing to stack if not showing labels
+        if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
+            { return false; }
+
         // if we aren't auto stacking, then just return the stacking
         // method that the client specified earlier
         if (!IsAutoStackingEnabled())
             { return IsStackingLabels(); }
 
-        const size_t axisWidth = IsVertical() ?
+        const auto axisWidth = IsVertical() ?
             std::abs(GetTopPoint().y-GetBottomPoint().y) :
             std::abs(GetBottomPoint().x-GetTopPoint().x);
 
@@ -3054,7 +3091,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxCoord Axis::CalcBracketsWidth(wxDC& dc) const
         {
-        wxCoord spacing(0);
+        wxCoord spacing{ 0 };
         for (const auto& bracket : GetBrackets())
             {
             spacing = std::max(bracket.CalcWidth(dc, GetDPIScaleFactor()), spacing);
