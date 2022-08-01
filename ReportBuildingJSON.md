@@ -14,6 +14,12 @@ The following details the available options for JSON configuration files.
 
 # Root-level Items
 - @c "name": contains a string value, representing the name of the report.
+- @c "print": properties related to printer settings.\n
+  Available options are:
+  - @c "orientation": string specifying the print orientation.
+    Available options are:
+    - @c "landscape" or @c "horizontal"
+    - @c "portrait" or @c "vertical"
 
 ## Datasources {#datasources-properties}
 Properties for the @c "datasources" node:
@@ -87,13 +93,6 @@ Properties for the @c "values" node:
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
 The @c "pages" node will contain an array of definitions for all pages, each containing the following:
 - @c "name": contains a string value, representing the name of the page.
-- @c "print": properties related to printer settings.\n
-  Note that the print settings from the first page in the report will be used for the remaining pages.\n
-  Available options are:
-  - @c "orientation": string specifying the print orientation.
-    Available options are:
-    - @c "landscape" or @c "horizontal"
-    - @c "portrait" or @c "vertical"
 - @c "rows": an array of rows, each containing items to draw on the page (layed out horizontally).\n
   - @c "items": An array of items in the current row.
     - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
@@ -160,7 +159,7 @@ Properties for @c "categorical-bar-chart" nodes:
 ## Common Axis {#common-axis-properties}
 Properties for @c "common-axis" nodes:
 - All properties available to [axis](#axis-properties) nodes are included.\n
-  Note that for @c "axis-type", common axes only support @c "bottom-x" and @c "right-y".
+  Note that @c "axis-type" will specify where to place the common axis.
 - @c "child-ids": a numeric array of IDs of the graphs that this common axis will manage.\n
      IDs are assigned to graphs using the @c "id" property, which should be numeric.
 - @c "common-perpendicular-axis": if @c "axis-type" is @c "bottom-x" and this is @c true,

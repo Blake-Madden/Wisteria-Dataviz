@@ -38,6 +38,20 @@ namespace Wisteria
         if (reportNameNode->IsOk())
             { m_name = reportNameNode->GetValueString(); }
 
+        // print settings
+        wxPrintData reportPrintSettings;
+        const auto printNode = json->GetProperty(L"print");
+        if (printNode->IsOk())
+            {
+            const auto orientation = printNode->GetProperty(L"orientation")->GetValueString();
+            if (orientation.CmpNoCase(L"horizontal") == 0 ||
+                orientation.CmpNoCase(L"landscape") == 0)
+                { reportPrintSettings.SetOrientation(wxPrintOrientation::wxLANDSCAPE); }
+            else if (orientation.CmpNoCase(L"vertical") == 0 ||
+                orientation.CmpNoCase(L"portrait") == 0)
+                { reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT); }
+            }
+
         const auto datasourcesNode = json->GetProperty(L"datasources");
         try
             { LoadDatasources(datasourcesNode); }
@@ -70,18 +84,8 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
-                    // print settings
-                    const auto printNode = page->GetProperty(L"print");
-                    if (printNode->IsOk())
-                        {
-                        const auto orientation = printNode->GetProperty(L"orientation")->GetValueString();
-                        if (orientation.CmpNoCase(L"horizontal") == 0 ||
-                            orientation.CmpNoCase(L"landscape") == 0)
-                            { canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE); }
-                        else if (orientation.CmpNoCase(L"vertical") == 0 ||
-                            orientation.CmpNoCase(L"portrait") == 0)
-                            { canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxPORTRAIT); }
-                        }
+                    // copy print settings from report
+                    canvas->GetPrinterSettings().SetOrientation(reportPrintSettings.GetOrientation());
 
                     size_t rowCount{ 0 };
                     const auto rowsProperty = page->GetProperty(L"rows");
