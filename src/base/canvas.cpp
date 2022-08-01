@@ -1136,14 +1136,14 @@ namespace Wisteria
                 {
                 GetFixedObjects().at(row).at(0)->SetCanvasWidthProportion(1.0);
                 }
-            // resize all (or just non-fixed) objects to fit
+            // resize all (or just non-fixed width) objects to fit
             else
                 {
                 for (size_t item = 0; item < GetFixedObjects().at(row).size(); ++item)
                     {
                     auto& currentItem = GetFixedObjects().at(row).at(item);
                     if (currentItem != nullptr &&
-                        // if all object are width fixed, then adjust all of them;
+                        // if all object are fixed width, then adjust all of them;
                         // otherwise, just adjust non-fixed ones
                         (!currentItem->IsFittingContentWidthToCanvas() ||
                           nonFixedObjects == 0))

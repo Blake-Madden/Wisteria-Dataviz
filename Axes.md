@@ -255,6 +255,6 @@ turn off the graph's axis labels. Finally, it will return a new axis that can be
 canvas->SetFixedObject(0, 2,
     // construct a common axis connected to the line and box plots,
     // and add it to the right of them on the canvas
-    CommonAxisBuilder::BuildRightAxis(canvas,
-        { linePlot, boxPlot }));
+    CommonAxisBuilder::BuildYAxis(canvas,
+        { linePlot, boxPlot }, AxisType::RightYAxis));
 ```

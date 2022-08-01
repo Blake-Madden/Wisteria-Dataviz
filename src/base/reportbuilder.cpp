@@ -189,12 +189,13 @@ namespace Wisteria
                                     }
                                 if (childGraphs.size() > 1)
                                     {
-                                    auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis) ?
-                                        CommonAxisBuilder::BuildBottomAxis(canvas,
-                                            childGraphs,
+                                    auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis ||
+                                                       commonAxisInfo.m_axisType == AxisType::TopXAxis) ?
+                                        CommonAxisBuilder::BuildXAxis(canvas,
+                                            childGraphs, commonAxisInfo.m_axisType,
                                             commonAxisInfo.m_commonPerpendicularAxis) :
-                                        CommonAxisBuilder::BuildRightAxis(canvas,
-                                            childGraphs);
+                                        CommonAxisBuilder::BuildYAxis(canvas,
+                                            childGraphs, commonAxisInfo.m_axisType);
                                     LoadAxis(commonAxisInfo.m_node, *commonAxis);
                                     LoadItem(commonAxisInfo.m_node, commonAxis);
                                     // force the row to its height and no more

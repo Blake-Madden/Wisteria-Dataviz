@@ -1714,8 +1714,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 2,
             // construct a common axis connected to the line and box plots,
             // and add it to the righ of them on the canvas
-            CommonAxisBuilder::BuildRightAxis(subframe->m_canvas,
-                { linePlot, boxPlot}));
+            CommonAxisBuilder::BuildYAxis(subframe->m_canvas,
+                { linePlot, boxPlot}, AxisType::RightYAxis));
 
         // add a centered title and subtitle on the canvas
         // (above the plots)

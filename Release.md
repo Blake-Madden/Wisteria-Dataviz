@@ -3,6 +3,8 @@ Wisteria Dataviz 0.9.1 Release
 
 - WARNING: icon classes and schemes have been moved into @c Wisteria::Icons and @c Wisteria::Icons::Schemes
   namespaces, respectively.
+- WARNING: the common axis functions have been renamed to @c CommonAxisBuilder::BuildYAxis and
+  @c CommonAxisBuilder::BuildXAxis
 - Added Linear Regression Roadmap
 - Added Pros & Cons Roadmap
 - Added Table (i.e., presentation of tabular data, with aggregation and annotation support)
