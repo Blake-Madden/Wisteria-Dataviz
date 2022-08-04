@@ -636,7 +636,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             Pen(*wxLIGHT_GREY).
             FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
-        linePlot->AddEmbeddedObject(note,
+        linePlot->AddAnnotation(note,
             // top corner of note
             wxPoint(3, 38),
             // the suspect data point to make the note point to
@@ -1427,7 +1427,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         storyNote->GetFont().MakeSmaller();
         storyNote->SplitTextToFitLength(25);
 
-        WCurve->AddEmbeddedObject(storyNote,
+        WCurve->AddAnnotation(storyNote,
             wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));*/
 
         // add the line plot and its legend to the canvas
@@ -1692,7 +1692,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 IncludeHeader(false).
                 PlacementHint(LegendCanvasPlacementHint::EmbeddedOnGraph));
         lineLegend->SetAnchoring(Anchoring::BottomRightCorner);
-        linePlot->AddEmbeddedObject(lineLegend,
+        linePlot->AddAnnotation(lineLegend,
             wxPoint(linePlot->GetBottomXAxis().GetRange().second,
                     linePlot->GetLeftYAxis().GetRange().first));
 

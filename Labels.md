@@ -157,7 +157,7 @@ to make the label fit.
 Adding an Annotation
 =============================
 
-A label can be added to a plot to act as an annotation. This can be done via `Graph2D::AddEmbeddedObject()`, where
+A label can be added to a plot to act as an annotation. This can be done via `Graph2D::AddAnnotation()`, where
 the label will be anchored by the provided data point. (The label's anchoring value will determine how the anchor
 point is used). In the following example, a note will be added at the
 intersection of 3 (the X axis value) and 59 (the Y axis values):
@@ -168,7 +168,7 @@ auto note = std::make_shared<Label>(
     Pen(*wxLIGHT_GREY).
     FontBackgroundColor(ColorBrewer::GetColor(Color::AntiqueWhite)).
     Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
-linePlot->AddEmbeddedObject(note,
+linePlot->AddAnnotation(note,
     // top corner of note
     wxPoint(3, 38));
 ```
@@ -176,7 +176,7 @@ linePlot->AddEmbeddedObject(note,
 Optionally, a line from the note can also be drawn to a specific data point:
 
 ```cpp
-linePlot->AddEmbeddedObject(note,
+linePlot->AddAnnotation(note,
     // top corner of note
     wxPoint(3, 38),
     // the suspect data point to make the note point to

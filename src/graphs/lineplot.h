@@ -107,10 +107,10 @@ namespace Wisteria::Graphs
             GraphItemInfo(_(L"What happened this week?\nAre we sure this is correct???")).
             Pen(*wxLIGHT_GREY).FontBackgroundColor(*wxWHITE).
             Anchoring(Anchoring::TopRightCorner).Padding(4, 4, 4, 4));
-         linePlot->AddEmbeddedObject(note,
+         linePlot->AddAnnotation(note,
             // top corner of note
             wxPoint(3, 38),
-            // the suspect data point to make to note point to
+            // the suspect data point to make the note point to
             wxPoint(4, 59));
 
          // add some titles
@@ -395,7 +395,7 @@ namespace Wisteria::Graphs
             }
         /// @brief Returns the value at @c index of the X column.
         /// @param index The row in the X column to retrieve.
-        /// @returns The vale of the given row in the X column.\n
+        /// @returns The value of the given row in the X column.\n
         ///     Note that this value may be NaN if invalid.
         [[nodiscard]] double GetXValue(const size_t index) const
             {
@@ -422,7 +422,8 @@ namespace Wisteria::Graphs
             @returns The X column's min and max dates, which can be @c wxInvalidDateTime if invalid.*/
         [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetXMinMaxDates() const
             {
-            wxASSERT_MSG(IsXDates(), L"GetXMinMaxDates() should only be called if X axis is date based!");
+            wxASSERT_MSG(IsXDates(),
+                         L"GetXMinMaxDates() should only be called if X axis is date based!");
             const auto [fullXDataMin, fullXDataMax] = std::minmax_element(
                     m_xColumnDate->GetValues().cbegin(),
                     m_xColumnDate->GetValues().cend());

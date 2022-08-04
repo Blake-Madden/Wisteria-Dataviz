@@ -88,7 +88,7 @@ namespace Wisteria::Graphs
         /// @private
         Graph2D& operator=(Graph2D&&) = delete;
 
-        /** @brief Embeds an object onto the plot.
+        /** @brief Embeds an annotation object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
             @param pt The X and Y coordinates of the object. These coordinates are relative to the
                 plot's X and Y axes, not physical coordinates on the canvas.\n
@@ -101,9 +101,9 @@ namespace Wisteria::Graphs
                 For example, this can draw a line from a data point to an annotation.
             @note This is intended as a way for the client to add a custom object on top of the plot.
                 An example would be inserting a @c Label as a sticky note.*/
-        void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
-                               const wxPoint pt,
-                               const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
+        void AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object,
+                           const wxPoint pt,
+                           const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
             {
             if (object != nullptr)
                 {
@@ -348,6 +348,11 @@ namespace Wisteria::Graphs
         /// @private
         [[nodiscard]] const Wisteria::Canvas* GetCanvas() const noexcept
             { return m_parentCanvas; }
+        [[deprecated("Use AddAnnotation() instead.")]]
+        void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
+            const wxPoint pt,
+            const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
+            { AddAnnotation(object, pt, interestPts); }
     protected:
         /// @returns The image drawn across all bars/boxes.
         [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
@@ -465,11 +470,34 @@ namespace Wisteria::Graphs
         void SetCanvas(Wisteria::Canvas* canvas) noexcept
             { m_parentCanvas = canvas; }
 
-        struct EmbeddedObject
+        /// @private
+        class EmbeddedObject
             {
+        public:
+            EmbeddedObject(const std::shared_ptr<GraphItems::GraphItemBase>& object,
+                wxPoint anchorPt, const std::vector<wxPoint>& interestPts) :
+                m_object(object), m_anchorPt(anchorPt), m_interestPts(interestPts),
+                m_originalScaling(object->GetScaling())
+                {}
+
+            [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase>&
+                GetObject() noexcept
+                { return m_object; }
+            [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>&
+                GetObject() const noexcept
+                { return m_object; }
+            [[nodiscard]] wxPoint GetAnchorPoint() const noexcept
+                { return m_anchorPt; }
+            [[nodiscard]] double GetOriginalScaling() const noexcept
+                { return m_originalScaling; }
+            [[nodiscard]] const std::vector<wxPoint>&
+                GetInterestPoints() const noexcept
+                { return m_interestPts; }
+        private:
             std::shared_ptr<GraphItems::GraphItemBase> m_object;
             wxPoint m_anchorPt;
             std::vector<wxPoint> m_interestPts;
+            double m_originalScaling{ 1.0 };
             };
 
         /** @brief Moves the points by the specified x and y values.
@@ -481,8 +509,8 @@ namespace Wisteria::Graphs
                 { object->Offset(xToMove,yToMove); }
             for (auto& object : m_embeddedObjects)
                 {
-                if (object.m_object != nullptr)
-                    { object.m_object->Offset(xToMove,yToMove); }
+                if (object.GetObject() != nullptr)
+                    { object.GetObject()->Offset(xToMove,yToMove); }
                 }
             m_rect.Offset(wxPoint(xToMove, yToMove));
             m_plotRect.Offset(wxPoint(xToMove, yToMove));
@@ -504,9 +532,9 @@ namespace Wisteria::Graphs
                 }
             for (auto& object : m_embeddedObjects)
                 {
-                if (object.m_object != nullptr &&
-                    object.m_object->IsSelected())
-                    { object.m_object->SetSelected(false); }
+                if (object.GetObject() != nullptr &&
+                    object.GetObject()->IsSelected())
+                    { object.GetObject()->SetSelected(false); }
                 }
             }
         /** @brief Sets whether the plot is selected.
@@ -517,7 +545,10 @@ namespace Wisteria::Graphs
             if (m_lastHitPointIndex < m_plotObjects.size())
                 { m_plotObjects.at(m_lastHitPointIndex)->SetSelected(selected); }
             if (m_lastHitPointEmbeddedObjectIndex < m_embeddedObjects.size())
-                { m_embeddedObjects.at(m_lastHitPointEmbeddedObjectIndex).m_object->SetSelected(selected); }
+                {
+                m_embeddedObjects.at(m_lastHitPointEmbeddedObjectIndex).
+                    GetObject()->SetSelected(selected);
+                }
             }
         /** @returns @c true if @c pt is inside of plot area.
             @param pt The point to see that is in the plot.*/

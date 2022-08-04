@@ -96,8 +96,8 @@ namespace Wisteria::Graphs
          storyNote->GetFont().MakeSmaller();
          storyNote->SplitTextToFitLength(25);
 
-         WCurve->AddEmbeddedObject(storyNote,
-                                   wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));
+         WCurve->AddAnnotation(storyNote,
+                               wxPoint(1, WCurve->GetLeftYAxis().GetRange().first));
 
          // add the plot and its legend to the canvas
          canvas->SetFixedObject(0, 0, WCurve);

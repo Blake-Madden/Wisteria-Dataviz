@@ -176,8 +176,8 @@ namespace Wisteria::Graphs
             { object->SetDPIScaleFactor(scaling); }
         for (auto& object : m_embeddedObjects)
             {
-            if (object.m_object != nullptr)
-                { object.m_object->SetDPIScaleFactor(scaling); }
+            if (object.GetObject() != nullptr)
+                { object.GetObject()->SetDPIScaleFactor(scaling); }
             }
         }
 
@@ -222,7 +222,7 @@ namespace Wisteria::Graphs
         for (const auto& object : m_plotObjects)
             { object->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox()); }
         for (const auto& object : m_embeddedObjects)
-            { object.m_object->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox()); }
+            { object.GetObject()->DrawSelectionLabel(dc, GetScaling(), GetPlotAreaBoundingBox()); }
         }
 
     //----------------------------------------------------------------
@@ -695,9 +695,9 @@ namespace Wisteria::Graphs
             {
             wxCoord axisCoord1{ 0 }, axisCoord2{ 0 };
             auto dividerLine1 = std::make_shared<GraphItems::Lines>(
-                wxPen(refArea.m_lineColor, 2, refArea.m_linePenStyle), GetScaling());
+                wxPen(refArea.m_lineColor, 1, refArea.m_linePenStyle), GetScaling());
             auto dividerLine2 = std::make_shared<GraphItems::Lines>(
-                wxPen(refArea.m_lineColor, 2, refArea.m_linePenStyle), GetScaling());
+                wxPen(refArea.m_lineColor, 1, refArea.m_linePenStyle), GetScaling());
             if (refArea.m_axisType == AxisType::LeftYAxis ||
                 refArea.m_axisType == AxisType::RightYAxis)
                 {
@@ -767,11 +767,13 @@ namespace Wisteria::Graphs
         // embed client object once the axes's physical coordinates have been recalculated
         for (auto& object : m_embeddedObjects)
             {
-            wxCoord x{0}, y{0};
-            if (GetBottomXAxis().GetPhysicalCoordinate(object.m_anchorPt.x, x) &&
-                GetLeftYAxis().GetPhysicalCoordinate(object.m_anchorPt.y, y))
-                { object.m_object->SetAnchorPoint({x,y}); }
-            object.m_object->SetScaling(GetScaling());
+            wxCoord x{ 0 }, y{ 0 };
+            if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().x, x) &&
+                GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().y, y))
+                { object.GetObject()->SetAnchorPoint({x,y}); }
+            // client may have used a custom scaling for the annotation,
+            // so maintain that ratio
+            object.GetObject()->SetScaling(GetScaling() * object.GetOriginalScaling());
             }
         }
 
@@ -783,22 +785,22 @@ namespace Wisteria::Graphs
             { object->Draw(dc); }
         for (const auto& object : m_embeddedObjects)
             {
-            for (const auto& interestPoint : object.m_interestPts)
+            for (const auto& interestPoint : object.GetInterestPoints())
                 {
                 wxPoint anchorPt, interestPt;
-                if (GetBottomXAxis().GetPhysicalCoordinate(object.m_anchorPt.x, anchorPt.x) &&
-                    GetLeftYAxis().GetPhysicalCoordinate(object.m_anchorPt.y, anchorPt.y) &&
+                if (GetBottomXAxis().GetPhysicalCoordinate(object.GetAnchorPoint().x, anchorPt.x) &&
+                    GetLeftYAxis().GetPhysicalCoordinate(object.GetAnchorPoint().y, anchorPt.y) &&
                     GetBottomXAxis().GetPhysicalCoordinate(interestPoint.x, interestPt.x) &&
                     GetLeftYAxis().GetPhysicalCoordinate(interestPoint.y, interestPt.y))
                     {
-                    Lines ln(wxPen(*wxBLACK, 2, wxPenStyle::wxPENSTYLE_SHORT_DASH), GetScaling());
+                    Lines ln(wxPen(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SHORT_DASH), GetScaling());
                     ln.AddLine(anchorPt, interestPt);
                     ln.SetLineStyle(LineStyle::Arrows);
                     ln.SetDPIScaleFactor(GetDPIScaleFactor());
                     ln.Draw(dc);
                     }
                 }
-            object.m_object->Draw(dc);
+            object.GetObject()->Draw(dc);
             }
         // draw the outline
         if (IsSelected())
@@ -920,8 +922,8 @@ namespace Wisteria::Graphs
                 }
             for (auto& plotObject : m_embeddedObjects)
                 {
-                plotObject.m_object->GetSelectedIds().clear();
-                plotObject.m_object->SetSelected(false);
+                plotObject.GetObject()->GetSelectedIds().clear();
+                plotObject.GetObject()->SetSelected(false);
                 }
             }
         // items are added to a plot FILO (i.e., painter's algorithm),
@@ -933,9 +935,9 @@ namespace Wisteria::Graphs
              plotObject != m_embeddedObjects.rend();
              ++plotObject)
             {
-            if ((*plotObject).m_object->IsSelectable() && (*plotObject).m_object->HitTest(pt, dc))
+            if ((*plotObject).GetObject()->IsSelectable() && (*plotObject).GetObject()->HitTest(pt, dc))
                 {
-                (*plotObject).m_object->SetSelected(!(*plotObject).m_object->IsSelected());
+                (*plotObject).GetObject()->SetSelected(!(*plotObject).GetObject()->IsSelected());
                 return true;
                 }
             }

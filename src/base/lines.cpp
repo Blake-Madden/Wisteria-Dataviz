@@ -36,7 +36,7 @@ namespace Wisteria::GraphItems
             if (GetLineStyle() == LineStyle::Arrows)
                 {
                 Polygon::DrawArrow(dc, line.first, line.second,
-                    wxSize(ScaleToScreenAndCanvas(10), ScaleToScreenAndCanvas(10)));
+                    wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                 }
             else // Lines or Spline
                 { dc.DrawLine(line.first, line.second); }
