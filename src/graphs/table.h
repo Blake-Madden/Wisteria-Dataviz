@@ -383,31 +383,14 @@ namespace Wisteria::Graphs
                 @param alignment How to align the content.*/
             void SetPageHorizontalAlignment(const PageHorizontalAlignment alignment) noexcept
                 { m_horizontalCellAlignment = alignment; }
+            /** @brief Sets how to align the textual content of the cell (if multi-line).
+                @param alignment How to align the content.*/
+            void SetTextAlignment(const TextAlignment alignment) noexcept
+                { m_textAlignment = alignment; }
 
             /// @brief Sets the display format of the cell.
             /// @param cellFormat The format settings to apply.
-            void SetFormat(const CellFormat cellFormat) noexcept
-                {
-                m_valueFormat = cellFormat;
-                if (m_valueFormat == CellFormat::General)
-                    {
-                    m_precision = 0;
-                    m_prefix.clear();
-                    m_horizontalCellAlignment = std::nullopt;
-                    }
-                else if (m_valueFormat == CellFormat::Percent)
-                    {
-                    m_precision = 0;
-                    m_prefix = L"\x25B2"; // up arrow
-                    m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
-                    }
-                else if (m_valueFormat == CellFormat::Accounting)
-                    {
-                    m_precision = 2;
-                    m_prefix = L"$";
-                    m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
-                    }
-                }
+            void SetFormat(const CellFormat cellFormat) noexcept;
         private:
             /// @brief Returns a double value representing the cell.
             /// @details This is useful for comparing cells (or aggregating them).
@@ -451,6 +434,7 @@ namespace Wisteria::Graphs
             bool m_colorCodePrefix{ false };
 
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
+            std::optional<TextAlignment> m_textAlignment;
             std::optional<size_t> m_suggestedLineLength;
 
             int m_columnCount{ 1 };

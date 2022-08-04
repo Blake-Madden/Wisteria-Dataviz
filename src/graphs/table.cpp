@@ -6,6 +6,30 @@ using namespace Wisteria::Colors;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
+    void Table::TableCell::SetFormat(const CellFormat cellFormat) noexcept
+        {
+        m_valueFormat = cellFormat;
+        if (m_valueFormat == CellFormat::General)
+            {
+            m_precision = 0;
+            m_prefix.clear();
+            m_horizontalCellAlignment = std::nullopt;
+            }
+        else if (m_valueFormat == CellFormat::Percent)
+            {
+            m_precision = 0;
+            m_prefix = L"\x25B2"; // up arrow
+            m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
+            }
+        else if (m_valueFormat == CellFormat::Accounting)
+            {
+            m_precision = 2;
+            m_prefix = L"$";
+            m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
+            }
+        }
+
+    //----------------------------------------------------------------
     wxString Table::TableCell::GetDisplayValue() const
         {
         if (const auto strVal{ std::get_if<wxString>(&m_value) };
@@ -913,8 +937,13 @@ namespace Wisteria::Graphs
                          PageHorizontalAlignment::LeftAligned));
                     }
                 // if centered in cell, then center the text also (if multi-line)
-                if (cellLabel->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+                if (cellLabel->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered &&
+                    !cell.m_textAlignment.has_value())
                     { cellLabel->SetTextAlignment(TextAlignment::Centered); }
+
+                // user-defined text alignment
+                if (cell.m_textAlignment.has_value())
+                    { cellLabel->SetTextAlignment(cell.m_textAlignment.value()); }
 
                 smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
 
@@ -924,6 +953,7 @@ namespace Wisteria::Graphs
                 if (cell.GetPrefix().length())
                     {
                     const wxString prefix = (cell.m_valueFormat == CellFormat::Percent) ?
+                        // down and up arrow emojis
                         (cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
                         cell.GetPrefix();
                     auto cellPrefixLabel = std::make_shared<Label>(
@@ -933,7 +963,8 @@ namespace Wisteria::Graphs
                         Font(cell.m_font).
                         FontColor(
                             (cell.m_bgColor.IsOk() ?
-                                ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) : *wxBLACK)).
+                                ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) :
+                                *wxBLACK)).
                         FontBackgroundColor(wxTransparentColour).
                         Anchoring(Anchoring::TopLeftCorner).
                         AnchorPoint(boxRect.GetLeftTop()));
@@ -941,7 +972,7 @@ namespace Wisteria::Graphs
                         {
                         cellPrefixLabel->SetFontColor(
                             (cell.GetDoubleValue() < 0) ?
-                            *wxRED :
+                            ColorBrewer::GetColor(Colors::Color::Red) :
                             ColorBrewer::GetColor(Colors::Color::HunterGreen));
                         }
                     cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
@@ -1011,7 +1042,8 @@ namespace Wisteria::Graphs
                 // see if the above cell (or a cell above that which is eclipsing it)
                 // is highlighted
                 auto aboveCellHighlighted = (currentRow > 0) ?
-                    GetCell(currentRow-1, currentColumn).IsHighlighted() :
+                    (GetCell(currentRow-1, currentColumn).IsHighlighted() &&
+                     GetCell(currentRow-1, currentColumn).m_showBottomBorder) :
                     false;
                 if (currentRow > 0 && !aboveCellHighlighted)
                     {
@@ -1032,7 +1064,7 @@ namespace Wisteria::Graphs
                     !(currentRow > 0 && !cell.m_showTopBorder &&
                       !GetCell(currentRow - 1, currentColumn).m_showBottomBorder))
                     {
-                    if (cell.IsHighlighted() || aboveCellHighlighted ||
+                    if ((cell.IsHighlighted() && cell.m_showTopBorder) || aboveCellHighlighted ||
                         (parentColumnCell.has_value() && parentColumnCell.value().IsHighlighted()))
                         {
                         highlightedBorderLines->AddLine(
@@ -1060,8 +1092,18 @@ namespace Wisteria::Graphs
                       !GetCell(currentRow, currentColumn - 1).m_showRightBorder))
                     {
                     auto parentCell = GetParentRowWiseCell(currentRow, currentColumn);
-                    if (cell.IsHighlighted() ||
-                        (parentCell.has_value() && parentCell.value().IsHighlighted()))
+                    if (cell.IsHighlighted())
+                        {
+                        if (cell.m_showLeftBorder || isPreviousColumnHighlighted)
+                            {
+                            highlightedBorderLines->AddLine(wxPoint(currentXPos, currentYPos),
+                                wxPoint(currentXPos, currentYPos + rowHeight));
+                            }
+                        isPreviousColumnHighlighted = cell.m_showRightBorder;
+                        }
+                    else if (parentCell.has_value() &&
+                         parentCell.value().IsHighlighted() &&
+                        parentCell.value().m_showRightBorder)
                         {
                         highlightedBorderLines->AddLine(wxPoint(currentXPos, currentYPos),
                             wxPoint(currentXPos, currentYPos + rowHeight));
@@ -1091,8 +1133,8 @@ namespace Wisteria::Graphs
         for (const auto& rowHeight : rowHeights)
             {
             const auto& cell = GetCell(currentRow, GetColumnCount() - 1);
-            auto parentRowCell = GetParentRowWiseCell(currentRow, GetColumnCount() - 1);
-            auto parentColumnCell = GetParentColumnWiseCell(currentRow, GetColumnCount() - 1);
+            const auto& parentRowCell = GetParentRowWiseCell(currentRow, GetColumnCount() - 1);
+            const auto& parentColumnCell = GetParentColumnWiseCell(currentRow, GetColumnCount() - 1);
             if (cell.m_showRightBorder)
                 {
                 if (cell.IsHighlighted() ||
@@ -1118,11 +1160,12 @@ namespace Wisteria::Graphs
         for (const auto& colWidth : columnWidths)
             {
             const auto& cell = GetCell(GetRowCount()-1, currentColumn);
-            auto parentColumnCell = GetParentColumnWiseCell(GetRowCount() - 1, currentColumn);
+            const auto& parentColumnCell = GetParentColumnWiseCell(GetRowCount() - 1, currentColumn);
             if (cell.m_showBottomBorder)
                 {
                 if (cell.IsHighlighted() ||
-                    (parentColumnCell.has_value() && parentColumnCell.value().IsHighlighted()))
+                    (parentColumnCell.has_value() &&
+                     parentColumnCell.value().IsHighlighted()))
                     {
                     highlightedBorderLines->AddLine(
                         wxPoint(currentXPos, drawArea.GetY() + tableHeight),
