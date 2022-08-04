@@ -1585,13 +1585,13 @@ namespace Wisteria::GraphItems
                         else
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(position1, connectionY),
-                                                            wxPoint(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                wxPoint(position1, connectionY),
+                                wxPoint(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                             dc.DrawLine(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                         position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(position3, connectionY),
-                                                            wxPoint(position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                wxPoint(position3, connectionY),
+                                wxPoint(position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                             }
                         }
 

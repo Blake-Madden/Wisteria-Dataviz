@@ -51,7 +51,7 @@ namespace Wisteria::GraphItems
         /// @param linePenStyle The pen style to use for the line.
         ReferenceLine(const AxisType axisType, const double axisPosition,
                       const wxString& label,
-                      const wxColour lineColor = *wxBLACK,
+                      const wxColour lineColor = *wxLIGHT_GREY,
                       const wxPenStyle linePenStyle = wxPenStyle::wxPENSTYLE_LONG_DASH) :
                       m_axisType(axisType), m_axisPosition(axisPosition), m_label(label),
                       m_lineColor(lineColor), m_linePenStyle(linePenStyle),
@@ -74,8 +74,8 @@ namespace Wisteria::GraphItems
     /// @brief Draws two lines across the graph, showing reference values on its parent axis,
     ///     and fills in the area between them with a color. An example of this could be adding
     ///     a recession to a financial plot.
-    /// @details This is used by a Graph2D::AddReferenceArea().
-    class ReferenceArea: public ReferenceLine
+    /// @details This is used by Graph2D::AddReferenceArea().
+    class ReferenceArea : public ReferenceLine
         {
         friend class Wisteria::Graphs::Graph2D;
     public:
@@ -92,7 +92,7 @@ namespace Wisteria::GraphItems
         ReferenceArea(const AxisType axisType,
             const double axisPosition1, const double axisPosition2,
             const wxString& label,
-            const wxColour lineColor = *wxBLACK,
+            const wxColour lineColor = *wxLIGHT_GREY,
             const wxPenStyle linePenStyle = wxPenStyle::wxPENSTYLE_LONG_DASH) :
             ReferenceLine(axisType, axisPosition1, label, lineColor, linePenStyle),
             m_axisPosition2(axisPosition2)
