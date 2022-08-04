@@ -182,6 +182,12 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] static wxColour ConvertColor(wxString colorStr);
+        /// @brief Converts a string value to a TextAlignment enum value.
+        [[nodiscard]] static std::optional<TextAlignment>
+            ConvertTextAlignment(const wxString& value);
+        /// @brief Finds a position on the axis based on the value from a node.
+        [[nodiscard]] std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
+            const wxSimpleJSON::Ptr_t& positionNode) const;
 
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.

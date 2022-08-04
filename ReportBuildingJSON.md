@@ -138,6 +138,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "no-display"
 - @c "brackets": adds brackets to the axis, which included the following properties:
   - @c "datasource": the name of the datasource to read the columns from.
+  - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
   - @c "variables": which include the following properties:
     - @c "label": the labels column.
     - @c "value": the values column. (This can be either a continous, categorical, or date column.)
@@ -332,6 +333,12 @@ The remaining properties are executed in the following order:
     - @c "left-aligned"
     - @c "right-aligned"
     - @c "centered"
+  - @c "text-alignment": how to align the cell's text (if multi-line).\n
+       The available options are:
+    - @c "flush-left" or @c "ragged-right"
+    - @c "flush-right" or @c "ragged-left"
+    - @c "centered"
+    - @c "justified"
 
 # Base-level Properties
 
@@ -371,6 +378,20 @@ Properties common to all graph items:
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
 - @c "axes": an array of [axis](#axis-properties) objects.
+- @c "annotations": text messages that can be added on top of the graph, optionally pointing to positions
+     on the graph. This is an array of annotation definitions, which contain the following properties:
+  - @c "label": the label for the note, , which contains ["label"](#label-properties) properties.
+  - @c "interest-points": The points that the note will point at.\n
+    This is an array of items which contain the following properties:
+    - @c "x": the X axis position of the point.
+    - @c "y": the Y axis position of the point.
+  - @c "anchor": the point to anchor the label.\n
+     Note the the `label`'s @ "anchoring" property will control which part of the label that the
+     anchoring point refers to.\n
+     If not specified, the graph will attempt to place it at the best location.\n
+     This contains the following properties:
+     - @c "x": the X axis position of the point.
+     - @c "y": the Y axis position of the point.
 - @c "reference-lines": an array of reference line definitions, which contain the following properties:
   - @c "axis-type": the axis to add the reference line to.\n
     Available options are:
@@ -452,6 +473,14 @@ Properties common to all items:
 - @c "pen": the item's pen, which includes [pen](#pen-properties) properties
 - @c "scaling": numeric value of how much to scale the object's size. For example, @c 2.0 will double the
      its default size.
+- @c "anchoring": controls the starting point of where the object is drawn.\n
+  This is usually only relative for objects being embedded on a plot (e.g., annotations).\n
+  Available options are:
+  - @c "bottom-left-corner"
+  - @c "bottom-right-corner"
+  - @c "center" (the default)
+  - @c "top-left-corner"
+  - @c "top-right-corner"
 - @c "relative-alignment": how an object is aligned with its parent (e.g., an axis title relative to its axis).\n
   Available options are:
   - @c "flush-left"

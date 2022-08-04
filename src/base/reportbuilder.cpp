@@ -3,6 +3,7 @@
 using namespace Wisteria::Data;
 using namespace Wisteria::Graphs;
 using namespace Wisteria::GraphItems;
+using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;
 using namespace Wisteria::Icons::Schemes;
 
@@ -243,6 +244,25 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<TextAlignment> ReportBuilder::ConvertTextAlignment(const wxString& value)
+        {
+        static const std::map<std::wstring, TextAlignment> textAlignValues =
+            {
+            { L"flushleft", TextAlignment::FlushLeft },
+            { L"flushright", TextAlignment::FlushRight },
+            { L"raggedright", TextAlignment::RaggedRight },
+            { L"raggedleft", TextAlignment::RaggedLeft },
+            { L"centered", TextAlignment::Centered },
+            { L"justified", TextAlignment::Justified }
+            };
+        
+        const auto foundValue = textAlignValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != textAlignValues.cend()) ?
+            std::optional<TextAlignment>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<BinLabelDisplay> ReportBuilder::ConvertBinLabelDisplay(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally
@@ -363,6 +383,8 @@ namespace Wisteria
         const auto bracketsNode = axisNode->GetProperty(L"brackets");
         if (bracketsNode->IsOk())
             {
+            wxPen bracketPen{ *wxBLACK_PEN };
+            LoadPen(bracketsNode->GetProperty(L"pen"), bracketPen);
             const wxString dsName = bracketsNode->GetProperty(L"datasource")->GetValueString();
             const auto foundDataset = m_datasets.find(dsName);
             if (foundDataset == m_datasets.cend() ||
@@ -379,6 +401,11 @@ namespace Wisteria
                 const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
 
                 axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                if (bracketPen.IsOk())
+                    {
+                    for (auto& bracket : axis.GetBrackets())
+                        { bracket.GetLinePen() = bracketPen; }
+                    }
                 }
             else
                 {
@@ -446,17 +473,10 @@ namespace Wisteria
                     }
                 }
 
-            auto textAlignment = labelNode->GetProperty("text-alignment")->GetValueString();
-            if (textAlignment.CmpNoCase(L"flush-left") == 0 ||
-                textAlignment.CmpNoCase(L"ragged-right") == 0)
-                { label->SetTextAlignment(TextAlignment::FlushLeft); }
-            else if (textAlignment.CmpNoCase(L"flush-right") == 0 ||
-                textAlignment.CmpNoCase(L"ragged-left") == 0)
-                { label->SetTextAlignment(TextAlignment::FlushRight); }
-            else if (textAlignment.CmpNoCase(L"centered") == 0)
-                { label->SetTextAlignment(TextAlignment::Centered); }
-            else if (textAlignment.CmpNoCase(L"justified") == 0)
-                { label->SetTextAlignment(TextAlignment::Justified); }
+            const auto textAlignment = ConvertTextAlignment(
+                labelNode->GetProperty("text-alignment")->GetValueString());
+            if (textAlignment.has_value())
+                { label->SetTextAlignment(textAlignment.value()); }
 
             // header info
             auto headerNode = labelNode->GetProperty(L"header");
@@ -480,17 +500,10 @@ namespace Wisteria
                     label->GetHeaderInfo().GetFont().GetFractionalPointSize() *
                     headerNode->GetProperty(L"scaling")->GetValueNumber(1));
 
-                const auto textAlignment = headerNode->GetProperty("text-alignment")->GetValueString();
-                if (textAlignment.CmpNoCase(L"flush-left") == 0 ||
-                    textAlignment.CmpNoCase(L"ragged-right") == 0)
-                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft); }
-                else if (textAlignment.CmpNoCase(L"flush-right") == 0 ||
-                    textAlignment.CmpNoCase(L"ragged-left") == 0)
-                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::FlushRight); }
-                else if (textAlignment.CmpNoCase(L"centered") == 0)
-                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::Centered); }
-                else if (textAlignment.CmpNoCase(L"justified") == 0)
-                    { label->GetHeaderInfo().LabelAlignment(TextAlignment::Justified); }
+                const auto textAlignment = ConvertTextAlignment(
+                    headerNode->GetProperty("text-alignment")->GetValueString());
+                if (textAlignment.has_value())
+                    { label->GetHeaderInfo().LabelAlignment(textAlignment.value()); }
                 }
 
             LoadItem(labelNode, label);
@@ -1257,6 +1270,11 @@ namespace Wisteria
                         { currentCell.ShowBottomBorder(outerBorderToggles[2]); }
                     if (outerBorderToggles.size() >= 4)
                         { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
+
+                    const auto textAlignment = ConvertTextAlignment(
+                        cellUpdate->GetProperty("text-alignment")->GetValueString());
+                    if (textAlignment.has_value())
+                        { currentCell.SetTextAlignment(textAlignment.value()); }
 
                     // horizontal page alignment
                     const auto hPageAlignment =
@@ -2075,8 +2093,23 @@ namespace Wisteria
         if (!itemNode->IsOk())
             { return; }
 
+        static const std::map<std::wstring_view, Anchoring> anchoringValues =
+            {
+            { L"bottom-left-corner", Anchoring::BottomLeftCorner },
+            { L"bottom-right-corner", Anchoring::BottomRightCorner },
+            { L"center", Anchoring::Center },
+            { L"top-left-corner", Anchoring::TopLeftCorner },
+            { L"top-right-corner", Anchoring::TopRightCorner },
+            };
+
         // ID
         item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
+
+        // anchoring
+        auto foundPos = anchoringValues.find(std::wstring_view(
+            itemNode->GetProperty(L"anchoring")->GetValueString().MakeLower().wc_str()));
+        if (foundPos != anchoringValues.cend())
+            { item->SetAnchoring(foundPos->second); }
 
         // child-alignment
         const auto childPlacement = itemNode->GetProperty(L"relative-alignment")->GetValueString();
@@ -2142,6 +2175,40 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<double> ReportBuilder::FindAxisPosition(const GraphItems::Axis& axis,
+        const wxSimpleJSON::Ptr_t& positionNode) const
+        {
+        std::optional<double> axisPos;
+        if (positionNode->IsOk() &&
+            positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+            {
+            // see if it's a date
+            wxDateTime dt;
+            if (dt.ParseDateTime(positionNode->GetValueString()) ||
+                dt.ParseDate(positionNode->GetValueString()))
+                {
+                axisPos = axis.FindDatePosition(dt);
+                // looks like a date, but couldn't be found on the axis,
+                // so just show it as a string
+                if (!axisPos.has_value())
+                    {
+                    axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                    }
+                }
+            else
+                {
+                axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
+                }
+            }
+        else if (positionNode->IsOk() &&
+            positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+            {
+            axisPos = positionNode->GetValueNumber();
+            }
+        return axisPos;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGraph(
                                   const wxSimpleJSON::Ptr_t& graphNode,
                                   Canvas* canvas, size_t& currentRow, size_t& currentColumn,
@@ -2199,6 +2266,73 @@ namespace Wisteria
                 }
             }
 
+        // annotations embedded on the plot
+        const auto annotationNode = graphNode->GetProperty(L"annotations");
+        if (annotationNode->IsOk())
+            {
+            const auto annotations = annotationNode->GetValueArrayObject();
+            for (const auto& annotation : annotations)
+                {
+                auto label = LoadLabel(annotation->GetProperty(L"label"),
+                                       GraphItems::Label());
+                // add outline and background color if not provided in config file
+                if (!label->GetPen().IsOk())
+                    { label->GetPen() = *wxBLACK_PEN; }
+                if (!label->GetFontBackgroundColor().IsOk())
+                    {
+                    label->SetFontBackgroundColor(
+                        ColorContrast::BlackOrWhiteContrast(label->GetFontColor()));
+                    }
+                label->SetPadding(5, 5, 5, 5);
+
+                const auto interestPointsNode = annotation->GetProperty(L"interest-points");
+                if (interestPointsNode->IsOk())
+                    {
+                    // get all the points on the plot that the note is pointing at
+                    std::vector<wxPoint> interestPointPostions;
+                    const auto interestPoints = interestPointsNode->GetValueArrayObject();
+                    for (const auto& interestPoint : interestPoints)
+                        {
+                        const auto xPos = FindAxisPosition(graph->GetBottomXAxis(),
+                                                           interestPoint->GetProperty(L"x"));
+                        const auto yPos = FindAxisPosition(graph->GetLeftYAxis(),
+                                                           interestPoint->GetProperty(L"y"));
+                        if (xPos.has_value() && yPos.has_value())
+                            {
+                            interestPointPostions.emplace_back(
+                                wxPoint(xPos.value(), yPos.value()));
+                            }
+                        }
+                    wxPoint anchorPt;
+                    const auto anchorNode = annotation->GetProperty(L"anchor");
+                    if (anchorNode->IsOk())
+                        {
+                        anchorPt.x = anchorNode->GetProperty(L"x")->GetValueNumber();
+                        anchorPt.y = anchorNode->GetProperty(L"y")->GetValueNumber();
+                        }
+                    // if no anchor point specified, then use the middle point of the interest points
+                    /// @todo try to add even better logic in here, like how ggrepel works
+                    else if (interestPointPostions.size())
+                        {
+                        const auto [minX, maxX] = std::minmax_element(
+                            interestPointPostions.cbegin(),
+                            interestPointPostions.cend(),
+                            [](const auto& lhv, const auto& rhv) noexcept
+                            { return lhv.x < rhv.x; });
+                        const auto [minY, maxY] = std::minmax_element(
+                            interestPointPostions.cbegin(),
+                            interestPointPostions.cend(),
+                            [](const auto& lhv, const auto& rhv) noexcept
+                            { return lhv.y < rhv.y; });
+                        anchorPt.x = safe_divide<double>(maxX->x - minX->x, 2) + minX->x;
+                        anchorPt.y = safe_divide<double>(maxY->y - minY->y, 2) + minY->y;
+                        }
+                    if (anchorPt.IsFullySpecified())
+                        { graph->AddAnnotation(label, anchorPt, interestPointPostions); }
+                    }
+                }
+            }
+
         // reference lines
         const auto referenceLinesNode = graphNode->GetProperty(L"reference-lines");
         if (referenceLinesNode->IsOk())
@@ -2210,7 +2344,7 @@ namespace Wisteria
                     refLine->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
-                    wxPen pen(*wxBLACK, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    wxPen pen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH);
                     LoadPen(refLine->GetProperty(L"pen"), pen);
 
                     auto& axis = (axisType == AxisType::BottomXAxis ?
@@ -2222,34 +2356,8 @@ namespace Wisteria
                         axisType == AxisType::RightYAxis ?
                         graph->GetRightYAxis() :
                         graph->GetBottomXAxis());
-                    const auto positionNode = refLine->GetProperty(L"position");
-                    std::optional<double> axisPos;
-                    if (positionNode->IsOk() &&
-                        positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
-                        {
-                        // see if it's a date
-                        wxDateTime dt;
-                        if (dt.ParseDateTime(positionNode->GetValueString()) ||
-                            dt.ParseDate(positionNode->GetValueString()))
-                            {
-                            axisPos = axis.FindDatePosition(dt);
-                            // looks like a date, but couldn't be found on the axis,
-                            // so just show it as a string
-                            if (!axisPos.has_value())
-                                {
-                                axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
-                                }
-                            }
-                        else
-                            {
-                            axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
-                            }
-                        }
-                    else if (positionNode->IsOk() &&
-                        positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                        {
-                        axisPos = positionNode->GetValueNumber();
-                        }
+                    const auto axisPos =
+                        FindAxisPosition(axis, refLine->GetProperty(L"position"));
 
                     if (axisPos.has_value())
                         {
@@ -2273,7 +2381,7 @@ namespace Wisteria
                     refArea->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
-                    wxPen pen(*wxBLACK, wxPenStyle::wxPENSTYLE_LONG_DASH);
+                    wxPen pen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH);
                     LoadPen(refArea->GetProperty(L"pen"), pen);
 
                     auto& axis = (axisType == AxisType::BottomXAxis ?
@@ -2285,63 +2393,12 @@ namespace Wisteria
                         axisType == AxisType::RightYAxis ?
                         graph->GetRightYAxis() :
                         graph->GetBottomXAxis());
-                    const auto position1Node = refArea->GetProperty(L"position-1");
-                    std::optional<double> axisPos1;
-                    if (position1Node->IsOk() &&
-                        position1Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
-                        {
-                        // see if it's a date
-                        wxDateTime dt;
-                        if (dt.ParseDateTime(position1Node->GetValueString()) ||
-                            dt.ParseDate(position1Node->GetValueString()))
-                            {
-                            axisPos1 = axis.FindDatePosition(dt);
-                            // looks like a date, but couldn't be found on the axis,
-                            // so just show it as a string
-                            if (!axisPos1.has_value())
-                                {
-                                axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
-                                }
-                            }
-                        else
-                            {
-                            axisPos1 = axis.FindCustomLabelPosition(position1Node->GetValueString());
-                            }
-                        }
-                    else if (position1Node->IsOk() &&
-                        position1Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                        {
-                        axisPos1 = position1Node->GetValueNumber();
-                        }
 
-                    const auto position2Node = refArea->GetProperty(L"position-2");
-                    std::optional<double> axisPos2;
-                    if (position2Node->IsOk() &&
-                        position2Node->GetType() == wxSimpleJSON::JSONType::IS_STRING)
-                        {
-                        // see if it's a date
-                        wxDateTime dt;
-                        if (dt.ParseDateTime(position2Node->GetValueString()) ||
-                            dt.ParseDate(position2Node->GetValueString()))
-                            {
-                            axisPos2 = axis.FindDatePosition(dt);
-                            // looks like a date, but couldn't be found on the axis,
-                            // so just show it as a string
-                            if (!axisPos2.has_value())
-                                {
-                                axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
-                                }
-                            }
-                        else
-                            {
-                            axisPos2 = axis.FindCustomLabelPosition(position2Node->GetValueString());
-                            }
-                        }
-                    else if (position2Node->IsOk() &&
-                        position2Node->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
-                        {
-                        axisPos2 = position2Node->GetValueNumber();
-                        }
+                    std::optional<double> axisPos1 =
+                        FindAxisPosition(axis, refArea->GetProperty(L"position-1"));
+
+                    std::optional<double> axisPos2 =
+                        FindAxisPosition(axis, refArea->GetProperty(L"position-2"));
 
                     if (axisPos1.has_value() && axisPos2.has_value())
                         {
