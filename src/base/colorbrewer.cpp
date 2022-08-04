@@ -75,6 +75,9 @@ wxColour ColorBrewer::GetColor(const Color color)
 
 wxColour ColorBrewer::BrewColor(const double value) const
     {
+    wxASSERT_MSG(value >= m_range.first && value <= m_range.first,
+                 L"Value passed to BrewColor() should be within establised data range "
+                  "from previous call to BrewColors()!");
     // return invalid color or NaN
     if (std::isnan(value))
         { return wxColour(); }
@@ -84,8 +87,10 @@ wxColour ColorBrewer::BrewColor(const double value) const
         { throw std::length_error("Color scale has not been initialized in color brewer."); }
     double normalizedValue = statistics::normalize<double>(m_range.first, m_range.second, value);
 
-    int idx1{0}, idx2{0};    // |-- Our desired color will be between these two indexes in "colorSpectrum".
-    double fractBetween{0};  // Fraction between "idx1" and "idx2" where our value is.
+    // |-- Our desired color will be between these two indexes in "colorSpectrum".
+    int idx1{ 0 }, idx2{ 0 };
+    // Fraction between "idx1" and "idx2" where our value is.
+    double fractBetween{ 0 };
 
     if (normalizedValue <= 0)
         { idx1 = idx2 = 0; }
@@ -94,14 +99,21 @@ wxColour ColorBrewer::BrewColor(const double value) const
     else
         {
         normalizedValue = normalizedValue * (m_colorSpectrum.size()-1);
-        idx1 = std::floor(normalizedValue); // Our desired color will be after this index.
-        idx2 = idx1+1;                      // ... and before this index (inclusive).
-        fractBetween = normalizedValue - static_cast<double>(idx1); // Distance between the two indexes (0-1).
+        // Our desired color will be after this index.
+        idx1 = std::floor(normalizedValue);
+        // ... and before this index (inclusive).
+        idx2 = idx1+1;
+        // Distance between the two indexes (0-1).
+        fractBetween = normalizedValue - static_cast<double>(idx1);
         }
 
-    wxColour brewedColor((m_colorSpectrum[idx2].Red() - m_colorSpectrum[idx1].Red())*fractBetween + m_colorSpectrum[idx1].Red(),
-        (m_colorSpectrum[idx2].Green() - m_colorSpectrum[idx1].Green())*fractBetween + m_colorSpectrum[idx1].Green(),
-        (m_colorSpectrum[idx2].Blue() - m_colorSpectrum[idx1].Blue())*fractBetween + m_colorSpectrum[idx1].Blue());
+    wxColour brewedColor(
+        (m_colorSpectrum[idx2].Red() - m_colorSpectrum[idx1].Red()) *
+            fractBetween + m_colorSpectrum[idx1].Red(),
+        (m_colorSpectrum[idx2].Green() - m_colorSpectrum[idx1].Green()) *
+            fractBetween + m_colorSpectrum[idx1].Green(),
+        (m_colorSpectrum[idx2].Blue() - m_colorSpectrum[idx1].Blue()) *
+            fractBetween + m_colorSpectrum[idx1].Blue());
 
     return brewedColor;
     }

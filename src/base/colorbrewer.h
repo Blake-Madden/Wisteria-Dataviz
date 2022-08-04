@@ -579,10 +579,10 @@ namespace Wisteria::Colors
             25.5  // in between value (will be purple)
             };
 
-         auto res = cb.BrewColors(data.begin(), data.end());
+         const auto res = cb.BrewColors(data.cbegin(), data.cend());
 
          // an initializer list could also be used:
-         // auto res = cb.BrewColors({ 50, 1, 25.5 });
+         // const auto res = cb.BrewColors({ 50.0, 1.0, 25.5 });
 
          // res[0] will be red, res[1] will be blue, and res[2] will be purple
         @endcode
@@ -662,20 +662,22 @@ namespace Wisteria::Colors
             return colors;
             }
         /** @brief Returns the calculated min and max of the values from the last
-             call to BrewColors().
+                call to BrewColors().
             @returns The min and max of the values represented by the color scale.
             @sa BrewColors().*/
         [[nodiscard]] std::pair<double, double> GetRange() const noexcept
             { return m_range; }
-#ifndef __UNITTEST
-    private:
-#endif
         /** @brief Converts a value from the range into a color laying on the
-             color scale mapped to that range.
+                color scale mapped to that range.
+            @details This should be called after a call to BrewColors(), which will
+                establish the color spectrum across a range of values.
             @param value The value (should be within the original range) to convert.
             @returns The color that represents the value on our color scale.
-             Will return an empty color if @c value is NaN;
-             be sure to call `IsOk()` on returned color.
+                Will return an empty color if @c value is NaN;
+                be sure to call `IsOk()` on the returned color.
+            @warning The value passed here should be within the range of data previously
+                passed to BrewColors(); otherwise, it will re-adjust the color/value mapping
+                and invalidate previous calls to BrewColor(s).
             @note This code is adapted from http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
         [[nodiscard]] wxColour BrewColor(const double value) const;
     private:
@@ -722,10 +724,12 @@ namespace Wisteria::Colors
             return color;
             }
         /// @brief Returns a darker (shaded) or lighter (tinted) version of a color,
-        ///  depending on how dark it is to begin with.
-        ///  For example, black will be returned as dark gray, while white will return as an eggshell white.
+        ///     depending on how dark it is to begin with.
+        ///     For example, black will be returned as dark gray,
+        ///     while white will return as an eggshell white.
         /// @param color The color to shade.
-        /// @param shadeValue How much to lighten or darken a color. (Should be between 0.0 to 1.0.)
+        /// @param shadeValue How much to lighten or darken a color
+        ///      (Should be between 0.0 to 1.0.)
         /// @returns The shaded or tinted color.
         [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
                                                   const double shadeValue = .20f)
@@ -822,9 +826,8 @@ namespace Wisteria::Colors
                 }
             /** @brief Gets the color from a given index and applies an opacity value to it.
                 @param index The index into the color list to return.
-                 Returns black if index is invalid.
                 @param opacity The opacity to set the color.
-                @returns The color from given index.*/
+                @returns The color from given index, or black if index is invalid.*/
             [[nodiscard]] wxColour GetColor(const size_t index, const uint8_t opacity) const
                 {
                 auto color = GetColor(index);
