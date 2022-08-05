@@ -37,7 +37,7 @@ namespace Wisteria::Graphs
                 [](const auto& left, const auto& right) noexcept
                 {
                 return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                        left.m_lineColor == right.m_lineColor);
+                        left.m_pen.GetColour() == right.m_pen.GetColour());
                 }),
             refLines.end());
         // resort by axis position and add to the legend
@@ -47,8 +47,8 @@ namespace Wisteria::Graphs
             textLines += refLine.m_label + L"\n";
             legend->GetLegendIcons().push_back(
                 LegendIcon(IconShape::HorizontalLineIcon,
-                           wxPen(refLine.m_lineColor, 2, refLine.m_linePenStyle),
-                           ColorContrast::ChangeOpacity(refLine.m_lineColor,
+                           wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
+                           ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
                                                         Settings::GetTranslucencyValue())));
             }
 
@@ -64,7 +64,7 @@ namespace Wisteria::Graphs
                 [](const auto& left, const auto& right) noexcept
                 {
                 return (left.m_label.CmpNoCase(right.m_label) == 0 &&
-                        left.m_lineColor == right.m_lineColor);
+                        left.m_pen.GetColour() == right.m_pen.GetColour());
                 }),
             refAreas.end());
         // resort by axis position and add to the legend
@@ -74,8 +74,8 @@ namespace Wisteria::Graphs
             textLines += refArea.m_label + L"\n";
             legend->GetLegendIcons().push_back(
                 LegendIcon(IconShape::SquareIcon,
-                           wxPen(refArea.m_lineColor, 2, refArea.m_linePenStyle),
-                           ColorContrast::ChangeOpacity(refArea.m_lineColor,
+                           wxPen(refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle()),
+                           ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
                                                         Settings::GetTranslucencyValue())));
             }
         legend->SetText(legend->GetText() + L"\n \n" + textLines.Trim());
@@ -661,7 +661,7 @@ namespace Wisteria::Graphs
             {
             wxCoord axisCoord{ 0 };
             auto dividerLine = std::make_shared<GraphItems::Lines>(
-                wxPen(refLine.m_lineColor, 2, refLine.m_linePenStyle), GetScaling());
+                wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()), GetScaling());
             if (refLine.m_axisType == AxisType::LeftYAxis ||
                 refLine.m_axisType == AxisType::RightYAxis)
                 {
@@ -695,9 +695,9 @@ namespace Wisteria::Graphs
             {
             wxCoord axisCoord1{ 0 }, axisCoord2{ 0 };
             auto dividerLine1 = std::make_shared<GraphItems::Lines>(
-                wxPen(refArea.m_lineColor, 1, refArea.m_linePenStyle), GetScaling());
+                wxPen(refArea.m_pen.GetColour(), 1, refArea.m_pen.GetStyle()), GetScaling());
             auto dividerLine2 = std::make_shared<GraphItems::Lines>(
-                wxPen(refArea.m_lineColor, 1, refArea.m_linePenStyle), GetScaling());
+                wxPen(refArea.m_pen.GetColour(), 1, refArea.m_pen.GetStyle()), GetScaling());
             if (refArea.m_axisType == AxisType::LeftYAxis ||
                 refArea.m_axisType == AxisType::RightYAxis)
                 {
@@ -713,21 +713,50 @@ namespace Wisteria::Graphs
                         wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2),
                         wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2)
                         };
-                    AddObject(std::make_shared<GraphItems::Polygon>(
+                    auto area = std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo().
-                        Pen(wxNullPen).Brush(ColorContrast::ChangeOpacity(
-                                             refArea.m_lineColor, Settings::GetTranslucencyValue())),
-                        boxPoints, std::size(boxPoints)));
+                        Pen(wxNullPen),
+                        boxPoints, std::size(boxPoints));
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
+                        {
+                        area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
+                            refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()));
+                        }
+                    else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromTopToBottom)
+                        {
+                        area->GetBrush() = wxTransparentColour;
+                        area->SetBackgroundFill(Colors::GradientFill(
+                            ColorContrast::ChangeOpacity(
+                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            wxTransparentColour, FillDirection::South));
+                        }
+                    else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromBottomToTop)
+                        {
+                        area->GetBrush() = wxTransparentColour;
+                        area->SetBackgroundFill(Colors::GradientFill(
+                            ColorContrast::ChangeOpacity(
+                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            wxTransparentColour, FillDirection::North));
+                        }
+                    AddObject(area);
 
-                    dividerLine1->AddLine(
-                        wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord1),
-                        wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord1));
-                    AddObject(dividerLine1);
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
+                        refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromTopToBottom)
+                        {
+                        dividerLine1->AddLine(
+                            wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord1),
+                            wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord1));
+                        AddObject(dividerLine1);
+                        }
 
-                    dividerLine2->AddLine(
-                        wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2),
-                        wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2));
-                    AddObject(dividerLine2);
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
+                        refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromBottomToTop)
+                        {
+                        dividerLine2->AddLine(
+                            wxPoint(GetBottomXAxis().GetLeftPoint().x, axisCoord2),
+                            wxPoint(GetBottomXAxis().GetRightPoint().x, axisCoord2));
+                        AddObject(dividerLine2);
+                        }
                     }
                 }
             else if (refArea.m_axisType == AxisType::BottomXAxis ||
@@ -745,21 +774,50 @@ namespace Wisteria::Graphs
                         wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y),
                         wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y)
                         };
-                    AddObject(std::make_shared<GraphItems::Polygon>(
+                    auto area = std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo().
-                        Pen(wxNullPen).Brush(ColorContrast::ChangeOpacity(
-                                             refArea.m_lineColor, Settings::GetTranslucencyValue())),
-                        boxPoints, std::size(boxPoints)));
+                        Pen(wxNullPen),
+                        boxPoints, std::size(boxPoints));
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid)
+                        {
+                        area->GetBrush().SetColour(ColorContrast::ChangeOpacity(
+                            refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()));
+                        }
+                    else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromLeftToRight)
+                        {
+                        area->GetBrush() = wxTransparentColour;
+                        area->SetBackgroundFill(Colors::GradientFill(
+                            ColorContrast::ChangeOpacity(
+                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            wxTransparentColour, FillDirection::Right));
+                        }
+                    else if (refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromRightToLeft)
+                        {
+                        area->GetBrush() = wxTransparentColour;
+                        area->SetBackgroundFill(Colors::GradientFill(
+                            ColorContrast::ChangeOpacity(
+                                refArea.m_pen.GetColour(), Settings::GetTranslucencyValue()),
+                            wxTransparentColour, FillDirection::Left));
+                        }
+                    AddObject(area);
 
-                    dividerLine1->AddLine(
-                        wxPoint(axisCoord1, GetLeftYAxis().GetBottomPoint().y),
-                        wxPoint(axisCoord1, GetLeftYAxis().GetTopPoint().y));
-                    AddObject(dividerLine1);
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
+                        refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromLeftToRight)
+                        {
+                        dividerLine1->AddLine(
+                            wxPoint(axisCoord1, GetLeftYAxis().GetBottomPoint().y),
+                            wxPoint(axisCoord1, GetLeftYAxis().GetTopPoint().y));
+                        AddObject(dividerLine1);
+                        }
 
-                    dividerLine2->AddLine(
-                        wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y),
-                        wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y));
-                    AddObject(dividerLine2);
+                    if (refArea.m_refAreaStyle == ReferenceAreaStyle::Solid ||
+                        refArea.m_refAreaStyle == ReferenceAreaStyle::FadeFromRightToLeft)
+                        {
+                        dividerLine2->AddLine(
+                            wxPoint(axisCoord2, GetLeftYAxis().GetBottomPoint().y),
+                            wxPoint(axisCoord2, GetLeftYAxis().GetTopPoint().y));
+                        AddObject(dividerLine2);
+                        }
                     }
                 }
             }

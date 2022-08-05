@@ -415,7 +415,14 @@ Properties common to all graph items:
   - @c "position-2": the ending axis position for the area.\n
        This can either be a numeric position, a date (as a string), or an axis label.
   - @c "label": the text to display on the legend referring to area.
-  - @c "pen": the definition for the [pen](#pen-properties) properties.
+  - @c "pen": the definition for the [pen](#pen-properties) properties.\n
+        The color is used for the surrounding reference lines, and a tinted version
+        is used the area.
+  - @c "style": the style to apply to the reference area.\n
+    Available options are:
+    - @c "fade-from-left-to-right"
+    - @c "fade-from-right-to-left"
+    - @c "solid"
 - @c "color-scheme": for graphs that support color schemes only.\n
      This can either be an array of color strings or the name of the color scheme.\n
      Refer to @c Wisteria::Colors::Schemes for a list of color schemes.

@@ -33,6 +33,32 @@ namespace Wisteria::Graphs
     class Histogram;
     }
 
+namespace Wisteria
+    {
+    /// @brief The visual style for a reference area.
+    enum class ReferenceAreaStyle
+        {
+        /// @brief Area is filled solidly and has reference lines on each side.
+        Solid,
+        /// @brief Area is filled with a gradient of the color to transparent,
+        ///     going from left to right. Only the left side has a reference line.\n
+        ///     This is useful for showing a reference area with a vague ending point.
+        FadeFromLeftToRight,
+        /// @brief Area is filled with a gradient of the color to transparent,
+        ///     going from bottom to top. Only the bottom side has a reference line.\n
+        ///     This is useful for showing a reference area with a vague ending point.
+        FadeFromBottomToTop = FadeFromLeftToRight,
+        /// @brief Area is filled with a gradient of the color to transparent,
+        ///     going from right to left. Only the right side has a reference line.\n
+        ///     This is useful for showing a reference area with a vague starting point.
+        FadeFromRightToLeft,
+        /// @brief Area is filled with a gradient of the color to transparent,
+        ///     going from top to bottom. Only the top side has a reference line.\n
+        ///     This is useful for showing a reference area with a vague starting point.
+        FadeFromTopToBottom = FadeFromRightToLeft
+        };
+    }
+
 namespace Wisteria::GraphItems
     {
     /// @brief Draws a line across the graph, showing a reference value on its parent axis.
@@ -47,15 +73,13 @@ namespace Wisteria::GraphItems
         ///     Note that `Axes::FindCustomLabelPosition()` or `Axes::FindDatePosition()`
         ///     can be used to find the position of a label.
         /// @param label The label to describe what the line represents.
-        /// @param lineColor The color of the line.
-        /// @param linePenStyle The pen style to use for the line.
+        /// @param pen The pen to use for the line.
         ReferenceLine(const AxisType axisType, const double axisPosition,
                       const wxString& label,
-                      const wxColour lineColor = *wxLIGHT_GREY,
-                      const wxPenStyle linePenStyle = wxPenStyle::wxPENSTYLE_LONG_DASH) :
+                      const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH)) :
                       m_axisType(axisType), m_axisPosition(axisPosition), m_label(label),
-                      m_lineColor(lineColor), m_linePenStyle(linePenStyle),
-                      m_compKey(label + lineColor.GetAsString(wxC2S_HTML_SYNTAX))
+                      m_pen(pen),
+                      m_compKey(label + pen.GetColour().GetAsString(wxC2S_HTML_SYNTAX))
                       {}
         /// @private
         /// @brief Compare on axis position.
@@ -65,10 +89,9 @@ namespace Wisteria::GraphItems
         AxisType m_axisType{ AxisType::RightYAxis };
         double m_axisPosition{ 0 };
         wxString m_label;
+        wxPen m_pen{ *wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH };
         // used by lambdas to sort by label and color (instead of axis position)
         wxString m_compKey;
-        wxColour m_lineColor{ *wxBLACK };
-        wxPenStyle m_linePenStyle{ wxPenStyle::wxPENSTYLE_LONG_DASH };
         };
 
     /// @brief Draws two lines across the graph, showing reference values on its parent axis,
@@ -86,19 +109,19 @@ namespace Wisteria::GraphItems
         ///     can be used to find the position of a label.
         /// @param axisPosition2 Where on the parent axis to end the area.
         /// @param label The label to describe what the line represents.
-        /// @param lineColor The color of the line and area.\n
-        ///     The area color will be a translucent version of the line color.
-        /// @param linePenStyle The pen style to use for the line.
+        /// @param pen The pen to use for the line.
+        /// @param refAreaStyle The visual style of the reference area.
         ReferenceArea(const AxisType axisType,
             const double axisPosition1, const double axisPosition2,
             const wxString& label,
-            const wxColour lineColor = *wxLIGHT_GREY,
-            const wxPenStyle linePenStyle = wxPenStyle::wxPENSTYLE_LONG_DASH) :
-            ReferenceLine(axisType, axisPosition1, label, lineColor, linePenStyle),
-            m_axisPosition2(axisPosition2)
+            const wxPen pen = wxPen(*wxLIGHT_GREY, 1, wxPenStyle::wxPENSTYLE_LONG_DASH),
+            const ReferenceAreaStyle refAreaStyle = ReferenceAreaStyle::Solid) :
+            ReferenceLine(axisType, axisPosition1, label, pen),
+            m_refAreaStyle(refAreaStyle), m_axisPosition2(axisPosition2)
             {}
     private:
         double m_axisPosition2{ 0 };
+        ReferenceAreaStyle m_refAreaStyle{ ReferenceAreaStyle::Solid };
         };
 
     /// @brief An axis on a graph.

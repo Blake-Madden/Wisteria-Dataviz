@@ -2364,13 +2364,20 @@ namespace Wisteria
                         graph->AddReferenceLine(
                             ReferenceLine(axisType.value(), axisPos.value(),
                                 refLine->GetProperty(L"label")->GetValueString(),
-                                pen.GetColour(), pen.GetStyle()));
+                                pen));
                         }
                     }
                 }
             }
 
         // reference areas
+        static const std::map<std::wstring_view, ReferenceAreaStyle> refAreaValues =
+            {
+            { L"fade-from-left-to-right", ReferenceAreaStyle::FadeFromLeftToRight },
+            { L"fade-from-right-to-left", ReferenceAreaStyle::FadeFromRightToLeft },
+            { L"solid", ReferenceAreaStyle::Solid },
+            };
+
         const auto referenceAreasNode = graphNode->GetProperty(L"reference-areas");
         if (referenceAreasNode->IsOk())
             {
@@ -2394,6 +2401,13 @@ namespace Wisteria
                         graph->GetRightYAxis() :
                         graph->GetBottomXAxis());
 
+                    ReferenceAreaStyle areaStyle{ ReferenceAreaStyle::Solid };
+                    const auto foundPos = refAreaValues.find(
+                        std::wstring_view(refArea->GetProperty(L"style")->
+                            GetValueString().MakeLower().wc_str()));
+                    if (foundPos != refAreaValues.cend())
+                        { areaStyle = foundPos->second; }
+
                     std::optional<double> axisPos1 =
                         FindAxisPosition(axis, refArea->GetProperty(L"position-1"));
 
@@ -2405,7 +2419,7 @@ namespace Wisteria
                         graph->AddReferenceArea(
                             ReferenceArea(axisType.value(), axisPos1.value(), axisPos2.value(),
                                 refArea->GetProperty(L"label")->GetValueString(),
-                                pen.GetColour(), pen.GetStyle()));
+                                pen, areaStyle));
                         }
                     }
                 }
