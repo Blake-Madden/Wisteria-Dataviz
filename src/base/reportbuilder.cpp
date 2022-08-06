@@ -355,6 +355,15 @@ namespace Wisteria
             { L"no-display", AxisLabelDisplay::NoDisplay }
             };
 
+        static const std::map<std::wstring_view, BracketLineStyle> bracketLineValues =
+            {
+            { L"arrow", BracketLineStyle::Arrow },
+            { L"lines", BracketLineStyle::Lines },
+            { L"reverse-arrow", BracketLineStyle::ReverseArrow },
+            { L"curly-braces", BracketLineStyle::CurlyBraces },
+            { L"no-connection-lines", BracketLineStyle::NoConnectionLines },
+            };
+
         const auto titleProperty = axisNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
@@ -375,6 +384,8 @@ namespace Wisteria
         if (foundPos != labelDisplayValues.cend())
             { axis.SetLabelDisplay(foundPos->second); }
 
+        axis.SetDoubleSidedAxisLabels(axisNode->GetProperty(L"double-sided-labels")->GetValueBool());
+
         // pens
         LoadPen(axisNode->GetProperty(L"axis-pen"), axis.GetAxisLinePen());
         LoadPen(axisNode->GetProperty(L"gridline-pen"), axis.GetGridlinePen());
@@ -385,33 +396,75 @@ namespace Wisteria
             {
             wxPen bracketPen{ *wxBLACK_PEN };
             LoadPen(bracketsNode->GetProperty(L"pen"), bracketPen);
-            const wxString dsName = bracketsNode->GetProperty(L"datasource")->GetValueString();
-            const auto foundDataset = m_datasets.find(dsName);
-            if (foundDataset == m_datasets.cend() ||
-                foundDataset->second == nullptr)
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
-                }
 
-            const auto variablesNode = bracketsNode->GetProperty(L"variables");
-            if (variablesNode->IsOk())
-                {
-                const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
-                const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
+            const auto foundBracketStyle = bracketLineValues.find(std::wstring_view(
+                bracketsNode->GetProperty(L"style")->GetValueString().wc_str()));
 
-                axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
-                if (bracketPen.IsOk())
+            // if loading brackets based on the dataset
+            if (bracketsNode->GetProperty(L"datasource")->IsOk())
+                {
+                const wxString dsName = bracketsNode->GetProperty(L"datasource")->GetValueString();
+                const auto foundDataset = m_datasets.find(dsName);
+                if (foundDataset == m_datasets.cend() ||
+                    foundDataset->second == nullptr)
                     {
-                    for (auto& bracket : axis.GetBrackets())
-                        { bracket.GetLinePen() = bracketPen; }
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                    }
+
+                const auto variablesNode = bracketsNode->GetProperty(L"variables");
+                if (variablesNode->IsOk())
+                    {
+                    const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
+                    const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
+
+                    axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                    if (bracketPen.IsOk())
+                        {
+                        for (auto& bracket : axis.GetBrackets())
+                            { bracket.GetLinePen() = bracketPen; }
+                        }
+                    if (foundBracketStyle != bracketLineValues.cend())
+                        {
+                        for (auto& bracket : axis.GetBrackets())
+                            { bracket.SetBracketLineStyle(foundBracketStyle->second); }
+                        }
+                    }
+                else
+                    {
+                    throw std::runtime_error(
+                        _(L"Variables not defined for brackets").ToUTF8());
                     }
                 }
-            else
+            // or individually defined brackets
+            else if (bracketsNode->GetProperty(L"bracket-items")->IsOk())
                 {
-                throw std::runtime_error(
-                    _(L"Variables not defined for brackets").ToUTF8());
+                auto brackets = bracketsNode->GetProperty(L"bracket-items")->GetValueArrayObject();
+                for (const auto& bracket : brackets)
+                    {
+                    const std::optional<double> axisPos1 =
+                        FindAxisPosition(axis, bracket->GetProperty(L"position-1"));
+                    const std::optional<double> axisPos2 =
+                        FindAxisPosition(axis, bracket->GetProperty(L"position-2"));
+
+                    wxPen pen(*wxBLACK_PEN);
+                    LoadPen(bracket->GetProperty(L"pen"), pen);
+
+                    if (axisPos1.has_value() && axisPos2.has_value())
+                        {
+                        axis.AddBracket(
+                            Axis::AxisBracket(axisPos1.value(), axisPos2.value(),
+                                safe_divide<double>(axisPos1.value() + axisPos2.value(), 2),
+                                bracket->GetProperty(L"label")->GetValueString(),
+                                pen,
+                                (foundBracketStyle != bracketLineValues.cend()) ?
+                                    foundBracketStyle->second : BracketLineStyle::Lines));
+                        }
+                    }
                 }
+
+            if (bracketsNode->GetProperty(L"simplify")->GetValueBool())
+                { axis.SimplifyBrackets(); }
             }
         }
 
@@ -465,12 +518,9 @@ namespace Wisteria
             // font attributes
             if (labelNode->GetProperty(L"bold")->IsOk())
                 {
-                if (labelNode->GetProperty(L"bold")->IsOk())
-                    {
-                    labelNode->GetProperty(L"bold")->GetValueBool() ?
-                        label->GetFont().MakeBold() :
-                        label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
-                    }
+                labelNode->GetProperty(L"bold")->GetValueBool() ?
+                    label->GetFont().MakeBold() :
+                    label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
                 }
 
             const auto textAlignment = ConvertTextAlignment(
@@ -2307,8 +2357,15 @@ namespace Wisteria
                     const auto anchorNode = annotation->GetProperty(L"anchor");
                     if (anchorNode->IsOk())
                         {
-                        anchorPt.x = anchorNode->GetProperty(L"x")->GetValueNumber();
-                        anchorPt.y = anchorNode->GetProperty(L"y")->GetValueNumber();
+                        const auto xPos = FindAxisPosition(graph->GetBottomXAxis(),
+                                                           anchorNode->GetProperty(L"x"));
+                        const auto yPos = FindAxisPosition(graph->GetLeftYAxis(),
+                                                           anchorNode->GetProperty(L"y"));
+                        if (xPos.has_value() && yPos.has_value())
+                            {
+                            anchorPt.x = xPos.value();
+                            anchorPt.y = yPos.value();
+                            }
                         }
                     // if no anchor point specified, then use the middle point of the interest points
                     /// @todo try to add even better logic in here, like how ggrepel works

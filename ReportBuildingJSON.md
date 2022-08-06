@@ -123,6 +123,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
 - @c "title": the title of the axis, which contains ["label"](#label-properties) properties.
 - @c "axis-pen": the pen for the axis line, which includes [pen](#pen-properties) properties.
 - @c "gridline-pen": the pen for the gridlines, which includes [pen](#pen-properties) properties.
+- @c "double-sided-labels": boolean value specifying whether axis labels should be shown on both sides of the axis.
 - @c "tickmarks": tickmarks settings, which contains the following properties:
   - @c "display": a string, indicating how to display the tickmarks.\n
     Available options are:
@@ -137,11 +138,30 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "custom-labels-and-values"
   - @c "no-display"
 - @c "brackets": adds brackets to the axis, which included the following properties:
-  - @c "datasource": the name of the datasource to read the columns from.
   - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
+  - @c "simplify": a bool value indicating whether to simplify the bracket's labels.
+  - @c "style": the style of the braces.\n
+    Available options are:
+    - @c "arrow"
+    - @c "reverse-arrow"
+    - @c "lines"
+    - @c "curly-braces"
+    - @c "no-connection-linesrrow"
+
+  If building brackets from a dataset, use the following properties:
+  - @c "datasource": the name of the datasource to read the columns from.
   - @c "variables": which include the following properties:
     - @c "label": the labels column.
     - @c "value": the values column. (This can be either a continous, categorical, or date column.)
+  
+  If building brackets individually, use the following property:
+  - @c "bracket-items": an array of the items with the following properties:
+    - @c "position-1": the starting axis position for the area.\n
+         This can either be a numeric position, a date (as a string), or an axis label.
+    - @c "position-2": the ending axis position for the area.\n
+         This can either be a numeric position, a date (as a string), or an axis label.
+    - @c "label": the text to display on the legend referring to area.
+    - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
 
 ## Categorical Bar Chart {#categorical-bar-chart-properties}
 Properties for @c "categorical-bar-chart" nodes:

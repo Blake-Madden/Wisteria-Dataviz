@@ -55,6 +55,14 @@ namespace Wisteria::GraphItems
         /// @param rect The area to bind the leaf within.
         /// @param dc The DC to draw to.
         void DrawFallLeaf(const wxRect rect, wxDC& dc);
+        /// @brief Draws curly braces.
+        /// @param rect The area to bind the curly braces within.
+        /// @param dc The DC to draw to.
+        /// @param side The side of the object that the curly braces are enclosing.\n
+        ///     For example, @c Left means that the left curly braces will be drawn,
+        ///     where @c Top will draw curly braces that are opening downward
+        ///     (enclosing what is beneath it).
+        void DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side);
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         [[nodiscard]] double GetXPosFromLeft(const wxRect rect, const double percentFromLeft) noexcept

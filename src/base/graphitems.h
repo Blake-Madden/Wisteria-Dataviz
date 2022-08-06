@@ -79,7 +79,11 @@ namespace Wisteria
         /// @brief Left side.
         Left,
         /// @brief Right side.
-        Right
+        Right,
+        /// @brief Top side.
+        Top,
+        /// @brief Bottom side.
+        Bottom
         };
 
     /// @brief Where a ring is within a circle.
@@ -937,6 +941,9 @@ namespace Wisteria
             /// @returns The brush.
             [[nodiscard]] const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
+            /// @returns The pen.
+            [[nodiscard]] const wxPen& GetPen() const noexcept
+                { return m_pen; }
             /// @returns The text.
             [[nodiscard]] const wxString& GetText() const noexcept
                 { return m_text; }

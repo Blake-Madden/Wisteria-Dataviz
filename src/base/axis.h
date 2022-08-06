@@ -17,6 +17,7 @@
 #include <map>
 #include "label.h"
 #include "polygon.h"
+#include "shapes.h"
 #include "../data/dataset.h"
 
 // forward declares for friendship
@@ -56,6 +57,23 @@ namespace Wisteria
         ///     going from top to bottom. Only the top side has a reference line.\n
         ///     This is useful for showing a reference area with a vague starting point.
         FadeFromTopToBottom = FadeFromRightToLeft
+        };
+
+    /// @brief How to draw the line connecting the bracket to the parent axis.
+    enum class BracketLineStyle
+        {
+        /// @brief Regular line.
+        Lines,
+        /// @brief Arrow pointing at the axis.
+        Arrow,
+        /// @brief Arrow point at the labels on the bracket.
+        ReverseArrow,
+        /** @brief Do not draw a line from the axis to the bracket;
+                only the bracket itself will be drawn.*/
+        NoConnectionLines,
+        /** @brief The connecting lines and main bracket line
+                will be a curly brace.*/
+        CurlyBraces
         };
     }
 
@@ -178,15 +196,6 @@ namespace Wisteria::GraphItems
             /// Parent axis needs full access to this object.
             friend class Axis;
         public:
-            /// @brief How to draw the line connecting the bracket to the parent axis.
-            enum class BracketLineShape
-                {
-                BracketLine,         /*!< @brief Regular line.*/
-                BracketArrow,        /*!< @brief Arrow pointing at the axis.*/
-                BracketReverseArrow, /*!< @brief Arrow point at the labels on the bracket.*/
-                NoLine               /*!< @brief Do not draw anything.*/
-                };
-
             /** @brief Constructor.
                 @param pos1 The starting position (relative to its parent axis) of
                     where to place the bracket.
@@ -195,15 +204,17 @@ namespace Wisteria::GraphItems
                 @param labelPos The position (relative to its axis) of where to
                     place the bracket's label.
                 @param label The label to display next to the brackets.
-                @param color The color of the lines and label.
-                    The font color can be overridden via GetLabel(),
-                    and the line via GetLinePen().*/
+                @param pen The pen for the lines.\n
+                    The color of the pen will be applied to the label as well.\n
+                @param lineStyle The style to use for the bracket's lines.*/
             AxisBracket(const double pos1, const double pos2, const double labelPos,
-                        const wxString label, const wxColour color = *wxBLACK) :
+                        const wxString label, const wxPen pen = *wxBLACK_PEN,
+                        const BracketLineStyle lineStyle = BracketLineStyle::Lines) :
                 m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
-                m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(color)
+                m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(pen),
+                m_bracketLineStyle(lineStyle)
                 {
-                m_label.SetFontColor(color);
+                m_label.SetFontColor(pen.GetColour());
                 m_label.SetTextOrientation(Orientation::Horizontal);
                 }
             AxisBracket() = delete;
@@ -228,6 +239,14 @@ namespace Wisteria::GraphItems
                 @sa GetStartPosition(), GetEndPosition().*/
             [[nodiscard]] bool IsSingleLine() const noexcept
                 { return compare_doubles(GetStartPosition(), GetEndPosition()); }
+            /// @returns @c true if the lines being drawn are straight lines
+            ///     (as opposed to curly braces).
+            [[nodiscard]] bool IsStraightLines() const noexcept
+                {
+                return (m_bracketLineStyle == BracketLineStyle::Arrow ||
+                        m_bracketLineStyle == BracketLineStyle::Lines ||
+                        m_bracketLineStyle == BracketLineStyle::ReverseArrow);
+                }
 
             /// @returns The width of the padding between the bracket label and the parent axis
             ///     (not including the connection line).
@@ -293,12 +312,12 @@ namespace Wisteria::GraphItems
             void SetTickmarkLength(const wxCoord length) noexcept
                 { m_tickMarkLength = length; }
             /// @returns The type of line being draw for the bracket.
-            [[nodiscard]] BracketLineShape GetBracketLineShape() const noexcept
-                { return m_bracketLineShape; }
+            [[nodiscard]] BracketLineStyle GetBracketLineStyle() const noexcept
+                { return m_bracketLineStyle; }
             /** @brief Sets the type of line to draw on the bracket.
                 @param lineType The line type.*/
-            void SetBracketLineShape(const BracketLineShape lineType) noexcept
-                { m_bracketLineShape = lineType; }
+            void SetBracketLineStyle(const BracketLineStyle lineType) noexcept
+                { m_bracketLineStyle = lineType; }
             /// @}
 
             /// @private
@@ -314,28 +333,38 @@ namespace Wisteria::GraphItems
             [[nodiscard]] wxCoord CalcWidth(wxDC& dc, const double dpiScaling) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
-                @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.
-                 Note that scaling does not related to the line length since two explicit points are used here.
-                 If the line length needs to be scaled, then caller much apply that transformation to the points.
+                @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
+                    Note that scaling does not relate to the line length since two explicit points
+                    are used here. If the line length needs to be scaled, then caller much apply
+                    that transformation to the points.
                 @param axisPoint The starting point from the axis.
                 @param bracketPoint The ending point, connecting to the bracket label area.
-                @note This function is only meant to be called from the parent axis when rendering the brackets.*/
-            void DrawConnectionLine(wxDC& dc, const double scaling, const wxPoint axisPoint, const wxPoint bracketPoint) const
+                @note This function is only meant to be called from the parent axis when rendering
+                    the brackets.*/
+            void DrawConnectionLine(wxDC& dc, const double scaling, const wxPoint axisPoint,
+                                    const wxPoint bracketPoint) const
                 {
-                if (GetBracketLineShape() == AxisBracket::BracketLineShape::BracketLine)
+                if (GetBracketLineStyle() == BracketLineStyle::Arrow)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc, bracketPoint, axisPoint,
+                                                   wxSize(10*scaling, 10*scaling));
+                    }
+                else if (GetBracketLineStyle() == BracketLineStyle::ReverseArrow)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc,axisPoint, bracketPoint,
+                                                   wxSize(10*scaling, 10*scaling));
+                    }
+                // OK for curly braces because it will be a single line
+                else
                     { dc.DrawLine(axisPoint, bracketPoint); }
-                else if (GetBracketLineShape() == AxisBracket::BracketLineShape::BracketArrow)
-                    { GraphItems::Polygon::DrawArrow(dc, bracketPoint, axisPoint, wxSize(10*scaling, 10*scaling)); }
-                else if (GetBracketLineShape() == AxisBracket::BracketLineShape::BracketReverseArrow)
-                    { GraphItems::Polygon::DrawArrow(dc,axisPoint, bracketPoint, wxSize(10*scaling, 10*scaling)); }
                 }
             /// @returns The space between the bracket label and outer area of parent axis.
             ///     This is how much space is needed to draw the bracket lines.
-            /// @note If lines aren't being drawn, then will return a recommended amount of padding between
-            ///     bracket label and axis labels.
+            /// @note If lines aren't being drawn, then will return a recommended amount of padding
+            ///     between bracket label and axis labels.
             [[nodiscard]] wxCoord GetLineSpacing() const noexcept
                 {
-                return (GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine) ?
+                return (GetBracketLineStyle() != BracketLineStyle::NoConnectionLines) ?
                         (GetTickmarkLength()+GetPadding()) : GetPadding();
                 }
             /** @brief Sets the orientation of the bracket.
@@ -354,7 +383,7 @@ namespace Wisteria::GraphItems
             wxPen m_linePen;
             Orientation m_orientation{ Orientation::Vertical };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
-            BracketLineShape m_bracketLineShape{ BracketLineShape::BracketLine };
+            BracketLineStyle m_bracketLineStyle{ BracketLineStyle::Lines };
             };
 
         /// @brief A point on an axis.
@@ -510,7 +539,8 @@ namespace Wisteria::GraphItems
 
         /** @brief Call this to set the range if you know what the interval step size should be.
             @details The range may be adjusted to fix the intervals, but will not be rounded up to
-             neat intervals. This function gives you more precise control over the interval and range.
+                neat intervals. This function gives you more precise control over the interval
+                and range.
             @param rangeStart The start of the range.
             @param rangeEnd The end of the range.
             @param precision The floating-point precision to show on the axis labels.
@@ -537,8 +567,8 @@ namespace Wisteria::GraphItems
             @param FYtype If @c displayInterval is fiscal-year based, then this is the type of
                 fiscal year to use; otherwise, it will be ignored.
             @note The date interval and fiscal year type specified can affect the
-                starting and ending points of the dates. For example, using FY quarters will cause the
-                dates to start and end at the beginning and end of a fiscal year.
+                starting and ending points of the dates. For example, using FY quarters will cause
+                the dates to start and end at the beginning and end of a fiscal year.
                 Also, after calling this, GetRangeDates() will return the (possibly adjusted)
                 start and end dates. GetRange(), on the other hand, will return the underlying
                 axis values (which may be something like 0-365 if the date range is a year).
@@ -554,7 +584,8 @@ namespace Wisteria::GraphItems
             @sa GetRangeDates().*/
         void SetRange(const wxDateTime& startDate, const wxDateTime& endDate);
         /** @returns A pair representing the first and last value on the axis.
-            @warning The direction that this range is drawn will be reversed if the axis is reversed.*/
+            @warning The direction that this range is drawn will be reversed if the
+                axis is reversed.*/
         [[nodiscard]] auto GetRange() const noexcept
             { return std::make_pair(m_rangeStart, m_rangeEnd); }
         /** @brief Returns the start and end dates of the range.
@@ -766,7 +797,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] bool HasDoubleSidedAxisLabels() const noexcept
             { return m_doubleSidedAxisLabels; }
         /** @brief Specifies whether axis labels should be drawn on both sides of the axis.
-            @param doubleSided Whether axis labels should be drawn on both sides of the main axis line.*/
+            @param doubleSided Whether axis labels should be drawn on both sides of the
+                main axis line.*/
         void SetDoubleSidedAxisLabels(const bool doubleSided) noexcept
             { m_doubleSidedAxisLabels = doubleSided; }
 
@@ -898,7 +930,8 @@ namespace Wisteria::GraphItems
 
         /// @returns The length of the minor tick marks (i.e., tick marks between axis labels).
         /// @note This value is not scaled to the screen DPI because it is copied to the tickmarks,
-        ///  so the axis will then scale the tickmarks to the DPI and canvas scaling at a later stage.
+        ///     so the axis will then scale the tickmarks to the DPI and canvas scaling
+        ///     at a later stage.
         [[nodiscard]] int GetMinorTickMarkLength() const noexcept
             { return m_minorTickMarkLength; }
         /// @brief Sets the length of the minor tick marks (i.e., tick marks between axis labels).
@@ -911,7 +944,8 @@ namespace Wisteria::GraphItems
         /// @returns The length of the major tick marks (i.e., tick marks between axis labels).
         [[nodiscard]] int GetMajorTickMarkLength() const noexcept
             { return m_majorTickMarkLength; }
-        /// @brief Sets the length of the major tick marks (i.e., tick marks that correspond to axis labels).
+        /// @brief Sets the length of the major tick marks
+        ///     (i.e., tick marks that correspond to axis labels).
         /// @param length The length of the major tickmarks.
         ///  This is a pixel value that the framework will scale to the screen for you.
         ///  (The parent axis will also scale this as the graph's scaling changes.)
@@ -927,8 +961,9 @@ namespace Wisteria::GraphItems
         /// @}
 
         /** @brief Copies the settings from another axis into this one.
-            @details This only copies core settings (e.g., range, label display, precision, fonts, colors, etc.),
-             not structural features such as axis type or "add on" features like titles, headers, footers, and brackets.
+            @details This only copies core settings (e.g., range, label display, precision, fonts,
+                colors, etc.), not structural features such as axis type or "add on" features like
+                titles, headers, footers, and brackets.
             @param that The other axis to copy settings from.*/
         void CopySettings(const Axis& that);
 
@@ -940,7 +975,8 @@ namespace Wisteria::GraphItems
             @details This is a label that appears at the far outside of the axis, drawn parallel to it.
                 Relative alignment can control where the title is aligned against the axis
                 (the default is to align it centered to the axis line).
-            @note The title manages its own font. The customize this font, call `GetTitle().GetLabelDisplayInfo()`.
+            @note The title manages its own font.
+                To customize this font, call `GetTitle().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]] Label& GetTitle() noexcept
@@ -948,17 +984,21 @@ namespace Wisteria::GraphItems
         /// @}
 
         /** @name Header & Footer Functions
-            @brief Functions related to labels drawn on the top or bottom (or left and right) of an axis.*/
+            @brief Functions related to labels drawn on the top or bottom (or left and right)
+                of an axis.*/
         /// @{
 
         /** @brief Gets/sets the header of the axis.
-            @details This is a label that appears at the top or right of the axis (depending on the orientation of the axis).
+            @details This is a label that appears at the top or right of the axis
+                (depending on the orientation of the axis).
 
-             For X axes, relative alignment can control where the header is aligned vertically against the right of axis
-             (the default is to align it centered to the axis line).
+                For X axes, relative alignment can control where the header is aligned vertically
+                against the right of axis (the default is to align it centered to the axis line).
 
-             For Y axes, relative alignment controls where the footer is aligned horizontally against the top of the axis.
-            @note The header manages its own font. The customize this font, call `GetHeader().GetLabelDisplayInfo()`.
+                For Y axes, relative alignment controls where the footer is aligned horizontally
+                against the top of the axis.
+            @note The header manages its own font. The customize this font, call
+                `GetHeader().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
         [[nodiscard]] Label& GetHeader() noexcept
@@ -1009,6 +1049,14 @@ namespace Wisteria::GraphItems
         /// @returns The axis's brackets.
         [[nodiscard]] std::vector<AxisBracket>& GetBrackets() noexcept
             { return m_brackets; }
+        /** @brief Simplifies the labels along the brackets.
+            @note This should be called after all brackets have been added.
+            @details This will be various simplifications, such as the following:
+            - If brackets contain a pattern like `1979-80` or `FY1979-1980`,
+              then the first one will be preserved, but the remaining ones will
+              be shortened to `'79-80` or `FY79-80`. (This will only be applied
+              if all dates are in the same century.)*/
+        void SimplifyBrackets();
         /// @}
 
         /** @name Custom Axis Functions
@@ -1016,26 +1064,32 @@ namespace Wisteria::GraphItems
                 (i.e., an axis branching off of the traditional X or Y axes).*/
         /// @{
 
-        /// @returns The custom position (in respect to the main x axes); these only relate to custom axes.
+        /// @returns The custom position (in respect to the main x axes);
+        ///     these only relate to custom axes.
         /// @sa SetCustomXPosition().
         [[nodiscard]] double GetCustomXPosition() const noexcept
             { return m_customXPosition; }
-        /** @brief Sets the custom position (in respect to the main axes); these only relate to custom axes.
+        /** @brief Sets the custom position (in respect to the main axes);
+                these only relate to custom axes.
             @param xPos The custom (parent) x-axis position to connect this axis to.
-            @note For horizontal axes, this should be the right-most point of the X axis. In other words,
-             the max value of the X axis, unless it is reversed (then use the min of the X axis).
-             For vertical axes, this is where the axis should be placed on the bottom axis.*/
+            @note For horizontal axes, this should be the right-most point of the X axis.
+                In other words, the max value of the X axis, unless it is reversed
+                (then use the min of the X axis). For vertical axes, this is where the axis should
+                be placed on the bottom axis.*/
         void SetCustomXPosition(const double xPos) noexcept
             { m_customXPosition = xPos; }
-        /// @returns The custom position (in respect to the main y axes); these only relate to custom axes.
+        /// @returns The custom position (in respect to the main y axes);
+        ///     these only relate to custom axes.
         /// @sa SetCustomYPosition().
         [[nodiscard]] double GetCustomYPosition() const noexcept
             { return m_customYPosition; }
-        /** @brief Sets the custom position (in respect to the main axes); these only relate to custom axes.
+        /** @brief Sets the custom position (in respect to the main axes);
+                these only relate to custom axes.
             @param yPos The custom (parent) x-axis position to connect this axis to.
-            @note For vertical axes, this should be the top-most point of the Y axis. In other words,
-             the max value of the Y axis, unless Y is reversed (then it should be its min value).
-             For horizontal axes, this is where the axis should be placed on the left axis.*/
+            @note For vertical axes, this should be the top-most point of the Y axis.
+                In other words, the max value of the Y axis, unless Y is reversed
+                (then it should be its min value).\n
+                For horizontal axes, this is where the axis should be placed on the left axis.*/
         void SetCustomYPosition(const double yPos) noexcept
             { m_customYPosition = yPos; }
 
@@ -1049,9 +1103,10 @@ namespace Wisteria::GraphItems
 
         /** @brief Sets the physical y position on the canvas.
             @param y The physical y position to place the axis.
-            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be called in client code.
-             Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an axis
-             relative to the main axes.*/
+            @note This is used by the framework (e.g., @c Graph2D) for layout and should not be
+                called in client code.\n
+                Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an
+                axis relative to the main axes.*/
         void SetPhysicalCustomYPosition(const double y) noexcept
             { m_physicalCustomYPosition = y; }
         /// @returns The physical y position on the canvas of the axis.
@@ -1062,8 +1117,8 @@ namespace Wisteria::GraphItems
             @param x The physical x position to place the axis.
             @note This is used by the framework (e.g., @c Graph2D) for layout and should not be
                 called in client code.\n
-                Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an axis
-                relative to the main axes.*/
+                Use SetCustomYPosition() and SetCustomXPosition() for custom positioning of an
+                axis relative to the main axes.*/
         void SetPhysicalCustomXPosition(const double x) noexcept
             { m_physicalCustomXPosition = x; }
         /// @returns The physical x position on the canvas of the axis.
@@ -1073,12 +1128,14 @@ namespace Wisteria::GraphItems
         /// @}
 
         /** @name Outlining & Axis Width Functions
-            @brief Functions related to controlling how wide the axis is and drawing an outline around it.
+            @brief Functions related to controlling how wide the axis is and drawing an
+                outline around it.
             @note These functions can be useful for custom axes.*/
         /// @{
 
         /** @brief Specifies the inflated size around the axis to draw an outline.
-            @details By default, this outline is not being drawn and will be activated by calling this function.
+            @details By default, this outline is not being drawn and will be activated by
+                calling this function.
             @param sz The size around the axis to draw an outline.*/
         void SetOutlineSize(const wxSize sz) noexcept
             { m_outlineSize = sz; }
@@ -1154,6 +1211,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
             { return FindDatePosition(date); }
     private:
+        /// @brief Simplifies bracket labels if they are years.
+        bool SimplifyYearBrackets();
         // Most of the following functionality is only used by Graph2D-derived classes and
         // shouldn't be part of the client API. They are still properly documented here,
         // though, as a reference for when you are designing a new graph type.
@@ -1166,12 +1225,13 @@ namespace Wisteria::GraphItems
 
         /// @brief Sets the fiscal year date range.
         /// @details This will be used if the date interval is set to DateInterval::FiscalQuarterly.
-        ///  Fiscal years can vary between domains. For example, higher education runs July 1st to June 30,
-        ///  while most businesses run from April 1st to March 31st.
+        ///     Fiscal years can vary between domains. For example, higher education runs
+        ///     July 1st to June 30, while most businesses run from April 1st to March 31st.
         /// @param startMonth The starting month of the FY.
         /// @param startDay The starting day of the FY.
         /// @sa SetFiscalYearType().
-        void SetFiscalYearStart(const wxDateTime::Month startMonth, const wxDateTime::wxDateTime_t startDay)
+        void SetFiscalYearStart(const wxDateTime::Month startMonth,
+                                const wxDateTime::wxDateTime_t startDay)
             {
             m_fyQ1.SetMonth(startMonth);
             m_fyQ1.SetDay(startDay);
@@ -1280,15 +1340,19 @@ namespace Wisteria::GraphItems
             { return m_axisLabelScaling; }
         /// @brief If labels have a background color, then make their boxes wide enough
         ///     to fill the entire place available to them.
-        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, wxDC& dc, const bool useMaxWidth) const;
+        void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, wxDC& dc,
+                                                   const bool useMaxWidth) const;
         /// @brief Sets the scaling of the axis.
         /// @param scaling The scaling to use.
         void SetScaling(const double scaling) final;
-        /** @brief Retrieves the value along the axis from a physical (relative to parent plot) coordinate.
+        /** @brief Retrieves the value along the axis from a physical
+                (relative to parent plot) coordinate.
             @param coordinate The physical coordinate to look up.
             @param[out] value The axis value connected to the coordinate.
-            @returns @c true if coordinate is on the axis and a value can be found; @c false otherwise.*/
-        [[nodiscard]] bool GetValueFromPhysicalCoordinate(const wxCoord coordinate, double& value) const noexcept;
+            @returns @c true if coordinate is on the axis and a value can be found;
+                @c false otherwise.*/
+        [[nodiscard]] bool GetValueFromPhysicalCoordinate(const wxCoord coordinate,
+                                                          double& value) const noexcept;
         /// @brief Sets the width of spacing between labels.
         /// @param width The width of spacing between labels.
         void SetLabelPhysicalOffset(const double width) noexcept
@@ -1299,10 +1363,12 @@ namespace Wisteria::GraphItems
 
         /// @brief For horizontal axes, gets the first and last displayed labels and adjusts
         ///     the axis's corners to fit the labels' overhangs.
-        void CalcHorizontalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
+        void CalcHorizontalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner,
+                                         wxPoint& bottomRightCorner) const;
         /// @brief For vertical axes, gets the first and last displayed labels and adjusts
         ///     the axis's corners to fit the labels' overhangs.
-        void CalcVerticalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner, wxPoint& bottomRightCorner) const;
+        void CalcVerticalLabelOverhang(wxDC& dc, wxPoint& topLeftCorner,
+                                       wxPoint& bottomRightCorner) const;
 
         /// @brief Draws the axis onto the graphics context dc.
         /// @param dc The DC to draw on.
@@ -1310,7 +1376,8 @@ namespace Wisteria::GraphItems
         [[nodiscard]] wxRect Draw(wxDC& dc) const final;
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
-            @note This version is more optimal if multiple axes need to be measured with the same DC.*/
+            @note This version is more optimal if multiple axes need to be measured with
+                the same DC.*/
         [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
         /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
             @param dc The DC to measure with.*/
@@ -1397,13 +1464,15 @@ namespace Wisteria::GraphItems
         ///     but only custom labels are being displayed.
         [[nodiscard]] bool IsPointDisplayingLabel(const AxisPoint& point) const;
         /// @returns The best (smallest) scaling so that the labels don't overlap.
-        /// @warning This should be called after SetPoints() is called so that the physical width of the axis is valid.
+        /// @warning This should be called after SetPoints() is called so that the
+        ///     physical width of the axis is valid.
         double CalcBestScalingToFitLabels(wxDC& dc);
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final;
-        /// @returns The physical (relative to the parent canvas) starting and ending points for the axis.
+        /// @returns The physical (relative to the parent canvas) starting and ending points
+        ///     for the axis.
         [[nodiscard]] const std::pair<wxPoint,wxPoint>& GetPoints() const noexcept
             { return m_points; }
         /// @brief Calculates where to place the labels.

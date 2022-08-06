@@ -20,7 +20,7 @@ namespace Wisteria::GraphItems
         const auto radius =
             safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2);
         wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
-        wxDCBrushChanger bc(dc, m_graphInfo.GetBrush());
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto circleCenter = rect.GetLeftTop() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -28,7 +28,7 @@ namespace Wisteria::GraphItems
         dc.DrawCircle(circleCenter, radius);
 
         // lettering on the sign
-        Label theLabel(GraphItemInfo(m_graphInfo.GetText()).Pen(wxNullPen).
+        Label theLabel(GraphItemInfo(GetGraphItemInfo().GetText()).Pen(wxNullPen).
             AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).
             DPIScaling(GetDPIScaleFactor()));
@@ -51,7 +51,7 @@ namespace Wisteria::GraphItems
     void Shapes::DrawSun(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
-        GraphItems::Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
 
         const auto centerPt = wxPoint(0, 0) +
@@ -105,7 +105,7 @@ namespace Wisteria::GraphItems
     void Shapes::DrawFlower(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
-        GraphItems::Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
 
         const auto centerPt = wxPoint(0, 0) +
@@ -160,13 +160,13 @@ namespace Wisteria::GraphItems
     void Shapes::DrawFallLeaf(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
-        GraphItems::Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
 
-        const wxRect dcRect(wxPoint(0, 0), memDC.GetSize());
+        const wxRect dcRect(memDC.GetSize());
 
         auto gc = wxGraphicsContext::Create(memDC);
-        wxASSERT_MSG(gc, L"Failed to get graphics context for maple leaf icon!");
+        wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
             gc->SetPen(wxPen(ColorBrewer::GetColor(Color::LightBrown),
@@ -200,6 +200,134 @@ namespace Wisteria::GraphItems
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
+
+            wxDELETE(gc);
+            }
+
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void Shapes::DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side)
+        {
+        wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
+                     L"Pen should be set in Shape for curly braces!");
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");
+        if (gc && (side == Side::Left || side == Side::Right))
+            {
+            wxRect drawRect(rect.GetSize());
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+
+                // shrink drawing area for wider pens so that they don't
+                // go outside of it
+                drawRect.SetHeight(drawRect.GetHeight() - scaledPen.GetWidth());
+                drawRect.SetTop(drawRect.GetTop() + (scaledPen.GetWidth() / 2));
+                }
+
+            // cut the rect in half and draw mirrored curls in them
+            wxRect upperRect(drawRect), lowerRect(drawRect);
+            upperRect.SetHeight(upperRect.GetHeight() / 2);
+            lowerRect.SetHeight(lowerRect.GetHeight() / 2);
+            lowerRect.SetTop(upperRect.GetBottom());
+
+            if (side == Side::Left)
+                {
+                // draw the upper curl
+                auto upperCurlPath = gc->CreatePath();
+                upperCurlPath.MoveToPoint(upperRect.GetTopRight());
+                upperCurlPath.AddCurveToPoint(upperRect.GetTopLeft(), upperRect.GetBottomRight(),
+                    upperRect.GetBottomLeft());
+                gc->StrokePath(upperCurlPath);
+
+                // draw the lower curl
+                auto lowerCurlPath = gc->CreatePath();
+                lowerCurlPath.MoveToPoint(lowerRect.GetTopLeft());
+                lowerCurlPath.AddCurveToPoint(lowerRect.GetTopRight(), lowerRect.GetBottomLeft(),
+                    lowerRect.GetBottomRight());
+                gc->StrokePath(lowerCurlPath);
+                }
+            else if (side == Side::Right)
+                {
+                // draw the upper curl
+                auto upperCurlPath = gc->CreatePath();
+                upperCurlPath.MoveToPoint(upperRect.GetTopLeft());
+                upperCurlPath.AddCurveToPoint(upperRect.GetTopRight(), upperRect.GetBottomLeft(),
+                    upperRect.GetBottomRight());
+                gc->StrokePath(upperCurlPath);
+
+                // draw the lower curl
+                auto lowerCurlPath = gc->CreatePath();
+                lowerCurlPath.MoveToPoint(lowerRect.GetTopRight());
+                lowerCurlPath.AddCurveToPoint(lowerRect.GetTopLeft(), lowerRect.GetBottomRight(),
+                    lowerRect.GetBottomLeft());
+                gc->StrokePath(lowerCurlPath);
+                }
+
+            wxDELETE(gc);
+            }
+        else if (gc && (side == Side::Bottom || side == Side::Top))
+            {
+            wxRect drawRect(rect.GetSize());
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+
+                // shrink drawing area for wider pens so that they don't
+                // go outside of it
+                drawRect.SetWidth(drawRect.GetWidth() - scaledPen.GetWidth());
+                drawRect.SetLeft(drawRect.GetLeft() + (scaledPen.GetWidth() / 2));
+                }
+
+            // cut the rect in half and draw mirrored curls in them
+            wxRect leftRect(drawRect), rightRect(drawRect);
+            leftRect.SetWidth(leftRect.GetWidth() / 2);
+            rightRect.SetWidth(rightRect.GetWidth() / 2);
+            rightRect.SetLeft(leftRect.GetRight());
+
+            if (side == Side::Bottom)
+                {
+                // draw the left curl
+                auto leftCurlPath = gc->CreatePath();
+                leftCurlPath.MoveToPoint(leftRect.GetTopLeft());
+                leftCurlPath.AddCurveToPoint(leftRect.GetBottomLeft(), leftRect.GetTopRight(),
+                    leftRect.GetBottomRight());
+                gc->StrokePath(leftCurlPath);
+
+                // draw the right curl
+                auto rightCurlPath = gc->CreatePath();
+                rightCurlPath.MoveToPoint(rightRect.GetBottomLeft());
+                rightCurlPath.AddCurveToPoint(rightRect.GetTopLeft(), rightRect.GetBottomRight(),
+                    rightRect.GetTopRight());
+                gc->StrokePath(rightCurlPath);
+                }
+            else if (side == Side::Top)
+                {
+                // draw the left curl
+                auto leftCurlPath = gc->CreatePath();
+                leftCurlPath.MoveToPoint(leftRect.GetBottomLeft());
+                leftCurlPath.AddCurveToPoint(leftRect.GetTopLeft(), leftRect.GetBottomRight(),
+                    leftRect.GetTopRight());
+                gc->StrokePath(leftCurlPath);
+
+                // draw the right curl
+                auto lowerCurlPath = gc->CreatePath();
+                lowerCurlPath.MoveToPoint(rightRect.GetTopLeft());
+                lowerCurlPath.AddCurveToPoint(rightRect.GetBottomLeft(), rightRect.GetTopRight(),
+                    rightRect.GetBottomRight());
+                gc->StrokePath(lowerCurlPath);
+                }
 
             wxDELETE(gc);
             }

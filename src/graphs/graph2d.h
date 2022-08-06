@@ -348,6 +348,7 @@ namespace Wisteria::Graphs
         /// @private
         [[nodiscard]] const Wisteria::Canvas* GetCanvas() const noexcept
             { return m_parentCanvas; }
+        /// @private
         [[deprecated("Use AddAnnotation() instead.")]]
         void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
             const wxPoint pt,

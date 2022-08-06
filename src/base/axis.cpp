@@ -1325,7 +1325,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
-                    if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                    if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
                             {
@@ -1335,7 +1335,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(connectionX, position1),
                                 wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             }
-                        else
+                        else if (bracket.IsStraightLines())
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
                                 wxPoint(connectionX, position1),
@@ -1345,6 +1345,20 @@ namespace Wisteria::GraphItems
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
                                 wxPoint(connectionX, position3),
                                 wxPoint(connectionX-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                            }
+                        else
+                            {
+                            // the entire rect where the curly braces are drawn
+                            const wxRect styleAreaRect(
+                                wxPoint(connectionX -
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1),
+                                wxPoint(connectionX, position3));
+                                
+                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                Scaling(GetScaling()).
+                                DPIScaling(GetDPIScaleFactor()));
+                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
                             }
                         }
 
@@ -1362,7 +1376,7 @@ namespace Wisteria::GraphItems
                     bracketLabel.Draw(dc);
                     if (HasDoubleSidedAxisLabels())
                         {
-                        if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                        if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
                             if (bracket.IsSingleLine())
                                 {
@@ -1370,16 +1384,31 @@ namespace Wisteria::GraphItems
                                     wxPoint(connectionXDoubleSided, position1),
                                     wxPoint(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                                 }
-                            else
+                            else if (bracket.IsStraightLines())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(connectionXDoubleSided, position1),
-                                                                wxPoint(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                    wxPoint(connectionXDoubleSided, position1),
+                                    wxPoint(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                                 dc.DrawLine(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
                                             connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(connectionXDoubleSided, position3),
-                                                                wxPoint(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                    wxPoint(connectionXDoubleSided, position3),
+                                    wxPoint(connectionXDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                }
+                            else
+                                {
+                                // the entire rect where the curly braces are drawn
+                                const wxRect styleAreaRect(
+                                    wxPoint(connectionXDoubleSided,
+                                            position1),
+                                    wxPoint(connectionXDoubleSided +
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3));
+                                
+                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                    Scaling(GetScaling()).
+                                    DPIScaling(GetDPIScaleFactor()));
+                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1388,7 +1417,12 @@ namespace Wisteria::GraphItems
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                             }
                         else // AnchorWithLine
-                            { bracketLabel.SetAnchorPoint(wxPoint(connectionXDoubleSided+(labelWidth/2)+ScaleToScreenAndCanvas(bracket.GetLineSpacing()), position2)); }
+                            {
+                            bracketLabel.SetAnchorPoint(
+                                wxPoint(connectionXDoubleSided +
+                                    (labelWidth/2) + ScaleToScreenAndCanvas(bracket.GetLineSpacing()),
+                                position2));
+                            }
                         bracketLabel.Draw(dc);
                         }
                     }
@@ -1409,7 +1443,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
-                    if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                    if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
                             {
@@ -1417,16 +1451,30 @@ namespace Wisteria::GraphItems
                                 wxPoint(connectionX, position1),
                                 wxPoint(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             }
-                        else
+                        else if (bracket.IsStraightLines())
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionX, position1),
-                                                            wxPoint(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                wxPoint(connectionX, position1),
+                                wxPoint(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             dc.DrawLine(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
                                         connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionX, position3),
-                                                            wxPoint(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                wxPoint(connectionX, position3),
+                                wxPoint(connectionX+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                            }
+                        else
+                            {
+                            // the entire rect where the curly braces are drawn
+                            const wxRect styleAreaRect(
+                                wxPoint(connectionX +
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                        position1),
+                                wxPoint(connectionX, position3));
+                                
+                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                Scaling(GetScaling()).
+                                DPIScaling(GetDPIScaleFactor()));
+                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
                             }
                         }
 
@@ -1444,24 +1492,39 @@ namespace Wisteria::GraphItems
                     bracketLabel.Draw(dc);
                     if (HasDoubleSidedAxisLabels())
                         {
-                        if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                        if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
                             if (bracket.IsSingleLine())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(connectionXDoubleSided, position1),
-                                                                wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                    wxPoint(connectionXDoubleSided, position1),
+                                    wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                                 }
-                            else
+                            else if (bracket.IsStraightLines())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionXDoubleSided, position1),
-                                                            wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
+                                    wxPoint(connectionXDoubleSided, position1),
+                                    wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                                 dc.DrawLine(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1,
                                             connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3);
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(connectionXDoubleSided, position3),
-                                                            wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                    wxPoint(connectionXDoubleSided, position3),
+                                    wxPoint(connectionXDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3));
+                                }
+                            else
+                                {
+                                // the entire rect where the curly braces are drawn
+                                const wxRect styleAreaRect(
+                                    wxPoint(connectionXDoubleSided,
+                                            position1),
+                                    wxPoint(connectionXDoubleSided -
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
+                                            position3));
+                                
+                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                    Scaling(GetScaling()).
+                                    DPIScaling(GetDPIScaleFactor()));
+                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1470,7 +1533,13 @@ namespace Wisteria::GraphItems
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             }
                         else // AnchorWithLine
-                            { bracketLabel.SetAnchorPoint(wxPoint(connectionXDoubleSided-(ScaleToScreenAndCanvas(bracket.GetLineSpacing())+labelWidth/2), position2)); }
+                            {
+                            bracketLabel.SetAnchorPoint(
+                                wxPoint(connectionXDoubleSided -
+                                    (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + labelWidth/2),
+                                position2));
+                            bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                            }
                         bracketLabel.Draw(dc);
                         }
                     }
@@ -1491,24 +1560,37 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
-                    if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                    if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(position1, connectionY),
-                                                            wxPoint(position1, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                wxPoint(position1, connectionY),
+                                wxPoint(position1, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                             }
-                        else
+                        else if (bracket.IsStraightLines())
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(position1, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
-                                                            wxPoint(position1, connectionY));
+                                wxPoint(position1, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                wxPoint(position1, connectionY));
                             dc.DrawLine(position1, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                         position3, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                            wxPoint(position3, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
-                                                            wxPoint(position3, connectionY));
+                                wxPoint(position3, connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                wxPoint(position3, connectionY));
+                            }
+                        else
+                            {
+                            // the entire rect where the curly braces are drawn
+                            const wxRect styleAreaRect(
+                                wxPoint(position1,connectionY),
+                                wxPoint(position3,
+                                        connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                
+                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                Scaling(GetScaling()).
+                                DPIScaling(GetDPIScaleFactor()));
+                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);
                             }
                         }
 
@@ -1527,23 +1609,37 @@ namespace Wisteria::GraphItems
 
                     if (HasDoubleSidedAxisLabels())
                         {
-                        if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                        if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
                             if (bracket.IsSingleLine())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position1, connectionYDoubleSided),
-                                                                wxPoint(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                }
+                            else if (bracket.IsStraightLines())
+                                {
+                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                dc.DrawLine(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3, connectionYDoubleSided-bracket.GetTickmarkLength()*GetScaling());
+                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
+                                    wxPoint(position3, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                    wxPoint(position3, connectionYDoubleSided));
                                 }
                             else
                                 {
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position1, connectionYDoubleSided),
-                                                                wxPoint(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                dc.DrawLine(position1, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position3, connectionYDoubleSided-bracket.GetTickmarkLength()*GetScaling());
-                                bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position3, connectionYDoubleSided-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
-                                                                wxPoint(position3, connectionYDoubleSided));
+                                // the entire rect where the curly braces are drawn
+                                const wxRect styleAreaRect(
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position3,
+                                            connectionYDoubleSided -
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                
+                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                    Scaling(GetScaling()).
+                                    DPIScaling(GetDPIScaleFactor()));
+                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1574,7 +1670,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
-                    if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                    if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
                             {
@@ -1582,7 +1678,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(position1, connectionY),
                                 wxPoint(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                             }
-                        else
+                        else if (bracket.IsStraightLines())
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
                                 wxPoint(position1, connectionY),
@@ -1592,6 +1688,21 @@ namespace Wisteria::GraphItems
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
                                 wxPoint(position3, connectionY),
                                 wxPoint(position3, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                            }
+                        else
+                            {
+                            // the entire rect where the curly braces are drawn
+                            const wxRect styleAreaRect(
+                                wxPoint(position1,
+                                        connectionY -
+                                            ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                wxPoint(position3,
+                                        connectionY));
+                                
+                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                Scaling(GetScaling()).
+                                DPIScaling(GetDPIScaleFactor()));
+                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
                             }
                         }
 
@@ -1610,24 +1721,38 @@ namespace Wisteria::GraphItems
 
                     if (HasDoubleSidedAxisLabels())
                         {
-                        if (bracket.GetBracketLineShape() != AxisBracket::BracketLineShape::NoLine)
+                        if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
                             if (bracket.IsSingleLine())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position1, connectionYDoubleSided),
-                                                                wxPoint(position1, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position1, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                                 }
-                            else
+                            else if (bracket.IsStraightLines())
                                 {
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position1, connectionYDoubleSided),
-                                                                wxPoint(position1, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position1, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                                 dc.DrawLine(position1, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength()));
                                 bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
-                                                                wxPoint(position3, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
-                                                                wxPoint(position3, connectionYDoubleSided));
+                                    wxPoint(position3, connectionYDoubleSided+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
+                                    wxPoint(position3, connectionYDoubleSided));
+                                }
+                            else
+                                {
+                                // the entire rect where the curly braces are drawn
+                                const wxRect styleAreaRect(
+                                    wxPoint(position1, connectionYDoubleSided),
+                                    wxPoint(position3,
+                                            connectionYDoubleSided +
+                                                ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                
+                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                    Scaling(GetScaling()).
+                                    DPIScaling(GetDPIScaleFactor()));
+                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -3204,6 +3329,67 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
+        }
+
+    //-------------------------------------------
+    bool Axis::SimplifyYearBrackets()
+        {
+        if (GetBrackets().size() < 2)
+            { return false; }
+
+        wxRegEx re(LR"(^[A-Z]{0,2}([0-9]{2})[0-9]{2}[\-\x2013]([0-9]{2})?[0-9]{2}$)");
+        wxString century;
+        for (const auto& bracket : GetBrackets())
+            {
+            if (re.Matches(bracket.GetLabel().GetText()))
+                {
+                const auto currentCentury = re.GetMatch(bracket.GetLabel().GetText(), 1);
+                // first bracket, so set the overall century
+                if (century.empty())
+                    { century = currentCentury; }
+                // or if a latter bracket with a different century, then bail
+                else if (century != currentCentury)
+                    { return false; }
+                if (re.GetMatchCount() > 1)
+                    {
+                    const auto secondCentury = re.GetMatch(bracket.GetLabel().GetText(), 2);
+                    if (secondCentury.length() && secondCentury != currentCentury)
+                        { return false; }
+                    }
+                }
+            else
+                { return false; }
+            }
+        wxRegEx reReplace(LR"([0-9]{2}([0-9]{2}))");
+        wxRegEx rePrefix(LR"(^[A-Z]{2})");
+        for (size_t i = 1; i < GetBrackets().size(); ++i)
+            {
+            wxString label = GetBrackets()[i].GetLabel().GetText();
+            // out of 4-digit sequence, only keep the last 2
+            reReplace.ReplaceAll(&label, LR"(\1)");
+            // if no prefix like "FY", then it's just a year sequence;
+            // add apostrophe in front of the first truncated number
+            if (!rePrefix.Matches(label))
+                { label.insert(0, 1, L'\''); }
+            // if using hypthens, replace with en dashes to be fancier
+            label.Replace(L"-", L"\x2013");
+            GetBrackets()[i].GetLabel().SetText(label);
+            }
+        // fix en dash in first label also
+        wxString label = GetBrackets()[0].GetLabel().GetText();
+        label.Replace(L"-", L"\x2013");
+        GetBrackets()[0].GetLabel().SetText(label);
+
+        return true;
+        }
+
+    //-------------------------------------------
+    void Axis::SimplifyBrackets()
+        {
+        if (GetBrackets().size() < 2)
+            { return; }
+
+        SimplifyYearBrackets();
         }
 
     //-------------------------------------------
