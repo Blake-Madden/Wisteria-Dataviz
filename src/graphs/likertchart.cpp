@@ -386,7 +386,7 @@ namespace Wisteria::Graphs
                     {
                     throw std::runtime_error(wxString::Format(
                         _(L"Invalid Likert response: %" PRIu64 "\nColumn: %s\nValues should not exceed 7."),
-                        maxVal, categoricalColumn->GetTitle()).ToUTF8());
+                        maxVal, categoricalColumn->GetName()).ToUTF8());
                     }
                 }
             }

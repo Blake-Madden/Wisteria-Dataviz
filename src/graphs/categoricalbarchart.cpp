@@ -80,7 +80,7 @@ namespace Wisteria::Graphs
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
-        GetBarAxis().GetTitle().SetText(m_categoricalColumn->GetTitle());
+        GetBarAxis().GetTitle().SetText(m_categoricalColumn->GetName());
         GetScalingAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
@@ -235,7 +235,7 @@ namespace Wisteria::Graphs
         if (options.IsIncludingHeader())
             {
             legendText.Prepend(
-                wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
+                wxString::Format(L"%s\n", m_groupColumn->GetName()));
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());

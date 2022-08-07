@@ -114,7 +114,7 @@ namespace Wisteria::Graphs
 
         if (groupColumn != data->GetCategoricalColumns().cend())
             {
-            m_legendTitle = groupColumn->GetTitle();
+            m_legendTitle = groupColumn->GetName();
             for (const auto& groupId : groupIds)
                 {
                 m_legendLines.emplace(

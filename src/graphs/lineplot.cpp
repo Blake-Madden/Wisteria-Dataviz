@@ -324,7 +324,7 @@ namespace Wisteria::Graphs
             }
         if (options.IsIncludingHeader())
             {
-            legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetTitle()));
+            legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetName()));
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());

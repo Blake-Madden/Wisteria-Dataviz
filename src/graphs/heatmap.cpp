@@ -437,7 +437,7 @@ namespace Wisteria::Graphs
         if (options.IsIncludingHeader())
             {
             legend->SetText(
-                wxString::Format(L"%s\n", m_continuousColumn->GetTitle()) + legend->GetText());
+                wxString::Format(L"%s\n", m_continuousColumn->GetName()) + legend->GetText());
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->GetLegendIcons().emplace_back(LegendIcon(m_reversedColorSpectrum));

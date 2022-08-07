@@ -63,7 +63,7 @@ namespace Wisteria::Data
         /** @brief Constructor.
             @param title The title of the column.
              This is useful for identifying the column in a dataset.*/
-        explicit Column(const wxString& title) : m_title(title)
+        explicit Column(const wxString& title) : m_name(title)
             {}
         /// @private
         Column() = default;
@@ -108,13 +108,21 @@ namespace Wisteria::Data
         /// @returns The number of rows.
         [[nodiscard]] size_t GetRowCount() const noexcept
             { return m_data.size(); }
-        /// @returns The title of the column.
+        /// @returns The name of the column.
+        [[nodiscard]] const wxString& GetName() const noexcept
+            { return m_name; }
+        /// @brief Sets the column's name.
+        /// @param name The name.
+        void SetName(const wxString& name)
+            { m_name = name; }
+        /// @private
+        [[deprecated("Use GetName().")]]
         [[nodiscard]] const wxString& GetTitle() const noexcept
-            { return m_title; }
-        /// @brief Sets the column's title.
-        /// @param title The title.
+            { return m_name; }
+        /// @private
+        [[deprecated("Use SetName().")]]
         void SetTitle(const wxString& title)
-            { m_title = title; }
+            { m_name = title; }
     protected:
         /// @brief Removes all data.
         virtual void Clear() noexcept
@@ -137,7 +145,7 @@ namespace Wisteria::Data
         void AddValue(const T& val)
             { m_data.push_back(val); }
     private:
-        wxString m_title;
+        wxString m_name;
         std::vector<T> m_data;
         };
 
@@ -173,6 +181,10 @@ namespace Wisteria::Data
         /// @private
         [[nodiscard]] const StringTableType& GetStringTable() const noexcept
             { return m_stringTable; }
+        /// @brief Sets the string table.
+        /// @param sTable The new string table for the column.
+        void SetStringTable(const StringTableType& sTable)
+            { m_stringTable = sTable; }
         /** @brief Gets the label from the string table given the numeric code,
                 or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
@@ -618,43 +630,49 @@ namespace Wisteria::Data
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
              otherwise, that function will rely on creating new columns
-             with more generic names.*/
-        void AddContinuousColumn(const wxString& columnName)
+                with more generic names.
+            @returns The newly added column.*/
+        Column<double>& AddContinuousColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Column name is empty in call to AddContinuousColumn()!");
             m_continuousColumns.resize(m_continuousColumns.size()+1);
-            m_continuousColumns.back().SetTitle(columnName);
+            m_continuousColumns.back().SetName(columnName);
             m_continuousColumns.back().Resize(GetRowCount(),
                                               std::numeric_limits<double>::quiet_NaN());
+            return m_continuousColumns.back();
             }
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
              otherwise, that function will rely on creating new columns
-             with more generic names.*/
-        void AddCategoricalColumn(const wxString& columnName);
+                with more generic names.
+            @returns The newly added column.*/
+        ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName);
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
             @param stringTable A string table to assign to the column.
             @note It is recommended to call this prior to AddRow();
              otherwise, that function will rely on creating new columns
-             with more generic names.*/
-        void AddCategoricalColumn(const wxString& columnName,
+                with more generic names.
+            @returns The newly added column.*/
+        ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName,
             const ColumnWithStringTable::StringTableType& stringTable);
         
         /** @brief Adds a new date column.
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
              otherwise, that function will rely on creating new columns
-             with more generic names.*/
-        void AddDateColumn(const wxString& columnName)
+                with more generic names.
+            @returns The newly added column.*/
+        Column<wxDateTime>& AddDateColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Date name is empty in call to AddDateColumn()!");
             m_dateColumns.resize(m_dateColumns.size()+1);
-            m_dateColumns.back().SetTitle(columnName);
+            m_dateColumns.back().SetName(columnName);
             m_dateColumns.back().Resize(GetRowCount(), wxInvalidDateTime);
+            return m_dateColumns.back();
             }
         /** @brief Adds a single data point.
             @details This is a lower-level method for manually filling a dataset;
@@ -697,7 +715,7 @@ namespace Wisteria::Data
             return std::find_if(GetCategoricalColumns().cbegin(),
                 GetCategoricalColumns().cend(),
                 [&columnName](const auto& item) noexcept
-                { return item.GetTitle().CmpNoCase(columnName) == 0; });
+                { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets an iterator to a categorical column by name.
             @param columnName The name of the categorical column to look for.
@@ -710,7 +728,7 @@ namespace Wisteria::Data
             return std::find_if(GetCategoricalColumns().begin(),
                 GetCategoricalColumns().end(),
                 [&columnName](const auto& item) noexcept
-                { return item.GetTitle().CmpNoCase(columnName) == 0; });
+                { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /// @private
         [[nodiscard]] const std::vector<ColumnWithStringTable>& GetCategoricalColumns() const noexcept
@@ -724,7 +742,7 @@ namespace Wisteria::Data
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetCategoricalColumns())
-                { colNames.push_back(col.GetTitle()); }
+                { colNames.push_back(col.GetName()); }
             return colNames;
             }
 
@@ -739,7 +757,7 @@ namespace Wisteria::Data
             return std::find_if(GetDateColumns().cbegin(),
                 GetDateColumns().cend(),
                 [&columnName](const auto& item) noexcept
-                { return item.GetTitle().CmpNoCase(columnName) == 0; });
+                { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets an iterator to a date column by name.
             @param columnName The name of the date column to look for.
@@ -752,7 +770,7 @@ namespace Wisteria::Data
             return std::find_if(GetDateColumns().begin(),
                 GetDateColumns().end(),
                 [&columnName](const auto& item) noexcept
-                { return item.GetTitle().CmpNoCase(columnName) == 0; });
+                { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /// @private
         [[nodiscard]] const std::vector<Column<wxDateTime>>& GetDateColumns() const noexcept
@@ -766,7 +784,7 @@ namespace Wisteria::Data
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetDateColumns())
-                { colNames.push_back(col.GetTitle()); }
+                { colNames.push_back(col.GetName()); }
             return colNames;
             }
 
@@ -781,7 +799,7 @@ namespace Wisteria::Data
             return std::find_if(GetContinuousColumns().cbegin(),
                 GetContinuousColumns().cend(),
                 [&columnName](const auto& item) noexcept
-                { return item.GetTitle().CmpNoCase(columnName) == 0; });
+                { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /// @private
         [[nodiscard]] const std::vector<Column<double>>& GetContinuousColumns() const noexcept
@@ -795,7 +813,7 @@ namespace Wisteria::Data
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetContinuousColumns())
-                { colNames.push_back(col.GetTitle()); }
+                { colNames.push_back(col.GetName()); }
             return colNames;
             }
         /** @brief Removes a column name(s) from a list of columns.

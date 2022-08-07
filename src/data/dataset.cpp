@@ -405,25 +405,25 @@ namespace Wisteria::Data
             }
 
         if (info.m_idColumn.length())
-            { GetIdColumn().SetTitle(info.m_idColumn); }
+            { GetIdColumn().SetName(info.m_idColumn); }
         // date columns
         for (size_t i = 0; i < info.m_dateColumns.size(); ++i)
-            { GetDateColumn(i).SetTitle(info.m_dateColumns.at(i).m_columnName); }
+            { GetDateColumn(i).SetName(info.m_dateColumns.at(i).m_columnName); }
         // categorical columns
         for (size_t i = 0; i < info.m_categoricalColumns.size(); ++i)
-            { GetCategoricalColumn(i).SetTitle(info.m_categoricalColumns.at(i).m_columnName); }
+            { GetCategoricalColumn(i).SetName(info.m_categoricalColumns.at(i).m_columnName); }
         // continuous
         for (size_t i = 0; i < info.m_continuousColumns.size(); ++i)
-            { GetContinuousColumn(i).SetTitle(info.m_continuousColumns.at(i)); }
+            { GetContinuousColumn(i).SetName(info.m_continuousColumns.at(i)); }
         }
 
     //----------------------------------------------
-    void Dataset::AddCategoricalColumn(const wxString& columnName)
+    ColumnWithStringTable& Dataset::AddCategoricalColumn(const wxString& columnName)
         {
         wxASSERT_MSG(columnName.length(),
             L"Column name is empty in call to AddCategoricalColumn()!");
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
-        m_categoricalColumns.back().SetTitle(columnName);
+        m_categoricalColumns.back().SetName(columnName);
         // add a string table with an empty value and fill the data with that
         // if there are existing rows in the data
         if (GetRowCount())
@@ -432,16 +432,17 @@ namespace Wisteria::Data
                 insert(std::make_pair(0, wxString()));
             m_categoricalColumns.back().Resize(GetRowCount(), 0);
             }
+        return m_categoricalColumns.back();
         }
 
     //----------------------------------------------
-    void Dataset::AddCategoricalColumn(const wxString& columnName,
+    ColumnWithStringTable& Dataset::AddCategoricalColumn(const wxString& columnName,
         const ColumnWithStringTable::StringTableType& stringTable)
         {
         wxASSERT_MSG(columnName.length(),
             L"Column name is empty in call to AddCategoricalColumn()!");
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
-        m_categoricalColumns.back().SetTitle(columnName);
+        m_categoricalColumns.back().SetName(columnName);
         m_categoricalColumns.back().GetStringTable() = stringTable;
         // if we have existing rows and need to fill this column
         if (GetRowCount())
@@ -461,7 +462,7 @@ namespace Wisteria::Data
                     if (value.empty())
                         {
                         m_categoricalColumns.back().Resize(GetRowCount(), key);
-                        return;
+                        return m_categoricalColumns.back();
                         }
                     }
                 // no empty string in string table, so add one (with an ID one
@@ -472,6 +473,7 @@ namespace Wisteria::Data
                 m_categoricalColumns.back().Resize(GetRowCount(), lastKey+1);
                 }
             }
+        return m_categoricalColumns.back();
         }
 
     //----------------------------------------------
@@ -568,13 +570,13 @@ namespace Wisteria::Data
             wxString colNames;
             for (const auto& catCol : cols)
                 {
-                colNames.append(wrapText(catCol.GetTitle())).
+                colNames.append(wrapText(catCol.GetName())).
                     append(1, delimiter);
                 }
             colNames.RemoveLast();
             return colNames;
             };
-        wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetTitle()) : wxString();
+        wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString();
         wxString continuousColumnNames = concatColNames(GetContinuousColumns());
         wxString catColumnNames = concatColNames(GetCategoricalColumns());
         wxString dataColumnNames = concatColNames(GetDateColumns());
