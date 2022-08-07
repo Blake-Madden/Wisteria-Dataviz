@@ -1205,6 +1205,11 @@ namespace Wisteria::GraphItems
         [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
             { return FindDatePosition(date); }
     private:
+        /// @brief Loads the default labels based on the axis values.
+        /// @details This will only do anything is the label display is set to use
+        ///     the default labels. In other words, if labels are turned off or only
+        ///     custom labels are used, then this will not update anything.
+        void LoadDefaultLabels();
         /// @brief Simplifies bracket labels if they are years.
         bool SimplifyYearBrackets();
         // Most of the following functionality is only used by Graph2D-derived classes and

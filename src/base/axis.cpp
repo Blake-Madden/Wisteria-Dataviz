@@ -2753,10 +2753,8 @@ namespace Wisteria::GraphItems
                     { currentDisplayInterval = displayInterval; }
                 else
                     { --currentDisplayInterval; }
-                wxString textLabel = wxNumberFormatter::ToString(i, precision,
-                    wxNumberFormatter::Style::Style_WithThousandsSep);
                 // add it to the axis label collection
-                m_axisLabels.emplace_back(AxisPoint(i, textLabel, display));
+                m_axisLabels.emplace_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeEnd;
@@ -2776,22 +2774,38 @@ namespace Wisteria::GraphItems
                     { currentDisplayInterval = displayInterval; }
                 else
                     { --currentDisplayInterval; }
-                wxString textLabel = wxNumberFormatter::ToString(i, precision,
-                    wxNumberFormatter::Style::Style_WithThousandsSep);
                 // add it to the axis label collection
-                m_axisLabels.emplace_back(AxisPoint(i, textLabel, display));
+                m_axisLabels.emplace_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeStart;
             m_rangeEnd = lastValidPoint;
             }
+
+        LoadDefaultLabels();
         }
 
     //--------------------------------------
     void Axis::SetLabelDisplay(const AxisLabelDisplay display)
         {
         m_labelDisplay = display;
+        LoadDefaultLabels();
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
+        }
+
+    //--------------------------------------
+    void Axis::LoadDefaultLabels()
+        {
+        if (GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsAndValues ||
+            GetLabelDisplay() == AxisLabelDisplay::DisplayCustomLabelsOrValues)
+            {
+            for (auto& axisPt : GetAxisPoints())
+                {
+                axisPt.SetDisplayValue(
+                    wxNumberFormatter::ToString(axisPt.GetValue(), m_displayPrecision,
+                        wxNumberFormatter::Style::Style_WithThousandsSep));
+                }
+            }
         }
 
     //--------------------------------------
