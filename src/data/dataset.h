@@ -47,6 +47,7 @@ namespace Wisteria::Data
 
     // forward declarations for friendships
     class Dataset;
+    class DatasetClone;
 
     /// @brief A column of data.
     template<typename T>
@@ -56,6 +57,7 @@ namespace Wisteria::Data
         // accessible to the parent dataset; client should not be able to alter
         // the dimensions of the column, only its content.
         friend class Dataset;
+        friend class DatasetClone;
     public:
         /// @brief The data type stored in this column.
         using DataType = T;
@@ -582,6 +584,7 @@ namespace Wisteria::Data
          for dataset overviews.*/
     class Dataset
         {
+        friend DatasetClone;
     public:
         /// @brief Description of a column's deduced type when previewing.
         /// @details This is used by ReadColumnInfo().
@@ -629,7 +632,7 @@ namespace Wisteria::Data
         /** @brief Adds a new continuous column.
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
-             otherwise, that function will rely on creating new columns
+                otherwise, that function will rely on creating new columns
                 with more generic names.
             @returns The newly added column.*/
         Column<double>& AddContinuousColumn(const wxString& columnName)
@@ -645,7 +648,7 @@ namespace Wisteria::Data
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
-             otherwise, that function will rely on creating new columns
+                otherwise, that function will rely on creating new columns
                 with more generic names.
             @returns The newly added column.*/
         ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName);
@@ -653,7 +656,7 @@ namespace Wisteria::Data
             @param columnName The name of the column.
             @param stringTable A string table to assign to the column.
             @note It is recommended to call this prior to AddRow();
-             otherwise, that function will rely on creating new columns
+                otherwise, that function will rely on creating new columns
                 with more generic names.
             @returns The newly added column.*/
         ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName,
@@ -662,7 +665,7 @@ namespace Wisteria::Data
         /** @brief Adds a new date column.
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
-             otherwise, that function will rely on creating new columns
+                otherwise, that function will rely on creating new columns
                 with more generic names.
             @returns The newly added column.*/
         Column<wxDateTime>& AddDateColumn(const wxString& columnName)

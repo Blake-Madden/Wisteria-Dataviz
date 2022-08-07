@@ -15,6 +15,7 @@ SET(WISTERIA_SRC
     src/base/reportbuilder.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
+    src/data/clone.cpp
     src/data/dataset.cpp
     src/data/textclassifier.cpp
     src/debug/debug_profile.cpp
