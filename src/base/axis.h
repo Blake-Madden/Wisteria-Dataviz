@@ -215,7 +215,6 @@ namespace Wisteria::GraphItems
                 m_label.SetFontColor(pen.GetColour());
                 m_label.SetTextOrientation(Orientation::Horizontal);
                 }
-            AxisBracket() = delete;
 
             /// @name Range Functions
             /// @brief Functions relating to the bracket's starting and ending point
@@ -722,11 +721,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] bool PointHasLabel(const double value) const;
         /// @brief Sets how the numbers and custom labels should be shown.
         /// @param display How the tick labels should be displayed.
-        void SetLabelDisplay(const AxisLabelDisplay display) noexcept
-            {
-            m_labelDisplay = display;
-            m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
-            }
+        void SetLabelDisplay(const AxisLabelDisplay display);
         /// @returns How the tick labels are displayed.
         [[nodiscard]] const AxisLabelDisplay& GetLabelDisplay() const noexcept
             { return m_labelDisplay; }

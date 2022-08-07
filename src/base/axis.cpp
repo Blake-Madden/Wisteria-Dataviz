@@ -2756,7 +2756,7 @@ namespace Wisteria::GraphItems
                 wxString textLabel = wxNumberFormatter::ToString(i, precision,
                     wxNumberFormatter::Style::Style_WithThousandsSep);
                 // add it to the axis label collection
-                m_axisLabels.push_back(AxisPoint(i, textLabel, display));
+                m_axisLabels.emplace_back(AxisPoint(i, textLabel, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeEnd;
@@ -2779,12 +2779,19 @@ namespace Wisteria::GraphItems
                 wxString textLabel = wxNumberFormatter::ToString(i, precision,
                     wxNumberFormatter::Style::Style_WithThousandsSep);
                 // add it to the axis label collection
-                m_axisLabels.push_back(AxisPoint(i, textLabel, display));
+                m_axisLabels.emplace_back(AxisPoint(i, textLabel, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeStart;
             m_rangeEnd = lastValidPoint;
             }
+        }
+
+    //--------------------------------------
+    void Axis::SetLabelDisplay(const AxisLabelDisplay display)
+        {
+        m_labelDisplay = display;
+        m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
         }
 
     //--------------------------------------
