@@ -81,7 +81,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] double GetScaling() const noexcept
             { return m_graphInfo.GetScaling(); }
 
-        double GetDPIScaleFactor() const noexcept
+        [[nodiscard]] double GetDPIScaleFactor() const noexcept
             {
             wxASSERT_LEVEL_2_MSG(m_graphInfo.GetDPIScaleFactor().has_value(),
                                  L"Shape should have a proper DPI scaling.");
