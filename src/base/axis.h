@@ -169,12 +169,10 @@ namespace Wisteria::GraphItems
                 @param lineLength The length of the tickmark.*/
             TickMark(const DisplayType displayType, const double position, wxCoord lineLength) noexcept :
                 m_displayType(displayType), m_position(position),
-                m_lineLength(lineLength), m_physicalCoordinate(-1)
+                m_lineLength(lineLength)
                 {}
-            /// @brief Default Constructor.
-            TickMark() noexcept : m_displayType(DisplayType::Inner), m_position(0),
-                                  m_lineLength(0), m_physicalCoordinate(-1)
-                {}
+            /// @private
+            TickMark() = default;
             /// @brief Returns how the tickmark is displayed.
             /// @returns The tickmark display method.
             [[nodiscard]] const DisplayType& GetTickMarkDisplay() const noexcept
@@ -277,7 +275,8 @@ namespace Wisteria::GraphItems
 
             /// @returns How the labels are aligned, either against the connection
             ///     lines or the outer boundary of the brackets.
-            [[nodiscard]] const AxisLabelAlignment& GetPerpendicularLabelConnectionLinesAlignment() const noexcept
+            [[nodiscard]] const AxisLabelAlignment&
+                GetPerpendicularLabelConnectionLinesAlignment() const noexcept
                 { return m_axisLabelAlignment; }
             /// @brief Sets how the labels are aligned, either against the lines
             ///     (connecting to the parent axis) or the outer boundary.
