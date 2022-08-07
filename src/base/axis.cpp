@@ -3135,7 +3135,7 @@ namespace Wisteria::GraphItems
         result = -1; // init to invalid value in case we have to return false
         if (GetAxisPointsCount() == 0)
             { return false; }
-        std::vector<AxisPoint>::const_iterator pos;
+        std::vector<AxisPoint>::const_iterator pos{ GetAxisPoints().cend() };
         if (IsReversed())
             {
             for (pos = GetAxisPoints().cbegin();
@@ -3149,10 +3149,10 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            pos = std::lower_bound(GetAxisPoints().begin(),
-                                   GetAxisPoints().end(), value);
+            pos = std::lower_bound(GetAxisPoints().cbegin(),
+                                   GetAxisPoints().cend(), value);
             }
-        if (pos == GetAxisPoints().end() )
+        if (pos == GetAxisPoints().cend() )
             { return false; }
         if (*pos == value)
             {
@@ -3161,7 +3161,7 @@ namespace Wisteria::GraphItems
             }
         // if this point is before the first axis line or
         // above the top axis line, then it is out of range
-        if (pos == GetAxisPoints().begin())
+        if (pos == GetAxisPoints().cbegin())
             { return false; }
         auto previousLine = pos; --previousLine;
         const double lowerLineValue = previousLine->GetValue();
