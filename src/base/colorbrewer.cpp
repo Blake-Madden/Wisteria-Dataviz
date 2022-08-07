@@ -75,7 +75,8 @@ wxColour ColorBrewer::GetColor(const Color color)
 
 wxColour ColorBrewer::BrewColor(const double value) const
     {
-    wxASSERT_MSG(value >= m_range.first && value <= m_range.first,
+    wxASSERT_MSG(std::isnan(value) ||
+                 (value >= m_range.first && value <= m_range.second),
                  L"Value passed to BrewColor() should be within establised data range "
                   "from previous call to BrewColors()!");
     // return invalid color or NaN
