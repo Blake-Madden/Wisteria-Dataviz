@@ -19,6 +19,7 @@
 #include <optional>
 #include <limits>
 #include <cinttypes>
+#include <variant>
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/colour.h>
@@ -30,7 +31,28 @@
 #include <wx/regex.h>
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
+#include "../math/mathematics.h"
 #include "../debug/debug_assert.h"
+
+namespace Wisteria
+    {
+    /// @brief How values can be compared.
+    enum class Comparison
+        {
+        /// @brief Items are equal.
+        Equals,
+        /// @brief Items are not equal.
+        NotEquals,
+        /// @brief First item is less than the other.
+        LessThan,
+        /// @brief First item is less than or equal to the other.
+        LessThanOrEqualTo,
+        /// @brief First item is greater than the other.
+        GreaterThan,
+        /// @brief First item is greater than or equal to the other.
+        GreaterThanOrEqualTo,
+        };
+    }
 
 /** @brief %Data management classes for graphs.*/
 namespace Wisteria::Data
@@ -48,6 +70,22 @@ namespace Wisteria::Data
     // forward declarations for friendships
     class Dataset;
     class DatasetClone;
+
+    /// @brief The integral type used for looking up a label from a grouping column's string table.
+    /// @details Grouping column string tables are maps that consist of a @c GroupIdType
+    ///     as its lookup key and a string as its value.
+    using GroupIdType = uint64_t;
+    /// @brief The different types that could appear in a dataset.
+    using DatasetValueType = std::variant<wxString, double, GroupIdType, wxDateTime>;
+
+    /// @private
+    enum class ColumnType
+        {
+        ID,
+        Date,
+        Continuous,
+        Categorical
+        };
 
     /// @brief A column of data.
     template<typename T>
@@ -150,11 +188,6 @@ namespace Wisteria::Data
         wxString m_name;
         std::vector<T> m_data;
         };
-
-    /// @brief The integral type used for looking up a label from a grouping column's string table.
-    /// @details Grouping column string tables are maps that consist of a @c GroupIdType
-    ///  as its lookup key and a string as its value.
-    using GroupIdType = uint64_t;
 
     /// @brief An integral column with a string lookup table.
     /// @details This is useful for categorical data that is stored as numeric codes,

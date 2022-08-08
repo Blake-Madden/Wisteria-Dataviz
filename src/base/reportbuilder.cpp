@@ -72,6 +72,15 @@ namespace Wisteria
             return reportPages;
             }
 
+        try
+            { LoadSubsets(json->GetProperty(L"subsets")); }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Subsets Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
+            return reportPages;
+            }
+
         // start loading the pages
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
@@ -739,6 +748,82 @@ namespace Wisteria
                 { return formula; }
             }
         return formula;
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode)
+        {
+        static const std::map<std::wstring_view, Comparison> cmpOperators =
+            {
+            { L"=", Comparison::Equals },
+            { L"==", Comparison::Equals },
+            { L"!=", Comparison::NotEquals },
+            { L"<>", Comparison::NotEquals },
+            { L"<", Comparison::LessThan },
+            { L"<=", Comparison::LessThanOrEqualTo },
+            { L">", Comparison::GreaterThan },
+            { L">=", Comparison::GreaterThanOrEqualTo }
+            };
+
+        if (subsetsNode->IsOk())
+            {
+            auto subsets = subsetsNode->GetValueArrayObject();
+            for (const auto& subset : subsets)
+                {
+                if (subset->IsOk())
+                    {
+                    const wxString dsName = subset->GetProperty(L"datasource")->GetValueString();
+                    if (subset->GetProperty(L"datasource")->IsOk())
+                        {
+                        const wxString dsName = subset->GetProperty(L"datasource")->GetValueString();
+                        const auto foundDataset = m_datasets.find(dsName);
+                        if (foundDataset == m_datasets.cend() ||
+                            foundDataset->second == nullptr)
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                            }
+                        const auto filter = subset->GetProperty(L"filter");
+                        if (filter->IsOk())
+                            {
+                            const auto foundPos = cmpOperators.find(std::wstring_view(
+                                filter->GetProperty(L"operator")->
+                                GetValueString().MakeLower().wc_str()));
+                            Comparison cmp = (foundPos != cmpOperators.cend() ?
+                                foundPos->second : Comparison::Equals);
+                            
+                            const auto filterNode = filter->GetProperty(L"value");
+                            
+                            if (filterNode->IsOk())
+                                {
+                                wxDateTime dt;
+                                const bool isDate =
+                                    (filterNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                                     (dt.ParseDateTime(filterNode->GetValueString()) ||
+                                      dt.ParseDate(filterNode->GetValueString())));
+                                ColumnFilterInfo cFilter 
+                                    {
+                                    filter->GetProperty(L"column")->GetValueString(),
+                                    cmp,
+                                    (isDate ?
+                                     DatasetValueType(dt) :
+                                        filterNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                                     DatasetValueType(ExpandValues(filterNode->GetValueString())) :
+                                     DatasetValueType(filterNode->GetValueNumber()))
+                                    };
+
+                                DatasetSubset dataSubsetter;
+                                const auto dataSubset = dataSubsetter.Subset(
+                                    foundDataset->second, cFilter);
+                            
+                                m_datasets.insert_or_assign(
+                                    subset->GetProperty(L"name")->GetValueString(), dataSubset);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
     //---------------------------------------------------

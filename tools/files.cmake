@@ -17,6 +17,7 @@ SET(WISTERIA_SRC
     src/base/shapes.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
+    src/data/subset.cpp
     src/data/textclassifier.cpp
     src/debug/debug_profile.cpp
     src/easyexif/demo.cpp

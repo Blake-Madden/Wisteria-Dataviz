@@ -23,6 +23,18 @@ namespace Wisteria::Data
     class DatasetClone
         {
     public:
+        /// @brief Constructor.
+        DatasetClone() = default;
+        /// @private
+        DatasetClone(const DatasetClone&) = delete;
+        /// @private
+        DatasetClone(DatasetClone&&) = delete;
+        /// @private
+        DatasetClone& operator=(const DatasetClone&) = delete;
+        /// @private
+        DatasetClone& operator=(DatasetClone&&) = delete;
+        /// @brief Virtual destructor.
+        virtual ~DatasetClone() {}
         /** @brief Sets the source dataset to clone from.
             @param fromDataset The dataset to clone.
             @warning The source dataset should not be altered after calling this.
@@ -43,6 +55,19 @@ namespace Wisteria::Data
             { ++m_currentSrcRow; }
         /// @brief Copies the next row from the source dataset into the destination.
         void CopyNextRow();
+        /// @brief Get the cloned (i.e., destination) dataset.
+        /// @details Derived classes can call this after calls to CopyNextRow() and
+        ///     SkipNextRow() are finished.
+        /// @returns The cloned dataset.
+        [[nodiscard]] std::shared_ptr<Dataset> GetClone() const
+            { return m_toDataset; }
+        /// @returns The source dataset.
+        [[nodiscard]] const std::shared_ptr<const Dataset>& GetSource() const noexcept
+            { return m_fromDataset; }
+        /// @returns The position of the next row queued to be copied or skipped.\n
+        ///     Will return @c std::nullopt if all rows have been processed and there are no more.
+        [[nodiscard]] std::optional<size_t> GetNextRowPosition() const noexcept
+            { return HasMoreRows() ? std::optional<size_t>(m_currentSrcRow) : std::nullopt; }
     private:
         /// @brief Builds a map of pointers to the corresponding columns between the datasets.
         void MapColumns();

@@ -113,6 +113,19 @@ template<typename T>
     return std::fabs(left-right) > std::fabs(delta) && (left > right);
     }
 
+/** @brief Compares two double values for greater than or equal to (given the specified precision).
+    @param left The value being reviewed.
+    @param right The other value to compare against.
+    @param delta The tolerance of how different the values can be. The larger the delta, the
+        higher precision used in the comparison.
+    @returns @c true if the value is greater than or equal to the other value.*/
+[[nodiscard]] inline bool compare_doubles_greater_or_equal(const double left, const double right,
+                                                           const double delta = 1e-6) noexcept
+    {
+    assert(delta >= 0 && "delta value should be positive when comparing doubles");
+    return compare_doubles_greater(left,right,delta) || compare_doubles(left,right,delta);
+    }
+
 /// @brief "less" interface for double values.
 class double_less
     {

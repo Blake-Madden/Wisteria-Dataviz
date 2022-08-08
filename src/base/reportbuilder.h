@@ -15,7 +15,7 @@
 #include "canvas.h"
 #include "commonaxisbuilder.h"
 #include "colorbrewer.h"
-#include "../data/dataset.h"
+#include "../data/subset.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/piechart.h"
 #include "../graphs/categoricalbarchart.h"
@@ -48,6 +48,11 @@ namespace Wisteria
         ///     referencing them by name.
         /// @param valuesNode The values node.
         void LoadValues(const wxSimpleJSON::Ptr_t& valuesNode);
+        /// @brief Loads the subsets node into @c m_datasets.
+        /// @details These (subset) datasets are used by objects throughout the report,
+        ///     referencing them by name.
+        /// @param subsetsNode The subsets node.
+        void LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode);
         /// @brief Loads a common axis node into @c m_commonAxesPostions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then

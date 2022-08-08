@@ -89,6 +89,30 @@ Properties for the @c "values" node:
         For example, the group ID can be a formula getting the highest label from the grouping column:\n
         `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
 
+## Subsets {#subsets-properties}
+Properties for the @c "subsets" node:
+- @c "subsets": contains an array of subsets, which are referenced by other items in the report in the same
+     way as datasources are.\n
+     Note that these are subsets of datasets loaded from the @c "datasources" section.
+  - @c "name": the name of the subst. (This should be different from the datasource that it is subsetting;
+    otherwise, it will overwrite it.)\n
+    This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
+  - @c "datasource": the name of the dataset that it is subsetting. This will be the name that was assigned
+    to the dataset in the @c "datasources" section.
+  - @c "filter": the subset filtering definition, which will contain the following:
+    - @c "column": the column from the dataset to filter on.
+    - @c "operator": how to compare the values from the column with the filter's value.
+      Available options are:
+      - @c "=" or "==" (the default)
+      - @c "!=" or "<>"
+      - @c "<"
+      - @c ">="
+      - @c "<"
+      - @c "<="
+    - @c "value": the value to filter the column on. This can be a number, string, or date
+         (depending on the column's data type).\n
+         Note that string values used here can reference constants loaded on the @c "values" section.
+
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
 The @c "pages" node will contain an array of definitions for all pages, each containing the following:
