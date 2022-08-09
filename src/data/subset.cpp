@@ -118,8 +118,8 @@ namespace Wisteria::Data
                 else
                     {
                     throw std::runtime_error(
-                        wxString::Format(_(L"%s: string unable to be parsed for date filter.",
-                                         *val)));
+                        wxString::Format(_(L"%s: string unable to be parsed for date filter."),
+                                         *val));
                     }
                 }
             else

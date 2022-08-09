@@ -192,7 +192,7 @@ namespace Wisteria
                                 {
                                 for (const auto& childId : commonAxisInfo.m_childrenIds)
                                     {
-                                    auto childGraph = std::find_if(embeddedGraphs.begin(), embeddedGraphs.end(),
+                                    auto childGraph = std::find_if(embeddedGraphs.cbegin(), embeddedGraphs.cend(),
                                         [&childId](const auto& graph) noexcept
                                           {
                                           return graph->GetId() == static_cast<long>(childId);
@@ -240,14 +240,14 @@ namespace Wisteria
     std::optional<LabelPlacement> ReportBuilder::ConvertLabelPlacement(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, LabelPlacement> values =
+        static const std::map<std::wstring, LabelPlacement> labelPlacementValues =
             {
             { L"next-to-parent", LabelPlacement::NextToParent },
             { L"flush", LabelPlacement::Flush }
             };
 
-        const auto foundValue = values.find(value.Lower().ToStdWstring());
-        return ((foundValue != values.cend()) ?
+        const auto foundValue = labelPlacementValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != labelPlacementValues.cend()) ?
             std::optional<LabelPlacement>(foundValue->second) :
             std::nullopt);
         }
@@ -275,7 +275,7 @@ namespace Wisteria
     std::optional<BinLabelDisplay> ReportBuilder::ConvertBinLabelDisplay(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, BinLabelDisplay> values =
+        static const std::map<std::wstring, BinLabelDisplay> bDisplayValues =
             {
             { L"percentage", BinLabelDisplay::BinPercentage },
             { L"value", BinLabelDisplay::BinValue },
@@ -284,8 +284,8 @@ namespace Wisteria
             { L"bin-name", BinLabelDisplay::BinName }
             };
 
-        const auto foundValue = values.find(value.Lower().ToStdWstring());
-        return ((foundValue != values.cend()) ?
+        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != bDisplayValues.cend()) ?
             std::optional<BinLabelDisplay>(foundValue->second) :
             std::nullopt);
         }
@@ -294,7 +294,7 @@ namespace Wisteria
     std::optional<AxisType> ReportBuilder::ConvertAxisType(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, AxisType> values =
+        static const std::map<std::wstring, AxisType> axisValues =
             {
             { L"bottom-x", AxisType::BottomXAxis },
             { L"top-x", AxisType::TopXAxis },
@@ -302,8 +302,8 @@ namespace Wisteria
             { L"right-y", AxisType::RightYAxis }
             };
 
-        const auto foundValue = values.find(value.Lower().ToStdWstring());
-        return ((foundValue != values.cend()) ?
+        const auto foundValue = axisValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != axisValues.cend()) ?
             std::optional<AxisType>(foundValue->second) :
             std::nullopt);
         }
@@ -389,7 +389,7 @@ namespace Wisteria
                 { axis.SetTickMarkDisplay(foundPos->second); }
             }
         const auto display = axisNode->GetProperty(L"label-display")->GetValueString().Lower();
-        auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
+        const auto foundPos = labelDisplayValues.find(std::wstring_view(display.wc_str()));
         if (foundPos != labelDisplayValues.cend())
             { axis.SetLabelDisplay(foundPos->second); }
 
@@ -418,7 +418,7 @@ namespace Wisteria
                     foundDataset->second == nullptr)
                     {
                     throw std::runtime_error(
-                        wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                        wxString::Format(_(L"%s: datasource not found for axis brackets."), dsName).ToUTF8());
                     }
 
                 const auto variablesNode = bracketsNode->GetProperty(L"variables");
@@ -533,7 +533,7 @@ namespace Wisteria
                 }
 
             const auto textAlignment = ConvertTextAlignment(
-                labelNode->GetProperty("text-alignment")->GetValueString());
+                labelNode->GetProperty(L"text-alignment")->GetValueString());
             if (textAlignment.has_value())
                 { label->SetTextAlignment(textAlignment.value()); }
 
@@ -560,7 +560,7 @@ namespace Wisteria
                     headerNode->GetProperty(L"scaling")->GetValueNumber(1));
 
                 const auto textAlignment = ConvertTextAlignment(
-                    headerNode->GetProperty("text-alignment")->GetValueString());
+                    headerNode->GetProperty(L"text-alignment")->GetValueString());
                 if (textAlignment.has_value())
                     { label->GetHeaderInfo().LabelAlignment(textAlignment.value()); }
                 }
@@ -576,7 +576,7 @@ namespace Wisteria
         {
         if (valuesNode->IsOk())
             {
-            auto values = valuesNode->GetValueArrayObject();
+            const auto values = valuesNode->GetValueArrayObject();
             for (const auto& value : values)
                 {
                 if (value->IsOk())
@@ -594,7 +594,7 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::CalcFormula(const wxString& formula)
         {
-        wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
+       const wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
         if (re.Matches(formula))
             {
             const wxString funcName = re.GetMatch(formula, 1).MakeLower();
@@ -610,22 +610,25 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::CalcValidNValue(const wxString& formula)
         {
-        wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\("
-                          "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                          "([[:alnum:]\\-_ ]+)\\)");
-        wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\("
-                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                            "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                            "(([[:alnum:]\\-_ ]+|{{[[:alnum:]\\-_ \\(\\),]+}}))\\)");
+        const wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\("
+                               "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                               "([[:alnum:]\\-_ ]+)\\)");
+        const wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\("
+                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+                                 "(([[:alnum:]\\-_ ]+|{{[[:alnum:]\\-_ \\(\\),]+}}))\\)");
         if (reSimple.Matches(formula))
             {
             const auto paramPartsCount = reSimple.GetMatchCount();
             if (paramPartsCount >= 4)
                 {
-                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower().Trim(true).Trim(false);
-                const wxString dsName = reSimple.GetMatch(formula, 2).Trim(true).Trim(false);
-                const wxString columnName = reSimple.GetMatch(formula, 3).Trim(true).Trim(false);
+                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower().
+                    Trim(true).Trim(false);
+                const wxString dsName = reSimple.GetMatch(formula, 2).
+                    Trim(true).Trim(false);
+                const wxString columnName = reSimple.GetMatch(formula, 3).
+                    Trim(true).Trim(false);
                 const auto foundPos = m_datasets.find(dsName);
                 if (foundPos != m_datasets.cend() &&
                     foundPos->second != nullptr)
@@ -655,11 +658,16 @@ namespace Wisteria
             const auto paramPartsCount = reExtended.GetMatchCount();
             if (paramPartsCount >= 6)
                 {
-                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower().Trim(true).Trim(false);
-                const wxString dsName = reExtended.GetMatch(formula, 2).Trim(true).Trim(false);
-                const wxString columnName = reExtended.GetMatch(formula, 3).Trim(true).Trim(false);
-                const wxString groupName = reExtended.GetMatch(formula, 4).Trim(true).Trim(false);
-                wxString groupValue = reExtended.GetMatch(formula, 5).Trim(true).Trim(false);
+                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower().
+                    Trim(true).Trim(false);
+                const wxString dsName = reExtended.GetMatch(formula, 2).
+                    Trim(true).Trim(false);
+                const wxString columnName = reExtended.GetMatch(formula, 3).
+                    Trim(true).Trim(false);
+                const wxString groupName = reExtended.GetMatch(formula, 4).
+                    Trim(true).Trim(false);
+                wxString groupValue = reExtended.GetMatch(formula, 5).
+                    Trim(true).Trim(false);
                 // if the group value is an embedded formula, then calculate it
                 if (groupValue.starts_with(L"{{") && groupValue.ends_with(L"}}"))
                     {
@@ -675,26 +683,30 @@ namespace Wisteria
                     if (groupColumn == foundPos->second->GetCategoricalColumns().cend())
                         {
                         throw std::runtime_error(
-                            wxString::Format(_(L"%s: group column not found."), groupName).ToUTF8());
+                            wxString::Format(_(L"%s: group column not found."),
+                                             groupName).ToUTF8());
                         }
                     const auto groupID = groupColumn->GetIDFromCategoryLabel(groupValue);
                     if (!groupID)
                         {
                         throw std::runtime_error(
-                            wxString::Format(_(L"Group ID for '%s' not found."), groupValue).ToUTF8());
+                            wxString::Format(_(L"Group ID for '%s' not found."),
+                                             groupValue).ToUTF8());
                         }
                     if (foundPos->second->GetCategoricalColumn(columnName) !=
                         foundPos->second->GetCategoricalColumns().cend())
                         {
                         return wxNumberFormatter::ToString(
-                            foundPos->second->GetCategoricalColumnValidN(columnName, groupName, groupID.value()), 0,
+                            foundPos->second->GetCategoricalColumnValidN(columnName, groupName,
+                                                                         groupID.value()), 0,
                             wxNumberFormatter::Style::Style_WithThousandsSep);
                         }
                     else if (foundPos->second->GetContinuousColumn(columnName) !=
                         foundPos->second->GetContinuousColumns().cend())
                         {
                         return wxNumberFormatter::ToString(
-                            foundPos->second->GetContinuousColumnValidN(columnName, groupName, groupID.value()), 0,
+                            foundPos->second->GetContinuousColumnValidN(columnName, groupName,
+                                                                        groupID.value()), 0,
                             wxNumberFormatter::Style::Style_WithThousandsSep);
                         }
                     }
@@ -709,9 +721,9 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::CalcMinMaxValue(const wxString& formula)
         {
-        wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\("
-                    "([[:alnum:]\\-_ ]*)[ ]*,[ ]*"
-                    "([[:alnum:]\\-_ ]*)\\)");
+        const wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\("
+                         "([[:alnum:]\\-_ ]*)[ ]*,[ ]*"
+                         "([[:alnum:]\\-_ ]*)\\)");
         if (re.Matches(formula))
             {
             const auto paramPartsCount = re.GetMatchCount();
@@ -781,7 +793,7 @@ namespace Wisteria
                             foundDataset->second == nullptr)
                             {
                             throw std::runtime_error(
-                                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                                wxString::Format(_(L"%s: datasource not found for subset."), dsName).ToUTF8());
                             }
                         const auto filter = subset->GetProperty(L"filter");
                         if (filter->IsOk())
@@ -792,24 +804,24 @@ namespace Wisteria
                             Comparison cmp = (foundPos != cmpOperators.cend() ?
                                 foundPos->second : Comparison::Equals);
                             
-                            const auto filterNode = filter->GetProperty(L"value");
+                            const auto valueNode = filter->GetProperty(L"value");
                             
-                            if (filterNode->IsOk())
+                            if (valueNode->IsOk())
                                 {
                                 wxDateTime dt;
                                 const bool isDate =
-                                    (filterNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
-                                     (dt.ParseDateTime(filterNode->GetValueString()) ||
-                                      dt.ParseDate(filterNode->GetValueString())));
+                                    (valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                                     (dt.ParseDateTime(valueNode->GetValueString()) ||
+                                      dt.ParseDate(valueNode->GetValueString())));
                                 ColumnFilterInfo cFilter 
                                     {
                                     filter->GetProperty(L"column")->GetValueString(),
                                     cmp,
                                     (isDate ?
                                      DatasetValueType(dt) :
-                                        filterNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                                     DatasetValueType(ExpandValues(filterNode->GetValueString())) :
-                                     DatasetValueType(filterNode->GetValueNumber()))
+                                        valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                                     DatasetValueType(ExpandValues(valueNode->GetValueString())) :
+                                     DatasetValueType(valueNode->GetValueNumber()))
                                     };
 
                                 DatasetSubset dataSubsetter;
@@ -818,6 +830,11 @@ namespace Wisteria
                             
                                 m_datasets.insert_or_assign(
                                     subset->GetProperty(L"name")->GetValueString(), dataSubset);
+                                }
+                            else
+                                {
+                                throw std::runtime_error(
+                                    _(L"Comparison value for subset filter missing.").ToUTF8());
                                 }
                             }
                         }
@@ -982,7 +999,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: datasource not found for line plot."), dsName).ToUTF8());
             }
 
         auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1017,7 +1034,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: datasource not found for categorical bar chart."), dsName).ToUTF8());
             }
 
         auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1060,7 +1077,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: datasource not found for pie chart."), dsName).ToUTF8());
             }
 
         auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1180,10 +1197,10 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: datasource not found for table."), dsName).ToUTF8());
             }
 
-        auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
+        const auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
 
         auto table = std::make_shared<Graphs::Table>(canvas);
         table->SetData(foundPos->second, variables,
@@ -1407,7 +1424,7 @@ namespace Wisteria
                         { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
 
                     const auto textAlignment = ConvertTextAlignment(
-                        cellUpdate->GetProperty("text-alignment")->GetValueString());
+                        cellUpdate->GetProperty(L"text-alignment")->GetValueString());
                     if (textAlignment.has_value())
                         { currentCell.SetTextAlignment(textAlignment.value()); }
 
@@ -1430,7 +1447,7 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::ExpandValues(wxString str) const
         {
-        wxRegEx re(L"{{([[:alnum:]\\-]+)}}");
+        const wxRegEx re(L"{{([[:alnum:]\\-]+)}}");
         size_t start{ 0 }, len{ 0 };
         std::wstring_view processText(str.wc_str());
         std::map<wxString, wxString> replacements;

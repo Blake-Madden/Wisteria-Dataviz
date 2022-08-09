@@ -98,20 +98,20 @@ Properties for the @c "subsets" node:
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
   - @c "datasource": the name of the dataset that it is subsetting. This will be the name that was assigned
-    to the dataset in the @c "datasources" section.
+    to the dataset in the ["datasources"](#datasources-properties) section.
   - @c "filter": the subset filtering definition, which will contain the following:
     - @c "column": the column from the dataset to filter on.
     - @c "operator": how to compare the values from the column with the filter's value.
       Available options are:
-      - @c "=" or "==" (the default)
-      - @c "!=" or "<>"
-      - @c "<"
-      - @c ">="
-      - @c "<"
-      - @c "<="
+      - @c "=" or "==": equals (the default)
+      - @c "!=" or "<>": not equals
+      - @c "<": less than
+      - @c "<=": less than or equal to
+      - @c ">": greater than
+      - @c ">=": great than or equal to
     - @c "value": the value to filter the column on. This can be a number, string, or date
          (depending on the column's data type).\n
-         Note that string values used here can reference constants loaded on the @c "values" section.
+         Note that string values can reference constants loaded from the ["values"](#values-properties) section.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
@@ -128,7 +128,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
       - ["label"](#label-properties)
       - ["pie-chart"](#pie-chart-properties)
       - ["table"](#table-properties)
-      - @c null: a null value will act as a placeholder for the previous column.\n
+      - @c null: a @c null value will act as a placeholder for the previous column.\n
         If an entire row contains nulls, then the previous row will consume that row
         (meaning it will grow that much in height).
 
@@ -366,7 +366,7 @@ The remaining properties are executed in the following order:
        This can either be a number, or the string @c "all" (meaning all columns).
   - @c "row-count": the number of rows that this cell should consume.\n
        This can either be a number, or the string @c "all" (meaning all rows).
-  - @c "value": a numeric, string, or null value to assign to the cell.
+  - @c "value": a numeric, string, or date value to assign to the cell.
   - @c "background": the background color. This can be either a color name or hex-encoded value.
   - @c "bold": @c true to make the cell bold.
   - @c "highlight": @c true to highlight the cell.
