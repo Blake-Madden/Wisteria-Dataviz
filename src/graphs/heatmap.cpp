@@ -381,7 +381,7 @@ namespace Wisteria::Graphs
                 {
                 // add a group label
                 auto groupRowLabel = std::make_shared<GraphItems::Label>(
-                    GraphItemInfo(m_groupColumn->GetCategoryLabelFromID(currentGroupdStart)).
+                    GraphItemInfo(m_groupColumn->GetLabelFromID(currentGroupdStart)).
                     Anchoring(Anchoring::TopLeftCorner).
                     // font is already scaled, so leave the label's scaling at 1.0
                     Font(groupLabelFont).

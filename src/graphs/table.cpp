@@ -223,7 +223,7 @@ namespace Wisteria::Graphs
                     for (size_t i = 0; i < catCol->GetValues().size(); ++i)
                         {
                         GetCell(currentRow, i+1).m_value  =
-                            catCol->GetCategoryLabelFromID(catCol->GetValue(i));
+                            catCol->GetLabelFromID(catCol->GetValue(i));
                         }
                     }
                 else if (auto dateCol = data->GetDateColumn(colName);
@@ -266,7 +266,7 @@ namespace Wisteria::Graphs
                     for (size_t i = 0; i < catCol->GetValues().size(); ++i)
                         {
                         GetCell(i+1, currentColumn).m_value =
-                            catCol->GetCategoryLabelFromID(catCol->GetValue(i));
+                            catCol->GetLabelFromID(catCol->GetValue(i));
                         }
                     }
                 else if (auto dateCol = data->GetDateColumn(colName);

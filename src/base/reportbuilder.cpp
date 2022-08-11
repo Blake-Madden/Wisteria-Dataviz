@@ -687,7 +687,7 @@ namespace Wisteria
                             wxString::Format(_(L"%s: group column not found."),
                                              groupName).ToUTF8());
                         }
-                    const auto groupID = groupColumn->GetIDFromCategoryLabel(groupValue);
+                    const auto groupID = groupColumn->GetIDFromLabel(groupValue);
                     if (!groupID)
                         {
                         throw std::runtime_error(

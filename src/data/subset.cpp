@@ -68,7 +68,7 @@ namespace Wisteria::Data
             else if (const auto val{ std::get_if<wxString>(&subsetCriterion.m_value) };
                 val != nullptr)
                 {
-                const auto code = m_categoricalColumn->GetIDFromCategoryLabel(*val);
+                const auto code = m_categoricalColumn->GetIDFromLabel(*val);
                 if (code.has_value())
                     { m_groupIdValue = code.value(); }
                 else
@@ -88,7 +88,7 @@ namespace Wisteria::Data
             if (m_comparisonType != Comparison::Equals &&
                 m_comparisonType != Comparison::NotEquals)
                 {
-                m_stringValue = m_categoricalColumn->GetCategoryLabelFromID(m_groupIdValue);
+                m_stringValue = m_categoricalColumn->GetLabelFromID(m_groupIdValue);
                 }
             }
         // continuous column
@@ -163,7 +163,7 @@ namespace Wisteria::Data
                 // group IDs probably aren't ordered the same ways as the strings
                 // would be alphabetically
                 const auto currentString =
-                    m_categoricalColumn->GetCategoryLabelFromID(
+                    m_categoricalColumn->GetLabelFromID(
                         m_categoricalColumn->GetValue(rowPosition));
                 const auto cmpResult = currentString.CmpNoCase(m_stringValue);
                 return (

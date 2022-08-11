@@ -130,7 +130,7 @@ namespace Wisteria::Graphs
             if (m_useGrouping)
                 {
                 blockLabelText.Prepend(
-                    m_groupColumn->GetCategoryLabelFromID(blockTable.first.m_block) + L": ");
+                    m_groupColumn->GetLabelFromID(blockTable.first.m_block) + L": ");
                 }
             GraphItems::Label blockLabel(blockLabelText);
 
@@ -146,7 +146,7 @@ namespace Wisteria::Graphs
                     },
                     wxEmptyString,
                     GraphItems::Label(
-                        m_categoricalColumn->GetCategoryLabelFromID(blockTable.first.m_bin)),
+                        m_categoricalColumn->GetLabelFromID(blockTable.first.m_bin)),
                     GetBarEffect(), GetBarOpacity());
                 AddBar(theBar);
                 }
@@ -220,7 +220,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetCategoryLabelFromID(groupId) :
+                m_groupColumn->GetLabelFromID(groupId) :
                 wxString(L"");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength())
                 {

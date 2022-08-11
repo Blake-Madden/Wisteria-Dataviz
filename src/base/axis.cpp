@@ -3274,7 +3274,7 @@ namespace Wisteria::GraphItems
             multi_value_aggregate_map<wxString, double> brackets;
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                brackets.insert(labelCol->GetLabelFromID(labelCol->GetValue(i)),
                                 valueContinuousCol->GetValue(i), 1);
                 }
             for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
@@ -3303,7 +3303,7 @@ namespace Wisteria::GraphItems
             multi_value_aggregate_map<wxString, Data::GroupIdType> brackets;
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                brackets.insert(labelCol->GetLabelFromID(labelCol->GetValue(i)),
                                 valueCatCol->GetValue(i), 1);
                 }
             for (const auto& [bracketLabel, bracketValues] : brackets.get_data())
@@ -3327,7 +3327,7 @@ namespace Wisteria::GraphItems
             multi_value_aggregate_map<wxString, wxDateTime> brackets;
             for (size_t i = 0; i < data->GetRowCount(); ++i)
                 {
-                brackets.insert(labelCol->GetCategoryLabelFromID(labelCol->GetValue(i)),
+                brackets.insert(labelCol->GetLabelFromID(labelCol->GetValue(i)),
                                 valueDateCol->GetValue(i), 1);
                 }
             for (const auto& [bracketLabel, bracketValues] : brackets.get_data())

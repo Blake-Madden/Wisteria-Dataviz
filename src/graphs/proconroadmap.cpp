@@ -71,10 +71,10 @@ namespace Wisteria::Graphs
             // valid aggregate count (if aggregate value is in use)
             if (!(positiveValueColumnName.has_value() &&
                   std::isnan(positiveValueColumn->GetValue(i))) &&
-                positiveColumn->GetCategoryLabelFromID(positiveColumn->GetValue(i)).length())
+                positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)).length())
                 {
                 influencers.insert(
-                    positiveColumn->GetCategoryLabelFromID(positiveColumn->GetValue(i)),
+                    positiveColumn->GetLabelFromID(positiveColumn->GetValue(i)),
                     (positiveValueColumnName.has_value() ?
                         // force positive influencers to be positive
                         // (in case data had negative values)
@@ -82,10 +82,10 @@ namespace Wisteria::Graphs
                 }
             if (!(negativeValueColumnName.has_value() &&
                   std::isnan(negativeValueColumn->GetValue(i))) &&
-                negativeColumn->GetCategoryLabelFromID(negativeColumn->GetValue(i)).length())
+                negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)).length())
                 {
                 influencers.insert(
-                    negativeColumn->GetCategoryLabelFromID(negativeColumn->GetValue(i)),
+                    negativeColumn->GetLabelFromID(negativeColumn->GetValue(i)),
                     // force negative influencers to be negative
                     // (in case data had negative values)
                     -(negativeValueColumnName.has_value() ?

@@ -82,7 +82,7 @@ namespace Wisteria::Graphs
                 {
                 Line ln;
                 ln.SetGroupInfo(groupColumnName, group,
-                                m_groupColumn->GetCategoryLabelFromID(group));
+                                m_groupColumn->GetLabelFromID(group));
                 ln.GetPen().SetColour(GetColorScheme()->GetColor(group));
                 // if some sort of spiral, then draw as a dashed spline
                 if (IsAutoSplining() && !IsDataSingleDirection(data, group))
@@ -124,8 +124,8 @@ namespace Wisteria::Graphs
             std::sort(m_lines.begin(), m_lines.end(),
                 [this](const auto& first, const auto& second) noexcept
                     {
-                    return m_groupColumn->GetCategoryLabelFromID(first.m_groupId) <
-                           m_groupColumn->GetCategoryLabelFromID(second.m_groupId);
+                    return m_groupColumn->GetLabelFromID(first.m_groupId) <
+                           m_groupColumn->GetLabelFromID(second.m_groupId);
                     }
                 );
             }
@@ -299,7 +299,7 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetCategoryLabelFromID(line.m_groupId) :
+                m_groupColumn->GetLabelFromID(line.m_groupId) :
                 wxString(L"");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength())
                 {

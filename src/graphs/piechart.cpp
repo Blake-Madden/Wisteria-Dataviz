@@ -359,7 +359,7 @@ namespace Wisteria::Graphs
         for (const auto& group : outerGroups)
             {
             GetOuterPie().emplace_back(
-                SliceInfo{ groupColumn1->GetCategoryLabelFromID(group.first),
+                SliceInfo{ groupColumn1->GetLabelFromID(group.first),
                            group.second,
                            safe_divide(group.second, totalValue) });
             }
@@ -410,13 +410,13 @@ namespace Wisteria::Graphs
                 for (const auto& innerGroup : innerGroupOuterRing.second)
                     {
                     currentOuterSliceSlices.emplace_back(
-                        SliceInfo{ groupColumn2->GetCategoryLabelFromID(innerGroup.first),
+                        SliceInfo{ groupColumn2->GetLabelFromID(innerGroup.first),
                                innerGroup.second,
                                safe_divide(innerGroup.second, totalValue) });
                     }
                 std::sort(currentOuterSliceSlices.begin(), currentOuterSliceSlices.end());
                 innerPie.insert(std::make_pair(
-                    groupColumn1->GetCategoryLabelFromID(innerGroupOuterRing.first),
+                    groupColumn1->GetLabelFromID(innerGroupOuterRing.first),
                     currentOuterSliceSlices));
                 }
             // unroll the grouped slices into one large pie

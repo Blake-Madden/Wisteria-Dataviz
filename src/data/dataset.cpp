@@ -32,7 +32,7 @@ namespace Wisteria::Data
         wxString currentRegex;
         for (size_t i = 0; i < dataset->GetRowCount(); ++i)
             {
-            currentRegex = regexColumn->GetCategoryLabelFromID(regexColumn->GetValue(i));
+            currentRegex = regexColumn->GetLabelFromID(regexColumn->GetValue(i));
             wxRegEx testRe(currentRegex);
             if (currentRegex.empty() || !testRe.IsValid())
                 {
@@ -41,7 +41,7 @@ namespace Wisteria::Data
                 }
             reMap.insert(std::make_pair(
                 std::make_shared<wxRegEx>(currentRegex),
-                replaceColumn->GetCategoryLabelFromID(replaceColumn->GetValue(i))));
+                replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
             }
 
         return reMap;
@@ -199,7 +199,7 @@ namespace Wisteria::Data
                   groupColumnIterator->GetValue(i) == groupId.value()))
                 {
                 strings.insert(
-                    catColumnIterator->GetCategoryLabelFromID(catColumnIterator->GetValue(i)));
+                    catColumnIterator->GetLabelFromID(catColumnIterator->GetValue(i)));
                 }
             }
         if (strings.empty())
@@ -608,7 +608,7 @@ namespace Wisteria::Data
             // categoricals
             for (const auto& col : GetCategoricalColumns())
                 {
-                currentRow.append(wrapText(col.GetCategoryLabelFromID(col.GetValue(i)))).
+                currentRow.append(wrapText(col.GetLabelFromID(col.GetValue(i)))).
                            append(1, delimiter);
                 }
             // dates

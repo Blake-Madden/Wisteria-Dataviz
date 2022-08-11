@@ -224,7 +224,7 @@ namespace Wisteria::Data
                 or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
             @param code The ID to look up.*/
-        [[nodiscard]] wxString GetCategoryLabelFromID(const GroupIdType code) const
+        [[nodiscard]] wxString GetLabelFromID(const GroupIdType code) const
             {
             const auto foundLabel = m_stringTable.find(code);
             if (foundLabel != m_stringTable.cend())
@@ -236,7 +236,7 @@ namespace Wisteria::Data
                 or @c std::nullopt if not found.
             @returns The ID from the string table, or @c std::nullopt if not found.
             @param str The string value to look up.*/
-        [[nodiscard]] std::optional<GroupIdType> GetIDFromCategoryLabel(const wxString& str) const
+        [[nodiscard]] std::optional<GroupIdType> GetIDFromLabel(const wxString& str) const
             {
             for (const auto& [key, value] : m_stringTable)
                 {
@@ -245,7 +245,8 @@ namespace Wisteria::Data
                 }
             return std::nullopt;
             }
-        /// @returns The key value from a string table that's represents missing data
+
+        /// @returns The key value from a string table that represents missing data
         ///     (i.e., empty string), or @c std::nullopt if not found.
         /// @param stringTable The string table to review.
         [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
@@ -258,6 +259,11 @@ namespace Wisteria::Data
                 }
             return std::nullopt;
             }
+        /// @returns The key value from the string table that represents missing data
+        ///     (i.e., empty string), or @c std::nullopt if not found.
+        [[nodiscard]] std::optional<GroupIdType> FindMissingDataCode() const
+            { return FindMissingDataCode(m_stringTable); }
+
         /** @returns The next group ID that can be inserted into a string table.
             @param stringTable The string table to review.*/
         [[nodiscard]] static GroupIdType GetNextKey(const StringTableType& stringTable)

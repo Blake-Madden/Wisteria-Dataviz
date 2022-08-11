@@ -652,53 +652,53 @@ namespace Wisteria::Graphs
             if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(2), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(2), 1);
                 }
             else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetNeutralLabel(categoricalColumn->GetCategoryLabelFromID(2));
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(3), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetNeutralLabel(categoricalColumn->GetLabelFromID(2));
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
                 }
             else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(2), 2);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(3), 1);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(4), 2);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 2);
                 }
             else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(2), 2);
-                SetNeutralLabel(categoricalColumn->GetCategoryLabelFromID(3));
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(4), 1);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(5), 2);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                SetNeutralLabel(categoricalColumn->GetLabelFromID(3));
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
                 }
             else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(2), 2);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(3), 3);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(4), 1);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(5), 2);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(6), 3);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 3);
                 }
             else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
                 GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
                 {
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(2), 2);
-                SetNegativeLabel(categoricalColumn->GetCategoryLabelFromID(3), 3);
-                SetNeutralLabel(categoricalColumn->GetCategoryLabelFromID(4));
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(5), 1);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(6), 2);
-                SetPositiveLabel(categoricalColumn->GetCategoryLabelFromID(7), 3);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
+                SetNeutralLabel(categoricalColumn->GetLabelFromID(4));
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 1);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 2);
+                SetPositiveLabel(categoricalColumn->GetLabelFromID(7), 3);
                 }
             }
         }
@@ -759,7 +759,7 @@ namespace Wisteria::Graphs
             LikertCategorizedThreePointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertThreePointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertThreePointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), 0/* no neutrals*/, findCount(group.first, 2),
                     findNACount(group.first));
                 groupResponses += surveyQuestion.m_responses;
@@ -774,7 +774,7 @@ namespace Wisteria::Graphs
             LikertCategorizedThreePointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertThreePointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertThreePointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), findCount(group.first, 2), findCount(group.first, 3),
                     findNACount(group.first));
                 groupResponses += surveyQuestion.m_responses;
@@ -789,7 +789,7 @@ namespace Wisteria::Graphs
             LikertCategorizedFivePointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertFivePointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertFivePointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), findCount(group.first, 2), 0/* no neutrals*/,
                     findCount(group.first, 3), findCount(group.first, 4),
                     findNACount(group.first));
@@ -805,7 +805,7 @@ namespace Wisteria::Graphs
             LikertCategorizedFivePointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertFivePointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertFivePointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), findCount(group.first, 2), findCount(group.first, 3),
                     findCount(group.first, 4), findCount(group.first, 5),
                     findNACount(group.first));
@@ -821,7 +821,7 @@ namespace Wisteria::Graphs
             LikertCategorizedSevenPointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertSevenPointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertSevenPointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), findCount(group.first, 2), findCount(group.first, 3),
                     0/* no neutrals*/, findCount(group.first, 4), findCount(group.first, 5),
                     findCount(group.first, 6), findNACount(group.first));
@@ -837,7 +837,7 @@ namespace Wisteria::Graphs
             LikertCategorizedSevenPointSurveyQuestion sQuestion(question);
             for (const auto& group : fMap)
                 {
-                const LikertSevenPointSurveyQuestion surveyQuestion(groups.GetCategoryLabelFromID(group.first),
+                const LikertSevenPointSurveyQuestion surveyQuestion(groups.GetLabelFromID(group.first),
                     findCount(group.first, 1), findCount(group.first, 2), findCount(group.first, 3),
                     findCount(group.first, 4), findCount(group.first, 5), findCount(group.first, 6),
                     findCount(group.first, 7), findNACount(group.first));

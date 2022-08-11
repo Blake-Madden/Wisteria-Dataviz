@@ -239,7 +239,7 @@ namespace Wisteria::Graphs
             const size_t axisOffset = (m_boxes.size() > 1) ? 1 : 2;
             const double boxAxisPosition = (boxPos-m_boxes.begin())+axisOffset;
             const wxString groupIdLabel = boxPos->m_useGrouping ?
-                m_groupColumn->GetCategoryLabelFromID(boxPos->m_groupId) :
+                m_groupColumn->GetLabelFromID(boxPos->m_groupId) :
                 wxString(L"");
             boxPos->SetXAxisPosition(boxAxisPosition);
             GetBottomXAxis().SetCustomLabel(boxAxisPosition,
