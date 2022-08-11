@@ -232,14 +232,14 @@ namespace Wisteria::Data
     //---------------------------------------------------
     std::shared_ptr<Dataset> DatasetSubset::Subset(
             const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo subsetCriterion)
+            const ColumnFilterInfo columnFilter)
         {
         if (fromDataset == nullptr)
             { return nullptr; }
 
         SetSourceData(fromDataset);
 
-        ColumnFilter cf(GetSource(), subsetCriterion);
+        ColumnFilter cf(GetSource(), columnFilter);
 
         while (HasMoreRows())
             {
@@ -247,6 +247,91 @@ namespace Wisteria::Data
             if (nextRow.has_value())
                 {
                 if (cf.MeetsCriterion(nextRow.value()))
+                    { CopyNextRow(); }
+                else
+                    { SkipNextRow(); }
+                }
+            // shouldn't happen
+            else
+                { break; }
+            }
+
+        return GetClone();
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Dataset> DatasetSubset::SubsetOr(
+            const std::shared_ptr<const Dataset>& fromDataset,
+            const std::vector<ColumnFilterInfo>& columnFilters)
+        {
+        if (fromDataset == nullptr)
+            { return nullptr; }
+
+        SetSourceData(fromDataset);
+
+        std::vector<ColumnFilter> cFilters;
+        for (const auto& cf : columnFilters)
+            { cFilters.push_back({ GetSource(), cf }); }
+
+        while (HasMoreRows())
+            {
+            const auto nextRow = GetNextRowPosition();
+            if (nextRow.has_value())
+                {
+                bool hadMatch{ false };
+                for (const auto& cf : cFilters)
+                    {
+                    if (cf.MeetsCriterion(nextRow.value()))
+                        {
+                        hadMatch = true;
+                        break;
+                        }
+                    }
+                // if any criterion matches, then copy observation and go to next
+                if (hadMatch)
+                    { CopyNextRow(); }
+                else
+                    { SkipNextRow(); }
+                }
+            // shouldn't happen
+            else
+                { break; }
+            }
+
+        return GetClone();
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Dataset> DatasetSubset::SubsetAnd(
+            const std::shared_ptr<const Dataset>& fromDataset,
+            const std::vector<ColumnFilterInfo>& columnFilters)
+        {
+        if (fromDataset == nullptr)
+            { return nullptr; }
+
+        SetSourceData(fromDataset);
+
+        std::vector<ColumnFilter> cFilters;
+        for (const auto& cf : columnFilters)
+            { cFilters.push_back({ GetSource(), cf }); }
+
+        while (HasMoreRows())
+            {
+            const auto nextRow = GetNextRowPosition();
+            if (nextRow.has_value())
+                {
+                bool allMatched{ true };
+                for (const auto& cf : cFilters)
+                    {
+                    // if any criterion doesn't match, then bail
+                    if (!cf.MeetsCriterion(nextRow.value()))
+                        {
+                        allMatched = false;
+                        break;
+                        }
+                    }
+                // if all criteria matched, then copy
+                if (allMatched)
                     { CopyNextRow(); }
                 else
                     { SkipNextRow(); }

@@ -57,7 +57,33 @@ namespace Wisteria::Data
         ColumnType m_columnType{ ColumnType::Continuous };
         };
 
-    /// @brief Interface for subsetting a dataset.
+    /** @brief Interface for subsetting a dataset.
+        @par Example:
+        @code
+         auto theData = std::make_shared<Data::Dataset>();
+         theData->ImportCSV(L"/home/emma/datasets/Spelling Grades.csv",
+            ImportInfo().
+            ContinuousColumns({ L"AVG_GRADE"}).
+            CategoricalColumns({
+                { L"Gender" },
+                { L"WEEK_NAME" }
+                }));
+         DatasetSubset dsSubset;
+         // dataset with only female observations
+         const auto subset =
+            dsSubset.Subset(theData,
+                ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" });
+         // "subset" can now be exported or plotted
+
+         // dataset with only female observations starting from Week 3 or later
+         const auto subset2 =
+            dsSubset.SubsetAnd(theData,
+                {
+                ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" },
+                ColumnFilterInfo{ L"WEEK_NAME", Comparison::GreaterThanOrEqualTo, L"Week 3" }
+                });
+        @endcode
+    */
     class DatasetSubset final : public DatasetClone
         {
     public:
@@ -73,18 +99,44 @@ namespace Wisteria::Data
         DatasetSubset& operator=(DatasetClone&&) = delete;
         /** @brief Creates a subset, based on a single criterion.
             @param fromDataset The source datasource to subset.
-            @param subsetCriterion The criterion, defining the column and value
+            @param columnFilter The criterion for subsetting, defining the column and value
                 to filter on and how to compare the values.
             @returns The subset dataset.
-            @throws std::runtime_error If column or filter value can't be found,
+            @throws std::runtime_error If the column or filter value can't be found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]] std::shared_ptr<Dataset> Subset(
             const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo subsetCriterion);
-    private:
-        
+            const ColumnFilterInfo columnFilter);
+        /** @brief Creates a subset, based on multiple filters that are ORed together.
+            @details In other words, if any of the filters match against an observation
+                then it will included in the subset.
+            @param fromDataset The source datasource to subset.
+            @param columnFilters The criteria for subsetting, defining the columns, values
+                to filter on, and how to compare the values.
+            @returns The subset dataset.
+            @throws std::runtime_error If any column or filter value can't be found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]] std::shared_ptr<Dataset> SubsetOr(
+            const std::shared_ptr<const Dataset>& fromDataset,
+            const std::vector<ColumnFilterInfo>& columnFilters);
+        /** @brief Creates a subset, based on multiple filters that are ANDed together.
+            @details In other words, all the filters must match against an observation
+                for it to be included in the subset.
+            @param fromDataset The source datasource to subset.
+            @param columnFilters The criteria for subsetting, defining the columns, values
+                to filter on, and how to compare the values.
+            @returns The subset dataset.
+            @throws std::runtime_error If any column or filter value can't be found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]] std::shared_ptr<Dataset> SubsetAnd(
+            const std::shared_ptr<const Dataset>& fromDataset,
+            const std::vector<ColumnFilterInfo>& columnFilters);
         };
     }
 
