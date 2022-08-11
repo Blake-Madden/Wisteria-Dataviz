@@ -622,109 +622,243 @@ namespace Wisteria::Graphs
         /// @brief Sets the background color for a given row.
         /// @param row The row to change.
         /// @param color The background color to apply to the row.
-        /// @param startColumn An optional column in the row to start from.\n
-        ///     The default is to start from the first column.
-        /// @param endColumn An optional column in the row to end at.\n
-        ///     The default is to end at the last column.
+        /// @param columnStops An optional list of columns within the row to skip.
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void SetRowBackgroundColor(const size_t row, const wxColour color,
-                                   std::optional<size_t> startColumn = std::nullopt,
-                                   std::optional<size_t> endColumn = std::nullopt);
+                                   std::optional<std::set<size_t>> columnStops = std::nullopt);
         /// @brief Sets the background color for a given column.
         /// @param column The column to change.
         /// @param color The background color to apply to the column.
+        /// @param rowStops An optional list of rows within the column to skip.
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void SetColumnBackgroundColor(const size_t column, const wxColour color)
+        void SetColumnBackgroundColor(const size_t column, const wxColour color,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
-            if (GetRowCount() && column < GetColumnCount())
+            if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
-                for (auto& row : m_table)
+                for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (column < row.size())
-                        { row[column].m_bgColor = color; }
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.m_bgColor = color;
                     }
                 }
             }
 
         /** @brief Makes the specified row use a bold font.
-            @param row The row to make bold.*/
-        void BoldRow(const size_t row)
+            @param row The row to make bold.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void BoldRow(const size_t row,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
-                for (auto& cell : currentRow)
-                    { cell.GetFont().MakeBold(); }
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.GetFont().MakeBold();
+                    }
                 }
             }
         /** @brief Makes the specified column use a bold font.
-            @param column The column to make bold.*/
-        void BoldColumn(const size_t column)
+            @param column The column to make bold.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void BoldColumn(const size_t column,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
-            if (GetColumnCount() > 0)
+            if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
-                for (auto& row : m_table)
+                for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (column < row.size())
-                        { row[column].GetFont().MakeBold(); }
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.GetFont().MakeBold();
+                    }
+                }
+            }
+
+        /** @brief Highlights the cells across the specified row.
+            @param row The row to make bold.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void HighlightRow(const size_t row,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
+            {
+            if (row < GetRowCount())
+                {
+                auto& currentRow = m_table[row];
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.Highlight(true);
+                    }
+                }
+            }
+        /** @brief Highlights the cells down the specified column.
+            @param column The column to make bold.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void HighlightColumn(const size_t column,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
+            {
+            if (GetColumnCount() > 0 && column < GetColumnCount())
+                {
+                for (size_t i = 0; i < m_table.size(); ++i)
+                    {
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.Highlight(true);
+                    }
+                }
+            }
+
+        /** @brief Sets the borders for all cells across the specified row.
+            @param row The row to edit.
+            @param showTopBorder Whether to show the cells' top borders.
+            @param showRightBorder Whether to show the cells' right borders.
+            @param showBottomBorder Whether to show the cells' bottom borders.
+            @param showLeftBorder Whether to show the cells' left borders.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void SetRowBorders(const size_t row,
+            const bool showTopBorder, const bool showRightBorder,
+            const bool showBottomBorder, const bool showLeftBorder,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
+            {
+            if (row < GetRowCount())
+                {
+                auto& currentRow = m_table[row];
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.ShowTopBorder(showTopBorder);
+                    cell.ShowRightBorder(showRightBorder);
+                    cell.ShowBottomBorder(showBottomBorder);
+                    cell.ShowLeftBorder(showLeftBorder);
+                    }
+                }
+            }
+        /** @brief Sets the borders for all cells down the specified column.
+            @param column The column to edit.
+            @param showTopBorder Whether to show the cells' top borders.
+            @param showRightBorder Whether to show the cells' right borders.
+            @param showBottomBorder Whether to show the cells' bottom borders.
+            @param showLeftBorder Whether to show the cells' left borders.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void SetColumnBorders(const size_t column,
+            const bool showTopBorder, const bool showRightBorder,
+            const bool showBottomBorder, const bool showLeftBorder,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
+            {
+            if (GetColumnCount() > 0 && column < GetColumnCount())
+                {
+                for (size_t i = 0; i < m_table.size(); ++i)
+                    {
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.ShowTopBorder(showTopBorder);
+                    cell.ShowRightBorder(showRightBorder);
+                    cell.ShowBottomBorder(showBottomBorder);
+                    cell.ShowLeftBorder(showLeftBorder);
                     }
                 }
             }
 
         /** @brief Sets the specified row's precision.
             @param row The row to edit.
-            @param precision The precision for the row.*/
-        void SetRowPrecision(const size_t row, const uint8_t precision)
+            @param precision The precision for the row.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void SetRowPrecision(const size_t row, const uint8_t precision,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
-                for (auto& cell : currentRow)
-                    { cell.m_precision = precision; }
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.m_precision = precision;
+                    }
                 }
             }
         /** @brief Sets the specified column's precision.
             @param column The column to edit.
-            @param precision The precision for the column.*/
-        void SetColumnPrecision(const size_t column, const uint8_t precision)
+            @param precision The precision for the column.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void SetColumnPrecision(const size_t column, const uint8_t precision,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
-            if (GetColumnCount() > 0)
+            if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
-                for (auto& row : m_table)
+                for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (column < row.size())
-                        { row[column].m_precision = precision; }
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.m_precision = precision;
                     }
                 }
             }
 
         /** @brief Sets the specified row's cells' horizontal content alginment.
             @param row The row to have horizontally centered cell content.
-            @param alignment How to align the content within the row's cells.*/
+            @param alignment How to align the content within the row's cells.
+            @param columnStops An optional list of columns within the row to skip.*/
         void SetRowHorizontalPageAlignment(const size_t row,
-                                           const PageHorizontalAlignment alignment)
+            const PageHorizontalAlignment alignment,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
             {
             if (row < GetRowCount())
                 {
                 auto& currentRow = m_table[row];
-                for (auto& cell : currentRow)
-                    { cell.SetPageHorizontalAlignment(alignment); }
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.SetPageHorizontalAlignment(alignment);
+                    }
                 }
             }
         /** @brief Sets the specified column's cells' horizontal content alginment.
             @param column The column to have horizontally centered cell content.
-            @param alignment How to align the content within the column's cells.*/
+            @param alignment How to align the content within the column's cells.
+            @param rowStops An optional list of rows within the column to skip.*/
         void SetColumnHorizontalPageAlignment(const size_t column,
-                                              const PageHorizontalAlignment alignment)
+            const PageHorizontalAlignment alignment,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
-            if (GetColumnCount() > 0)
+            if (GetColumnCount() > 0 && column < GetColumnCount())
                 {
-                for (auto& row : m_table)
+                for (size_t i = 0; i < m_table.size(); ++i)
                     {
-                    if (column < row.size())
-                        { row[column].SetPageHorizontalAlignment(alignment); }
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.SetPageHorizontalAlignment(alignment);
                     }
                 }
             }
@@ -768,16 +902,10 @@ namespace Wisteria::Graphs
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
         /// @param alternateColor The background color to apply to ever other row.
         /// @param startRow The row to start from (default is @c 0).
-        /// @param startColumn An optional column in the row to start from.\n
-        ///     The default is to start from the first column.
-        /// @param endColumn An optional column in the row to end at.\n
-        ///     The default is to end at the last column.
         /// @note This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
         void ApplyAlternateRowColors(const wxColour alternateColor,
-                                     const size_t startRow = 0, 
-                                     std::optional<size_t> startColumn = std::nullopt,
-                                     std::optional<size_t> endColumn = std::nullopt);
+                                     const size_t startRow = 0);
         /// @}
 
         /// @name Cell Functions
@@ -798,6 +926,13 @@ namespace Wisteria::Graphs
         ///     the note, and where to place it relative to the table.
         void AddCellAnnotation(const CellAnnotation& cellNote);
         /// @}
+
+        /** @brief Adds a footnote to the table.
+            @param cellValue The value to look for in the table, which will have a number added after it.
+            @param footnote The respective footnote to add to the caption.
+            @note Up to nine footnotes is supported.
+            @warning Adding a footnote will overwrite the existing caption.*/
+        void AddFootnote(const wxString& cellValue, const wxString& footnote);
 
         /// @private
         void AddCellAnnotation(CellAnnotation&& cellNote);
@@ -875,6 +1010,8 @@ namespace Wisteria::Graphs
         // DIPs for annotation connection lines and space between lines
         static constexpr wxCoord m_labelSpacingFromLine{ 5 };
         static constexpr wxCoord m_connectionOverhangWidth{ 10 };
+
+        std::vector<wxString> m_footnotes;
 
         std::vector<std::vector<TableCell>> m_table;
         std::optional<double> m_minWidthProportion;

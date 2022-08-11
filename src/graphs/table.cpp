@@ -377,9 +377,9 @@ namespace Wisteria::Graphs
             InsertRow(rIndex);
             if (rowName.has_value())
                 { GetCell(rIndex, 0).SetValue(rowName.value()); }
-            BoldRow(rIndex);
+            BoldRow(rIndex, std::nullopt);
             if (bkColor.has_value())
-                { SetRowBackgroundColor(rIndex, bkColor.value()); }
+                { SetRowBackgroundColor(rIndex, bkColor.value(), std::nullopt); }
 
             std::vector<double> colValues;
             for (size_t currentCol = 0; currentCol < GetColumnCount(); ++currentCol)
@@ -411,9 +411,9 @@ namespace Wisteria::Graphs
             InsertColumn(columnIndex);
             if (colName.has_value())
                 { GetCell(0, columnIndex).SetValue(colName.value()); }
-            BoldColumn(columnIndex);
+            BoldColumn(columnIndex, std::nullopt);
             if (bkColor.has_value())
-                { SetColumnBackgroundColor(columnIndex, bkColor.value()); }
+                { SetColumnBackgroundColor(columnIndex, bkColor.value(), std::nullopt); }
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
@@ -453,33 +453,30 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void Table::ApplyAlternateRowColors(const wxColour alternateColor,
-        const size_t startRow /*= 0*/,
-        std::optional<size_t> startColumn /*= std::nullopt*/,
-        std::optional<size_t> endColumn /*= std::nullopt*/)
+        const size_t startRow /*= 0*/)
         {
         bool isAlternate{ false };
         for (size_t i = startRow; i < GetRowCount(); ++i)
             {
-            SetRowBackgroundColor(i, (isAlternate ? alternateColor : *wxWHITE),
-                                  startColumn, endColumn);
+            SetRowBackgroundColor(i, (isAlternate ? alternateColor : *wxWHITE), std::nullopt);
             isAlternate = !isAlternate;
             }
         }
 
     //----------------------------------------------------------------
     void Table::SetRowBackgroundColor(const size_t row, const wxColour color,
-        std::optional<size_t> startColumn /*= std::nullopt*/,
-        std::optional<size_t> endColumn /*= std::nullopt*/)
+        std::optional<std::set<size_t>> columnStops /*= std::nullopt*/)
         {
         if (row < GetRowCount() && m_table[row].size() > 0)
             {
             auto& currentRow = m_table[row];
-            startColumn = startColumn.has_value() ? startColumn.value() : 0;
-            // don't go beyond the last column
-            endColumn = endColumn.has_value() ?
-                std::min(endColumn.value(), currentRow.size()-1) : currentRow.size()-1;
-            for (size_t i = startColumn.value(); i <= endColumn.value(); ++i)
-                { currentRow[i].m_bgColor = color; }
+            for (size_t i = 0; i < currentRow.size(); ++i)
+                {
+                if (columnStops.has_value() &&
+                    columnStops.value().find(i) != columnStops.value().cend())
+                    { continue; }
+                currentRow[i].m_bgColor = color;
+                }
             }
         }
 
@@ -655,7 +652,7 @@ namespace Wisteria::Graphs
 
         // if there are annotations, add gutters for them
         wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
-        for (auto& note : m_cellAnnotations)
+        for (const auto& note : m_cellAnnotations)
             {
             measuringLabel.SetText(note.m_note);
             if (DeduceGutterSide(note) == Side::Left)
@@ -671,7 +668,7 @@ namespace Wisteria::Graphs
             }
 
         // if centering table, add extra spacing to keep labels fitting
-        auto extraSpaceForCentering =
+        const auto extraSpaceForCentering =
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
             std::abs(widestLeftNote - widestRightNote) :
             0;
@@ -784,8 +781,8 @@ namespace Wisteria::Graphs
         const wxRect originalFullGraphArea = GetBoundingBox(dc);
         wxRect fullGraphArea = originalFullGraphArea;
         wxRect drawArea = GetPlotAreaBoundingBox();
-        auto graphDecorationHeight = fullGraphArea.GetHeight() - drawArea.GetHeight();
-        auto graphDecorationWidth = fullGraphArea.GetWidth() - drawArea.GetWidth();
+        const auto graphDecorationHeight = fullGraphArea.GetHeight() - drawArea.GetHeight();
+        const auto graphDecorationWidth = fullGraphArea.GetWidth() - drawArea.GetWidth();
 
         // calculate the necessary heights of the rows and widths of the columns
         std::vector<wxCoord> columnWidths;
@@ -823,7 +820,7 @@ namespace Wisteria::Graphs
              safe_divide(drawArea.GetHeight() - tableHeight, 2) :
             0;
 
-        // draw the text
+        // measure the text
         wxPoint pts[4];
         std::vector<std::shared_ptr<Label>> cellLabels;
         double smallestTextScaling{ std::numeric_limits<double>::max() };
@@ -1337,5 +1334,49 @@ namespace Wisteria::Graphs
                 (GetTitle().GetFont().GetFractionalPointSize() * .75) *
                  std::max(1.0, smallestTextScaling));
             }
+        }
+
+    //----------------------------------------------------------------
+    void Table::AddFootnote(const wxString& cellValue, const wxString& footnote)
+        {
+        m_footnotes.push_back(footnote);
+
+        static const std::map<uint8_t, std::wstring> footnoteChars =
+            {
+            { 0, L"\x2070" },
+            { 1, L"\x00B9" },
+            { 2, L"\x00B2" },
+            { 3, L"\x00B3" },
+            { 4, L"\x2074" },
+            { 5, L"\x2075" },
+            { 6, L"\x2076" },
+            { 7, L"\x2077" },
+            { 8, L"\x2078" },
+            { 9, L"\x2079" }
+            };
+
+        const auto ftChar = footnoteChars.find(m_footnotes.size());
+        if (ftChar != footnoteChars.cend())
+            {
+            for (auto& row : m_table)
+                {
+                for (auto& cell : row)
+                    {
+                    if (cell.IsText() &&
+                        cell.GetDisplayValue().CmpNoCase(cellValue) == 0)
+                        {
+                        cell.SetValue(cell.GetDisplayValue() + ftChar->second);
+                        }
+                    }
+                }
+            }
+        // build the caption
+        wxString footnoteCaption;
+        for (int i = 0; i < m_footnotes.size(); ++i)
+            {
+            footnoteCaption += wxString::Format(L"%i. %s\n", i+1, m_footnotes[i]);
+            }
+        footnoteCaption.Trim();
+        GetCaption().SetText(footnoteCaption);
         }
     }
