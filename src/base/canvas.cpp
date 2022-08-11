@@ -895,7 +895,26 @@ namespace Wisteria
                                 {
                                 objectPos->SetContentLeft(leftPt);
                                 objectPos->SetContentRight(rightPt);
+                                // recalculate the size of the object after adjust its content area;
+                                // if that changed the size of the object (should be smaller),
+                                // then push everything to the right of it over to the left.
+                                const auto oldBoundingBox = objectPos->GetBoundingBox(dc);
                                 objectPos->RecalcSizes(dc);
+                                const auto newBoundingBox = objectPos->GetBoundingBox(dc);
+                                const auto rightDiff = oldBoundingBox.GetRight() -
+                                                       newBoundingBox.GetRight();
+                                wxASSERT_MSG(rightDiff >= 0,
+                                    L"Object shouldn't be wider after adjusting its content area!");
+                                for (size_t remainingRowsItem = colIndex + 1;
+                                    remainingRowsItem < fixedObjectsRowPos->size();
+                                    ++remainingRowsItem)
+                                    {
+                                    if (fixedObjectsRowPos->at(remainingRowsItem) != nullptr)
+                                        {
+                                        fixedObjectsRowPos->at(remainingRowsItem)->
+                                            Offset(-rightDiff, 0);
+                                        }
+                                    }
                                 objectPos->UpdateSelectedItems();
                                 }
                             }

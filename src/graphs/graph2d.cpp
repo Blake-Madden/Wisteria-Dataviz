@@ -388,6 +388,9 @@ namespace Wisteria::Graphs
                                    (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing()*2))));
             }
 
+        // if axes from this graph are being adjusted to align with something else
+        // (e.g., another graph), then adjust them now
+        const auto originalPlotArea = GetPlotAreaBoundingBox();
         if (GetContentTop())
             { m_plotRect.SetTop(GetContentTop().value()); }
         if (GetContentBottom())
@@ -396,6 +399,26 @@ namespace Wisteria::Graphs
             { m_plotRect.SetLeft(GetContentLeft().value()); }
         if (GetContentRight())
             { m_plotRect.SetRight(GetContentRight().value()); }
+        const auto adjustedPlotArea = GetPlotAreaBoundingBox();
+
+        // ...and shrink the graph (draw) area to the smaller plot area
+        auto drawArea = GetBoundingBox(dc);
+        if (adjustedPlotArea.GetWidth() < originalPlotArea.GetWidth())
+            {
+            drawArea.SetLeft(drawArea.GetLeft() +
+                (adjustedPlotArea.GetLeft() - originalPlotArea.GetLeft()));
+            drawArea.SetWidth(drawArea.GetWidth() -
+                (originalPlotArea.GetWidth() - adjustedPlotArea.GetWidth()));
+            }
+        if (adjustedPlotArea.GetHeight() < originalPlotArea.GetHeight())
+            {
+            drawArea.SetTop(drawArea.GetTop() +
+                (adjustedPlotArea.GetTop() - originalPlotArea.GetTop()));
+            drawArea.SetHeight(drawArea.GetHeight() -
+                (originalPlotArea.GetHeight() - adjustedPlotArea.GetHeight()));
+            }
+        if (drawArea != GetBoundingBox(dc))
+            { SetBoundingBox(drawArea, dc, GetScaling()); }
 
         // reset the axes' points to the updated plot area
         adjustAxesPoints();
