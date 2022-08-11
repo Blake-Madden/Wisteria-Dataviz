@@ -257,10 +257,10 @@ namespace Wisteria
         {
         static const std::map<std::wstring, TextAlignment> textAlignValues =
             {
-            { L"flushleft", TextAlignment::FlushLeft },
-            { L"flushright", TextAlignment::FlushRight },
-            { L"raggedright", TextAlignment::RaggedRight },
-            { L"raggedleft", TextAlignment::RaggedLeft },
+            { L"flush-left", TextAlignment::FlushLeft },
+            { L"flush-right", TextAlignment::FlushRight },
+            { L"ragged-right", TextAlignment::RaggedRight },
+            { L"ragged-left", TextAlignment::RaggedLeft },
             { L"centered", TextAlignment::Centered },
             { L"justified", TextAlignment::Justified }
             };
@@ -418,7 +418,8 @@ namespace Wisteria
                     foundDataset->second == nullptr)
                     {
                     throw std::runtime_error(
-                        wxString::Format(_(L"%s: datasource not found for axis brackets."), dsName).ToUTF8());
+                        wxString::Format(
+                            _(L"%s: datasource not found for axis brackets."), dsName).ToUTF8());
                     }
 
                 const auto variablesNode = bracketsNode->GetProperty(L"variables");
@@ -777,6 +778,42 @@ namespace Wisteria
             { L">=", Comparison::GreaterThanOrEqualTo }
             };
 
+        const auto loadColumnFilter = [this](const auto& filterNode)
+            {
+            const auto foundPos = cmpOperators.find(std::wstring_view(
+                filterNode->GetProperty(L"operator")->
+                GetValueString().MakeLower().wc_str()));
+            Comparison cmp = (foundPos != cmpOperators.cend() ?
+                foundPos->second : Comparison::Equals);
+                            
+            const auto valueNode = filterNode->GetProperty(L"value");
+                            
+            if (valueNode->IsOk())
+                {
+                wxDateTime dt;
+                const bool isDate =
+                    (valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                        (dt.ParseDateTime(valueNode->GetValueString()) ||
+                        dt.ParseDate(valueNode->GetValueString())));
+                ColumnFilterInfo cFilter 
+                    {
+                    filterNode->GetProperty(L"column")->GetValueString(),
+                    cmp,
+                    (isDate ?
+                        DatasetValueType(dt) :
+                        valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                        DatasetValueType(ExpandValues(valueNode->GetValueString())) :
+                        DatasetValueType(valueNode->GetValueNumber()))
+                    };
+                return cFilter;
+                }
+            else
+                {
+                throw std::runtime_error(
+                    _(L"Comparison value for subset filter missing.").ToUTF8());
+                }
+            };
+
         if (subsetsNode->IsOk())
             {
             auto subsets = subsetsNode->GetValueArrayObject();
@@ -793,49 +830,69 @@ namespace Wisteria
                             foundDataset->second == nullptr)
                             {
                             throw std::runtime_error(
-                                wxString::Format(_(L"%s: datasource not found for subset."), dsName).ToUTF8());
+                                wxString::Format(
+                                    _(L"%s: datasource not found for subset."), dsName).ToUTF8());
                             }
-                        const auto filter = subset->GetProperty(L"filter");
-                        if (filter->IsOk())
+                        const auto filterNode = subset->GetProperty(L"filter");
+                        const auto filterAndNode = subset->GetProperty(L"filter-and");
+                        const auto filterOrNode = subset->GetProperty(L"filter-or");
+                        const size_t validFilterTypeNode =
+                            (filterNode->IsOk() ? 1 : 0) +
+                            (filterAndNode->IsOk() ? 1 : 0) +
+                            (filterOrNode->IsOk() ? 1 : 0);
+                        if (validFilterTypeNode  > 1)
                             {
-                            const auto foundPos = cmpOperators.find(std::wstring_view(
-                                filter->GetProperty(L"operator")->
-                                GetValueString().MakeLower().wc_str()));
-                            Comparison cmp = (foundPos != cmpOperators.cend() ?
-                                foundPos->second : Comparison::Equals);
-                            
-                            const auto valueNode = filter->GetProperty(L"value");
-                            
-                            if (valueNode->IsOk())
-                                {
-                                wxDateTime dt;
-                                const bool isDate =
-                                    (valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
-                                     (dt.ParseDateTime(valueNode->GetValueString()) ||
-                                      dt.ParseDate(valueNode->GetValueString())));
-                                ColumnFilterInfo cFilter 
-                                    {
-                                    filter->GetProperty(L"column")->GetValueString(),
-                                    cmp,
-                                    (isDate ?
-                                     DatasetValueType(dt) :
-                                        valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                                     DatasetValueType(ExpandValues(valueNode->GetValueString())) :
-                                     DatasetValueType(valueNode->GetValueNumber()))
-                                    };
+                            throw std::runtime_error(
+                                _(L"Only one filter type allowed for a subset.").ToUTF8());
+                            }
+                        else if (validFilterTypeNode == 0)
+                            {
+                            throw std::runtime_error(
+                                _(L"Subset missing filters.").ToUTF8());
+                            }
 
-                                DatasetSubset dataSubsetter;
-                                const auto dataSubset = dataSubsetter.Subset(
-                                    foundDataset->second, cFilter);
-                            
-                                m_datasets.insert_or_assign(
-                                    subset->GetProperty(L"name")->GetValueString(), dataSubset);
-                                }
-                            else
+                        DatasetSubset dataSubsetter;
+                        // single column filter
+                        if (filterNode->IsOk())
+                            {
+                            m_datasets.insert_or_assign(
+                                subset->GetProperty(L"name")->GetValueString(),
+                                dataSubsetter.Subset(
+                                    foundDataset->second, loadColumnFilter(filterNode)));
+                            }
+                        // ANDed filters
+                        else if (filterAndNode->IsOk())
+                            {
+                            std::vector<ColumnFilterInfo> cf;
+                            const auto filterNodes = filterAndNode->GetValueArrayObject();
+                            if (filterNodes.size() == 0)
                                 {
                                 throw std::runtime_error(
-                                    _(L"Comparison value for subset filter missing.").ToUTF8());
+                                    _(L"Subset missing filters.").ToUTF8());
                                 }
+                            for (const auto& filterNode : filterNodes)
+                                { cf.emplace_back(loadColumnFilter(filterNode)); }
+                            
+                            m_datasets.insert_or_assign(
+                                subset->GetProperty(L"name")->GetValueString(),
+                                    dataSubsetter.SubsetAnd(foundDataset->second, cf));
+                            }
+                        // ORed filters
+                        else if (filterOrNode->IsOk())
+                            {
+                            std::vector<ColumnFilterInfo> cf;
+                            const auto filterNodes = filterOrNode->GetValueArrayObject();
+                            if (filterNodes.size() == 0)
+                                {
+                                throw std::runtime_error(
+                                    _(L"Subset missing filters.").ToUTF8());
+                                }
+                            for (const auto& filterNode : filterNodes)
+                                { cf.emplace_back(loadColumnFilter(filterNode)); }
+                            
+                            m_datasets.insert_or_assign(
+                                subset->GetProperty(L"name")->GetValueString(),
+                                    dataSubsetter.SubsetOr(foundDataset->second, cf));
                             }
                         }
                     }
@@ -871,14 +928,17 @@ namespace Wisteria
                             if (dateVar->IsOk())
                                 {
                                 // get the date column's name and how to load it
-                                const wxString dateName = dateVar->GetProperty(L"name")->GetValueString();
+                                const wxString dateName =
+                                    dateVar->GetProperty(L"name")->GetValueString();
                                 if (dateName.empty())
                                     {
                                     throw std::runtime_error(
                                         wxString(_(L"Date column must have a name.")).ToUTF8());
                                     }
-                                const wxString dateParser = dateVar->GetProperty(L"parser")->GetValueString();
-                                const wxString dateFormat = dateVar->GetProperty(L"format")->GetValueString();
+                                const wxString dateParser =
+                                    dateVar->GetProperty(L"parser")->GetValueString();
+                                const wxString dateFormat =
+                                    dateVar->GetProperty(L"format")->GetValueString();
                                 dateInfo.push_back(
                                     {
                                     dateName,
@@ -917,7 +977,8 @@ namespace Wisteria
                                     throw std::runtime_error(
                                         wxString(_(L"Categorical column must have a name.")).ToUTF8());
                                     }
-                                const wxString catParser = catVar->GetProperty(L"parser")->GetValueString();
+                                const wxString catParser =
+                                    catVar->GetProperty(L"parser")->GetValueString();
                                 catInfo.push_back(
                                     {
                                     catName,
@@ -1002,10 +1063,10 @@ namespace Wisteria
                 wxString::Format(_(L"%s: datasource not found for line plot."), dsName).ToUTF8());
             }
 
-        auto variablesNode = graphNode->GetProperty(L"variables");
+        const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
 
             auto linePlot = std::make_shared<LinePlot>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
@@ -1037,7 +1098,7 @@ namespace Wisteria
                 wxString::Format(_(L"%s: datasource not found for categorical bar chart."), dsName).ToUTF8());
             }
 
-        auto variablesNode = graphNode->GetProperty(L"variables");
+        const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
             const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
@@ -1080,7 +1141,7 @@ namespace Wisteria
                 wxString::Format(_(L"%s: datasource not found for pie chart."), dsName).ToUTF8());
             }
 
-        auto variablesNode = graphNode->GetProperty(L"variables");
+        const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
             const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
@@ -1206,10 +1267,10 @@ namespace Wisteria
         table->SetData(foundPos->second, variables,
             graphNode->GetProperty(L"transpose")->GetValueBool());
 
-        const auto& minWidthProp = graphNode->GetProperty(L"min-width-proportion");
+        const auto minWidthProp = graphNode->GetProperty(L"min-width-proportion");
         if (minWidthProp->IsOk())
             { table->SetMinWidthProportion(minWidthProp->GetValueNumber()); }
-        const auto& minHeightProp = graphNode->GetProperty(L"min-height-proportion");
+        const auto minHeightProp = graphNode->GetProperty(L"min-height-proportion");
         if (minHeightProp->IsOk())
             { table->SetMinHeightProportion(minHeightProp->GetValueNumber()); }
 
@@ -1217,6 +1278,25 @@ namespace Wisteria
 
         const size_t originalColumnCount = table->GetColumnCount();
         const size_t originalRowCount = table->GetRowCount();
+
+        // loads the positions from a row or column stops array
+        const auto loadStops = [this, &originalColumnCount, &originalRowCount](const auto& stopsNode)
+            {
+            std::set<size_t> rowOrColumnStops;
+            const auto stops = stopsNode->GetValueArrayObject();
+            if (stops.size())
+                {
+                for (const auto& stop : stops)
+                    {
+                    const std::optional<size_t> stopPosition =
+                        LoadPosition(stop->GetProperty(L"position"),
+                            originalColumnCount, originalRowCount);
+                    if (stopPosition.has_value())
+                        { rowOrColumnStops.insert(stopPosition.value()); }
+                    }
+                }
+            return rowOrColumnStops;
+            };
 
         // add rows
         auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
@@ -1237,16 +1317,16 @@ namespace Wisteria
                 const wxColour bgcolor(
                     ConvertColor(rowAddCommand->GetProperty(L"background")->GetValueString()));
                 if (bgcolor.IsOk())
-                    { table->SetRowBackgroundColor(position.value(), bgcolor); }
+                    { table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt); }
                 }
             }
         // group the rows
-        auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
+        const auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
         for (const auto& rowGrouping : rowGroupings)
             { table->GroupRow(rowGrouping); }
 
         // color the rows
-        auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
+        const auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
         if (rowColorCommands.size())
             {
             for (const auto& rowColorCommand : rowColorCommands)
@@ -1256,13 +1336,17 @@ namespace Wisteria
                         originalColumnCount, originalRowCount);
                 const wxColour bgcolor(
                     ConvertColor(rowColorCommand->GetProperty(L"background")->GetValueString()));
+                const std::set<size_t> colStops =
+                    loadStops(rowColorCommand->GetProperty(L"stops"));
                 if (position.has_value() && bgcolor.IsOk())
-                    { table->SetRowBackgroundColor(position.value(), bgcolor); }
+                    {
+                    table->SetRowBackgroundColor(position.value(), bgcolor, colStops);
+                    }
                 }
             }
 
         // change rows' content alignent
-        auto rowContentCommands =
+        const auto rowContentCommands =
             graphNode->GetProperty(L"rows-content-align")->GetValueArrayObject();
         if (rowContentCommands.size())
             {
@@ -1278,23 +1362,87 @@ namespace Wisteria
                 if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::LeftAligned);
+                        PageHorizontalAlignment::LeftAligned, std::nullopt);
                     }
                 else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::RightAligned);
+                        PageHorizontalAlignment::RightAligned, std::nullopt);
                     }
                 else if (hPageAlignment.CmpNoCase(L"centered") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::Centered);
+                        PageHorizontalAlignment::Centered, std::nullopt);
                     }
                 }
             }
 
+        // color the columns
+        const auto colColorCommands = graphNode->GetProperty(L"columns-color")->GetValueArrayObject();
+        if (colColorCommands.size())
+            {
+            for (const auto& colColorCommand : colColorCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(colColorCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+                const wxColour bgcolor(
+                    ConvertColor(colColorCommand->GetProperty(L"background")->GetValueString()));
+                const std::set<size_t> rowStops =
+                    loadStops(colColorCommand->GetProperty(L"stops"));
+                if (position.has_value() && bgcolor.IsOk())
+                    { table->SetColumnBackgroundColor(position.value(), bgcolor, rowStops); }
+                }
+            }
+
+        // change columns' borders
+        const auto columnBordersCommands =
+            graphNode->GetProperty(L"columns-borders")->GetValueArrayObject();
+        if (columnBordersCommands.size())
+            {
+            for (const auto& columnBordersCommand : columnBordersCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(columnBordersCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+                const auto borderFlags =
+                    columnBordersCommand->GetProperty(L"borders")->GetValueArrayBool();
+
+                const std::set<size_t> rowStops =
+                    loadStops(columnBordersCommand->GetProperty(L"stops"));
+                if (position.has_value() && borderFlags.size() > 0)
+                    {
+                    table->SetColumnBorders(position.value(),
+                        (borderFlags.size() > 0 ? borderFlags[0] : true),
+                        (borderFlags.size() > 1 ? borderFlags[1] : true),
+                        (borderFlags.size() > 2 ? borderFlags[2] : true),
+                        (borderFlags.size() > 3 ? borderFlags[3] : true),
+                        rowStops);
+                    }
+                }
+            }
+
+        // highlight cells down a column
+        const auto columnHighlightsCommands =
+            graphNode->GetProperty(L"columns-highlight")->GetValueArrayObject();
+        if (columnHighlightsCommands.size())
+            {
+            for (const auto& columnHighlightsCommand : columnHighlightsCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadPosition(columnHighlightsCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount);
+
+                std::set<size_t> rowStops =
+                    loadStops(columnHighlightsCommand->GetProperty(L"stops"));
+                if (position.has_value())
+                    { table->HighlightColumn(position.value(), rowStops); }
+                }
+            }
+
         // column aggregates
-        auto columnAggregates = graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
+        const auto columnAggregates =
+            graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
         if (columnAggregates.size())
             {
             for (const auto& columnAggregate : columnAggregates)
@@ -1327,7 +1475,8 @@ namespace Wisteria
             }
 
         // cell updating
-        auto cellUpdates = graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
+        const auto cellUpdates =
+            graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
         if (cellUpdates.size())
             {
             for (const auto& cellUpdate : cellUpdates)
@@ -1348,7 +1497,7 @@ namespace Wisteria
                     {
                     auto& currentCell = table->GetCell(rowPosition.value(), columnPosition.value());
                     // column count
-                    const auto& columnCountProperty =
+                    const auto columnCountProperty =
                         cellUpdate->GetProperty(L"column-count");
                     if (columnCountProperty->IsOk())
                         {
@@ -1363,7 +1512,7 @@ namespace Wisteria
                             }
                         }
                     // row count
-                    const auto& rowCountProperty =
+                    const auto rowCountProperty =
                         cellUpdate->GetProperty(L"row-count");
                     if (rowCountProperty->IsOk())
                         {
@@ -1378,7 +1527,7 @@ namespace Wisteria
                             }
                         }
                     // value
-                    const auto& valueProperty = cellUpdate->GetProperty(L"value");
+                    const auto valueProperty = cellUpdate->GetProperty(L"value");
                     if (valueProperty->IsOk())
                         {
                         if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING)
@@ -1438,6 +1587,18 @@ namespace Wisteria
                     else if (hPageAlignment.CmpNoCase(L"centered") == 0)
                         { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
                     }
+                }
+            }
+
+        // assign footnotes after all cells have been updated
+        const auto footnotesNode = graphNode->GetProperty(L"footnotes")->GetValueArrayObject();
+        if (footnotesNode.size())
+            {
+            for (const auto& ftNode : footnotesNode)
+                {
+                table->AddFootnote(
+                    ftNode->GetProperty(L"value")->GetValueString(),
+                    ftNode->GetProperty(L"footnote")->GetValueString());
                 }
             }
 
@@ -2115,7 +2276,7 @@ namespace Wisteria
             }
         else if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
             {
-            auto foundPos = colorSchemes.find(
+            const auto foundPos = colorSchemes.find(
                 std::wstring_view(colorSchemeNode->GetValueString().MakeLower().wc_str()));
             if (foundPos != colorSchemes.cend())
                 { return foundPos->second; }
@@ -2175,7 +2336,7 @@ namespace Wisteria
                 { return nullptr; }
             for (auto& icon : iconValues)
                 {
-                auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
+                const auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
                 if (foundPos != iconEnums.cend())
                     { icons.emplace_back(foundPos->second); }
                 }
@@ -2186,8 +2347,8 @@ namespace Wisteria
         // a pre-defined icon scheme
         else if (iconSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
             {
-            auto foundPos = iconSchemes.find(
-            std::wstring_view(iconSchemeNode->GetValueString().MakeLower().wc_str()));
+            const auto foundPos = iconSchemes.find(
+                std::wstring_view(iconSchemeNode->GetValueString().MakeLower().wc_str()));
             if (foundPos != iconSchemes.cend())
                 { return foundPos->second; }
             }
@@ -2258,7 +2419,7 @@ namespace Wisteria
         item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));
 
         // anchoring
-        auto foundPos = anchoringValues.find(std::wstring_view(
+        const auto foundPos = anchoringValues.find(std::wstring_view(
             itemNode->GetProperty(L"anchoring")->GetValueString().MakeLower().wc_str()));
         if (foundPos != anchoringValues.cend())
             { item->SetAnchoring(foundPos->second); }
@@ -2372,7 +2533,7 @@ namespace Wisteria
         const auto titleProperty = graphNode->GetProperty(L"title");
         if (titleProperty->IsOk())
             {
-            auto titleLabel = LoadLabel(titleProperty, graph->GetTitle());
+            const auto titleLabel = LoadLabel(titleProperty, graph->GetTitle());
             if (titleLabel != nullptr)
                 { graph->GetTitle() = *titleLabel; }
             }
@@ -2381,7 +2542,7 @@ namespace Wisteria
         const auto subtitleProperty = graphNode->GetProperty(L"sub-title");
         if (subtitleProperty->IsOk())
             {
-            auto subtitleLabel = LoadLabel(subtitleProperty, graph->GetSubtitle());
+            const auto subtitleLabel = LoadLabel(subtitleProperty, graph->GetSubtitle());
             if (subtitleLabel != nullptr)
                 { graph->GetSubtitle() = *subtitleLabel; }
             }
@@ -2390,7 +2551,7 @@ namespace Wisteria
         const auto captionProperty = graphNode->GetProperty(L"caption");
         if (captionProperty->IsOk())
             {
-            auto captionLabel = LoadLabel(captionProperty, graph->GetCaption());
+            const auto captionLabel = LoadLabel(captionProperty, graph->GetCaption());
             if (captionLabel != nullptr)
                 { graph->GetCaption() = *captionLabel; }
             }

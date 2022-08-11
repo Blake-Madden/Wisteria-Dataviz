@@ -163,17 +163,20 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "no-display"
 - @c "brackets": adds brackets to the axis, which included the following properties:
   - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
-  - @c "simplify": a bool value indicating whether to simplify the bracket's labels.
+  - @c "simplify": a boolean value indicating whether to simplify the bracket's labels.
   - @c "style": the style of the braces.\n
     Available options are:
     - @c "arrow"
     - @c "reverse-arrow"
     - @c "lines"
     - @c "curly-braces"
-    - @c "no-connection-linesrrow"
+    - @c "no-connection-lines"
 
   If building brackets from a dataset, use the following properties:
-  - @c "datasource": the name of the datasource to read the columns from.
+  - @c "datasource": the name of the datasource to read the columns from.\n
+       Note that this datasource can be different from the datasource used for the first
+       child graph if you are wanting to use different labels. For this situation, the
+       @c "value" variable should have the same scale as the child graph.
   - @c "variables": which include the following properties:
     - @c "label": the labels column.
     - @c "value": the values column. (This can be either a continous, categorical, or date column.)
@@ -324,6 +327,7 @@ Properties for @c "table" nodes:
 - Some base properties available to [graphs](#graph-properties).
 
 Note that it is recommended to set @c "fit-row-to-content" to @c true for shorter tables to better fit them to the page.
+Likewise, set @c "fit-row-to-content" to @c false for taller tables that are meant to consume most of a page's height.
 
 The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
@@ -337,6 +341,8 @@ The remaining properties are executed in the following order:
   - @c "position": which row to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the row.
+  - @c "stops": an array of which columns to skip over when changing the row's color.\n
+       This is an array of @c "position" items.
 - @c "rows-content-align": an array of commands to align the content inside of the cells across a row.
   - @c "position": which row to change the content alignment in.\n
        Refer to the [position](#position-properties) properties that are available.
@@ -345,6 +351,26 @@ The remaining properties are executed in the following order:
     - @c "left-aligned"
     - @c "right-aligned"
     - @c "centered"
+- @c "columns-color": an array of column and color pairs, which contain the following properties:
+  - @c "position": which column to apply a background color.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "background": the background color of the column.
+  - @c "stops": an array of which rows to skip over when changing the column's color.\n
+       This is an array of @c "position" items.
+- @c "columns-borders": an array of column border specifications, which contain the following:
+  - @c "position": which column to edit.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "borders": an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "stops": an array of which rows to skip over when changing the column's borders.\n
+       This is an array of @c "position" items.
+- @c "columns-highlight": an array of column highlight specifications, which contain the following:
+  - @c "position": which column to edit.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "borders": an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "stops": an array of which rows to skip over when changing the column's cell highlighting.\n
+       This is an array of @c "position" items.
 - @c "columns-add-aggregates": an array of column aggregate definitions that will be added to the table.\n
      Each column aggregate node contains the following properties:
   - @c "type": the type of aggregate column to add.\n
@@ -383,6 +409,9 @@ The remaining properties are executed in the following order:
     - @c "flush-right" or @c "ragged-left"
     - @c "centered"
     - @c "justified"
+- @c "footnotes": an array of footnote specifications, which each contain the following properties:
+  - @c "value": the cell value to add a footnote number to.
+  - @c "footnote": the footnote to add to the caption.
 
 # Base-level Properties
 
