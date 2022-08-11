@@ -207,7 +207,7 @@ namespace Wisteria::GraphItems
                 @param lineStyle The style to use for the bracket's lines.*/
             AxisBracket(const double pos1, const double pos2, const double labelPos,
                         const wxString label, const wxPen pen = *wxBLACK_PEN,
-                        const BracketLineStyle lineStyle = BracketLineStyle::Lines) :
+                        const BracketLineStyle lineStyle = BracketLineStyle::CurlyBraces) :
                 m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
                 m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(pen),
                 m_bracketLineStyle(lineStyle)
@@ -381,7 +381,7 @@ namespace Wisteria::GraphItems
             wxPen m_linePen;
             Orientation m_orientation{ Orientation::Vertical };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
-            BracketLineStyle m_bracketLineStyle{ BracketLineStyle::Lines };
+            BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
             };
 
         /// @brief A point on an axis.
