@@ -50,19 +50,23 @@ namespace Wisteria::Data
             subCategoryCol->GetStringTable() :
             ColumnWithStringTable::StringTableType());
         auto subCatMDCode = ColumnWithStringTable::FindMissingDataCode(m_subCategoriesStringTable);
+        // if no missing data value in the string table, then add it
         if (!subCatMDCode)
-            { subCatMDCode = ColumnWithStringTable::GetNextKey(m_subCategoriesStringTable); }
+            {
+            subCatMDCode = ColumnWithStringTable::GetNextKey(m_subCategoriesStringTable);
+            m_subCategoriesStringTable.insert(std::make_pair(subCatMDCode.value(), wxEmptyString));
+            }
 
         // build a map of unique categories and all the regexes connected to them.
         for (size_t i = 0; i < classifierData->GetRowCount(); ++i)
             {
             // make sure the regex is OK before loading it for later
-            const wxString reValue = patternCol->GetCategoryLabelFromID(patternCol->GetValue(i));
+            const wxString reValue = patternCol->GetLabelFromID(patternCol->GetValue(i));
             wxRegEx re(reValue);
 
             const wxString negatingReValue =
                 (negationPatternCol != classifierData->GetCategoricalColumns().cend()) ?
-                negationPatternCol->GetCategoryLabelFromID(negationPatternCol->GetValue(i)) :
+                negationPatternCol->GetLabelFromID(negationPatternCol->GetValue(i)) :
                 wxString();
 
             if (reValue.length() && re.IsValid())
@@ -81,7 +85,7 @@ namespace Wisteria::Data
                 {
                 wxLogWarning(_(L"'%s': regular expression syntax error for category '%s.'"),
                              reValue,
-                             categoryCol->GetCategoryLabelFromID(categoryCol->GetValue(i)));
+                             categoryCol->GetLabelFromID(categoryCol->GetValue(i)));
                 }
             }
         }
@@ -129,10 +133,10 @@ namespace Wisteria::Data
                 for (const auto& re : regexes.first)
                     {
                     if (re.first->IsValid() &&
-                        re.first->Matches(contentColumn->GetCategoryLabelFromID(contentColumn->GetValue(i))) &&
+                        re.first->Matches(contentColumn->GetLabelFromID(contentColumn->GetValue(i))) &&
                         // either no negating regex or it doesn't match it
                         (!re.second->IsValid() ||
-                         !re.second->Matches(contentColumn->GetCategoryLabelFromID(contentColumn->GetValue(i)))))
+                         !re.second->Matches(contentColumn->GetLabelFromID(contentColumn->GetValue(i)))))
                         {
                         categoryRegexMatched = true;
                         matchedAnyCategory = true;

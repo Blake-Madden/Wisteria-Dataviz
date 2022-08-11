@@ -265,7 +265,7 @@ namespace Wisteria::Data
             if (stringTable.size())
                 {
                 const auto& [key, value] = *stringTable.crbegin();
-                return key;
+                return key + 1;
                 }
             else
                 { return 0; }
