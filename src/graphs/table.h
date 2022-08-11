@@ -930,7 +930,7 @@ namespace Wisteria::Graphs
         /** @brief Adds a footnote to the table.
             @param cellValue The value to look for in the table, which will have a number added after it.
             @param footnote The respective footnote to add to the caption.
-            @note Up to nine footnotes is supported.
+            @note Up to nine footnotes are supported.
             @warning Adding a footnote will overwrite the existing caption.*/
         void AddFootnote(const wxString& cellValue, const wxString& footnote);
 
