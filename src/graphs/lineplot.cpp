@@ -75,28 +75,35 @@ namespace Wisteria::Graphs
 
         if (m_useGrouping)
             {
-            std::set<Data::GroupIdType> groups;
+            std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
             for (const auto& groupId : m_groupColumn->GetValues())
-                { groups.insert(groupId); }
+                {
+                groups.insert(std::make_pair(m_groupColumn->GetLabelFromID(groupId), groupId));
+                }
+            size_t currentIndex{ 0 };
             for (const auto& group : groups)
                 {
                 Line ln;
-                ln.SetGroupInfo(groupColumnName, group,
-                                m_groupColumn->GetLabelFromID(group));
-                ln.GetPen().SetColour(GetColorScheme()->GetColor(group));
+                ln.SetGroupInfo(groupColumnName, group.second,
+                                m_groupColumn->GetLabelFromID(group.second));
+                ln.GetPen().SetColour(GetColorScheme()->GetColor(currentIndex));
+                ln.m_shape = GetShapeScheme()->GetShape(currentIndex);
+                ln.m_shapeImg = GetShapeScheme()->GetImage(currentIndex);
                 // if some sort of spiral, then draw as a dashed spline
-                if (IsAutoSplining() && !IsDataSingleDirection(data, group))
+                if (IsAutoSplining() && !IsDataSingleDirection(data, group.second))
                     {
                     ln.GetPen().SetStyle(wxPenStyle::wxPENSTYLE_SHORT_DASH);
                     ln.SetStyle(LineStyle::Spline);
                     }
                 else
                     {
-                    const auto& [penStyle, lineStyle] = GetPenStyleScheme()->GetLineStyle(group);
+                    const auto& [penStyle, lineStyle] =
+                        GetPenStyleScheme()->GetLineStyle(currentIndex);
                     ln.GetPen().SetStyle(penStyle);
                     ln.SetStyle(lineStyle);
                     }
                 AddLine(ln);
+                ++currentIndex;
                 }
             }
         else
@@ -116,18 +123,6 @@ namespace Wisteria::Graphs
                 ln.SetStyle(lineStyle);
                 }
             AddLine(ln);
-            }
-
-        // sort the lines by their group label
-        if (m_useGrouping)
-            {
-            std::sort(m_lines.begin(), m_lines.end(),
-                [this](const auto& first, const auto& second) noexcept
-                    {
-                    return m_groupColumn->GetLabelFromID(first.m_groupId) <
-                           m_groupColumn->GetLabelFromID(second.m_groupId);
-                    }
-                );
             }
         }
 
@@ -271,8 +266,8 @@ namespace Wisteria::Graphs
                                     AnchorPoint(pt).
                                     Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
                                     Settings::GetPointRadius(),
-                                    GetShapeScheme()->GetShape(line.m_groupId),
-                                    &GetShapeScheme()->GetImage(line.m_groupId)), dc);
+                                    line.m_shape,
+                                    &line.m_shapeImg), dc);
                 }
             AddObject(points);
             }
@@ -310,7 +305,7 @@ namespace Wisteria::Graphs
             if (showingMarkers)
                 {
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(GetShapeScheme()->GetShape(line.m_groupId), *wxBLACK,
+                    LegendIcon(line.m_shape, *wxBLACK,
                         line.GetPen().GetColour()));
                 }
             else
