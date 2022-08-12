@@ -38,7 +38,7 @@ Properties for the @c "datasources" node:
     This property is optional.
   - @c "categorical-columns": an array of categorical column specifications.\n
     This property is optional.\n
-  Each specification consists of the following:
+    Each specification consists of the following:
     - @c "name": the name of the column.
     - @c "parser": how to read the column.\n
       Available options are:
@@ -55,7 +55,13 @@ Properties for the @c "datasources" node:
       - @c "rfc822"
       - @c "strptime-format"
       - @c "automatic" (if not specified, this will be the default).
-    - @c "format": if @c "parser" is set to @c "strptime-format", then this is the user-defined format to parse with.
+    - @c "format": if @c "parser" is set to @c "strptime-format",
+         then this is the user-defined format to parse with.
+  - @c "recode-re": an array of categorical column recode commands. This will apply a regular expression
+       text replace for each label in the provided column(s). Each set of commands contains the following properties:
+       - @c "column": the categorical column to recode.
+       - @c "pattern": the regular expression pattern to search for.
+       - @c "replacement": the replacement text. Note that capture groups are supported.
 
 ## Values {#values-properties}
 Properties for the @c "values" node:

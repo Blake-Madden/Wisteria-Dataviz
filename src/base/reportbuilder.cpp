@@ -852,13 +852,12 @@ namespace Wisteria
                             }
 
                         DatasetSubset dataSubsetter;
+                        std::shared_ptr<Data::Dataset> dataset{ nullptr };
                         // single column filter
                         if (filterNode->IsOk())
                             {
-                            m_datasets.insert_or_assign(
-                                subset->GetProperty(L"name")->GetValueString(),
-                                dataSubsetter.Subset(
-                                    foundDataset->second, loadColumnFilter(filterNode)));
+                            dataset = dataSubsetter.Subset(
+                                    foundDataset->second, loadColumnFilter(filterNode));
                             }
                         // ANDed filters
                         else if (filterAndNode->IsOk())
@@ -873,9 +872,7 @@ namespace Wisteria
                             for (const auto& filterNode : filterNodes)
                                 { cf.emplace_back(loadColumnFilter(filterNode)); }
                             
-                            m_datasets.insert_or_assign(
-                                subset->GetProperty(L"name")->GetValueString(),
-                                    dataSubsetter.SubsetAnd(foundDataset->second, cf));
+                            dataset = dataSubsetter.SubsetAnd(foundDataset->second, cf);
                             }
                         // ORed filters
                         else if (filterOrNode->IsOk())
@@ -889,13 +886,35 @@ namespace Wisteria
                                 }
                             for (const auto& filterNode : filterNodes)
                                 { cf.emplace_back(loadColumnFilter(filterNode)); }
-                            
+
+                            dataset = dataSubsetter.SubsetOr(foundDataset->second, cf);
+                            }
+
+                        if (dataset)
+                            {
+                            LoadDatasourceTransformations(subset, dataset);
                             m_datasets.insert_or_assign(
-                                subset->GetProperty(L"name")->GetValueString(),
-                                    dataSubsetter.SubsetOr(foundDataset->second, cf));
+                                subset->GetProperty(L"name")->GetValueString(), dataset);
                             }
                         }
                     }
+                }
+            }
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::LoadDatasourceTransformations(const wxSimpleJSON::Ptr_t& dsNode,
+        std::shared_ptr<Data::Dataset>& dataset)
+        {
+        if (dsNode->IsOk())
+            {
+            auto recodeREs = dsNode->GetProperty(L"recode-re")->GetValueArrayObject();
+            for (const auto& recodeRE : recodeREs)
+                {
+                dataset->RecodeRE(
+                    recodeRE->GetProperty(L"column")->GetValueString(),
+                    recodeRE->GetProperty(L"pattern")->GetValueString(),
+                    recodeRE->GetProperty(L"replacement")->GetValueString());
                 }
             }
         }
@@ -1043,6 +1062,7 @@ namespace Wisteria
                                     ToUTF8());
                         }
                     
+                    LoadDatasourceTransformations(datasource, dataset);
                     m_datasets.insert_or_assign(dsName, dataset);
                     }
                 }

@@ -67,7 +67,7 @@ namespace Wisteria
         /// @param item[in,out] The item to write the properties to.
         void LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
             std::shared_ptr<GraphItems::GraphItemBase> item);
-        /// @brief Finalizes loading options for graph.
+        /// @brief Finalizes loading options for a graph.
         /// @details This will load general graph options from a node,
         ///     apply them to the graph, and add the graph (and possibly its legend)
         ///     to the canvas.
@@ -172,6 +172,13 @@ namespace Wisteria
         /// @return The loaded icon scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
+
+        /** @brief Loads additional transformation features and applies them to a dataset.
+            @param dsNode The datasouce node that the dataset was loaded from.
+            @param[in,out] dataset The dataset apply the transformations to.*/
+        [[nodiscard]] void LoadDatasourceTransformations(
+            const wxSimpleJSON::Ptr_t& dsNode,
+            std::shared_ptr<Data::Dataset>& dataset);
 
         /// @brief Converts a string value to a LabelPlaceent enum value.
         [[nodiscard]] static std::optional<LabelPlacement>

@@ -11,6 +11,36 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------
+    void ColumnWithStringTable::RecodeRE(const wxString& pattern,
+                                                    const wxString& replace)
+        {
+        wxRegEx re(pattern);
+        if (re.IsValid())
+            {
+            for (auto& str : m_stringTable)
+                { re.ReplaceAll(&str.second, replace); }
+            }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': invalid regex used for recoding column."), pattern).ToUTF8());
+            }
+        }
+
+    //----------------------------------------------
+    void Dataset::RecodeRE(const wxString& colName, const wxString& pattern,
+                           const wxString& replace)
+        {
+        auto catColumn = GetCategoricalColumn(colName);
+        if (catColumn == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for regex recoding."), colName).ToUTF8());
+            }
+        catColumn->RecodeRE(pattern, replace);
+        }
+
+    //----------------------------------------------
     ImportInfo::RegExMap ImportInfo::DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
         const wxString& regexColumnName,
         const wxString& replacementColumnName)

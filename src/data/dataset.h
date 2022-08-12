@@ -220,6 +220,14 @@ namespace Wisteria::Data
         /// @param sTable The new string table for the column.
         void SetStringTable(const StringTableType& sTable)
             { m_stringTable = sTable; }
+
+        /** @brief Applies a regular expression string replacment for all values in
+                the string table.
+            @param pattern The regex pattern to replace.
+            @param replace The replacement text.
+            @throws std::runtime_error If the regex patterns is invalid.*/
+        void RecodeRE(const wxString& pattern, const wxString& replace);
+
         /** @brief Gets the label from the string table given the numeric code,
                 or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
@@ -947,6 +955,14 @@ namespace Wisteria::Data
         /** @brief Determines if there are any valid IDs in the ID column.
             @returns @c true if there are any ID values in the ID column.*/
         [[nodiscard]] bool HasValidIdData() const;
+
+        /** @brief Applies a regular expression string replacment for all values in
+                the specified categorical column.
+            @param colName The categorical column to edit.
+            @param pattern The regex pattern to replace.
+            @param replace The replacement text.
+            @throws std::runtime_error If the regex patterns is invalid.*/
+        void RecodeRE(const wxString& colName, const wxString& pattern, const wxString& replace);
 
         /** @brief Reads the column names from a file and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
