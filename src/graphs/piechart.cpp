@@ -426,7 +426,7 @@ namespace Wisteria::Graphs
                 std::for_each(innerPieSliceGroup.second.begin(),
                     innerPieSliceGroup.second.end(),
                     [&parentGroupIndex](auto& slice) noexcept
-                    { slice.m_parentSliceGroup = parentGroupIndex; });
+                    { slice.m_parentSliceIndex = parentGroupIndex; });
                 GetInnerPie().insert(GetInnerPie().end(),
                                      innerPieSliceGroup.second.cbegin(),
                                      innerPieSliceGroup.second.cend());
@@ -587,8 +587,8 @@ namespace Wisteria::Graphs
             {
             const wxColour sliceColor =
                 (GetOuterPie().at(i).IsGhosted() ?
-                    ColorContrast::ChangeOpacity(m_pieColors->GetColor(i), m_ghostOpacity) :
-                    m_pieColors->GetColor(i));
+                    ColorContrast::ChangeOpacity(GetColorScheme()->GetColor(i), m_ghostOpacity) :
+                    GetColorScheme()->GetColor(i));
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
                 Brush(sliceColor).
@@ -604,13 +604,13 @@ namespace Wisteria::Graphs
                     GetOuterPie().at(i).m_description);
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 if (IsUsingColorLabels())
-                    { pSlice->GetHeaderInfo().FontColor(m_pieColors->GetColor(i)); }
+                    { pSlice->GetHeaderInfo().FontColor(GetColorScheme()->GetColor(i)); }
                 pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), .4));
                 }
             else
                 {
                 if (IsUsingColorLabels())
-                    { pSlice->SetFontColor(m_pieColors->GetColor(i)); }
+                    { pSlice->SetFontColor(GetColorScheme()->GetColor(i)); }
                 pSlice->GetFont().MakeBold();
                 }
             AddObject(pSlice);
@@ -651,7 +651,7 @@ namespace Wisteria::Graphs
         // inner pie
         startAngle = 0;
         size_t currentParentSliceIndex{ 0 };
-        auto sliceColor{ m_pieColors->GetColor(0) };
+        auto sliceColor{ GetColorScheme()->GetColor(0) };
         middleLabels.clear();
         smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetPointSize();
         // note that we do NOT clear outerLabels or its smallest font size,
@@ -677,15 +677,15 @@ namespace Wisteria::Graphs
             sliceLine.SetWidth(std::max(1,
                 (sliceLine.IsOk()? sliceLine.GetWidth() : 2) / 2));
             // slightly adjusted color based on the parent slice color
-            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
+            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
                 ColorContrast::ShadeOrTint(
-                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, 0.1));
+                    GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex, 0.1));
             const wxColour sliceColorForBrush =
                 (GetInnerPie().at(i).IsGhosted() ?
                     ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity) :
                     sliceColor);
-            currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
+            currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
 
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetInnerPie().at(i).GetGroupLabel()).
@@ -1156,7 +1156,7 @@ namespace Wisteria::Graphs
             std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
                 [&](const auto& slice)
                 {
-                if (slice.m_parentSliceGroup == i)
+                if (slice.m_parentSliceIndex == i)
                     { innerSlicesForCurrentGroup.push_back(&slice); }
                 }
                 );
@@ -1218,7 +1218,7 @@ namespace Wisteria::Graphs
             std::for_each(GetInnerPie().cbegin(), GetInnerPie().cend(),
                 [&](const auto& slice)
                 {
-                if (slice.m_parentSliceGroup == i)
+                if (slice.m_parentSliceIndex == i)
                     { innerSlicesForCurrentGroup.push_back(&slice); }
                 }
                 );
@@ -1254,15 +1254,15 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost)
+    void PieChart::GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost)
         {
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
             [&](auto& slice) noexcept
                 {
                 const bool inList = (std::find_if(
-                    labelsToGhost.cbegin(), labelsToGhost.cend(),
+                    slicesToGhost.cbegin(), slicesToGhost.cend(),
                     [&slice](const auto& label)
-                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != slicesToGhost.cend());
                 slice.Ghost(inList ? ghost : !ghost);
                 }
             );
@@ -1278,18 +1278,55 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost)
+    void PieChart::GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
             [&](auto& slice) noexcept
                 {
                 const bool inList = (std::find_if(
-                    labelsToGhost.cbegin(), labelsToGhost.cend(),
+                    slicesToGhost.cbegin(), slicesToGhost.cend(),
                     [&slice](const auto& label)
-                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToGhost.cend());
+                    { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != slicesToGhost.cend());
                 slice.Ghost(inList ? ghost : !ghost);
                 }
             );
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices)
+        {
+        ShowOuterPieLabels(false);
+        ShowOuterPieMidPointLabels(false);
+        GhostOuterPieSlices(false, pieSlices);
+
+        // get positions of outer slices being showcased
+        std::set<size_t> showcasedOuterIndices;
+        for (const auto& pieSliceLabel : pieSlices)
+            {
+            auto foundSlice =
+                std::find_if(GetOuterPie().cbegin(), GetOuterPie().cend(),
+                    [&pieSliceLabel](const auto& slice)
+                    {
+                    return (slice.GetGroupLabel().CmpNoCase(pieSliceLabel) == 0);
+                    });
+            if (foundSlice != GetOuterPie().cend())
+                {
+                showcasedOuterIndices.insert(
+                    std::distance(GetOuterPie().cbegin(), foundSlice));
+                }
+            }
+
+        std::vector<wxString> innerLabelsForGroups;
+        for (const auto& innerSlice : GetInnerPie())
+            {
+            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
+                showcasedOuterIndices.cend())
+                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+            }
+
+        ShowInnerPieLabels(true, innerLabelsForGroups);
+        ShowInnerPieMidPointLabels(true, innerLabelsForGroups);
+        GhostInnerPieSlices(false, innerLabelsForGroups);
         }
 
     //----------------------------------------------------------------
@@ -1416,13 +1453,13 @@ namespace Wisteria::Graphs
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::HorizontalLineIcon, *wxBLACK_PEN, m_pieColors->GetColor(0)));
+            LegendIcon(IconShape::HorizontalLineIcon, *wxBLACK_PEN, GetColorScheme()->GetColor(0)));
         legend->GetLegendIcons().emplace_back(
             LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
 
         size_t lineCount{ 0 };
         size_t currentParentSliceIndex{ 0 };
-        auto sliceColor{ m_pieColors->GetColor(0) };
+        auto sliceColor{ GetColorScheme()->GetColor(0) };
         for (size_t i = 0; i < GetInnerPie().size(); ++i)
             {
             if (Settings::GetMaxLegendItemCount() == lineCount)
@@ -1441,14 +1478,14 @@ namespace Wisteria::Graphs
 
             // get the color
             // slightly adjusted color based on the parent slice color
-            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceGroup) ?
+            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
                 ColorContrast::ShadeOrTint(
-                    m_pieColors->GetColor(GetInnerPie().at(i).m_parentSliceGroup, .1));
+                    GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex, .1));
             // starting a new group
-            if (currentParentSliceIndex != GetInnerPie().at(i).m_parentSliceGroup)
+            if (currentParentSliceIndex != GetInnerPie().at(i).m_parentSliceIndex)
                 {
-                currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceGroup;
+                currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
                 legendText.append(
                     GetOuterPie().at(currentParentSliceIndex).GetGroupLabel()).append(L"\n \n");
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
@@ -1456,7 +1493,7 @@ namespace Wisteria::Graphs
                 legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::HorizontalLineIcon,
                         *wxBLACK_PEN,
-                        m_pieColors->GetColor(currentParentSliceIndex)));
+                        GetColorScheme()->GetColor(currentParentSliceIndex)));
                 legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
                 }

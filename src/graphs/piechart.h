@@ -292,13 +292,13 @@ namespace Wisteria::Graphs
             ///     (usually the group label from the dataset).
             /// @param value The value (e.g., number of items in the group) for the slice.
             /// @param percent The percent of the pie that this slice consumes.
-            /// @param parentSliceGroup The slice's parent slice
-            ///     (only applies only to the inner pie).
+            /// @param parentSliceIndex The position along the outer pie of this slice's
+            ///     parent slice (only applies only to the inner pie).
             explicit SliceInfo(const wxString& groupLabel, const double value = 0,
                                const double percent = 0,
-                               Wisteria::Data::GroupIdType parentSliceGroup = 0) :
+                               size_t parentSliceIndex = 0) :
                 m_groupLabel(groupLabel), m_value(value),
-                m_percent(percent), m_parentSliceGroup(parentSliceGroup)
+                m_percent(percent), m_parentSliceIndex(parentSliceIndex)
                 {}
 
             /// @returns The text shown on the outer ring of the slice.
@@ -353,7 +353,7 @@ namespace Wisteria::Graphs
             bool m_showText{ true };
             double m_value{ 0.0 };
             double m_percent{ 0.0 };
-            Wisteria::Data::GroupIdType m_parentSliceGroup{ 0 };
+            size_t m_parentSliceIndex{ 0 };
             std::optional<BinLabelDisplay> m_midPointLabelDisplay;
             };
 
@@ -403,8 +403,8 @@ namespace Wisteria::Graphs
         /// @name Outer Pie Functions
         /// @brief Functions for customizing the outer ring of the pie chart.\n
         ///     If subgrouping is not being used, then this will be the only pie ring.
-        /// @note For functions which accept lists of slices (by label name) such as
-        ///     GhostOuterPieSlices() can be used functions such as GetLargestOuterPieSlices().
+        /// @note Functions which accept lists of slices by label name (such as
+        ///     GhostOuterPieSlices()) can be used functions such as GetLargestOuterPieSlices().
         /// @{
 
         /// @brief Accesses the outer pie (or the only pie if a single series chart).\n
@@ -434,6 +434,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
+        /// @brief Brings to focus the specified slice(s) along the outer and their children
+        ///     inner slices.
+        /// @details This will make all other slices (including the non-children inner slices)
+        ///     translucent and hide their labels.
+        void ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices);
         /// @brief Brings to focus the largest slice(s) along the outer (or only) pie.
         /// @details This will make all other slices (including the inner pie) translucent
         ///     and hide their labels.
@@ -478,10 +483,10 @@ namespace Wisteria::Graphs
         void GhostOuterPieSlices(const bool ghost);
         /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
-            @param labelsToGhost Which slices to ghost or unghost.\n
+            @param slicesToGhost Which slices to ghost or unghost.\n
                 Slice labels not in this list will have the opposite of @c ghost applied to them.
             @note This should be called after SetData().*/
-        void GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost);
+        void GhostOuterPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost);
 
         /** @brief Shows or hides the outside labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
@@ -637,19 +642,19 @@ namespace Wisteria::Graphs
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
             @note This should be called after SetData().\n
                 Also, inner slices should only be ghosted if its parent slice is ghosted also;
-                otherwise, its opaque parent slice will simply show through it.*/
+                otherwise, its opaque parent slice will show through it.*/
         void GhostInnerPieSlices(const bool ghost);
         /** @brief Ghosts or unghosts the slices of the inner pie
                 (if using a secondary grouping variable).
             @details This is useful for pushing most slices to the background and drawing
                 attention to the ones that are not ghosted.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
-            @param labelsToGhost Which slices to ghost or unghost.\n
+            @param slicesToGhost Which slices to ghost or unghost.\n
                 Slice labels not in this list will have the opposite of @c ghost applied to them.
             @note This should be called after SetData().\n
                 Also, inner slices should only be ghosted if its parent slice is ghosted also;
-                otherwise, its opaque parent slice will simply show through it.*/
-        void GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& labelsToGhost);
+                otherwise, its opaque parent slice will show through it.*/
+        void GhostInnerPieSlices(const bool ghost, const std::vector<wxString>& slicesToGhost);
 
         /** @brief Shows or hides the outside labels of the inner pie
                 (if using a secondary grouping variable).
