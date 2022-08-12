@@ -11,8 +11,37 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------
+    void ColumnWithStringTable::CollapseStringTable()
+        {
+        multi_value_aggregate_map<wxString, GroupIdType> dupMap;
+        for (const auto& [id, strValue] : GetStringTable())
+            { dupMap.insert(strValue, id); }
+
+        for (const auto& [str, idsAndFreq] : dupMap.get_data())
+            {
+            // found a string that appears more than once in the string table
+            if (idsAndFreq.first.size() > 1)
+                {
+                auto idsIter = idsAndFreq.first.cbegin();
+                const auto mainID = *idsIter;
+                std::advance(idsIter, 1);
+                // remove duplicates of string from string table and replace
+                // their codes in the data with the code from the first
+                // instance of that string (that remains in the string table)
+                while (idsIter != idsAndFreq.first.cend())
+                    {
+                    const auto removeID = *idsIter;
+                    m_stringTable.erase(m_stringTable.find(removeID));
+                    Recode(removeID, mainID);
+                    std::advance(idsIter, 1);
+                    }
+                }
+            }
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::RecodeRE(const wxString& pattern,
-                                                    const wxString& replace)
+                                         const wxString& replace)
         {
         wxRegEx re(pattern);
         if (re.IsValid())
@@ -25,19 +54,75 @@ namespace Wisteria::Data
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': invalid regex used for recoding column."), pattern).ToUTF8());
             }
+        CollapseStringTable();
         }
 
     //----------------------------------------------
     void Dataset::RecodeRE(const wxString& colName, const wxString& pattern,
                            const wxString& replace)
         {
-        auto catColumn = GetCategoricalColumn(colName);
-        if (catColumn == GetCategoricalColumns().cend())
+        auto catColumn = GetCategoricalColumnWritable(colName);
+        if (catColumn == GetCategoricalColumns().end())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': column not found for regex recoding."), colName).ToUTF8());
             }
         catColumn->RecodeRE(pattern, replace);
+        }
+
+    //----------------------------------------------
+    void Dataset::RenameColumn(const wxString& colName, const wxString& newColName)
+        {
+        if (newColName.empty())
+            {
+            throw std::runtime_error(
+                _(L"New column name cannot be empty.").ToUTF8());
+            }
+
+        // make sure new name isn't in dataset already (unless old name and new name
+        // are the same). New and old might be different if they are changing the casing.
+        if (colName.CmpNoCase(newColName) != 0 &&
+            ContainsColumn(newColName))
+            {
+            throw std::runtime_error(
+                _(L"New column name already exists in the dataset.").ToUTF8());
+            }
+
+        auto continuousCol = GetContinuousColumnWritable(colName);
+        auto catCol = GetCategoricalColumnWritable(colName);
+        auto dateCol = GetDateColumnWritable(colName);
+
+        if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
+            { GetIdColumn().SetName(newColName); }
+        else if (continuousCol != GetContinuousColumns().end())
+            { continuousCol->SetName(newColName); }
+        else if (catCol != GetCategoricalColumns().end())
+            { catCol->SetName(newColName); }
+        else if (dateCol != GetDateColumns().end())
+            { dateCol->SetName(newColName); }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for renaming."), newColName).ToUTF8());
+            }
+        }
+
+    //----------------------------------------------
+    bool Dataset::ContainsColumn(const wxString& colName) const noexcept
+        {
+        auto continuousCol = GetContinuousColumn(colName);
+        auto catCol = GetCategoricalColumn(colName);
+        auto dateCol = GetDateColumn(colName);
+
+        if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
+            { return true; }
+        else if (continuousCol != GetContinuousColumns().end())
+            { return true; }
+        else if (catCol != GetCategoricalColumns().end())
+            { return true; }
+        else if (dateCol != GetDateColumns().end())
+            { return true; }
+        return false;
         }
 
     //----------------------------------------------

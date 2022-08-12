@@ -32,6 +32,7 @@
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
 #include "../math/mathematics.h"
+#include "../util/frequencymap.h"
 #include "../debug/debug_assert.h"
 
 namespace Wisteria
@@ -225,7 +226,7 @@ namespace Wisteria::Data
                 the string table.
             @param pattern The regex pattern to replace.
             @param replace The replacement text.
-            @throws std::runtime_error If the regex patterns is invalid.*/
+            @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& pattern, const wxString& replace);
 
         /** @brief Gets the label from the string table given the numeric code,
@@ -285,6 +286,9 @@ namespace Wisteria::Data
                 { return 0; }
             }
     private:
+        /// @brief Combines duplicate values in the string table and recodes
+        ///     the numeric values down the column.
+        void CollapseStringTable();
         /// @brief Removes all data and clears the string table.
         void Clear() noexcept final
             {
@@ -424,9 +428,9 @@ namespace Wisteria::Data
         };
 
     /// @brief Class for specifying which columns from an input file to use in the dataset
-    ///  and how to map them.
+    ///     and how to map them.
     /// @details The fields in this class are chainable, so you can set multiple properties
-    ///  in place as you construct it.
+    ///     in place as you construct it.
     class ImportInfo
         {
         friend class Dataset;
@@ -538,8 +542,8 @@ namespace Wisteria::Data
              info().ContinuousColumns({ L"COMPASS SCORES", L"GPA" })
             @endcode
 
-             This will result in `COMPASS SCORES` being imported as the first continuous column
-             and `GPA` as the second continuous column.
+                This will result in `COMPASS SCORES` being imported as the first continuous column
+                and `GPA` as the second continuous column.
             @param colNames The column names.
             @returns A self reference.*/
         ImportInfo& ContinuousColumns(const std::vector<wxString>& colNames)
@@ -568,9 +572,9 @@ namespace Wisteria::Data
             return *this;
             }
         /** @brief Sets a map of regular expressions to look for in imported text
-             (i.e., categorical) columns and what to replace them with.
+                (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data or fixing
-             misspellings in the input data.
+                misspellings in the input data.
             @par Example:
             @code
              auto commentsData = std::make_shared<Data::Dataset>();
@@ -587,7 +591,7 @@ namespace Wisteria::Data
                     }));
             @endcode
             @param replaceStrings The map of regular expressions to match against
-             and what to replace them with.
+                and what to replace them with.
             @returns A self reference.*/
         ImportInfo& ReplacementStrings(const RegExMap& replaceStrings)
             {
@@ -596,16 +600,16 @@ namespace Wisteria::Data
             }
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
-             and their replacement values from a file and passing that to ReplacementStrings().
+                and their replacement values from a file and passing that to ReplacementStrings().
             @param dataset The dataset containing the patterns to replace and what to
-             replace them with.
+                replace them with.
             @param regexColumnName The name of the column containing the patterns to replace.\n
-             Any regular expressions that fail to compile will be logged and then ignored.
+                Any regular expressions that fail to compile will be logged and then ignored.
             @param replacementColumnName The name of the column containing the replacements.
             @returns The map of regular expression pattherns to replace and what to replace them with.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         static RegExMap DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
             const wxString& regexColumnName,
             const wxString& replacementColumnName);
@@ -625,10 +629,10 @@ namespace Wisteria::Data
 
     /** @brief %Dataset interface for graphs.
         @details Contains columns for continuous data, categoricals, groupings,
-         dates, and observation names/IDs.
+            dates, and observation names/IDs.
          
         @sa [Importing Data](../../ImportingData.md) and [Building Data](../../BuildingData.md)
-         for dataset overviews.*/
+            for dataset overviews.*/
     class Dataset
         {
         friend DatasetClone;
@@ -767,13 +771,14 @@ namespace Wisteria::Data
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
-        /** @brief Gets an iterator to a categorical column by name.
+        /** @brief Gets a writable iterator to a categorical column by name.
             @param columnName The name of the categorical column to look for.
             @returns An iterator to the categorical column if found,
-             `GetCategoricalColumns().end()` otherwise.
+                `GetCategoricalColumns().cend()` otherwise.
             @note Check the return against `GetCategoricalColumns().end()`
-             to confirm that the column was found prior to using it.*/
-        [[nodiscard]] auto GetCategoricalColumn(const wxString& columnName) noexcept
+                to confirm that the column was found prior to using it.\n
+                Also, prefer using GetCategoricalColumn() unless you need to edit the column.*/
+        [[nodiscard]] auto GetCategoricalColumnWritable(const wxString& columnName) noexcept
             {
             return std::find_if(GetCategoricalColumns().begin(),
                 GetCategoricalColumns().end(),
@@ -809,13 +814,14 @@ namespace Wisteria::Data
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
-        /** @brief Gets an iterator to a date column by name.
+        /** @brief Gets a writable iterator to a date column by name.
             @param columnName The name of the date column to look for.
             @returns An iterator to the group column if found,
-             `GetDateColumns().end()` otherwise.
+                `GetDateColumns().cend()` otherwise.
             @note Check the return against `GetDateColumns().end()`
-             to confirm that the column was found prior to using it.*/
-        [[nodiscard]] auto GetDateColumn(const wxString& columnName) noexcept
+                to confirm that the column was found prior to using it.\n
+                Also, prefer using GetDateColumn() unless you need to edit the column.*/
+        [[nodiscard]] auto GetDateColumnWritable(const wxString& columnName) noexcept
             {
             return std::find_if(GetDateColumns().begin(),
                 GetDateColumns().end(),
@@ -841,13 +847,27 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a continuous column by name.
             @param columnName The name of the continuous column to look for.
             @returns An iterator to the group column if found,
-                `GetContinuousColumns().cend()` otherwise.
+                `GetContinuousColumns().end()` otherwise.
             @note Check the return against `GetContinuousColumns().cend()`
                 to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetContinuousColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetContinuousColumns().cbegin(),
                 GetContinuousColumns().cend(),
+                [&columnName](const auto& item) noexcept
+                { return item.GetName().CmpNoCase(columnName) == 0; });
+            }
+        /** @brief Gets a writable iterator to a continuous column by name.
+            @param columnName The name of the continuous column to look for.
+            @returns An iterator to the group column if found,
+                `GetContinuousColumns().end()` otherwise.
+            @note Check the return against `GetContinuousColumns().end()`
+                to confirm that the column was found prior to using it.\n
+                Also, prefer using GetContinuousColumns() unless you need to edit the column.*/
+        [[nodiscard]] auto GetContinuousColumnWritable(const wxString& columnName) noexcept
+            {
+            return std::find_if(GetContinuousColumns().begin(),
+                GetContinuousColumns().end(),
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
@@ -956,12 +976,23 @@ namespace Wisteria::Data
             @returns @c true if there are any ID values in the ID column.*/
         [[nodiscard]] bool HasValidIdData() const;
 
+        /** @brief Determines if a column name already exists in the dataset.
+            @param colName The column name to look for.
+            @returns @c true if the column name is in the dataset.*/
+        [[nodiscard]] bool ContainsColumn(const wxString& colName) const noexcept;
+
+        /** @brief Renames a column.
+            @param colName The column to rename.
+            @param newColName The new name for the column.
+            @throws std::runtime_error If column not found, throws an exception.*/
+        void RenameColumn(const wxString& colName, const wxString& newColName);
+
         /** @brief Applies a regular expression string replacment for all values in
                 the specified categorical column.
             @param colName The categorical column to edit.
             @param pattern The regex pattern to replace.
             @param replace The replacement text.
-            @throws std::runtime_error If the regex patterns is invalid.*/
+            @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& colName, const wxString& pattern, const wxString& replace);
 
         /** @brief Reads the column names from a file and deduces their data types.
@@ -969,11 +1000,11 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types,
             @returns A vector of column names and their respective data types.\n
-             This can be especially useful for determining whether a categorical column
-             should be imported as strings or codes (i.e., discrete numbers).
+                This can be especially useful for determining whether a categorical column
+                should be imported as strings or codes (i.e., discrete numbers).
             @throws std::runtime_error If the file can't be read, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                               const wchar_t delimiter,
                                                               const size_t rowPreviewCount = 100);
@@ -982,9 +1013,9 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.
             @param delimiter The delimiter to parse the columns with.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportCSV(), ImportTSV(), ReadColumnInfo().
             @par Example:
             @code
@@ -1002,9 +1033,9 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportCSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
@@ -1012,20 +1043,20 @@ namespace Wisteria::Data
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
             @throws std::runtime_error If the file can't be read or named columns aren't found,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportTSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
         /** @brief Exports the dataset to a text file.
             @details Continuous columns are exported with six-point precision and date
-             columns are exported in ISO date & time format.
+                columns are exported in ISO date & time format.
             @param filePath The file path to save to.
             @param delimiter The delimiter to save with.
             @param quoteColumns Whether the columns should be quoted.
             @throws std::runtime_error If the file can't be written to.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportText(const wxString& filePath,
                         const wchar_t delimiter,
                         const bool quoteColumns) const;
@@ -1033,17 +1064,17 @@ namespace Wisteria::Data
             @details This is a shortcut for ExportText(), using tabs as the column separator.
             @param filePath The file path to save to.
             @throws std::runtime_error If the file can't be written to.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportTSV(const wxString& filePath) const
             { ExportText(filePath, L'\t', false); }
         /** @brief Exports the dataset to as a comma-delimited text file.
             @details This is a shortcut for ExportText(),
-             using commas as the column separator and quoting the columns.
+                using commas as the column separator and quoting the columns.
             @param filePath The file path to save to.
             @throws std::runtime_error If the file can't be written to.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
     private:
