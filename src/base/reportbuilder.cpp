@@ -908,6 +908,15 @@ namespace Wisteria
         {
         if (dsNode->IsOk())
             {
+            // column renaming
+            auto colRenames = dsNode->GetProperty(L"columns-rename")->GetValueArrayObject();
+            for (const auto& colRename : colRenames)
+                {
+                dataset->RenameColumn(
+                    colRename->GetProperty(L"name")->GetValueString(),
+                    colRename->GetProperty(L"new-name")->GetValueString());
+                }
+            // label recoding
             auto recodeREs = dsNode->GetProperty(L"recode-re")->GetValueArrayObject();
             for (const auto& recodeRE : recodeREs)
                 {
@@ -1090,7 +1099,8 @@ namespace Wisteria
 
             auto linePlot = std::make_shared<LinePlot>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
-                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
+                LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             linePlot->SetData(foundPos->second,
                 variablesNode->GetProperty(L"y")->GetValueString(),
                 variablesNode->GetProperty(L"x")->GetValueString(),
@@ -1209,6 +1219,12 @@ namespace Wisteria
                 }
 
             // showcase of slices
+            const auto showcase2LevelNode = graphNode->GetProperty(L"showcase-slices-2-level");
+            if (showcase2LevelNode->IsOk())
+                {
+                pieChart->ShowcaseOuterPieSlicesAndChildren(
+                    showcase2LevelNode->GetValueStringVector());
+                }
             const auto showcaseNode = graphNode->GetProperty(L"showcase-slices");
             if (showcaseNode->IsOk())
                 {
@@ -2203,6 +2219,9 @@ namespace Wisteria
             { L"zinnwalditebrown", Colors::Color::ZinnwalditeBrown }
             };
 
+        // in case the color is a user-defined constant in the file
+        colorStr = ExpandValues(colorStr);
+
         // see if it is one of our defined colors
         auto foundPos = values.find(std::wstring_view(colorStr.MakeLower().wc_str()));
         if (foundPos != values.cend())
@@ -2306,6 +2325,43 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Wisteria::LineStyleScheme> ReportBuilder::LoadLineStyleScheme(
+        const wxSimpleJSON::Ptr_t& lineStyleSchemeNode)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring_view, LineStyle> lineStyleEnsums =
+            {
+            { L"arrows", LineStyle::Arrows },
+            { L"lines", LineStyle::Lines },
+            { L"spline", LineStyle::Spline }
+            };
+
+        if (!lineStyleSchemeNode->IsOk())
+            { return nullptr; }
+        // a list of icons
+        else if (lineStyleSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+            {
+            std::vector<std::pair<wxPenStyle, LineStyle>> lineStyles;
+            auto lineStyleValues = lineStyleSchemeNode->GetValueArrayObject();
+            for (auto& lineStyle : lineStyleValues)
+                {
+                wxPen pn(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SOLID);
+                LoadPen(lineStyle->GetProperty(L"pen-style"), pn);
+                const auto foundPos = lineStyleEnsums.find(
+                    std::wstring_view(lineStyle->GetProperty(L"line-style")->
+                        GetValueString().MakeLower().wc_str()));
+                if (foundPos != lineStyleEnsums.cend())
+                    { lineStyles.emplace_back(pn.GetStyle(), foundPos->second); }
+                }
+            if (lineStyles.size() == 0)
+                { return nullptr; }
+            return std::make_shared<LineStyleScheme>(lineStyles);
+            }
+
+        return nullptr;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> ReportBuilder::LoadIconScheme(
         const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
@@ -2341,7 +2397,7 @@ namespace Wisteria
 
         static const std::map<std::wstring_view, std::shared_ptr<IconScheme>> iconSchemes =
             {
-            { L"standardshapes", std::make_shared<StandardShapes>() },
+            { L"standard-shapes", std::make_shared<StandardShapes>() },
             { L"semesters", std::make_shared<Semesters>() }
             };
 

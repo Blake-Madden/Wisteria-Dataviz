@@ -57,11 +57,16 @@ Properties for the @c "datasources" node:
       - @c "automatic" (if not specified, this will be the default).
     - @c "format": if @c "parser" is set to @c "strptime-format",
          then this is the user-defined format to parse with.
+
+  The following transformations commands are executed in the following order:
+  - @c "columns-rename": an array of column rename commands, which contain the following:
+    - @c "name": the column to rename.
+    - @c "new-name": the new name for the column.
   - @c "recode-re": an array of categorical column recode commands. This will apply a regular expression
        text replace for each label in the provided column(s). Each set of commands contains the following properties:
-       - @c "column": the categorical column to recode.
-       - @c "pattern": the regular expression pattern to search for.
-       - @c "replacement": the replacement text. Note that capture groups are supported.
+    - @c "column": the categorical column to recode.
+    - @c "pattern": the regular expression pattern to search for.
+    - @c "replacement": the replacement text. Note that capture groups are supported.
 
 ## Values {#values-properties}
 Properties for the @c "values" node:
@@ -118,6 +123,16 @@ Properties for the @c "subsets" node:
     - @c "value": the value to filter the column on. This can be a number, string, or date
          (depending on the column's data type).\n
          Note that string values can reference constants loaded from the ["values"](#values-properties) section.
+
+  The following transformations commands are executed in the following order:
+  - @c "columns-rename": an array of column rename commands, which contain the following:
+     - @c "name": the column to rename.
+     - @c "new-name": the new name for the column.
+  - @c "recode-re": an array of categorical column recode commands. This will apply a regular expression
+       text replace for each label in the provided column(s). Each set of commands contains the following properties:
+    - @c "column": the categorical column to recode.
+    - @c "pattern": the regular expression pattern to search for.
+    - @c "replacement": the replacement text. Note that capture groups are supported.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
@@ -296,6 +311,9 @@ Properties for @c "pie-chart" nodes:
   - @c "value-and-percentage"
   - @c "bin-name"
   - @c "no-display"
+- @c "showcase-slices-2-level": an array of strings specifying which outer slices and showcase, along
+     with their inner slices. All outer labelling will be turned off, and the showcased inner
+     slices' labels will be shown.
 - @c "showcase-slices": draw attention to a slice (or series of slices).\n
   Available options are:
   - @c "pie": which pie to showcase.\n
@@ -306,7 +324,7 @@ Properties for @c "pie-chart" nodes:
     Available options are:
     - @c "smallest"
     - @c "largest"
-  - @c "by-group": if showcasing the inner pie, @c true will show the smallerst/largest slice for within each group.
+  - @c "by-group": if showcasing the inner pie, @c true will show the smallest/largest slice for within each group.
   - @c "show-outer-pie-labels": if showcasing the inner pie, @c true keep the outer pie labels shown.
 - @c "color-labels": @c true to apply the slice colors to their respective outer labels.
 - @c "include-outer-pie-labels": @c true to show the outer labels for the outer pie
@@ -534,6 +552,15 @@ Properties common to all graph items:
   - @c "sun-icon"
   - @c "flower-icon"
   - @c "fall-leaf-icon"
+- @c "line-scheme": for graphs that support line schemes only.\n
+  This is an array of line specifications (which can be recycled)\n
+  Each specification contains the following:
+  - @c "line-style": a string specifying the line style.\n
+    Available options are:
+    - @c "lines"
+    - @c "arrows"
+    - @c "spline"
+  - @c "pen-style": a [pen](#pen-properties) specificaiton (although only the pen style is used)
 - @c "legend": an item containing the following properties:
   - @c "placement": where to place the legend.\n
     Available options are:
@@ -592,3 +619,6 @@ Properties common to all items:
 # Notes {#notes}
 Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
 of color names available, refer to the @c Wisteria::Colors::Color enumeration.
+
+Constants defined in the ["values"](#values-properties) can also be referenced, which likewise can
+be named colors or hex encoded values.

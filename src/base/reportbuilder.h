@@ -163,15 +163,21 @@ namespace Wisteria
 
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode Tne node to parse.
-        /// @return The loaded color scheme, or null upon failure.
+        /// @returns The loaded color scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
         /// @brief Loads an icon scheme from a node.
         /// @param iconSchemeNode Tne node to parse.
-        /// @return The loaded icon scheme, or null upon failure.
+        /// @returns The loaded icon scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
+
+        /// @brief Loads a line style scheme from a node.
+        /// @param lineStyleSchemeNode Tne node to parse.
+        /// @returns The loaded line style scheme, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Wisteria::LineStyleScheme> LoadLineStyleScheme(
+            const wxSimpleJSON::Ptr_t& lineStyleSchemeNode);
 
         /** @brief Loads additional transformation features and applies them to a dataset.
             @param dsNode The datasouce node that the dataset was loaded from.
@@ -193,7 +199,7 @@ namespace Wisteria
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
-        [[nodiscard]] static wxColour ConvertColor(wxString colorStr);
+        [[nodiscard]] wxColour ConvertColor(wxString colorStr);
         /// @brief Converts a string value to a TextAlignment enum value.
         [[nodiscard]] static std::optional<TextAlignment>
             ConvertTextAlignment(const wxString& value);
