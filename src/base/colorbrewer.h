@@ -702,12 +702,18 @@ namespace Wisteria::Colors
         /// @param opacity The opacity to use for the new color.
         [[nodiscard]] static wxColour ChangeOpacity(wxColour color, const uint8_t opacity)
             { return wxColor(color.Red(), color.Green(), color.Blue(), opacity); }
-        /// @brief Determines whether a color is dark (i.e., luminance is less than 50%).
+        /// @brief Determines whether a color is dark.
+        /// @details "Dark" is defined as luminance being less than 50% and
+        ///     opacity higher than 32. For example, black having an opacity of 32
+        ///     would mean it has 1/8 of the opacity of a fully opaque black;
+        ///     this would appear more like a very light gray, rather than black, and would
+        ///     be consided not dark.
         /// @param color The color to review.
-        /// @returns @c true if the color's luminance is less than 50% (and not transparent).
+        /// @returns @c true if the color is dark.
         [[nodiscard]] static bool IsDark(const wxColour& color)
-            { return (color.Alpha() != wxALPHA_TRANSPARENT && color.GetLuminance() < .5f); }
-        /// @brief Determines whether a color is light (i.e., luminance is >= 50%).
+            { return (color.Alpha() > 32 && color.GetLuminance() < .5f); }
+        /// @brief Determines whether a color is light
+        ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.
         /// @returns @c true if the color's luminance is >= 50%.
         [[nodiscard]] static bool IsLight(const wxColour& color)
@@ -719,7 +725,8 @@ namespace Wisteria::Colors
         [[nodiscard]] static wxColour Shade(wxColour color, const double minimumLuminance = 0.5f)
             {
             int darkenValue{ 100 };
-            while (color.GetLuminance() > std::clamp(minimumLuminance, 0.0, 1.0) && darkenValue > 0)
+            while (color.GetLuminance() > std::clamp(minimumLuminance, 0.0, 1.0) &&
+                   darkenValue > 0)
                 { color = color.ChangeLightness(--darkenValue); }
             return color;
             }

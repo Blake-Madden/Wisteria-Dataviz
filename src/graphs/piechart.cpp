@@ -689,7 +689,9 @@ namespace Wisteria::Graphs
                     GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex, 0.1));
             const wxColour sliceColorForBrush =
                 (GetInnerPie().at(i).IsGhosted() ?
-                    ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity) :
+                    // inner slices should be twice as translucent as outer slices since
+                    // the outer slices will slightly show through it
+                    ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity / 2) :
                     sliceColor);
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
 
