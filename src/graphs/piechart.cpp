@@ -213,7 +213,11 @@ namespace Wisteria::GraphItems
         const wxPoint centerPoint{ m_pieArea.GetWidth() / 2 + m_pieArea.GetLeft(),
                                    m_pieArea.GetHeight() / 2 + m_pieArea.GetTop() };
 
-        // outer arc
+        // Outer arc
+        // Note that if the start and end angles are the same, then an entire pie
+        // is drawn with the current brush (per wx's docs), which is not what we want;
+        // in that case, don't draw the outer arc (which would be zero length anyway).
+        if (!compare_doubles(m_startAngle, m_endAngle))
             {
             wxPen scaledArcPen(
                 (GetArcPen().has_value() && GetArcPen().value().IsOk()) ?
