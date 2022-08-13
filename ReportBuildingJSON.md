@@ -279,7 +279,7 @@ object on the canvas (i.e., not a label on another object).
 Properties for @c "line-plot" nodes:
 - @c "variables": an item containing the following properties:
   - @c "x": the X column.
-  - @c "y": the X column.
+  - @c "y": the Y column.
   - @c "group": the grouping column (this is optional).
 - Some base properties available to [graphs](#graph-properties).
 
@@ -311,9 +311,9 @@ Properties for @c "pie-chart" nodes:
   - @c "value-and-percentage"
   - @c "bin-name"
   - @c "no-display"
-- @c "showcase-slices-2-level": an array of strings specifying which outer slices and showcase, along
-     with their inner slices. All outer labelling will be turned off, and the showcased inner
-     slices' labels will be shown.
+- @c "showcase-slices-groups": an array of strings specifying which inners slices to showcase,
+  based on the parent group(s). All outer labelling will be turned off, and the showcased inner
+  slices' labels will be shown. The parent slices' colors will be solid, like their children inner slices.
 - @c "showcase-slices": draw attention to a slice (or series of slices).\n
   Available options are:
   - @c "pie": which pie to showcase.\n

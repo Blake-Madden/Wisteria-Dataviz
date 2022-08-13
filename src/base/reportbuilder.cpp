@@ -1219,11 +1219,11 @@ namespace Wisteria
                 }
 
             // showcase of slices
-            const auto showcase2LevelNode = graphNode->GetProperty(L"showcase-slices-2-level");
-            if (showcase2LevelNode->IsOk())
+            const auto showcaseGroupsNode = graphNode->GetProperty(L"showcase-slices-groups");
+            if (showcaseGroupsNode->IsOk())
                 {
                 pieChart->ShowcaseOuterPieSlicesAndChildren(
-                    showcase2LevelNode->GetValueStringVector());
+                    showcaseGroupsNode->GetValueStringVector());
                 }
             const auto showcaseNode = graphNode->GetProperty(L"showcase-slices");
             if (showcaseNode->IsOk())
