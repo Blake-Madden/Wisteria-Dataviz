@@ -798,7 +798,7 @@ namespace Wisteria::Graphs
 
         bool m_useColorLabels{ false };
 
-        const uint8_t m_ghostOpacity{ 64 };
+        const uint8_t m_ghostOpacity{ 32 };
 
         // donut hole
         bool m_includeDonutHole{ false };
