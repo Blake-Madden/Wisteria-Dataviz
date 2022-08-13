@@ -654,28 +654,30 @@ namespace Wisteria::Graphs
         auto sliceColor{ GetColorScheme()->GetColor(0) };
         middleLabels.clear();
         smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetPointSize();
+
+        const double sliceProportion = safe_divide<double>(1 -
+                (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), 2) +
+                (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
+        auto innerDrawArea = drawArea;
+        innerDrawArea.width *= sliceProportion;
+        innerDrawArea.height *= sliceProportion;
+        innerDrawArea.Offset(wxPoint((drawArea.width-innerDrawArea.width)/2,
+                                        (drawArea.height-innerDrawArea.height)/2));
+
+        // how much (percentage) of the inner ring area the donut hole consumes
+        const double donutHoleInnerProportion = safe_divide<double>(
+            (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), sliceProportion);
+
+        // outline of inner slices' sides, which will be half as thick as the
+        // outer ring's slice sides
+        auto sliceLine{ GetPen() };
+        sliceLine.SetWidth(std::max(1,
+            (sliceLine.IsOk()? sliceLine.GetWidth() : 2) / 2));
+
         // note that we do NOT clear outerLabels or its smallest font size,
         // both rings use these
         for (size_t i = 0; i < GetInnerPie().size(); ++i)
             {
-            const double sliceProportion = safe_divide<double>(1 -
-                (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), 2) +
-                (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
-            auto innerDrawArea = drawArea;
-            innerDrawArea.width *= sliceProportion;
-            innerDrawArea.height *= sliceProportion;
-            innerDrawArea.Offset(wxPoint((drawArea.width-innerDrawArea.width)/2,
-                                         (drawArea.height-innerDrawArea.height)/2));
-
-            // how much (percentage) of the inner ring area the donut hole consumes
-            const double donutHoleInnerProportion = safe_divide<double>(
-                (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), sliceProportion);
-
-            // outline of inner slices' sides, which will be half as thick as the
-            // outer ring's slice sides
-            auto sliceLine{ GetPen() };
-            sliceLine.SetWidth(std::max(1,
-                (sliceLine.IsOk()? sliceLine.GetWidth() : 2) / 2));
             // slightly adjusted color based on the parent slice color
             sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
                 ColorContrast::ShadeOrTint(sliceColor, .1) :
