@@ -42,7 +42,7 @@ namespace Wisteria::GraphItems
     {
     /** @brief A text box that can be placed on a canvas. Can also be used as a legend.
         @note Call GetLabelDisplayInfo() to edit most of the appearance and layout
-         functionality for a label.
+            functionality for a label.
         @sa The [label](../../Labels.md) overview for more information.*/
     class Label final : public GraphItemBase
         {
@@ -83,7 +83,7 @@ namespace Wisteria::GraphItems
             @param dc The device context to measure with.
             @param boundingBoxSize The size of the bounding box to fit the text into.
             @note If the bounding box isn't tall enough to fit the text, then the text
-             will be truncated and have an ellipsis appended to it.*/
+                will be truncated and have an ellipsis appended to it.*/
         void SplitTextToFitBoundingBox(wxDC& dc, const wxSize& boundingBoxSize);
 
         /** @brief Splits the string into multiline chunks, with each line being around
@@ -119,7 +119,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets the number of DIPs between lines (if label is multiline).
             @param spacing The number of DIPs to space between lines.
             @note This is in DIPS; the framework will scale this to the current DPI and zoom
-             level for you.*/
+                level for you.*/
         void SetLineSpacing(const double spacing) noexcept
             { m_spacingBetweenLines = spacing; }
 
@@ -135,8 +135,8 @@ namespace Wisteria::GraphItems
         /** @brief Tilts the text by the provided degree.
             @param tiltAngle The angle to tilt the text.
             @warning The bounding box of the label will not take this tilt into account.
-             This will enable vertical labels with a slight tilt to blend with each other
-             without creating large negative spaces between them.*/
+                This will enable vertical labels with a slight tilt to blend with each other
+                without creating large negative spaces between them.*/
         void Tilt(const double tiltAngle) noexcept
             { m_tiltAngle = tiltAngle; }
 
@@ -162,7 +162,7 @@ namespace Wisteria::GraphItems
         /** @returns The rectangle on the canvas where the label would fit in.
             @param dc An existing graphics context to measure the label on.
             @note This is a more optimal alternative to GetBoundingBox(), which doesn't have to
-             create its own temporary @c wxDC.*/
+                create its own temporary @c wxDC.*/
         [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
@@ -195,20 +195,20 @@ namespace Wisteria::GraphItems
             { return m_linesIgnoringLeftMargin; }
 
         /** @brief Set this to @c true so that calls to SetBoundingBox() will only
-             be treated as a suggestion. The bounding box will be set to the suggested size,
-             but then be scaled down to the content.\n
-             This behaviour is turned off by default, so that calls to SetBoundingBox() will
-             explicitly set the size.\n
-             This is mostly useful for legends being embedded on a canvas. Having this option
-             set will tell the canvas to re-measure the legend and only use the space that it
-             needs, giving any extra space back to the items in the same row. If this is not
-             set, then the canvas will just use the pre-calculated size of the legend based
-             on its proportion to the overall canvas; thus, it may upscale the legend's size,
-             instead of keeping it at the correct scale and reclaiming the extra space.\n
-             This situation relates to when the canvas is being made wider than when
-             its canvas proportion was calculated.
+                be treated as a suggestion. The bounding box will be set to the suggested size,
+                but then be scaled down to the content.
+            @details This behaviour is turned off by default, so that calls to SetBoundingBox()
+                will explicitly set the size.\n
+                This is mostly useful for legends being embedded on a canvas. Having this option
+                set will tell the canvas to re-measure the legend and only use the space that it
+                needs, giving any extra space back to the items in the same row. If this is not
+                set, then the canvas will just use the pre-calculated size of the legend based
+                on its proportion to the overall canvas; thus, it may upscale the legend's size,
+                instead of keeping it at the correct scale and reclaiming the extra space.\n
+                This situation relates to when the canvas is being made wider than when
+                its canvas proportion was calculated.
              @param adjust @c true to tell SetBoundingBox() to only treat its size
-              as a suggestion.*/
+                as a suggestion.*/
         void AdjustingBoundingBoxToContent(const bool adjust) noexcept
             { m_adjustBoundingBoxToContent = adjust; }
         /// @returns @c true if the bounding box passed to SetBoundingBox() is only
@@ -219,7 +219,7 @@ namespace Wisteria::GraphItems
         /// @name Font Functions
         /// @brief Helper functions for font selection and adjustments.
         /// @note To change or edit the font for a label, call
-        ///  @c GetGraphItemInfo().Font() or GetFont().
+        ///     @c GetGraphItemInfo().Font() or GetFont().
         /// @{
 
         /** @returns The best font size to fit a given string across an area diagonally.
