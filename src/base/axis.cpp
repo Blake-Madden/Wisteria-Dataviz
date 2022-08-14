@@ -1355,7 +1355,7 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
                                 
-                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
@@ -1405,7 +1405,7 @@ namespace Wisteria::GraphItems
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
                                 
-                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
@@ -1471,7 +1471,7 @@ namespace Wisteria::GraphItems
                                         position1),
                                 wxPoint(connectionX, position3));
                                 
-                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
@@ -1521,7 +1521,7 @@ namespace Wisteria::GraphItems
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
                                 
-                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
@@ -1587,7 +1587,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(position3,
                                         connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                                 
-                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);
@@ -1636,7 +1636,7 @@ namespace Wisteria::GraphItems
                                             connectionYDoubleSided -
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                                 
-                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
@@ -1699,7 +1699,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(position3,
                                         connectionY));
                                 
-                            Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                            ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
                             sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
@@ -1749,7 +1749,7 @@ namespace Wisteria::GraphItems
                                             connectionYDoubleSided +
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                                 
-                                Shapes sh(GraphItemInfo().Pen(bracket.GetLinePen()).
+                                ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
                                 sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);

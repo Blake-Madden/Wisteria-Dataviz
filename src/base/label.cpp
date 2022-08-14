@@ -740,12 +740,12 @@ namespace Wisteria::GraphItems
                 middleOfCurrentRow += yOffset;
                 const auto midPoint = wxPoint(contentBoundingBox.GetTopLeft() +
                                               wxPoint(iconMiddleX, middleOfCurrentRow));
-                wxPoint polygonPoints[6];
+                wxPoint polygonPoints[6]{ {0, 0} };
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
                 // object that can handle drawing various shapes for the icons.
-                Shapes sh(GraphItemInfo().
+                ShapeRenderer sh(GraphItemInfo().
                     Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
                     Scaling(GetScaling()).
                     DPIScaling(GetDPIScaleFactor()));

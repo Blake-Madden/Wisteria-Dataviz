@@ -45,7 +45,7 @@ namespace Wisteria::Graphs
 
 namespace Wisteria::GraphItems
     {
-    class Shapes;
+    class ShapeRenderer;
     }
 
 namespace Wisteria::GraphItems
@@ -63,7 +63,7 @@ namespace Wisteria::GraphItems
         friend class Wisteria::Graphs::Graph2D;
         friend class Wisteria::Canvas;
         friend class Wisteria::UI::Thumbnail;
-        friend class Wisteria::GraphItems::Shapes;
+        friend class Wisteria::GraphItems::ShapeRenderer;
     public:
         /// @private
         Image()

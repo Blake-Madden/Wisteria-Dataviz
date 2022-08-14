@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "shapes.h"
+#include "Shapes.h"
 #include "label.h"
 #include "image.h"
 
@@ -15,7 +15,7 @@ using namespace Wisteria::Colors;
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
-    void Shapes::DrawCircularSign(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawCircularSign(const wxRect rect, wxDC& dc)
         {
         const auto radius =
             safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2);
@@ -48,7 +48,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shapes::DrawSun(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -102,7 +102,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shapes::DrawFlower(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -157,7 +157,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shapes::DrawFallLeaf(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -209,7 +209,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shapes::DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side)
+    void ShapeRenderer::DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side)
         {
         wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
                      L"Pen should be set in Shape for curly braces!");

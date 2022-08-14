@@ -313,7 +313,7 @@ namespace Wisteria::GraphItems
             const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
             wxPoint polygonPoints[6];
             // object that can handle drawing various shapes for the icons.
-            Shapes sh(GraphItemInfo().Brush(GetBrush()).
+            ShapeRenderer sh(GraphItemInfo().Brush(GetBrush()).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()));
             switch (m_shape)

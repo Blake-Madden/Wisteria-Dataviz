@@ -436,6 +436,7 @@ namespace Wisteria::Graphs
 
         /// @brief Brings to focus the specified slice(s) along the outer and their children
         ///     inner slices.
+        /// @param pieSlices The outer slices to showcase.
         /// @details This will make all other slices (including the non-children inner slices)
         ///     translucent and hide their labels.
         void ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices);
