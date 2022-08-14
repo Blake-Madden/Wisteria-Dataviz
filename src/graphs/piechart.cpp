@@ -450,26 +450,45 @@ namespace Wisteria::Graphs
         Graph2D::RecalcSizes(dc);
 
         // get a square inside of the drawing area for the pie
-        wxRect drawArea = GetPlotAreaBoundingBox();
+        wxRect pieDrawArea = GetPlotAreaBoundingBox();
         // get 75% of the area width and height for the pie (adding space for any labels),
-        // and use the smaller of the two for the pie's area dimensions
-        const auto pieHeight = (drawArea.GetHeight() * 0.75);
-        const auto pieWidth = (drawArea.GetWidth() * 0.75);
+        // and use the smaller of the two for the pie's area
+        const auto pieHeight = (pieDrawArea.GetHeight() * 0.75);
+        const auto pieWidth = (pieDrawArea.GetWidth() * 0.75);
         const auto pieDimension = std::min(pieHeight, pieWidth);
-        const auto widthDifference = (drawArea.GetWidth() - pieDimension);
-        const auto heightDifference = (drawArea.GetHeight() - pieDimension);
-        drawArea.SetWidth(pieDimension);
-        drawArea.SetX(drawArea.GetX() + (widthDifference / 2));
-        drawArea.SetHeight(pieDimension);
-        drawArea.SetY(drawArea.GetY() + (heightDifference / 2));
+        const auto widthDifference = (pieDrawArea.GetWidth() - pieDimension);
+        const auto heightDifference = (pieDrawArea.GetHeight() - pieDimension);
+        pieDrawArea.SetWidth(pieDimension);
+        pieDrawArea.SetX(pieDrawArea.GetX() + (widthDifference / 2));
+        pieDrawArea.SetHeight(pieDimension);
+        pieDrawArea.SetY(pieDrawArea.GetY() + (heightDifference / 2));
+
+        // make label drawing area square now, so that labels go up too high or too far over
+        wxRect fullDrawDrawArea = GetPlotAreaBoundingBox();
+            {
+            const auto widthDiff = GetPlotAreaBoundingBox().GetWidth() - pieDrawArea.GetWidth();
+            const auto heightDiff = GetPlotAreaBoundingBox().GetHeight() - pieDrawArea.GetHeight();
+            if (heightDiff > widthDiff)
+                {
+                const auto sizeDiff = heightDiff - widthDiff;
+                fullDrawDrawArea.SetHeight(fullDrawDrawArea.GetHeight() - sizeDiff);
+                fullDrawDrawArea.SetY(fullDrawDrawArea.GetY() + (sizeDiff/2));
+                }
+            else if (widthDiff > heightDiff)
+                {
+                const auto sizeDiff = widthDiff - heightDiff;
+                fullDrawDrawArea.SetWidth(fullDrawDrawArea.GetWidth() - sizeDiff);
+                fullDrawDrawArea.SetX(fullDrawDrawArea.GetX() + (sizeDiff/2));
+                }
+            }
 
         // make the connection line for inner slices and their labels
         // poke out a little from the pie
-        auto outerDrawArea = drawArea;
-        outerDrawArea.width *= 1.1;
-        outerDrawArea.height *= 1.1;
-        outerDrawArea.Offset(wxPoint((drawArea.width - outerDrawArea.width) / 2,
-            (drawArea.height - outerDrawArea.height) / 2));
+        auto outerPieDrawArea = pieDrawArea;
+        outerPieDrawArea.width *= 1.1;
+        outerPieDrawArea.height *= 1.1;
+        outerPieDrawArea.Offset(wxPoint((pieDrawArea.width - outerPieDrawArea.width) / 2,
+            (pieDrawArea.height - outerPieDrawArea.height) / 2));
 
         int smallestOuterLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
 
@@ -484,19 +503,19 @@ namespace Wisteria::Graphs
         const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
             {
             auto outerLabel = pSlice->CreateOuterLabel(dc,
-                (isInnerSlice ? outerDrawArea : drawArea));
+                (isInnerSlice ? outerPieDrawArea : pieDrawArea));
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
                 // lambda to adjust label to fit in pie's gutters
-                const auto measureAndFitLabel = [this, &dc](auto& label)
+                const auto measureAndFitLabel = [&dc, &fullDrawDrawArea](auto& label)
                     {
                     const auto labelBox = label->GetBoundingBox(dc);
-                    if (!Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()) )
+                    if (!Polygon::IsRectInsideRect(labelBox, fullDrawDrawArea) )
                         {
                         const auto currentFontSize = label->GetFont().GetFractionalPointSize();
                         const auto& [widthInside, heightInside] =
-                            Polygon::GetPercentInsideRect(labelBox, GetPlotAreaBoundingBox());
+                            Polygon::GetPercentInsideRect(labelBox, fullDrawDrawArea);
                         const auto smallerScale = std::min(widthInside, heightInside);
                         label->GetFont().SetFractionalPointSize(currentFontSize * smallerScale);
                         return smallerScale;
@@ -549,8 +568,8 @@ namespace Wisteria::Graphs
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(isLeft ?
-                                            GetPlotAreaBoundingBox().GetLeft() :
-                                            GetPlotAreaBoundingBox().GetRight(),
+                                            fullDrawDrawArea.GetLeft() :
+                                            fullDrawDrawArea.GetRight(),
                                         outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
                         // force using lines (instead of arrows) since this will be two lines
                         connectionLine->SetLineStyle(LineStyle::Lines);
@@ -578,8 +597,8 @@ namespace Wisteria::Graphs
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(isLeft ?
-                                            GetPlotAreaBoundingBox().GetLeft() :
-                                            GetPlotAreaBoundingBox().GetRight(),
+                                            fullDrawDrawArea.GetLeft() :
+                                            fullDrawDrawArea.GetRight(),
                                         outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
                         connectionLine->SetLineStyle(LineStyle::Lines);
                         }
@@ -622,7 +641,7 @@ namespace Wisteria::Graphs
                 Brush(sliceColor).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Pen(GetPen()),
-                drawArea,
+                pieDrawArea,
                 startAngle, startAngle + (GetOuterPie().at(i).m_percent * 360),
                 GetOuterPie().at(i).m_value, GetOuterPie().at(i).m_percent);
             pSlice->SetMidPointLabelDisplay(GetOuterPie().at(i).GetMidPointLabelDisplay());
@@ -689,11 +708,11 @@ namespace Wisteria::Graphs
         const double sliceProportion = safe_divide<double>(1 -
                 (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0), 2) +
                 (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
-        auto innerDrawArea = drawArea;
+        auto innerDrawArea = pieDrawArea;
         innerDrawArea.width *= sliceProportion;
         innerDrawArea.height *= sliceProportion;
-        innerDrawArea.Offset(wxPoint((drawArea.width-innerDrawArea.width)/2,
-                                        (drawArea.height-innerDrawArea.height)/2));
+        innerDrawArea.Offset(wxPoint((pieDrawArea.width-innerDrawArea.width)/2,
+                                        (pieDrawArea.height-innerDrawArea.height)/2));
 
         // how much (percentage) of the inner ring area the donut hole consumes
         const double donutHoleInnerProportion = safe_divide<double>(
@@ -810,7 +829,7 @@ namespace Wisteria::Graphs
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                    wxPoint(fullDrawDrawArea.GetLeft(),
                         outerLabel->GetAnchorPoint().y +
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
@@ -819,11 +838,11 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetLeft());
+                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
+                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetTopLeft());
                         outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                         }
                     }
@@ -849,7 +868,7 @@ namespace Wisteria::Graphs
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
                     // but only if line connection is outside of the pie's bounding box
-                    if (!drawArea.Contains(calculatedMiddlePt))
+                    if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
                 AddObject(outerLine);
@@ -873,7 +892,7 @@ namespace Wisteria::Graphs
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(GetPlotAreaBoundingBox().GetLeft(),
+                    wxPoint(fullDrawDrawArea.GetLeft(),
                         outerLabel->GetAnchorPoint().y -
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
@@ -882,11 +901,11 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetLeft());
+                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetBottomLeft());
+                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomLeft());
                         outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
                         }
                     }
@@ -911,7 +930,7 @@ namespace Wisteria::Graphs
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
                     // but only if line connection is outside of the pie's bounding box
-                    if (!drawArea.Contains(calculatedMiddlePt))
+                    if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
                 AddObject(outerLine);
@@ -950,7 +969,7 @@ namespace Wisteria::Graphs
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                    wxPoint(fullDrawDrawArea.GetRight(),
                         outerLabel->GetAnchorPoint().y +
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
@@ -959,12 +978,12 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetRight() -
+                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetTopRight());
+                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetTopRight());
                         outerLabel->SetAnchoring(Anchoring::TopRightCorner);
                         }
                     }
@@ -989,7 +1008,7 @@ namespace Wisteria::Graphs
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
                     // but only if line connection is outside of the pie's bounding box
-                    if (!drawArea.Contains(calculatedMiddlePt))
+                    if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
                 AddObject(outerLine);
@@ -1013,7 +1032,7 @@ namespace Wisteria::Graphs
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(GetPlotAreaBoundingBox().GetRight(),
+                    wxPoint(fullDrawDrawArea.GetRight(),
                         outerLabel->GetAnchorPoint().y -
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::TopRightCorner);
@@ -1022,12 +1041,12 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(GetPlotAreaBoundingBox().GetRight() -
+                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(GetPlotAreaBoundingBox().GetBottomRight());
+                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomRight());
                         outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
                         }
                     }
@@ -1052,7 +1071,7 @@ namespace Wisteria::Graphs
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
                     // move middle point over to make the lines straight,
                     // but only if line connection is outside of the pie's bounding box
-                    if (!drawArea.Contains(calculatedMiddlePt))
+                    if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
                 AddObject(outerLine);
@@ -1072,8 +1091,8 @@ namespace Wisteria::Graphs
         // center hole, if a donut
         if (IsIncludingDonutHole())
             {
-            const wxPoint centerPt(drawArea.GetLeft() + (drawArea.GetWidth() / 2),
-                drawArea.GetTop() + (drawArea.GetHeight() / 2));
+            const wxPoint centerPt(pieDrawArea.GetLeft() + (pieDrawArea.GetWidth() / 2),
+                pieDrawArea.GetTop() + (pieDrawArea.GetHeight() / 2));
             auto donutHole = std::make_shared<Point2D>(
                 GraphItemInfo().Brush(GetDonutHoleColor()).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
@@ -1082,7 +1101,7 @@ namespace Wisteria::Graphs
                 Anchoring(Anchoring::Center).
                 AnchorPoint(centerPt),
                 0);
-            const double holeRadius{ (drawArea.GetWidth() * GetDonutHoleProportion()) / 2 };
+            const double holeRadius{ (pieDrawArea.GetWidth() * GetDonutHoleProportion()) / 2 };
             donutHole->SetRadius(donutHole->DownscaleFromScreenAndCanvas(holeRadius));
             AddObject(donutHole);
 
