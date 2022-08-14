@@ -171,21 +171,21 @@ namespace Wisteria::GraphItems
 
         auto middleSweep1 = geometry::calc_arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
-            safe_divide<double>(m_endAngle-m_startAngle, 4) + m_startAngle);
+            ((m_endAngle-m_startAngle) * math_constants::quarter) + m_startAngle);
         middleSweep1.first += m_pieArea.GetTopLeft().x;
         middleSweep1.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep1));
 
         auto middleSweep2 = geometry::calc_arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
-            safe_divide<double>(m_endAngle-m_startAngle, 2) + m_startAngle);
+            ((m_endAngle-m_startAngle) * math_constants::half) + m_startAngle);
         middleSweep2.first += m_pieArea.GetTopLeft().x;
         middleSweep2.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep2));
 
         auto middleSweep3 = geometry::calc_arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
-            ((m_endAngle-m_startAngle) * .75) + m_startAngle);
+            ((m_endAngle-m_startAngle) * math_constants::three_quarters) + m_startAngle);
         middleSweep3.first += m_pieArea.GetTopLeft().x;
         middleSweep3.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep3));
@@ -453,7 +453,7 @@ namespace Wisteria::Graphs
         wxRect drawArea = GetPlotAreaBoundingBox();
         // get 75% of the area width and height for the pie (adding space for any labels),
         // and use the smaller of the two for the pie's area dimensions
-        const auto pieHeight = drawArea.GetHeight() * 0.75;
+        const auto pieHeight = (drawArea.GetHeight() * 0.75);
         const auto pieWidth = (drawArea.GetWidth() * 0.75);
         const auto pieDimension = std::min(pieHeight, pieWidth);
         const auto widthDifference = (drawArea.GetWidth() - pieDimension);
@@ -1334,7 +1334,7 @@ namespace Wisteria::Graphs
     void PieChart::ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices)
         {
         ShowOuterPieLabels(false);
-        ShowOuterPieMidPointLabels(false);
+        ShowOuterPieMidPointLabels(true, pieSlices);
         GhostOuterPieSlices(false, pieSlices);
 
         // get positions of outer slices being showcased
