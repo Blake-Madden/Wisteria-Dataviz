@@ -488,15 +488,39 @@ namespace Wisteria::Graphs
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
-                const auto labelBox = outerLabel->GetBoundingBox(dc);
-                if (!Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()) )
+                // lambda to adjust label to fit in pie's gutters
+                const auto measureAndFitLabel = [this, &dc](auto& label)
                     {
-                    const auto currentFontSize = outerLabel->GetFont().GetFractionalPointSize();
-                    const auto& [widthInside, heightInside] =
-                        Polygon::GetPercentInsideRect(labelBox, GetPlotAreaBoundingBox());
-                    const auto smallerScale = std::min(widthInside, heightInside);
-                    outerLabel->GetFont().SetFractionalPointSize(currentFontSize * smallerScale);
+                    const auto labelBox = label->GetBoundingBox(dc);
+                    if (!Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()) )
+                        {
+                        const auto currentFontSize = label->GetFont().GetFractionalPointSize();
+                        const auto& [widthInside, heightInside] =
+                            Polygon::GetPercentInsideRect(labelBox, GetPlotAreaBoundingBox());
+                        const auto smallerScale = std::min(widthInside, heightInside);
+                        label->GetFont().SetFractionalPointSize(currentFontSize * smallerScale);
+                        return smallerScale;
+                        }
+                    return 1.0;
+                    };
+
+                // adjust label to fit
+                const auto currentFontSize = outerLabel->GetFont().GetFractionalPointSize();
+                const auto textScale = measureAndFitLabel(outerLabel);
+                // ...but if it's a little too small and doesn't have a header,
+                // then try to split it into multiple lines and resize it again.
+                // Note that we don't do this if it has a header because the header
+                // implies that the first line break is meaningful, so we can't
+                // arbitrarily split this text up.
+                if (compare_doubles_less(textScale, 0.75) &&
+                    !outerLabel->GetHeaderInfo().IsEnabled())
+                    {
+                    outerLabel->GetFont().SetFractionalPointSize(currentFontSize);
+                    outerLabel->SplitTextToFitLength(
+                        outerLabel->GetText().length() * math_constants::third);
+                    measureAndFitLabel(outerLabel);
                     }
+                
                 smallestOuterLabelFontSize =
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
 
@@ -628,17 +652,20 @@ namespace Wisteria::Graphs
             sliceProportion = (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0) +
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
-            auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
-                (pSlice->GetMidPointLabelDisplay().has_value() ?
-                    pSlice->GetMidPointLabelDisplay().value() :
-                    GetOuterPieMidPointLabelDisplay()) );
-            if (middleLabel != nullptr)
+            if (GetOuterPie().at(i).GetMidPointLabelDisplay() != BinLabelDisplay::NoDisplay)
                 {
-                middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                smallestMiddleLabelFontSize =
-                    std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
+                auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
+                    (pSlice->GetMidPointLabelDisplay().has_value() ?
+                        pSlice->GetMidPointLabelDisplay().value() :
+                        GetOuterPieMidPointLabelDisplay()) );
+                if (middleLabel != nullptr)
+                    {
+                    middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
+                    smallestMiddleLabelFontSize =
+                        std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
+                    }
+                middleLabels.emplace_back(middleLabel);
                 }
-            middleLabels.emplace_back(middleLabel);
 
             startAngle += GetOuterPie().at(i).m_percent * 360;
             }
@@ -725,20 +752,23 @@ namespace Wisteria::Graphs
             if (GetInnerPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, true); }
 
-            auto middleLabel = pSlice->CreateMiddleLabel(dc,
-                // take into account the hole consuming a larger % of the inner
-                // area compared to the full pie area
-                safe_divide(1.0 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,
-                (pSlice->GetMidPointLabelDisplay().has_value() ?
-                    pSlice->GetMidPointLabelDisplay().value() :
-                    GetInnerPieMidPointLabelDisplay()) );
-            if (middleLabel != nullptr)
+            if (GetInnerPie().at(i).GetMidPointLabelDisplay() != BinLabelDisplay::NoDisplay)
                 {
-                middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
-                smallestMiddleLabelFontSize =
-                    std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
+                auto middleLabel = pSlice->CreateMiddleLabel(dc,
+                    // take into account the hole consuming a larger % of the inner
+                    // area compared to the full pie area
+                    safe_divide(1.0 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,
+                    (pSlice->GetMidPointLabelDisplay().has_value() ?
+                        pSlice->GetMidPointLabelDisplay().value() :
+                        GetInnerPieMidPointLabelDisplay()) );
+                if (middleLabel != nullptr)
+                    {
+                    middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
+                    smallestMiddleLabelFontSize =
+                        std::min(smallestMiddleLabelFontSize, middleLabel->GetFont().GetPointSize());
+                    }
+                middleLabels.emplace_back(middleLabel);
                 }
-            middleLabels.emplace_back(middleLabel);
 
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
