@@ -80,9 +80,10 @@ namespace Wisteria
         /// @warning The node's graph-specific loading function should be called first, then
         ///     this should be called to finalize it and add it to the canvas.
         /// @todo many features still needed!
-        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
-                       Canvas* canvas, size_t& currentRow, size_t& currentColumn,
-                       std::shared_ptr<Graphs::Graph2D> graph);
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadGraph(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn,
+                        std::shared_ptr<Graphs::Graph2D> graph);
         /// @brief Loads a line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -90,16 +91,18 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
-        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLinePlot(const wxSimpleJSON::Ptr_t& graphNode,
-            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLinePlot(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a pie chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
-        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadPieChart(const wxSimpleJSON::Ptr_t& graphNode,
-            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadPieChart(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a categorical barchart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -107,8 +110,9 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
-        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadCategoricalBarChart(const wxSimpleJSON::Ptr_t& graphNode,
-            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadCategoricalBarChart(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -116,10 +120,12 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the table will be placed.
         /// @returns The table that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
-        std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
-            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        std::shared_ptr<Graphs::Graph2D> LoadTable(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
 
-        [[nodiscard]] std::shared_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode);
+        [[nodiscard]] std::shared_ptr<GraphItems::Shape> LoadShape(
+                        const wxSimpleJSON::Ptr_t& shapeNode);
 
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
@@ -144,7 +150,8 @@ namespace Wisteria
         /// @param columnRow The row count in the table.\n
         ///     This is what the constant @c "last-row" is expanded into (minus one).
         /// @returns The row or column position.
-        [[nodiscard]] std::optional<size_t> LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
+        [[nodiscard]] std::optional<size_t> LoadPosition(
+            const wxSimpleJSON::Ptr_t& positionNode,
             const size_t columnCount,
             const size_t columnRow);
 

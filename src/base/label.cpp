@@ -842,31 +842,7 @@ namespace Wisteria::GraphItems
                         sh.DrawSquare(boxRect, dc);
                         break;
                     case IconShape::BoxPlotIcon:
-                        // whisker
-                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2),
-                                            boxRect.GetTop()),
-                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2),
-                                            boxRect.GetBottom()));
-                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) -
-                                                boxRect.GetWidth()/4,
-                                            boxRect.GetTop()),
-                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) +
-                                                boxRect.GetWidth()/4,
-                                            boxRect.GetTop()));
-                        dc.DrawLine(wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) -
-                                                boxRect.GetWidth()/4,
-                                            boxRect.GetBottom()),
-                                    wxPoint(boxRect.GetLeft()+(boxRect.GetWidth()/2) +
-                                                boxRect.GetWidth()/4,
-                                            boxRect.GetBottom()));
-                        boxRect.y += (boxRect.GetHeight()/2)-(boxRect.GetHeight()/4); // center
-                        boxRect.SetHeight(boxRect.GetHeight()/2);
-                        dc.DrawRectangle(boxRect);
-                        // median line
-                        dc.DrawLine(wxPoint(boxRect.GetLeft(), boxRect.GetTop() +
-                                            (boxRect.GetHeight()/2)),
-                                    wxPoint(boxRect.GetRight(), boxRect.GetTop() +
-                                            (boxRect.GetHeight()/2)));
+                        sh.DrawBoxPlot(boxRect, dc);
                         break;
                     case IconShape::TriangleUpwardIcon:
                         polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);

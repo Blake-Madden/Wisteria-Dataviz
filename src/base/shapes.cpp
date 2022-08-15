@@ -99,6 +99,9 @@ namespace Wisteria::GraphItems
             case IconShape::SquareIcon:
                 sh.DrawSquare(drawRect, dc);
                 break;
+            case IconShape::BoxPlotIcon:
+                sh.DrawBoxPlot(drawRect, dc);
+                break;
             }
 
         // draw the outline
@@ -278,6 +281,42 @@ namespace Wisteria::GraphItems
 
         memDC.SelectObject(wxNullBitmap);
         dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBoxPlot(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        
+        // whisker
+        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
+                            rect.GetTop()),
+                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
+                            rect.GetBottom()));
+        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2) -
+                                rect.GetWidth()/4,
+                            rect.GetTop()),
+                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2) +
+                                rect.GetWidth()/4,
+                            rect.GetTop()));
+        dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2) -
+                                rect.GetWidth()/4,
+                            rect.GetBottom()),
+                    wxPoint(rect.GetLeft()+(rect.GetWidth()/2) +
+                                rect.GetWidth()/4,
+                            rect.GetBottom()));
+        rect.y += (rect.GetHeight()/2)-(rect.GetHeight()/4); // center
+        rect.SetHeight(rect.GetHeight()/2);
+        dc.DrawRectangle(rect);
+        // median line
+        dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() +
+                            (rect.GetHeight()/2)),
+                    wxPoint(rect.GetRight(), rect.GetTop() +
+                            (rect.GetHeight()/2)));
         }
 
     //---------------------------------------------------

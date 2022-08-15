@@ -79,6 +79,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the square within.
         /// @param dc The DC to draw to.
         void DrawSquare(const wxRect rect, wxDC& dc);
+        /// @brief Draws a box plot.
+        /// @param rect The area to draw the box plot within.
+        /// @param dc The DC to draw to.
+        void DrawBoxPlot(wxRect rect, wxDC& dc);
         /// @}
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
