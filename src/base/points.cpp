@@ -313,7 +313,9 @@ namespace Wisteria::GraphItems
             const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
             wxPoint polygonPoints[6];
             // object that can handle drawing various shapes for the icons.
-            ShapeRenderer sh(GraphItemInfo().Brush(GetBrush()).
+            ShapeRenderer sh(
+                GraphItemInfo().Brush(GetBrush()).
+                Pen(GetPen()).
                 Scaling(GetScaling()).
                 DPIScaling(GetDPIScaleFactor()));
             switch (m_shape)
@@ -323,7 +325,7 @@ namespace Wisteria::GraphItems
                                   ScaleToScreenAndCanvas(GetRadius()));
                     break;
                 case IconShape::SquareIcon:
-                    dc.DrawRectangle(boundingBox);
+                    sh.DrawSquare(boundingBox, dc);
                     break;
                 case IconShape::HorizontalLineIcon:
                     dc.DrawLine(wxPoint(boundingBox.GetLeft(), boundingBox.GetTop()+boundingBox.GetHeight()/2),

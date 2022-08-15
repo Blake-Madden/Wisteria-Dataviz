@@ -75,6 +75,10 @@ namespace Wisteria::GraphItems
         ///     where @c Top will draw curly braces that are opening downward
         ///     (enclosing what is beneath it).
         void DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side);
+        /// @brief Draws a square.
+        /// @param rect The area to draw the square within.
+        /// @param dc The DC to draw to.
+        void DrawSquare(const wxRect rect, wxDC& dc);
         /// @}
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.

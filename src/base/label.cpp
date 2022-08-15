@@ -746,6 +746,7 @@ namespace Wisteria::GraphItems
                                        wxSize(1, 1)).Inflate(iconRadius) };
                 // object that can handle drawing various shapes for the icons.
                 ShapeRenderer sh(GraphItemInfo().
+                    Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen()).
                     Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
                     Scaling(GetScaling()).
                     DPIScaling(GetDPIScaleFactor()));
@@ -801,22 +802,13 @@ namespace Wisteria::GraphItems
                             dc);
                         break;
                     case IconShape::SunIcon:
-                        sh.DrawSun(wxRect(contentBoundingBox.GetTopLeft() +
-                                          wxPoint(iconMiddleX, middleOfCurrentRow),
-                                          wxSize(1, 1)).Inflate(iconRadius),
-                            dc);
+                        sh.DrawSun(boxRect, dc);
                         break;
                     case IconShape::FlowerIcon:
-                        sh.DrawFlower(wxRect(contentBoundingBox.GetTopLeft() +
-                                             wxPoint(iconMiddleX, middleOfCurrentRow),
-                                             wxSize(1, 1)).Inflate(iconRadius),
-                            dc);
+                        sh.DrawFlower(boxRect, dc);
                         break;
                     case IconShape::FallLeafIcon:
-                        sh.DrawFallLeaf(wxRect(contentBoundingBox.GetTopLeft() +
-                                               wxPoint(iconMiddleX, middleOfCurrentRow),
-                                               wxSize(1, 1)).Inflate(iconRadius),
-                            dc);
+                        sh.DrawFallLeaf(boxRect, dc);
                         break;
                     case IconShape::LocationMarker:
                         dc.DrawCircle(contentBoundingBox.GetTopLeft() +
@@ -847,10 +839,7 @@ namespace Wisteria::GraphItems
                             iconRadius);
                         break;
                     case IconShape::SquareIcon:
-                        dc.DrawRectangle(
-                            wxRect(contentBoundingBox.GetTopLeft() +
-                                   wxPoint(iconMiddleX, middleOfCurrentRow),
-                                   wxSize(1, 1)).Inflate(iconRadius));
+                        sh.DrawSquare(boxRect, dc);
                         break;
                     case IconShape::BoxPlotIcon:
                         // whisker

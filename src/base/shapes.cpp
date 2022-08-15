@@ -21,8 +21,8 @@ namespace Wisteria::GraphItems
         [[maybe_unused]] const double parentScaling)
         {
         m_sizeDIPs.x = (IsFittingContentWidthToCanvas() ?
-            DownscaleFromScreenAndCanvas(
-                std::min(m_shapeSizeDIPs.GetWidth(), rect.GetSize().GetWidth())) :
+            std::min<int>(m_shapeSizeDIPs.GetWidth(),
+                          DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth())) :
             DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth()) );
         m_sizeDIPs.y = DownscaleFromScreenAndCanvas(rect.GetSize().GetHeight());
 
@@ -46,6 +46,10 @@ namespace Wisteria::GraphItems
     wxRect Shape::Draw(wxDC& dc) const
         {
         auto bBox = GetBoundingBox(dc);
+        auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
+        // keep drawing area inside of the full area
+        drawRect.SetWidth(std::min(drawRect.GetWidth(), bBox.GetWidth()));
+        drawRect.SetHeight(std::min(drawRect.GetHeight(), bBox.GetHeight()));
 
         // position the shape inside of its (possibly) larger box
         wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
@@ -55,12 +59,11 @@ namespace Wisteria::GraphItems
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
             {
             shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
-                safe_divide<double>(m_shapeSizeDIPs.GetWidth() * GetScaling(), 2);
+                safe_divide<double>(drawRect.GetWidth(), 2);
             }
         else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
             {
-            shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() -
-               m_shapeSizeDIPs.GetWidth() * GetScaling();
+            shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() - drawRect.GetWidth();
             }
         // vertical page aligment
         if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
@@ -68,21 +71,22 @@ namespace Wisteria::GraphItems
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
             {
             shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
-                safe_divide<double>(m_shapeSizeDIPs.GetHeight() * GetScaling(), 2);
+                safe_divide<double>(drawRect.GetHeight(), 2);
             }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
             {
-            shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() -
-               (m_shapeSizeDIPs.GetHeight() * GetScaling());
+            shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() - drawRect.GetHeight();
             }
-
-        auto drawRect = wxRect(m_shapeSizeDIPs);
+        
         drawRect.SetTopLeft(shapeTopLeftCorner);
 
         ShapeRenderer sh(GetGraphItemInfo());
 
         switch (m_shape)
             {
+            case IconShape::BlankIcon:
+                // nothing to draw
+                break;
             case IconShape::FallLeafIcon:
                 sh.DrawFallLeaf(drawRect, dc);
                 break;
@@ -91,6 +95,9 @@ namespace Wisteria::GraphItems
                 break;
             case IconShape::SunIcon:
                 sh.DrawSun(drawRect, dc);
+                break;
+            case IconShape::SquareIcon:
+                sh.DrawSquare(drawRect, dc);
                 break;
             }
 
@@ -274,6 +281,17 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawSquare(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        dc.DrawRectangle(rect);
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc)
         {
         wxBitmap bmp(rect.GetSize());
@@ -286,7 +304,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
-            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::LightBrown),
+            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::DarkBrown),
                        ScaleToScreenAndCanvas(1)));
 
             // draw the stem
