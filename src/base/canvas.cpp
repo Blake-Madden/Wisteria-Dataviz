@@ -732,6 +732,7 @@ namespace Wisteria
                                     wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             size_t currentXPos{ 0 };
+            int extraSpaceFromPreviousItemsForThisItem{ 0 };
             for (size_t i = 0; i < currentRow.size(); ++i)
                 {
                 auto& objectsPos = currentRow[i];
@@ -746,6 +747,10 @@ namespace Wisteria
                                                 fixedObjectRect.y + rowHeightOffset),
                         wxSize(fixedObjectRect.GetWidth() * objectsPos->GetCanvasWidthProportion(),
                                currentObjHeight));
+                    // if any previous items were resized to be smaller then add
+                    // this object's share of that extra space
+                    boundingRect.SetWidth(boundingRect.GetWidth() +
+                                          extraSpaceFromPreviousItemsForThisItem);
                     wxRect nonPaddedBoundingRect{ boundingRect };
                     // subtract the canvas margins from the object's allocated space
                     // and center its drawing area within that
@@ -768,17 +773,30 @@ namespace Wisteria
                     // canvas margins subtracted from it, so if we use this new measurement
                     // the margins will be preserved.
                     auto measuredBox = objectsPos->GetBoundingBox(dc);
-                    if (measuredBox.GetWidth() < boundingRect.GetWidth())
+                    if (measuredBox.GetWidth() < boundingRect.GetWidth() &&
+                        objectsPos->IsFittingContentWidthToCanvas())
                         {
                         const auto originalWidth = boundingRect.GetWidth();
-                        auto widthDiff = (originalWidth - measuredBox.GetWidth());
-                        if (objectsPos->GetPageHorizontalAlignment() ==
-                                 PageHorizontalAlignment::Centered)
-                            { widthDiff /= 2; }
-                        else if (objectsPos->GetPageHorizontalAlignment() ==
-                                 PageHorizontalAlignment::LeftAligned)
-                            { widthDiff = 0; }
-                        boundingRect.x += widthDiff;
+                        const auto widthDiff = (originalWidth - measuredBox.GetWidth());
+                        // how much space to give back to previous items in the row
+                        const auto extraSpaceForPreviousItems =
+                            // if first item in row, then there aren't previous items and page
+                            // alignment is irrelevant
+                            (i == 0 ?
+                                0 :
+                            objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered ?
+                                (widthDiff / 2) :
+                             objectsPos->GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned ?
+                                0 :
+                                widthDiff);
+                        // the full amount of space left over from this object to
+                        // add to following objects
+                        const auto extraSpaceForFollowingItems = widthDiff - extraSpaceForPreviousItems;
+                        extraSpaceFromPreviousItemsForThisItem +=
+                            safe_divide<int>(extraSpaceForFollowingItems, currentRow.size() - (i+1));
+
+                        // if there are items to the left, then move this object back
+                        boundingRect.x -= extraSpaceForPreviousItems;
                         boundingRect.SetWidth(measuredBox.GetWidth());
                         objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
 
@@ -786,10 +804,10 @@ namespace Wisteria
                             nonPaddedBoundingRect.GetWidth() - widthDiff);
                         // adjust previously laid out items by making them wider
                         // and pushing them over
-                        if (i > 0 && widthDiff > 0)
+                        if (i > 0 && extraSpaceForPreviousItems > 0)
                             {
                             const auto averageWidthToAdd =
-                                safe_divide<double>(widthDiff, i/* # of previous items*/);
+                                safe_divide<double>(extraSpaceForPreviousItems, i/* # of previous items*/);
                             for (long backCounter = static_cast<long>(i-1);
                                  backCounter >= 0;
                                  --backCounter)
