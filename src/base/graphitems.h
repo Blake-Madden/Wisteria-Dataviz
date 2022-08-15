@@ -1763,7 +1763,7 @@ namespace Wisteria
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param sz The size to be scaled.
             /// @returns The scaled size.
-            [[nodiscard]] wxSize ScaleToScreenAndCanvas(const wxSize sz) const
+            [[nodiscard]] wxSize ScaleToScreenAndCanvas(const wxSize sz) const noexcept
                 { return sz * GetScaling() * GetDPIScaleFactor(); }
             /// @brief Takes a pixel value that has been scaled from the screen DPI
             ///     and parent canvas scaling and converts it back to its base DIP.

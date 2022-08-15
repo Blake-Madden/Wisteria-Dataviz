@@ -75,7 +75,7 @@ namespace Wisteria
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed. 
-        /// @param graph The graph to apply the settings to.
+        /// @param[in,out] graph The graph to apply the settings to.
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @warning The node's graph-specific loading function should be called first, then
         ///     this should be called to finalize it and add it to the canvas.
@@ -119,6 +119,8 @@ namespace Wisteria
         std::shared_ptr<Graphs::Graph2D> LoadTable(const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
 
+        [[nodiscard]] std::shared_ptr<GraphItems::Shape> LoadShape(const wxSimpleJSON::Ptr_t& shapeNode);
+
         /// @brief Loads properties from a JSON node into an axis.
         /// @param axisNode The node to parse.
         /// @param axis[in,out] The axis to apply the loaded settings to.
@@ -141,15 +143,11 @@ namespace Wisteria
             const size_t columnCount,
             const size_t columnRow);
 
-        /// @brief Loads a image node into the canvas.
+        /// @brief Loads a image node.
         /// @param imageNode The image node to parse.
-        /// @param canvas The canvas to add the image to.
-        /// @param[in,out] currentRow The row in the canvas where the image will be placed.
-        /// @param[in,out] currentColumn The column in the canvas where the image will be placed.
-        /// @returns The image that was added to the canvas, or null upon failure.
+        /// @returns The image that was loaded, or null upon failure.
         /// @todo many features still needed!
-        std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode,
-            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
@@ -200,6 +198,10 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(wxString colorStr);
+        /// @brief Converts a string value to a icon shape enum value.
+        /// @param iconStr the string name of the icon.
+        /// @returns The icon enum value if found, @c std::nullopt otherwise.
+        [[nodiscard]] std::optional<Icons::IconShape> ConvertIcon(wxString iconStr);
         /// @brief Converts a string value to a TextAlignment enum value.
         [[nodiscard]] static std::optional<TextAlignment>
             ConvertTextAlignment(const wxString& value);

@@ -76,7 +76,7 @@ namespace Wisteria::GraphItems
             @param img The image to render.
                 LoaddFile() can be used as a quick way to load an image here.*/
         Image(const GraphItems::GraphItemInfo& itemInfo,
-            const wxImage& img) : GraphItemBase(itemInfo),
+              const wxImage& img) : GraphItemBase(itemInfo),
             m_originalImg(img), m_img(img),
             m_size(img.GetSize()),
             m_frameSize(img.GetSize())
@@ -283,7 +283,7 @@ namespace Wisteria::GraphItems
             @param preserveTransparentPixels Set to @c true to not alter pixels that
                 are already transparent in the image.*/
         static void SetOpacity(wxImage& image, const uint8_t opacity,
-                              const bool preserveTransparentPixels);
+                               const bool preserveTransparentPixels);
         /// @returns The size of the image as it is being drawn.
         [[nodiscard]] const wxSize& GetImageSize() const noexcept
             { return m_size; }
@@ -300,7 +300,7 @@ namespace Wisteria::GraphItems
             @param dc The DC to render onto.
             @returns The box that the image is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
-        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @returns The rectangle on the canvas where the image would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Bounds the image to the given rectangle.
@@ -330,7 +330,7 @@ namespace Wisteria::GraphItems
             { return std::make_pair(sz.GetWidth(), sz.GetHeight()); }
         wxImage m_originalImg;
         mutable wxImage m_img;
-        wxSize m_size{ 0, 0};
+        wxSize m_size{ 0, 0 };
         wxSize m_frameSize{ 0, 0 };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         ResizeMethod m_resizeMethod{ ResizeMethod::DownscaleOrUpscale };

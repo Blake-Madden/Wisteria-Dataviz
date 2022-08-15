@@ -14,6 +14,7 @@
 
 #include "graphitems.h"
 #include "colorbrewer.h"
+#include "polygon.h"
 
 namespace Wisteria::GraphItems
     {
@@ -106,6 +107,48 @@ namespace Wisteria::GraphItems
 
         GraphItemInfo m_graphInfo;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
+        };
+
+    /** @brief Draws a shape on a canvas.
+        @todo Only a few icons are currently supported.*/
+    class Shape final : public GraphItemBase
+        {
+    public:
+         /** @brief Constructor.
+             @param itemInfo Base information for the shape.
+             @param shape The icon shape to draw.
+             @param sz The size of the shape (in DIPs).*/
+        Shape(const GraphItems::GraphItemInfo& itemInfo,
+              const Icons::IconShape shape,
+              const wxSize sz) :
+            GraphItemBase(itemInfo), m_shape(shape), m_shapeSizeDIPs(sz), m_sizeDIPs(sz)
+            {}
+    private:
+        /** @brief Draws the shape onto the given DC.
+            @param dc The DC to render onto.
+            @returns The box that the shape is being drawn in.*/
+        wxRect Draw(wxDC& dc) const final;
+        /// @returns The rectangle on the canvas where the shape would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        /** @brief Bounds the shape to the given rectangle.
+            @param rect The rectangle to bound the shape to.
+            @param parentScaling This parameter is ignored.*/
+        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double parentScaling) final;
+        /** @brief Moves the shaoe by the specified x and y values.
+            @param xToMove the amount to move horizontally.
+            @param yToMove the amount to move vertically.*/
+        void Offset(const int xToMove, const int yToMove) noexcept final
+            { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
+        /** @returns @c true if the given point is inside of the shape.
+            @param pt The point to check.*/
+        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
+            { return GetBoundingBox(dc).Contains(pt); }
+
+        wxSize m_shapeSizeDIPs{ 0, 0 };
+        wxSize m_sizeDIPs{ 0, 0 };
+        Icons::IconShape m_shape;
         };
     };
 

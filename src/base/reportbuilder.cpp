@@ -145,7 +145,8 @@ namespace Wisteria
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"image") == 0)
                                                 {
-                                                LoadImage(item, canvas, currentRow, currentColumn);
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                    LoadImage(item));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"table") == 0)
                                                 {
@@ -158,6 +159,11 @@ namespace Wisteria
                                                 // after all other items have been added to the grid.
                                                 canvas->SetFixedObject(currentRow, currentColumn, nullptr);
                                                 LoadCommonAxis(item, currentRow, currentColumn);
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"shape") == 0)
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                    LoadShape(item));
                                                 }
                                             // explicitly null item is a placeholder,
                                             // or possibly a blank row that will be consumed by the
@@ -506,7 +512,6 @@ namespace Wisteria
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
             label->SetText(ExpandValues(labelNode->GetProperty(L"text")->GetValueString()));
             label->GetPen() = wxNullPen;
-            label->SetDPIScaleFactor(m_dpiScaleFactor);
 
             const wxColour bgcolor(
                 ConvertColor(labelNode->GetProperty(L"background")->GetValueString()));
@@ -1112,6 +1117,38 @@ namespace Wisteria
             throw std::runtime_error(
                 _(L"Variables not defined for line plot.").ToUTF8());
             }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<GraphItems::Shape> ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode)
+        {
+        const auto loadedShape = ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
+        if (!loadedShape.has_value())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: unknown icon for shape."),
+                    shapeNode->GetProperty(L"icon")->GetValueString()).ToUTF8());
+            }
+        
+        wxSize sz(32, 32);
+        const auto sizeNode = shapeNode->GetProperty(L"size");
+        if (sizeNode->IsOk())
+            {
+            sz.x = sizeNode->GetProperty(L"width")->GetValueNumber(32);
+            sz.y = sizeNode->GetProperty(L"height")->GetValueNumber(32);
+            }
+        auto sh = std::make_shared<Shape>(GraphItemInfo().Anchoring(Anchoring::TopLeftCorner),
+            loadedShape.value(), sz);
+        // center by default, but allow LoadItems (below) to override that
+        // if client asked for something else
+        sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+        sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+
+        LoadItem(shapeNode, sh);
+
+        // fit the column area to this shape
+        sh->FitContentWidthToCanvas(true);
+        return sh;
         }
 
     //---------------------------------------------------
@@ -2362,8 +2399,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> ReportBuilder::LoadIconScheme(
-        const wxSimpleJSON::Ptr_t& iconSchemeNode)
+    std::optional<Icons::IconShape> ReportBuilder::ConvertIcon(wxString iconStr)
         {
         // use standard string, wxString should not be constructed globally
         static const std::map<std::wstring_view, IconShape> iconEnums =
@@ -2395,6 +2431,16 @@ namespace Wisteria
             { L"fall-leaf-icon", IconShape::FallLeafIcon }
             };
 
+        const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
+        return (foundPos != iconEnums.cend() ?
+                std::optional<Icons::IconShape>(foundPos->second) :
+                std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> ReportBuilder::LoadIconScheme(
+        const wxSimpleJSON::Ptr_t& iconSchemeNode)
+        {
         static const std::map<std::wstring_view, std::shared_ptr<IconScheme>> iconSchemes =
             {
             { L"standard-shapes", std::make_shared<StandardShapes>() },
@@ -2412,9 +2458,9 @@ namespace Wisteria
                 { return nullptr; }
             for (auto& icon : iconValues)
                 {
-                const auto foundPos = iconEnums.find(std::wstring_view(icon.MakeLower().wc_str()));
-                if (foundPos != iconEnums.cend())
-                    { icons.emplace_back(foundPos->second); }
+                const auto iconValue =  ConvertIcon(icon);
+                if (iconValue.has_value())
+                    { icons.emplace_back(iconValue.value()); }
                 }
             if (icons.size() == 0)
                 { return nullptr; }
@@ -2434,8 +2480,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<GraphItems::Image> ReportBuilder::LoadImage(
-        const wxSimpleJSON::Ptr_t& imageNode,
-        Canvas* canvas, size_t& currentRow, size_t& currentColumn)
+        const wxSimpleJSON::Ptr_t& imageNode)
         {
         static const std::map<std::wstring_view, ResizeMethod> resizeValues =
             {
@@ -2463,12 +2508,18 @@ namespace Wisteria
         auto image = std::make_shared<GraphItems::Image>(path);
         if (image->IsOk())
             {
+            // center by default, but allow LoadItems (below) to override that
+            // if client asked for something else
+            image->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            image->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+
             auto foundPos = resizeValues.find(std::wstring_view(
                 imageNode->GetProperty(L"resize-method")->GetValueString().MakeLower().wc_str()));
             if (foundPos != resizeValues.cend())
                 { image->SetResizeMethod(foundPos->second); }
             LoadItem(imageNode, image);
-            canvas->SetFixedObject(currentRow, currentColumn, image);
+
+            image->FitContentWidthToCanvas(true);
             return image;
             }
         else
@@ -2490,6 +2541,8 @@ namespace Wisteria
             { L"top-left-corner", Anchoring::TopLeftCorner },
             { L"top-right-corner", Anchoring::TopRightCorner },
             };
+
+        item->SetDPIScaleFactor(m_dpiScaleFactor);
 
         // ID
         item->SetId(itemNode->GetProperty(L"id")->GetValueNumber(wxID_ANY));

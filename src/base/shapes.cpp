@@ -11,9 +11,126 @@
 #include "image.h"
 
 using namespace Wisteria::Colors;
+using namespace Wisteria::Icons;
 
 namespace Wisteria::GraphItems
     {
+    //---------------------------------------------------
+    void Shape::SetBoundingBox(const wxRect& rect,
+        [[maybe_unused]] wxDC& dc,
+        [[maybe_unused]] const double parentScaling)
+        {
+        m_sizeDIPs.x = (IsFittingContentWidthToCanvas() ?
+            DownscaleFromScreenAndCanvas(
+                std::min(m_shapeSizeDIPs.GetWidth(), rect.GetSize().GetWidth())) :
+            DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth()) );
+        m_sizeDIPs.y = DownscaleFromScreenAndCanvas(rect.GetSize().GetHeight());
+
+        if (GetAnchoring() == Anchoring::TopLeftCorner)
+            { SetAnchorPoint(rect.GetTopLeft()); }
+        else if (GetAnchoring() == Anchoring::BottomLeftCorner)
+            { SetAnchorPoint(rect.GetBottomLeft()); }
+        else if (GetAnchoring() == Anchoring::TopRightCorner)
+            { SetAnchorPoint(rect.GetTopRight()); }
+        else if (GetAnchoring() == Anchoring::BottomRightCorner)
+            { SetAnchorPoint(rect.GetBottomRight()); }
+        else if (GetAnchoring() == Anchoring::Center)
+            {
+            wxPoint pt = rect.GetTopLeft();
+            pt += wxPoint(rect.GetWidth() / 2, rect.GetHeight() / 2);
+            SetAnchorPoint(pt);
+            }
+        }
+
+    //---------------------------------------------------
+    wxRect Shape::Draw(wxDC& dc) const
+        {
+        auto bBox = GetBoundingBox(dc);
+
+        // position the shape inside of its (possibly) larger box
+        wxPoint shapeTopLeftCorner(GetBoundingBox(dc).GetLeftTop());
+        // horizontal page alignment
+        if (GetPageHorizontalAlignment() == PageHorizontalAlignment::LeftAligned)
+            { /*noop*/ }
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered)
+            {
+            shapeTopLeftCorner.x += safe_divide<double>(GetBoundingBox(dc).GetWidth(), 2) -
+                safe_divide<double>(m_shapeSizeDIPs.GetWidth() * GetScaling(), 2);
+            }
+        else if (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned)
+            {
+            shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() -
+               m_shapeSizeDIPs.GetWidth() * GetScaling();
+            }
+        // vertical page aligment
+        if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
+            { /*noop*/ }
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
+            {
+            shapeTopLeftCorner.y += safe_divide<double>(GetBoundingBox(dc).GetHeight(), 2) -
+                safe_divide<double>(m_shapeSizeDIPs.GetHeight() * GetScaling(), 2);
+            }
+        else if (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned)
+            {
+            shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() -
+               (m_shapeSizeDIPs.GetHeight() * GetScaling());
+            }
+
+        auto drawRect = wxRect(m_shapeSizeDIPs);
+        drawRect.SetTopLeft(shapeTopLeftCorner);
+
+        ShapeRenderer sh(GetGraphItemInfo());
+
+        switch (m_shape)
+            {
+            case IconShape::FallLeafIcon:
+                sh.DrawFallLeaf(drawRect, dc);
+                break;
+            case IconShape::FlowerIcon:
+                sh.DrawFlower(drawRect, dc);
+                break;
+            case IconShape::SunIcon:
+                sh.DrawSun(drawRect, dc);
+                break;
+            }
+
+        // draw the outline
+        if (IsSelected())
+            {
+            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            dc.DrawRectangle(GetBoundingBox(dc));
+            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+                {
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
+                                       wxPENSTYLE_DOT));
+                dc.DrawRectangle(drawRect);
+                }
+            }
+
+        return bBox;
+        }
+
+    //---------------------------------------------------
+    wxRect Shape::GetBoundingBox([[maybe_unused]] wxDC& dc) const
+        {
+        wxRect rect(ScaleToScreenAndCanvas(m_sizeDIPs));
+        if (GetAnchoring() == Anchoring::TopLeftCorner)
+            { rect.SetTopLeft(GetAnchorPoint()); }
+        else if (GetAnchoring() == Anchoring::BottomLeftCorner)
+            { rect.SetBottomLeft(GetAnchorPoint()); }
+        else if (GetAnchoring() == Anchoring::TopRightCorner)
+            { rect.SetTopRight(GetAnchorPoint()); }
+        else if (GetAnchoring() == Anchoring::BottomRightCorner)
+            { rect.SetBottomRight(GetAnchorPoint()); }
+        else if (GetAnchoring() == Anchoring::Center)
+            {
+            rect.SetTopLeft(GetAnchorPoint());
+            rect.Offset(rect.GetWidth() / 2, rect.GetHeight() / 2);
+            }
+        return rect;
+        }
+
     //---------------------------------------------------
     void ShapeRenderer::DrawCircularSign(const wxRect rect, wxDC& dc)
         {
