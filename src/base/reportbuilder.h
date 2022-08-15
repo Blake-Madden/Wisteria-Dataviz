@@ -131,6 +131,11 @@ namespace Wisteria
         /// @param pen[in,out] The pen to apply the loaded settings to.
         void LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen);
 
+        /// @brief Loads properties from a JSON node into a brush.
+        /// @param brushNode The node to parse.
+        /// @param brush[in,out] The brush to apply the loaded settings to.
+        void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush);
+
         /// @brief Loads a row or column position from a node.
         /// @details This support loading the @c origin and @c offset properties.
         /// @param positionNode The node to parse.

@@ -338,6 +338,12 @@ Properties for @c "pie-chart" nodes:
   - @c "color": the color of the donut hole.
 - Some base properties available to [graphs](#graph-properties).
 
+## Shape {#shape-properties}
+Properties for @c "shape" nodes:
+- @c "icon": a string specifying the icon to draw the shape as.
+- @c "pen": the pen to draw with, which includes [pen](#pen-properties) properties.
+- @c "brush": the pen to brush with, which includes [brush](#brush-properties) properties.
+
 ## Table {#table-properties}
 Properties for @c "table" nodes:
 - @c "variables": an array of column names to use from the dataset.
@@ -464,6 +470,20 @@ Properties for pens:
   - @c "vertical-hatch"
 
 Note that pens can be set to @c null to turn it off.
+
+## Brush {#brush-properties}
+Properties for brushes:
+- @c "color": the brush color. This can be either a color name or hex-encoded value.
+- @c "style": the brush's pattern, which includes the following:
+  - @c "backwards-diagonal-hatch"
+  - @c "forward-diagonal-hatch"
+  - @c "cross-diagonal-hatch"
+  - @c "solid" (the default)
+  - @c "cross-hatch"
+  - @c "horizontal-hatch"
+  - @c "vertical-hatch"
+
+Note that brushes can be set to @c null to turn it off.
 
 ## Graphs {#graph-properties}
 Properties common to all graph items:

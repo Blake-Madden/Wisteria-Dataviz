@@ -315,6 +315,39 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush)
+        {
+        static const std::map<std::wstring, wxBrushStyle> styleValues =
+            {
+            { L"backwards-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_BDIAGONAL_HATCH },
+            { L"forward-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH },
+            { L"cross-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSSDIAG_HATCH },
+            { L"solid", wxBrushStyle::wxBRUSHSTYLE_SOLID },
+            { L"cross-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSS_HATCH },
+            { L"horizontal-hatch", wxBrushStyle::wxBRUSHSTYLE_HORIZONTAL_HATCH },
+            { L"vertical-hatch", wxBrushStyle::wxBRUSHSTYLE_VERTICAL_HATCH }
+            };
+
+        if (brushNode->IsOk())
+            {
+            if (brushNode->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+                { brush = wxNullBrush; }
+            else
+                {
+                const wxColour brushColor(
+                    ConvertColor(brushNode->GetProperty(L"color")->GetValueString()));
+                if (brushColor.IsOk())
+                    { brush.SetColour(brushColor); }
+
+                const auto style = styleValues.find(
+                    brushNode->GetProperty(L"style")->GetValueString().Lower().ToStdWstring());
+                if (style != styleValues.cend())
+                    { brush.SetStyle(style->second); }
+                }
+            }
+        }
+
+    //---------------------------------------------------
     void ReportBuilder::LoadPen(const wxSimpleJSON::Ptr_t& penNode, wxPen& pen)
         {
         static const std::map<std::wstring, wxPenStyle> styleValues =
@@ -1137,7 +1170,16 @@ namespace Wisteria
             sz.x = sizeNode->GetProperty(L"width")->GetValueNumber(32);
             sz.y = sizeNode->GetProperty(L"height")->GetValueNumber(32);
             }
-        auto sh = std::make_shared<Shape>(GraphItemInfo().Anchoring(Anchoring::TopLeftCorner),
+
+        wxPen pen(*wxBLACK_PEN);
+        LoadPen(shapeNode->GetProperty(L"pen"), pen);
+
+        wxBrush brush(*wxWHITE_BRUSH);
+        LoadBrush(shapeNode->GetProperty(L"brush"), brush);
+
+        auto sh = std::make_shared<Shape>(
+            GraphItemInfo().Anchoring(Anchoring::TopLeftCorner).
+            Pen(pen).Brush(brush),
             loadedShape.value(), sz);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
