@@ -1676,7 +1676,8 @@ namespace Wisteria::GraphItems
                             {
                             bracket.DrawConnectionLine(dc, ScaleToScreenAndCanvas(1),
                                 wxPoint(position1, connectionY),
-                                wxPoint(position1, connectionY-ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
+                                wxPoint(position1,
+                                        connectionY - ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
                             }
                         else if (bracket.IsStraightLines())
                             {
@@ -2681,7 +2682,7 @@ namespace Wisteria::GraphItems
             { rangeDivisionFactor = 10; }
         else
             { rangeDivisionFactor = 1; }
-
+        
         // can't do anything with any empty range, so just leave the axis as is
         if (rangeSize <= 0)
             { return; }
@@ -3535,5 +3536,30 @@ namespace Wisteria::GraphItems
         wxCoord size = GetLineSpacing() * theLabel.GetScaling() * dpiScaling;
         size += (GetOrientation() == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
         return size;
+        }
+
+    //-------------------------------------------
+    void Axis::AxisBracket::DrawConnectionLine(wxDC& dc, const double scaling,
+                                               const wxPoint axisPoint,
+                                               const wxPoint bracketPoint) const
+        {
+        wxPen scaledPen = GetLinePen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(scaledPen.GetWidth() * scaling); }
+        wxDCPenChanger penCh(dc, scaledPen);
+
+        if (GetBracketLineStyle() == BracketLineStyle::Arrow)
+            {
+            GraphItems::Polygon::DrawArrow(dc, bracketPoint, axisPoint,
+                                            wxSize(10*scaling, 10*scaling));
+            }
+        else if (GetBracketLineStyle() == BracketLineStyle::ReverseArrow)
+            {
+            GraphItems::Polygon::DrawArrow(dc, axisPoint, bracketPoint,
+                                            wxSize(10*scaling, 10*scaling));
+            }
+        // OK for curly braces because it will be a single line
+        else
+            { dc.DrawLine(axisPoint, bracketPoint); }
         }
     }

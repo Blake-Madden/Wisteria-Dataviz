@@ -340,22 +340,7 @@ namespace Wisteria::GraphItems
                 @note This function is only meant to be called from the parent axis when rendering
                     the brackets.*/
             void DrawConnectionLine(wxDC& dc, const double scaling, const wxPoint axisPoint,
-                                    const wxPoint bracketPoint) const
-                {
-                if (GetBracketLineStyle() == BracketLineStyle::Arrow)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc, bracketPoint, axisPoint,
-                                                   wxSize(10*scaling, 10*scaling));
-                    }
-                else if (GetBracketLineStyle() == BracketLineStyle::ReverseArrow)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc,axisPoint, bracketPoint,
-                                                   wxSize(10*scaling, 10*scaling));
-                    }
-                // OK for curly braces because it will be a single line
-                else
-                    { dc.DrawLine(axisPoint, bracketPoint); }
-                }
+                const wxPoint bracketPoint) const;
             /// @returns The space between the bracket label and outer area of parent axis.
             ///     This is how much space is needed to draw the bracket lines.
             /// @note If lines aren't being drawn, then will return a recommended amount of padding
@@ -378,7 +363,7 @@ namespace Wisteria::GraphItems
             wxCoord m_tickMarkLength{ 15 };
             wxCoord m_padding{ 5 };
             Label m_label;
-            wxPen m_linePen;
+            wxPen m_linePen{ *wxBLACK_PEN };
             Orientation m_orientation{ Orientation::Vertical };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
             BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
