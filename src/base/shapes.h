@@ -79,6 +79,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the square within.
         /// @param dc The DC to draw to.
         void DrawSquare(const wxRect rect, wxDC& dc);
+        /// @brief Draws a circle.
+        /// @param rect The area to draw the circle within.
+        /// @param dc The DC to draw to.
+        void DrawCircle(const wxRect rect, wxDC& dc);
         /// @brief Draws a box plot.
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.

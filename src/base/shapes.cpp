@@ -87,20 +87,23 @@ namespace Wisteria::GraphItems
             case IconShape::BlankIcon:
                 // nothing to draw
                 break;
-            case IconShape::FallLeafIcon:
-                sh.DrawFallLeaf(drawRect, dc);
-                break;
-            case IconShape::FlowerIcon:
-                sh.DrawFlower(drawRect, dc);
-                break;
-            case IconShape::SunIcon:
-                sh.DrawSun(drawRect, dc);
+            case IconShape::CircleIcon:
+                sh.DrawCircle(drawRect, dc);
                 break;
             case IconShape::SquareIcon:
                 sh.DrawSquare(drawRect, dc);
                 break;
             case IconShape::BoxPlotIcon:
                 sh.DrawBoxPlot(drawRect, dc);
+                break;
+            case IconShape::SunIcon:
+                sh.DrawSun(drawRect, dc);
+                break;
+            case IconShape::FlowerIcon:
+                sh.DrawFlower(drawRect, dc);
+                break;
+            case IconShape::FallLeafIcon:
+                sh.DrawFallLeaf(drawRect, dc);
                 break;
             }
 
@@ -328,6 +331,18 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, scaledPen);
         wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawRectangle(rect);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawCircle(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        dc.DrawCircle(rect.GetLeftTop() + wxPoint(rect.GetWidth()/2, rect.GetHeight()/2),
+                      std::min(rect.GetWidth(), rect.GetHeight()) / 2);
         }
 
     //---------------------------------------------------

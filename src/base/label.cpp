@@ -834,9 +834,7 @@ namespace Wisteria::GraphItems
                             }
                         break;
                     case IconShape::CircleIcon:
-                        dc.DrawCircle(contentBoundingBox.GetTopLeft() +
-                            wxPoint(iconMiddleX, middleOfCurrentRow),
-                            iconRadius);
+                        sh.DrawCircle(boxRect, dc);
                         break;
                     case IconShape::SquareIcon:
                         sh.DrawSquare(boxRect, dc);

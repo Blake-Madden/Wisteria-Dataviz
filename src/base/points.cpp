@@ -321,8 +321,7 @@ namespace Wisteria::GraphItems
             switch (m_shape)
                 {
                 case IconShape::CircleIcon:
-                    dc.DrawCircle(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2),
-                                  ScaleToScreenAndCanvas(GetRadius()));
+                    sh.DrawCircle(boundingBox, dc);
                     break;
                 case IconShape::SquareIcon:
                     sh.DrawSquare(boundingBox, dc);
