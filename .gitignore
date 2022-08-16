@@ -1,6 +1,7 @@
 /.vs/
 /app/
 /build/
+/out/
 /docs/doxygen/html/
 CMakeSettings.json
 /tools/ColorCode.txt
