@@ -83,6 +83,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the circle within.
         /// @param dc The DC to draw to.
         void DrawCircle(const wxRect rect, wxDC& dc);
+        /// @brief Draws a horizontal line.
+        /// @param rect The area to draw the line within.
+        /// @param dc The DC to draw to.
+        void DrawHorizontalLine(const wxRect rect, wxDC& dc);
         /// @brief Draws a box plot.
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.
@@ -90,14 +94,16 @@ namespace Wisteria::GraphItems
         /// @}
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
-        [[nodiscard]] double GetXPosFromLeft(const wxRect rect, const double percentFromLeft) noexcept
+        [[nodiscard]] double GetXPosFromLeft(const wxRect rect,
+                                             const double percentFromLeft) noexcept
             {
             wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
                          L"Percent should be between 0.0 and 1.0!");
             return rect.GetLeft() + (rect.GetWidth() * percentFromLeft);
             };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
-        [[nodiscard]] double GetYPosFromTop(const wxRect rect, const double percentFromLeft) noexcept
+        [[nodiscard]] double GetYPosFromTop(const wxRect rect,
+                                            const double percentFromLeft) noexcept
             {
             wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
                          L"Percent should be between 0.0 and 1.0!");

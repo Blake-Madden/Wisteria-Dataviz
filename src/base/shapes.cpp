@@ -87,6 +87,9 @@ namespace Wisteria::GraphItems
             case IconShape::BlankIcon:
                 // nothing to draw
                 break;
+            case IconShape::HorizontalLineIcon:
+                sh.DrawHorizontalLine(drawRect, dc);
+                break;
             case IconShape::CircleIcon:
                 sh.DrawCircle(drawRect, dc);
                 break;
@@ -343,6 +346,22 @@ namespace Wisteria::GraphItems
         wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawCircle(rect.GetLeftTop() + wxPoint(rect.GetWidth()/2, rect.GetHeight()/2),
                       std::min(rect.GetWidth(), rect.GetHeight()) / 2);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHorizontalLine(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            {
+            // for a line icon, make it a minimum of 2 pixels wide
+            scaledPen.SetWidth(
+                ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
+            }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
+                            wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
         }
 
     //---------------------------------------------------

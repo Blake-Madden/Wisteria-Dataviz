@@ -756,10 +756,7 @@ namespace Wisteria::GraphItems
                     case IconShape::BlankIcon:
                         break;
                     case IconShape::HorizontalLineIcon:
-                        dc.DrawLine(contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(iconMiddleX-(iconRadius)), middleOfCurrentRow),
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(iconMiddleX+(iconRadius)), middleOfCurrentRow));
+                        sh.DrawHorizontalLine(boxRect, dc);
                         break;
                     case IconShape::ArrowRightIcon:
                         GraphItems::Polygon::DrawArrow(dc,

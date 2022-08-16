@@ -327,8 +327,7 @@ namespace Wisteria::GraphItems
                     sh.DrawSquare(boundingBox, dc);
                     break;
                 case IconShape::HorizontalLineIcon:
-                    dc.DrawLine(wxPoint(boundingBox.GetLeft(), boundingBox.GetTop()+boundingBox.GetHeight()/2),
-                                wxPoint(boundingBox.GetRight(), boundingBox.GetTop()+boundingBox.GetHeight()/2));
+                    sh.DrawHorizontalLine(boundingBox, dc);
                     break;
                 case IconShape::ArrowRightIcon:
                     GraphItems::Polygon::DrawArrow(dc,
