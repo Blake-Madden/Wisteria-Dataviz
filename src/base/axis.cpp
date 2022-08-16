@@ -2682,7 +2682,10 @@ namespace Wisteria::GraphItems
         else
             { rangeDivisionFactor = 1; }
 
-        if (rangeSize <= 1)
+        // can't do anything with any empty range, so just leave the axis as is
+        if (rangeSize <= 0)
+            { return; }
+        else if (rangeSize <= 1)
             {
             intervalSize = 0.2;
             if (precision == 0)
