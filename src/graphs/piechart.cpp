@@ -756,14 +756,23 @@ namespace Wisteria::Graphs
                 pSlice->SetText(GetInnerPie().at(i).GetGroupLabel() + L"\n" +
                     GetInnerPie().at(i).m_description);
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
+                // use the parent slice color for the header, font color for the body
                 if (IsUsingColorLabels())
-                    { pSlice->GetHeaderInfo().FontColor(sliceColor); }
+                    {
+                    pSlice->SetFontColor(GetColorScheme()->GetColor(
+                        GetInnerPie().at(i).m_parentSliceIndex));
+                    }
                 pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
                 }
             else
                 {
                 if (IsUsingColorLabels())
-                    { pSlice->SetFontColor(sliceColor); }
+                    {
+                    // parent color if using color labels, the inner slice's color
+                    // may be too washed out to be legible
+                    pSlice->SetFontColor(GetColorScheme()->GetColor(
+                        GetInnerPie().at(i).m_parentSliceIndex));
+                    }
                 pSlice->GetFont().MakeBold();
                 }
             AddObject(pSlice);

@@ -791,7 +791,7 @@ namespace Wisteria::Graphs
         LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
 
         wxPen m_connectionLinePen{ wxPen(
-            wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey, 200),
+            wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey),
                       ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
