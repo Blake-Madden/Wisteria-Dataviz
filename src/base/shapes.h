@@ -207,6 +207,7 @@ namespace Wisteria::GraphItems
             {}
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
+            @param dc This parameter is ignored.
             @param parentScaling This parameter is ignored.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final;
@@ -218,8 +219,7 @@ namespace Wisteria::GraphItems
         /** @brief Draws the shape onto the given DC within a given rect.
             @details This is the main drawing routine and should be used by derived classes.
             @param drawRect The rect to draw within.
-            @param dc The DC to render onto.
-            @returns The box that the shape is being drawn in.*/
+            @param dc The DC to render onto.*/
         void Draw(const wxRect& drawRect, wxDC& dc) const;
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
