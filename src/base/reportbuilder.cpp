@@ -2461,7 +2461,7 @@ namespace Wisteria
             { L"triangle-right-icon", IconShape::TriangleRightIcon },
             { L"triangle-left-icon", IconShape::TriangleLeftIcon },
             { L"diamond-icon", IconShape::DiamondIcon },
-            { L"cross-icon", IconShape::CrossIcon },
+            { L"plus-icon", IconShape::PlusIcon },
             { L"asterisk-icon", IconShape::AsteriskIcon },
             { L"hexagon-icon", IconShape::HexagonIcon },
             { L"box-plot-icon", IconShape::BoxPlotIcon },

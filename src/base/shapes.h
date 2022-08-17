@@ -91,6 +91,34 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the box plot within.
         /// @param dc The DC to draw to.
         void DrawBoxPlot(wxRect rect, wxDC& dc);
+        /// @brief Draws an asterisk.
+        /// @param rect The area to draw the asterisk within.
+        /// @param dc The DC to draw to.
+        void DrawAsterisk(wxRect rect, wxDC& dc);
+        /// @brief Draws a plus sign.
+        /// @param rect The area to draw the plus within.
+        /// @param dc The DC to draw to.
+        void DrawPlus(wxRect rect, wxDC& dc);
+        /// @brief Draws a diamond.
+        /// @param rect The area to draw the diamond within.
+        /// @param dc The DC to draw to.
+        void DrawDiamond(wxRect rect, wxDC& dc);
+        /// @brief Draws a upward triangle.
+        /// @param rect The area to draw the triangle within.
+        /// @param dc The DC to draw to.
+        void DrawUpwardTriangle(wxRect rect, wxDC& dc);
+        /// @brief Draws a downward triangle.
+        /// @param rect The area to draw the triangle within.
+        /// @param dc The DC to draw to.
+        void DrawDownwardTriangle(wxRect rect, wxDC& dc);
+        /// @brief Draws a right triangle.
+        /// @param rect The area to draw the triangle within.
+        /// @param dc The DC to draw to.
+        void DrawRightTriangle(wxRect rect, wxDC& dc);
+        /// @brief Draws a left triangle.
+        /// @param rect The area to draw the triangle within.
+        /// @param dc The DC to draw to.
+        void DrawLeftTriangle(wxRect rect, wxDC& dc);
         /// @}
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
@@ -119,6 +147,14 @@ namespace Wisteria::GraphItems
             return (m_graphInfo.GetDPIScaleFactor().has_value() ?
                     m_graphInfo.GetDPIScaleFactor().value() : 1);
             }
+
+        /// @returns The midpoint of a rect.
+        [[nodiscard]] wxPoint GetMidPoint(const wxRect rect) const
+            { return rect.GetLeftTop() + wxPoint(rect.GetWidth()/2, rect.GetHeight()/2); }
+
+        /// @returns The radius of the largest circle that can fit in a rect.
+        [[nodiscard]] double GetRadius(const wxRect rect) const
+            { return safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2); }
 
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
             { return value * GetScaling() * GetDPIScaleFactor(); }

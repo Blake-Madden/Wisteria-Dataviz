@@ -562,7 +562,7 @@ Properties common to all graph items:
   - @c "triangle-right-icon"
   - @c "triangle-left-icon"
   - @c "diamond-icon"
-  - @c "cross-icon"
+  - @c "plus-icon"
   - @c "asterisk-icon"
   - @c "hexagon-icon"
   - @c "box-plot-icon"

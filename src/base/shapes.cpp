@@ -96,6 +96,27 @@ namespace Wisteria::GraphItems
             case IconShape::SquareIcon:
                 sh.DrawSquare(drawRect, dc);
                 break;
+            case IconShape::AsteriskIcon:
+                sh.DrawAsterisk(drawRect, dc);
+                break;
+            case IconShape::PlusIcon:
+                sh.DrawPlus(drawRect, dc);
+                break;
+            case IconShape::TriangleUpwardIcon:
+                sh.DrawUpwardTriangle(drawRect, dc);
+                break;
+            case IconShape::TriangleDownwardIcon:
+                sh.DrawDownwardTriangle(drawRect, dc);
+                break;
+            case IconShape::TriangleRightIcon:
+                sh.DrawRightTriangle(drawRect, dc);
+                break;
+            case IconShape::TriangleLeftIcon:
+                sh.DrawLeftTriangle(drawRect, dc);
+                break;
+            case IconShape::DiamondIcon:
+                sh.DrawDiamond(drawRect, dc);
+                break;
             case IconShape::BoxPlotIcon:
                 sh.DrawBoxPlot(drawRect, dc);
                 break;
@@ -150,13 +171,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawCircularSign(const wxRect rect, wxDC& dc)
         {
-        const auto radius =
-            safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2);
         wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
         wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
 
-        const auto circleCenter = rect.GetLeftTop() +
-            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
+        const auto radius = GetRadius(rect);
+        const auto circleCenter = GetMidPoint(rect);
 
         dc.DrawCircle(circleCenter, radius);
 
@@ -344,8 +363,145 @@ namespace Wisteria::GraphItems
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
         wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
-        dc.DrawCircle(rect.GetLeftTop() + wxPoint(rect.GetWidth()/2, rect.GetHeight()/2),
-                      std::min(rect.GetWidth(), rect.GetHeight()) / 2);
+        dc.DrawCircle(GetMidPoint(rect), GetRadius(rect));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawDiamond(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 4> points;
+        points[0] = midPoint + wxPoint(0, -iconRadius);
+        points[1] = midPoint + wxPoint(iconRadius, 0);
+        points[2] = midPoint + wxPoint(0, iconRadius);
+        points[3] = midPoint + wxPoint(-iconRadius, 0);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawUpwardTriangle(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points;
+        points[0] = midPoint + wxPoint(0, -iconRadius);
+        points[1] = midPoint + wxPoint(-iconRadius, iconRadius);
+        points[2] = midPoint + wxPoint(iconRadius, iconRadius);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawDownwardTriangle(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points;
+        points[0] = midPoint + wxPoint(0, iconRadius);
+        points[1] = midPoint + wxPoint(-iconRadius, -iconRadius);
+        points[2] = midPoint + wxPoint(iconRadius, -iconRadius);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawRightTriangle(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points;
+        points[0] = midPoint + wxPoint(iconRadius, 0);
+        points[1] = midPoint + wxPoint(-iconRadius, iconRadius);
+        points[2] = midPoint + wxPoint(-iconRadius, -iconRadius);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawLeftTriangle(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points;
+        points[0] = midPoint + wxPoint(-iconRadius, 0);
+        points[1] = midPoint + wxPoint(iconRadius, iconRadius);
+        points[2] = midPoint + wxPoint(iconRadius, -iconRadius);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            {
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
+            }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+
+        dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
+                    wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
+        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
+                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
+        dc.DrawLine(wxPoint(midPoint + wxPoint(iconRadius, iconRadius)),
+                    wxPoint(wxPoint(midPoint + wxPoint(-iconRadius, -iconRadius))));
+        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, iconRadius)),
+                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, -iconRadius))));
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPlus(wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            {
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
+            }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+
+        dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
+                    wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
+        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
+                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
         }
 
     //---------------------------------------------------

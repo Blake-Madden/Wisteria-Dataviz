@@ -308,7 +308,6 @@ namespace Wisteria::GraphItems
                 { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
             wxDCPenChanger pc(dc, scaledPen);
             const auto boundingBox = GetBoundingBox(dc);
-            auto boxRect = boundingBox;
             const auto midPoint = wxPoint(boundingBox.GetLeftTop()+(boundingBox.GetSize()/2));
             const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
             wxPoint polygonPoints[6];
@@ -336,59 +335,25 @@ namespace Wisteria::GraphItems
                                 ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
                     break;
                 case IconShape::TriangleUpwardIcon:
-                    polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);
-                    polygonPoints[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-                    polygonPoints[2] = midPoint + wxPoint(iconRadius, iconRadius);
-                    dc.DrawPolygon(3, polygonPoints);
+                    sh.DrawUpwardTriangle(boundingBox, dc);
                     break;
                 case IconShape::TriangleDownwardIcon:
-                    polygonPoints[0] = midPoint + wxPoint(0, iconRadius);
-                    polygonPoints[1] = midPoint + wxPoint(-iconRadius, -iconRadius);
-                    polygonPoints[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-                    dc.DrawPolygon(3, polygonPoints);
+                    sh.DrawDownwardTriangle(boundingBox, dc);
                     break;
                 case IconShape::TriangleRightIcon:
-                    polygonPoints[0] = midPoint + wxPoint(iconRadius, 0);
-                    polygonPoints[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-                    polygonPoints[2] = midPoint + wxPoint(-iconRadius, -iconRadius);
-                    dc.DrawPolygon(3, polygonPoints);
+                    sh.DrawRightTriangle(boundingBox, dc);
                     break;
                 case IconShape::TriangleLeftIcon:
-                    polygonPoints[0] = midPoint + wxPoint(-iconRadius, 0);
-                    polygonPoints[1] = midPoint + wxPoint(iconRadius, iconRadius);
-                    polygonPoints[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-                    dc.DrawPolygon(3, polygonPoints);
+                    sh.DrawLeftTriangle(boundingBox, dc);
                     break;
                 case IconShape::DiamondIcon:
-                    polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);
-                    polygonPoints[1] = midPoint + wxPoint(iconRadius, 0);
-                    polygonPoints[2] = midPoint + wxPoint(0, iconRadius);
-                    polygonPoints[3] = midPoint + wxPoint(-iconRadius, 0);
-                    dc.DrawPolygon(4, polygonPoints);
+                    sh.DrawDiamond(boundingBox, dc);
                     break;
-                case IconShape::CrossIcon:
-                    {
-                    wxDCPenChanger dpc2(dc, wxPen(wxPenInfo(dc.GetBrush().GetColour(),
-                                        dc.GetPen().GetWidth() * 2)));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
-                                wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
-                                wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
-                    }
+                case IconShape::PlusIcon:
+                    sh.DrawPlus(boundingBox, dc);
                     break;
                 case IconShape::AsteriskIcon:
-                    {
-                    wxDCPenChanger dpc2(dc, wxPen(wxPenInfo(dc.GetBrush().GetColour(),
-                                        dc.GetPen().GetWidth() * 2)));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
-                        wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
-                        wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(iconRadius, iconRadius)),
-                        wxPoint(wxPoint(midPoint + wxPoint(-iconRadius, -iconRadius))));
-                    dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, iconRadius)),
-                        wxPoint(wxPoint(midPoint + wxPoint(iconRadius, -iconRadius))));
-                    }
+                    sh.DrawAsterisk(boundingBox, dc);
                     break;
                 case IconShape::HexagonIcon:
                     polygonPoints[0] = midPoint + wxPoint(-iconRadius/2, -iconRadius);
@@ -540,7 +505,7 @@ namespace Wisteria::GraphItems
                         }
                     break;
                 case IconShape::BoxPlotIcon:
-                    sh.DrawBoxPlot(boxRect, dc);
+                    sh.DrawBoxPlot(boundingBox, dc);
                     break;
                 case IconShape::ImageIcon:
                     if (m_iconImage && m_iconImage->IsOk())
@@ -556,8 +521,7 @@ namespace Wisteria::GraphItems
                         }
                     break;
                 default:
-                    dc.DrawCircle(GetBoundingBox(dc).GetLeftTop()+(GetBoundingBox(dc).GetSize()/2),
-                                  ScaleToScreenAndCanvas(GetRadius()));
+                    sh.DrawCircle(boundingBox, dc);
                 };
             }
         if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())

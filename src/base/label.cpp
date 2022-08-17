@@ -840,59 +840,25 @@ namespace Wisteria::GraphItems
                         sh.DrawBoxPlot(boxRect, dc);
                         break;
                     case IconShape::TriangleUpwardIcon:
-                        polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);
-                        polygonPoints[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-                        polygonPoints[2] = midPoint + wxPoint(iconRadius, iconRadius);
-                        dc.DrawPolygon(3, polygonPoints);
+                        sh.DrawUpwardTriangle(boxRect, dc);
                         break;
                     case IconShape::TriangleDownwardIcon:
-                        polygonPoints[0] = midPoint + wxPoint(0, iconRadius);
-                        polygonPoints[1] = midPoint + wxPoint(-iconRadius, -iconRadius);
-                        polygonPoints[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-                        dc.DrawPolygon(3, polygonPoints);
+                        sh.DrawDownwardTriangle(boxRect, dc);
                         break;
                     case IconShape::TriangleRightIcon:
-                        polygonPoints[0] = midPoint + wxPoint(iconRadius, 0);
-                        polygonPoints[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-                        polygonPoints[2] = midPoint + wxPoint(-iconRadius, -iconRadius);
-                        dc.DrawPolygon(3, polygonPoints);
+                        sh.DrawRightTriangle(boxRect, dc);
                         break;
                     case IconShape::TriangleLeftIcon:
-                        polygonPoints[0] = midPoint + wxPoint(-iconRadius, 0);
-                        polygonPoints[1] = midPoint + wxPoint(iconRadius, iconRadius);
-                        polygonPoints[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-                        dc.DrawPolygon(3, polygonPoints);
+                        sh.DrawLeftTriangle(boxRect, dc);
                         break;
                     case IconShape::DiamondIcon:
-                        polygonPoints[0] = midPoint + wxPoint(0, -iconRadius);
-                        polygonPoints[1] = midPoint + wxPoint(iconRadius, 0);
-                        polygonPoints[2] = midPoint + wxPoint(0, iconRadius);
-                        polygonPoints[3] = midPoint + wxPoint(-iconRadius, 0);
-                        dc.DrawPolygon(4, polygonPoints);
+                        sh.DrawDiamond(boxRect, dc);
                         break;
-                    case IconShape::CrossIcon:
-                        {
-                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(GetBrush().GetColour(),
-                                                     GetPen().GetWidth() * 2)));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
-                        }
+                    case IconShape::PlusIcon:
+                        sh.DrawPlus(boxRect, dc);
                         break;
                     case IconShape::AsteriskIcon:
-                        {
-                        wxDCPenChanger dpc(dc, wxPen(wxPenInfo(GetBrush().GetColour(),
-                                           GetPen().GetWidth() * 2)));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(iconRadius, iconRadius)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(-iconRadius, -iconRadius))));
-                        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, iconRadius)),
-                                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, -iconRadius))));
-                        }
+                        sh.DrawAsterisk(boxRect, dc);
                         break;
                     case IconShape::HexagonIcon:
                         polygonPoints[0] = midPoint + wxPoint(-iconRadius/2, -iconRadius);

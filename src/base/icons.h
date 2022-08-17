@@ -57,7 +57,7 @@ namespace Wisteria::Icons
         TriangleRightIcon,             /*!< A triangle pointing right.*/
         TriangleLeftIcon,              /*!< A triangle pointing left.*/
         DiamondIcon,                   /*!< A diamond.*/
-        CrossIcon,                     /*!< A cross.*/
+        PlusIcon,                      /*!< A plus sign.*/
         AsteriskIcon,                  /*!< An asterisk.*/
         HexagonIcon,                   /*!< A hexagon.*/
         BoxPlotIcon,                   /*!< A box & whisker plot.*/
@@ -206,7 +206,7 @@ namespace Wisteria::Icons
                                             IconShape::DiamondIcon,
                                             IconShape::TriangleUpwardIcon,
                                             IconShape::TriangleDownwardIcon,
-                                            IconShape::CrossIcon,
+                                            IconShape::PlusIcon,
                                             IconShape::AsteriskIcon,
                                             IconShape::TriangleRightIcon,
                                             IconShape::TriangleLeftIcon })
