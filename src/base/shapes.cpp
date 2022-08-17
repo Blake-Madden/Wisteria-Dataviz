@@ -80,6 +80,28 @@ namespace Wisteria::GraphItems
         
         drawRect.SetTopLeft(shapeTopLeftCorner);
 
+        Draw(drawRect, dc);        
+
+        // draw the outline
+        if (IsSelected())
+            {
+            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
+            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
+            dc.DrawRectangle(GetBoundingBox(dc));
+            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+                {
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
+                                       wxPENSTYLE_DOT));
+                dc.DrawRectangle(drawRect);
+                }
+            }
+
+        return bBox;
+        }
+
+    //---------------------------------------------------
+    void Shape::Draw(const wxRect& drawRect, wxDC& dc) const
+        {
         ShapeRenderer sh(GetGraphItemInfo());
 
         switch (m_shape)
@@ -148,22 +170,6 @@ namespace Wisteria::GraphItems
                 sh.DrawImage(drawRect, dc, m_iconImage);
                 break;
             }
-
-        // draw the outline
-        if (IsSelected())
-            {
-            wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
-            wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
-            dc.DrawRectangle(GetBoundingBox(dc));
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
-                {
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
-                                       wxPENSTYLE_DOT));
-                dc.DrawRectangle(drawRect);
-                }
-            }
-
-        return bBox;
         }
 
     //---------------------------------------------------

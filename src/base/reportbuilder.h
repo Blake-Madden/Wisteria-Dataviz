@@ -15,6 +15,7 @@
 #include "canvas.h"
 #include "commonaxisbuilder.h"
 #include "colorbrewer.h"
+#include "fillableshape.h"
 #include "../data/subset.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/piechart.h"
@@ -125,6 +126,9 @@ namespace Wisteria
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);
 
         [[nodiscard]] std::shared_ptr<GraphItems::Shape> LoadShape(
+                        const wxSimpleJSON::Ptr_t& shapeNode);
+
+        [[nodiscard]] std::shared_ptr<GraphItems::FillableShape> LoadFillableShape(
                         const wxSimpleJSON::Ptr_t& shapeNode);
 
         /// @brief Loads properties from a JSON node into an axis.

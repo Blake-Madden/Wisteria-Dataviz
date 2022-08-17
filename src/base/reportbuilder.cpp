@@ -165,6 +165,11 @@ namespace Wisteria
                                                 canvas->SetFixedObject(currentRow, currentColumn,
                                                     LoadShape(item));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"fillable-shape") == 0)
+                                                {
+                                                canvas->SetFixedObject(currentRow, currentColumn,
+                                                    LoadFillableShape(item));
+                                                }
                                             // explicitly null item is a placeholder,
                                             // or possibly a blank row that will be consumed by the
                                             // previous row to make it twice as tall as others
@@ -1150,6 +1155,49 @@ namespace Wisteria
             throw std::runtime_error(
                 _(L"Variables not defined for line plot.").ToUTF8());
             }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<GraphItems::FillableShape>
+        ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode)
+        {
+        const auto loadedShape = ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
+        if (!loadedShape.has_value())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: unknown icon for fillable shape."),
+                    shapeNode->GetProperty(L"icon")->GetValueString()).ToUTF8());
+            }
+        
+        wxSize sz(32, 32);
+        const auto sizeNode = shapeNode->GetProperty(L"size");
+        if (sizeNode->IsOk())
+            {
+            sz.x = sizeNode->GetProperty(L"width")->GetValueNumber(32);
+            sz.y = sizeNode->GetProperty(L"height")->GetValueNumber(32);
+            }
+
+        wxPen pen(*wxBLACK_PEN);
+        LoadPen(shapeNode->GetProperty(L"pen"), pen);
+
+        wxBrush brush(*wxWHITE_BRUSH);
+        LoadBrush(shapeNode->GetProperty(L"brush"), brush);
+
+        auto sh = std::make_shared<FillableShape>(
+            GraphItemInfo().Anchoring(Anchoring::TopLeftCorner).
+            Pen(pen).Brush(brush),
+            loadedShape.value(), sz,
+            shapeNode->GetProperty(L"fill-percent")->GetValueNumber(0.5));
+        // center by default, but allow LoadItems (below) to override that
+        // if client asked for something else
+        sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+        sh->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+
+        LoadItem(shapeNode, sh);
+
+        // fit the column area to this shape
+        sh->FitContentWidthToCanvas(true);
+        return sh;
         }
 
     //---------------------------------------------------

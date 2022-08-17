@@ -7,6 +7,7 @@ SET(WISTERIA_SRC
     src/base/colorbrewer.cpp
     src/base/commonaxisbuilder.cpp
     src/base/graphitems.cpp
+    src/base/fillableshape.cpp
     src/base/image.cpp
     src/base/label.cpp
     src/base/lines.cpp

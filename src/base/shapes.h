@@ -214,7 +214,13 @@ namespace Wisteria::GraphItems
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/
         wxRect Draw(wxDC& dc) const override;
-    private:
+    protected:
+        /** @brief Draws the shape onto the given DC within a given rect.
+            @details This is the main drawing routine and should be used by derived classes.
+            @param drawRect The rect to draw within.
+            @param dc The DC to render onto.
+            @returns The box that the shape is being drawn in.*/
+        void Draw(const wxRect& drawRect, wxDC& dc) const;
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
@@ -223,6 +229,7 @@ namespace Wisteria::GraphItems
             @param yToMove the amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) noexcept final
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
+    private:
         /** @returns @c true if the given point is inside of the shape.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final

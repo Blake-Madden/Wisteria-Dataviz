@@ -234,6 +234,16 @@ Properties for @c "common-axis" nodes:
 - @c "common-perpendicular-axis": if @c "axis-type" is @c "bottom-x" and this is @c true,
      then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
 
+## Fillable Shape {#fillable-shape-properties}
+Properties for @c "fillable-shape" nodes:
+- @c "icon": a string specifying the icon to draw the shape as.
+- @c "pen": the pen to draw with, which includes [pen](#pen-properties) properties.
+- @c "brush": the pen to brush with, which includes [brush](#brush-properties) properties.
+- @c "size": the size of the shape, which contains the following properties:
+  - @c "width": the width.
+  - @c "height": the height.
+- @c "fill-percent": the percent to fill the shape, which is a number between @c 0.0 and @c 1.0.
+
 ## Image {#image-properties}
 Properties for @c "image" nodes:
 - @c "path": the file path of the image to load.
@@ -343,6 +353,9 @@ Properties for @c "shape" nodes:
 - @c "icon": a string specifying the icon to draw the shape as.
 - @c "pen": the pen to draw with, which includes [pen](#pen-properties) properties.
 - @c "brush": the pen to brush with, which includes [brush](#brush-properties) properties.
+- @c "size": the size of the shape, which contains the following properties:
+  - @c "width": the width.
+  - @c "height": the height.
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
