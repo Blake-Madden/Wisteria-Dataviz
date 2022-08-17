@@ -119,22 +119,45 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
         void DrawLeftTriangle(wxRect rect, wxDC& dc);
+        /// @brief Draws a hexagon.
+        /// @param rect The area to draw the hexagon within.
+        /// @param dc The DC to draw to.
+        void DrawHexagon(wxRect rect, wxDC& dc);
+        /// @brief Draws a right-pointing arrow.
+        /// @param rect The area to draw the arrow within.
+        /// @param dc The DC to draw to.
+        void DrawRightArrow(wxRect rect, wxDC& dc);
+        /// @brief Draws a warning road sign.
+        /// @param rect The area to draw the sign within.
+        /// @param dc The DC to draw to.
+        void DrawWarningRoadSign(wxRect rect, wxDC& dc);
+        /// @brief Draws a "Go" road sign.
+        /// @param rect The area to draw the sign within.
+        /// @param dc The DC to draw to.
+        void DrawGoSign(wxRect rect, wxDC& dc);
+        /// @brief Draws a geo marker.
+        /// @param rect The area to draw the marker within.
+        /// @param dc The DC to draw to.
+        void DrawGeoMarker(wxRect rect, wxDC& dc);
+        /// @brief Draws an image.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        /// @param img The image to draw.
+        void DrawImage(wxRect rect, wxDC& dc, const wxBitmapBundle* img);
         /// @}
     private:
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
+        /// @note @c percentFromLeft can be negative if using it for Bezier control points
+        ///     that need to go a little outside of the rect.
         [[nodiscard]] double GetXPosFromLeft(const wxRect rect,
                                              const double percentFromLeft) noexcept
             {
-            wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
-                         L"Percent should be between 0.0 and 1.0!");
             return rect.GetLeft() + (rect.GetWidth() * percentFromLeft);
             };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]] double GetYPosFromTop(const wxRect rect,
                                             const double percentFromLeft) noexcept
             {
-            wxASSERT_MSG(percentFromLeft >= 0.0 && percentFromLeft <= 1.0,
-                         L"Percent should be between 0.0 and 1.0!");
             return rect.GetTop() + (rect.GetHeight() * percentFromLeft);
             };
         [[nodiscard]] double GetScaling() const noexcept
@@ -159,37 +182,42 @@ namespace Wisteria::GraphItems
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
             { return value * GetScaling() * GetDPIScaleFactor(); }
 
+        [[nodiscard]] double DownscaleFromScreenAndCanvas(const double value) const noexcept
+            { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
+
         GraphItemInfo m_graphInfo;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
         };
 
-    /** @brief Draws a shape on a canvas.
-        @todo Only a few icons are currently supported.*/
-    class Shape final : public GraphItemBase
+    /** @brief Draws a shape onto a canvas.*/
+    class Shape : public GraphItemBase
         {
     public:
          /** @brief Constructor.
              @param itemInfo Base information for the shape.
              @param shape The icon shape to draw.
-             @param sz The size of the shape (in DIPs).*/
+             @param sz The size of the shape (in DIPs).
+             @param img An image to use for the point if point is using IconShape::ImageIcon.*/
         Shape(const GraphItems::GraphItemInfo& itemInfo,
               const Icons::IconShape shape,
-              const wxSize sz) :
-            GraphItemBase(itemInfo), m_shape(shape), m_shapeSizeDIPs(sz), m_sizeDIPs(sz)
+              const wxSize sz,
+              const wxBitmapBundle* img = nullptr) :
+            GraphItemBase(itemInfo), m_shape(shape), m_shapeSizeDIPs(sz),
+            m_sizeDIPs(sz), m_iconImage(img)
             {}
-    private:
-        /** @brief Draws the shape onto the given DC.
-            @param dc The DC to render onto.
-            @returns The box that the shape is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
-        /// @returns The rectangle on the canvas where the shape would fit in.
-        /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
             @param parentScaling This parameter is ignored.*/
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final;
+        /** @brief Draws the shape onto the given DC.
+            @param dc The DC to render onto.
+            @returns The box that the shape is being drawn in.*/
+        wxRect Draw(wxDC& dc) const override;
+    private:
+        /// @returns The rectangle on the canvas where the shape would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Moves the shaoe by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
@@ -203,6 +231,7 @@ namespace Wisteria::GraphItems
         wxSize m_shapeSizeDIPs{ 0, 0 };
         wxSize m_sizeDIPs{ 0, 0 };
         Icons::IconShape m_shape;
+        const wxBitmapBundle* m_iconImage{ nullptr };
         };
     };
 

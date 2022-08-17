@@ -1765,7 +1765,7 @@ namespace Wisteria
             /// @returns The scaled size.
             [[nodiscard]] wxSize ScaleToScreenAndCanvas(const wxSize sz) const noexcept
                 { return sz * GetScaling() * GetDPIScaleFactor(); }
-            /// @brief Takes a pixel value that has been scaled from the screen DPI
+            /// @brief Takes a DIP value that has been scaled from the screen DPI
             ///     and parent canvas scaling and converts it back to its base DIP.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The downscaled value.

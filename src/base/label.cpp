@@ -744,209 +744,93 @@ namespace Wisteria::GraphItems
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
-                // object that can handle drawing various shapes for the icons.
-                ShapeRenderer sh(GraphItemInfo().
-                    Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen()).
-                    Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
-                    Scaling(GetScaling()).
-                    DPIScaling(GetDPIScaleFactor()));
-                // draw the current shape now
-                switch (iconPos->m_shape)
+                // icons only relavant to legends that shape renderer doesn't handle
+                if (iconPos->m_shape == IconShape::HorizontalSeparator ||
+                    iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
+                    iconPos->m_shape == IconShape::ImageWholeLegend ||
+                    iconPos->m_shape == IconShape::ColorGradientIcon)
                     {
-                    case IconShape::BlankIcon:
-                        break;
-                    case IconShape::HorizontalLineIcon:
-                        sh.DrawHorizontalLine(boxRect, dc);
-                        break;
-                    case IconShape::ArrowRightIcon:
-                        GraphItems::Polygon::DrawArrow(dc,
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(iconMiddleX-(iconRadius)), middleOfCurrentRow),
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint(std::ceil(iconMiddleX+(iconRadius)), middleOfCurrentRow),
-                            ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
-                        break;
-                    case IconShape::WarningRoadSign:
+                    switch (iconPos->m_shape)
                         {
-                        wxDCPenChanger pc4(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
-                        const auto circleCenter = contentBoundingBox.GetLeftTop() +
-                            wxPoint(iconMiddleX, middleOfCurrentRow);
-                        polygonPoints[0] = circleCenter + wxPoint(0, -iconRadius);
-                        polygonPoints[1] = circleCenter + wxPoint(iconRadius, 0);
-                        polygonPoints[2] = circleCenter + wxPoint(0, iconRadius);
-                        polygonPoints[3] = circleCenter + wxPoint(-iconRadius, 0);
-                        dc.DrawPolygon(4, polygonPoints);
-                        // ! label
-                        Label bangLabel(GraphItemInfo(L"!").Pen(wxNullPen).
-                            AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
-                            LabelAlignment(TextAlignment::Centered).
-                            DPIScaling(GetDPIScaleFactor()));
-                        bangLabel.SetFontColor(*wxBLACK);
-                        bangLabel.SetBoundingBox(
-                            wxRect(circleCenter - wxPoint(iconMiddleX, iconMiddleX),
-                                   wxSize(iconAreaWidth, iconAreaWidth)),
-                            dc, GetScaling());
-                        bangLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-                        bangLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-                        bangLabel.Draw(dc);
-                        }
-                        break;
-                    case IconShape::GoRoadSign:
-                        sh.GetGraphItemInfo().Text(_(L"GO"));
-                        sh.DrawCircularSign(wxRect(contentBoundingBox.GetTopLeft() +
-                                                   wxPoint(iconMiddleX, middleOfCurrentRow),
-                            wxSize(0, 0)).Inflate(DownscaleFromScreenAndCanvas(iconAreaWidth * 0.5)),
-                            dc);
-                        break;
-                    case IconShape::SunIcon:
-                        sh.DrawSun(boxRect, dc);
-                        break;
-                    case IconShape::FlowerIcon:
-                        sh.DrawFlower(boxRect, dc);
-                        break;
-                    case IconShape::FallLeafIcon:
-                        sh.DrawFallLeaf(boxRect, dc);
-                        break;
-                    case IconShape::LocationMarker:
-                        dc.DrawCircle(contentBoundingBox.GetTopLeft() +
-                            wxPoint(iconMiddleX, middleOfCurrentRow),
-                            iconRadius);
-                        // inner ring
-                            {
-                            wxDCPenChanger pc4(dc,
-                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
-                            wxDCBrushChanger bc3(dc,
-                                ColorContrast::ShadeOrTint(GetBrush().GetColour(), 0.4));
-                            dc.DrawCircle(contentBoundingBox.GetLeftTop() +
-                                wxPoint(iconMiddleX, middleOfCurrentRow),
-                                iconRadius * 0.5);
-                            }
-                        // center (1/3 the size of outer ring)
-                            {
-                            wxDCPenChanger pc4(dc, *wxWHITE_PEN);
-                            wxDCBrushChanger bc3(dc, *wxWHITE_BRUSH);
-                            dc.DrawCircle(contentBoundingBox.GetLeftTop() +
-                                wxPoint(iconMiddleX, middleOfCurrentRow),
-                                iconRadius * 0.33);
-                            }
-                        break;
-                    case IconShape::CircleIcon:
-                        sh.DrawCircle(boxRect, dc);
-                        break;
-                    case IconShape::SquareIcon:
-                        sh.DrawSquare(boxRect, dc);
-                        break;
-                    case IconShape::BoxPlotIcon:
-                        sh.DrawBoxPlot(boxRect, dc);
-                        break;
-                    case IconShape::TriangleUpwardIcon:
-                        sh.DrawUpwardTriangle(boxRect, dc);
-                        break;
-                    case IconShape::TriangleDownwardIcon:
-                        sh.DrawDownwardTriangle(boxRect, dc);
-                        break;
-                    case IconShape::TriangleRightIcon:
-                        sh.DrawRightTriangle(boxRect, dc);
-                        break;
-                    case IconShape::TriangleLeftIcon:
-                        sh.DrawLeftTriangle(boxRect, dc);
-                        break;
-                    case IconShape::DiamondIcon:
-                        sh.DrawDiamond(boxRect, dc);
-                        break;
-                    case IconShape::PlusIcon:
-                        sh.DrawPlus(boxRect, dc);
-                        break;
-                    case IconShape::AsteriskIcon:
-                        sh.DrawAsterisk(boxRect, dc);
-                        break;
-                    case IconShape::HexagonIcon:
-                        polygonPoints[0] = midPoint + wxPoint(-iconRadius/2, -iconRadius);
-                        polygonPoints[1] = midPoint + wxPoint(-iconRadius, 0);
-                        polygonPoints[2] = midPoint + wxPoint(-iconRadius/2, iconRadius);
-                        polygonPoints[3] = midPoint + wxPoint(iconRadius/2, iconRadius);
-                        polygonPoints[4] = midPoint + wxPoint(iconRadius, 0);
-                        polygonPoints[5] = midPoint + wxPoint(iconRadius/2, -iconRadius);
-                        dc.DrawPolygon(6, polygonPoints);
-                        break;
-                    case IconShape::ImageIcon:
-                        if (iconPos->m_img.IsOk())
-                            {
-                            const auto downScaledSize =
-                                geometry::calculate_downscaled_size(
-                                    std::make_pair<double, double>(iconPos->m_img.GetWidth(),
-                                                                    iconPos->m_img.GetHeight()),
-                                    std::make_pair(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()),
-                                                    static_cast<double>(averageLineHeight)));
-                            wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first, downScaledSize.second,
-                                                                     wxIMAGE_QUALITY_HIGH);
-                            dc.DrawBitmap(wxBitmap(scaledImg),contentBoundingBox.GetTopLeft() +
-                                          wxPoint(0, middleOfCurrentRow-(scaledImg.GetHeight()/2)));
-                            }
-                        break;
-                    // Horizontal separators
-                    //----------------------
-                    case IconShape::HorizontalSeparator:
-                        dc.DrawLine(contentBoundingBox.GetTopLeft() +
-                            wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
-                                middleOfCurrentRow));
-                        break;
-                    case IconShape::HorizontalArrowRightSeparator:
-                        GraphItems::Polygon::DrawArrow(dc,
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
-                            contentBoundingBox.GetTopLeft() +
-                            wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
-                                middleOfCurrentRow),
-                            ScaleToScreenAndCanvas(iconPos->GetArrowheadSizeDIPs()));
-                        break;
-                    // full-length icons
-                    //------------------
-                    case IconShape::ImageWholeLegend:
-                        if (iconPos->m_img.IsOk())
-                            {
-                            wxRect legendArea = contentBoundingBox;
-                            legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
-
-                            const auto downScaledSize = geometry::calculate_downscaled_size(
-                                            std::make_pair<double, double>(iconPos->m_img.GetWidth(),
-                                                                           iconPos->m_img.GetHeight()),
-                                            std::make_pair(ScaleToScreenAndCanvas(GetLeftPadding()),
-                                                legendArea.GetHeight() - yOffset -
-                                                             ScaleToScreenAndCanvas(GetTopPadding()) -
-                                                             ScaleToScreenAndCanvas(GetBottomPadding())));
-                            wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first,downScaledSize.second,
-                                                                     wxIMAGE_QUALITY_HIGH);
-                            dc.DrawBitmap(wxBitmap(scaledImg),
-                                legendArea.GetTopLeft() +
-                                wxPoint(0, ScaleToScreenAndCanvas(GetTopPadding())+yOffset));
-                            }
-                        break;
-                    case IconShape::ColorGradientIcon:
-                        if (iconPos->m_colors.size() >= 2)
-                            {
-                            // we need to see how many colors there are and draw separate gradients between each
-                            // pair, until the full spectrum is shown.
-                            wxRect legendArea = contentBoundingBox;
-                            legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
-                            legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
-                            legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
-
-                            const int chunkSections = iconPos->m_colors.size()-1;
-                            const wxCoord chunkHeight = safe_divide(legendArea.GetHeight(), chunkSections);
-                            for (size_t i = 0; i < iconPos->m_colors.size()-1; ++i)
+                        // Horizontal separators
+                        //----------------------
+                        case IconShape::HorizontalSeparator:
+                            dc.DrawLine(contentBoundingBox.GetTopLeft() +
+                                wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
+                                contentBoundingBox.GetTopLeft() +
+                                wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
+                                    middleOfCurrentRow));
+                            break;
+                        case IconShape::HorizontalArrowRightSeparator:
+                            GraphItems::Polygon::DrawArrow(dc,
+                                contentBoundingBox.GetTopLeft() +
+                                wxPoint((ScaleToScreenAndCanvas(2)), middleOfCurrentRow),
+                                contentBoundingBox.GetTopLeft() +
+                                wxPoint(contentBoundingBox.GetWidth()-((ScaleToScreenAndCanvas(2))),
+                                    middleOfCurrentRow),
+                                ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs()));
+                            break;
+                        // full-length icons
+                        //------------------
+                        case IconShape::ImageWholeLegend:
+                            if (iconPos->m_img.IsOk())
                                 {
-                                wxRect currentLegendChunk = legendArea;
-                                currentLegendChunk.SetHeight(chunkHeight);
-                                currentLegendChunk.y += chunkHeight*i;
-                                dc.GradientFillLinear(currentLegendChunk,
-                                                      iconPos->m_colors[i], iconPos->m_colors[i+1], wxDOWN);
+                                wxRect legendArea = contentBoundingBox;
+                                legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
+
+                                const auto downScaledSize = geometry::calculate_downscaled_size(
+                                                std::make_pair<double, double>(iconPos->m_img.GetWidth(),
+                                                                               iconPos->m_img.GetHeight()),
+                                                std::make_pair(ScaleToScreenAndCanvas(GetLeftPadding()),
+                                                    legendArea.GetHeight() - yOffset -
+                                                                 ScaleToScreenAndCanvas(GetTopPadding()) -
+                                                                 ScaleToScreenAndCanvas(GetBottomPadding())));
+                                wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first,downScaledSize.second,
+                                                                         wxIMAGE_QUALITY_HIGH);
+                                dc.DrawBitmap(wxBitmap(scaledImg),
+                                    legendArea.GetTopLeft() +
+                                    wxPoint(0, ScaleToScreenAndCanvas(GetTopPadding())+yOffset));
                                 }
-                            }
-                        break;
-                    };
+                            break;
+                        case IconShape::ColorGradientIcon:
+                            if (iconPos->m_colors.size() >= 2)
+                                {
+                                // we need to see how many colors there are and draw separate gradients between each
+                                // pair, until the full spectrum is shown.
+                                wxRect legendArea = contentBoundingBox;
+                                legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
+                                legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
+                                legendArea.SetWidth(ScaleToScreenAndCanvas(LegendIcon::GetIconWidthDIPs()));
+
+                                const int chunkSections = iconPos->m_colors.size()-1;
+                                const wxCoord chunkHeight = safe_divide(legendArea.GetHeight(), chunkSections);
+                                for (size_t i = 0; i < iconPos->m_colors.size()-1; ++i)
+                                    {
+                                    wxRect currentLegendChunk = legendArea;
+                                    currentLegendChunk.SetHeight(chunkHeight);
+                                    currentLegendChunk.y += chunkHeight*i;
+                                    dc.GradientFillLinear(currentLegendChunk,
+                                                          iconPos->m_colors[i], iconPos->m_colors[i+1], wxDOWN);
+                                    }
+                                }
+                            break;
+                        };
+                    }
+                else
+                    {
+                    wxBitmapBundle bmp(iconPos->m_img);
+                    Shape sh(
+                        GraphItemInfo().
+                        Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen()).
+                        Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
+                        Anchoring(Anchoring::TopLeftCorner).
+                        Scaling(GetScaling()).
+                        DPIScaling(GetDPIScaleFactor()),
+                        iconPos->m_shape, boxRect.GetSize(),
+                        iconPos->m_img.IsOk() ? &bmp : nullptr);
+                    sh.SetBoundingBox(boxRect, dc, GetScaling());
+                    sh.Draw(dc);
+                    }
                 }
             }
 

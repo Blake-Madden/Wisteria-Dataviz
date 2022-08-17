@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Shapes.h"
+#include "shapes.h"
 #include "label.h"
 #include "image.h"
 
@@ -87,6 +87,9 @@ namespace Wisteria::GraphItems
             case IconShape::BlankIcon:
                 // nothing to draw
                 break;
+            case IconShape::ArrowRightIcon:
+                sh.DrawRightArrow(drawRect, dc);
+                break;
             case IconShape::HorizontalLineIcon:
                 sh.DrawHorizontalLine(drawRect, dc);
                 break;
@@ -117,6 +120,9 @@ namespace Wisteria::GraphItems
             case IconShape::DiamondIcon:
                 sh.DrawDiamond(drawRect, dc);
                 break;
+            case IconShape::HexagonIcon:
+                sh.DrawHexagon(drawRect, dc);
+                break;
             case IconShape::BoxPlotIcon:
                 sh.DrawBoxPlot(drawRect, dc);
                 break;
@@ -128,6 +134,18 @@ namespace Wisteria::GraphItems
                 break;
             case IconShape::FallLeafIcon:
                 sh.DrawFallLeaf(drawRect, dc);
+                break;
+            case IconShape::WarningRoadSign:
+                sh.DrawWarningRoadSign(drawRect, dc);
+                break;
+            case IconShape::LocationMarker:
+                sh.DrawGeoMarker(drawRect, dc);
+                break;
+            case IconShape::GoRoadSign:
+                sh.DrawGoSign(drawRect, dc);
+                break;
+            case IconShape::ImageIcon:
+                sh.DrawImage(drawRect, dc, m_iconImage);
                 break;
             }
 
@@ -383,6 +401,235 @@ namespace Wisteria::GraphItems
         points[1] = midPoint + wxPoint(iconRadius, 0);
         points[2] = midPoint + wxPoint(0, iconRadius);
         points[3] = midPoint + wxPoint(-iconRadius, 0);
+        dc.DrawPolygon(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawImage(wxRect rect, wxDC& dc, const wxBitmapBundle* img)
+        {
+        if (img && img->IsOk())
+            {
+            const auto downScaledSize = geometry::calculate_downscaled_size(
+                std::make_pair<double, double>(img->GetDefaultSize().GetWidth(),
+                                               img->GetDefaultSize().GetHeight()),
+                std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
+            const wxBitmap scaledImg = img->GetBitmap(wxSize(downScaledSize.first,
+                                                             downScaledSize.second));
+            dc.DrawBitmap(scaledImg, rect.GetTopLeft());
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc)
+        {
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+
+        const wxRect dcRect(memDC.GetSize());
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for geo marker!");
+        if (gc)
+            {
+            wxPen scaledPen = GetGraphItemInfo().GetPen();
+            if (scaledPen.IsOk())
+                { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+
+            gc->SetPen(scaledPen);
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
+            auto marker = gc->CreatePath();
+            // bottom middle, strecthed out to both top corners
+            marker.MoveToPoint(GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, 1));
+            marker.AddCurveToPoint(
+                GetXPosFromLeft(dcRect, -.75), GetYPosFromTop(dcRect, -.25),
+                GetXPosFromLeft(dcRect, 1.75), GetYPosFromTop(dcRect, -.25),
+                GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, 1));
+
+            marker.CloseSubpath();
+            gc->FillPath(marker);
+            gc->StrokePath(marker);
+
+            // outer ring in center of head
+            wxRect topRect = dcRect;
+            topRect.SetHeight(topRect.GetHeight() * math_constants::third);
+            topRect.SetWidth(topRect.GetHeight()); // make it a square
+            topRect.SetX(topRect.GetX() +
+                ((dcRect.GetWidth() / 2) - (topRect.GetWidth() / 2)));
+            topRect.SetY(topRect.GetY() + (topRect.GetHeight() * math_constants::two_thirds));
+
+            gc->SetBrush(wxBrush(ColorContrast::ShadeOrTint(
+                GetGraphItemInfo().GetBrush().GetColour())));
+            gc->SetPen(wxPen(ColorContrast::ShadeOrTint(
+                GetGraphItemInfo().GetBrush().GetColour())));
+            gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y,
+                topRect.GetWidth(), topRect.GetHeight());
+
+            topRect.Deflate(topRect.GetWidth() * math_constants::third);
+            gc->SetBrush(*wxWHITE);
+            gc->SetPen(*wxWHITE);
+            gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y,
+                topRect.GetWidth(), topRect.GetHeight());
+
+            wxDELETE(gc);
+            }
+
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc)
+        {
+        wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
+
+        const auto iconRadius = GetRadius(rect);
+
+        // sign post
+            {
+            wxPoint pt[2] =
+                {
+                rect.GetTopLeft() +
+                    wxSize(rect.GetWidth() / 2, iconRadius),
+                // bottom
+                rect.GetBottomLeft() +
+                    wxSize(rect.GetWidth() / 2, 0)
+                };
+            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(4),
+                                                     (rect.GetWidth() / 5));
+            // white outline of sign post
+                {
+                wxDCPenChanger pc(dc,
+                    wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1)).
+                            Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            // actual sign post
+                {
+                wxDCPenChanger pc(dc,
+                    wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray),
+                        signPostWidth).Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            }
+        // sign
+            {
+            const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
+            GetGraphItemInfo().Pen(wxPen(*wxBLACK, signOutlineWidth)).
+                Brush(ColorBrewer::GetColor(Color::KellyGreen));
+
+            const auto signRect = wxRect(rect.GetLeftTop(),
+                                         wxSize(rect.GetWidth(),
+                                                rect.GetHeight() * math_constants::two_thirds));
+            GetGraphItemInfo().Text(_(L"GO"));
+            DrawCircularSign(signRect, dc);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc)
+        {
+        wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
+
+        const auto iconRadius = GetRadius(rect);
+
+        // sign post
+            {
+            wxPoint pt[2] =
+                {
+                rect.GetTopLeft() +
+                    // top of post is in the middle of the sign
+                    // so that pen cap doesn't appear above sign
+                    wxSize(rect.GetWidth() / 2, iconRadius),
+                // bottom
+                rect.GetBottomLeft() +
+                    wxSize(rect.GetWidth() / 2, 0)
+                };
+            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(4),
+                                                     (rect.GetWidth() / 5));
+            // white outline of sign post used to contrast black sign post
+            // against a possibly dark background
+                {
+                wxDCPenChanger pc(dc,
+                    wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1)).
+                            Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            // actual sign post
+                {
+                wxDCPenChanger pc(dc,
+                    wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray),
+                        signPostWidth).Cap(wxPenCap::wxCAP_BUTT)));
+                dc.DrawLine(pt[0], pt[1]);
+                }
+            }
+        // sign
+            {
+            const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
+            wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
+            const auto signHeight = rect.GetHeight() * math_constants::third;
+            const auto signRadius = std::min(signHeight, iconRadius);
+            const auto circleCenter = rect.GetLeftTop() +
+                wxSize(rect.GetWidth() / 2, signRadius);
+            std::array<wxPoint, 4> points;
+            points[0] = circleCenter + wxPoint(0, -signRadius);
+            points[1] = circleCenter + wxPoint(signRadius, 0);
+            points[2] = circleCenter + wxPoint(0, signRadius);
+            points[3] = circleCenter + wxPoint(-signRadius, 0);
+            dc.DrawPolygon(points.size(), &points[0]);
+            // ! label
+            Label bangLabel(GraphItemInfo(L"!").Pen(wxNullPen).
+                AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
+                LabelAlignment(TextAlignment::Centered).
+                DPIScaling(GetDPIScaleFactor()));
+            bangLabel.SetFontColor(*wxBLACK);
+            bangLabel.GetFont().MakeBold();
+            bangLabel.SetBoundingBox(
+                wxRect(rect.GetLeftTop(),
+                    wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::two_thirds)),
+                dc, GetScaling());
+            bangLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            bangLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+            bangLabel.Draw(dc);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        Polygon::DrawArrow(dc,
+                wxPoint(rect.GetLeft(), rect.GetTop()+rect.GetHeight()/2),
+                wxPoint(rect.GetRight(), rect.GetTop()+rect.GetHeight()/2),
+                wxSize(
+                    ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
+                    ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetHeight())) );
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawHexagon(const wxRect rect, wxDC& dc)
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 6> points;
+        points[0] = midPoint + wxPoint(-iconRadius/2, -iconRadius);
+        points[1] = midPoint + wxPoint(-iconRadius, 0);
+        points[2] = midPoint + wxPoint(-iconRadius/2, iconRadius);
+        points[3] = midPoint + wxPoint(iconRadius/2, iconRadius);
+        points[4] = midPoint + wxPoint(iconRadius, 0);
+        points[5] = midPoint + wxPoint(iconRadius/2, -iconRadius);
         dc.DrawPolygon(points.size(), &points[0]);
         }
 
