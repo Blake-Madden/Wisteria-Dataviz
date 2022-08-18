@@ -229,6 +229,8 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
 
         const auto centerPt = wxPoint(0, 0) +
             wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
@@ -247,7 +249,7 @@ namespace Wisteria::GraphItems
                 wxPoint(memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight() / 2)
                 };
             // save current transform matrix state
-            auto gm = gc->GetTransform();
+            gc->PushState();
             // move matrix to center of drawing area
             gc->Translate(centerPt.x, centerPt.y);
             // draw the sun beams, which will be the horizontal line going across the middle,
@@ -264,7 +266,7 @@ namespace Wisteria::GraphItems
                 angle += 45;
                 }
             // restore transform matrix
-            gc->SetTransform(gm);
+            gc->PopState();
             // draw the sun
             const wxRect sunRect = wxRect(memDC.GetSize()).Deflate(memDC.GetSize().GetWidth()/4);
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y,
@@ -283,6 +285,8 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
 
         const auto centerPt = wxPoint(0, 0) +
             wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
@@ -300,7 +304,7 @@ namespace Wisteria::GraphItems
                 wxSize(memDC.GetSize().GetWidth()/2, memDC.GetSize().GetHeight()/6));
             petalRect.Offset(wxPoint(0, petalRect.GetHeight() / 2));
             // save current transform matrix state
-            auto gm = gc->GetTransform();
+            gc->PushState();
             // move matrix to center of drawing area
             gc->Translate(centerPt.x, centerPt.y);
             // draw the sun beams, which will be the horizontal line going across the middle,
@@ -318,7 +322,7 @@ namespace Wisteria::GraphItems
                 angle += 45;
                 }
             // restore transform matrix
-            gc->SetTransform(gm);
+            gc->PopState();
             // draw the middle of flower
             gc->SetBrush(ColorBrewer::GetColor(Color::BabyBlue));
             const wxRect flowerRect = wxRect(memDC.GetSize()).Deflate(memDC.GetSize().GetWidth()/4);
@@ -431,6 +435,8 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
 
         const wxRect dcRect(memDC.GetSize());
 
@@ -718,24 +724,56 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc)
         {
-        wxPen scaledPen = GetGraphItemInfo().GetPen();
-        if (scaledPen.IsOk())
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
+
+        const auto centerPt = wxPoint(0, 0) +
+            wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for asterisk icon!");
+        if (gc)
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
+            wxPen scaledPen = GetGraphItemInfo().GetPen();
+            if (scaledPen.IsOk())
+                {
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
+                }
+            gc->SetPen(scaledPen);
+            // a line going from the middle of the left side to the middle of the right
+            const std::array<wxPoint2DDouble, 2> points =
+                {
+                wxPoint(0, memDC.GetSize().GetHeight() / 2),
+                wxPoint(memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight() / 2)
+                };
+            // save current transform matrix state
+            gc->PushState();
+            // move matrix to center of drawing area
+            gc->Translate(centerPt.x, centerPt.y);
+            // draw the lines, which will be the horizontal line going across the middle,
+            // but rotated 45 degrees around the center
+            double angle = 0.0;
+            while (angle < 360)
+                {
+                gc->Rotate(geometry::degrees_to_radians(angle));
+                // note that because we translated to the middle of the drawing area,
+                // we need to adjust the points of our middle line back and over to
+                // from the translated origin
+                gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
+                               points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
+                angle += 45;
+                }
+            // restore transform matrix
+            gc->PopState();
+
+            wxDELETE(gc);
             }
-        wxDCPenChanger pc(dc, scaledPen);
 
-        const auto iconRadius = GetRadius(rect);
-        const auto midPoint = GetMidPoint(rect);
-
-        dc.DrawLine(wxPoint(midPoint + wxPoint(0, -iconRadius)),
-                    wxPoint(wxPoint(midPoint + wxPoint(0, iconRadius))));
-        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, 0)),
-                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, 0))));
-        dc.DrawLine(wxPoint(midPoint + wxPoint(iconRadius, iconRadius)),
-                    wxPoint(wxPoint(midPoint + wxPoint(-iconRadius, -iconRadius))));
-        dc.DrawLine(wxPoint(midPoint + wxPoint(-iconRadius, iconRadius)),
-                    wxPoint(wxPoint(midPoint + wxPoint(iconRadius, -iconRadius))));
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
@@ -779,6 +817,8 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
 
         const wxRect dcRect(memDC.GetSize());
 
@@ -833,6 +873,8 @@ namespace Wisteria::GraphItems
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
 
         auto gc = wxGraphicsContext::Create(memDC);
         wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");

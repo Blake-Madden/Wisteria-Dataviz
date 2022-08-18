@@ -17,24 +17,37 @@ namespace Wisteria::GraphItems
     wxRect FillableShape::Draw(wxDC& dc) const
         {
         const auto drawArea = GetBoundingBox(dc);
+
+        // draw the full shape to a bitmap
         wxBitmap bmp(drawArea.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
         wxMemoryDC memDC(bmp);
-        Shape::Draw(wxRect(drawArea.GetSize()), memDC);
+        wxGCDC gdc(memDC);
+        gdc.SetBrush(*wxTRANSPARENT_BRUSH);
+        gdc.Clear();
+        Shape::Draw(wxRect(drawArea.GetSize()), gdc);
         memDC.SelectObject(wxNullBitmap);
 
-        const auto yCutOff = bmp.GetHeight() * (1.0 - m_fillPercent);
+        // if 100% "filled," then just draw the regular bitmap
+        if (compare_doubles_greater_or_equal(m_fillPercent, 1.0))
+            {
+            dc.DrawBitmap(bmp, drawArea.GetLeftTop(), true);
+            }
+        else
+            {
+            const auto yCutOff = bmp.GetHeight() * (1.0 - m_fillPercent);
 
-        auto ghostedBmp = bmp.GetSubBitmap(
-            wxSize(bmp.GetWidth(), yCutOff));
-        Image::SetOpacity(ghostedBmp, 32, true);
-        dc.DrawBitmap(ghostedBmp, drawArea.GetLeftTop(), true);
+            auto ghostedBmp = bmp.GetSubBitmap(
+                wxSize(bmp.GetWidth(), yCutOff));
+            Image::SetOpacity(ghostedBmp, 32, true);
+            dc.DrawBitmap(ghostedBmp, drawArea.GetLeftTop(), true);
 
-        auto filledBmp = bmp.GetSubBitmap(
-            wxRect(wxPoint(0, yCutOff),
-                   wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)) );
-        dc.DrawBitmap(filledBmp,
-                      drawArea.GetLeftTop() + wxPoint(0, yCutOff), true);
+            auto filledBmp = bmp.GetSubBitmap(
+                wxRect(wxPoint(0, yCutOff),
+                       wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)) );
+            dc.DrawBitmap(filledBmp,
+                          drawArea.GetLeftTop() + wxPoint(0, yCutOff), true);
+            }
 
         // draw the outline
         if (IsSelected())
