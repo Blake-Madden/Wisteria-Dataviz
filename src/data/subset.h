@@ -68,10 +68,10 @@ namespace Wisteria::Data
                 { L"Gender" },
                 { L"WEEK_NAME" }
                 }));
-         DatasetSubset dsSubset;
+         Subset dsSubset;
          // dataset with only female observations
          const auto subset =
-            dsSubset.Subset(theData,
+            dsSubset.SubsetSimple(theData,
                 ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" });
          // "subset" can now be exported or plotted
 
@@ -84,19 +84,19 @@ namespace Wisteria::Data
                 });
         @endcode
     */
-    class DatasetSubset final : public DatasetClone
+    class Subset final : public DatasetClone
         {
     public:
         /// @brief Constructor.
-        DatasetSubset() = default;
+        Subset() = default;
         /// @private
-        DatasetSubset(const DatasetClone&) = delete;
+        Subset(const DatasetClone&) = delete;
         /// @private
-        DatasetSubset(DatasetClone&&) = delete;
+        Subset(DatasetClone&&) = delete;
         /// @private
-        DatasetSubset& operator=(const DatasetClone&) = delete;
+        Subset& operator=(const DatasetClone&) = delete;
         /// @private
-        DatasetSubset& operator=(DatasetClone&&) = delete;
+        Subset& operator=(DatasetClone&&) = delete;
         /** @brief Creates a subset, based on a single criterion.
             @param fromDataset The source datasource to subset.
             @param columnFilter The criterion for subsetting, defining the column and value
@@ -106,7 +106,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::shared_ptr<Dataset> Subset(
+        [[nodiscard]] std::shared_ptr<Dataset> SubsetSimple(
             const std::shared_ptr<const Dataset>& fromDataset,
             const ColumnFilterInfo columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.

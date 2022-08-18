@@ -219,7 +219,7 @@ commentsData->ImportCSV(L"/home/dmoon/data/Comments.csv",
 Subsetting
 =============================
 
-A dataset can be subsetted using the `Wisteria::Data::DatasetSubset` class. This class's @c Subset()
+A dataset can be subsetted using the `Wisteria::Data::Subset` class. This class's @c Subset()
 method accepts a filter criterion based on a column, the value to filter with, and how to compare with
 that value. For example, the following will create a subset where it filtered a dataset on the
 column @c Gender equalling @c Female.
@@ -233,10 +233,10 @@ theData->ImportCSV(L"/home/emma/datasets/Spelling Grades.csv",
         { L"Gender" },
         { L"WEEK_NAME" }
         }));
-DatasetSubset dsSubset;
+Subset dsSubset;
 // dataset with only female observations
 const auto subset =
-    dsSubset.Subset(theData,
+    dsSubset.SubsetSimple(theData,
         ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" });
 // "subset" can now be exported or plotted
 ```

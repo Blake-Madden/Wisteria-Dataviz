@@ -230,7 +230,7 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Dataset> DatasetSubset::Subset(
+    std::shared_ptr<Dataset> Subset::SubsetSimple(
             const std::shared_ptr<const Dataset>& fromDataset,
             const ColumnFilterInfo columnFilter)
         {
@@ -260,7 +260,7 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Dataset> DatasetSubset::SubsetOr(
+    std::shared_ptr<Dataset> Subset::SubsetOr(
             const std::shared_ptr<const Dataset>& fromDataset,
             const std::vector<ColumnFilterInfo>& columnFilters)
         {
@@ -302,7 +302,7 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Dataset> DatasetSubset::SubsetAnd(
+    std::shared_ptr<Dataset> Subset::SubsetAnd(
             const std::shared_ptr<const Dataset>& fromDataset,
             const std::vector<ColumnFilterInfo>& columnFilters)
         {

@@ -894,7 +894,7 @@ namespace Wisteria
                                 _(L"Subset missing filters.").ToUTF8());
                             }
 
-                        DatasetSubset dataSubsetter;
+                        Subset dataSubsetter;
                         std::shared_ptr<Data::Dataset> dataset{ nullptr };
                         // single column filter
                         if (filterNode->IsOk())
