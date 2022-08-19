@@ -304,9 +304,18 @@ namespace Wisteria::Graphs
                 {
                 const auto oldValue = values.front();
                 const auto newValue = values.back();
-                aggCell.m_value = safe_divide(newValue-oldValue, oldValue);
-                aggCell.SetFormat(CellFormat::Percent);
-                aggCell.m_colorCodePrefix = true;
+                // if starting value is zero, then percent change is invalid
+                // since you can't divide with it
+                if (oldValue == 0 || std::isnan(oldValue) || std::isnan(newValue))
+                    {
+                    aggCell.m_value = std::numeric_limits<double>::quiet_NaN();
+                    }
+                else
+                    {
+                    aggCell.m_value = safe_divide(newValue - oldValue, oldValue);
+                    aggCell.SetFormat(CellFormat::Percent);
+                    aggCell.m_colorCodePrefix = true;
+                    }
                 }
             else if (aggInfo.m_type == AggregateType::Ratio &&
                 values.size() > 1)
