@@ -899,7 +899,7 @@ namespace Wisteria
                         // single column filter
                         if (filterNode->IsOk())
                             {
-                            dataset = dataSubsetter.Subset(
+                            dataset = dataSubsetter.SubsetSimple(
                                     foundDataset->second, loadColumnFilter(filterNode));
                             }
                         // ANDed filters
