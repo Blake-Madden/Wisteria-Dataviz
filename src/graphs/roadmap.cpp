@@ -196,7 +196,7 @@ namespace Wisteria::Graphs
             if (m_laneSepatatorStyle == LaneSeparatorStyle::DoubleLine)
                 {
                 wxPen lineSepPen = wxPen(m_roadPen.GetColour(),
-                                         m_laneSeparatorPen.GetWidth() * .33);
+                                         m_laneSeparatorPen.GetWidth() * math_constants::third);
                 auto laneSepRoadLine = std::make_shared<GraphItems::Points2D>(lineSepPen);
                 laneSepRoadLine->SetDPIScaleFactor(GetDPIScaleFactor());
                 laneSepRoadLine->GetClippingRect() = GetPlotAreaBoundingBox();

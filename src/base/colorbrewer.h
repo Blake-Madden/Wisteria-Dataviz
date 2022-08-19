@@ -722,7 +722,8 @@ namespace Wisteria::Colors
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
         ///     ranging from 0.0 to 1.0 (the lower, the darker).
-        [[nodiscard]] static wxColour Shade(wxColour color, const double minimumLuminance = 0.5f)
+        [[nodiscard]] static wxColour Shade(wxColour color,
+            const double minimumLuminance = math_constants::half)
             {
             int darkenValue{ 100 };
             while (color.GetLuminance() > std::clamp(minimumLuminance, 0.0, 1.0) &&

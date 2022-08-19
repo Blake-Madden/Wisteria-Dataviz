@@ -34,6 +34,9 @@ namespace math_constants
     /// @brief Golden ratio
     constexpr double golden_ratio = 1.618;
 
+    /// @brief Empty (i.e., 0%).
+    constexpr double empty = 0.0;
+
     /// @brief Quarter (i.e., 25%).
     constexpr double quarter = 0.25;
 
@@ -48,6 +51,9 @@ namespace math_constants
 
     /// @brief Two thirds (i.e., 66% or 2/3).
     constexpr double two_thirds = third * 2;
+
+    /// @brief Full (i.e., 100%).
+    constexpr double full = 1.0;
     }
 
 /// @returns @c true if a value is within a given range.

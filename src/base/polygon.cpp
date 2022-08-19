@@ -386,7 +386,7 @@ namespace Wisteria::GraphItems
 	    const auto vx = -uy;
 	    const auto vy = ux;
 
-	    const auto halfWidth = 0.5f * arrowHeadSize.GetWidth();
+	    const auto halfWidth = math_constants::half * arrowHeadSize.GetWidth();
 
 	    const std::array<wxPoint, 3> arrowHead
 		    {

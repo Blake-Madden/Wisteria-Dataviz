@@ -37,14 +37,14 @@ namespace Wisteria::GraphItems
               const double fillPercent,
               const wxBitmapBundle* img = nullptr) :
             Shape(itemInfo, shape, sz, img),
-            m_fillPercent(std::clamp(fillPercent, 0.0, 1.0))
+            m_fillPercent(std::clamp(fillPercent, math_constants::empty, math_constants::full))
             {}
         /** @brief Draws the shape onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
     private:
-        double m_fillPercent{ math_constants::half };
+        double m_fillPercent{ math_constants::empty };
         };
     };
 
