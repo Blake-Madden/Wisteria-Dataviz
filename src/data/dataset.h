@@ -620,7 +620,7 @@ namespace Wisteria::Data
             @param regexColumnName The name of the column containing the patterns to replace.\n
                 Any regular expressions that fail to compile will be logged and then ignored.
             @param replacementColumnName The name of the column containing the replacements.
-            @returns The map of regular expression pattherns to replace and what to replace them with.
+            @returns The map of regular expression patterns to replace and what to replace them with.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/

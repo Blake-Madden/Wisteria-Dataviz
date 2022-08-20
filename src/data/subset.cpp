@@ -34,7 +34,8 @@ namespace Wisteria::Data
             if (m_continuousColumn == fromDataset->GetContinuousColumns().cend())
                 {
                 // if not found, look for it as a categorical
-                m_categoricalColumn = fromDataset->GetCategoricalColumn(subsetCriterion.m_columnName);
+                m_categoricalColumn =
+                    fromDataset->GetCategoricalColumn(subsetCriterion.m_columnName);
                 m_columnType = ColumnType::Categorical;
                 if (m_categoricalColumn == fromDataset->GetCategoricalColumns().cend())
                     {
@@ -74,7 +75,8 @@ namespace Wisteria::Data
                 else
                     {
                     throw std::runtime_error(
-                        _(L"String value not found for categorical column filter."));
+                        wxString::Format(_(L"'%s': string value not found for "
+                                            "categorical column filter."), *val));
                     }
                 }
             else
