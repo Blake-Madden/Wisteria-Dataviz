@@ -940,6 +940,36 @@ namespace Wisteria
                                 subset->GetProperty(L"name")->GetValueString(), dataset);
                             // load any constants defined with this subset
                             LoadConstants(subset->GetProperty(L"constants"));
+
+                            auto exportPath =
+                                    subset->GetProperty(L"export-path")->GetValueString();
+                            // A project silently writing to an arbitrary file is
+                            // a security threat vector, so only allow that for builds
+                            // with DEBUG_FILE_IO explicitly set.
+                            // This should only be used for reviewing the output from a subset operation
+                            // when designing a project (in release build).
+                            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
+                                {
+                                if (exportPath.length())
+                                    {
+                                    wxFileName fn(exportPath);
+                                    if (fn.GetPath().empty())
+                                        {
+                                        fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
+                                        }                     
+                                    if (fn.GetExt().CmpNoCase(L"csv") == 0)
+                                        { dataset->ExportCSV(fn.GetFullPath()); }
+                                    else
+                                        { dataset->ExportTSV(fn.GetFullPath()); }
+                                    }
+                                }
+                            else if (exportPath.length())
+                                {
+                                // just log this (don't throw)
+                                wxLogWarning(
+                                        wxString::Format(_(L"Dataset '%s' cannot be exported "
+                                            "because debug file IO is not enabled."), dsName));
+                                }
                             }
                         }
                     }

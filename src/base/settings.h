@@ -27,8 +27,8 @@ namespace Wisteria
         - @c DEBUG_DRAW_EXP_CODE enables @ IncludeExperimentalCode.
         - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
-            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES and @c DEBUG_FILE_IO
-            are enabled. Otherwise, all debugging features are disabled.
+            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES
+            is enabled. Otherwise, all debugging features are disabled.
 
             Note that these are %Wisteria specific debugging features (e.g., bounding boxes
             being rendered). If running in debug mode, other debugging features (e.g., asserts)
@@ -52,7 +52,7 @@ namespace Wisteria
                 be wrapped in @c IncludeExperimentalCode blocks.\n
                 This is a preferred replacement for `#ifdef 0` code blocks as this
                 can easily be enabled/disabled globally
-                (based on how @c DEBUG_FILE_IO is defined).*/
+                (based on how @c DEBUG_DRAW_EXP_CODE is defined).*/
         IncludeExperimentalCode = 0x08,
         /** @brief Allows various file output options that should not be available in
                 production releases. For example, allowing configuration files to
@@ -62,7 +62,6 @@ namespace Wisteria
 
 #if wxDEBUG_LEVEL >= 2
     #define DEBUG_BOXES
-    #define DEBUG_FILE_IO
 #endif
 
     /// @brief Class for managing global library settings.
