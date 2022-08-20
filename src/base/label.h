@@ -79,18 +79,24 @@ namespace Wisteria::GraphItems
             CalcLongestLineLength();
             }
 
-        /** @brief Chop the string up so that it will fit within a bounding box.
+        /** @brief Chop the label's text up so that it will fit within a bounding box.
             @param dc The device context to measure with.
             @param boundingBoxSize The size of the bounding box to fit the text into.
             @note If the bounding box isn't tall enough to fit the text, then the text
                 will be truncated and have an ellipsis appended to it.*/
         void SplitTextToFitBoundingBox(wxDC& dc, const wxSize& boundingBoxSize);
 
-        /** @brief Splits the string into multiline chunks, with each line being around
+        /** @brief Splits the label into multiline chunks, with each line being around
              the suggested length argument.
             @details String will be split on these delimiters: spaces and hyphens.
             @param suggestedLineLength The suggested length (character count) for each new line.*/
         void SplitTextToFitLength(const size_t suggestedLineLength);
+
+        /** @brief Attempts to split the label into two lines if a logical break in the text
+                can be found.
+            @details String will be split on these delimiters: open parenthesis, open brace, or colon.
+            @returns @c true if the text was successfully split.*/
+        [[nodiscard]] bool SplitTextAuto();
 
         /** @brief Splits the text into lines containing only one character.
             @note It is recommended to set the alignment to centered for best appearance.

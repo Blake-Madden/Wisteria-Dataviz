@@ -453,8 +453,8 @@ namespace Wisteria::Graphs
         wxRect pieDrawArea = GetPlotAreaBoundingBox();
         // get 75% of the area width and height for the pie (adding space for any labels),
         // and use the smaller of the two for the pie's area
-        const auto pieHeight = (pieDrawArea.GetHeight() * 0.75);
-        const auto pieWidth = (pieDrawArea.GetWidth() * 0.75);
+        const auto pieHeight = (pieDrawArea.GetHeight() * math_constants::three_quarters);
+        const auto pieWidth = (pieDrawArea.GetWidth() * math_constants::three_quarters);
         const auto pieDimension = std::min(pieHeight, pieWidth);
         const auto widthDifference = (pieDrawArea.GetWidth() - pieDimension);
         const auto heightDifference = (pieDrawArea.GetHeight() - pieDimension);
@@ -531,12 +531,15 @@ namespace Wisteria::Graphs
                 // Note that we don't do this if it has a header because the header
                 // implies that the first line break is meaningful, so we can't
                 // arbitrarily split this text up.
-                if (compare_doubles_less(textScale, 0.75) &&
+                if (compare_doubles_less(textScale, math_constants::three_quarters) &&
                     !outerLabel->GetHeaderInfo().IsEnabled())
                     {
                     outerLabel->GetFont().SetFractionalPointSize(currentFontSize);
-                    outerLabel->SplitTextToFitLength(
-                        outerLabel->GetText().length() * math_constants::third);
+                    if (!outerLabel->SplitTextAuto())
+                        {
+                        outerLabel->SplitTextToFitLength(
+                            outerLabel->GetText().length() * math_constants::half);
+                        }
                     measureAndFitLabel(outerLabel);
                     }
                 

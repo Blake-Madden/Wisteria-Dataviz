@@ -849,6 +849,23 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    bool Label::SplitTextAuto()
+        {
+        if (const auto charPos = GetText().find_first_of(L"([:");
+            charPos != std::wstring::npos)
+            {
+            wxString splitText = GetText();
+            splitText.insert(
+                (GetText()[charPos] == L':' ? charPos+1 : charPos),
+                1, L'\n');
+            SetText(splitText);
+            return true;
+            }
+        else
+            { return false; }
+        }
+
+    //-------------------------------------------
     void Label::SplitTextToFitLength(const size_t suggestedLineLength)
         {
         if (GetText().length() < suggestedLineLength)
