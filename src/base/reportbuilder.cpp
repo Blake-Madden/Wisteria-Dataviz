@@ -53,22 +53,22 @@ namespace Wisteria
                 { reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT); }
             }
 
-        const auto datasourcesNode = json->GetProperty(L"datasources");
+        const auto datasetsNode = json->GetProperty(L"datasets");
         try
-            { LoadDatasources(datasourcesNode); }
+            { LoadDatasets(datasetsNode); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Datasource Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
+                         _(L"Datasets Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
             return reportPages;
             }
 
         try
-            { LoadValues(json->GetProperty(L"values")); }
+            { LoadConstants(json->GetProperty(L"constants")); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Values Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
+                         _(L"Constants Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
             return reportPages;
             }
 
@@ -454,16 +454,16 @@ namespace Wisteria
                 bracketsNode->GetProperty(L"style")->GetValueString().wc_str()));
 
             // if loading brackets based on the dataset
-            if (bracketsNode->GetProperty(L"datasource")->IsOk())
+            if (bracketsNode->GetProperty(L"dataset")->IsOk())
                 {
-                const wxString dsName = bracketsNode->GetProperty(L"datasource")->GetValueString();
+                const wxString dsName = bracketsNode->GetProperty(L"dataset")->GetValueString();
                 const auto foundDataset = m_datasets.find(dsName);
                 if (foundDataset == m_datasets.cend() ||
                     foundDataset->second == nullptr)
                     {
                     throw std::runtime_error(
                         wxString::Format(
-                            _(L"%s: datasource not found for axis brackets."), dsName).ToUTF8());
+                            _(L"%s: dataset not found for axis brackets."), dsName).ToUTF8());
                     }
 
                 const auto variablesNode = bracketsNode->GetProperty(L"variables");
@@ -548,7 +548,7 @@ namespace Wisteria
         if (labelNode->IsOk())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
-            label->SetText(ExpandValues(labelNode->GetProperty(L"text")->GetValueString()));
+            label->SetText(ExpandConstants(labelNode->GetProperty(L"text")->GetValueString()));
             label->GetPen() = wxNullPen;
 
             const wxColour bgcolor(
@@ -616,11 +616,11 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadValues(const wxSimpleJSON::Ptr_t& valuesNode)
+    void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode)
         {
-        if (valuesNode->IsOk())
+        if (constantsNode->IsOk())
             {
-            const auto values = valuesNode->GetValueArrayObject();
+            const auto values = constantsNode->GetValueArrayObject();
             for (const auto& value : values)
                 {
                 if (value->IsOk())
@@ -693,7 +693,7 @@ namespace Wisteria
                         }
                     }
                 }
-            // datasource or column name missing
+            // dataset or column name missing
             else
                 { return formula; }
             }
@@ -755,7 +755,7 @@ namespace Wisteria
                         }
                     }
                 }
-            // datasource or something missing
+            // dataset or something missing
             else
                 { return formula; }
             }
@@ -799,7 +799,7 @@ namespace Wisteria
                         }
                     }
                 }
-            // datasource or column name missing
+            // dataset or column name missing
             else
                 { return formula; }
             }
@@ -845,7 +845,7 @@ namespace Wisteria
                     (isDate ?
                         DatasetValueType(dt) :
                         valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                        DatasetValueType(ExpandValues(valueNode->GetValueString())) :
+                        DatasetValueType(ExpandConstants(valueNode->GetValueString())) :
                         DatasetValueType(valueNode->GetValueNumber()))
                     };
                 return cFilter;
@@ -864,31 +864,31 @@ namespace Wisteria
                 {
                 if (subset->IsOk())
                     {
-                    const wxString dsName = subset->GetProperty(L"datasource")->GetValueString();
-                    if (subset->GetProperty(L"datasource")->IsOk())
+                    const wxString dsName = subset->GetProperty(L"dataset")->GetValueString();
+                    if (subset->GetProperty(L"dataset")->IsOk())
                         {
-                        const wxString dsName = subset->GetProperty(L"datasource")->GetValueString();
+                        const wxString dsName = subset->GetProperty(L"dataset")->GetValueString();
                         const auto foundDataset = m_datasets.find(dsName);
                         if (foundDataset == m_datasets.cend() ||
                             foundDataset->second == nullptr)
                             {
                             throw std::runtime_error(
                                 wxString::Format(
-                                    _(L"%s: datasource not found for subset."), dsName).ToUTF8());
+                                    _(L"%s: dataset not found for subset."), dsName).ToUTF8());
                             }
                         const auto filterNode = subset->GetProperty(L"filter");
                         const auto filterAndNode = subset->GetProperty(L"filter-and");
                         const auto filterOrNode = subset->GetProperty(L"filter-or");
-                        const size_t validFilterTypeNode =
+                        const size_t validFilterTypeNodes =
                             (filterNode->IsOk() ? 1 : 0) +
                             (filterAndNode->IsOk() ? 1 : 0) +
                             (filterOrNode->IsOk() ? 1 : 0);
-                        if (validFilterTypeNode  > 1)
+                        if (validFilterTypeNodes  > 1)
                             {
                             throw std::runtime_error(
                                 _(L"Only one filter type allowed for a subset.").ToUTF8());
                             }
-                        else if (validFilterTypeNode == 0)
+                        else if (validFilterTypeNodes == 0)
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
@@ -935,9 +935,11 @@ namespace Wisteria
 
                         if (dataset)
                             {
-                            LoadDatasourceTransformations(subset, dataset);
+                            LoadDatasetTransformations(subset, dataset);
                             m_datasets.insert_or_assign(
                                 subset->GetProperty(L"name")->GetValueString(), dataset);
+                            // load any constants defined with this subset
+                            LoadConstants(subset->GetProperty(L"constants"));
                             }
                         }
                     }
@@ -946,7 +948,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadDatasourceTransformations(const wxSimpleJSON::Ptr_t& dsNode,
+    void ReportBuilder::LoadDatasetTransformations(const wxSimpleJSON::Ptr_t& dsNode,
         std::shared_ptr<Data::Dataset>& dataset)
         {
         if (dsNode->IsOk())
@@ -972,25 +974,25 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadDatasources(const wxSimpleJSON::Ptr_t& datasourcesNode)
+    void ReportBuilder::LoadDatasets(const wxSimpleJSON::Ptr_t& datasetsNode)
         {
-        if (datasourcesNode->IsOk())
+        if (datasetsNode->IsOk())
             {
-            auto datasources = datasourcesNode->GetValueArrayObject();
-            for (const auto& datasource : datasources)
+            auto datasets = datasetsNode->GetValueArrayObject();
+            for (const auto& datasetNode : datasets)
                 {
-                if (datasource->IsOk())
+                if (datasetNode->IsOk())
                     {
-                    const wxString dsName = datasource->GetProperty(L"name")->GetValueString();
-                    wxString path = datasource->GetProperty(L"path")->GetValueString();
-                    const wxString importer = datasource->GetProperty(L"importer")->GetValueString();
+                    const wxString dsName = datasetNode->GetProperty(L"name")->GetValueString();
+                    wxString path = datasetNode->GetProperty(L"path")->GetValueString();
+                    const wxString importer = datasetNode->GetProperty(L"importer")->GetValueString();
                     // read the variables info
                     //------------------------
                     // ID column
-                    const wxString idColumn = datasource->GetProperty(L"id-column")->GetValueString();
+                    const wxString idColumn = datasetNode->GetProperty(L"id-column")->GetValueString();
                     // date columns
                     std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
-                    const auto dateProperty = datasource->GetProperty(L"date-columns");
+                    const auto dateProperty = datasetNode->GetProperty(L"date-columns");
                     if (dateProperty->IsOk())
                         {
                         const auto dateVars = dateProperty->GetValueArrayObject();
@@ -1030,10 +1032,10 @@ namespace Wisteria
                         }
                     // continuous columns
                     std::vector<wxString> continuousVars =
-                        datasource->GetProperty(L"continuous-columns")->GetValueStringVector();
+                        datasetNode->GetProperty(L"continuous-columns")->GetValueStringVector();
                     // categorical columns
                     std::vector<Data::ImportInfo::CategoricalImportInfo> catInfo;
-                    const auto catProperty = datasource->GetProperty(L"categorical-columns");
+                    const auto catProperty = datasetNode->GetProperty(L"categorical-columns");
                     if (catProperty->IsOk())
                         {
                         const auto catVars = catProperty->GetValueArrayObject();
@@ -1096,7 +1098,7 @@ namespace Wisteria
                             ContinuousColumns(continuousVars).
                             CategoricalColumns(catInfo).
                             ContinousMDRecodeValue(
-                                datasource->GetProperty(L"continuous-md-recode-value")->
+                                datasetNode->GetProperty(L"continuous-md-recode-value")->
                                     GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
                         }
                     else if (importer.CmpNoCase(L"tsv") == 0 ||
@@ -1110,7 +1112,7 @@ namespace Wisteria
                             ContinuousColumns(continuousVars).
                             CategoricalColumns(catInfo).
                             ContinousMDRecodeValue(
-                                datasource->GetProperty(L"continuous-md-recode-value")->
+                                datasetNode->GetProperty(L"continuous-md-recode-value")->
                                     GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
                         }
                     else
@@ -1120,8 +1122,11 @@ namespace Wisteria
                                     ToUTF8());
                         }
                     
-                    LoadDatasourceTransformations(datasource, dataset);
+                    LoadDatasetTransformations(datasetNode, dataset);
                     m_datasets.insert_or_assign(dsName, dataset);
+
+                    // load any constants defined with this dataset
+                    LoadConstants(datasetNode->GetProperty(L"constants"));
                     }
                 }
             }
@@ -1132,13 +1137,13 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() ||
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found for line plot."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for line plot."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1252,13 +1257,13 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() ||
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found for categorical bar chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for categorical bar chart."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1295,13 +1300,13 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() ||
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found for pie chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for pie chart."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1421,13 +1426,13 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"datasource")->GetValueString();
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() ||
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: datasource not found for table."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for table."), dsName).ToUTF8());
             }
 
         const auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
@@ -1775,7 +1780,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::ExpandValues(wxString str) const
+    wxString ReportBuilder::ExpandConstants(wxString str) const
         {
         const wxRegEx re(L"{{([[:alnum:]\\-]+)}}");
         size_t start{ 0 }, len{ 0 };
@@ -2353,7 +2358,7 @@ namespace Wisteria
             };
 
         // in case the color is a user-defined constant in the file
-        colorStr = ExpandValues(colorStr);
+        colorStr = ExpandConstants(colorStr);
 
         // see if it is one of our defined colors
         auto foundPos = values.find(std::wstring_view(colorStr.MakeLower().wc_str()));

@@ -7,7 +7,7 @@ These reports can consist of a single page (i.e., a canvas), or a series of mult
 On each page, items such as tables, plots, notes, etc. are embedded, and the configuration file
 specifies how these items are laid out.
 
-Along with the objects on the pages, a configuration file can also define the datasources and
+Along with the objects on the pages, a configuration file can also define the datasets and
 user-defined values used by report's objects, printer settings, etc.
 
 The following details the available options for JSON configuration files.
@@ -21,13 +21,13 @@ The following details the available options for JSON configuration files.
     - @c "landscape" or @c "horizontal"
     - @c "portrait" or @c "vertical"
 
-## Datasources {#datasources-properties}
-Properties for the @c "datasources" node:
-- @c "datasources": contains an array of datasources, which are referenced by other items in the report.
-  - @c "name": the name of the datasource.\n
+## Datasets {#datasets-properties}
+Properties for the @c "datasets" node:
+- @c "datasets": contains an array of datasets, which are referenced by other items in the report.
+  - @c "name": the name of the dataset.\n
   This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
-  - @c "path": the full file path of the datasource.
-  - @c "importer": how to import the datasource.\n
+  - @c "path": the full file path of the dataset.
+  - @c "importer": how to import the dataset.\n
     This is optional and the default is to import the file based on its file extension.\n
     Available options are:
     - @c "tsv": a tab-delimited text file.
@@ -70,9 +70,12 @@ Properties for the @c "datasources" node:
     - @c "pattern": the regular expression pattern to search for.
     - @c "replacement": the replacement text. Note that capture groups are supported.
 
-## Values {#values-properties}
-Properties for the @c "values" node:
-- @c "values": contains an array of key and value pairs, which are referenced by other items in the reports.\n
+  Finally, a ["constants"](#constants-properties) section can also be loaded from within the dataset's node.
+  These constants can reference the newly loaded dataset.
+
+## Constants {#constants-properties}
+Properties for the @c "constants" node:
+- @c "constants": contains an array of key and value pairs, which are referenced by other items in the reports.\n
   Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
   titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
@@ -82,36 +85,40 @@ Properties for the @c "values" node:
     The following formulas are available:\n
     - `min(dataset, column)`:
       Returns the minimum value of the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
+      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
       - @c column is the column name from the dataset.\n
     - `max(dataset, column)`:
       Returns the maximum value of the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
+      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
       - @c column is the column name from the dataset.\n
     - `n(dataset, column)`:
       Returns the valid number of observations in the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
+      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
       - @c column is the column name from the dataset.\n
     - `n(dataset, column, groupColum, groupId)`:
       Returns the valid number of observations in the given column from the dataset, using group filtering.
-      - @c dataset is the name of the dataset (loaded from the ["datasources"](#datasources-properties) section).
+      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
       - @c column is the column name from the dataset.
       - @c groupColum is a group column to filter on.
       - @c groupId is the group ID to filter on.\n
         Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
         For example, the group ID can be a formula getting the highest label from the grouping column:\n
         `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
+  
+  Note that each dataset and subset node (within the ["datasets"](#datasets-properties) and
+  ["subsets"](#subsets-properties) sections, respectively) can contain their own @c "constants" sections
+  that reference themselves.
 
 ## Subsets {#subsets-properties}
 Properties for the @c "subsets" node:
 - @c "subsets": contains an array of subsets, which are referenced by other items in the report in the same
-     way as datasources are.\n
-     Note that these are subsets of datasets loaded from the @c "datasources" section.
-  - @c "name": the name of the subst. (This should be different from the datasource that it is subsetting;
+     way as datasets are.\n
+     Note that these are subsets of datasets loaded from the @c "datasets" section.
+  - @c "name": the name of the subst. (This should be different from the dataset that it is subsetting;
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
-  - @c "datasource": the name of the dataset that it is subsetting. This will be the name that was assigned
-    to the dataset in the ["datasources"](#datasources-properties) section.
+  - @c "dataset": the name of the dataset that it is subsetting. This will be the name that was assigned
+    to the dataset in the ["datasets"](#datasets-properties) section.
   - @c "filter": the subset filtering definition, which will contain the following:
     - @c "column": the column from the dataset to filter on.
     - @c "operator": how to compare the values from the column with the filter's value.
@@ -124,7 +131,7 @@ Properties for the @c "subsets" node:
       - @c ">=": great than or equal to
     - @c "value": the value to filter the column on. This can be a number, string, or date
          (depending on the column's data type).\n
-         Note that string values can reference constants loaded from the ["values"](#values-properties) section.
+         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section.
 
   The following transformations commands are executed in the following order:
   - @c "columns-rename": an array of column rename commands, which contain the following:
@@ -135,6 +142,9 @@ Properties for the @c "subsets" node:
     - @c "column": the categorical column to recode.
     - @c "pattern": the regular expression pattern to search for.
     - @c "replacement": the replacement text. Note that capture groups are supported.
+
+  Finally, a ["constants"](#constants-properties) section can also be loaded from within the subset's node.
+  These constants can reference the newly loaded subset.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
@@ -196,8 +206,8 @@ The @c "pages" node will contain an array of definitions for all pages, each con
     - @c "no-connection-lines"
 
   If building brackets from a dataset, use the following properties:
-  - @c "datasource": the name of the datasource to read the columns from.\n
-       Note that this datasource can be different from the datasource used for the first
+  - @c "dataset": the name of the dataset to read the columns from.\n
+       Note that this dataset can be different from the dataset used for the first
        child graph if you are wanting to use different labels. For this situation, the
        @c "value" variable should have the same scale as the child graph.
   - @c "variables": which include the following properties:
@@ -260,7 +270,7 @@ Properties for @c "image" nodes:
 Properties for @c "label" nodes:
 - @c "text": the title's text.\n
   Note that this property supports embedded formulas that can reference user-defined values loaded from the
-  ["values"](#values-properties) section.
+  ["constants"](#constants-properties) section.
 - @c "orientation": string specifying the orientation of the text.\n
   Available options are:
   - @c "vertical"
@@ -378,7 +388,7 @@ The remaining properties are executed in the following order:
 - @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
        Refer to the [position](#position-properties) properties that are available.
-  - @c "values": an array of strings to fill the row with (left-to-right).
+  - @c "constants": an array of strings to fill the row with (left-to-right).
   - @c "background": the background color of the row.
 - @c "rows-group": a numeric array representing which rows to apply label grouping to.\n
      Across each provided row, this will combine consecutive cells with the same label into one cell.
@@ -502,10 +512,10 @@ Note that brushes can be set to @c null to turn it off.
 
 ## Graphs {#graph-properties}
 Properties common to all graph items:
-- @c "datasource": if the object requires a datasource (most graphs do), then this is the name of the datasource.\n
-     Note that this is the unique name of the datasource loaded from the report's
-     ["datasources"](#datasources-properties) section, not a filepath.\n
-     Also, this is optional if the item type doesn't require a datasource (e.g., a @c Wisteria::GraphItems::Label).
+- @c "dataset": if the object requires a dataset (most graphs do), then this is the name of the dataset.\n
+     Note that this is the unique name of the dataset loaded from the report's
+     ["datasets"](#datasets-properties) section, not a filepath.\n
+     Also, this is optional if the item type doesn't require a dataset (e.g., a @c Wisteria::GraphItems::Label).
 - @c "title": the title of the graph, which contains ["label"](#label-properties) properties.
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
@@ -655,5 +665,5 @@ Properties common to all items:
 Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
 of color names available, refer to the @c Wisteria::Colors::Color enumeration.
 
-Constants defined in the ["values"](#values-properties) can also be referenced, which likewise can
+Constants defined in the ["constants"](#constants-properties) can also be referenced, which likewise can
 be named colors or hex encoded values.

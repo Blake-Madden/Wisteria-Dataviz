@@ -39,16 +39,16 @@ namespace Wisteria
         [[nodiscard]] std::vector<Canvas*> LoadConfigurationFile(
             const wxString& filePath, wxWindow* parent);
     private:
-        /// @brief Loads the datasources node into @c m_datasets.
+        /// @brief Loads the datasets node into @c m_datasets.
         /// @details These datasets are used by objects throughout the report,
         ///     referencing them by name.
-        /// @param datasourcesNode The datasources node.
-        void LoadDatasources(const wxSimpleJSON::Ptr_t& datasourcesNode);
-        /// @brief Loads the values node into @c m_values.
-        /// @details This is a key/value mape used by objects throughout the report,
+        /// @param datasetNode The datasets node.
+        void LoadDatasets(const wxSimpleJSON::Ptr_t& datasetsNode);
+        /// @brief Loads the constants node into @c m_values.
+        /// @details This is a key/value map used by objects throughout the report,
         ///     referencing them by name.
-        /// @param valuesNode The values node.
-        void LoadValues(const wxSimpleJSON::Ptr_t& valuesNode);
+        /// @param constantsNode The node containing the constants' definitions.
+        void LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode);
         /// @brief Loads the subsets node into @c m_datasets.
         /// @details These (subset) datasets are used by objects throughout the report,
         ///     referencing them by name.
@@ -196,7 +196,7 @@ namespace Wisteria
         /** @brief Loads additional transformation features and applies them to a dataset.
             @param dsNode The datasouce node that the dataset was loaded from.
             @param[in,out] dataset The dataset apply the transformations to.*/
-        [[nodiscard]] void LoadDatasourceTransformations(
+        [[nodiscard]] void LoadDatasetTransformations(
             const wxSimpleJSON::Ptr_t& dsNode,
             std::shared_ptr<Data::Dataset>& dataset);
 
@@ -229,7 +229,7 @@ namespace Wisteria
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced
                 with the user-defined values.*/
-        [[nodiscard]] wxString ExpandValues(wxString str) const;
+        [[nodiscard]] wxString ExpandConstants(wxString str) const;
         [[nodiscard]] wxString CalcFormula(const wxString& formula);
         [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula);
         [[nodiscard]] wxString CalcValidNValue(const wxString& formula);
