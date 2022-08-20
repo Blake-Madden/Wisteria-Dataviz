@@ -3,11 +3,16 @@
 /build/
 /out/
 /docs/doxygen/html/
-CMakeSettings.json
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
+# Compiler helper files
+CMakeSettings.json
+cpp.hint
 
-# any documents
+# Compiler project files
+*.kdev4
+
+# Any documents
 *.docx
 *.doc
 *.ods
@@ -16,7 +21,6 @@ CMakeSettings.json
 
 # Prerequisites
 *.d
-*.kdev4
 
 # Compiled Object files
 *.slo

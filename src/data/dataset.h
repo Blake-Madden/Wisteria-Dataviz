@@ -578,7 +578,8 @@ namespace Wisteria::Data
                 This can be useful for replacing MD with zero or even and extreme value
                 (e.g., -9999) to draw attention to missing data.
             @param recodeVal The value to replace missing data with.
-            @sa ReplacementStrings() for recoding missing data in categorical columns.*/
+            @sa ReplacementStrings() for recoding missing data in categorical columns.
+            @returns A self reference.*/
         ImportInfo& ContinousMDRecodeValue(const double recodeVal)
             {
             m_continousMDRecodeValue = recodeVal;
