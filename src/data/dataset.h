@@ -571,10 +571,23 @@ namespace Wisteria::Data
             m_idColumn = std::move(colName);
             return *this;
             }
+        /** @brief Set the value to replace missing data in continuous cells
+                during import. (The default value is NaN.)
+            @details Missing data can be either empty cells or text values in a
+                numeric column that can't be converted to a number.\n
+                This can be useful for replacing MD with zero or even and extreme value
+                (e.g., -9999) to draw attention to missing data.
+            @param recodeVal The value to replace missing data with.
+            @sa ReplacementStrings() for recoding missing data in categorical columns.*/
+        ImportInfo& ContinousMDRecodeValue(const double recodeVal)
+            {
+            m_continousMDRecodeValue = recodeVal;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
-            @details This is useful for recoding values to missing data or fixing
-                misspellings in the input data.
+            @details This is useful for recoding values to missing data,
+                missing data to a vale, or fixing misspellings in the input data.
             @par Example:
             @code
              auto commentsData = std::make_shared<Data::Dataset>();
@@ -584,7 +597,7 @@ namespace Wisteria::Data
                     }).
                 ReplacementStrings({
                     // replace cells that contain only something like
-                    // 'NA' or 'n/a'
+                    // 'NA' or 'n/a' with empty string
                     { std::make_shared<wxRegEx>(L"^[nN][/]?[aA]$"), L"" },
                     // replace 'foot ball' with 'football'
                     { std::make_shared<wxRegEx>(L"(?i)foot ball"), L"football" }
@@ -592,7 +605,8 @@ namespace Wisteria::Data
             @endcode
             @param replaceStrings The map of regular expressions to match against
                 and what to replace them with.
-            @returns A self reference.*/
+            @returns A self reference.
+            @sa ContinousMDRecodeValue() for recoding missing data in continuous columns.*/
         ImportInfo& ReplacementStrings(const RegExMap& replaceStrings)
             {
             m_textImportReplacements = replaceStrings;
@@ -625,6 +639,7 @@ namespace Wisteria::Data
         std::vector<wxString> m_continuousColumns;
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
+        double m_continousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
         };
 
     /** @brief %Dataset interface for graphs.
@@ -1005,9 +1020,9 @@ namespace Wisteria::Data
             @throws std::runtime_error If the file can't be read, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
-                                                              const wchar_t delimiter,
-                                                              const size_t rowPreviewCount = 100);
+        [[nodiscard]] ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+                                                       const wchar_t delimiter,
+                                                       const size_t rowPreviewCount = 100);
         /** @brief Imports a text file into the dataset.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
@@ -1077,6 +1092,14 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
+
+        /** @brief Set the value to replace missing data in continuous cells
+                during import. (The default value is NaN.)
+            @details Missing data can be either empty cells or text values in a
+                numeric column that can't be converted to a number.
+            @param recodeVal The value to replace missing data with.*/
+        void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
+            { m_importContinousMDRecodeValue = recodeVal; }
     private:
         /// @returns The specified continuous column.
         /// @param column The index into the list of continuous columns.
@@ -1098,14 +1121,16 @@ namespace Wisteria::Data
         /// @param column The index into the list of date columns.
         [[nodiscard]] Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
             { return m_dateColumns.at(column); }
-        [[nodiscard]] static double ConvertToDouble(const wxString& input);
-        [[nodiscard]] static GroupIdType ConvertToGroupId(const wxString& input,
-                                                          const GroupIdType mdCode);
-        [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
-                                                      const DateImportMethod method,
-                                                      const wxString& formatStr);
+        [[nodiscard]] double ConvertToDouble(const wxString& input);
+        [[nodiscard]] GroupIdType ConvertToGroupId(const wxString& input,
+                                                   const GroupIdType mdCode);
+        [[nodiscard]] wxDateTime ConvertToDate(const wxString& input,
+                                               const DateImportMethod method,
+                                               const wxString& formatStr);
 
         wxString m_name;
+
+        double m_importContinousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
 
         // actual data
         Column<wxString> m_idColumn{ L"IDS" };

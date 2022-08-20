@@ -1094,7 +1094,10 @@ namespace Wisteria
                             IdColumn(idColumn).
                             DateColumns(dateInfo).
                             ContinuousColumns(continuousVars).
-                            CategoricalColumns(catInfo));
+                            CategoricalColumns(catInfo).
+                            ContinousMDRecodeValue(
+                                datasource->GetProperty(L"continuous-md-recode-value")->
+                                    GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
                         }
                     else if (importer.CmpNoCase(L"tsv") == 0 ||
                         fileExt.CmpNoCase(L"tsv") == 0 ||
@@ -1105,7 +1108,10 @@ namespace Wisteria
                             IdColumn(idColumn).
                             DateColumns(dateInfo).
                             ContinuousColumns(continuousVars).
-                            CategoricalColumns(catInfo));
+                            CategoricalColumns(catInfo).
+                            ContinousMDRecodeValue(
+                                datasource->GetProperty(L"continuous-md-recode-value")->
+                                    GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
                         }
                     else
                         {

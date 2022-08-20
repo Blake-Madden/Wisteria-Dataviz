@@ -32,6 +32,8 @@ Properties for the @c "datasources" node:
     Available options are:
     - @c "tsv": a tab-delimited text file.
     - @c "csv": a comma-delimited text file.
+  - @c "continuous-md-recode-value": numeric value used to substitue missing data in continuous columns.\n
+    This property is optional.
   - @c "id-column": the ID column.\n
     This property is optional.
   - @c "continuous-columns": an array of continuous column names to import.\n

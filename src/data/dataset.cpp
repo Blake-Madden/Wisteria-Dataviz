@@ -166,14 +166,14 @@ namespace Wisteria::Data
     double Dataset::ConvertToDouble(const wxString& input)
         {
         if (input.empty())
-            { return std::numeric_limits<double>::quiet_NaN(); }
+            { return m_importContinousMDRecodeValue; }
         else
             {
             double val{ 0 };
             if (input.ToCDouble(&val))
                 { return val; }
             else
-                { return std::numeric_limits<double>::quiet_NaN(); }
+                { return m_importContinousMDRecodeValue; }
             }
         }
 
@@ -644,7 +644,8 @@ namespace Wisteria::Data
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
                 wxLogNull nl;
-                if (currentCell.length() && ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
+                if (currentCell.length() &&
+                    ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
@@ -730,7 +731,9 @@ namespace Wisteria::Data
             for (const auto& col : GetDateColumns())
                 {
                 currentRow.append(
-                           wrapText(col.GetValue(i).IsValid() ? col.GetValue(i).FormatISOCombined() : wxString())).
+                           wrapText(col.GetValue(i).IsValid() ?
+                               col.GetValue(i).FormatISOCombined() :
+                               wxString())).
                            append(1, delimiter);
                 }
             if (currentRow.length() && currentRow.Last() == delimiter)
@@ -766,6 +769,8 @@ namespace Wisteria::Data
         fileText.Trim(true).Trim(false);
 
         m_name = wxFileName(filePath).GetName();
+
+        SetImportContinuousMDRecodeValue(info.m_continousMDRecodeValue);
 
         std::vector<std::vector<wxString>> dataStrings;
 
@@ -833,8 +838,10 @@ namespace Wisteria::Data
             [&info](const auto& item) noexcept
                 { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
         throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
-        const std::optional<size_t> idColumnIndex = (idColumnIter != preview.get_header_names().cend()) ?
-            std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) : std::nullopt;
+        const std::optional<size_t> idColumnIndex =
+            (idColumnIter != preview.get_header_names().cend()) ?
+            std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) :
+            std::nullopt;
 
         // find the supplied date columns
         std::vector<std::optional<dateIndexInfo>> dateColumnIndices;
