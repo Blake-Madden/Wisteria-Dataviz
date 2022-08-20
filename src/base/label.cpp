@@ -844,7 +844,7 @@ namespace Wisteria::GraphItems
         {
         wxString splitText;
         for (size_t i = 0; i < GetText().length(); ++i)
-            { splitText.append(GetText().at(i)).append(L"\n"); }
+            { splitText.append(GetText().at(i)).append(L'\n'); }
         SetText(splitText);
         }
 
@@ -902,7 +902,7 @@ namespace Wisteria::GraphItems
                 {
                 fittedText.append(
                     std::wstring_view(tempStr.wc_str()).substr(0, index+1).data(), index+1).
-                    Trim(true).append(L"\n");
+                    Trim(true).append(L'\n');
                 tempStr.erase(0, index+1);
                 }
             else
