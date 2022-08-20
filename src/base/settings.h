@@ -17,26 +17,53 @@
 
 namespace Wisteria
     {
-    /// @brief Debug settings used throughout the library.
-    ///  This is a bitmask which can be used to control multiple flags.
-    /// @internal Developer Note: this is used as a bitmask, don't strongly type it.
-    /// @note These are %Wisteria specific debugging features
-    ///  (e.g., bounding boxes being rendered). If running in debug mode,
-    ///  other debugging features (e.g., asserts) will still be in effect.
+    /** @brief Debug settings used throughout the library.
+        @details This is a bitmask which can be used to control multiple flags.\n
+            The following preprocessors can be defined to control which settings are enabled.
+    
+        - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
+        - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
+        - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawExtraInformation.
+        - @c DEBUG_DRAW_EXP_CODE enables @ IncludeExperimentalCode.
+        - @c DEBUG_FILE_IO enables @ AllowFileIO.
+
+            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES and @c DEBUG_FILE_IO
+            are enabled. Otherwise, all debugging features are disabled.
+
+            Note that these are %Wisteria specific debugging features (e.g., bounding boxes
+            being rendered). If running in debug mode, other debugging features (e.g., asserts)
+            will still be in effect.
+    
+        @internal Developer Note: this is used as a bitmask, don't strongly type it.*/
     enum DebugSettings
         {
-        None = 0x00,                         /*!< No %Wisteria-specific debugging should be enabled.*/
-        DrawBoundingBoxesOnSelection = 0x01, /*!< Draw a bounding box around objects when they are selected.*/
-        DrawInformationOnSelection = 0x02,   /*!< Write additional information on the screen when an object is selected
-                                                  (e.g., the scaling value).*/
-        DrawExtraInformation = 0x04,         /*!< Draw more verbose information, even when objects aren't selected.\n
-                                                  This is only recommended when first designing a graph.*/
-        IncludeExperimentalCode = 0x08       /*!< Run experimental code.\n
-                                                  Code being used to test a new graph type during the design stage should
-                                                  be wrapped in @c IncludeExperimentalCode blocks.\n
-                                                  This is a preferred replacement for `#ifdef 0` code blocks as this
-                                                  can easily be enabled/disabled globally.*/
+        /** @brief No %Wisteria-specific debugging should be enabled.*/
+        None = 0x00,
+        /** @brief Draw a bounding box around objects when they are selected.*/
+        DrawBoundingBoxesOnSelection = 0x01,
+        /** @brief Write additional information on the screen when an object is selected
+                (e.g., the scaling value).*/
+        DrawInformationOnSelection = 0x02,
+        /** @brief Draw more verbose information, even when objects aren't selected.\n
+                This is only recommended when designing a new graph type.*/
+        DrawExtraInformation = 0x04,
+        /** @brief Run experimental code.\n
+                Code being used to test a new graph type during the design stage should
+                be wrapped in @c IncludeExperimentalCode blocks.\n
+                This is a preferred replacement for `#ifdef 0` code blocks as this
+                can easily be enabled/disabled globally
+                (based on how @c DEBUG_FILE_IO is defined).*/
+        IncludeExperimentalCode = 0x08,
+        /** @brief Allows various file output options that should not be available in
+                production releases. For example, allowing configuration files to
+                export dataset silently for debugging purposes.*/
+        AllowFileIO = 0x10
         };
+
+#if wxDEBUG_LEVEL >= 2
+    #define DEBUG_BOXES
+    #define DEBUG_FILE_IO
+#endif
 
     /// @brief Class for managing global library settings.
     class Settings
@@ -53,7 +80,7 @@ namespace Wisteria
         [[nodiscard]] static uint8_t GetTranslucencyValue() noexcept
             { return m_translucencyValue; }
         /// @brief Sets the opacity value to use when making a color translucent.
-        ///  Default is 100;
+        ///     Default is 100;
         /// @param value The opacity level (should be between 0 [transparent] to 255 [opaque]).
         static void SetTranslucencyValue(const uint8_t value) noexcept
             { m_translucencyValue = std::clamp<uint8_t>(value, 0, 255); }
@@ -63,7 +90,7 @@ namespace Wisteria
             { return m_maxLegendItems; }
         /// @brief Sets the maximum number of items that can be displayed in a legend.
         /// @details If there are more items in the legend, then an ellipsis will be shown.
-        ///  The default number of items is 20.
+        ///     The default number of items is 20.
         /// @param maxItems The maximum number of items that can be displayed in a legend.
         static void SetMaxLegendItemCount(const uint8_t maxItems) noexcept
             { m_maxLegendItems = maxItems; }
@@ -78,18 +105,18 @@ namespace Wisteria
             { return m_maxObservationsInBin; }
  
         /// @brief Sets the radius of the rounded corner, which is used when using rounded
-        ///  corners for labels, box plots, etc.
+        ///     corners for labels, box plots, etc.
         /// @param roundedCornerRadius The rounded corner radius.
         static void SetBoxRoundedCornerRadius(const double roundedCornerRadius) noexcept
             { m_roundedCornerRadius = roundedCornerRadius; }
         /// @returns The radius of the rounded corner, which is used when using rounded
-        ///  corners for labels, box plots, etc.
+        ///     corners for labels, box plots, etc.
         [[nodiscard]] static double GetBoxRoundedCornerRadius() noexcept
             { return m_roundedCornerRadius; }
         /// @brief Sets the maximum text length for legend labels.
         /// @details The default length is 32.
         /// @details If a label is longer than this,
-        ///  then it will be truncated with an ellipsis at the end.
+        ///     then it will be truncated with an ellipsis at the end.
         /// @param length The maximum text length.
         static void SetMaxLegendTextLength(const size_t length) noexcept
             {
@@ -97,36 +124,15 @@ namespace Wisteria
                          L"Max legend label lengths should be at least 1!");
             m_maxLegendTextLength = std::max<size_t>(1, length); // at least length of one
             }
-        /// @brief Enables or disables a debug flag.
-        /// @param flag Which debug flag to enable.
-        /// @param enable Whether to enable or disable the flag.
-        /// @note DebugSettings::DrawBoundingBoxesOnSelection is enabled by default
-        ///  if @c wxDEBUG_LEVEL is set to 2; otherwise, all flags are disabled.
-        static void EnableDebugFlag(const DebugSettings flag, const bool enable) noexcept
-            {
-            if (enable)
-                { m_debugSettings |= flag; }
-            else
-                { m_debugSettings &= ~flag; }
-            }
-        /// @brief Turns off all debugging flags (specific to %Wisteria).
-        static void DisableAllDebugFlags() noexcept
-            { m_debugSettings = 0; }
-        /// @brief Turns on all debugging flags (specific to %Wisteria).
-        static void EnableAllDebugFlags() noexcept
-            {
-            m_debugSettings = DebugSettings::DrawBoundingBoxesOnSelection|
-                              DebugSettings::DrawInformationOnSelection|
-                              DebugSettings::DrawExtraInformation|
-                              DebugSettings::IncludeExperimentalCode;
-            }
         /// @brief Determines if a debug flag is enabled.
         /// @param flag The flag to check for.
         /// @returns @c true if the given flag is enabled.
-        [[nodiscard]] static bool IsDebugFlagEnabled(const int flag) noexcept
+        /// @note Calls to this can be `if constexpr`ed so that the @c if block's code
+        ///     will be compiled out when the flag is not enabled.
+        [[nodiscard]] static constexpr bool IsDebugFlagEnabled(const int flag) noexcept
             { return (m_debugSettings & flag) == flag; }
         /// @returns No trailing zeroes and thousands separator format
-        ///  for calls to @c wxNumberFormatter::ToString().
+        ///     for calls to @c wxNumberFormatter::ToString().
         [[nodiscard]] static auto GetDefaultNumberFormat() noexcept
             {
             return wxNumberFormatter::Style::Style_WithThousandsSep|
@@ -142,12 +148,25 @@ namespace Wisteria
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
-        inline static int m_debugSettings
-#if wxDEBUG_LEVEL >= 2
-        { DebugSettings::DrawBoundingBoxesOnSelection };
-#else
-        { DebugSettings::None };
+        static constexpr int m_debugSettings
+        {
+#ifdef DEBUG_BOXES
+        DebugSettings::DrawBoundingBoxesOnSelection|
 #endif
+#ifdef DEBUG_DRAW_INFO
+        DebugSettings::DrawInformationOnSelection|
+#endif
+#ifdef DEBUG_DRAW_EXTRA_INFO
+        DebugSettings::DrawExtraInformation|
+#endif
+#ifdef DEBUG_DRAW_EXP_CODE
+        DebugSettings::IncludeExperimentalCode|
+#endif
+#ifdef DEBUG_FILE_IO
+        DebugSettings::AllowFileIO|
+#endif
+        DebugSettings::None
+        };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_defaultColorScheme;
         };
     }

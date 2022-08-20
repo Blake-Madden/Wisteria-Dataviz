@@ -653,11 +653,11 @@ namespace Wisteria::GraphItems
                 {
                 dc.DrawRectangle(boundingBox);
                 }
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
                 dc.DrawRectangle(GetCachedContentBoundingBox());
-                if (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+                if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
                     {
                     const auto bBox = GetBoundingBox(dc);
                     Label infoLabel(GraphItemInfo(

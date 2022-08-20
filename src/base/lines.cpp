@@ -30,7 +30,9 @@ namespace Wisteria::GraphItems
         wxPen scaledPen(GetPen());
         if (GetPen().IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth())); }
-        wxDCPenChanger pc(dc, IsSelected() ? wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
+        wxDCPenChanger pc(dc, IsSelected() ?
+            wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) :
+            scaledPen);
         for (const auto& line : m_lines)
             {
             if (GetLineStyle() == LineStyle::Arrows)
@@ -42,13 +44,17 @@ namespace Wisteria::GraphItems
                 { dc.DrawLine(line.first, line.second); }
             }
         // highlight the selected bounding box in debug mode
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
-            wxPoint debugOutline[5]{ { 0, 0 } };
-            GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
-            debugOutline[4] = debugOutline[0];
-            wxDCPenChanger pcDebug(dc, wxPen(*wxRED, 2*scaledPen.GetWidth(), wxPENSTYLE_SHORT_DASH));
-            dc.DrawLines(std::size(debugOutline), debugOutline);
+            if (IsSelected())
+                {
+                wxPoint debugOutline[5]{ { 0, 0 } };
+                GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
+                debugOutline[4] = debugOutline[0];
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, 2*scaledPen.GetWidth(),
+                                       wxPENSTYLE_SHORT_DASH));
+                dc.DrawLines(std::size(debugOutline), debugOutline);
+                }
             }
 
         if (GetClippingRect())

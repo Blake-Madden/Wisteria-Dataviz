@@ -897,7 +897,7 @@ namespace Wisteria::Graphs
             // with higher-level debugging enabled, show a large amount of information
             // about the plot, including its axes' physical points, scaling, a graphical
             // ruler, etc.
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
                 {
                 // highlight horizontal axes
                     {

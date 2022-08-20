@@ -88,7 +88,7 @@ namespace Wisteria::GraphItems
             wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);
             wxDCPenChanger pc(dc, wxPen(*wxBLACK, 2, wxPENSTYLE_DOT));
             dc.DrawRectangle(GetBoundingBox(dc));
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
                                        wxPENSTYLE_DOT));

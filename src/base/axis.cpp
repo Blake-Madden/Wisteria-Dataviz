@@ -1781,8 +1781,12 @@ namespace Wisteria::GraphItems
                     {
                     Label axisLabel(GetDisplayableValue(*axisPtIter));
                     axisLabel.GetPen() = wxNullPen; // don't draw box around axis labels
-                    if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
-                        { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                    if constexpr(Settings::IsDebugFlagEnabled(
+                        DebugSettings::DrawBoundingBoxesOnSelection))
+                        {
+                        if (IsSelected())
+                            { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                        }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
                     axisLabel.SetFontColor(GetFontColor());
@@ -1995,8 +1999,12 @@ namespace Wisteria::GraphItems
                     {
                     Label axisLabel(GetDisplayableValue(*axisPtIter));
                     axisLabel.GetPen() = wxNullPen;
-                    if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
-                        { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                    if constexpr(Settings::IsDebugFlagEnabled(
+                        DebugSettings::DrawBoundingBoxesOnSelection))
+                        {
+                        if (IsSelected())
+                            { axisLabel.GetPen() = wxPen(*wxRED, 2, wxPENSTYLE_DOT); }
+                        }
                     axisLabel.SetDPIScaleFactor(GetDPIScaleFactor());
                     axisLabel.SetScaling(GetAxisLabelScaling());
                     axisLabel.SetFontColor(GetFontColor());
@@ -2193,36 +2201,45 @@ namespace Wisteria::GraphItems
             }
 
         // highlight the selected protruding bounding box in debug mode
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
-            wxPoint debugOutline[5];
-            GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
-            debugOutline[4] = debugOutline[0];
-            wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-            dc.DrawLines(std::size(debugOutline), debugOutline);
+            if (IsSelected())
+                {
+                wxPoint debugOutline[5];
+                GraphItems::Polygon::GetRectPoints(GetProtrudingBoundingBox(dc), debugOutline);
+                debugOutline[4] = debugOutline[0];
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                dc.DrawLines(std::size(debugOutline), debugOutline);
+                }
             }
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection) && IsSelected())
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
             {
-            const auto bBox = GetBoundingBox(dc);
-            Label infoLabel(GraphItemInfo(
-                wxString::Format(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                                  "Axis Line Points: (%d, %d), (%d, %d)\n"
-                                  "Scaling: %s\n"
-                                  "Axis Label Scaling: %s",
-                    bBox.x, bBox.y, bBox.width, bBox.height,
-                    GetBottomPoint().x, GetBottomPoint().y,
-                    GetTopPoint().x, GetTopPoint().y,
-                    wxNumberFormatter::ToString(GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                    wxNumberFormatter::ToString(GetAxisLabelScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes))).
-                AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth()/2, bBox.GetBottomRight().y)).
-                FontColor(*wxBLUE).
-                Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
-            if (GetAxisType() == AxisType::LeftYAxis)
-                { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner); }
-            else
-                { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner); }
-            infoLabel.Draw(dc);
+            if (IsSelected())
+                {
+                const auto bBox = GetBoundingBox(dc);
+                Label infoLabel(GraphItemInfo(
+                    wxString::Format(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                                      "Axis Line Points: (%d, %d), (%d, %d)\n"
+                                      "Scaling: %s\n"
+                                      "Axis Label Scaling: %s",
+                        bBox.x, bBox.y, bBox.width, bBox.height,
+                        GetBottomPoint().x, GetBottomPoint().y,
+                        GetTopPoint().x, GetTopPoint().y,
+                        wxNumberFormatter::ToString(GetScaling(), 1,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        wxNumberFormatter::ToString(GetAxisLabelScaling(), 1,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes))).
+                    AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth()/2,
+                                bBox.GetBottomRight().y)).
+                    FontColor(*wxBLUE).
+                    Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
+                    FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                if (GetAxisType() == AxisType::LeftYAxis)
+                    { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomLeftCorner); }
+                else
+                    { infoLabel.GetGraphItemInfo().Anchoring(Anchoring::BottomRightCorner); }
+                infoLabel.Draw(dc);
+                }
             }
 
         return axisRect;

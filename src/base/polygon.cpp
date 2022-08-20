@@ -353,13 +353,16 @@ namespace Wisteria::GraphItems
             }
 
         // highlight the selected bounding box in debug mode
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
-            std::array<wxPoint, 5> debugOutline;
-            GetRectPoints(boundingBox, &debugOutline[0]);
-            debugOutline[4] = debugOutline[0];
-            wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-            dc.DrawLines(debugOutline.size(), &debugOutline[0]);
+            if (IsSelected())
+                {
+                std::array<wxPoint, 5> debugOutline;
+                GetRectPoints(boundingBox, &debugOutline[0]);
+                debugOutline[4] = debugOutline[0];
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                dc.DrawLines(debugOutline.size(), &debugOutline[0]);
+                }
             }
 
         if (GetClippingRect())

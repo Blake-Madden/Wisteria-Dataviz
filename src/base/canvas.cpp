@@ -651,7 +651,7 @@ namespace Wisteria
                 }
             }
         
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             m_debugInfo = wxString::Format(L"Canvas scaling: %s\n"
                 "Area height: %s\nGrid height: %s\n",
@@ -719,7 +719,7 @@ namespace Wisteria
                     }
                 }
 
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
                 {
                 m_debugInfo += wxString::Format(L"Row %s: height %s, proportion %s\n",
                                 wxNumberFormatter::ToString(currentRowIndex, 0,
@@ -1346,7 +1346,7 @@ namespace Wisteria
                 WatermarkDirection::Diagonal } );
             }
 
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             m_debugInfo.Trim();
             const auto bBox = GetCanvasRect(dc);

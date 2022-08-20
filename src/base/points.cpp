@@ -321,13 +321,16 @@ namespace Wisteria::GraphItems
             sh.SetBoundingBox(boundingBox, dc, GetScaling());
             sh.Draw(dc);
             }
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection) && IsSelected())
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
             {
-            wxPoint debugOutline[5];
-            GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
-            debugOutline[4] = debugOutline[0];
-            wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
-            dc.DrawLines(std::size(debugOutline), debugOutline);
+            if (IsSelected())
+                {
+                wxPoint debugOutline[5];
+                GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
+                debugOutline[4] = debugOutline[0];
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                dc.DrawLines(std::size(debugOutline), debugOutline);
+                }
             }
 
         if (GetClippingRect())

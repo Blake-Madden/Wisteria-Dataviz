@@ -254,7 +254,7 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
             dc.DrawLines(points.size(), &points[0]);
             // highlight the selected protruding bounding box in debug mode
-            if (Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
                 {
                 wxPoint debugOutline[5];
                 GraphItems::Polygon::GetRectPoints(m_pieArea, debugOutline);
@@ -1572,7 +1572,7 @@ namespace Wisteria::Graphs
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
-        if (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             { legend->SetLabelStyle(LabelStyle::LinedPaper); }
 
         AdjustLegendSettings(legend, hint);
