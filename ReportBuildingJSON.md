@@ -21,6 +21,17 @@ The following details the available options for JSON project files.
     - @c "landscape" or @c "horizontal"
     - @c "portrait" or @c "vertical"
 
+## Constants {#constants-properties}
+Properties for the @c "constants" node:
+- @c "constants": contains an array of key and value pairs, which are referenced by other items in the reports.\n
+  Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
+  titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
+  - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
+  - @c "value": either a string or numeric value to associate with the key.\n
+    If a number, then it will be formatted to the current locale when displayed in the report.\n
+
+Note that datasets have their own @c "constants" section which can use self-referencing formulas.
+
 ## Datasets {#datasets-properties}
 Properties for the @c "datasets" node:
 - @c "datasets": contains an array of datasets, which are referenced by other items in the report.
@@ -71,11 +82,34 @@ Properties for the @c "datasets" node:
     - @c "replacement": the replacement text. Note that capture groups are supported.
 
   Next, a ["constants"](#constants-properties) section can also be loaded from within the dataset's node.
-  These constants can reference the newly loaded dataset.
+  In this context, a constant will be a formula string which references the dataset.\n
+  This is an array of constant specifications which include the following properties:
+  - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
+  - @c "value": either a string or numeric value to associate with the key.\n
+    If a number, then it will be formatted to the current locale when displayed in the report.\n
+    If a string, then it can be a literal string or a formula.\n
+    The following formulas are available:\n
+    - `min(column)`:
+      Returns the minimum value of the given column from the dataset.
+      - @c column is the column name from the dataset.\n
+    - `max(column)`:
+      Returns the maximum value of the given column from the dataset.
+      - @c column is the column name from the dataset.\n
+    - `n(column)`:
+      Returns the valid number of observations in the given column from the dataset.
+      - @c column is the column name from the dataset.\n
+    - `n(column, groupColum, groupId)`:
+      Returns the valid number of observations in the given column from the dataset, using group filtering.
+      - @c column is the column name from the dataset.
+      - @c groupColum is a group column to filter on.
+      - @c groupId is the group ID to filter on.\n
+        Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
+        For example, the group ID can be a formula getting the highest label from the grouping column:\n
+        `n(Degree, Academic Year, {{max(Academic Year)}})`\n
 
   Finally, the "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
-  - @c "name": the name of the subst. (This should be different from the dataset that it is subsetting;
+  - @c "name": the name of the subset. (This should be different from the dataset that it is subsetting;
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - @c "dataset": the name of the dataset that it is subsetting. This will be the name that was assigned
@@ -99,41 +133,6 @@ Properties for the @c "datasets" node:
 
   Note that subset nodes can also contain transformation commands (e.g., @c "columns-rename") and its own
   ["constants"](#constants-properties) section, similar to a dataset's node.
-
-## Constants {#constants-properties}
-Properties for the @c "constants" node:
-- @c "constants": contains an array of key and value pairs, which are referenced by other items in the reports.\n
-  Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
-  titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
-  - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
-  - @c "value": either a string or numeric value to associate with the key.\n
-    If a number, then it will be formatted to the current locale when displayed in the report.\n
-    If a string, then it can be a literal string or a formula.\n
-    The following formulas are available:\n
-    - `min(dataset, column)`:
-      Returns the minimum value of the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
-      - @c column is the column name from the dataset.\n
-    - `max(dataset, column)`:
-      Returns the maximum value of the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
-      - @c column is the column name from the dataset.\n
-    - `n(dataset, column)`:
-      Returns the valid number of observations in the given column from the dataset.
-      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
-      - @c column is the column name from the dataset.\n
-    - `n(dataset, column, groupColum, groupId)`:
-      Returns the valid number of observations in the given column from the dataset, using group filtering.
-      - @c dataset is the name of the dataset (loaded from the ["datasets"](#datasets-properties) section).
-      - @c column is the column name from the dataset.
-      - @c groupColum is a group column to filter on.
-      - @c groupId is the group ID to filter on.\n
-        Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
-        For example, the group ID can be a formula getting the highest label from the grouping column:\n
-        `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
-  
-  Note that each dataset node (within the ["datasets"](#datasets-properties) section) can contain their
-  own @c "constants" sections that reference itself.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n

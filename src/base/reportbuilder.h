@@ -48,7 +48,9 @@ namespace Wisteria
         /// @details This is a key/value map used by objects throughout the report,
         ///     referencing them by name.
         /// @param constantsNode The node containing the constants' definitions.
-        void LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode);
+        /// @param dataset The dataset that any formulas may be referencing.
+        void LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode,
+                           const std::shared_ptr<const Data::Dataset>& dataset);
         /// @brief Loads the subsets node into @c m_datasets.
         /// @details These (subset) datasets are used by objects throughout the report,
         ///     referencing them by name.
@@ -234,9 +236,13 @@ namespace Wisteria
             @returns The original string, with any placeholders in it replaced
                 with the user-defined values.*/
         [[nodiscard]] wxString ExpandConstants(wxString str) const;
-        [[nodiscard]] wxString CalcFormula(const wxString& formula);
-        [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula);
-        [[nodiscard]] wxString CalcValidNValue(const wxString& formula);
+        /// @todo needs support for ID and date columns
+        [[nodiscard]] wxString CalcFormula(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] wxString CalcValidNValue(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

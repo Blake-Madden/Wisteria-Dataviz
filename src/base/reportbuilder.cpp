@@ -64,7 +64,7 @@ namespace Wisteria
             }
 
         try
-            { LoadConstants(json->GetProperty(L"constants")); }
+            { LoadConstants(json->GetProperty(L"constants"), nullptr); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
@@ -607,7 +607,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode)
+    void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode,
+                                      const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (constantsNode->IsOk())
             {
@@ -619,7 +620,7 @@ namespace Wisteria
                     const wxString vName = value->GetProperty(L"name")->GetValueString();
                     m_values.insert_or_assign(vName,
                         value->GetProperty(L"value")->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                        ValuesType(CalcFormula(value->GetProperty(L"value")->GetValueString())) :
+                        ValuesType(CalcFormula(value->GetProperty(L"value")->GetValueString(), dataset)) :
                         ValuesType(value->GetProperty(L"value")->GetValueNumber()) );
                     }
                 }
@@ -627,61 +628,62 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcFormula(const wxString& formula)
+    wxString ReportBuilder::CalcFormula(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
         {
-       const wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
+        const wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
         if (re.Matches(formula))
             {
             const wxString funcName = re.GetMatch(formula, 1).MakeLower();
             if (funcName.CmpNoCase(L"min") == 0 ||
                 funcName.CmpNoCase(L"max") == 0)
-                { return CalcMinMaxValue(formula); }
+                { return CalcMinMaxValue(formula, dataset); }
             else if (funcName.CmpNoCase(L"n") == 0)
-                { return CalcValidNValue(formula); }
+                { return CalcValidNValue(formula, dataset); }
             }
+        // note that formula may just be a constant (e.g., color string),
+        // so return that if it can't be calculated into something else
         return formula;
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcValidNValue(const wxString& formula)
+    wxString ReportBuilder::CalcValidNValue(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
         {
-        const wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\("
-                               "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                               "([[:alnum:]\\-_ ]+)\\)");
-        const wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\("
-                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        const wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\([ ]*"
+                               "([[:alnum:]\\-_ ]+)[ ]*\\)");
+        const wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\([ ]*"
                                  "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
                                  "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
                                  "(([[:alnum:]\\-_ ]+|{{[[:alnum:]\\-_ \\(\\),]+}}))\\)");
         if (reSimple.Matches(formula))
             {
             const auto paramPartsCount = reSimple.GetMatchCount();
-            if (paramPartsCount >= 4)
+            if (paramPartsCount >= 3)
                 {
                 const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower().
                     Trim(true).Trim(false);
-                const wxString dsName = reSimple.GetMatch(formula, 2).
+                const wxString columnName = reSimple.GetMatch(formula, 2).
                     Trim(true).Trim(false);
-                const wxString columnName = reSimple.GetMatch(formula, 3).
-                    Trim(true).Trim(false);
-                const auto foundPos = m_datasets.find(dsName);
-                if (foundPos != m_datasets.cend() &&
-                    foundPos->second != nullptr)
+                if (dataset->GetCategoricalColumn(columnName) !=
+                    dataset->GetCategoricalColumns().cend())
                     {
-                    if (foundPos->second->GetCategoricalColumn(columnName) !=
-                        foundPos->second->GetCategoricalColumns().cend())
-                        {
-                        return wxNumberFormatter::ToString(
-                            foundPos->second->GetCategoricalColumnValidN(columnName), 0,
-                            wxNumberFormatter::Style::Style_WithThousandsSep);
-                        }
-                    else if (foundPos->second->GetContinuousColumn(columnName) !=
-                        foundPos->second->GetContinuousColumns().cend())
-                        {
-                        return wxNumberFormatter::ToString(
-                            foundPos->second->GetContinuousColumnValidN(columnName), 0,
-                            wxNumberFormatter::Style::Style_WithThousandsSep);
-                        }
+                    return wxNumberFormatter::ToString(
+                        dataset->GetCategoricalColumnValidN(columnName), 0,
+                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    }
+                else if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    return wxNumberFormatter::ToString(
+                        dataset->GetContinuousColumnValidN(columnName), 0,
+                        wxNumberFormatter::Style::Style_WithThousandsSep);
                     }
                 }
             // dataset or column name missing
@@ -691,59 +693,52 @@ namespace Wisteria
         else if (reExtended.Matches(formula))
             {
             const auto paramPartsCount = reExtended.GetMatchCount();
-            if (paramPartsCount >= 6)
+            if (paramPartsCount >= 5)
                 {
                 const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower().
                     Trim(true).Trim(false);
-                const wxString dsName = reExtended.GetMatch(formula, 2).
+                const wxString columnName = reExtended.GetMatch(formula, 2).
                     Trim(true).Trim(false);
-                const wxString columnName = reExtended.GetMatch(formula, 3).
+                const wxString groupName = reExtended.GetMatch(formula, 3).
                     Trim(true).Trim(false);
-                const wxString groupName = reExtended.GetMatch(formula, 4).
-                    Trim(true).Trim(false);
-                wxString groupValue = reExtended.GetMatch(formula, 5).
+                wxString groupValue = reExtended.GetMatch(formula, 4).
                     Trim(true).Trim(false);
                 // if the group value is an embedded formula, then calculate it
                 if (groupValue.starts_with(L"{{") && groupValue.ends_with(L"}}"))
                     {
                     groupValue = groupValue.substr(2, groupValue.length() - 4);
-                    groupValue = CalcFormula(groupValue);
+                    groupValue = CalcFormula(groupValue, dataset);
                     }
-                const auto foundPos = m_datasets.find(dsName);
-                if (foundPos != m_datasets.cend() &&
-                    foundPos->second != nullptr)
+                // get the group column and the numeric code for the value
+                const auto groupColumn = dataset->GetCategoricalColumn(groupName);
+                if (groupColumn == dataset->GetCategoricalColumns().cend())
                     {
-                    // get the group column and the numeric code for the value
-                    const auto groupColumn = foundPos->second->GetCategoricalColumn(groupName);
-                    if (groupColumn == foundPos->second->GetCategoricalColumns().cend())
-                        {
-                        throw std::runtime_error(
-                            wxString::Format(_(L"%s: group column not found."),
-                                             groupName).ToUTF8());
-                        }
-                    const auto groupID = groupColumn->GetIDFromLabel(groupValue);
-                    if (!groupID)
-                        {
-                        throw std::runtime_error(
-                            wxString::Format(_(L"Group ID for '%s' not found."),
-                                             groupValue).ToUTF8());
-                        }
-                    if (foundPos->second->GetCategoricalColumn(columnName) !=
-                        foundPos->second->GetCategoricalColumns().cend())
-                        {
-                        return wxNumberFormatter::ToString(
-                            foundPos->second->GetCategoricalColumnValidN(columnName, groupName,
-                                                                         groupID.value()), 0,
-                            wxNumberFormatter::Style::Style_WithThousandsSep);
-                        }
-                    else if (foundPos->second->GetContinuousColumn(columnName) !=
-                        foundPos->second->GetContinuousColumns().cend())
-                        {
-                        return wxNumberFormatter::ToString(
-                            foundPos->second->GetContinuousColumnValidN(columnName, groupName,
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: group column not found."),
+                                            groupName).ToUTF8());
+                    }
+                const auto groupID = groupColumn->GetIDFromLabel(groupValue);
+                if (!groupID)
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"Group ID for '%s' not found."),
+                                            groupValue).ToUTF8());
+                    }
+                if (dataset->GetCategoricalColumn(columnName) !=
+                    dataset->GetCategoricalColumns().cend())
+                    {
+                    return wxNumberFormatter::ToString(
+                        dataset->GetCategoricalColumnValidN(columnName, groupName,
                                                                         groupID.value()), 0,
-                            wxNumberFormatter::Style::Style_WithThousandsSep);
-                        }
+                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    }
+                else if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    return wxNumberFormatter::ToString(
+                        dataset->GetContinuousColumnValidN(columnName, groupName,
+                                                                    groupID.value()), 0,
+                        wxNumberFormatter::Style::Style_WithThousandsSep);
                     }
                 }
             // dataset or something missing
@@ -754,40 +749,40 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcMinMaxValue(const wxString& formula)
+    wxString ReportBuilder::CalcMinMaxValue(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
         {
-        const wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\("
-                         "([[:alnum:]\\-_ ]*)[ ]*,[ ]*"
-                         "([[:alnum:]\\-_ ]*)\\)");
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        const wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\([ ]*"
+                         "([[:alnum:]\\-_ ]*)[ ]*\\)");
         if (re.Matches(formula))
             {
             const auto paramPartsCount = re.GetMatchCount();
-            if (paramPartsCount >= 4)
+            if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(formula, 1).MakeLower();
-                const wxString dsName = re.GetMatch(formula, 2);
-                const wxString columnName = re.GetMatch(formula, 3);
-                const auto foundPos = m_datasets.find(dsName);
-                if (foundPos != m_datasets.cend() &&
-                    foundPos->second != nullptr)
+                const wxString columnName = re.GetMatch(formula, 2);
+                if (dataset->GetCategoricalColumn(columnName) !=
+                    dataset->GetCategoricalColumns().cend())
                     {
-                    if (foundPos->second->GetCategoricalColumn(columnName) !=
-                        foundPos->second->GetCategoricalColumns().cend())
-                        {
-                        const auto [minVal, maxVal] =
-                            foundPos->second->GetCategoricalMinMax(columnName);
-                        return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
-                        }
-                    else if (foundPos->second->GetContinuousColumn(columnName) !=
-                        foundPos->second->GetContinuousColumns().cend())
-                        {
-                        const auto [minVal, maxVal] =
-                            foundPos->second->GetContinuousMinMax(columnName);
-                        return wxNumberFormatter::ToString(
-                            (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal), 2,
-                            wxNumberFormatter::Style::Style_WithThousandsSep |
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
-                        }
+                    const auto [minVal, maxVal] =
+                        dataset->GetCategoricalMinMax(columnName);
+                    return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
+                    }
+                else if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    const auto [minVal, maxVal] =
+                        dataset->GetContinuousMinMax(columnName);
+                    return wxNumberFormatter::ToString(
+                        (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal), 2,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
                     }
                 }
             // dataset or column name missing
@@ -936,7 +931,7 @@ namespace Wisteria
                         m_datasets.insert_or_assign(
                             subset->GetProperty(L"name")->GetValueString(), subsettedDataset);
                         // load any constants defined with this subset
-                        LoadConstants(subset->GetProperty(L"constants"));
+                        LoadConstants(subset->GetProperty(L"constants"), subsettedDataset);
 
                         auto exportPath =
                                 subset->GetProperty(L"export-path")->GetValueString();
@@ -1153,7 +1148,7 @@ namespace Wisteria
                     m_datasets.insert_or_assign(dsName, dataset);
 
                     // load any constants defined with this dataset
-                    LoadConstants(datasetNode->GetProperty(L"constants"));
+                    LoadConstants(datasetNode->GetProperty(L"constants"), dataset);
 
                     // load any subsets of this dataset
                     LoadSubsets(datasetNode->GetProperty(L"subsets"), dataset);
