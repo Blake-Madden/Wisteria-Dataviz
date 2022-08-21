@@ -72,15 +72,6 @@ namespace Wisteria
             return reportPages;
             }
 
-        try
-            { LoadSubsets(json->GetProperty(L"subsets")); }
-        catch (const std::exception& err)
-            {
-            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                         _(L"Subsets Section Error"), wxOK|wxICON_WARNING|wxCENTRE);
-            return reportPages;
-            }
-
         // start loading the pages
         const auto pagesProperty = json->GetProperty(L"pages");
         if (pagesProperty->IsOk())
@@ -807,7 +798,8 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode)
+    void ReportBuilder::LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
+                                    const std::shared_ptr<const Data::Dataset>& parentSubset)
         {
         static const std::map<std::wstring_view, Comparison> cmpOperators =
             {
@@ -864,7 +856,10 @@ namespace Wisteria
                 {
                 if (subset->IsOk())
                     {
-                    const wxString dsName = subset->GetProperty(L"dataset")->GetValueString();
+                    // What is being filtered? Default to the parent dataset.
+                    // ----------------
+                    std::shared_ptr<const Data::Dataset> datasetToSubset{ parentSubset };
+                    // if explicitly requested a different dataset (e.g., a previous subset)
                     if (subset->GetProperty(L"dataset")->IsOk())
                         {
                         const wxString dsName = subset->GetProperty(L"dataset")->GetValueString();
@@ -876,100 +871,102 @@ namespace Wisteria
                                 wxString::Format(
                                     _(L"%s: dataset not found for subset."), dsName).ToUTF8());
                             }
-                        const auto filterNode = subset->GetProperty(L"filter");
-                        const auto filterAndNode = subset->GetProperty(L"filter-and");
-                        const auto filterOrNode = subset->GetProperty(L"filter-or");
-                        const size_t validFilterTypeNodes =
-                            (filterNode->IsOk() ? 1 : 0) +
-                            (filterAndNode->IsOk() ? 1 : 0) +
-                            (filterOrNode->IsOk() ? 1 : 0);
-                        if (validFilterTypeNodes  > 1)
-                            {
-                            throw std::runtime_error(
-                                _(L"Only one filter type allowed for a subset.").ToUTF8());
-                            }
-                        else if (validFilterTypeNodes == 0)
+                        datasetToSubset = foundDataset->second;
+                        }
+                    const auto filterNode = subset->GetProperty(L"filter");
+                    const auto filterAndNode = subset->GetProperty(L"filter-and");
+                    const auto filterOrNode = subset->GetProperty(L"filter-or");
+                    const size_t validFilterTypeNodes =
+                        (filterNode->IsOk() ? 1 : 0) +
+                        (filterAndNode->IsOk() ? 1 : 0) +
+                        (filterOrNode->IsOk() ? 1 : 0);
+                    if (validFilterTypeNodes  > 1)
+                        {
+                        throw std::runtime_error(
+                            _(L"Only one filter type allowed for a subset.").ToUTF8());
+                        }
+                    else if (validFilterTypeNodes == 0)
+                        {
+                        throw std::runtime_error(
+                            _(L"Subset missing filters.").ToUTF8());
+                        }
+
+                    Subset dataSubsetter;
+                    std::shared_ptr<Data::Dataset> subsettedDataset{ nullptr };
+                    // single column filter
+                    if (filterNode->IsOk())
+                        {
+                        subsettedDataset = dataSubsetter.SubsetSimple(
+                                datasetToSubset, loadColumnFilter(filterNode));
+                        }
+                    // ANDed filters
+                    else if (filterAndNode->IsOk())
+                        {
+                        std::vector<ColumnFilterInfo> cf;
+                        const auto filterNodes = filterAndNode->GetValueArrayObject();
+                        if (filterNodes.size() == 0)
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
                             }
-
-                        Subset dataSubsetter;
-                        std::shared_ptr<Data::Dataset> dataset{ nullptr };
-                        // single column filter
-                        if (filterNode->IsOk())
-                            {
-                            dataset = dataSubsetter.SubsetSimple(
-                                    foundDataset->second, loadColumnFilter(filterNode));
-                            }
-                        // ANDed filters
-                        else if (filterAndNode->IsOk())
-                            {
-                            std::vector<ColumnFilterInfo> cf;
-                            const auto filterNodes = filterAndNode->GetValueArrayObject();
-                            if (filterNodes.size() == 0)
-                                {
-                                throw std::runtime_error(
-                                    _(L"Subset missing filters.").ToUTF8());
-                                }
-                            for (const auto& filterNode : filterNodes)
-                                { cf.emplace_back(loadColumnFilter(filterNode)); }
+                        for (const auto& filterNode : filterNodes)
+                            { cf.emplace_back(loadColumnFilter(filterNode)); }
                             
-                            dataset = dataSubsetter.SubsetAnd(foundDataset->second, cf);
-                            }
-                        // ORed filters
-                        else if (filterOrNode->IsOk())
+                        subsettedDataset = dataSubsetter.SubsetAnd(datasetToSubset, cf);
+                        }
+                    // ORed filters
+                    else if (filterOrNode->IsOk())
+                        {
+                        std::vector<ColumnFilterInfo> cf;
+                        const auto filterNodes = filterOrNode->GetValueArrayObject();
+                        if (filterNodes.size() == 0)
                             {
-                            std::vector<ColumnFilterInfo> cf;
-                            const auto filterNodes = filterOrNode->GetValueArrayObject();
-                            if (filterNodes.size() == 0)
-                                {
-                                throw std::runtime_error(
-                                    _(L"Subset missing filters.").ToUTF8());
-                                }
-                            for (const auto& filterNode : filterNodes)
-                                { cf.emplace_back(loadColumnFilter(filterNode)); }
-
-                            dataset = dataSubsetter.SubsetOr(foundDataset->second, cf);
+                            throw std::runtime_error(
+                                _(L"Subset missing filters.").ToUTF8());
                             }
+                        for (const auto& filterNode : filterNodes)
+                            { cf.emplace_back(loadColumnFilter(filterNode)); }
 
-                        if (dataset)
+                        subsettedDataset = dataSubsetter.SubsetOr(datasetToSubset, cf);
+                        }
+
+                    if (subsettedDataset)
+                        {
+                        LoadDatasetTransformations(subset, subsettedDataset);
+                        m_datasets.insert_or_assign(
+                            subset->GetProperty(L"name")->GetValueString(), subsettedDataset);
+                        // load any constants defined with this subset
+                        LoadConstants(subset->GetProperty(L"constants"));
+
+                        auto exportPath =
+                                subset->GetProperty(L"export-path")->GetValueString();
+                        // A project silently writing to an arbitrary file is
+                        // a security threat vector, so only allow that for builds
+                        // with DEBUG_FILE_IO explicitly set.
+                        // This should only be used for reviewing the output from a subset operation
+                        // when designing a project (in release build).
+                        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
                             {
-                            LoadDatasetTransformations(subset, dataset);
-                            m_datasets.insert_or_assign(
-                                subset->GetProperty(L"name")->GetValueString(), dataset);
-                            // load any constants defined with this subset
-                            LoadConstants(subset->GetProperty(L"constants"));
-
-                            auto exportPath =
-                                    subset->GetProperty(L"export-path")->GetValueString();
-                            // A project silently writing to an arbitrary file is
-                            // a security threat vector, so only allow that for builds
-                            // with DEBUG_FILE_IO explicitly set.
-                            // This should only be used for reviewing the output from a subset operation
-                            // when designing a project (in release build).
-                            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
+                            if (exportPath.length())
                                 {
-                                if (exportPath.length())
+                                wxFileName fn(exportPath);
+                                if (fn.GetPath().empty())
                                     {
-                                    wxFileName fn(exportPath);
-                                    if (fn.GetPath().empty())
-                                        {
-                                        fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
-                                        }                     
-                                    if (fn.GetExt().CmpNoCase(L"csv") == 0)
-                                        { dataset->ExportCSV(fn.GetFullPath()); }
-                                    else
-                                        { dataset->ExportTSV(fn.GetFullPath()); }
-                                    }
+                                    fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
+                                    }                     
+                                if (fn.GetExt().CmpNoCase(L"csv") == 0)
+                                    { subsettedDataset->ExportCSV(fn.GetFullPath()); }
+                                else
+                                    { subsettedDataset->ExportTSV(fn.GetFullPath()); }
                                 }
-                            else if (exportPath.length())
-                                {
-                                // just log this (don't throw)
-                                wxLogWarning(
-                                        wxString::Format(_(L"Dataset '%s' cannot be exported "
-                                            "because debug file IO is not enabled."), dsName));
-                                }
+                            }
+                        else if (exportPath.length())
+                            {
+                            // just log this (don't throw)
+                            wxLogWarning(
+                                    wxString::Format(_(L"Dataset '%s' cannot be exported "
+                                        "because debug file IO is not enabled."),
+                                        datasetToSubset->GetName()));
                             }
                         }
                     }
@@ -1157,6 +1154,9 @@ namespace Wisteria
 
                     // load any constants defined with this dataset
                     LoadConstants(datasetNode->GetProperty(L"constants"));
+
+                    // load any subsets of this dataset
+                    LoadSubsets(datasetNode->GetProperty(L"subsets"), dataset);
                     }
                 }
             }

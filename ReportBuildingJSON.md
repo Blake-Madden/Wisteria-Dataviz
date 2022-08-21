@@ -1,16 +1,16 @@
-Report Building from a Configuration File
+Report Building from a Project File
 =============================
 [TOC]
 
-A report can be loaded directly from a JSON configuration file using the `ReportBuilder` class.
+A report can be loaded directly from a JSON project file using the `ReportBuilder` class.
 These reports can consist of a single page (i.e., a canvas), or a series of multiple pages.
-On each page, items such as tables, plots, notes, etc. are embedded, and the configuration file
+On each page, items such as tables, plots, notes, etc. are embedded, and the project file
 specifies how these items are laid out.
 
-Along with the objects on the pages, a configuration file can also define the datasets and
+Along with the objects on the pages, a project file can also define the datasets and
 user-defined values used by report's objects, printer settings, etc.
 
-The following details the available options for JSON configuration files.
+The following details the available options for JSON project files.
 
 # Root-level Items
 - @c "name": contains a string value, representing the name of the report.
@@ -25,7 +25,7 @@ The following details the available options for JSON configuration files.
 Properties for the @c "datasets" node:
 - @c "datasets": contains an array of datasets, which are referenced by other items in the report.
   - @c "name": the name of the dataset.\n
-  This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
+  This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - @c "path": the full file path of the dataset.
   - @c "importer": how to import the dataset.\n
     This is optional and the default is to import the file based on its file extension.\n
@@ -60,7 +60,7 @@ Properties for the @c "datasets" node:
     - @c "format": if @c "parser" is set to @c "strptime-format",
          then this is the user-defined format to parse with.
 
-  The following transformations commands are executed in the following order:
+  Next, any transformation commands for a dataset node are executed. These are performed in the following order:
   - @c "columns-rename": an array of column rename commands, which contain the following:
     - @c "name": the column to rename.
     - @c "new-name": the new name for the column.
@@ -70,8 +70,35 @@ Properties for the @c "datasets" node:
     - @c "pattern": the regular expression pattern to search for.
     - @c "replacement": the replacement text. Note that capture groups are supported.
 
-  Finally, a ["constants"](#constants-properties) section can also be loaded from within the dataset's node.
+  Next, a ["constants"](#constants-properties) section can also be loaded from within the dataset's node.
   These constants can reference the newly loaded dataset.
+
+  Finally, the "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
+  contain the following properties:
+  - @c "name": the name of the subst. (This should be different from the dataset that it is subsetting;
+    otherwise, it will overwrite it.)\n
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - @c "dataset": the name of the dataset that it is subsetting. This will be the name that was assigned
+    to the dataset in the ["datasets"](#datasets-properties) section.\n
+    Note: this is optional and should only be included if referencing a different dataset. (If not included,
+    the parent dataset will be used.) Specifying a different dataset can be useful for subsetting a previous subset,
+    given that the subsets are created in the order that they appear in the project file.
+  - @c "filter": the subset filtering definition, which will contain the following:
+    - @c "column": the column from the dataset to filter on.
+    - @c "operator": how to compare the values from the column with the filter's value.
+      Available options are:
+      - @c "=" or "==": equals (the default)
+      - @c "!=" or "<>": not equals
+      - @c "<": less than
+      - @c "<=": less than or equal to
+      - @c ">": greater than
+      - @c ">=": great than or equal to
+    - @c "value": the value to filter the column on. This can be a number, string, or date
+         (depending on the column's data type).\n
+         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section.
+
+  Note that subset nodes can also contain transformation commands (e.g., @c "columns-rename") and its own
+  ["constants"](#constants-properties) section, similar to a dataset's node.
 
 ## Constants {#constants-properties}
 Properties for the @c "constants" node:
@@ -105,46 +132,8 @@ Properties for the @c "constants" node:
         For example, the group ID can be a formula getting the highest label from the grouping column:\n
         `n(Awards, Degree, Academic Year, {{max(Awards, Academic Year)}})`\n
   
-  Note that each dataset and subset node (within the ["datasets"](#datasets-properties) and
-  ["subsets"](#subsets-properties) sections, respectively) can contain their own @c "constants" sections
-  that reference themselves.
-
-## Subsets {#subsets-properties}
-Properties for the @c "subsets" node:
-- @c "subsets": contains an array of subsets, which are referenced by other items in the report in the same
-     way as datasets are.\n
-     Note that these are subsets of datasets loaded from the @c "datasets" section.
-  - @c "name": the name of the subst. (This should be different from the dataset that it is subsetting;
-    otherwise, it will overwrite it.)\n
-    This name is referenced by items (e.g., plots) elsewhere in the configuration file and must be unique.
-  - @c "dataset": the name of the dataset that it is subsetting. This will be the name that was assigned
-    to the dataset in the ["datasets"](#datasets-properties) section.
-  - @c "filter": the subset filtering definition, which will contain the following:
-    - @c "column": the column from the dataset to filter on.
-    - @c "operator": how to compare the values from the column with the filter's value.
-      Available options are:
-      - @c "=" or "==": equals (the default)
-      - @c "!=" or "<>": not equals
-      - @c "<": less than
-      - @c "<=": less than or equal to
-      - @c ">": greater than
-      - @c ">=": great than or equal to
-    - @c "value": the value to filter the column on. This can be a number, string, or date
-         (depending on the column's data type).\n
-         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section.
-
-  The following transformations commands are executed in the following order:
-  - @c "columns-rename": an array of column rename commands, which contain the following:
-     - @c "name": the column to rename.
-     - @c "new-name": the new name for the column.
-  - @c "recode-re": an array of categorical column recode commands. This will apply a regular expression
-       text replace for each label in the provided column(s). Each set of commands contains the following properties:
-    - @c "column": the categorical column to recode.
-    - @c "pattern": the regular expression pattern to search for.
-    - @c "replacement": the replacement text. Note that capture groups are supported.
-
-  Finally, a ["constants"](#constants-properties) section can also be loaded from within the subset's node.
-  These constants can reference the newly loaded subset.
+  Note that each dataset node (within the ["datasets"](#datasets-properties) section) can contain their
+  own @c "constants" sections that reference itself.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
