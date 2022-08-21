@@ -861,8 +861,7 @@ namespace Wisteria::Graphs
                 else if (nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
-                                      nextLabelBox.GetWidth());
+                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
@@ -935,6 +934,20 @@ namespace Wisteria::Graphs
                         {
                         outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomLeft());
                         outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                        }
+                    else if (nextLabel)
+                        {
+                        auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                        nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
+                        nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
+                        if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                            {
+                            outerLabel->SetAnchorPoint(
+                                // there is already padding on the labels, OK to
+                                // not have space between them
+                                previousLabelBoundingBox.GetTopLeft());
+                            outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
+                            }
                         }
                     }
                 }
@@ -1094,6 +1107,21 @@ namespace Wisteria::Graphs
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
                         outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomRight());
+                        outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
+                        }
+                    }
+                else if (nextLabel)
+                    {
+                    auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                                      nextLabelBox.GetWidth());
+                    nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
+                    if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                        {
+                        outerLabel->SetAnchorPoint(
+                            // there is already padding on the labels, OK to
+                            // not have space between them
+                            previousLabelBoundingBox.GetTopRight());
                         outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
                         }
                     }
