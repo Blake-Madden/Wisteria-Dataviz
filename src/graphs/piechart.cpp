@@ -890,7 +890,7 @@ namespace Wisteria::Graphs
                     const auto labelBox = outerLabel->GetBoundingBox(dc);
                     // connect last point to middle of label's right side
                     lastPt.SetAnchorPoint(
-                        wxPoint(labelBox.GetRight(),
+                        wxPoint(std::min(labelBox.GetRight(), middlePt.GetAnchorPoint().x),
                                 labelBox.GetTop() + (labelBox.GetHeight()/2)));
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
@@ -951,9 +951,10 @@ namespace Wisteria::Graphs
                     auto& middlePt = outerLine->GetPoints()[1];
                     auto& lastPt = outerLine->GetPoints()[2];
                     const auto labelBox = outerLabel->GetBoundingBox(dc);
-                    // connect last point to middle of label's right side
+                    // Connect last point to middle of label's right side;
+                    // unless the label is oddly wide, then align with the middle point.
                     lastPt.SetAnchorPoint(
-                        wxPoint(labelBox.GetRight(),
+                        wxPoint(std::min(labelBox.GetRight(), middlePt.GetAnchorPoint().x),
                                 labelBox.GetTop() + (labelBox.GetHeight()/2)));
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
@@ -1048,7 +1049,7 @@ namespace Wisteria::Graphs
                     const auto labelBox = outerLabel->GetBoundingBox(dc);
                     // connect last point to middle of label's right side
                     lastPt.SetAnchorPoint(
-                        wxPoint(labelBox.GetLeft(),
+                        wxPoint(std::max(labelBox.GetLeft(), middlePt.GetAnchorPoint().x),
                                 labelBox.GetTop() + (labelBox.GetHeight()/2)));
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
@@ -1112,7 +1113,7 @@ namespace Wisteria::Graphs
                     const auto labelBox = outerLabel->GetBoundingBox(dc);
                     // connect last point to middle of label's right side
                     lastPt.SetAnchorPoint(
-                        wxPoint(labelBox.GetLeft(),
+                        wxPoint(std::max(labelBox.GetLeft(), middlePt.GetAnchorPoint().x),
                                 labelBox.GetTop() + (labelBox.GetHeight()/2)));
                     const auto calculatedMiddlePt =
                         wxPoint(firstPt.GetAnchorPoint().x, lastPt.GetAnchorPoint().y);
