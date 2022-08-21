@@ -538,7 +538,7 @@ namespace Wisteria::Graphs
                     if (!outerLabel->SplitTextAuto())
                         {
                         outerLabel->SplitTextToFitLength(
-                            outerLabel->GetText().length() * math_constants::half);
+                            outerLabel->GetText().length() * math_constants::third);
                         }
                     measureAndFitLabel(outerLabel);
                     }
