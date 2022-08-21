@@ -799,7 +799,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     void ReportBuilder::LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
-                                    const std::shared_ptr<const Data::Dataset>& parentSubset)
+                                    const std::shared_ptr<const Data::Dataset>& parentToSubset)
         {
         static const std::map<std::wstring_view, Comparison> cmpOperators =
             {
@@ -858,7 +858,7 @@ namespace Wisteria
                     {
                     // What is being filtered? Default to the parent dataset.
                     // ----------------
-                    std::shared_ptr<const Data::Dataset> datasetToSubset{ parentSubset };
+                    std::shared_ptr<const Data::Dataset> datasetToSubset{ parentToSubset };
                     // if explicitly requested a different dataset (e.g., a previous subset)
                     if (subset->GetProperty(L"dataset")->IsOk())
                         {

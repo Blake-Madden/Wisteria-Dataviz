@@ -53,11 +53,11 @@ namespace Wisteria
         /// @details These (subset) datasets are used by objects throughout the report,
         ///     referencing them by name.
         /// @param subsetsNode The subsets node.
-        /// @param parentSubset The dataset connected to the current dataset node.
+        /// @param parentToSubset The dataset connected to the current dataset node.
         ///     This will usually be the dataset being subsetted, unless a subset
         ///     explicitly references something else (e.g., a previous subset from the same section).
         void LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
-                         const std::shared_ptr<const Data::Dataset>& parentSubset);
+                         const std::shared_ptr<const Data::Dataset>& parentToSubset);
         /// @brief Loads a common axis node into @c m_commonAxesPostions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then
