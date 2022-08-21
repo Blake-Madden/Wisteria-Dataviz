@@ -822,7 +822,7 @@ namespace Wisteria::Graphs
             });
         // Make the left-side outer labels (for both rings) have a common font size.
         // Also, adjust their positioning and connection lines (if necessary).
-
+        wxRect previousLabelBoundingBox;
         // left-side labels, top quadrant
         for (size_t i = 0; i < outerTopLeftLabelAndLines.size(); ++i)
             {
@@ -858,7 +858,23 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                         }
                     }
+                else if (nextLabel)
+                    {
+                    auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                                      nextLabelBox.GetWidth());
+                    nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
+                    if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                        {
+                        outerLabel->SetAnchorPoint(
+                            // there is already padding on the labels, OK to
+                            // not have space between them
+                            previousLabelBoundingBox.GetBottomLeft());
+                        outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
+                        }
+                    }
                 }
+            previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
@@ -922,6 +938,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 }
+            previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
@@ -964,6 +981,7 @@ namespace Wisteria::Graphs
             wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
             return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
             });
+
         // right-side labels, top quadrant
         for (size_t i = 0; i < outerTopRightLabelAndLines.size(); ++i)
             {
@@ -999,7 +1017,23 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchoring(Anchoring::TopRightCorner);
                         }
                     }
+                else if (nextLabel)
+                    {
+                    auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                                      nextLabelBox.GetWidth());
+                    nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
+                    if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
+                        {
+                        outerLabel->SetAnchorPoint(
+                            // there is already padding on the labels, OK to
+                            // not have space between them
+                            previousLabelBoundingBox.GetBottomRight());
+                        outerLabel->SetAnchoring(Anchoring::TopRightCorner);
+                        }
+                    }
                 }
+            previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
@@ -1063,6 +1097,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 }
+            previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
             AddObject(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
