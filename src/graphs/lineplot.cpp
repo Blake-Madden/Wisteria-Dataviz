@@ -75,11 +75,10 @@ namespace Wisteria::Graphs
 
         if (m_useGrouping)
             {
+            // create a reverse string table, with it sorted by label
             std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-            for (const auto& groupId : m_groupColumn->GetValues())
-                {
-                groups.insert(std::make_pair(m_groupColumn->GetLabelFromID(groupId), groupId));
-                }
+            for (const auto& [id, str] : m_groupColumn->GetStringTable())
+                { groups.insert(std::make_pair(str, id)); }
             size_t currentIndex{ 0 };
             for (const auto& group : groups)
                 {
