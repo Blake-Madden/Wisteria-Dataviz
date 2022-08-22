@@ -511,11 +511,11 @@ namespace Wisteria::Graphs
             }
 
         std::shared_ptr<const Data::Dataset> m_data;
-        CategoricalColumnConstIterator m_groupColumn;
-        ContinuousColumnConstIterator m_xColumnContinuous;
-        CategoricalColumnConstIterator m_xColumnCategorical;
-        DateColumnConstIterator m_xColumnDate;
-        ContinuousColumnConstIterator m_yColumn;
+        Data::CategoricalColumnConstIterator m_groupColumn;
+        Data::ContinuousColumnConstIterator m_xColumnContinuous;
+        Data::CategoricalColumnConstIterator m_xColumnCategorical;
+        Data::DateColumnConstIterator m_xColumnDate;
+        Data::ContinuousColumnConstIterator m_yColumn;
         wxString m_yColumnName;
 
         std::vector<Line> m_lines;
