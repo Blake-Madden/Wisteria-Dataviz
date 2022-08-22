@@ -58,16 +58,6 @@ namespace Wisteria
 /** @brief %Data management classes for graphs.*/
 namespace Wisteria::Data
     {
-    /// @brief Helper functor to compare wxStrings case insensitively.
-    /// @details This is useful as a predicate for maps and sets.
-    class StringCmpNoCase
-        {
-    public:
-        /// @private
-        [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const
-            { return lhs.CmpNoCase(rhs) < 0; };
-        };
-
     // forward declarations for friendships
     class Dataset;
     class DatasetClone;
@@ -78,6 +68,18 @@ namespace Wisteria::Data
     using GroupIdType = uint64_t;
     /// @brief The different types that could appear in a dataset.
     using DatasetValueType = std::variant<wxString, double, GroupIdType, wxDateTime>;
+    /// @brief Value used in either an ID or categorical column.
+    using CategoricalOrIdDataType = std::variant<wxString, GroupIdType>;
+
+    /// @brief Helper functor to compare wxStrings case insensitively.
+    /// @details This is useful as a predicate for maps and sets.
+    class StringCmpNoCase
+        {
+    public:
+        /// @private
+        [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const
+            { return lhs.CmpNoCase(rhs) < 0; };
+        };
 
     /// @private
     enum class ColumnType
@@ -192,7 +194,7 @@ namespace Wisteria::Data
 
     /// @brief An integral column with a string lookup table.
     /// @details This is useful for categorical data that is stored as numeric codes,
-    ///  but have string labels that represent them.
+    ///     but have string labels that represent them.
     /// @note The strings in this table are case insensitive.
     class ColumnWithStringTable final : public Column<GroupIdType>
         {
@@ -299,10 +301,20 @@ namespace Wisteria::Data
         StringTableType m_stringTable;
         };
 
+    /// @brief Constant iterator to a datetime column.
+    using DateColumnConstIterator =
+        std::vector<Wisteria::Data::Column<wxDateTime>>::const_iterator;
+    /// @brief Constant iterator to a continuous column.
+    using ContinuousColumnConstIterator =
+        std::vector<Wisteria::Data::Column<double>>::const_iterator;
+    /// @brief Constant iterator to a categorical column.
+    using CategoricalColumnConstIterator =
+        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator;
+
     /** @brief Class for filling a row in a dataset.
         @details This can be used to chain multiple fields together in a call to @c AddRow():
         @code
-         dataset.AddRow(DataInfo().Continuous({ 4, 120 }).Categoricals({ 1 }));
+            dataset.AddRow(DataInfo().Continuous({ 4, 120 }).Categoricals({ 1 }));
         @endcode*/
     class RowInfo
         {
