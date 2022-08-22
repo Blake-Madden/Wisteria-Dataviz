@@ -351,14 +351,15 @@ namespace Wisteria::Graphs
             ///    For example, if the bar axis range is 0-100 and you set 25 here, then the
             ///    block will consume 25% of the width of the axis
             ///    (regardless of how wide the other bars are).
-            /// @note You can mix and match custom-width at the bar and bar block levels,
+            /// @note You can mix and match custom-width at the bar and bar-block levels,
             ///    although that normally wouldn't be recommend.\n
             ///    Prefer just setting custom widths at the bar level,
             ///    unless you have a special need.
             void SetCustomWidth(const std::optional<double> width) noexcept
                 {
                 m_customWidth = width;
-                if (m_customWidth <= 0 || std::isnan(m_customWidth.value()))
+                if (m_customWidth.has_value() &&
+                    (m_customWidth <= 0 || std::isnan(m_customWidth.value())) )
                     { m_customWidth = std::nullopt; }
                 }
             /** @brief The custom width used for the block along the bar axis.
@@ -405,12 +406,12 @@ namespace Wisteria::Graphs
                 @param axisPosition The position on the parent axis to anchor this bar.
                 @param blocks The blocks used to build the bar.
                 @param barLabel The label shown on top of the bar
-                 (useful for showing the item count in the bar, for example).
+                    (useful for showing the item count in the bar, for example).
                 @param axisLabel The label to display beneath the bar on the parent axis.
                 @param effect The effect to display on the bar (e.g., a color gradient).
                 @param opacity The opacity of the bar.
                 @param customWidth How wide to show the bar. If provided, this will override the
-                 calculated width (which would show all bars with a uniform width).*/
+                    calculated width (which would show all bars with a uniform width).*/
             Bar(const double axisPosition, const std::vector<BarBlock>& blocks,
                 const wxString& barLabel, const Wisteria::GraphItems::Label& axisLabel,
                 const BoxEffect effect, const uint8_t opacity = wxALPHA_OPAQUE,
@@ -423,7 +424,8 @@ namespace Wisteria::Graphs
                 m_axisPosition(axisPosition)
                 {
                 // set to sane value
-                if (m_customWidth <= 0 || std::isnan(m_customWidth.value()))
+                if (m_customWidth.has_value() &&
+                    (m_customWidth <= 0 || std::isnan(m_customWidth.value())))
                     { m_customWidth = std::nullopt; }
                 m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(),
                     0.0f,
@@ -455,7 +457,8 @@ namespace Wisteria::Graphs
             void SetEffect(const BoxEffect effect) noexcept
                 { m_barEffect = effect; }
             /** @returns The shape of the bar.
-                @note Image-based bar effects and drop shadows will only work with rectangular shapes.
+                @note Image-based bar effects and drop shadows will only work with
+                    rectangular shapes.
                 @todo Add support for drop shadows for arrows.*/
             [[nodiscard]] BarShape GetShape() const noexcept
                 { return m_barShape; }
@@ -499,7 +502,7 @@ namespace Wisteria::Graphs
                 { return m_length; }
 
             /// @brief Sets the custom width of the bar.
-            /// @param width The width of the bar (in terms of units along the bar axis).
+            /// @param width The width of the bar (in terms of units along the bar axis).\n
             ///    For example, if the bar axis range is 0-100 and you set 25 here, then the bar will
             ///    consume 25% of the width of the axis (regardless of how wide the other bars are).
             /// @note You can mix and match custom-width and auto-fitted bars in the same barchart;
@@ -508,7 +511,8 @@ namespace Wisteria::Graphs
                 {
                 m_customWidth = width;
                 // sanity checks
-                if (m_customWidth <= 0 || std::isnan(m_customWidth.value()))
+                if (m_customWidth.has_value() &&
+                    (m_customWidth.value() <= 0 || std::isnan(m_customWidth.value())) )
                     { m_customWidth = std::nullopt; }
                 }
             /** @brief The custom width used for the bar along the bar axis.
@@ -739,7 +743,9 @@ namespace Wisteria::Graphs
             { return m_barOrientation; }
         /// @brief Sets whether the bars are laid out vertically or horizontally across the plot.
         /// @param orient Which orientation to use for the bars.
-        /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).
+        /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
+        ///     Also, if aligning with a common X axis, then set this to @c Vertical.
+        ///     (Set to @c Horizontal if aligning with a common Y axis.)
         void SetBarOrientation(const Orientation orient);
         /// @}
 
