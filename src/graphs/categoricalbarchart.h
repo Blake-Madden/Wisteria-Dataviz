@@ -139,13 +139,22 @@ namespace Wisteria::Graphs
     private:
         struct CatBarBlock
             {
+            // group ID in the main categorical column
             Data::GroupIdType m_bin{ 0 };
-            Data::GroupIdType m_block{ 0 };
+            // 0-based index into the color scheme
+            // (based on the alphabetically order of the group label from
+            //  the secondary group column)
+            size_t m_schemeIndex{ 0 };
+            // the name of the group for a subblock in a bar (from the secondary group column)
+            wxString m_groupName;
+            // sorts by group ID from the primary categorical column, or by the
+            // subgroup label (if grouping is in use) alphabetically
             [[nodiscard]] bool operator<(const CatBarBlock& that) const noexcept
                 {
                 if (m_bin != that.m_bin)
                     { return m_bin < that.m_bin; }
-                return m_block < that.m_block;
+                // if in the same bar, then compare by label alphabetically
+                return m_groupName.CmpNoCase(that.m_groupName) < 0;
                 }
             };
         void Calculate();
@@ -171,7 +180,8 @@ namespace Wisteria::Graphs
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
-        std::set<Data::GroupIdType> m_groupIds;
+        // cat ID and string order
+        std::map<Data::GroupIdType, size_t> m_groupIds;
         };
     }
 
