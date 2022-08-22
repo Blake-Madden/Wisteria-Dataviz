@@ -223,6 +223,7 @@ Properties for @c "categorical-bar-chart" nodes:
   Available options are:
   - @c "vertical"
   - @c "horizontal"
+- @c "bin-label-display": string specifying how to display labels on the bars.
 - Some base properties available to [graphs](#graph-properties).
 
 ## Common Axis {#common-axis-properties}
@@ -602,6 +603,7 @@ Properties common to all graph items:
     - @c "top"
     - @c "bottom"
   - @c "include-header": @c true to include a header (the default), @c false to not.
+  - @c "title": if @c "include-header" is @c true, a string specifying the title of the legend.
   - @c "ring": for pie charts, which ring to use for the legend.\n
     Available options are:
     - @c "outer": only the outer (or only) ring is included. (This is the default.)

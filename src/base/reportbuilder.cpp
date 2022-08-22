@@ -1288,7 +1288,8 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for categorical bar chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for categorical bar chart."),
+                                 dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
@@ -1297,6 +1298,8 @@ namespace Wisteria
             const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
             const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
             const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
+            const auto binLabel = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"bin-label-display")->GetValueString());
 
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
@@ -1309,7 +1312,8 @@ namespace Wisteria
 
             barChart->SetData(foundPos->second, categoryName,
                 (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
-                (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt));
+                (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
+                binLabel.has_value() ? binLabel.value() : BinLabelDisplay::BinValue);
 
             return LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
             }
@@ -3009,47 +3013,52 @@ namespace Wisteria
                                         Perimeter::Inner :
                                         Perimeter::Outer);
             const auto includeHeader = legendNode->GetProperty(L"include-header")->GetValueBool(true);
+            const auto headerLabel = legendNode->GetProperty(L"title")->GetValueString();
             const auto placement = legendNode->GetProperty(L"placement")->GetValueString();
+            std::shared_ptr<Label> legend{ nullptr };
             if (placement.CmpNoCase(L"left") == 0)
                 {
+                legend = graph->CreateLegend(
+                    LegendOptions().
+                    RingPerimeter(ringPerimeter).
+                    IncludeHeader(includeHeader).
+                    PlacementHint(LegendCanvasPlacementHint::LeftOfGraph));
                 canvas->SetFixedObject(currentRow, currentColumn+1, graph);
-                canvas->SetFixedObject(currentRow, currentColumn++,
-                    graph->CreateLegend(
-                        LegendOptions().
-                            RingPerimeter(ringPerimeter).
-                            IncludeHeader(includeHeader).
-                            PlacementHint(LegendCanvasPlacementHint::LeftOfGraph)) );
+                canvas->SetFixedObject(currentRow, currentColumn++, legend);
                 }
             else if (placement.CmpNoCase(L"bottom") == 0)
                 {
+                legend = graph->CreateLegend(
+                    LegendOptions().
+                    RingPerimeter(ringPerimeter).
+                    IncludeHeader(includeHeader).
+                    PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
                 canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(++currentRow, currentColumn,
-                    graph->CreateLegend(
-                        LegendOptions().
-                            RingPerimeter(ringPerimeter).
-                            IncludeHeader(includeHeader).
-                            PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
+                canvas->SetFixedObject(++currentRow, currentColumn, legend);
                 }
             else if (placement.CmpNoCase(L"top") == 0)
                 {
+                legend = graph->CreateLegend(
+                    LegendOptions().
+                    RingPerimeter(ringPerimeter).
+                    IncludeHeader(includeHeader).
+                    PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph));
                 canvas->SetFixedObject(currentRow+1, currentColumn, graph);
-                canvas->SetFixedObject(currentRow++, currentColumn,
-                    graph->CreateLegend(
-                        LegendOptions().
-                            RingPerimeter(ringPerimeter).
-                            IncludeHeader(includeHeader).
-                            PlacementHint(LegendCanvasPlacementHint::AboveOrBeneathGraph)) );
+                canvas->SetFixedObject(currentRow++, currentColumn, legend);
                 }
             else // right, the default
                 {
+                legend = graph->CreateLegend(
+                    LegendOptions().
+                    RingPerimeter(ringPerimeter).
+                    IncludeHeader(includeHeader).
+                    PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
                 canvas->SetFixedObject(currentRow, currentColumn, graph);
-                canvas->SetFixedObject(currentRow, ++currentColumn,
-                    graph->CreateLegend(
-                        LegendOptions().
-                            RingPerimeter(ringPerimeter).
-                            IncludeHeader(includeHeader).
-                            PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
+                canvas->SetFixedObject(currentRow, ++currentColumn, legend);
                 }
+            // update title
+            if (legend && headerLabel.length())
+                { legend->SetLine(0, headerLabel); }
             }
         // no legend, so just add the graph
         else
