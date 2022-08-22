@@ -38,7 +38,7 @@ bool MyApp::OnInit()
 
     wxInitAllImageHandlers();
 
-    // enable this to route wxLog messages to a file
+    // enable this to route wxLog messages to a file:
     // auto logFile = new LogFile;
     // delete wxLog::SetActiveTarget(logFile);
 
@@ -1294,23 +1294,23 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObjectsGridSize(3, 1);
 
         auto swData = std::make_shared<Data::Dataset>();
-            try
-                {
-                swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
-                    ImportInfo().
-                    CategoricalColumns({
-                        { L"Strength", CategoricalImportMethod::ReadAsStrings },
-                        { L"Weakness", CategoricalImportMethod::ReadAsStrings },
-                        { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
-                        { L"Threat", CategoricalImportMethod::ReadAsStrings }
-                        }));
-                }
-            catch (const std::exception& err)
-                {
-                wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                             _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
-                return;
-                }
+        try
+            {
+            swData->ImportCSV(appDir + L"/datasets/ERP Migration Survey.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"Strength", CategoricalImportMethod::ReadAsStrings },
+                    { L"Weakness", CategoricalImportMethod::ReadAsStrings },
+                    { L"Opportunity", CategoricalImportMethod::ReadAsStrings },
+                    { L"Threat", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                            _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
 
         // strengths and weaknesses
         auto SWroadmap = std::make_shared<ProConRoadmap>(subframe->m_canvas);
