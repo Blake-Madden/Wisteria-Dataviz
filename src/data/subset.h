@@ -90,13 +90,13 @@ namespace Wisteria::Data
         /// @brief Constructor.
         Subset() = default;
         /// @private
-        Subset(const DatasetClone&) = delete;
+        Subset(const Subset&) = delete;
         /// @private
-        Subset(DatasetClone&&) = delete;
+        Subset(Subset&&) = delete;
         /// @private
-        Subset& operator=(const DatasetClone&) = delete;
+        Subset& operator=(const Subset&) = delete;
         /// @private
-        Subset& operator=(DatasetClone&&) = delete;
+        Subset& operator=(Subset&&) = delete;
         /** @brief Creates a subset, based on a single criterion.
             @param fromDataset The source datasource to subset.
             @param columnFilter The criterion for subsetting, defining the column and value
