@@ -851,7 +851,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Label::SplitTextAuto()
         {
-        if (const auto charPos = GetText().find_first_of(L"([:");
+        if (const auto charPos = GetText().find_first_of(L"([:/");
             charPos != std::wstring::npos)
             {
             wxString splitText = GetText();
