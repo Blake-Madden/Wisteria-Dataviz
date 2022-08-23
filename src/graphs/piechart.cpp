@@ -28,13 +28,13 @@ namespace Wisteria::GraphItems
             {
         case BinLabelDisplay::BinValue:
             pieLabel->SetText(
-                wxNumberFormatter::ToString(m_value, 1,
+                wxNumberFormatter::ToString(m_value, 0,
                     Settings::GetDefaultNumberFormat()));
             break;
         case BinLabelDisplay::BinValueAndPercentage:
             pieLabel->SetText(wxString::Format(L"%s%%\n(%s)",
                 wxNumberFormatter::ToString((m_percent * 100), 0),
-                wxNumberFormatter::ToString(m_value, 1,
+                wxNumberFormatter::ToString(m_value, 0,
                     Settings::GetDefaultNumberFormat())) );
             break;
         case BinLabelDisplay::BinPercentage:
