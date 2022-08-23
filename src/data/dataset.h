@@ -257,6 +257,11 @@ namespace Wisteria::Data
             return std::nullopt;
             }
 
+        /** @returns The value at the given index as a string.
+            @param index The index into the data to set.*/
+        [[nodiscard]] const wxString GetValueAsLabel(const size_t index) const
+            { return GetLabelFromID(GetValue(index)); }
+
         /// @returns The key value from a string table that represents missing data
         ///     (i.e., empty string), or @c std::nullopt if not found.
         /// @param stringTable The string table to review.
@@ -1077,7 +1082,13 @@ namespace Wisteria::Data
         void ImportTSV(const wxString& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
         /** @brief Exports the dataset to a text file.
-            @details Continuous columns are exported with six-point precision and date
+            @details Columns are exported in the following order:
+                - ID
+                - Categoricals
+                - Dates
+                - Continuous
+
+                Continuous columns are exported with six-point precision and date
                 columns are exported in ISO date & time format.
             @param filePath The file path to save to.
             @param delimiter The delimiter to save with.

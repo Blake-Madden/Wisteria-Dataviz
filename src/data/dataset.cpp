@@ -693,13 +693,14 @@ namespace Wisteria::Data
             return colNames;
             };
         wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString();
-        wxString continuousColumnNames = concatColNames(GetContinuousColumns());
         wxString catColumnNames = concatColNames(GetCategoricalColumns());
-        wxString dataColumnNames = concatColNames(GetDateColumns());
+        wxString dateColumnNames = concatColNames(GetDateColumns());
+        wxString continuousColumnNames = concatColNames(GetContinuousColumns());
+
         wxString colNames = (idName.length() ? idName + delimiter : wxString()) +
-            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString()) +
             (catColumnNames.length() ? catColumnNames + delimiter : wxString()) +
-            (dataColumnNames.length() ? dataColumnNames + delimiter : wxString());
+            (dateColumnNames.length() ? dateColumnNames + delimiter : wxString()) +
+            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString());
         if (colNames.length() && colNames.Last() == delimiter)
             { colNames.RemoveLast();}
         
@@ -713,14 +714,6 @@ namespace Wisteria::Data
             // ID
             if (HasValidIdData())
                 { currentRow.append(wrapText(GetIdColumn().GetValue(i))).append(1, delimiter); }
-            // continuous
-            for (const auto& col : GetContinuousColumns())
-                {
-                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString() :
-                                  wxNumberFormatter::ToString(col.GetValue(i), 6,
-                                      wxNumberFormatter::Style::Style_NoTrailingZeroes))).
-                           append(1, delimiter);
-                }
             // categoricals
             for (const auto& col : GetCategoricalColumns())
                 {
@@ -734,6 +727,14 @@ namespace Wisteria::Data
                            wrapText(col.GetValue(i).IsValid() ?
                                col.GetValue(i).FormatISOCombined() :
                                wxString())).
+                           append(1, delimiter);
+                }
+            // continuous
+            for (const auto& col : GetContinuousColumns())
+                {
+                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString() :
+                                  wxNumberFormatter::ToString(col.GetValue(i), 6,
+                                      wxNumberFormatter::Style::Style_NoTrailingZeroes))).
                            append(1, delimiter);
                 }
             if (currentRow.length() && currentRow.Last() == delimiter)
