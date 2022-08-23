@@ -372,11 +372,17 @@ namespace Wisteria
     /// @brief The type of label to display for a bin (i.e., a bar, pie slice, etc.).
     enum class BinLabelDisplay
         {
-        BinValue,                /*!< The number of items in each bin.*/
-        BinPercentage,           /*!< The percentage of items in each bin.*/
-        BinValueAndPercentage,   /*!< Both the percentage and number of items in each bin.*/
-        NoDisplay,               /*!< Don't display labels on the bins.*/
-        BinName,                 /*!< The name of the bin (e.g., the group name).*/
+        /** @brief The number of items in (or aggregated value of) each bin.*/
+        BinValue,
+        /** @brief The percentage of items in in (or aggregated value of) each bin.*/
+        BinPercentage,
+        /** @brief Both the percentage and number of items in in
+                (or aggregated value of) each bin.*/
+        BinValueAndPercentage,
+        /** @brief Don't display labels on the bins.*/
+        NoDisplay,
+        /** @brief The name of the bin (e.g., the group name).*/
+        BinName,
         /// @private
         BIN_LABEL_DISPLAY_COUNT
         };

@@ -784,7 +784,8 @@ namespace Wisteria::Graphs
         /** @brief Sets the specified row's precision.
             @param row The row to edit.
             @param precision The precision for the row.
-            @param columnStops An optional list of columns within the row to skip.*/
+            @param columnStops An optional list of columns within the row to skip.
+            @note Cells' default precision is zero.*/
         void SetRowPrecision(const size_t row, const uint8_t precision,
             std::optional<std::set<size_t>> columnStops = std::nullopt)
             {
@@ -804,7 +805,8 @@ namespace Wisteria::Graphs
         /** @brief Sets the specified column's precision.
             @param column The column to edit.
             @param precision The precision for the column.
-            @param rowStops An optional list of rows within the column to skip.*/
+            @param rowStops An optional list of rows within the column to skip.
+            @note Cells' default precision is zero.*/
         void SetColumnPrecision(const size_t column, const uint8_t precision,
             std::optional<std::set<size_t>> rowStops = std::nullopt)
             {

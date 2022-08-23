@@ -78,8 +78,8 @@ namespace Wisteria::Graphs
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
-            @param colors The color scheme to apply to the points.
-             Leave as null to use the default theme.*/
+            @param colors The color scheme to apply to the points.\n
+                Leave as null to use the default theme.*/
         explicit CategoricalBarChart(Wisteria::Canvas* canvas,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
             Wisteria::Graphs::BarChart(canvas),
@@ -100,23 +100,27 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the data.
             @param data The data to use for the histogram.
-            @param categoricalColumnName The column from the dataset with the labels to aggregate.
+            @param categoricalColumnName The categorical column from the dataset with the labels to
+                group the data into. The labels in this column will become the bars.
             @param valueColumnName The column with values to sum for each category.
-             If not used (@c std::nullopt), then the frequency of the observations will be used.
-            @param groupColumnName The group column to split the bars into
-             (this is optional).
-            @param blDisplay Which type of labels to display for the bars.
+                If not used (@c std::nullopt), then the frequency of the observations
+                in each group will be used.
+            @param groupColumnName An additional group column to split the bars into
+                (this is optional).
+            @param blDisplay Which type of labels to display at the end of the bars.\n
+                Note that numeric labels (value or percentages) will be shown as integers
+                (i.e., no precision) for simplicity.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& categoricalColumnName,
                      const std::optional<const wxString> valueColumnName = std::nullopt,
                      const std::optional<const wxString> groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
 
-        /// @returns The number of groups found during the last call to SetData().
-        ///  This is only relevant if using a grouping variable.
+        /// @returns The number of subgroups found during the last call to SetData().\n
+        ///     This is only relevant if using the secondary grouping variable.
         [[nodiscard]] size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
 
