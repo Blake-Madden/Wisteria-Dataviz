@@ -581,11 +581,11 @@ namespace Wisteria::Graphs
                 }
             }
         /** @brief Adds an aggregate (e.g., total) row to the end of the table.
-            @param aggInfo Which type of aggregation to use in the column.
-            @param rowName An optional value for the first row of the new
+            @param aggInfo Which type of aggregation to use in the row.
+            @param rowName An optional value for the first column of the new
                 row, representing a name for the row.\n
                 This will be overwritten by a calculated value if the left-most column is not text.
-            @param rowIndex Where to (optionally) insert the column. The default
+            @param rowIndex Where to (optionally) insert the row. The default
                 is to insert as the last row.
             @param bkColor An optional background for the row.
             @note This should be called after all data has been set because the

@@ -616,11 +616,11 @@ namespace Wisteria::Graphs
                 if (cell.m_rowCount > 1)
                     {
                     auto remainingRows = cell.m_rowCount - 1;
-                    auto nextRow = currentRow+1;
+                    auto nextRow = currentRow + 1;
                     while (remainingRows > 0 && nextRow < GetRowCount())
                         {
                         rowHeights[nextRow] =
-                            std::max(safe_divide(bBox.GetWidth(), cell.m_rowCount),
+                            std::max(safe_divide(bBox.GetHeight(), cell.m_rowCount),
                                      rowHeights[nextRow]);
                         ++nextRow;
                         --remainingRows;
@@ -699,7 +699,8 @@ namespace Wisteria::Graphs
         // adjust if row heights collectively go outside of the drawing area
         if (tableHeight > drawArea.GetHeight())
             {
-            const auto heightDiffProportion = safe_divide<double>(drawArea.GetHeight(), tableHeight);
+            const auto heightDiffProportion = safe_divide<double>(drawArea.GetHeight(),
+                                                                  tableHeight);
             // take away a proportional amount of the difference from each row and column
             for (auto& row : rowHeights)
                 { row *= heightDiffProportion; }
@@ -1301,7 +1302,7 @@ namespace Wisteria::Graphs
                 const auto cellsYMiddle = ((highestY - lowestY) / 2) + lowestY;
                 noteConnectionLines->AddLine(
                     wxPoint(leftGutter.GetRight() - connectionOverhangWidth, cellsYMiddle),
-                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth *2, cellsYMiddle));
+                    wxPoint(leftGutter.GetRight() - connectionOverhangWidth * 2, cellsYMiddle));
                 AddObject(noteConnectionLines);
                 // add the note into the gutter
                 auto noteLabel = std::make_shared<Label>(
@@ -1340,7 +1341,7 @@ namespace Wisteria::Graphs
             // and downscale that to what is being used for the cells' and annotations'
             // text, making a consistent look.
             GetCaption().GetFont().SetFractionalPointSize(
-                (GetTitle().GetFont().GetFractionalPointSize() * .75) *
+                (GetTitle().GetFont().GetFractionalPointSize() * math_constants::three_quarters) *
                  std::max(1.0, smallestTextScaling));
             }
         }
