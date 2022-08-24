@@ -24,6 +24,7 @@
 #include "../src/base/reportbuilder.h"
 #include "../src/base/reportprintout.h"
 #include "../src/data/subset.h"
+#include "../src/data/pivot.h"
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
 #include "../src/graphs/candlestickplot.h"
