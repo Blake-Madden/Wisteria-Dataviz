@@ -855,67 +855,17 @@ namespace Wisteria
                 {
                 if (pivot->IsOk())
                     {
-                    // What is being pivoted? Default to the parent dataset.
-                    // ----------------
-                    std::shared_ptr<const Data::Dataset> datasetToPivot{ parentToPivot };
-                    // if explicitly requested a different dataset (e.g., a previous subset or pivot)
-                    if (pivot->GetProperty(L"dataset")->IsOk())
-                        {
-                        const wxString dsName = pivot->GetProperty(L"dataset")->GetValueString();
-                        const auto foundDataset = m_datasets.find(dsName);
-                        if (foundDataset == m_datasets.cend() ||
-                            foundDataset->second == nullptr)
-                            {
-                            throw std::runtime_error(
-                                wxString::Format(
-                                    _(L"%s: dataset not found for pivot."), dsName).ToUTF8());
-                            }
-                        datasetToPivot = foundDataset->second;
-                        }
                     Pivot pw;
-                    auto pivotedData = pw.PivotWider(datasetToPivot,
+                    auto pivotedData = pw.PivotWider(parentToPivot,
                         pivot->GetProperty(L"id-columns")->GetValueStringVector(),
                         pivot->GetProperty(L"names-from-column")->GetValueString(),
                         pivot->GetProperty(L"values-from-columns")->GetValueStringVector());
 
                     if (pivotedData)
                         {
-                        LoadDatasetTransformations(pivot, pivotedData);
                         m_datasets.insert_or_assign(
                             pivot->GetProperty(L"name")->GetValueString(), pivotedData);
-                        // load any constants defined with this pivot
-                        LoadConstants(pivot->GetProperty(L"formulas"), pivotedData);
-
-                        auto exportPath =
-                                pivot->GetProperty(L"export-path")->GetValueString();
-                        // A project silently writing to an arbitrary file is
-                        // a security threat vector, so only allow that for builds
-                        // with DEBUG_FILE_IO explicitly set.
-                        // This should only be used for reviewing the output from a pivot operation
-                        // when designing a project (in release build).
-                        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
-                            {
-                            if (exportPath.length())
-                                {
-                                wxFileName fn(exportPath);
-                                if (fn.GetPath().empty())
-                                    {
-                                    fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
-                                    }                     
-                                if (fn.GetExt().CmpNoCase(L"csv") == 0)
-                                    { pivotedData->ExportCSV(fn.GetFullPath()); }
-                                else
-                                    { pivotedData->ExportTSV(fn.GetFullPath()); }
-                                }
-                            }
-                        else if (exportPath.length())
-                            {
-                            // just log this (don't throw)
-                            wxLogWarning(
-                                    wxString::Format(_(L"Dataset '%s' cannot be exported "
-                                        "because debug file IO is not enabled."),
-                                        datasetToPivot->GetName()));
-                            }
+                        LoadDatasetTransformations(pivot, pivotedData);
                         }
                     }
                 }
@@ -981,23 +931,6 @@ namespace Wisteria
                 {
                 if (subset->IsOk())
                     {
-                    // What is being filtered? Default to the parent dataset.
-                    // ----------------
-                    std::shared_ptr<const Data::Dataset> datasetToSubset{ parentToSubset };
-                    // if explicitly requested a different dataset (e.g., a previous subset)
-                    if (subset->GetProperty(L"dataset")->IsOk())
-                        {
-                        const wxString dsName = subset->GetProperty(L"dataset")->GetValueString();
-                        const auto foundDataset = m_datasets.find(dsName);
-                        if (foundDataset == m_datasets.cend() ||
-                            foundDataset->second == nullptr)
-                            {
-                            throw std::runtime_error(
-                                wxString::Format(
-                                    _(L"%s: dataset not found for subset."), dsName).ToUTF8());
-                            }
-                        datasetToSubset = foundDataset->second;
-                        }
                     const auto filterNode = subset->GetProperty(L"filter");
                     const auto filterAndNode = subset->GetProperty(L"filter-and");
                     const auto filterOrNode = subset->GetProperty(L"filter-or");
@@ -1022,7 +955,7 @@ namespace Wisteria
                     if (filterNode->IsOk())
                         {
                         subsettedDataset = dataSubsetter.SubsetSimple(
-                                datasetToSubset, loadColumnFilter(filterNode));
+                                parentToSubset, loadColumnFilter(filterNode));
                         }
                     // ANDed filters
                     else if (filterAndNode->IsOk())
@@ -1037,7 +970,7 @@ namespace Wisteria
                         for (const auto& filterNode : filterNodes)
                             { cf.emplace_back(loadColumnFilter(filterNode)); }
                             
-                        subsettedDataset = dataSubsetter.SubsetAnd(datasetToSubset, cf);
+                        subsettedDataset = dataSubsetter.SubsetAnd(parentToSubset, cf);
                         }
                     // ORed filters
                     else if (filterOrNode->IsOk())
@@ -1052,47 +985,14 @@ namespace Wisteria
                         for (const auto& filterNode : filterNodes)
                             { cf.emplace_back(loadColumnFilter(filterNode)); }
 
-                        subsettedDataset = dataSubsetter.SubsetOr(datasetToSubset, cf);
+                        subsettedDataset = dataSubsetter.SubsetOr(parentToSubset, cf);
                         }
 
                     if (subsettedDataset)
                         {
-                        LoadDatasetTransformations(subset, subsettedDataset);
                         m_datasets.insert_or_assign(
                             subset->GetProperty(L"name")->GetValueString(), subsettedDataset);
-                        // load any constants defined with this subset
-                        LoadConstants(subset->GetProperty(L"formulas"), subsettedDataset);
-
-                        auto exportPath =
-                                subset->GetProperty(L"export-path")->GetValueString();
-                        // A project silently writing to an arbitrary file is
-                        // a security threat vector, so only allow that for builds
-                        // with DEBUG_FILE_IO explicitly set.
-                        // This should only be used for reviewing the output from a subset operation
-                        // when designing a project (in release build).
-                        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
-                            {
-                            if (exportPath.length())
-                                {
-                                wxFileName fn(exportPath);
-                                if (fn.GetPath().empty())
-                                    {
-                                    fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
-                                    }                     
-                                if (fn.GetExt().CmpNoCase(L"csv") == 0)
-                                    { subsettedDataset->ExportCSV(fn.GetFullPath()); }
-                                else
-                                    { subsettedDataset->ExportTSV(fn.GetFullPath()); }
-                                }
-                            }
-                        else if (exportPath.length())
-                            {
-                            // just log this (don't throw)
-                            wxLogWarning(
-                                    wxString::Format(_(L"Dataset '%s' cannot be exported "
-                                        "because debug file IO is not enabled."),
-                                        datasetToSubset->GetName()));
-                            }
+                        LoadDatasetTransformations(subset, subsettedDataset);
                         }
                     }
                 }
@@ -1121,6 +1021,46 @@ namespace Wisteria
                     recodeRE->GetProperty(L"column")->GetValueString(),
                     recodeRE->GetProperty(L"pattern")->GetValueString(),
                     recodeRE->GetProperty(L"replacement")->GetValueString());
+                }
+
+            // load any constants defined with this dataset
+            LoadConstants(dsNode->GetProperty(L"formulas"), dataset);
+
+            // load any subsets of this dataset
+            LoadSubsets(dsNode->GetProperty(L"subsets"), dataset);
+
+            // load any pivots of this dataset
+            LoadPivots(dsNode->GetProperty(L"pivots"), dataset);
+
+            const auto exportPath =
+                    dsNode->GetProperty(L"export-path")->GetValueString();
+            // A project silently writing to an arbitrary file is
+            // a security threat vector, so only allow that for builds
+            // with DEBUG_FILE_IO explicitly set.
+            // This should only be used for reviewing the output from a pivot operation
+            // when designing a project (in release build).
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
+                {
+                if (exportPath.length())
+                    {
+                    wxFileName fn(exportPath);
+                    if (fn.GetPath().empty())
+                        {
+                        fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
+                        }                     
+                    if (fn.GetExt().CmpNoCase(L"csv") == 0)
+                        { dataset->ExportCSV(fn.GetFullPath()); }
+                    else
+                        { dataset->ExportTSV(fn.GetFullPath()); }
+                    }
+                }
+            else if (exportPath.length())
+                {
+                // just log this (don't throw)
+                wxLogWarning(
+                        wxString::Format(_(L"Dataset '%s' cannot be exported "
+                            "because debug file IO is not enabled."),
+                            dataset->GetName()));
                 }
             }
         }
@@ -1274,17 +1214,9 @@ namespace Wisteria
                                     ToUTF8());
                         }
                     
-                    LoadDatasetTransformations(datasetNode, dataset);
                     m_datasets.insert_or_assign(dsName, dataset);
-
-                    // load any constants defined with this dataset
-                    LoadConstants(datasetNode->GetProperty(L"formulas"), dataset);
-
-                    // load any subsets of this dataset
-                    LoadSubsets(datasetNode->GetProperty(L"subsets"), dataset);
-
-                    // load any pivots of this dataset
-                    LoadPivots(datasetNode->GetProperty(L"pivots"), dataset);
+                    // recode values, build subsets and pivots, etc.
+                    LoadDatasetTransformations(datasetNode, dataset);
                     }
                 }
             }

@@ -83,12 +83,9 @@ Properties for the @c "datasets" node:
 
   Next, a @c "formulas" section can also be loaded from within the dataset's node.
   In this context, this is a formula string which references the dataset.\n
-  This is an array of constant specifications which include the following properties:
-  - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
-  - @c "value": either a string or numeric value to associate with the key.\n
-    If a number, then it will be formatted to the current locale when displayed in the report.\n
-    If a string, then it can be a literal string or a formula.\n
-    The following formulas are available:\n
+  This is an array of specifications which include the following properties:
+  - @c "name": the key used for the item. Other items in the project reference this using the syntax `{{name}}`, where @c name is the look-up key.
+  - @c "value": a string containing one of the following formulas:
     - `min(column)`:
       Returns the minimum value of the given column from the dataset.
       - @c column is the column name from the dataset.\n
@@ -107,16 +104,11 @@ Properties for the @c "datasets" node:
         For example, the group ID can be a formula getting the highest label from the grouping column:\n
         `n(Degree, Academic Year, {{max(Academic Year)}})`\n
 
-  Next, the "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
+  Next, the @c "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
   - @c "name": the name of the subset. (This should be different from the dataset that it is subsetting;
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - @c "dataset": the name of the dataset that it is subsetting. This will be the name that was assigned
-    to the dataset in the ["datasets"](#datasets-properties) section.\n
-    Note: this is optional and should only be included if referencing a different dataset. (If not included,
-    the parent dataset will be used.) Specifying a different dataset can be useful for subsetting a previous subset,
-    given that the subsets are created in the order that they appear in the project file.
   - @c "filter": the subset filtering definition, which will contain the following:
     - @c "column": the column from the dataset to filter on.
     - @c "operator": how to compare the values from the column with the filter's value.
@@ -132,22 +124,17 @@ Properties for the @c "datasets" node:
          Note that string values can reference constants loaded from the ["constants"](#constants-properties) section
          or @c "formulas" section of the parent dataset.
 
-  Finally, the "pivots" section of the dataset's node is parsed. This is an array of pivot specifications which
+  Finally, the @c "pivots" section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:
   - @c "name": the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - @c "dataset": the name of the dataset that it is pivoting. This will be the name that was assigned
-    to the dataset in the ["datasets"](#datasets-properties) section.\n
-    Note: this is optional and should only be included if referencing a different dataset. (If not included,
-    the parent dataset will be used.) Specifying a different dataset can be useful for pivoting a previous subset or pivot,
-    given that the pivoting are created in the order that they appear in the project file.
   - @c "id-columns": an array of strings representing the ID columns.
   - @c "names-from-column": a strings representing the 'names from'.
   - @c "values-from-columns": an array of strings representing the 'falues from' columns.
 
-  Note that subset and pivot nodes can also contain transformation commands (e.g., @c "columns-rename") and its own
-  ["formulas"](#constants-properties) section, similar to a dataset's node.
+  Note that subset and pivot nodes can contain their own transformation and formula sections,
+  same as a dataset node.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
