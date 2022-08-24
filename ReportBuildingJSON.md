@@ -440,6 +440,10 @@ The remaining properties are executed in the following order:
   - @c "end": the last column/row that the aggregate column/row should use.\n
        This property is optional, and if not included the last numeric column/row encountered will be used.
        Like @c "start", this is optional and has the same properties.
+- "add-row-totals": adds a grand total row to the bottom of the table.\n
+  If the first column is grouped and the second colum is text, then this will also insert subtotal rows.\m
+  Available options are:
+  - @c "background": the background color for the row(s).
 - @c "cells-update": an array of cell updating commands, which contain the following properties:
   - @c "column": the column position of the cell to update.\n
        Refer to the [position](#position-properties) properties that are available.

@@ -1743,7 +1743,7 @@ namespace Wisteria
                 }
             }
 
-        // column aggregates
+        // column/row aggregates
         const auto columnAggregates =
             graphNode->GetProperty(L"add-aggregates")->GetValueArrayObject();
         if (columnAggregates.size())
@@ -1793,6 +1793,17 @@ namespace Wisteria
                                        std::optional<wxColour>(bkColor) : std::nullopt));
                     }
                 }
+            }
+
+        // row totals
+        const auto rowTotals =
+            graphNode->GetProperty(L"add-row-totals");
+        if (rowTotals->IsOk())
+            {
+            const wxColour bkColor(
+                    ConvertColor(rowTotals->GetProperty(L"background")->GetValueString()));
+            table->InsertRowTotals(bkColor.IsOk() ?
+                                    std::optional<wxColour>(bkColor) : std::nullopt);
             }
 
         // cell updating
