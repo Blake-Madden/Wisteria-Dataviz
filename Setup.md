@@ -31,5 +31,5 @@ enable features such as drawing bounding boxes when you select items, showing us
 about the plot (e.g., its current scaling), etc. These features are toggled via preprocessor flags;
 refer to @c Wisteria::DebugSettings for an explanation of these flags and which features they enable.
 
-Note that @c DEBUG_BOXES is enabled by default if @c wxDEBUG_LEVEL is defined as @c 2 or higher.
+Note that @c DEBUG_BOXES  and @c DEBUG_FILE_IO are enabled by default if @c wxDEBUG_LEVEL is defined as @c 2 or higher.
 All other features are disabled.
