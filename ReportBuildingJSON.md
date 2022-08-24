@@ -30,7 +30,7 @@ Properties for the @c "constants" node:
   - @c "value": either a string or numeric value to associate with the key.\n
     If a number, then it will be formatted to the current locale when displayed in the report.\n
 
-Note that datasets have their own @c "constants" section which can use self-referencing formulas.
+Note that datasets have their own @c "formulas" section which can use self-referencing formulas.
 
 ## Datasets {#datasets-properties}
 Properties for the @c "datasets" node:
@@ -81,8 +81,8 @@ Properties for the @c "datasets" node:
     - @c "pattern": the regular expression pattern to search for.
     - @c "replacement": the replacement text. Note that capture groups are supported.
 
-  Next, a ["constants"](#constants-properties) section can also be loaded from within the dataset's node.
-  In this context, a constant will be a formula string which references the dataset.\n
+  Next, a @c "formulas" section can also be loaded from within the dataset's node.
+  In this context, this is a formula string which references the dataset.\n
   This is an array of constant specifications which include the following properties:
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": either a string or numeric value to associate with the key.\n
@@ -107,7 +107,7 @@ Properties for the @c "datasets" node:
         For example, the group ID can be a formula getting the highest label from the grouping column:\n
         `n(Degree, Academic Year, {{max(Academic Year)}})`\n
 
-  Finally, the "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
+  Next, the "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
   - @c "name": the name of the subset. (This should be different from the dataset that it is subsetting;
     otherwise, it will overwrite it.)\n
@@ -129,10 +129,25 @@ Properties for the @c "datasets" node:
       - @c ">=": great than or equal to
     - @c "value": the value to filter the column on. This can be a number, string, or date
          (depending on the column's data type).\n
-         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section.
+         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section
+         or @c "formulas" section of the parent dataset.
 
-  Note that subset nodes can also contain transformation commands (e.g., @c "columns-rename") and its own
-  ["constants"](#constants-properties) section, similar to a dataset's node.
+  Finally, the "pivots" section of the dataset's node is parsed. This is an array of pivot specifications which
+  contain the following properties:
+  - @c "name": the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
+    otherwise, it will overwrite it.)\n
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - @c "dataset": the name of the dataset that it is pivoting. This will be the name that was assigned
+    to the dataset in the ["datasets"](#datasets-properties) section.\n
+    Note: this is optional and should only be included if referencing a different dataset. (If not included,
+    the parent dataset will be used.) Specifying a different dataset can be useful for pivoting a previous subset or pivot,
+    given that the pivoting are created in the order that they appear in the project file.
+  - @c "id-columns": an array of strings representing the ID columns.
+  - @c "names-from-column": a strings representing the 'names from'.
+  - @c "values-from-columns": an array of strings representing the 'falues from' columns.
+
+  Note that subset and pivot nodes can also contain transformation commands (e.g., @c "columns-rename") and its own
+  ["formulas"](#constants-properties) section, similar to a dataset's node.
 
 ## Pages {#pages-properties}
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
@@ -360,7 +375,10 @@ Properties for @c "shape" nodes:
 
 ## Table {#table-properties}
 Properties for @c "table" nodes:
-- @c "variables": an array of column names to use from the dataset.
+- @c "variables": an array of column names to use from the dataset.\n
+  These values can also be variable selection formulas, including the following:
+  - @ "contains('value')": where @c value will be the search pattern, and any column
+      in the dataset that contains this text will be included.
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
 - @c "min-width-proportion": the minimum percent of the drawing area's width that the table should consume
@@ -395,6 +413,8 @@ The remaining properties are executed in the following order:
     - @c "left-aligned"
     - @c "right-aligned"
     - @c "centered"
+- @c "columns-group": a numeric array representing which columns to apply label grouping to.\n
+     Down each provided column, this will combine consecutive cells with the same label into one cell.
 - @c "columns-color": an array of column and color pairs, which contain the following properties:
   - @c "position": which column to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
@@ -415,17 +435,23 @@ The remaining properties are executed in the following order:
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "stops": an array of which rows to skip over when changing the column's cell highlighting.\n
        This is an array of @c "position" items.
-- @c "columns-add-aggregates": an array of column aggregate definitions that will be added to the table.\n
-     Each column aggregate node contains the following properties:
-  - @c "type": the type of aggregate column to add.\n
+- @c "add-aggregates": an array of aggregate definitions that will be added to the table.\n
+     Each aggregate node contains the following properties:
+  - @c "type": where to add the aggregate.\n
+    Available options are:
+    - @c "row"
+    - @c "column"
+  - @c "aggregate-type": the type of aggregate to add.\n
     Available options are:
     - @c "percent-change"
-  - @c "name": the name for the column.
-  - @c "start": the first column that the aggregate column should use.\n
-       This property is optional, and if not included the first numeric column encountered will be used.\n
+    - @c "total"
+  - @c "background": the background color for the column/row. This can be either a color name or hex-encoded value.
+  - @c "name": the name for the newly added aggregate column/row.
+  - @c "start": the first column/row that the aggregate column/row should use.\n
+       This property is optional, and if not included the first numeric column/row encountered will be used.\n
        Refer to the [position](#position-properties) properties that are available.
-  - @c "end": the last column that the aggregate column should use.\n
-       This property is optional, and if not included the last numeric column encountered will be used.
+  - @c "end": the last column/row that the aggregate column/row should use.\n
+       This property is optional, and if not included the last numeric column/row encountered will be used.
        Like @c "start", this is optional and has the same properties.
 - @c "cells-update": an array of cell updating commands, which contain the following properties:
   - @c "column": the column position of the cell to update.\n
@@ -454,8 +480,8 @@ The remaining properties are executed in the following order:
     - @c "centered"
     - @c "justified"
 - @c "footnotes": an array of footnote specifications, which each contain the following properties:
-  - @c "value": the cell value to add a footnote number to.
-  - @c "footnote": the footnote to add to the caption.
+  - @c "value": the cell value to add a footnote number to. Can include ["constants"](#constants-properties).
+  - @c "footnote": the footnote to add to the caption. Can include ["constants"](#constants-properties).
 
 # Base-level Properties
 

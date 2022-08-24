@@ -628,6 +628,58 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<std::vector<wxString>> ReportBuilder::ExpandVariableSelections(wxString var,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (var.starts_with(L"{{") && var.ends_with(L"}}"))
+            { var = var.substr(2, var.length() - 4); }
+        else
+            { return std::nullopt; }
+        const wxRegEx re(L"(?i)^[ ]*(contains)[ ]*\\('([[:alnum:] \\-]+)'[ ]*\\)");
+        if (re.Matches(var))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 3)
+                {
+                const wxString funcName = re.GetMatch(var, 1).MakeLower().
+                    Trim(true).Trim(false);
+                const wxString columnPattern = re.GetMatch(var, 2).
+                    Trim(true).Trim(false);
+
+                if (funcName.CmpNoCase(L"contains") == 0)
+                    {
+                    // get columns that contain the string (case sensitively)
+                    std::vector<wxString> columns;
+                    if (dataset->GetIdColumn().GetName().Contains(columnPattern))
+                        { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                    for (const auto& col : dataset->GetCategoricalColumns())
+                        {
+                        if (col.GetName().Contains(columnPattern))
+                            { columns.emplace_back(col.GetName()); }
+                        }
+                    for (const auto& col : dataset->GetContinuousColumns())
+                        {
+                        if (col.GetName().Contains(columnPattern))
+                            { columns.emplace_back(col.GetName()); }
+                        }
+                    for (const auto& col : dataset->GetDateColumns())
+                        {
+                        if (col.GetName().Contains(columnPattern))
+                            { columns.emplace_back(col.GetName()); }
+                        }
+                    return columns;
+                    }
+                else
+                    { return std::nullopt; }
+                }
+            else
+                { return std::nullopt; }
+            }
+        else
+            { return std::nullopt; }
+        }
+
+    //---------------------------------------------------
     wxString ReportBuilder::CalcFormula(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
@@ -793,6 +845,84 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
+                                   const std::shared_ptr<const Data::Dataset>& parentToPivot)
+        {
+        if (pivotsNode->IsOk())
+            {
+            auto pivots = pivotsNode->GetValueArrayObject();
+            for (const auto& pivot : pivots)
+                {
+                if (pivot->IsOk())
+                    {
+                    // What is being pivoted? Default to the parent dataset.
+                    // ----------------
+                    std::shared_ptr<const Data::Dataset> datasetToPivot{ parentToPivot };
+                    // if explicitly requested a different dataset (e.g., a previous subset or pivot)
+                    if (pivot->GetProperty(L"dataset")->IsOk())
+                        {
+                        const wxString dsName = pivot->GetProperty(L"dataset")->GetValueString();
+                        const auto foundDataset = m_datasets.find(dsName);
+                        if (foundDataset == m_datasets.cend() ||
+                            foundDataset->second == nullptr)
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(
+                                    _(L"%s: dataset not found for pivot."), dsName).ToUTF8());
+                            }
+                        datasetToPivot = foundDataset->second;
+                        }
+                    Pivot pw;
+                    auto pivotedData = pw.PivotWider(datasetToPivot,
+                        pivot->GetProperty(L"id-columns")->GetValueStringVector(),
+                        pivot->GetProperty(L"names-from-column")->GetValueString(),
+                        pivot->GetProperty(L"values-from-columns")->GetValueStringVector());
+
+                    if (pivotedData)
+                        {
+                        LoadDatasetTransformations(pivot, pivotedData);
+                        m_datasets.insert_or_assign(
+                            pivot->GetProperty(L"name")->GetValueString(), pivotedData);
+                        // load any constants defined with this pivot
+                        LoadConstants(pivot->GetProperty(L"formulas"), pivotedData);
+
+                        auto exportPath =
+                                pivot->GetProperty(L"export-path")->GetValueString();
+                        // A project silently writing to an arbitrary file is
+                        // a security threat vector, so only allow that for builds
+                        // with DEBUG_FILE_IO explicitly set.
+                        // This should only be used for reviewing the output from a pivot operation
+                        // when designing a project (in release build).
+                        if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::AllowFileIO))
+                            {
+                            if (exportPath.length())
+                                {
+                                wxFileName fn(exportPath);
+                                if (fn.GetPath().empty())
+                                    {
+                                    fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
+                                    }                     
+                                if (fn.GetExt().CmpNoCase(L"csv") == 0)
+                                    { pivotedData->ExportCSV(fn.GetFullPath()); }
+                                else
+                                    { pivotedData->ExportTSV(fn.GetFullPath()); }
+                                }
+                            }
+                        else if (exportPath.length())
+                            {
+                            // just log this (don't throw)
+                            wxLogWarning(
+                                    wxString::Format(_(L"Dataset '%s' cannot be exported "
+                                        "because debug file IO is not enabled."),
+                                        datasetToPivot->GetName()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    //---------------------------------------------------
     void ReportBuilder::LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
                                     const std::shared_ptr<const Data::Dataset>& parentToSubset)
         {
@@ -931,7 +1061,7 @@ namespace Wisteria
                         m_datasets.insert_or_assign(
                             subset->GetProperty(L"name")->GetValueString(), subsettedDataset);
                         // load any constants defined with this subset
-                        LoadConstants(subset->GetProperty(L"constants"), subsettedDataset);
+                        LoadConstants(subset->GetProperty(L"formulas"), subsettedDataset);
 
                         auto exportPath =
                                 subset->GetProperty(L"export-path")->GetValueString();
@@ -1148,10 +1278,13 @@ namespace Wisteria
                     m_datasets.insert_or_assign(dsName, dataset);
 
                     // load any constants defined with this dataset
-                    LoadConstants(datasetNode->GetProperty(L"constants"), dataset);
+                    LoadConstants(datasetNode->GetProperty(L"formulas"), dataset);
 
                     // load any subsets of this dataset
                     LoadSubsets(datasetNode->GetProperty(L"subsets"), dataset);
+
+                    // load any pivots of this dataset
+                    LoadPivots(datasetNode->GetProperty(L"pivots"), dataset);
                     }
                 }
             }
@@ -1464,7 +1597,19 @@ namespace Wisteria
                 wxString::Format(_(L"%s: dataset not found for table."), dsName).ToUTF8());
             }
 
-        const auto variables = graphNode->GetProperty(L"variables")->GetValueStringVector();
+        std::vector<wxString> variables;
+        const auto readVariables = graphNode->GetProperty(L"variables")->GetValueStringVector();
+        for (const auto& readVar : readVariables)
+            {
+            auto convertedVars = ExpandVariableSelections(readVar, foundPos->second);
+            if (convertedVars)
+                {
+                variables.insert(variables.cend(),
+                    convertedVars.value().cbegin(), convertedVars.value().cend());
+                }
+            else
+                { variables.push_back(readVar); }
+            }
 
         auto table = std::make_shared<Graphs::Table>(canvas);
         table->SetData(foundPos->second, variables,
@@ -1580,6 +1725,11 @@ namespace Wisteria
                 }
             }
 
+        // group the columns
+        const auto columnGroupings = graphNode->GetProperty(L"columns-group")->GetValueArrayNumber();
+        for (const auto& columnGrouping : columnGroupings)
+            { table->GroupColumn(columnGrouping); }
+
         // color the columns
         const auto colColorCommands = graphNode->GetProperty(L"columns-color")->GetValueArrayObject();
         if (colColorCommands.size())
@@ -1645,22 +1795,26 @@ namespace Wisteria
 
         // column aggregates
         const auto columnAggregates =
-            graphNode->GetProperty(L"columns-add-aggregates")->GetValueArrayObject();
+            graphNode->GetProperty(L"add-aggregates")->GetValueArrayObject();
         if (columnAggregates.size())
             {
             for (const auto& columnAggregate : columnAggregates)
                 {
                 const auto aggName = columnAggregate->GetProperty(L"name")->GetValueString();
-                const auto aggType = columnAggregate->GetProperty(L"type")->GetValueString();
+                const auto whereType = columnAggregate->GetProperty(L"type")->GetValueString();
+                const auto aggType = columnAggregate->GetProperty(L"aggregate-type")->GetValueString();
 
-                // starting column
+                // starting column/row
                 const std::optional<size_t> startColumn =
                     LoadPosition(columnAggregate->GetProperty(L"start"),
                         originalColumnCount, originalRowCount);
-                // ending column
+                // ending column/row
                 const std::optional<size_t> endingColumn =
                     LoadPosition(columnAggregate->GetProperty(L"end"),
                         originalColumnCount, originalRowCount);
+
+                const wxColour bkColor(
+                    ConvertColor(columnAggregate->GetProperty(L"background")->GetValueString()));
 
                 Table::AggregateInfo aggInfo;
                 if (startColumn.has_value())
@@ -1670,10 +1824,24 @@ namespace Wisteria
 
                 if (aggType.CmpNoCase(L"percent-change") == 0)
                     { aggInfo.Type(Table::AggregateType::ChangePercent); }
+                else if (aggType.CmpNoCase(L"total") == 0)
+                    { aggInfo.Type(Table::AggregateType::Total); }
                 // invalid agg column type
                 else
                     { continue; }
-                table->InsertAggregateColumn(aggInfo, aggName);
+
+                if (whereType.CmpNoCase(L"column") == 0)
+                    {
+                    table->InsertAggregateColumn(aggInfo, aggName,
+                        std::nullopt, (bkColor.IsOk() ?
+                                       std::optional<wxColour>(bkColor): std::nullopt));
+                    }
+                else if (whereType.CmpNoCase(L"row") == 0)
+                    {
+                    table->InsertAggregateRow(aggInfo, aggName,
+                        std::nullopt, (bkColor.IsOk() ?
+                                       std::optional<wxColour>(bkColor) : std::nullopt));
+                    }
                 }
             }
 
@@ -1800,8 +1968,8 @@ namespace Wisteria
             for (const auto& ftNode : footnotesNode)
                 {
                 table->AddFootnote(
-                    ftNode->GetProperty(L"value")->GetValueString(),
-                    ftNode->GetProperty(L"footnote")->GetValueString());
+                    ExpandConstants(ftNode->GetProperty(L"value")->GetValueString()),
+                    ExpandConstants(ftNode->GetProperty(L"footnote")->GetValueString()));
                 }
             }
 

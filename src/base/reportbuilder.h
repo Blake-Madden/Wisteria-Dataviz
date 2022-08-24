@@ -17,6 +17,7 @@
 #include "colorbrewer.h"
 #include "fillableshape.h"
 #include "../data/subset.h"
+#include "../data/pivot.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/piechart.h"
 #include "../graphs/categoricalbarchart.h"
@@ -60,6 +61,15 @@ namespace Wisteria
         ///     explicitly references something else (e.g., a previous subset from the same section).
         void LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
                          const std::shared_ptr<const Data::Dataset>& parentToSubset);
+        /// @brief Loads the pivots node into @c m_datasets.
+        /// @details These (pivoted) datasets are used by objects throughout the report,
+        ///     referencing them by name.
+        /// @param pivotsNode The pivots node.
+        /// @param parentToPivot The dataset connected to the current dataset node.
+        ///     This will usually be the dataset being pivoted, unless a pivot
+        ///     explicitly references something else (e.g., a previous pivot from the same section).
+        void LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
+                        const std::shared_ptr<const Data::Dataset>& parentToPivot);
         /// @brief Loads a common axis node into @c m_commonAxesPostions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then
@@ -242,6 +252,10 @@ namespace Wisteria
         [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
         [[nodiscard]] wxString CalcValidNValue(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+
+        // variable expansion functions
+        [[nodiscard]] std::optional<std::vector<wxString>> ExpandVariableSelections(wxString var,
             const std::shared_ptr<const Data::Dataset>& dataset);
 
         // the datasets used by all subitems in the report
