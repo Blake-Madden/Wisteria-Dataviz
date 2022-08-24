@@ -59,7 +59,7 @@ such as:
   - New graph types can be designed from the ground up or be derived from existing graph types (e.g., [BarChart](BarChart.md))
   - Uses an object-based API for positioning points, text boxes, polygons, lines, and images
   - Supports custom axes
-  - Draw bounding boxes and extended information in debug mode (via `Wisteria::Settings::EnableDebugFlag()`)
+  - Draw bounding boxes and extended information in debug mode
   - Profiling macros (e.g., `PROFILE()`) to help with reviewing performance
   - i18n functions to help prevent accidental translations (e.g., `DONTTRANSLATE()` and `_DT()`)
   - `LogFile` class for routing logging information to a formatted file
