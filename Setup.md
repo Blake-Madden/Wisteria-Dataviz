@@ -29,7 +29,7 @@ Debug Information
 If designing your own graph type, drawing debug information can be helpful. For example, you can
 enable features such as drawing bounding boxes when you select items, showing useful information
 about the plot (e.g., its current scaling), etc. These features are toggled via preprocessor flags;
-refer to @c Wisteria::DebugSettings for an explanation of these flags and which features the enable.
+refer to @c Wisteria::DebugSettings for an explanation of these flags and which features they enable.
 
 Note that @c DEBUG_BOXES is enabled by default if @c wxDEBUG_LEVEL is defined as @c 2 or higher.
 All other features are disabled.
