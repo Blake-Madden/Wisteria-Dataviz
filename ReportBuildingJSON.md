@@ -23,14 +23,14 @@ The following details the available options for JSON project files.
 
 ## Constants {#constants-properties}
 Properties for the @c "constants" node:
-- @c "constants": contains an array of key and value pairs, which are referenced by other items in the reports.\n
+- @c "constants": contains an array of key and value pairs, which are referenced by other items in the project.\n
   Items reference key/value pairs via text labels using a special syntax. For example, @c label objects or graph
   titles can embed a reference to a runtime value, which will be expanded when the report is rendered.
   - @c "name": the key used for the item. Other items reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": either a string or numeric value to associate with the key.\n
     If a number, then it will be formatted to the current locale when displayed in the report.\n
 
-Note that datasets have their own @c "formulas" section which can use self-referencing formulas.
+Note that datasets have a similar @c "formulas" section which can create constants from self-referencing formulas.
 
 ## Datasets {#datasets-properties}
 Properties for the @c "datasets" node:

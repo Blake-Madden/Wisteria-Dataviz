@@ -64,7 +64,7 @@ namespace Wisteria
             }
 
         try
-            { LoadConstants(json->GetProperty(L"constants"), nullptr); }
+            { LoadConstants(json->GetProperty(L"constants")); }
         catch (const std::exception& err)
             {
             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
@@ -607,8 +607,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode,
-                                      const std::shared_ptr<const Data::Dataset>& dataset)
+    void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode)
         {
         if (constantsNode->IsOk())
             {
@@ -620,7 +619,7 @@ namespace Wisteria
                     const wxString vName = value->GetProperty(L"name")->GetValueString();
                     m_values.insert_or_assign(vName,
                         value->GetProperty(L"value")->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
-                        ValuesType(CalcFormula(value->GetProperty(L"value")->GetValueString(), dataset)) :
+                        ValuesType(value->GetProperty(L"value")->GetValueString()) :
                         ValuesType(value->GetProperty(L"value")->GetValueNumber()) );
                     }
                 }
@@ -677,6 +676,25 @@ namespace Wisteria
             }
         else
             { return std::nullopt; }
+        }
+
+    //---------------------------------------------------
+    void ReportBuilder::CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (formulasNode->IsOk())
+            {
+            const auto formulas = formulasNode->GetValueArrayObject();
+            for (const auto& formula : formulas)
+                {
+                if (formula->IsOk())
+                    {
+                    const wxString vName = formula->GetProperty(L"name")->GetValueString();
+                    m_values.insert_or_assign(vName,
+                        CalcFormula(formula->GetProperty(L"value")->GetValueString(), dataset) );
+                    }
+                }
+            }
         }
 
     //---------------------------------------------------
@@ -1024,7 +1042,7 @@ namespace Wisteria
                 }
 
             // load any constants defined with this dataset
-            LoadConstants(dsNode->GetProperty(L"formulas"), dataset);
+            CalcFormulas(dsNode->GetProperty(L"formulas"), dataset);
 
             // load any subsets of this dataset
             LoadSubsets(dsNode->GetProperty(L"subsets"), dataset);
