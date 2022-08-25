@@ -379,16 +379,15 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    std::pair<double, double> Dataset::GetContinuousMinMax(const wxString& column,
+    std::pair<double, double> Dataset::GetContinuousMinMax(const std::variant<wxString, size_t>& column,
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const
         {
-        // check column being analyzed
         const auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+            throw std::runtime_error(
+                _(L"Column not found when calculating min/max.").ToUTF8());
             }
 
         // check grouping parameters
@@ -432,16 +431,60 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    size_t Dataset::GetContinuousColumnValidN(const wxString& column,
+    double Dataset::GetContinuousTotal(const std::variant<wxString, size_t>& column,
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const
         {
-        // check column being analyzed
         const auto continuousColumnIterator = GetContinuousColumn(column);
         if (continuousColumnIterator == GetContinuousColumns().cend())
             {
+            throw std::runtime_error(
+                _(L"Column not found when calculating total.").ToUTF8());
+            }
+
+        // check grouping parameters
+        const auto groupColumnIterator = (groupColumn.has_value() ?
+            GetCategoricalColumn(groupColumn.value()) : GetCategoricalColumns().cend());
+        wxASSERT_MSG(!groupColumn || groupId,
+                 L"Group ID must be provided if using grouping for GetContinuousColumnValidN()!");
+        if (groupColumn && groupColumnIterator == GetCategoricalColumns().cend())
+            {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': column not found when calculating valid N."), column).ToUTF8());
+                _(L"'%s': grouping column not found when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+        if (groupColumn && !groupId)
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': grouping ID not specified for column when calculating valid N."),
+                groupColumn.value()).ToUTF8());
+            }
+
+        // No rows or all NaN? Then return NaN.
+        if (GetContinuousColumnValidN(column, groupColumn, groupId) == 0)
+            { return std::numeric_limits<double>::quiet_NaN(); }
+
+        double totalVal{ 0 };
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if (!std::isnan(continuousColumnIterator->GetValue(i)) &&
+                ((groupColumnIterator == GetCategoricalColumns().cend()) ||
+                groupColumnIterator->GetValue(i) == groupId.value()))
+                { totalVal += continuousColumnIterator->GetValue(i); }
+            }
+        return totalVal;
+        }
+
+    //----------------------------------------------
+    size_t Dataset::GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
+        const std::optional<wxString>& groupColumn,
+        const std::optional<GroupIdType> groupId) const
+        {
+        const auto continuousColumnIterator = GetContinuousColumn(column);
+        if (continuousColumnIterator == GetContinuousColumns().cend())
+            {
+            throw std::runtime_error(
+                _(L"Column not found when calculating valid N.").ToUTF8());
             }
 
         // check grouping parameters

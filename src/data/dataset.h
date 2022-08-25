@@ -53,6 +53,9 @@ namespace Wisteria
         /// @brief First item is greater than or equal to the other.
         GreaterThanOrEqualTo,
         };
+
+    // forward declarations for friendships
+    class ReportBuilder;
     }
 
 /** @brief %Data management classes for graphs.*/
@@ -99,6 +102,7 @@ namespace Wisteria::Data
         // the dimensions of the column, only its content.
         friend class Dataset;
         friend class DatasetClone;
+        friend class ReportBuilder;
     public:
         /// @brief The data type stored in this column.
         using DataType = T;
@@ -668,7 +672,8 @@ namespace Wisteria::Data
             for dataset overviews.*/
     class Dataset
         {
-        friend DatasetClone;
+        friend class DatasetClone;
+        friend class ReportBuilder;
     public:
         /// @brief Description of a column's deduced type when previewing.
         /// @details This is used by ReadColumnInfo().
@@ -976,22 +981,38 @@ namespace Wisteria::Data
 
         /** @brief Gets the min and max values from the specified continuous column,
                 (optionally) where the group ID is @c groupId.
-            @param column The name of the continuous column.
+            @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
                 If there is no grouping being used, then the full continuous column is reviewed.
-            @returns The min and max values.
+            @returns The min and max values, or a pair of NaNs if no valid observations.
             @note If there are no valid values, then will return a pair of NaNs.
             @throws std::runtime_error If provided columns cannot be found or if a grouping
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::pair<double, double> GetContinuousMinMax(const wxString& column,
+        [[nodiscard]] std::pair<double, double> GetContinuousMinMax(
+            const std::variant<wxString, size_t>& column,
+            const std::optional<wxString>& groupColumn = std::nullopt,
+            const std::optional<GroupIdType> groupId = std::nullopt) const;
+        /** @brief Gets the total from the specified continuous column,
+                (optionally) where the group ID is @c groupId.
+            @param column The name or index of the continuous column.
+            @param groupColumn The (optional) group column to filter with.
+            @param groupId The grouping ID to filter on (if a grouping column is being used).\n
+                If there is no grouping being used, then the full continuous column is totalled.
+            @returns The total, or NaN if no valid observations.
+            @note If there are no valid values, then will return a pair of NaNs.
+            @throws std::runtime_error If provided columns cannot be found or if a grouping
+                column is provided without a group ID, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]] double GetContinuousTotal(const std::variant<wxString, size_t>& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column,
                 (optionally) where the group ID is @c groupId.
-            @param column The name of the continuous column.
+            @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.\n
                 If there is no grouping being used, then the full continuous column is reviewed.
             @param groupId The group ID to filter on (if a grouping column was supplied).
@@ -1001,7 +1022,7 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] size_t GetContinuousColumnValidN(const wxString& column,
+        [[nodiscard]] size_t GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
@@ -1125,6 +1146,22 @@ namespace Wisteria::Data
         void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
             { m_importContinousMDRecodeValue = recodeVal; }
     private:
+        /// @returns The specified continuous column by name or index.
+        [[nodiscard]] ContinuousColumnConstIterator
+            GetContinuousColumn(const std::variant<wxString, size_t>& column) const noexcept
+            {
+            if (const auto strVal{ std::get_if<wxString>(&column) };
+                strVal != nullptr)
+                { return GetContinuousColumn(*strVal); }
+            else if (const auto indexVal{ std::get_if<size_t>(&column) };
+                indexVal != nullptr)
+                {
+                if (*indexVal >= m_continuousColumns.size())
+                    { return GetContinuousColumns().cend(); }
+                return m_continuousColumns.cbegin() + *indexVal;
+                }
+            return GetContinuousColumns().cend();
+            }
         /// @returns The specified continuous column.
         /// @param column The index into the list of continuous columns.
         [[nodiscard]] Column<double>& GetContinuousColumn(const size_t column) noexcept
