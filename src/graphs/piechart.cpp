@@ -59,38 +59,49 @@ namespace Wisteria::GraphItems
             FontColor(ColorContrast::BlackOrWhiteContrast(GetBrush().GetColour()));
         pieLabel->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
         pieLabel->GetHeaderInfo().Enable(false);
+        // in case we need to split it to possibly fit
+        auto pieLabelSplit = std::make_shared<Label>(*pieLabel);
+        pieLabelSplit->SplitTextAuto();
 
-        // make it fit in the slice, or return null if too small
-        auto points = GetPolygon();
-        bool middleLabelIsTooSmall{ false };
-        for (;;)
+        // make it fit in the slice and return it (or null if too small)
+        const auto fitLabelToSlice = [this, &dc](auto pieLabel)
             {
-            auto labelBox = pieLabel->GetBoundingBox(dc);
-            if (Polygon::IsInsidePolygon(
-                    labelBox.GetTopLeft(), &points[0], points.size()) &&
-                Polygon::IsInsidePolygon(
-                    labelBox.GetBottomLeft(), &points[0], points.size()) &&
-                Polygon::IsInsidePolygon(
-                    labelBox.GetTopRight(), &points[0], points.size()) &&
-                Polygon::IsInsidePolygon(
-                    labelBox.GetBottomRight(), &points[0], points.size()))
-                { break; }
-            else
+            auto points = GetPolygon();
+            bool middleLabelIsTooSmall{ false };
+            for (;;)
                 {
-                const auto currentFontSize = pieLabel->GetFont().GetFractionalPointSize();
-                pieLabel->GetFont().Scale(.95f);
-                // either too small for our taste or couldn't be scaled down anymore
-                if (pieLabel->GetFont().GetPointSize() <= 4 ||
-                    compare_doubles(pieLabel->GetFont().GetFractionalPointSize(),
-                        currentFontSize))
+                auto labelBox = pieLabel->GetBoundingBox(dc);
+                if (Polygon::IsInsidePolygon(
+                        labelBox.GetTopLeft(), &points[0], points.size()) &&
+                    Polygon::IsInsidePolygon(
+                        labelBox.GetBottomLeft(), &points[0], points.size()) &&
+                    Polygon::IsInsidePolygon(
+                        labelBox.GetTopRight(), &points[0], points.size()) &&
+                    Polygon::IsInsidePolygon(
+                        labelBox.GetBottomRight(), &points[0], points.size()))
+                    { break; }
+                else
                     {
-                    middleLabelIsTooSmall = true;
-                    break;
+                    const auto currentFontSize = pieLabel->GetFont().GetFractionalPointSize();
+                    pieLabel->GetFont().Scale(.95f);
+                    // either too small for our taste or couldn't be scaled down anymore
+                    if ((pieLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
+                        compare_doubles(pieLabel->GetFont().GetFractionalPointSize(),
+                            currentFontSize))
+                        {
+                        middleLabelIsTooSmall = true;
+                        break;
+                        }
                     }
                 }
-            }
+            return middleLabelIsTooSmall ? nullptr : pieLabel;
+            };
 
-        return middleLabelIsTooSmall ? nullptr : pieLabel;
+        auto scaledPieLabel = fitLabelToSlice(pieLabel);
+        if (scaledPieLabel == nullptr)
+            { return fitLabelToSlice(pieLabelSplit); }
+        else
+            { return scaledPieLabel; }
         }
 
     //----------------------------------------------------------------
