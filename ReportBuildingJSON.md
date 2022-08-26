@@ -151,6 +151,10 @@ Properties for the @c "datasets" node:
   - @c "id-columns": an array of strings representing the ID columns.
   - @c "names-from-column": a strings representing the 'names from'.
   - @c "values-from-columns": an array of strings representing the 'falues from' columns.
+  - @c "names-separator": If multiple value columns are provided, then this separator will
+       join the label from @c namesFromColumn and the value column name.
+  - @c "names-prefix": string to prepend to newly created pivot columns.
+  - @c "fill-value": numeric value to assign to missing data. The default it so leave it as missing data.
 
   Note that subset and pivot nodes can contain their own transformation and formula sections,
   same as a dataset node.

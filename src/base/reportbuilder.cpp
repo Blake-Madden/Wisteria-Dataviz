@@ -326,7 +326,7 @@ namespace Wisteria
 
         if (brushNode->IsOk())
             {
-            if (brushNode->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+            if (brushNode->IsValueNull())
                 { brush = wxNullBrush; }
             else
                 {
@@ -360,7 +360,7 @@ namespace Wisteria
 
         if (penNode->IsOk())
             {
-            if (penNode->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+            if (penNode->IsValueNull())
                 { pen = wxNullPen; }
             else
                 {
@@ -618,7 +618,7 @@ namespace Wisteria
                     {
                     const wxString vName = value->GetProperty(L"name")->GetValueString();
                     m_values.insert_or_assign(vName,
-                        value->GetProperty(L"value")->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                        value->GetProperty(L"value")->IsValueString() ?
                         ValuesType(value->GetProperty(L"value")->GetValueString()) :
                         ValuesType(value->GetProperty(L"value")->GetValueNumber()) );
                     }
@@ -1009,7 +1009,11 @@ namespace Wisteria
                     auto pivotedData = pw.PivotWider(parentToPivot,
                         pivot->GetProperty(L"id-columns")->GetValueStringVector(),
                         pivot->GetProperty(L"names-from-column")->GetValueString(),
-                        pivot->GetProperty(L"values-from-columns")->GetValueStringVector());
+                        pivot->GetProperty(L"values-from-columns")->GetValueStringVector(),
+                        pivot->GetProperty(L"names-separator")->GetValueString(L"_"),
+                        pivot->GetProperty(L"names-prefix")->GetValueString(),
+                        pivot->GetProperty(L"fill-value")->GetValueNumber(
+                            std::numeric_limits<double>::quiet_NaN()));
 
                     if (pivotedData)
                         {
@@ -1052,7 +1056,7 @@ namespace Wisteria
                 {
                 wxDateTime dt;
                 const bool isDate =
-                    (valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                    (valueNode->IsValueString() &&
                         (dt.ParseDateTime(valueNode->GetValueString()) ||
                         dt.ParseDate(valueNode->GetValueString())));
                 ColumnFilterInfo cFilter 
@@ -1061,7 +1065,7 @@ namespace Wisteria
                     cmp,
                     (isDate ?
                         DatasetValueType(dt) :
-                        valueNode->GetType() == wxSimpleJSON::JSONType::IS_STRING ?
+                        valueNode->IsValueString() ?
                         DatasetValueType(ExpandConstants(valueNode->GetValueString())) :
                         DatasetValueType(valueNode->GetValueNumber()))
                     };
@@ -1965,12 +1969,12 @@ namespace Wisteria
                         cellUpdate->GetProperty(L"column-count");
                     if (columnCountProperty->IsOk())
                         {
-                        if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                        if (columnCountProperty->IsValueString() &&
                             columnCountProperty->GetValueString().CmpNoCase(L"all") == 0)
                             {
                             currentCell.SetColumnCount(table->GetColumnCount());
                             }
-                        else if (columnCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        else if (columnCountProperty->IsValueNumber())
                             {
                             currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
                             }
@@ -1980,12 +1984,12 @@ namespace Wisteria
                         cellUpdate->GetProperty(L"row-count");
                     if (rowCountProperty->IsOk())
                         {
-                        if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING &&
+                        if (rowCountProperty->IsValueString() &&
                             rowCountProperty->GetValueString().CmpNoCase(L"all") == 0)
                             {
                             currentCell.SetRowCount(table->GetRowCount());
                             }
-                        else if (rowCountProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        else if (rowCountProperty->IsValueNumber())
                             {
                             currentCell.SetRowCount(rowCountProperty->GetValueNumber());
                             }
@@ -1994,13 +1998,13 @@ namespace Wisteria
                     const auto valueProperty = cellUpdate->GetProperty(L"value");
                     if (valueProperty->IsOk())
                         {
-                        if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+                        if (valueProperty->IsValueString())
                             {
                             currentCell.SetValue(valueProperty->GetValueString());
                             }
-                        else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+                        else if (valueProperty->IsValueNumber())
                             { currentCell.SetValue(valueProperty->GetValueNumber()); }
-                        else if (valueProperty->GetType() == wxSimpleJSON::JSONType::IS_NULL)
+                        else if (valueProperty->IsValueNull())
                             { currentCell.SetValue(wxEmptyString); }
                         }
                     // background color
@@ -2669,14 +2673,14 @@ namespace Wisteria
         const auto origin = positionNode->GetProperty(L"origin");
         if (origin->IsOk())
             {
-            if (origin->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+            if (origin->IsValueString())
                 {
                 if (origin->GetValueString().CmpNoCase(L"last-column") == 0)
                     { position = columnCount-1; }
                 else if (origin->GetValueString().CmpNoCase(L"last-row") == 0)
                     { position = columnRow-1; }
                 }
-            else if (origin->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+            else if (origin->IsValueNumber())
                 { position = origin->GetValueNumber(); }
             }
         std::optional<double> doubleStartOffset =
@@ -2731,7 +2735,7 @@ namespace Wisteria
         
         if (!colorSchemeNode->IsOk())
             { return nullptr; }
-        else if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+        else if (colorSchemeNode->IsValueArray())
             {
             std::vector<wxColour> colors;
             const auto colorValues = colorSchemeNode->GetValueStringVector();
@@ -2741,7 +2745,7 @@ namespace Wisteria
                 { colors.emplace_back(ConvertColor(color)); }
             return std::make_shared<Colors::Schemes::ColorScheme>(colors);
             }
-        else if (colorSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+        else if (colorSchemeNode->IsValueString())
             {
             const auto foundPos = colorSchemes.find(
                 std::wstring_view(colorSchemeNode->GetValueString().MakeLower().wc_str()));
@@ -2767,7 +2771,7 @@ namespace Wisteria
         if (!lineStyleSchemeNode->IsOk())
             { return nullptr; }
         // a list of icons
-        else if (lineStyleSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+        else if (lineStyleSchemeNode->IsValueArray())
             {
             std::vector<std::pair<wxPenStyle, LineStyle>> lineStyles;
             auto lineStyleValues = lineStyleSchemeNode->GetValueArrayObject();
@@ -2841,7 +2845,7 @@ namespace Wisteria
         if (!iconSchemeNode->IsOk())
             { return nullptr; }
         // a list of icons
-        else if (iconSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_ARRAY)
+        else if (iconSchemeNode->IsValueArray())
             {
             std::vector<IconShape> icons;
             auto iconValues = iconSchemeNode->GetValueStringVector();
@@ -2858,7 +2862,7 @@ namespace Wisteria
             return std::make_shared<IconScheme>(icons);
             }
         // a pre-defined icon scheme
-        else if (iconSchemeNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+        else if (iconSchemeNode->IsValueString())
             {
             const auto foundPos = iconSchemes.find(
                 std::wstring_view(iconSchemeNode->GetValueString().MakeLower().wc_str()));
@@ -3012,8 +3016,7 @@ namespace Wisteria
         const wxSimpleJSON::Ptr_t& positionNode) const
         {
         std::optional<double> axisPos;
-        if (positionNode->IsOk() &&
-            positionNode->GetType() == wxSimpleJSON::JSONType::IS_STRING)
+        if (positionNode->IsOk() && positionNode->IsValueString())
             {
             // see if it's a date
             wxDateTime dt;
@@ -3033,8 +3036,7 @@ namespace Wisteria
                 axisPos = axis.FindCustomLabelPosition(positionNode->GetValueString());
                 }
             }
-        else if (positionNode->IsOk() &&
-            positionNode->GetType() == wxSimpleJSON::JSONType::IS_NUMBER)
+        else if (positionNode->IsOk() && positionNode->IsValueNumber())
             {
             axisPos = positionNode->GetValueNumber();
             }
