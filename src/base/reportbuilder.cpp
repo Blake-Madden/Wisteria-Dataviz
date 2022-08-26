@@ -627,23 +627,25 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::optional<std::vector<wxString>> ReportBuilder::ExpandVariableSelections(wxString var,
+    std::optional<std::vector<wxString>> ReportBuilder::ExpandColumnSelections(wxString var,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (var.starts_with(L"{{") && var.ends_with(L"}}"))
             { var = var.substr(2, var.length() - 4); }
         else
             { return std::nullopt; }
-        const wxRegEx re(L"(?i)^[ ]*(contains)[ ]*\\('([[:alnum:] \\-]+)'[ ]*\\)");
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(contains)" +
+                         OpeningParenthesisRegEx() +
+                         ColumnNameOrFormulaRegEx() +
+                         ClosingParenthesisRegEx());
         if (re.Matches(var))
             {
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
-                const wxString funcName = re.GetMatch(var, 1).MakeLower().
-                    Trim(true).Trim(false);
-                const wxString columnPattern = re.GetMatch(var, 2).
-                    Trim(true).Trim(false);
+                const wxString funcName = re.GetMatch(var, 1).MakeLower();
+                const wxString columnPattern = ConvertParameter(re.GetMatch(var, 2), dataset);
 
                 if (funcName.CmpNoCase(L"contains") == 0)
                     {
@@ -701,15 +703,22 @@ namespace Wisteria
     wxString ReportBuilder::CalcFormula(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
-        const wxRegEx re(L"(?i)^[ ]*(min|max|n)[ ]*\\(");
+        const wxRegEx re(FunctionStartRegEx() +
+            L"(min|max|n|total|grandtotal|continuouscolumn)" + OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
             const wxString funcName = re.GetMatch(formula, 1).MakeLower();
             if (funcName.CmpNoCase(L"min") == 0 ||
                 funcName.CmpNoCase(L"max") == 0)
-                { return CalcMinMaxValue(formula, dataset); }
+                { return CalcMinMax(formula, dataset); }
             else if (funcName.CmpNoCase(L"n") == 0)
-                { return CalcValidNValue(formula, dataset); }
+                { return CalcValidN(formula, dataset); }
+            else if (funcName.CmpNoCase(L"total") == 0)
+                { return CalcTotal(formula, dataset); }
+            else if (funcName.CmpNoCase(L"grandtotal") == 0)
+                { return CalcGrandTotal(formula, dataset); }
+            else if (funcName.CmpNoCase(L"continuouscolumn") == 0)
+                { return ExpandColumnSelection(formula, dataset); }
             }
         // note that formula may just be a constant (e.g., color string),
         // so return that if it can't be calculated into something else
@@ -717,7 +726,39 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcValidNValue(const wxString& formula,
+    wxString ReportBuilder::ExpandColumnSelection(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        const wxRegEx re(FunctionStartRegEx() +
+            L"(continuouscolumn)" + OpeningParenthesisRegEx() +
+            NumberRegEx() + ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 3)
+                {
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                const wxString columnIndexStr = re.GetMatch(formula, 2);
+                unsigned long columnIndex{ 0 };
+                if (columnIndexStr.ToULong(&columnIndex))
+                    {
+                    if (columnIndex >= dataset->GetContinuousColumns().size())
+                        {
+                        throw std::runtime_error(
+                        wxString::Format(
+                            _(L"%lu: invalid continuous column index."), columnIndex).ToUTF8());
+                        }
+                    return dataset->GetContinuousColumn(columnIndex).GetName();
+                    }
+                }
+            }
+
+        // can't get the name of the column, just return the original text
+        return formula;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcValidN(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -726,21 +767,22 @@ namespace Wisteria
                     wxString::Format(
                         _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
             }
-        const wxRegEx reSimple(L"(?i)^[ ]*(n)[ ]*\\([ ]*"
-                               "([[:alnum:]\\-_ ]+)[ ]*\\)");
-        const wxRegEx reExtended(L"(?i)^[ ]*(n)[ ]*\\([ ]*"
-                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                                 "([[:alnum:]\\-_ ]+)[ ]*,[ ]*"
-                                 "(([[:alnum:]\\-_ ]+|{{[[:alnum:]\\-_ \\(\\),]+}}))\\)");
+        const wxRegEx reSimple(FunctionStartRegEx() +
+                               L"(n)" + OpeningParenthesisRegEx() +
+                               ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+        const wxRegEx reExtended(FunctionStartRegEx() +
+                                 L"(n)" + OpeningParenthesisRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
         if (reSimple.Matches(formula))
             {
             const auto paramPartsCount = reSimple.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
-                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower().
-                    Trim(true).Trim(false);
-                const wxString columnName = reSimple.GetMatch(formula, 2).
-                    Trim(true).Trim(false);
+                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower();
+                const wxString columnName =
+                    ConvertParameter(reSimple.GetMatch(formula, 2), dataset);
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
                     {
@@ -765,20 +807,14 @@ namespace Wisteria
             const auto paramPartsCount = reExtended.GetMatchCount();
             if (paramPartsCount >= 5)
                 {
-                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower().
-                    Trim(true).Trim(false);
-                const wxString columnName = reExtended.GetMatch(formula, 2).
-                    Trim(true).Trim(false);
-                const wxString groupName = reExtended.GetMatch(formula, 3).
-                    Trim(true).Trim(false);
-                wxString groupValue = reExtended.GetMatch(formula, 4).
-                    Trim(true).Trim(false);
+                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower();
+                const wxString columnName =
+                    ConvertParameter(reExtended.GetMatch(formula, 2), dataset);
+                const wxString groupName =
+                    ConvertParameter(reExtended.GetMatch(formula, 3), dataset);
                 // if the group value is an embedded formula, then calculate it
-                if (groupValue.starts_with(L"{{") && groupValue.ends_with(L"}}"))
-                    {
-                    groupValue = groupValue.substr(2, groupValue.length() - 4);
-                    groupValue = CalcFormula(groupValue, dataset);
-                    }
+                const wxString groupValue =
+                    ConvertParameter(reExtended.GetMatch(formula, 4), dataset);
                 // get the group column and the numeric code for the value
                 const auto groupColumn = dataset->GetCategoricalColumn(groupName);
                 if (groupColumn == dataset->GetCategoricalColumns().cend())
@@ -819,7 +855,23 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcMinMaxValue(const wxString& formula,
+    wxString ReportBuilder::ConvertParameter(wxString columnStr,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (columnStr.starts_with(L"`") && columnStr.ends_with(L"`"))
+            { columnStr = columnStr.substr(1, columnStr.length() - 2); }
+        else if (columnStr.starts_with(L"{{") && columnStr.ends_with(L"}}"))
+            {
+            columnStr = columnStr.substr(2, columnStr.length() - 4);
+            columnStr = ExpandConstants(columnStr);
+            return CalcFormula(columnStr, dataset);
+            }
+
+        return columnStr;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcGrandTotal(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -828,15 +880,95 @@ namespace Wisteria
                     wxString::Format(
                         _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
             }
-        const wxRegEx re(L"(?i)^[ ]*(min|max)[ ]*\\([ ]*"
-                         "([[:alnum:]\\-_ ]*)[ ]*\\)");
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(grandtotal)" + OpeningParenthesisRegEx() +
+                         ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 2)
+                {
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                // only continuous can be totalled
+                double total{ 0 };
+                for (size_t i = 0; i < dataset->GetContinuousColumns().size(); ++i)
+                    { total += dataset->GetContinuousTotal(i); }
+                return wxNumberFormatter::ToString(total, 2,
+                    wxNumberFormatter::Style::Style_WithThousandsSep |
+                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                }
+            // dataset or column name missing
+            else
+                { return formula; }
+            }
+        return formula;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcTotal(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(total)" + OpeningParenthesisRegEx() +
+                         ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
         if (re.Matches(formula))
             {
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(formula, 1).MakeLower();
-                const wxString columnName = re.GetMatch(formula, 2);
+                const wxString columnName = ConvertParameter(re.GetMatch(formula, 2), dataset);
+                // only continuous can be totalled
+                if (dataset->GetContinuousColumn(columnName) !=
+                    dataset->GetContinuousColumns().cend())
+                    {
+                    const auto total =
+                        dataset->GetContinuousTotal(columnName);
+                    return wxNumberFormatter::ToString(total, 2,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(
+                        _(L"%s: column must be continuous when totalling."), columnName).ToUTF8());
+                    }
+                }
+            // dataset or column name missing
+            else
+                { return formula; }
+            }
+        return formula;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcMinMax(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(min|max)" + OpeningParenthesisRegEx() +
+                         ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 3)
+                {
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                const wxString columnName = ConvertParameter(re.GetMatch(formula, 2), dataset);
+
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
                     {
@@ -1551,7 +1683,7 @@ namespace Wisteria
         const auto readVariables = graphNode->GetProperty(L"variables")->GetValueStringVector();
         for (const auto& readVar : readVariables)
             {
-            auto convertedVars = ExpandVariableSelections(readVar, foundPos->second);
+            auto convertedVars = ExpandColumnSelections(readVar, foundPos->second);
             if (convertedVars)
                 {
                 variables.insert(variables.cend(),
@@ -1940,7 +2072,7 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::ExpandConstants(wxString str) const
         {
-        const wxRegEx re(L"{{([[:alnum:]\\-]+)}}");
+        const wxRegEx re(L"{{([^}]+)}}");
         size_t start{ 0 }, len{ 0 };
         std::wstring_view processText(str.wc_str());
         std::map<wxString, wxString> replacements;

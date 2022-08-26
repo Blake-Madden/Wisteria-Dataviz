@@ -86,23 +86,42 @@ Properties for the @c "datasets" node:
   This is an array of specifications which include the following properties:
   - @c "name": the key used for the item. Other items in the project reference this using the syntax `{{name}}`, where @c name is the look-up key.
   - @c "value": a string containing one of the following formulas:
-    - `min(column)`:
+    - ``Min(`column`)``:
       Returns the minimum value of the given column from the dataset.
-      - @c column is the column name from the dataset.\n
-    - `max(column)`:
+      - @c column: the column name from the dataset.
+    - ``Max(`column`)``:
       Returns the maximum value of the given column from the dataset.
-      - @c column is the column name from the dataset.\n
-    - `n(column)`:
+      - @c column: the column name from the dataset.
+    - ``Total(`column`)``:
+      Returns the total of the given continuous column from the dataset.
+      - @c column: the column name from the dataset.
+    - ``GrandTotal()``:
+      Returns the total of all continuous columns from the dataset.
+    - ``N(`column`)``:
       Returns the valid number of observations in the given column from the dataset.
-      - @c column is the column name from the dataset.\n
-    - `n(column, groupColum, groupId)`:
+      - @c column: the column name from the dataset.
+    - ``N(`column`, `groupColum`, `groupId`)``:
       Returns the valid number of observations in the given column from the dataset, using group filtering.
-      - @c column is the column name from the dataset.
-      - @c groupColum is a group column to filter on.
-      - @c groupId is the group ID to filter on.\n
-        Note that @c groupId can either be a string or an embedded formula (which must be wrapped in a set of `{{` and `}}`).\n
-        For example, the group ID can be a formula getting the highest label from the grouping column:\n
-        `n(Degree, Academic Year, {{max(Academic Year)}})`\n
+      - @c column: the column name from the dataset.
+      - @c groupColum: a group column to filter on.
+      - @c groupId: the group ID to filter on.
+  
+  Note that formula arguments can either be a string (wrapped in a pair of \`) or an embedded formula
+  (which must be wrapped in a set of `{{` and `}}`).\n
+  For example, the group ID can be a formula getting the highest label from the grouping column:\n
+
+  ```
+  N(`Degree`, `Academic Year`, {{max(`Academic Year`)}})
+  ```
+
+  Also, instead of referencing columns by name, functions are also available for referencing columns by index.
+  - ``ContinuousColumn(`index`)``: returns the name of the continuous column at the given index.
+
+  The following example would return the total of the first continuous column:
+
+  ```
+  Total({{ContinuousColumn(0)}})
+  ```
 
   Next, the @c "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
@@ -364,7 +383,7 @@ Properties for @c "shape" nodes:
 Properties for @c "table" nodes:
 - @c "variables": an array of column names to use from the dataset.\n
   These values can also be variable selection formulas, including the following:
-  - @ "contains('value')": where @c value will be the search pattern, and any column
+  - ``{{contains(`value`)}}``: where @c value will be the search pattern, and any column
       in the dataset that contains this text will be included.
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
@@ -441,7 +460,7 @@ The remaining properties are executed in the following order:
        This property is optional, and if not included the last numeric column/row encountered will be used.
        Like @c "start", this is optional and has the same properties.
 - "add-row-totals": adds a grand total row to the bottom of the table.\n
-  If the first column is grouped and the second colum is text, then this will also insert subtotal rows.\m
+  If the first column is grouped and the second colum is text, then this will also insert subtotal rows.\n
   Available options are:
   - @c "background": the background color for the row(s).
 - @c "cells-update": an array of cell updating commands, which contain the following properties:

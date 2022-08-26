@@ -249,13 +249,48 @@ namespace Wisteria
                           const std::shared_ptr<const Data::Dataset>& dataset);
         [[nodiscard]] wxString CalcFormula(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcMinMaxValue(const wxString& formula,
+        [[nodiscard]] wxString CalcMinMax(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcValidNValue(const wxString& formula,
+        [[nodiscard]] wxString CalcValidN(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] wxString CalcTotal(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] wxString CalcGrandTotal(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        
+        // helpers for builing formula regexes
+        //------------------------------------
+        [[nodiscard]] static wxString FunctionStartRegEx()
+            { return L"(?i)^[ ]*"; }
+        [[nodiscard]] static wxString OpeningParenthesisRegEx()
+            { return L"[ ]*\\([ ]*"; }
+        [[nodiscard]] static wxString ClosingParenthesisRegEx()
+            { return L"[ ]*\\)"; }
+        // a parameter that is either wrapped in tickmarks (usually a var name)
+        // or double curly braces (a subformula)
+        [[nodiscard]] static wxString ColumnNameOrFormulaRegEx()
+            { return L"(`[^`]+`|{{[^}]*}})"; }
+        [[nodiscard]] static wxString NumberRegEx()
+            { return L"([[:digit:]]+)"; }
+        [[nodiscard]] static wxString ParamSepatatorRegEx()
+            { return L"[ ]*,[ ]*"; }
+
+        // Converts a formula parameter into a column name or constant value.
+        // Arguments may be a hard-coded column name (which will be enclosed in tickmarks),
+        // or another formula (enclosed in {{}}). If the latter, this will calculate
+        // that formula (which can be a column selection function, column aggregate function,
+        // or constant value).
+        [[nodiscard]] wxString ConvertParameter(wxString columnStr,
             const std::shared_ptr<const Data::Dataset>& dataset);
 
-        // variable expansion functions
-        [[nodiscard]] std::optional<std::vector<wxString>> ExpandVariableSelections(wxString var,
+        // variable selection functions
+        //-----------------------------
+
+        /// @brief Converts a multiple column selection function into a vector of column names.
+        [[nodiscard]] std::optional<std::vector<wxString>> ExpandColumnSelections(wxString var,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        /// @brief Converts a single column selection function into a column name.
+        [[nodiscard]] wxString ExpandColumnSelection(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
 
         // the datasets used by all subitems in the report
