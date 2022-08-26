@@ -95,9 +95,9 @@ namespace Wisteria::GraphItems
         /** @brief Attempts to split the label into two lines if a logical break in the text
                 can be found.
             @details String will be split on these delimiters:
-                open parenthesis, open brace, forward slash, or colon.
+                open parenthesis, open brace, forward slash, ampersand, or colon.
             @returns @c true if the text was successfully split.*/
-        [[nodiscard]] bool SplitTextAuto();
+        bool SplitTextAuto();
 
         /** @brief Splits the text into lines containing only one character.
             @note It is recommended to set the alignment to centered for best appearance.

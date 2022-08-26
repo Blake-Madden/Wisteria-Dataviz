@@ -851,12 +851,13 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Label::SplitTextAuto()
         {
-        if (const auto charPos = GetText().find_first_of(L"([:/");
+        if (const auto charPos = GetText().find_first_of(L"([/:&");
             charPos != std::wstring::npos)
             {
             wxString splitText = GetText();
             splitText.insert(
-                (GetText()[charPos] == L':' ? charPos+1 : charPos),
+                ((GetText()[charPos] == L':' || GetText()[charPos] == L'&') ?
+                    charPos+1 : charPos),
                 1, L'\n');
             SetText(splitText);
             return true;
