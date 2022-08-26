@@ -36,6 +36,7 @@ namespace Wisteria::Data
             const wxString& namesFromColumn,
             const std::vector<wxString>& valuesFromColumns,
             const wxString& namesSep /*= L"_"*/,
+            const wxString& namesPrefix /*= wxEmptyString*/,
             const double fillValue /*= std::numeric_limits<double>::quiet_NaN()*/)
         {
         if (dataset == nullptr)
@@ -135,9 +136,10 @@ namespace Wisteria::Data
             const bool includeValueNameInPivotName = (valuesFromColumnsIters.size() > 1);
             for (const auto& valuesFrom : valuesFromColumnsIters)
                 {
-                const wxString colName = includeValueNameInPivotName ?
-                    valuesFrom->GetName() + namesSep + namesFromColumnsIter->GetValueAsLabel(i):
-                    namesFromColumnsIter->GetValueAsLabel(i);
+                const wxString colName = namesPrefix +
+                    (includeValueNameInPivotName ?
+                        valuesFrom->GetName() + namesSep + namesFromColumnsIter->GetValueAsLabel(i):
+                        namesFromColumnsIter->GetValueAsLabel(i));
                 pivotedColumns.insert(std::make_pair(colName, valuesFrom->GetValue(i)));
                 pivotedColumnNames.insert(colName);
                 }

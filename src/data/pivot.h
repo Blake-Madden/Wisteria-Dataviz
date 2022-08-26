@@ -74,8 +74,9 @@ namespace Wisteria::Data
                 columns created by teh labels from @c namesFromColumn.\n
                 If multiple value columns are provided, then an extra column will be created
                 for each label column for each values column.
-            @param namesSep If multiple value columns are provided, then this separator is
-                what will join the label from @c namesFromColumn and the value column name.
+            @param namesSep If multiple value columns are provided, then this separator will
+                join the label from @c namesFromColumn and the value column name.
+            @param namesPrefix A string to prepend to newly created pivot columns.
             @param fillValue If any observation is missing a label from @c namesFromColumn
                 that other observations have, then an empty cell will be added for that
                 column. This value will be used for fill this cell, with missing data
@@ -87,6 +88,7 @@ namespace Wisteria::Data
             const wxString& namesFromColumn,
             const std::vector<wxString>& valuesFromColumns,
             const wxString& namesSep = L"_",
+            const wxString& namesPrefix = wxEmptyString,
             const double fillValue = std::numeric_limits<double>::quiet_NaN());
         };
     }
