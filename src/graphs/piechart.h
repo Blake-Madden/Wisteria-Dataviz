@@ -434,8 +434,8 @@ namespace Wisteria::Graphs
         [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
-        /// @brief Brings to focus the specified slice(s) along the outer and their children
-        ///     inner slices.
+        /// @brief Brings to focus the specified slice(s) along the outer pie and their
+        ///     children inner slices.
         /// @param pieSlices The outer slices to showcase.
         /// @details This will make all other slices (including the non-children inner slices)
         ///     translucent and hide their labels.
