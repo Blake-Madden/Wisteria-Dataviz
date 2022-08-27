@@ -474,22 +474,22 @@ namespace Wisteria::Graphs
         pieDrawArea.SetHeight(pieDimension);
         pieDrawArea.SetY(pieDrawArea.GetY() + (heightDifference / 2));
 
-        // make label drawing area square now, so that labels go up too high or too far over
-        wxRect fullDrawDrawArea = GetPlotAreaBoundingBox();
+        // make label drawing area square, so that labels don't go up too high or too far over
+        wxRect fullDrawArea = GetPlotAreaBoundingBox();
             {
             const auto widthDiff = GetPlotAreaBoundingBox().GetWidth() - pieDrawArea.GetWidth();
             const auto heightDiff = GetPlotAreaBoundingBox().GetHeight() - pieDrawArea.GetHeight();
             if (heightDiff > widthDiff)
                 {
                 const auto sizeDiff = heightDiff - widthDiff;
-                fullDrawDrawArea.SetHeight(fullDrawDrawArea.GetHeight() - sizeDiff);
-                fullDrawDrawArea.SetY(fullDrawDrawArea.GetY() + (sizeDiff/2));
+                fullDrawArea.SetHeight(fullDrawArea.GetHeight() - sizeDiff);
+                fullDrawArea.SetY(fullDrawArea.GetY() + (sizeDiff/2));
                 }
             else if (widthDiff > heightDiff)
                 {
                 const auto sizeDiff = widthDiff - heightDiff;
-                fullDrawDrawArea.SetWidth(fullDrawDrawArea.GetWidth() - sizeDiff);
-                fullDrawDrawArea.SetX(fullDrawDrawArea.GetX() + (sizeDiff/2));
+                fullDrawArea.SetWidth(fullDrawArea.GetWidth() - sizeDiff);
+                fullDrawArea.SetX(fullDrawArea.GetX() + (sizeDiff/2));
                 }
             }
 
@@ -519,14 +519,14 @@ namespace Wisteria::Graphs
             if (outerLabel != nullptr)
                 {
                 // lambda to adjust label to fit in pie's gutters
-                const auto measureAndFitLabel = [&dc, &fullDrawDrawArea](auto& label)
+                const auto measureAndFitLabel = [&dc, &fullDrawArea](auto& label)
                     {
                     const auto labelBox = label->GetBoundingBox(dc);
-                    if (!Polygon::IsRectInsideRect(labelBox, fullDrawDrawArea) )
+                    if (!Polygon::IsRectInsideRect(labelBox, fullDrawArea) )
                         {
                         const auto currentFontSize = label->GetFont().GetFractionalPointSize();
                         const auto& [widthInside, heightInside] =
-                            Polygon::GetPercentInsideRect(labelBox, fullDrawDrawArea);
+                            Polygon::GetPercentInsideRect(labelBox, fullDrawArea);
                         const auto smallerScale = std::min(widthInside, heightInside);
                         label->GetFont().SetFractionalPointSize(currentFontSize * smallerScale);
                         return smallerScale;
@@ -582,8 +582,8 @@ namespace Wisteria::Graphs
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(isLeft ?
-                                            fullDrawDrawArea.GetLeft() :
-                                            fullDrawDrawArea.GetRight(),
+                                            fullDrawArea.GetLeft() :
+                                            fullDrawArea.GetRight(),
                                         outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
                         // force using lines (instead of arrows) since this will be two lines
                         connectionLine->SetLineStyle(LineStyle::Lines);
@@ -611,8 +611,8 @@ namespace Wisteria::Graphs
                         connectionLine->AddPoint(Point2D(
                             GraphItemInfo().AnchorPoint(
                                 wxPoint(isLeft ?
-                                            fullDrawDrawArea.GetLeft() :
-                                            fullDrawDrawArea.GetRight(),
+                                            fullDrawArea.GetLeft() :
+                                            fullDrawArea.GetRight(),
                                         outerLabel->GetAnchorPoint().y)).Show(false), 0), dc);
                         connectionLine->SetLineStyle(LineStyle::Lines);
                         }
@@ -852,7 +852,7 @@ namespace Wisteria::Graphs
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(fullDrawDrawArea.GetLeft(),
+                    wxPoint(fullDrawArea.GetLeft(),
                         outerLabel->GetAnchorPoint().y +
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
@@ -861,18 +861,18 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
+                    nextLabelBox.SetX(fullDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetTopLeft());
+                        outerLabel->SetAnchorPoint(fullDrawArea.GetTopLeft());
                         outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
                         }
                     }
                 else if (nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
+                    nextLabelBox.SetX(fullDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
@@ -930,7 +930,7 @@ namespace Wisteria::Graphs
                 // push label to the left and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(fullDrawDrawArea.GetLeft(),
+                    wxPoint(fullDrawArea.GetLeft(),
                         outerLabel->GetAnchorPoint().y -
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::TopLeftCorner);
@@ -939,17 +939,17 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
+                    nextLabelBox.SetX(fullDrawArea.GetLeft());
                     nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomLeft());
+                        outerLabel->SetAnchorPoint(fullDrawArea.GetBottomLeft());
                         outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
                         }
                     else if (nextLabel)
                         {
                         auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                        nextLabelBox.SetX(fullDrawDrawArea.GetLeft());
+                        nextLabelBox.SetX(fullDrawArea.GetLeft());
                         nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                         if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                             {
@@ -1024,7 +1024,7 @@ namespace Wisteria::Graphs
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(fullDrawDrawArea.GetRight(),
+                    wxPoint(fullDrawArea.GetRight(),
                         outerLabel->GetAnchorPoint().y +
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
@@ -1033,19 +1033,19 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                    nextLabelBox.SetX(fullDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetTopRight());
+                        outerLabel->SetAnchorPoint(fullDrawArea.GetTopRight());
                         outerLabel->SetAnchoring(Anchoring::TopRightCorner);
                         }
                     }
                 else if (nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                    nextLabelBox.SetX(fullDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() + (nextLabelBox.GetHeight() / 2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
@@ -1103,7 +1103,7 @@ namespace Wisteria::Graphs
                 // push label to the right and center it to its connect line vertically
                 outerLabel->GetHeaderInfo().LabelAlignment(TextAlignment::FlushLeft);
                 outerLabel->SetAnchorPoint(
-                    wxPoint(fullDrawDrawArea.GetRight(),
+                    wxPoint(fullDrawArea.GetRight(),
                         outerLabel->GetAnchorPoint().y -
                         (outerLabel->GetBoundingBox(dc).GetHeight() / 2)));
                 outerLabel->SetAnchoring(Anchoring::TopRightCorner);
@@ -1112,19 +1112,19 @@ namespace Wisteria::Graphs
                 if (i == 0 && nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                    nextLabelBox.SetX(fullDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
                         {
-                        outerLabel->SetAnchorPoint(fullDrawDrawArea.GetBottomRight());
+                        outerLabel->SetAnchorPoint(fullDrawArea.GetBottomRight());
                         outerLabel->SetAnchoring(Anchoring::BottomRightCorner);
                         }
                     }
                 else if (nextLabel)
                     {
                     auto nextLabelBox = nextLabel->GetBoundingBox(dc);
-                    nextLabelBox.SetX(fullDrawDrawArea.GetRight() -
+                    nextLabelBox.SetX(fullDrawArea.GetRight() -
                                       nextLabelBox.GetWidth());
                     nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                     if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))
