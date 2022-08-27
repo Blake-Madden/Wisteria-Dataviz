@@ -851,25 +851,37 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     bool Label::SplitTextAuto()
         {
-        if (const auto charPos = GetText().find_first_of(L"([/:&");
-            charPos != std::wstring::npos)
+        // return if not much to split
+        if (GetText().length() < 3)
+            { return false; }
+
+        wxString splitText = GetText();
+
+        if (const auto charPos = splitText.find_first_of(L"([/:&");
+            charPos != std::wstring::npos && charPos != splitText.length() - 1 &&
+            charPos != 0)
             {
-            wxString splitText = GetText();
-            splitText.insert(
-                ((GetText()[charPos] == L':' || GetText()[charPos] == L'&') ?
-                    charPos+1 : charPos),
-                1, L'\n');
+            if ((splitText[charPos] == L':' || splitText[charPos] == L'&') &&
+                 splitText[charPos+1] == L' ')
+                { splitText[charPos+1] = L'\n'; }
+            else
+                {
+                splitText.insert(
+                    ((splitText[charPos] == L':' || splitText[charPos] == L'&') ?
+                        charPos+1 : charPos),
+                    1, L'\n');
+                }
             SetText(splitText);
             return true;
             }
-        else if (const auto spacePos = GetText().find_first_of(L' ');
-            spacePos != std::wstring::npos && spacePos != GetText().length() - 1)
+        else if (const auto spacePos = splitText.find_first_of(L' ');
+            spacePos != std::wstring::npos && spacePos != splitText.length() - 1 &&
+            spacePos != 0)
             {
-            const auto nextSpacePos = GetText().find_first_of(L' ', spacePos + 1);
+            const auto nextSpacePos = splitText.find_first_of(L' ', spacePos + 1);
             // it just two words (no more spaces), then split on the space
             if (nextSpacePos == std::wstring::npos)
                 {
-                wxString splitText = GetText();
                 splitText[spacePos] = L'\n';
                 SetText(splitText);
                 return true;
