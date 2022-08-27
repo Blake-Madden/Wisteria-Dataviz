@@ -20,6 +20,7 @@
 #include "../base/axis.h"
 #include "../base/lines.h"
 #include "../math/mathematics.h"
+#include "../util/textreplace.h"
 
 /// @brief Classes for presenting data graphically.
 namespace Wisteria::Graphs

@@ -18,8 +18,9 @@ namespace Wisteria::GraphItems
     {
     //----------------------------------------------------------------
     std::shared_ptr<Label> PieSlice::CreateMiddleLabel(wxDC& dc,
-                                                       const double pieProportion,
-                                                       const BinLabelDisplay labelDisplay)
+        const double pieProportion,
+        const BinLabelDisplay labelDisplay,
+        const std::shared_ptr<const TextReplace> abbreviate /*= nullptr*/)
         {
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(pieProportion);
@@ -61,6 +62,9 @@ namespace Wisteria::GraphItems
         pieLabel->GetHeaderInfo().Enable(false);
         // in case we need to split it to possibly fit
         auto pieLabelSplit = std::make_shared<Label>(*pieLabel);
+        // abbreviate if enabled and showing a textual label
+        if (abbreviate && labelDisplay == BinLabelDisplay::BinName)
+            { pieLabelSplit->SetText((*abbreviate)(pieLabelSplit->GetText())); }
         pieLabelSplit->SplitTextAuto();
 
         // make it fit in the slice and return it (or null if too small)
@@ -690,12 +694,13 @@ namespace Wisteria::Graphs
             sliceProportion = (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0) +
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
-            if (GetOuterPie().at(i).GetMidPointLabelDisplay() != BinLabelDisplay::NoDisplay)
+            const auto labelDisplay = (pSlice->GetMidPointLabelDisplay().has_value() ?
+                pSlice->GetMidPointLabelDisplay().value() :
+                GetOuterPieMidPointLabelDisplay());
+            if (labelDisplay != BinLabelDisplay::NoDisplay)
                 {
                 auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
-                    (pSlice->GetMidPointLabelDisplay().has_value() ?
-                        pSlice->GetMidPointLabelDisplay().value() :
-                        GetOuterPieMidPointLabelDisplay()) );
+                    labelDisplay, m_abbreviate);
                 if (middleLabel != nullptr)
                     {
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());
@@ -799,15 +804,16 @@ namespace Wisteria::Graphs
             if (GetInnerPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, true); }
 
-            if (GetInnerPie().at(i).GetMidPointLabelDisplay() != BinLabelDisplay::NoDisplay)
+            const auto labelDisplay = (pSlice->GetMidPointLabelDisplay().has_value() ?
+                pSlice->GetMidPointLabelDisplay().value() :
+                GetInnerPieMidPointLabelDisplay());
+            if (labelDisplay != BinLabelDisplay::NoDisplay)
                 {
                 auto middleLabel = pSlice->CreateMiddleLabel(dc,
                     // take into account the hole consuming a larger % of the inner
                     // area compared to the full pie area
                     safe_divide(1.0 - donutHoleInnerProportion, 2.0) + donutHoleInnerProportion,
-                    (pSlice->GetMidPointLabelDisplay().has_value() ?
-                        pSlice->GetMidPointLabelDisplay().value() :
-                        GetInnerPieMidPointLabelDisplay()) );
+                    labelDisplay, m_abbreviate);
                 if (middleLabel != nullptr)
                     {
                     middleLabel->SetDPIScaleFactor(GetDPIScaleFactor());

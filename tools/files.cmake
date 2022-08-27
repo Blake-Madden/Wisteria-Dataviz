@@ -50,6 +50,7 @@ SET(WISTERIA_SRC
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
     src/util/logfile.cpp
+    src/util/textreplace.cpp
     src/util/memorymappedfile.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp)

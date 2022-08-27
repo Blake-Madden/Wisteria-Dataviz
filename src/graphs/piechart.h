@@ -49,20 +49,27 @@ namespace Wisteria::GraphItems
             @param dc The device context to measure the Label with.
             @param pieProportion The proportion of the pie area that this slice's ring consumes.
             @param labelDisplay What to display in the label.
+            @param abbreviate Text replacer object that can attempt to abbreviate the label
+                to make it fit. Note that this will only be used if @c labelDisplay is
+                set to BinLabelDisplay::BinName.
             @returns The label, which will already be anchored to the middle of the slice.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
-                          wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay);
+                          wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay,
+                          const std::shared_ptr<const TextReplace> abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
             @param dc The device context to measure the Label with.
-            @returns The label, which will already be anchored to the middle of the slices's outer ring.*/
+            @returns The label, which will already be anchored to the middle of the slices's
+                outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(wxDC& dc);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
             @param dc The device context to measure the Label with.
-            @param pieArea A different pie area from what the slice is currently using. This is useful
-                for inner ring slices that need its outer labels to be outside the parent ring.
-            @returns The label, which will already be anchored to the middle of the slices's outer ring.*/
+            @param pieArea A different pie area from what the slice is currently using.
+                This is useful for inner ring slices that need its outer labels to be outside
+                the parent ring.
+            @returns The label, which will already be anchored to the middle of the slices's
+                outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
                           wxDC& dc, const wxRect& pieArea);
         /// @returns The custom midpoint display, specific to this slice.
@@ -399,6 +406,18 @@ namespace Wisteria::Graphs
         /// @param useColors @c true to use colors for the labels.
         void UseColorLabels(const bool useColors) noexcept
             { m_useColorLabels = useColors; }
+
+        /** @brief Sets the text replacement object to abbreviate midpoint labels
+                to make them fit (if necessary).
+            @details The default is to use the English abbreviation interface.
+            @param abbreviate The text replacement object to abbreviate with.
+                Set to null to never attempt abbreviating midpoint labels.
+            @note This is only meant for midpoint labels, as this may be too aggressive
+                for outer labels. If outer labels are too long to fit, set label placement
+                to LabelPlacement::Flush.
+            @sa SetLabelPlacement().*/
+        void SetMidPointAbbreviation(const std::shared_ptr<const TextReplace> abbreviate)
+            { m_abbreviate = abbreviate; }
 
         /// @name Outer Pie Functions
         /// @brief Functions for customizing the outer ring of the pie chart.\n
@@ -801,10 +820,12 @@ namespace Wisteria::Graphs
 
         const uint8_t m_ghostOpacity{ 32 };
 
+        std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>() };
+
         // donut hole
         bool m_includeDonutHole{ false };
         Wisteria::GraphItems::Label m_donutHoleLabel;
-        double m_donutHoleProportion{ .5 };
+        double m_donutHoleProportion{ math_constants::half };
         wxColour m_donutHoleColor{ *wxWHITE };
         };
     }
