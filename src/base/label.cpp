@@ -795,8 +795,8 @@ namespace Wisteria::GraphItems
                         case IconShape::ColorGradientIcon:
                             if (iconPos->m_colors.size() >= 2)
                                 {
-                                // we need to see how many colors there are and draw separate gradients between each
-                                // pair, until the full spectrum is shown.
+                                // we need to see how many colors there are and draw separate
+                                // gradients between each pair, until the full spectrum is shown.
                                 wxRect legendArea = contentBoundingBox;
                                 legendArea.y += yOffset+ScaleToScreenAndCanvas(GetTopPadding());
                                 legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
@@ -861,6 +861,21 @@ namespace Wisteria::GraphItems
                 1, L'\n');
             SetText(splitText);
             return true;
+            }
+        else if (const auto spacePos = GetText().find_first_of(L' ');
+            spacePos != std::wstring::npos && spacePos != GetText().length() - 1)
+            {
+            const auto nextSpacePos = GetText().find_first_of(L' ', spacePos + 1);
+            // it just two words (no more spaces), then split on the space
+            if (nextSpacePos == std::wstring::npos)
+                {
+                wxString splitText = GetText();
+                splitText[spacePos] = L'\n';
+                SetText(splitText);
+                return true;
+                }
+            else
+                { return false; }
             }
         else
             { return false; }
