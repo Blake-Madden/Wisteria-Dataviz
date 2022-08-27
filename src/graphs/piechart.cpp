@@ -474,7 +474,8 @@ namespace Wisteria::Graphs
         pieDrawArea.SetHeight(pieDimension);
         pieDrawArea.SetY(pieDrawArea.GetY() + (heightDifference / 2));
 
-        // make label drawing area square, so that labels don't go up too high or too far over
+        // make label drawing area square or "golden ratioed,"
+        // so that labels don't go up too high or too far over
         wxRect fullDrawArea = GetPlotAreaBoundingBox();
             {
             const auto widthDiff = GetPlotAreaBoundingBox().GetWidth() - pieDrawArea.GetWidth();
@@ -487,9 +488,13 @@ namespace Wisteria::Graphs
                 }
             else if (widthDiff > heightDiff)
                 {
-                const auto sizeDiff = widthDiff - heightDiff;
-                fullDrawArea.SetWidth(fullDrawArea.GetWidth() - sizeDiff);
-                fullDrawArea.SetX(fullDrawArea.GetX() + (sizeDiff/2));
+                // use the golden ratio for the width if we have enough space for it;
+                // otherwise, use whatever width we have, making it more of a square
+                const auto goldenRatioWidth = fullDrawArea.GetHeight() * math_constants::golden_ratio;
+                const auto newWidth = std::min<double>(goldenRatioWidth, fullDrawArea.GetWidth());
+                const auto widthDiff = fullDrawArea.GetWidth() - newWidth;
+                fullDrawArea.SetWidth(newWidth);
+                fullDrawArea.SetX(fullDrawArea.GetX() + (widthDiff/2));
                 }
             }
 
