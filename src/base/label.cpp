@@ -849,6 +849,22 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    bool Label::SplitTextByListItems()
+        {
+        auto splitText{ GetText() };
+        // add newline after trailing "and/or" after last comma
+        const wxString andOrString{ L"(&|and\\b|und\\b|y\\b|et\\b|or\\b|oder\\b|o\\b|ou\\b)" };
+        const wxRegEx reCommaSepWithAnd(wxString::Format(L"(?i)(, )%s", andOrString));
+        auto replacedCount = reCommaSepWithAnd.ReplaceAll(&splitText, L"\\1\\2\n");
+        // and newline after 
+        const wxRegEx reCommaSep(
+            wxString::Format(L", ([^%s])", andOrString));
+        replacedCount += reCommaSep.ReplaceAll(&splitText, L",\n\\1");
+        SetText(splitText);
+        return (replacedCount > 0);
+        }
+
+    //-------------------------------------------
     bool Label::SplitTextAuto()
         {
         // return if not much to split

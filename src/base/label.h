@@ -17,6 +17,7 @@
 #include <wx/wx.h>
 #include <wx/tokenzr.h>
 #include <wx/fontenum.h>
+#include <wx/regex.h>
 #include "graphitems.h"
 
 // forward declares
@@ -49,9 +50,9 @@ namespace Wisteria::GraphItems
         friend class Graphs::Graph2D;
         friend class Graphs::HeatMap;
         friend class Wisteria::Canvas;
-        friend class GraphItems::Axis;
-        friend class GraphItems::Points2D;
-        friend class GraphItems::GraphItemBase;
+        friend class Axis;
+        friend class Points2D;
+        friend class GraphItemBase;
     public:
         /// @private
         Label() noexcept
@@ -99,6 +100,16 @@ namespace Wisteria::GraphItems
                 words, then will split on the space between them.
             @returns @c true if the text was successfully split.*/
         bool SplitTextAuto();
+
+        /** @brief Attempts to split the label into lines if a list of items
+                (commas followed by spaces).
+            @details For example, "Arts, Humanities, & Communications" would be split into
+                "Arts,\nHumanities, &\nCommunications".
+            @note The "and/or" after the last comma will be included at the end of the
+                second-to-last line. Along with ampersand, "and" and "or" for English,
+                Spanish, French, and German are supported.
+            @returns @c true if the text was successfully split.*/
+        bool SplitTextByListItems();
 
         /** @brief Splits the text into lines containing only one character.
             @note It is recommended to set the alignment to centered for best appearance.
