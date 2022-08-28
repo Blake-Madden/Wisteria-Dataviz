@@ -1114,7 +1114,7 @@ namespace Wisteria::GraphItems
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
                     offest = (safe_divide<double>(fullTextSz.GetHeight(),2) - safe_divide<double>(lineX, 2)) +
-                             (safe_divide<double>(leftOffset, 2));
+                             leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
@@ -1269,8 +1269,7 @@ namespace Wisteria::GraphItems
                 // note that for centering we need to add half of the margin back in
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offest = ((fullTextSz.GetWidth()/2)-lineX/2) +
-                              (leftOffset/2);
+                    offest = ((fullTextSz.GetWidth()/2)-lineX/2) + leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
