@@ -60,12 +60,9 @@ namespace Wisteria::GraphItems
             FontColor(ColorContrast::BlackOrWhiteContrast(GetBrush().GetColour()));
         pieLabel->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
         pieLabel->GetHeaderInfo().Enable(false);
-        // in case we need to split it to possibly fit
-        auto pieLabelSplit = std::make_shared<Label>(*pieLabel);
-        // abbreviate if enabled and showing a textual label
-        if (abbreviate && labelDisplay == BinLabelDisplay::BinName)
-            { pieLabelSplit->SetText((*abbreviate)(pieLabelSplit->GetText())); }
-        pieLabelSplit->SplitTextAuto();
+
+        const auto originalFontSize{ pieLabel->GetFont().GetFractionalPointSize() };
+        const auto orginalText{ pieLabel->GetText() };
 
         // make it fit in the slice and return it (or null if too small)
         const auto fitLabelToSlice = [this, &dc](auto pieLabel)
@@ -102,8 +99,31 @@ namespace Wisteria::GraphItems
             };
 
         auto scaledPieLabel = fitLabelToSlice(pieLabel);
+        // if it doesn't fit, try to split it into smaller lines
+        // and possibly abbreviate it, then try again
         if (scaledPieLabel == nullptr)
-            { return fitLabelToSlice(pieLabelSplit); }
+            {
+            pieLabel->GetFont().SetFractionalPointSize(originalFontSize);
+            pieLabel->SetText(orginalText);
+            if (abbreviate && labelDisplay == BinLabelDisplay::BinName)
+                { pieLabel->SetText((*abbreviate)(pieLabel->GetText())); }
+            pieLabel->SplitTextAuto();
+
+            scaledPieLabel = fitLabelToSlice(pieLabel);
+            // if auto splitting still wasn't enough to fit, then try
+            // splitting into multiple lines (if a commoa-separated list)
+            if (scaledPieLabel == nullptr)
+                {
+                pieLabel->GetFont().SetFractionalPointSize(originalFontSize);
+                pieLabel->SetText(orginalText);
+                if (abbreviate && labelDisplay == BinLabelDisplay::BinName)
+                    { pieLabel->SetText((*abbreviate)(pieLabel->GetText())); }
+                pieLabel->SplitTextByListItems();
+
+                return fitLabelToSlice(pieLabel);
+                }
+            return scaledPieLabel;
+            }
         else
             { return scaledPieLabel; }
         }
@@ -694,9 +714,8 @@ namespace Wisteria::Graphs
             sliceProportion = (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0) +
                 safe_divide<double>(sliceProportion, 2) +
                 (GetInnerPie().size() ? sliceProportion : 0);
-            const auto labelDisplay = (pSlice->GetMidPointLabelDisplay().has_value() ?
-                pSlice->GetMidPointLabelDisplay().value() :
-                GetOuterPieMidPointLabelDisplay());
+            const auto labelDisplay =
+                pSlice->GetMidPointLabelDisplay().value_or(GetOuterPieMidPointLabelDisplay());
             if (labelDisplay != BinLabelDisplay::NoDisplay)
                 {
                 auto middleLabel = pSlice->CreateMiddleLabel(dc, sliceProportion,
@@ -804,9 +823,8 @@ namespace Wisteria::Graphs
             if (GetInnerPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, true); }
 
-            const auto labelDisplay = (pSlice->GetMidPointLabelDisplay().has_value() ?
-                pSlice->GetMidPointLabelDisplay().value() :
-                GetInnerPieMidPointLabelDisplay());
+            const auto labelDisplay =
+                pSlice->GetMidPointLabelDisplay().value_or(GetInnerPieMidPointLabelDisplay());
             if (labelDisplay != BinLabelDisplay::NoDisplay)
                 {
                 auto middleLabel = pSlice->CreateMiddleLabel(dc,
