@@ -57,7 +57,6 @@ namespace Wisteria
             by calling AddReplacement().\n
             The following replacements are included:
             - Mathematics -> Math
-            - Science -> Sci.
             - Engineering -> Engr.
             - Manufacturing -> Mfg.
             - Technology -> Tech
@@ -65,12 +64,18 @@ namespace Wisteria
             - Services -> Svc.
             - Department -> Dept.
             - Communication -> Comm.
-            - Communications -> Comm.*/
+            - Communications -> Comm.
+            
+            If aggresive, the following will also be included:
+            - Science -> Sci.
+            - Social -> Soc.
+            - Public -> Pub.*/
     class AbbreviateEnglish final : public TextReplace
         {
     public:
         /// @brief Constructor.
-        AbbreviateEnglish();
+        /// @param aggressive Set to @c true to use more aggressive abbreviations.
+        AbbreviateEnglish(const bool aggressive = false);
         };
     }
 

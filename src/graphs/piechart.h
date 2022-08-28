@@ -409,7 +409,7 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the text replacement object to abbreviate midpoint labels
                 to make them fit (if necessary).
-            @details The default is to use the English abbreviation interface.
+            @details The default is to use the (aggressive) English abbreviation interface.
             @param abbreviate The text replacement object to abbreviate with.
                 Set to null to never attempt abbreviating midpoint labels.
             @note This is only meant for midpoint labels, as this may be too aggressive
@@ -820,7 +820,7 @@ namespace Wisteria::Graphs
 
         const uint8_t m_ghostOpacity{ 32 };
 
-        std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>() };
+        std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>(true) };
 
         // donut hole
         bool m_includeDonutHole{ false };
