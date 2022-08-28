@@ -80,6 +80,47 @@ namespace Wisteria::GraphItems
             CalcLongestLineLength();
             }
 
+        /** @brief Draws the box onto the given @c wxDC.
+            @param dc The wxDC to render onto.
+            @returns The box that the text is being drawn in.*/
+        wxRect Draw(wxDC& dc) const final;
+
+        /// @returns The minimum width needed for the left padding if including a legend.
+        /// @sa SetLeftPadding().
+        [[nodiscard]] static wxCoord GetMinLegendWidthDIPs() noexcept
+            {
+            return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
+                   2/* 1 DIP on each side of icon*/;
+            }
+
+        /// @brief Gets/sets the lines that are drawn ignoring the left margin.
+        ///     This is useful for legend formatting.
+        /// @returns The lines ignoring (left) margins.
+        [[nodiscard]] std::set<size_t>& GetLinesIgnoringLeftMargin() noexcept
+            { return m_linesIgnoringLeftMargin; }
+        /// @private
+        [[nodiscard]] const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
+            { return m_linesIgnoringLeftMargin; }
+
+        /// @name Text Functions
+        /// @brief Functions for settings and editing the label's text.
+        /// @{
+
+        /** @brief Sets the label, which the caller can use (e.g., as a selection label).
+            @param label The text for the label.*/
+        void SetText(const wxString& label) final
+            {
+            GraphItemBase::SetText(label);
+            CalcLongestLineLength();
+            InvalidateCachedBoundingBox();
+            }
+
+        /** @brief Changes the text at the given line in the label.
+            @param line The line number to change.
+            @param lineText The text to replace the specified line number with.
+            @note If the provided line index is out of range, then nothing is updated.*/
+        void SetLine(const size_t line, const wxString& lineText);
+
         /** @brief Chop the label's text up so that it will fit within a bounding box.
             @param dc The device context to measure with.
             @param boundingBoxSize The size of the bounding box to fit the text into.
@@ -123,24 +164,11 @@ namespace Wisteria::GraphItems
              thePlot->GetLeftYAxis().GetTitle().SplitTextByCharacter();
             @endcode*/
         void SplitTextByCharacter();
+        /// @}
 
-        /// @returns The minimum width needed for the left padding if including a legend.
-        /// @sa SetLeftPadding().
-        [[nodiscard]] static wxCoord GetMinLegendWidthDIPs() noexcept
-            {
-            return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
-                   2/* 1 DIP on each side of icon*/;
-            }
-        /** @returns The number of pixels between lines.
-            @warning This will need to be scaled when being drawn or measured.*/
-        [[nodiscard]] double GetLineSpacing() const noexcept
-            { return m_spacingBetweenLines; }
-        /** @brief Sets the number of DIPs between lines (if label is multiline).
-            @param spacing The number of DIPs to space between lines.
-            @note This is in DIPS; the framework will scale this to the current DPI and zoom
-                level for you.*/
-        void SetLineSpacing(const double spacing) noexcept
-            { m_spacingBetweenLines = spacing; }
+        /// @name Style Functions
+        /// @brief Functions for customizing the label's visual appearance.
+        /// @{
 
         /// @returns How the corners are drawn.
         [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
@@ -159,24 +187,21 @@ namespace Wisteria::GraphItems
         void Tilt(const double tiltAngle) noexcept
             { m_tiltAngle = tiltAngle; }
 
-        /** @brief Sets the label, which the caller can use (e.g., as a selection label).
-            @param label The text for the label.*/
-        void SetText(const wxString& label) final
-            {
-            GraphItemBase::SetText(label);
-            CalcLongestLineLength();
-            InvalidateCachedBoundingBox();
-            }
-        /** @brief Changes the text at the given line in the label.
-            @param line The line number to change.
-            @param lineText The text to replace the specified line number with.
-            @note If the provided line index is out of range, then nothing is updated.*/
-        void SetLine(const size_t line, const wxString& lineText);
+        /** @returns The number of pixels between lines.
+            @warning This will need to be scaled when being drawn or measured.*/
+        [[nodiscard]] double GetLineSpacing() const noexcept
+            { return m_spacingBetweenLines; }
+        /** @brief Sets the number of DIPs between lines (if label is multiline).
+            @param spacing The number of DIPs to space between lines.
+            @note This is in DIPS; the framework will scale this to the current DPI and zoom
+                level for you.*/
+        void SetLineSpacing(const double spacing) noexcept
+            { m_spacingBetweenLines = spacing; }
+        /// @}
 
-        /** @brief Draws the box onto the given @c wxDC.
-            @param dc The wxDC to render onto.
-            @returns The box that the text is being drawn in.*/
-        wxRect Draw(wxDC& dc) const final;
+        /// @name Bounding Box Functions
+        /// @brief Functions for customizing the label's bounding box.
+        /// @{
 
         /** @returns The rectangle on the canvas where the label would fit in.
             @param dc An existing graphics context to measure the label on.
@@ -204,15 +229,6 @@ namespace Wisteria::GraphItems
             InvalidateCachedBoundingBox();
             }
 
-        /// @brief Gets/sets the lines that are drawn ignoring the left margin.
-        ///  This is useful for legend formatting.
-        /// @returns The lines ignoring (left) margins.
-        [[nodiscard]] std::set<size_t>& GetLinesIgnoringLeftMargin() noexcept
-            { return m_linesIgnoringLeftMargin; }
-        /// @private
-        [[nodiscard]] const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
-            { return m_linesIgnoringLeftMargin; }
-
         /** @brief Set this to @c true so that calls to SetBoundingBox() will only
                 be treated as a suggestion. The bounding box will be set to the suggested size,
                 but then be scaled down to the content.
@@ -234,6 +250,7 @@ namespace Wisteria::GraphItems
         ///  treated as a suggestion.
         [[nodiscard]] bool IsAdjustingBoundingBoxToContent() const noexcept
             { return m_adjustBoundingBoxToContent; }
+        /// @}
 
         /// @name Font Functions
         /// @brief Helper functions for font selection and adjustments.
