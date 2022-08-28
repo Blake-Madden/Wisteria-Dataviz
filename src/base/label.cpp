@@ -169,9 +169,9 @@ namespace Wisteria::GraphItems
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
         wxCoord width = std::max<wxCoord>(measuredWidth,
-            (GetMinimumUserWidthDIPs() ? dc.FromDIP(GetMinimumUserWidthDIPs().value()) : 0));
+            dc.FromDIP(GetMinimumUserWidthDIPs().value_or(0)) );
         wxCoord height = std::max<wxCoord>(measuredHeight,
-            (GetMinimumUserHeightDIPs() ? dc.FromDIP(GetMinimumUserHeightDIPs().value()) : 0));
+            dc.FromDIP(GetMinimumUserHeightDIPs().value_or(0)) );
 
         wxRect boundingBox;
         if (GetTextOrientation() == Orientation::Horizontal)
