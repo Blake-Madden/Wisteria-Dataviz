@@ -1642,9 +1642,11 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = GetInnerPie().at(i).GetGroupLabel();
-            if (currentLabel.length() > Settings::GetMaxLegendTextLength())
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+            if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
+                Settings::GetMaxLegendTextLength() >= 1)
                 {
-                currentLabel.resize(Settings::GetMaxLegendTextLength()+1);
+                currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
                 currentLabel.append(L"\u2026");
                 ++currentLine;
                 }
@@ -1706,9 +1708,11 @@ namespace Wisteria::Graphs
                 break;
                 }
             wxString currentLabel = GetOuterPie().at(i).GetGroupLabel();
-            if (currentLabel.length() > Settings::GetMaxLegendTextLength())
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+            if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
+                Settings::GetMaxLegendTextLength() >= 1)
                 {
-                currentLabel.resize(Settings::GetMaxLegendTextLength()+1);
+                currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
                 currentLabel.append(L"\u2026");
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
