@@ -587,12 +587,9 @@ namespace Wisteria
                     ConvertColor(headerNode->GetProperty(L"color")->GetValueString()));
                 if (color.IsOk())
                     { label->GetHeaderInfo().FontColor(color); }
-                // not actually setting the scaling of the header (since the label
-                // that it is part of has its own scaling), but instead set the scaling
-                // of the header's font size.
-                label->GetHeaderInfo().GetFont().SetFractionalPointSize(
-                    label->GetHeaderInfo().GetFont().GetFractionalPointSize() *
-                    headerNode->GetProperty(L"scaling")->GetValueNumber(1));
+
+                label->GetHeaderInfo().RelativeScaling(
+                    headerNode->GetProperty(L"relative-scaling")->GetValueNumber(1));
 
                 const auto textAlignment = ConvertTextAlignment(
                     headerNode->GetProperty(L"text-alignment")->GetValueString());
@@ -2897,7 +2894,7 @@ namespace Wisteria
             if (!wxFileName::FileExists(path))
                 {
                 throw std::runtime_error(
-                    wxString::Format(_(L"%s :image not found."), path).ToUTF8());
+                    wxString::Format(_(L"%s: image not found."), path).ToUTF8());
                 }
             }
         auto image = std::make_shared<GraphItems::Image>(path);

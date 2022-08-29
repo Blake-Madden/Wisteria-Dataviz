@@ -602,6 +602,19 @@ namespace Wisteria
             [[nodiscard]] wxFont& GetFont() noexcept
                 { return m_font; }
 
+            /** @brief Gets the top line's scaling, relative to the rest of the text.
+                @returns The top line's scaling.*/
+            [[nodiscard]] double GetRelativeScaling() const noexcept
+                { return m_relativeScaling; }
+            /** @brief Specifies the top line's scaling, relative to the rest of the text.
+                @param scaling The realtive scaling for the top line.
+                @returns A self reference.*/
+            HeaderInfo& RelativeScaling(const double scaling) noexcept
+                {
+                m_relativeScaling = scaling;
+                return *this;
+                }
+
             /// @private
             [[nodiscard]] const wxFont& GetFont() const noexcept
                 { return m_font; }
@@ -610,6 +623,7 @@ namespace Wisteria
             bool m_enabled{ false };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
             wxColour m_fontColor{ *wxBLACK };
+            double m_relativeScaling{ 1.0 };
             };
 
         /// @brief Stores base information for an item being drawn on a plot or canvas.

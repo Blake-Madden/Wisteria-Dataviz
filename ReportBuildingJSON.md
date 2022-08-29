@@ -303,8 +303,8 @@ Properties for @c "label" nodes:
      The following sub-properties are available:
   - @c "bold": @c true to make the header bold.
   - @c "color": the font color for the header. This can be either a color name or hex-encoded value.
-  - @c "scaling": numeric value of how much to scale the header's font size. For example, @c 2.0 will double the
-       header's default font size.\n
+  - @c "relative-scaling": numeric value of how much to scale the header's font size relative to the label's scaling.
+       For example, @c 2.0 will double the header's default font size compared to the rest of the label.\n
        Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
        @c "scaling" property.
 

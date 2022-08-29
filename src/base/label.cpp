@@ -284,7 +284,9 @@ namespace Wisteria::GraphItems
                 {
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                     GetHeaderInfo().GetRelativeScaling()) :
+                    dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
@@ -311,7 +313,9 @@ namespace Wisteria::GraphItems
                 {
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                     GetHeaderInfo().GetRelativeScaling()) :
+                    dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(GetText().substr(0, firstLineEnd));
                 topLineSize.x += ScaleToScreenAndCanvas(GetLeftPadding()) +
                                  ScaleToScreenAndCanvas(GetRightPadding());
@@ -703,7 +707,9 @@ namespace Wisteria::GraphItems
                 {
                 wxDCFontChanger fc2(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                     GetHeaderInfo().GetRelativeScaling()) :
+                    GetFont());
                 topLineHeight = dc.GetTextExtent(topLine).GetHeight();
                 }
             for (auto iconPos = GetLegendIcons().cbegin();
@@ -1104,7 +1110,9 @@ namespace Wisteria::GraphItems
                 {
                 wxDCFontChanger fc(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                     GetHeaderInfo().GetRelativeScaling()) :
+                    dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
                 if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushLeft)
                     {
@@ -1159,7 +1167,9 @@ namespace Wisteria::GraphItems
                                   GetHeaderInfo().GetFont().IsOk()) };
             wxDCFontChanger fc(dc,
                 isHeader ?
-                GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                 GetHeaderInfo().GetRelativeScaling()) :
+                dc.GetFont());
             wxDCTextColourChanger tcc(dc,
                 isHeader ?
                 GetHeaderInfo().GetFontColor() : dc.GetTextForeground());
@@ -1257,7 +1267,9 @@ namespace Wisteria::GraphItems
                 // remeasure for (possibly) different font in header
                 wxDCFontChanger fc(dc,
                     GetHeaderInfo().GetFont().IsOk() ?
-                    GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                    GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                     GetHeaderInfo().GetRelativeScaling()) :
+                    dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
                 // if pushed to the left and it's a legend, then it should be to the edge;
                 // otherwise, align with the rest of the text
@@ -1314,7 +1326,9 @@ namespace Wisteria::GraphItems
                                   GetHeaderInfo().GetFont().IsOk()) };
             wxDCFontChanger fc(dc,
                 isHeader ?
-                GetHeaderInfo().GetFont().Scaled(GetScaling()) : dc.GetFont());
+                GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                 GetHeaderInfo().GetRelativeScaling()) :
+                dc.GetFont());
             wxDCTextColourChanger tcc(dc,
                 isHeader ?
                 GetHeaderInfo().GetFontColor() : dc.GetTextForeground());

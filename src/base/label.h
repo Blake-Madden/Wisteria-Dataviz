@@ -320,10 +320,11 @@ namespace Wisteria::GraphItems
              using the current text font, and the current text foreground and background colours.
             @param dc The device context to draw to.
             @param pt The point to draw the text.\n
-             This coordinate refers to the bottom-left corner of the rectangle bounding the string.*/
+                This coordinate refers to the bottom-left corner of the rectangle
+                bounding the string.*/
         void DrawVerticalMultiLineText(wxDC& dc, wxPoint pt) const;
-        /** @brief Draws a multi-line text string at the specified point, using the current text font,
-             and the current text foreground and background colours.
+        /** @brief Draws a multi-line text string at the specified point, using the current
+                 text font, and the current text foreground and background colours.
             @param dc The device context that the text is being drawn on.
             @param pt The point to draw the text.\n
              This coordinate refers to the top-left corner of the rectangle bounding the string.*/
@@ -331,7 +332,7 @@ namespace Wisteria::GraphItems
         /// @brief Figures out how many characters are in the longest line of text
         ///  (takes multiline labels into account).
         void CalcLongestLineLength();
-        /** @brief Retrieves The physical size of label
+        /** @brief Retrieves The physical size of label and its padding
              (including outlined bounding box if the pen is valid).
             @details Should only be called by GetBoundingBox(), which avoids calling this if
              the bounding box values are already cached. GetBoundingBox() will also take into
