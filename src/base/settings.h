@@ -114,7 +114,7 @@ namespace Wisteria
         [[nodiscard]] static double GetBoxRoundedCornerRadius() noexcept
             { return m_roundedCornerRadius; }
         /// @brief Sets the maximum text length for legend labels.
-        /// @details The default length is 32.
+        /// @details The default length is 40.
         /// @details If a label is longer than this,
         ///     then it will be truncated with an ellipsis at the end.
         /// @param length The maximum text length.
@@ -144,7 +144,7 @@ namespace Wisteria
     private:
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };
-        inline static size_t m_maxLegendTextLength{ 32 };
+        inline static size_t m_maxLegendTextLength{ 40 };
         inline static size_t m_pointRadius{ 4 };
         inline static double m_roundedCornerRadius{ 5 };
         inline static size_t m_maxObservationsInBin{ 25 };
