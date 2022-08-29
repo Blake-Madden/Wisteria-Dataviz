@@ -16,6 +16,18 @@ using namespace Wisteria::Icons;
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
+    wxSize Label::CalcLeftImageSize(const wxCoord textHeight) const
+        {
+        if (!m_leftImage.IsOk())
+            { return wxSize(0, 0); }
+        const auto imgHeight = std::min(m_leftImage.GetDefaultSize().GetHeight(), textHeight);
+        const auto imgWidth = geometry::calculate_rescale_width(
+            { m_leftImage.GetDefaultSize().GetWidth(), m_leftImage.GetDefaultSize().GetHeight() },
+            imgHeight);
+        return wxSize(imgWidth, imgHeight);
+        }
+
+    //-------------------------------------------
     void Label::SetLine(const size_t line, const wxString& lineText)
         {
         wxString newString;
@@ -122,15 +134,19 @@ namespace Wisteria::GraphItems
         // scale up or down to fit the bounding box if necessary
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
+        const auto measureWidthNoSideImages = ((GetTextOrientation() == Orientation::Horizontal) ?
+            (measuredWidth - CalcLeftImageSize(measuredHeight).GetWidth()) : measuredWidth);
+        const auto measuredHeightNoSideImages = ((GetTextOrientation() == Orientation::Vertical) ?
+            (measuredHeight - CalcLeftImageSize(measuredWidth).GetWidth()) : measuredHeight);
         if (// too small in both dimensions, so upscale
-            measuredWidth <= rect.GetWidth() &&
-            measuredHeight <= rect.GetHeight() ||
+            measureWidthNoSideImages <= rect.GetWidth() &&
+            measuredHeightNoSideImages <= rect.GetHeight() ||
             // or too big in one of the dimensions, so downscale
-            (measuredWidth > rect.GetWidth() ||
-             measuredHeight > rect.GetHeight()) )
+            (measureWidthNoSideImages > rect.GetWidth() ||
+             measuredHeightNoSideImages > rect.GetHeight()) )
             {
-            const auto widthFactor = safe_divide<double>(rect.GetWidth(), measuredWidth);
-            const auto heightFactor = safe_divide<double>(rect.GetHeight(), measuredHeight);
+            const auto widthFactor = safe_divide<double>(rect.GetWidth(), measureWidthNoSideImages);
+            const auto heightFactor = safe_divide<double>(rect.GetHeight(), measuredHeightNoSideImages);
             SetScaling(GetScaling() * std::min(widthFactor, heightFactor));
             }
         
@@ -293,6 +309,7 @@ namespace Wisteria::GraphItems
                 width = std::max(topLineSize.GetWidth(), width);
                 height += topLineSize.GetHeight();
                 }
+            width += CalcLeftImageSize(height).GetWidth();
             }
         else
             {
@@ -322,6 +339,7 @@ namespace Wisteria::GraphItems
                 height = std::max(topLineSize.GetWidth(), height);
                 width += topLineSize.GetHeight();
                 }
+            height += CalcLeftImageSize(width).GetWidth();
             }
         }
 
@@ -644,6 +662,33 @@ namespace Wisteria::GraphItems
                 }
             DrawVerticalMultiLineText(dc, GetCachedContentBoundingBox().GetLeftTop());
             }
+        // draw side image
+        if (m_leftImage.IsOk())
+            {
+            if (GetTextOrientation() == Orientation::Horizontal)
+                {
+                const auto bmp = m_leftImage.GetBitmap(
+                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()));
+                // center vertically
+                auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
+                leftCorner.y += safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
+                    safe_divide(bmp.GetHeight(), 2);
+                dc.DrawBitmap(bmp, leftCorner);
+                }
+            else
+                {
+                const auto img = m_leftImage.GetBitmap(
+                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight())).
+                    ConvertToImage().Rotate90(false);
+                // center horizontally
+                auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
+                leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
+                    safe_divide(img.GetHeight(), 2);
+                leftCorner.y -= img.GetWidth();
+                dc.DrawBitmap(img, leftCorner);
+                }
+            }
+
         // draw the outline
         if (IsSelected())
             {
@@ -753,7 +798,6 @@ namespace Wisteria::GraphItems
                 // icons only relavant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == IconShape::HorizontalSeparator ||
                     iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
-                    iconPos->m_shape == IconShape::ImageWholeLegend ||
                     iconPos->m_shape == IconShape::ColorGradientIcon)
                     {
                     switch (iconPos->m_shape)
@@ -778,26 +822,6 @@ namespace Wisteria::GraphItems
                             break;
                         // full-length icons
                         //------------------
-                        case IconShape::ImageWholeLegend:
-                            if (iconPos->m_img.IsOk())
-                                {
-                                wxRect legendArea = contentBoundingBox;
-                                legendArea.SetHeight(averageLineHeight * GetLineCountWithoutHeader());
-
-                                const auto downScaledSize = geometry::calculate_downscaled_size(
-                                                std::make_pair<double, double>(iconPos->m_img.GetWidth(),
-                                                                               iconPos->m_img.GetHeight()),
-                                                std::make_pair(ScaleToScreenAndCanvas(GetLeftPadding()),
-                                                    legendArea.GetHeight() - yOffset -
-                                                                 ScaleToScreenAndCanvas(GetTopPadding()) -
-                                                                 ScaleToScreenAndCanvas(GetBottomPadding())));
-                                wxImage scaledImg = iconPos->m_img.Scale(downScaledSize.first,downScaledSize.second,
-                                                                         wxIMAGE_QUALITY_HIGH);
-                                dc.DrawBitmap(wxBitmap(scaledImg),
-                                    legendArea.GetTopLeft() +
-                                    wxPoint(0, ScaleToScreenAndCanvas(GetTopPadding())+yOffset));
-                                }
-                            break;
                         case IconShape::ColorGradientIcon:
                             if (iconPos->m_colors.size() >= 2)
                                 {
@@ -1041,24 +1065,40 @@ namespace Wisteria::GraphItems
         wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
+        wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
         if (GetTextAlignment() == TextAlignment::Justified)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
-                (ScaleToScreenAndCanvas(GetLeftPadding()) +
-                ScaleToScreenAndCanvas(GetRightPadding())) );
+                (ScaleToScreenAndCanvas(GetTopPadding()) +
+                ScaleToScreenAndCanvas(GetBottomPadding())) );
             fullTextSz.SetHeight(fullTextSz.GetHeight() -
                 (spaceBetweenLines +
-                ScaleToScreenAndCanvas(GetTopPadding()) +
-                ScaleToScreenAndCanvas(GetBottomPadding())) );
+                ScaleToScreenAndCanvas(GetLeftPadding()) +
+                ScaleToScreenAndCanvas(GetRightPadding())) );
             }
+        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+            {
+            fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
+                (ScaleToScreenAndCanvas(GetTopPadding()) +
+                ScaleToScreenAndCanvas(GetBottomPadding())) );
+            fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
+                (spaceBetweenLines +
+                ScaleToScreenAndCanvas(GetLeftPadding()) +
+                ScaleToScreenAndCanvas(GetRightPadding())) );
+            }
+        fullTextSz.SetHeight(fullTextSz.GetHeight() -
+                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth() );
+        fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
+                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth() );
+
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
         std::vector<wxString> tokenizedLineLetters;
 
-        constexpr wchar_t hairSpace{ 0x200A };
-
-        const auto trackTextLine = [&](wxString& textLine)
+        const auto trackTextLine = [&dc, &tokenizedLineLetters]
+                                   (wxString& textLine, const wxSize textSz)
             {
+            constexpr wchar_t hairSpace{ 0x200A };
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
@@ -1067,7 +1107,7 @@ namespace Wisteria::GraphItems
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
             // more spaces (spread evenly throughout) until it fits
-            if (dc.GetTextExtent(textLine).GetWidth() < fullTextSz.GetHeight())
+            if (dc.GetTextExtent(textLine).GetWidth() < textSz.GetHeight())
                 {
                 wxString wordStr;
                 for (const auto letter : textLine)
@@ -1079,7 +1119,7 @@ namespace Wisteria::GraphItems
                 if (tokenizedLineLetters.size() < 2)
                     { return; }
                 // use hair spaces between letters for more precise tracking
-                auto lineDiff = fullTextSz.GetHeight() - dc.GetTextExtent(wordStr).GetWidth();
+                auto lineDiff = textSz.GetHeight() - dc.GetTextExtent(wordStr).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
                 const auto hairSpacesPerWordPair = std::max(1.0,
@@ -1121,19 +1161,20 @@ namespace Wisteria::GraphItems
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offest = (safe_divide<double>(fullTextSz.GetHeight(),2) - safe_divide<double>(lineX, 2)) +
+                    offest = (safe_divide<double>(fullTextSzForHeader.GetHeight(),2) -
+                              safe_divide<double>(lineX, 2)) +
                              leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = (fullTextSz.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
+                    offest = (fullTextSzForHeader.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
                         (HasLegendIcons() ? 0 : leftOffset);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
                     {
                     offest = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token);
+                    trackTextLine(token, fullTextSzForHeader);
                     }
                 }
             else
@@ -1141,7 +1182,10 @@ namespace Wisteria::GraphItems
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
                     { offest = ScaleToScreenAndCanvas(GetLeftPadding()); }
                 else if (GetTextAlignment() == TextAlignment::Centered)
-                    { offest = (safe_divide<double>(fullTextSz.GetHeight(),2) - safe_divide<double>(lineX,2)); }
+                    {
+                    offest = (safe_divide<double>(fullTextSz.GetHeight(), 2) -
+                              safe_divide<double>(lineX, 2));
+                    }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
                     offest = fullTextSz.GetHeight() - lineX -
@@ -1150,7 +1194,7 @@ namespace Wisteria::GraphItems
                 else if (GetTextAlignment() == TextAlignment::Justified)
                     {
                     offest = ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token);
+                    trackTextLine(token, fullTextSz);
                     }
                 }
             if (!dc.GetFont().IsOk())
@@ -1160,7 +1204,8 @@ namespace Wisteria::GraphItems
                 }
             const auto currentLineOffset =
                 (GetLinesIgnoringLeftMargin().find(currentLineNumber) != GetLinesIgnoringLeftMargin().cend()) ? 0 :
-                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset);
+                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
+                CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth()).GetWidth();
             const bool isHeader{ (currentLineNumber == 0 &&
                                   GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
@@ -1195,24 +1240,41 @@ namespace Wisteria::GraphItems
         wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
+        wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
         if (GetTextAlignment() == TextAlignment::Justified)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
                 (ScaleToScreenAndCanvas(GetLeftPadding()) +
-                ScaleToScreenAndCanvas(GetRightPadding())) );
+                 ScaleToScreenAndCanvas(GetRightPadding())) );
             fullTextSz.SetHeight(fullTextSz.GetHeight() -
                 (spaceBetweenLines +
                 ScaleToScreenAndCanvas(GetTopPadding()) +
                 ScaleToScreenAndCanvas(GetBottomPadding())) );
             }
+        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+            {
+            fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
+                (ScaleToScreenAndCanvas(GetLeftPadding()) +
+                 ScaleToScreenAndCanvas(GetRightPadding())) );
+            fullTextSzForHeader.SetHeight(fullTextSzForHeader.GetHeight() -
+                (spaceBetweenLines +
+                ScaleToScreenAndCanvas(GetTopPadding()) +
+                ScaleToScreenAndCanvas(GetBottomPadding())) );
+            }
+        fullTextSz.SetWidth(fullTextSz.GetWidth() -
+                 CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth() );
+        fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
+                 CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth() );
+
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         size_t currentLineNumber{ 0 };
         std::vector<wxString> tokenizedLineLetters;
 
-        constexpr wchar_t hairSpace{ 0x200A };
-
-        const auto trackTextLine = [&](wxString& textLine)
+        const auto trackTextLine = [&dc, &tokenizedLineLetters]
+                                   (wxString& textLine, const wxSize textSz)
             {
+            constexpr wchar_t hairSpace{ 0x200A };
+
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
@@ -1221,7 +1283,7 @@ namespace Wisteria::GraphItems
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
             // hair spaces (spread evenly throughout) until it fits
-            if (dc.GetTextExtent(textLine).GetWidth() < fullTextSz.GetWidth())
+            if (dc.GetTextExtent(textLine).GetWidth() < textSz.GetWidth())
                 {
                 // break the line into separate letters
                 wxString wordStr;
@@ -1234,7 +1296,7 @@ namespace Wisteria::GraphItems
                 if (tokenizedLineLetters.size() < 2)
                     { return; }
                 // use hair spaces between letters for more precise tracking
-                auto lineDiff = fullTextSz.GetWidth() - dc.GetTextExtent(wordStr).GetWidth();
+                auto lineDiff = textSz.GetWidth() - dc.GetTextExtent(wordStr).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
                 const auto hairSpacesPerWordPair = std::max(1.0,
@@ -1281,18 +1343,21 @@ namespace Wisteria::GraphItems
                 // note that for centering we need to add half of the margin back in
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offest = ((fullTextSz.GetWidth()/2)-lineX/2) + leftOffset;
+                    offest = (safe_divide<double>(fullTextSzForHeader.GetWidth(), 2) -
+                              safe_divide<double>(lineX, 2)) +
+                        leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = (fullTextSz.GetWidth()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
+                    offest = (fullTextSzForHeader.GetWidth() - lineX -
+                              ScaleToScreenAndCanvas(GetLeftPadding())) +
                              (HasLegendIcons() ? 0 : leftOffset);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
                     {
                     offest = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token);
+                    trackTextLine(token, fullTextSzForHeader);
                     }
                 }
             else
@@ -1300,7 +1365,10 @@ namespace Wisteria::GraphItems
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
                     { offest = ScaleToScreenAndCanvas(GetLeftPadding()); }
                 else if (GetTextAlignment() == TextAlignment::Centered)
-                    { offest = ((fullTextSz.GetWidth()/2)-lineX/2); }
+                    {
+                    offest = (safe_divide<double>(fullTextSz.GetWidth(), 2) -
+                              safe_divide<double>(lineX, 2));
+                    }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
                     offest = fullTextSz.GetWidth() - lineX -
@@ -1309,7 +1377,7 @@ namespace Wisteria::GraphItems
                 else if (GetTextAlignment() == TextAlignment::Justified)
                     {
                     offest = ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token);
+                    trackTextLine(token, fullTextSz);
                     }
                 }
             if (!dc.GetFont().IsOk())
@@ -1319,7 +1387,8 @@ namespace Wisteria::GraphItems
                 }
             const auto currentLineOffset =
                 (GetLinesIgnoringLeftMargin().find(currentLineNumber) != GetLinesIgnoringLeftMargin().cend()) ? 0 :
-                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset);
+                ((GetHeaderInfo().IsEnabled() && currentLineNumber == 0) ? 0 : leftOffset) +
+                CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()).GetWidth();
             const bool isHeader{ (currentLineNumber == 0 &&
                                   GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&

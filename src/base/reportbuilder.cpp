@@ -551,6 +551,26 @@ namespace Wisteria
             if (color.IsOk())
                 { label->SetFontColor(color); }
 
+            // an image to the left side of it
+            const auto leftSideNode = labelNode->GetProperty(L"left-side-image");
+            if (leftSideNode->IsOk())
+                {
+                auto path = leftSideNode->GetProperty(L"path")->GetValueString();
+                if (path.length())
+                    {
+                    if (!wxFileName::FileExists(path))
+                        {
+                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                        if (!wxFileName::FileExists(path))
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"%s: label side image not found."), path).ToUTF8());
+                            }
+                        }
+                    label->SetLeftSideImage(Image::LoadFile(path));
+                    }
+                }
+
             const auto orientation = labelNode->GetProperty(L"orientation")->GetValueString();
             if (orientation.CmpNoCase(L"horizontal") == 0)
                 { label->SetTextOrientation(Orientation::Horizontal); }
@@ -1790,20 +1810,22 @@ namespace Wisteria
                     { continue; }
                 const auto hPageAlignment =
                     rowContentCommand->GetProperty(L"horizontal-page-alignment")->GetValueString();
+                const std::set<size_t> colStops =
+                    loadStops(rowContentCommand->GetProperty(L"stops"));
                 if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::LeftAligned, std::nullopt);
+                        PageHorizontalAlignment::LeftAligned, colStops);
                     }
                 else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::RightAligned, std::nullopt);
+                        PageHorizontalAlignment::RightAligned, colStops);
                     }
                 else if (hPageAlignment.CmpNoCase(L"centered") == 0)
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::Centered, std::nullopt);
+                        PageHorizontalAlignment::Centered, colStops);
                     }
                 }
             }
@@ -2803,7 +2825,6 @@ namespace Wisteria
             { L"image-icon", IconShape::ImageIcon },
             { L"horizontal-separator", IconShape::HorizontalSeparator },
             { L"horizontal-arrow-right-separator", IconShape::HorizontalArrowRightSeparator },
-            { L"image-whole-legend", IconShape::ImageWholeLegend },
             { L"color-gradient-icon", IconShape::ColorGradientIcon },
             { L"square-icon", IconShape::SquareIcon },
             { L"triangle-upward-icon", IconShape::TriangleUpwardIcon },

@@ -197,6 +197,15 @@ namespace Wisteria::GraphItems
                 level for you.*/
         void SetLineSpacing(const double spacing) noexcept
             { m_spacingBetweenLines = spacing; }
+
+        /** @brief Adds an image to the left side of the text.
+            @details This is a shortcut for creating a whole-image legend for the label.\n
+                Because of this, the image's size will be the default icon width and
+                the height will be scaled to the height of the text (preserving the aspect ratio).
+            @warning This will reset any legend that the label currently has.
+            @param bmp The image to use.*/
+        void SetLeftSideImage(const wxBitmapBundle& bmp)
+            { m_leftImage = bmp; }
         /// @}
 
         /// @name Bounding Box Functions
@@ -296,6 +305,11 @@ namespace Wisteria::GraphItems
         static void FixFont(wxFont& theFont);
         /// @}
     private:
+        /// @returns The size that the left image will be if the provided height is given.
+        /// @note This will maintain the image's aspect ratio and the calculated height
+        ///     may be smaller than @c textHeight.
+        /// @param textHeight The current height of the label.
+        [[nodiscard]] wxSize CalcLeftImageSize(const wxCoord textHeight) const;
         /// @returns Number of lines of text in the label.
         [[nodiscard]] size_t GetLineCount() const noexcept
             { return m_lineCount; }
@@ -327,16 +341,16 @@ namespace Wisteria::GraphItems
                  text font, and the current text foreground and background colours.
             @param dc The device context that the text is being drawn on.
             @param pt The point to draw the text.\n
-             This coordinate refers to the top-left corner of the rectangle bounding the string.*/
+                This coordinate refers to the top-left corner of the rectangle bounding the string.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt) const;
         /// @brief Figures out how many characters are in the longest line of text
         ///  (takes multiline labels into account).
         void CalcLongestLineLength();
         /** @brief Retrieves The physical size of label and its padding
-             (including outlined bounding box if the pen is valid).
+                (including outlined bounding box if the pen is valid).
             @details Should only be called by GetBoundingBox(), which avoids calling this if
-             the bounding box values are already cached. GetBoundingBox() will also take into
-             account the (optional) minimum size of the label in conjunction with this.*/
+                the bounding box values are already cached. GetBoundingBox() will also take into
+                account the (optional) minimum size of the label in conjunction with this.*/
         void GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const;
         /// @returns The offset from the top if user-defined minimum size is being used it is
         ///  taller than the measured size.
@@ -352,6 +366,7 @@ namespace Wisteria::GraphItems
         size_t m_longestLineLength{ 0 };
         std::set<size_t> m_linesIgnoringLeftMargin;
         BoxCorners m_boxCorners{ BoxCorners::Straight };
+        wxBitmapBundle m_leftImage;
         };
     }
 

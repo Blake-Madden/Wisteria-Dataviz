@@ -299,6 +299,9 @@ Properties for @c "label" nodes:
   - @c "flush-right" or @c "ragged-left"
   - @c "centered"
   - @c "justified"
+- @c "left-side-image": properties specifying an image to display on the left side of the label.
+  The available options are:
+  - @c "path": string specifying the image path to load.
 - @c "header": attributes to apply to the first row of the label.\n
      The following sub-properties are available:
   - @c "bold": @c true to make the header bold.
@@ -423,6 +426,8 @@ The remaining properties are executed in the following order:
     - @c "left-aligned"
     - @c "right-aligned"
     - @c "centered"
+  - @c "stops": an array of which columns to skip over when changing the column's content alignment.\n
+       This is an array of @c "position" items.
 - @c "columns-group": a numeric array representing which columns to apply label grouping to.\n
      Down each provided column, this will combine consecutive cells with the same label into one cell.
 - @c "columns-color": an array of column and color pairs, which contain the following properties:
@@ -608,7 +613,6 @@ Properties common to all graph items:
   - @c "image-icon"
   - @c "horizontal-separator"
   - @c "horizontal-arrow-right-separator"
-  - @c "image-whole-legend"
   - @c "color-gradient-icon"
   - @c "square-icon"
   - @c "triangle-upward-icon"

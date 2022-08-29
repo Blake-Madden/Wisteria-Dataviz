@@ -46,9 +46,6 @@ namespace Wisteria::Icons
         HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend
                                             and text area of a label.\n
                                             Only applicable for legends.*/
-        ImageWholeLegend,              /*!< An image which fills the entire legend.
-                                            Only one should be used per legend.
-                                            Only applicable for legends.*/
         ColorGradientIcon,             /*!< A color gradient which fills the entire legend.
                                             Only applicable for legends.*/
         SquareIcon,                    /*!< A square.*/
@@ -86,17 +83,10 @@ namespace Wisteria::Icons
                 L"Color gradient legend created with only one color!");
             }
         /** @brief Constructs legend icon.
-            @param icon The type of image icon shape to use.
-             Must be either ImageIcon or ImageWholeLegend.
             @param img The image to draw as an icon.*/
-        LegendIcon(const IconShape icon, const wxImage& img) :
-            m_shape(icon), m_img(img)
-            {
-            wxASSERT_LEVEL_2_MSG((m_shape == IconShape::ImageIcon) ||
-                                 (m_shape == IconShape::ImageWholeLegend),
-                                 L"LegendIcon constructed with an image, "
-                                  "but its shape isn't set to image. Is this intentional?");
-            }
+        LegendIcon(const wxImage& img) :
+            m_shape(IconShape::ImageIcon), m_img(img)
+            {}
         /** @brief Constructor.
             @param icon The icon type.
             @param pen The pen to outline the icon with.

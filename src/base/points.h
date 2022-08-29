@@ -37,7 +37,7 @@ namespace Wisteria::GraphItems
                 by the object's scaling and parent window's DPI scale factor.
             @param shape The shape of the point.
             @param img An image to use for the point if point is using IconShape::ImageIcon.
-            @warning Some icon shapes (@c ImageWholeLegend, @c ColorGradientIcon) are not
+            @warning Some icon shapes (e.g., @c ColorGradientIcon) are not
                 applicable here and will be drawn as a circle instead if used.*/
         Point2D(const GraphItems::GraphItemInfo& itemInfo,
                 const size_t radius,
