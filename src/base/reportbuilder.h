@@ -244,6 +244,7 @@ namespace Wisteria
             @returns The original string, with any placeholders in it replaced
                 with the user-defined values.*/
         [[nodiscard]] wxString ExpandConstants(wxString str) const;
+        [[nodiscard]] std::optional<double> ExpandNumericConstant(wxString str) const;
         /// @todo needs support for ID and date columns
         void CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
                           const std::shared_ptr<const Data::Dataset>& dataset);

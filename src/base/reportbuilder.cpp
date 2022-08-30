@@ -709,8 +709,16 @@ namespace Wisteria
                 if (formula->IsOk())
                     {
                     const wxString vName = formula->GetProperty(L"name")->GetValueString();
-                    m_values.insert_or_assign(vName,
-                        CalcFormula(formula->GetProperty(L"value")->GetValueString(), dataset) );
+                    if (formula->GetProperty(L"value")->IsValueString())
+                        {
+                        m_values.insert_or_assign(vName,
+                            CalcFormula(formula->GetProperty(L"value")->GetValueString(), dataset) );
+                        }
+                    else if (formula->GetProperty(L"value")->IsValueNumber())
+                        {
+                        m_values.insert_or_assign(vName,
+                            formula->GetProperty(L"value")->GetValueNumber() );
+                        }
                     }
                 }
             }
@@ -1455,11 +1463,26 @@ namespace Wisteria
         wxBrush brush(*wxWHITE_BRUSH);
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
+        double fillPercent{ math_constants::half };
+        const auto fillPercentNode = shapeNode->GetProperty(L"fill-percent");
+        if (fillPercentNode->IsOk())
+            {
+            if (fillPercentNode->IsValueNumber())
+                {
+                fillPercent = fillPercentNode->GetValueNumber(fillPercent);
+                }
+            else if (fillPercentNode->IsValueString())
+                {
+                const auto numberVal = ExpandNumericConstant(fillPercentNode->GetValueString());
+                if (numberVal)
+                    { fillPercent = numberVal.value(); }
+                }
+            }
+
         auto sh = std::make_shared<FillableShape>(
             GraphItemInfo().Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush),
-            loadedShape.value(), sz,
-            shapeNode->GetProperty(L"fill-percent")->GetValueNumber(0.5));
+            loadedShape.value(), sz, fillPercent);
         // center by default, but allow LoadItems (below) to override that
         // if client asked for something else
         sh->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
@@ -2090,6 +2113,21 @@ namespace Wisteria
             }
 
         return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+        }
+
+    //---------------------------------------------------
+    std::optional<double> ReportBuilder::ExpandNumericConstant(wxString str) const
+        {
+        if (str.starts_with(L"{{") && str.ends_with(L"}}"))
+            { str = str.substr(2, str.length() - 4); }
+        const auto foundVal = m_values.find(str);
+        if (foundVal != m_values.cend())
+            {
+            if (const auto dVal{ std::get_if<double>(&foundVal->second) };
+                dVal != nullptr && !std::isnan(*dVal))
+                { return *dVal; }
+            }
+        return std::nullopt;
         }
 
     //---------------------------------------------------

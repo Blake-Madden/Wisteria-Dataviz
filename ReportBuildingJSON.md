@@ -268,7 +268,8 @@ Properties for @c "fillable-shape" nodes:
 - @c "size": the size of the shape, which contains the following properties:
   - @c "width": the width.
   - @c "height": the height.
-- @c "fill-percent": the percent to fill the shape, which is a number between @c 0.0 and @c 1.0.
+- @c "fill-percent": the percent to fill the shape, which is a number between @c 0.0 and @c 1.0.\n
+  This can either be a numeric or a formula reference.
 
 ## Image {#image-properties}
 Properties for @c "image" nodes:
