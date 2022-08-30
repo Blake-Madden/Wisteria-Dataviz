@@ -35,7 +35,7 @@ namespace Wisteria::Data
         m_toDataset->GetIdColumn().SetName(m_fromDataset->GetIdColumn().GetName());
         m_toDataset->GetIdColumn().Reserve(m_fromDataset->GetIdColumn().GetRowCount());
 
-        // data columns
+        // date columns
         m_toDataset->GetDateColumns().reserve(
             m_fromDataset->GetDateColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetDateColumns())

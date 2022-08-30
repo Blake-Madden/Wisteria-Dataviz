@@ -1251,7 +1251,7 @@ namespace Wisteria::Colors
             {
         public:
             Cosmopolitan() : ColorScheme({
-                wxColour(l"#8593AE"),
+                wxColour(L"#8593AE"),
                 ColorBrewer::GetColor(Color::Blush),
                 ColorBrewer::GetColor(Color::Pewter),
                 ColorBrewer::GetColor(Color::Steel) })
