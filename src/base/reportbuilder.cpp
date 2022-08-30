@@ -2136,11 +2136,15 @@ namespace Wisteria
                     LoadPosition(cellUpdate->GetProperty(L"column"),
                         table->GetColumnCount(),
                         table->GetRowCount());
-                if (rowPosition.has_value() && columnPosition.has_value() &&
-                    rowPosition.value() < table->GetRowCount() &&
-                    columnPosition.value() < table->GetColumnCount())
+                Table::TableCell* currentCell =
+                    ((rowPosition.has_value() && columnPosition.has_value() &&
+                      rowPosition.value() < table->GetRowCount() &&
+                      columnPosition.value() < table->GetColumnCount()) ?
+                    &table->GetCell(rowPosition.value(), columnPosition.value()) :
+                    table->FindCell(cellUpdate->GetProperty(L"value-to-find")->GetValueString()) );
+
+                if (currentCell)
                     {
-                    auto& currentCell = table->GetCell(rowPosition.value(), columnPosition.value());
                     // column count
                     const auto columnCountProperty =
                         cellUpdate->GetProperty(L"column-count");
@@ -2149,11 +2153,11 @@ namespace Wisteria
                         if (columnCountProperty->IsValueString() &&
                             columnCountProperty->GetValueString().CmpNoCase(L"all") == 0)
                             {
-                            currentCell.SetColumnCount(table->GetColumnCount());
+                            currentCell->SetColumnCount(table->GetColumnCount());
                             }
                         else if (columnCountProperty->IsValueNumber())
                             {
-                            currentCell.SetColumnCount(columnCountProperty->GetValueNumber());
+                            currentCell->SetColumnCount(columnCountProperty->GetValueNumber());
                             }
                         }
                     // row count
@@ -2164,11 +2168,11 @@ namespace Wisteria
                         if (rowCountProperty->IsValueString() &&
                             rowCountProperty->GetValueString().CmpNoCase(L"all") == 0)
                             {
-                            currentCell.SetRowCount(table->GetRowCount());
+                            currentCell->SetRowCount(table->GetRowCount());
                             }
                         else if (rowCountProperty->IsValueNumber())
                             {
-                            currentCell.SetRowCount(rowCountProperty->GetValueNumber());
+                            currentCell->SetRowCount(rowCountProperty->GetValueNumber());
                             }
                         }
                     // value
@@ -2177,30 +2181,30 @@ namespace Wisteria
                         {
                         if (valueProperty->IsValueString())
                             {
-                            currentCell.SetValue(valueProperty->GetValueString());
+                            currentCell->SetValue(valueProperty->GetValueString());
                             }
                         else if (valueProperty->IsValueNumber())
-                            { currentCell.SetValue(valueProperty->GetValueNumber()); }
+                            { currentCell->SetValue(valueProperty->GetValueNumber()); }
                         else if (valueProperty->IsValueNull())
-                            { currentCell.SetValue(wxEmptyString); }
+                            { currentCell->SetValue(wxEmptyString); }
                         }
                     // background color
                     const wxColour bgcolor(
                         ConvertColor(cellUpdate->GetProperty(L"background")->GetValueString()));
                     if (bgcolor.IsOk())
-                        { currentCell.SetBackgroundColor(bgcolor); }
+                        { currentCell->SetBackgroundColor(bgcolor); }
 
                     // prefix
                     if (cellUpdate->GetProperty(L"prefix")->IsOk())
                         {
-                        currentCell.SetPrefix(
+                        currentCell->SetPrefix(
                             cellUpdate->GetProperty(L"prefix")->GetValueString());
                         }
 
                     // is it highlighted
                     if (cellUpdate->GetProperty(L"highlight")->IsOk())
                         {
-                        currentCell.Highlight(
+                        currentCell->Highlight(
                             cellUpdate->GetProperty(L"highlight")->GetValueBool());
                         }
 
@@ -2208,36 +2212,36 @@ namespace Wisteria
                     if (cellUpdate->GetProperty(L"bold")->IsOk())
                         {
                         cellUpdate->GetProperty(L"bold")->GetValueBool() ?
-                            currentCell.GetFont().MakeBold() :
-                            currentCell.GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                            currentCell->GetFont().MakeBold() :
+                            currentCell->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
                         }
 
                     // outer border toggles
                     const auto outerBorderToggles =
                         cellUpdate->GetProperty(L"show-borders")->GetValueArrayBool();
                     if (outerBorderToggles.size() >= 1)
-                        { currentCell.ShowTopBorder(outerBorderToggles[0]); }
+                        { currentCell->ShowTopBorder(outerBorderToggles[0]); }
                     if (outerBorderToggles.size() >= 2)
-                        { currentCell.ShowRightBorder(outerBorderToggles[1]); }
+                        { currentCell->ShowRightBorder(outerBorderToggles[1]); }
                     if (outerBorderToggles.size() >= 3)
-                        { currentCell.ShowBottomBorder(outerBorderToggles[2]); }
+                        { currentCell->ShowBottomBorder(outerBorderToggles[2]); }
                     if (outerBorderToggles.size() >= 4)
-                        { currentCell.ShowLeftBorder(outerBorderToggles[3]); }
+                        { currentCell->ShowLeftBorder(outerBorderToggles[3]); }
 
                     const auto textAlignment = ConvertTextAlignment(
                         cellUpdate->GetProperty(L"text-alignment")->GetValueString());
                     if (textAlignment.has_value())
-                        { currentCell.SetTextAlignment(textAlignment.value()); }
+                        { currentCell->SetTextAlignment(textAlignment.value()); }
 
                     // horizontal page alignment
                     const auto hPageAlignment =
                         cellUpdate->GetProperty(L"horizontal-page-alignment")->GetValueString();
                     if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
-                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
+                        { currentCell->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned); }
                     else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
-                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
+                        { currentCell->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned); }
                     else if (hPageAlignment.CmpNoCase(L"centered") == 0)
-                        { currentCell.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
+                        { currentCell->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered); }
                     }
                 }
             }

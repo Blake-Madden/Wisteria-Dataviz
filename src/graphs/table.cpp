@@ -1359,6 +1359,21 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    Table::TableCell* Table::FindCell(const wxString& textToFind)
+        {
+        for (auto& row : m_table)
+            {
+            for (auto& cell : row)
+                {
+                if (cell.IsText() &&
+                    cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                    { return &cell; }
+                }
+            }
+        return nullptr;
+        }
+
+    //----------------------------------------------------------------
     void Table::AddFootnote(const wxString& cellValue, const wxString& footnote)
         {
         m_footnotes.push_back(footnote);
@@ -1380,18 +1395,13 @@ namespace Wisteria::Graphs
         const auto ftChar = footnoteChars.find(m_footnotes.size());
         if (ftChar != footnoteChars.cend())
             {
-            for (auto& row : m_table)
+            auto foundCell = FindCell(cellValue);
+            if (foundCell)
                 {
-                for (auto& cell : row)
-                    {
-                    if (cell.IsText() &&
-                        cell.GetDisplayValue().CmpNoCase(cellValue) == 0)
-                        {
-                        cell.SetValue(cell.GetDisplayValue() + ftChar->second);
-                        }
-                    }
+                foundCell->SetValue(foundCell->GetDisplayValue() + ftChar->second);
                 }
             }
+
         // build the caption
         wxString footnoteCaption;
         for (int i = 0; i < m_footnotes.size(); ++i)

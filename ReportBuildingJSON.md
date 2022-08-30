@@ -492,6 +492,9 @@ The remaining properties are executed in the following order:
        Refer to the [position](#position-properties) properties that are available.
   - @c "row": the row position of the cell to update.\n
        Refer to the [position](#position-properties) properties that are available.
+  - @c "value-to-find": if @c "row"/"column" are not provided, this is a string to search for in
+       the cells' content. The first cell that matches this text will be returned and that is the
+       cell that will be updated.
   - @c "column-count": the number of columns that this cell should consume.\n
        This can either be a number, or the string @c "all" (meaning all columns).
   - @c "row-count": the number of rows that this cell should consume.\n

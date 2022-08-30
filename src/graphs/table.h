@@ -929,6 +929,11 @@ namespace Wisteria::Graphs
         /// @param cellNote Information about the cell(s) to highlight,
         ///     the note, and where to place it relative to the table.
         void AddCellAnnotation(const CellAnnotation& cellNote);
+
+        /** @brief Searches for the first cell whose content matches the provided text.
+            @param textToFind The text to search for.
+            @returns A pointer to the first cell that matches the text, or null if not found.*/
+        [[nodiscard]] TableCell* FindCell(const wxString& textToFind);
         /// @}
 
         /** @brief Adds a footnote to the table.
