@@ -101,10 +101,24 @@ Properties for the @c "datasets" node:
       Returns the valid number of observations in the given column from the dataset.
       - @c column: the column name from the dataset.
     - ``N(`column`, `groupColum`, `groupId`)``:
-      Returns the valid number of observations in the given column from the dataset, using group filtering.
+      Returns the valid number of observations in the given column from the dataset, using group filtering.\n
       - @c column: the column name from the dataset.
       - @c groupColum: a group column to filter on.
       - @c groupId: the group ID to filter on.
+    - ``GroupCount(`groupColum`, `groupId`)``:
+      Returns the number of occurences of @c groupId in the categorical column @c groupColum.\n
+      - @c groupColum: the group column.
+      - @c groupId: the group ID to count.
+    - ``GroupPercentDecimal(`groupColum`, `groupId`)``:
+      Returns the decimal percent (i.e., @c 0.0 to @c 1.0) of the categorical column @c groupColum
+      that has the group ID @c groupId.\n
+      - @c groupColum: the group column.
+      - @c groupId: the group ID to count.
+    - ``GroupPercent(`groupColum`, `groupId`)``:
+      Returns the percent (as a string, such as @c "75%") of the categorical column @c groupColum
+      that has the group ID @c groupId.\n
+      - @c groupColum: the group column.
+      - @c groupId: the group ID to count.
   
   Note that formula arguments can either be a string (wrapped in a pair of \`) or an embedded formula
   (which must be wrapped in a set of `{{` and `}}`).\n

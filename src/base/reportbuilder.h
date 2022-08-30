@@ -40,6 +40,8 @@ namespace Wisteria
         [[nodiscard]] std::vector<Canvas*> LoadConfigurationFile(
             const wxString& filePath, wxWindow* parent);
     private:
+        using ValuesType = std::variant<wxString, double>;
+
         /// @brief Loads the datasets node into @c m_datasets.
         /// @details These datasets are used by objects throughout the report,
         ///     referencing them by name.
@@ -248,15 +250,22 @@ namespace Wisteria
         /// @todo needs support for ID and date columns
         void CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
                           const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcFormula(const wxString& formula,
+        [[nodiscard]] ValuesType CalcFormula(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcMinMax(const wxString& formula,
+        // can be a continous min/max or string (case insensitive)
+        [[nodiscard]] ValuesType CalcMinMax(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcValidN(const wxString& formula,
+        [[nodiscard]] std::optional<double> CalcValidN(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcTotal(const wxString& formula,
+        [[nodiscard]] std::optional<double> CalcTotal(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
-        [[nodiscard]] wxString CalcGrandTotal(const wxString& formula,
+        [[nodiscard]] std::optional<double> CalcGrandTotal(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] std::optional<double> CalcGroupCount(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] std::optional<double> CalcGroupPercentDecimal(const wxString& formula,
+            const std::shared_ptr<const Data::Dataset>& dataset);
+        [[nodiscard]] std::optional<wxString> CalcGroupPercent(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset);
         
         // helpers for builing formula regexes
@@ -276,12 +285,12 @@ namespace Wisteria
         [[nodiscard]] static wxString ParamSepatatorRegEx()
             { return L"[ ]*,[ ]*"; }
 
-        // Converts a formula parameter into a column name or constant value.
+        // Converts a formula parameter into a column name(s) or group value.
         // Arguments may be a hard-coded column name (which will be enclosed in tickmarks),
         // or another formula (enclosed in {{}}). If the latter, this will calculate
         // that formula (which can be a column selection function, column aggregate function,
-        // or constant value).
-        [[nodiscard]] wxString ConvertParameter(wxString columnStr,
+        // or group value).
+        [[nodiscard]] wxString ConvertColumnOrGroupParameter(wxString columnStr,
             const std::shared_ptr<const Data::Dataset>& dataset);
 
         // variable selection functions
@@ -296,7 +305,6 @@ namespace Wisteria
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;
-        using ValuesType = std::variant<wxString, double>;
         std::map<wxString, ValuesType, Data::StringCmpNoCase> m_values;
         wxString m_name;
 

@@ -662,7 +662,7 @@ namespace Wisteria
             if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(var, 1).MakeLower();
-                const wxString columnPattern = ConvertParameter(re.GetMatch(var, 2), dataset);
+                const wxString columnPattern = ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset);
 
                 if (funcName.CmpNoCase(L"contains") == 0)
                     {
@@ -725,11 +725,12 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcFormula(const wxString& formula,
+    ReportBuilder::ValuesType ReportBuilder::CalcFormula(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         const wxRegEx re(FunctionStartRegEx() +
-            L"(min|max|n|total|grandtotal|continuouscolumn)" + OpeningParenthesisRegEx());
+            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn)" +
+            OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
             const wxString funcName = re.GetMatch(formula, 1).MakeLower();
@@ -737,11 +738,35 @@ namespace Wisteria
                 funcName.CmpNoCase(L"max") == 0)
                 { return CalcMinMax(formula, dataset); }
             else if (funcName.CmpNoCase(L"n") == 0)
-                { return CalcValidN(formula, dataset); }
+                {
+                const auto calcValue = CalcValidN(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
             else if (funcName.CmpNoCase(L"total") == 0)
-                { return CalcTotal(formula, dataset); }
+                {
+                const auto calcValue = CalcTotal(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
             else if (funcName.CmpNoCase(L"grandtotal") == 0)
-                { return CalcGrandTotal(formula, dataset); }
+                {
+                const auto calcValue = CalcGrandTotal(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
+            else if (funcName.CmpNoCase(L"groupcount") == 0)
+                {
+                const auto calcValue = CalcGroupCount(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
+            else if (funcName.CmpNoCase(L"grouppercentdecimal") == 0)
+                {
+                const auto calcValue = CalcGroupPercentDecimal(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
+            else if (funcName.CmpNoCase(L"grouppercent") == 0)
+                {
+                const auto calcValue = CalcGroupPercent(formula, dataset);
+                return (calcValue ? ValuesType(calcValue.value()) : ValuesType(formula));
+                }
             else if (funcName.CmpNoCase(L"continuouscolumn") == 0)
                 { return ExpandColumnSelection(formula, dataset); }
             }
@@ -783,7 +808,127 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcValidN(const wxString& formula,
+    std::optional<double> ReportBuilder::CalcGroupCount(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        const wxRegEx re(FunctionStartRegEx() +
+                                 L"(groupcount)" + OpeningParenthesisRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 4)
+                {
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                const wxString groupName =
+                    ConvertColumnOrGroupParameter(re.GetMatch(formula, 2), dataset);
+                // if the group value is an embedded formula, then calculate it
+                const wxString groupValue =
+                    ConvertColumnOrGroupParameter(re.GetMatch(formula, 3), dataset);
+                // get the group column and the numeric code for the value
+                const auto groupColumn = dataset->GetCategoricalColumn(groupName);
+                if (groupColumn == dataset->GetCategoricalColumns().cend())
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: group column not found."),
+                                            groupName).ToUTF8());
+                    }
+                const auto groupID = groupColumn->GetIDFromLabel(groupValue);
+                if (!groupID)
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"Group ID for '%s' not found."),
+                                            groupValue).ToUTF8());
+                    }
+
+                return dataset->GetCategoricalColumnValidN(groupName, groupName,
+                                                           groupID.value());
+                }
+            // dataset or something missing
+            else
+                { return std::nullopt; }
+            }
+        return std::nullopt;
+        }
+
+    //---------------------------------------------------
+    std::optional<double> ReportBuilder::CalcGroupPercentDecimal(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(grouppercentdecimal)" + OpeningParenthesisRegEx() +
+                         ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                         ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+
+        if (re.Matches(formula))
+            {
+            wxString countFormula(formula);
+            const wxRegEx reFunctionRename(L"(?i)(grouppercentdecimal)");
+            if (reFunctionRename.Matches(countFormula))
+                {
+                reFunctionRename.ReplaceFirst(&countFormula, L"groupcount");
+                const auto groupTotal = CalcGroupCount(countFormula, dataset);
+                if (groupTotal)
+                    {
+                    return safe_divide<double>(groupTotal.value(), dataset->GetRowCount());
+                    }
+                }
+            }
+
+        return std::nullopt;
+        }
+
+    //---------------------------------------------------
+    std::optional<wxString> ReportBuilder::CalcGroupPercent(const wxString& formula,
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                    wxString::Format(
+                        _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
+            }
+        
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(grouppercent)" + OpeningParenthesisRegEx() +
+                         ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                         ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
+
+        if (re.Matches(formula))
+            {
+            wxString countFormula(formula);
+            const wxRegEx reFunctionRename(L"(?i)(grouppercent)");
+            if (reFunctionRename.Matches(countFormula))
+                {
+                reFunctionRename.ReplaceFirst(&countFormula, L"grouppercentdecimal");
+                const auto percDec = CalcGroupPercentDecimal(countFormula, dataset);
+                if (percDec)
+                    {
+                    return wxNumberFormatter::ToString(percDec.value() * 100, 0,
+                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%";
+                    }
+                }
+            }
+
+        return std::nullopt;
+        }
+
+    //---------------------------------------------------
+    std::optional<double> ReportBuilder::CalcValidN(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -807,25 +952,21 @@ namespace Wisteria
                 {
                 const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower();
                 const wxString columnName =
-                    ConvertParameter(reSimple.GetMatch(formula, 2), dataset);
+                    ConvertColumnOrGroupParameter(reSimple.GetMatch(formula, 2), dataset);
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
                     {
-                    return wxNumberFormatter::ToString(
-                        dataset->GetCategoricalColumnValidN(columnName), 0,
-                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    return dataset->GetCategoricalColumnValidN(columnName);
                     }
                 else if (dataset->GetContinuousColumn(columnName) !=
                     dataset->GetContinuousColumns().cend())
                     {
-                    return wxNumberFormatter::ToString(
-                        dataset->GetContinuousColumnValidN(columnName), 0,
-                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    return dataset->GetContinuousColumnValidN(columnName);
                     }
                 }
             // dataset or column name missing
             else
-                { return formula; }
+                { return std::nullopt; }
             }
         else if (reExtended.Matches(formula))
             {
@@ -834,12 +975,12 @@ namespace Wisteria
                 {
                 const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower();
                 const wxString columnName =
-                    ConvertParameter(reExtended.GetMatch(formula, 2), dataset);
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 2), dataset);
                 const wxString groupName =
-                    ConvertParameter(reExtended.GetMatch(formula, 3), dataset);
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 3), dataset);
                 // if the group value is an embedded formula, then calculate it
                 const wxString groupValue =
-                    ConvertParameter(reExtended.GetMatch(formula, 4), dataset);
+                    ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 4), dataset);
                 // get the group column and the numeric code for the value
                 const auto groupColumn = dataset->GetCategoricalColumn(groupName);
                 if (groupColumn == dataset->GetCategoricalColumns().cend())
@@ -858,29 +999,25 @@ namespace Wisteria
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
                     {
-                    return wxNumberFormatter::ToString(
-                        dataset->GetCategoricalColumnValidN(columnName, groupName,
-                                                                        groupID.value()), 0,
-                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    return dataset->GetCategoricalColumnValidN(columnName, groupName,
+                                                                        groupID.value());
                     }
                 else if (dataset->GetContinuousColumn(columnName) !=
                     dataset->GetContinuousColumns().cend())
                     {
-                    return wxNumberFormatter::ToString(
-                        dataset->GetContinuousColumnValidN(columnName, groupName,
-                                                                    groupID.value()), 0,
-                        wxNumberFormatter::Style::Style_WithThousandsSep);
+                    return dataset->GetContinuousColumnValidN(columnName, groupName,
+                                                                    groupID.value());
                     }
                 }
             // dataset or something missing
             else
-                { return formula; }
+                { return std::nullopt; }
             }
-        return formula;
+        return std::nullopt;
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::ConvertParameter(wxString columnStr,
+    wxString ReportBuilder::ConvertColumnOrGroupParameter(wxString columnStr,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (columnStr.starts_with(L"`") && columnStr.ends_with(L"`"))
@@ -889,14 +1026,19 @@ namespace Wisteria
             {
             columnStr = columnStr.substr(2, columnStr.length() - 4);
             columnStr = ExpandConstants(columnStr);
-            return CalcFormula(columnStr, dataset);
+            const auto calcStr = CalcFormula(columnStr, dataset);
+            if (const auto strVal{ std::get_if<wxString>(&calcStr) };
+                strVal != nullptr)
+                { return *strVal; }
+            else
+                { return wxEmptyString; }
             }
 
         return columnStr;
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcGrandTotal(const wxString& formula,
+    std::optional<double> ReportBuilder::CalcGrandTotal(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -918,19 +1060,17 @@ namespace Wisteria
                 double total{ 0 };
                 for (size_t i = 0; i < dataset->GetContinuousColumns().size(); ++i)
                     { total += dataset->GetContinuousTotal(i); }
-                return wxNumberFormatter::ToString(total, 2,
-                    wxNumberFormatter::Style::Style_WithThousandsSep |
-                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                return total;
                 }
             // dataset or column name missing
             else
-                { return formula; }
+                { return std::nullopt; }
             }
-        return formula;
+        return std::nullopt;
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcTotal(const wxString& formula,
+    std::optional<double> ReportBuilder::CalcTotal(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -948,16 +1088,13 @@ namespace Wisteria
             if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(formula, 1).MakeLower();
-                const wxString columnName = ConvertParameter(re.GetMatch(formula, 2), dataset);
+                const wxString columnName = ConvertColumnOrGroupParameter(
+                                                re.GetMatch(formula, 2), dataset);
                 // only continuous can be totalled
                 if (dataset->GetContinuousColumn(columnName) !=
                     dataset->GetContinuousColumns().cend())
                     {
-                    const auto total =
-                        dataset->GetContinuousTotal(columnName);
-                    return wxNumberFormatter::ToString(total, 2,
-                        wxNumberFormatter::Style::Style_WithThousandsSep |
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    return dataset->GetContinuousTotal(columnName);
                     }
                 else
                     {
@@ -968,13 +1105,13 @@ namespace Wisteria
                 }
             // dataset or column name missing
             else
-                { return formula; }
+                { return std::nullopt; }
             }
-        return formula;
+        return std::nullopt;
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::CalcMinMax(const wxString& formula,
+    ReportBuilder::ValuesType ReportBuilder::CalcMinMax(const wxString& formula,
         const std::shared_ptr<const Data::Dataset>& dataset)
         {
         if (dataset == nullptr)
@@ -992,7 +1129,8 @@ namespace Wisteria
             if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(formula, 1).MakeLower();
-                const wxString columnName = ConvertParameter(re.GetMatch(formula, 2), dataset);
+                const wxString columnName = ConvertColumnOrGroupParameter(
+                                                re.GetMatch(formula, 2), dataset);
 
                 if (dataset->GetCategoricalColumn(columnName) !=
                     dataset->GetCategoricalColumns().cend())
@@ -1006,10 +1144,7 @@ namespace Wisteria
                     {
                     const auto [minVal, maxVal] =
                         dataset->GetContinuousMinMax(columnName);
-                    return wxNumberFormatter::ToString(
-                        (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal), 2,
-                        wxNumberFormatter::Style::Style_WithThousandsSep |
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                    return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
                     }
                 }
             // dataset or column name missing
@@ -1083,7 +1218,7 @@ namespace Wisteria
                 const bool isDate =
                     (valueNode->IsValueString() &&
                         (dt.ParseDateTime(valueNode->GetValueString()) ||
-                        dt.ParseDate(valueNode->GetValueString())));
+                         dt.ParseDate(valueNode->GetValueString())));
                 ColumnFilterInfo cFilter 
                     {
                     filterNode->GetProperty(L"column")->GetValueString(),
@@ -1237,8 +1372,8 @@ namespace Wisteria
                 {
                 // just log this (don't throw)
                 wxLogWarning(
-                        wxString::Format(_(L"Dataset '%s' cannot be exported "
-                            "because debug file IO is not enabled."),
+                        wxString::Format(L"Dataset '%s' cannot be exported "
+                            "because debug file IO is not enabled.",
                             dataset->GetName()));
                 }
             }
@@ -1463,7 +1598,7 @@ namespace Wisteria
         wxBrush brush(*wxWHITE_BRUSH);
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
-        double fillPercent{ math_constants::half };
+        double fillPercent{ math_constants::empty };
         const auto fillPercentNode = shapeNode->GetProperty(L"fill-percent");
         if (fillPercentNode->IsOk())
             {
@@ -1644,7 +1779,7 @@ namespace Wisteria
                     graphNode->GetProperty(L"color-labels")->GetValueBool());
                 }
 
-            // showcase of slices
+            // showcase the slices
             const auto showcaseGroupsNode = graphNode->GetProperty(L"showcase-slices-groups");
             if (showcaseGroupsNode->IsOk())
                 {
