@@ -309,7 +309,7 @@ namespace Wisteria::GraphItems
             gc->Translate(centerPt.x, centerPt.y);
             // draw the sun beams, which will be the horizontal line going across the middle,
             // but rotated 45 degrees around the center
-            double angle = 0.0;
+            double angle{ 0.0 };
             while (angle < 360)
                 {
                 gc->Rotate(geometry::degrees_to_radians(angle));
@@ -584,11 +584,13 @@ namespace Wisteria::GraphItems
             const auto signRadius = std::min(signHeight, iconRadius);
             const auto circleCenter = rect.GetLeftTop() +
                 wxSize(rect.GetWidth() / 2, signRadius);
-            std::array<wxPoint, 4> points;
-            points[0] = circleCenter + wxPoint(0, -signRadius);
-            points[1] = circleCenter + wxPoint(signRadius, 0);
-            points[2] = circleCenter + wxPoint(0, signRadius);
-            points[3] = circleCenter + wxPoint(-signRadius, 0);
+            const std::array<wxPoint, 4> points =
+                {
+                circleCenter + wxPoint(0, -signRadius),
+                circleCenter + wxPoint(signRadius, 0),
+                circleCenter + wxPoint(0, signRadius),
+                circleCenter + wxPoint(-signRadius, 0)
+                };
             dc.DrawPolygon(points.size(), &points[0]);
             // ! label
             Label bangLabel(GraphItemInfo(L"!").Pen(wxNullPen).

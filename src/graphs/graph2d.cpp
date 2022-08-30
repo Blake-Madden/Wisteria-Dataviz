@@ -148,11 +148,11 @@ namespace Wisteria::Graphs
         // if they want without having to deal with scaling.
         GetSubtitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetSubtitle().GetFont().SetFractionalPointSize(
-            GetTitle().GetFont().GetFractionalPointSize() * .75);
+            GetTitle().GetFont().GetFractionalPointSize() * math_constants::three_quarters);
 
         GetCaption().SetRelativeAlignment(RelativeAlignment::FlushLeft);
         GetCaption().GetFont().SetFractionalPointSize(
-            GetTitle().GetFont().GetFractionalPointSize() * .75);
+            GetTitle().GetFont().GetFractionalPointSize() * math_constants::three_quarters);
         GetCaption().SetFontColor(Colors::ColorBrewer::GetColor(Colors::Color::DimGray));
         }
 
@@ -249,7 +249,7 @@ namespace Wisteria::Graphs
                 {
                 for (auto& customAxis : GetCustomAxes())
                     {
-                    wxCoord x(0), y(0);
+                    wxCoord x{ 0 }, y{ 0 };
                     if (GetBottomXAxis().GetPhysicalCoordinate(customAxis.GetCustomXPosition(), x) &&
                         GetLeftYAxis().GetPhysicalCoordinate(customAxis.GetCustomYPosition(), y))
                         {
@@ -292,7 +292,8 @@ namespace Wisteria::Graphs
         // set the axes' points assuming the entire drawing area, then measure their overhangs
         adjustAxesPoints();
 
-        long leftAxisOverhang(0), rightAxisOverhang(0), topAxisOverhang(0), bottomAxisOverhang(0);
+        long leftAxisOverhang{ 0 }, rightAxisOverhang{ 0 },
+             topAxisOverhang{ 0 }, bottomAxisOverhang{ 0 };
         GetAxesOverhang(leftAxisOverhang, rightAxisOverhang, topAxisOverhang, bottomAxisOverhang, dc);
 
         m_calculatedLeftPadding = std::max<long>(leftAxisOverhang,
@@ -1051,10 +1052,10 @@ namespace Wisteria::Graphs
                     {
                     // update our selection info if the object (an possibly, its subobjects)
                     // were deselected
-                    auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
+                    const auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
                     if (unselectedItem != GetSelectedIds().end())
                         { GetSelectedIds().erase(unselectedItem); }
-                    auto unselectedItemWithSubitems = m_selectedItemsWithSubitems.find((*plotObject)->GetId());
+                    const auto unselectedItemWithSubitems = m_selectedItemsWithSubitems.find((*plotObject)->GetId());
                     if (unselectedItemWithSubitems != m_selectedItemsWithSubitems.end())
                         { m_selectedItemsWithSubitems.erase(unselectedItemWithSubitems); }
                     }
