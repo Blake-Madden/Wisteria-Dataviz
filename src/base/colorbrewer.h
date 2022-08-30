@@ -1234,7 +1234,7 @@ namespace Wisteria::Colors
         public:
             BoxOfChocolates() : ColorScheme({
                 ColorBrewer::GetColor(Color::Chocolate),
-                wxColour("#301B28"),
+                wxColour(L"#301B28"),
                 ColorBrewer::GetColor(Color::Frosting),
                 ColorBrewer::GetColor(Color::Toffee) })
                 {}
@@ -1251,7 +1251,7 @@ namespace Wisteria::Colors
             {
         public:
             Cosmopolitan() : ColorScheme({
-                wxColour("#8593AE"),
+                wxColour(l"#8593AE"),
                 ColorBrewer::GetColor(Color::Blush),
                 ColorBrewer::GetColor(Color::Pewter),
                 ColorBrewer::GetColor(Color::Steel) })
@@ -1271,7 +1271,7 @@ namespace Wisteria::Colors
             DayAndNight() : ColorScheme({
                 ColorBrewer::GetColor(Color::Blueberry),
                 ColorBrewer::GetColor(Color::Daffodil),
-                wxColour("#011A27"),
+                wxColour(L"#011A27"),
                 ColorBrewer::GetColor(Color::Tangerine) })
                 {}
             };
@@ -1288,7 +1288,7 @@ namespace Wisteria::Colors
         public:
             FreshFlowers() : ColorScheme({
                 ColorBrewer::GetColor(Color::Aquamarine),
-                wxColour("#E6D72A"),
+                wxColour(L"#E6D72A"),
                 ColorBrewer::GetColor(Color::PinkTulip),
                 ColorBrewer::GetColor(Color::Turquoise) })
                 {}
@@ -1341,7 +1341,7 @@ namespace Wisteria::Colors
             {
         public:
             Typewriter() : ColorScheme({
-                wxColour("#080706"),
+                wxColour(L"#080706"),
                 ColorBrewer::GetColor(Color::GoldLeaf),
                 ColorBrewer::GetColor(Color::Paper),
                 ColorBrewer::GetColor(Color::Silver) })
@@ -1359,7 +1359,7 @@ namespace Wisteria::Colors
             {
         public:
             TastyWaves() : ColorScheme({
-                wxColour("#003B46"),
+                wxColour(L"#003B46"),
                 ColorBrewer::GetColor(Color::LightSeafoam),
                 ColorBrewer::GetColor(Color::Ocean),
                 ColorBrewer::GetColor(Color::Wave) })
@@ -1395,7 +1395,7 @@ namespace Wisteria::Colors
             {
         public:
             ShabbyChic() : ColorScheme({
-                wxColour("#CDAB81"),
+                wxColour(L"#CDAB81"),
                 ColorBrewer::GetColor(Color::Metal),
                 ColorBrewer::GetColor(Color::Newsprint),
                 ColorBrewer::GetColor(Color::Pewter) })
@@ -1431,7 +1431,7 @@ namespace Wisteria::Colors
             {
         public:
             ProduceSection() : ColorScheme({
-                wxColour("#31A9B8"),
+                wxColour(L"#31A9B8"),
                 ColorBrewer::GetColor(Color::Avocado),
                 ColorBrewer::GetColor(Color::RedTomato),
                 ColorBrewer::GetColor(Color::YellowPepper) })

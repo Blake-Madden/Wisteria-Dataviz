@@ -150,9 +150,9 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
 
     const wxDateTime dt = wxDateTime::Now();
     report->AddText(L"Timestamp.log", dt.FormatISODate() + wxT(' ') +
-                    dt.FormatISOTime(), _("Timestamp of this report"));
+                    dt.FormatISOTime(), _(L"Timestamp of this report"));
 
-    report->AddFile(m_logBuffer->GetLogFilePath(), _("Log Report"));
+    report->AddFile(m_logBuffer->GetLogFilePath(), _(L"Log Report"));
     wxString settingsPath = wxStandardPaths::Get().GetUserDataDir() +
                             wxFileName::GetPathSeparator() + L"Settings.xml";
     if (!wxFile::Exists(settingsPath))
@@ -160,7 +160,7 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
         settingsPath = wxStandardPaths::Get().GetUserDataDir() +
                        wxFileName::GetPathSeparator() + GetAppName() +
                        wxFileName::GetPathSeparator() + L"Settings.xml"; }
-    report->AddFile(settingsPath, _("Settings File"));
+    report->AddFile(settingsPath, _(L"Settings File"));
 
     if (wxDebugReportPreviewStd().Show(*report) )
         {
@@ -169,10 +169,10 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
                                  wxFileName::GetPathSeparator() + GetAppName() +
                                  L" Crash Report.zip";
         wxCopyFile(report->GetCompressedFileName(), newReportPath, true);
-        wxMessageBox(wxString::Format(_("An error report has been saved to:\n\"%s\".\n\n"
+        wxMessageBox(wxString::Format(_(L"An error report has been saved to:\n\"%s\".\n\n"
             "Please email this file to %s to have this issue reviewed. "
             "Thank you for your patience."), newReportPath, m_supportEmail), 
-            _("Error Report"), wxOK|wxICON_INFORMATION);
+            _(L"Error Report"), wxOK|wxICON_INFORMATION);
     #ifdef __WXMSW__
         ShellExecute(NULL, _DT(L"open"), wxStandardPaths::Get().GetDocumentsDir(),
                      NULL, NULL, SW_SHOWNORMAL);

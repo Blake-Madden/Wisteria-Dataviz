@@ -70,20 +70,20 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate **temp
             break;
 
         case 1:
-            // don't propose the user to choose if he has no choice
+            // don't propose the user to choose if they have no choice
             theTemplate = data[0];
             break;
 
         default:
-            //wxGetSingleChoiceData is used in the default implementation of this function,
-            //but we are overriding it here to use a more advanced selection dialog
+            // wxGetSingleChoiceData is used in the default implementation of this function,
+            // but we are overriding it here to use a more advanced selection dialog
             wxArrayString docNames;
             wxArrayString docDescriptions;
             for (i = 0; i < noTemplates; i++)
                 { docNames.Add(data[i]->GetDescription()); }
-            //find a suitable parent window
+            // find a suitable parent window
             RadioBoxDlg radioDlg(wxTheApp->GetTopWindow(),
-                _("Select Project Type"), wxEmptyString, _("Project types:"), _("New Project"),
+                _(L"Select Project Type"), wxEmptyString, _(L"Project types:"), _(L"New Project"),
                 docNames, docDescriptions);
             if (radioDlg.ShowModal() == wxID_OK)
                 { theTemplate = data[radioDlg.GetSelection()]; }
