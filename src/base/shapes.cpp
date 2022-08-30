@@ -826,17 +826,6 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
-            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::DarkBrown),
-                       ScaleToScreenAndCanvas(1)));
-
-            // draw the stem
-            auto stemPath = gc->CreatePath();
-            // start of middle of bottom
-            stemPath.MoveToPoint(GetXPosFromLeft(dcRect, .5), dcRect.GetBottom());
-            // draw to the top middle
-            stemPath.AddLineToPoint(GetXPosFromLeft(dcRect, .5), dcRect.GetTop());
-            gc->StrokePath(stemPath);
-
             // draw the leaf
             gc->SetPen(wxPen(ColorContrast::Shade(ColorBrewer::GetColor(Color::ChineseRed)),
                        ScaleToScreenAndCanvas(1)));
@@ -857,6 +846,19 @@ namespace Wisteria::GraphItems
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
+
+            gc->SetPen(wxPen(ColorBrewer::GetColor(Color::DarkBrown),
+                       ScaleToScreenAndCanvas(1)));
+
+            // draw the stem
+            auto stemPath = gc->CreatePath();
+            // start of middle of bottom
+            stemPath.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
+                                                 dcRect.GetBottom());
+            // draw to the top middle
+            stemPath.AddLineToPoint(GetXPosFromLeft(dcRect, math_constants::half),
+                                                    dcRect.GetTop());
+            gc->StrokePath(stemPath);
 
             wxDELETE(gc);
             }
