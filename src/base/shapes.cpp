@@ -452,11 +452,12 @@ namespace Wisteria::GraphItems
             gc->SetBrush(GetGraphItemInfo().GetBrush());
             auto marker = gc->CreatePath();
             // bottom middle, strecthed out to both top corners
-            marker.MoveToPoint(GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, 1));
+            marker.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
+                               GetYPosFromTop(dcRect, 1));
             marker.AddCurveToPoint(
                 GetXPosFromLeft(dcRect, -.75), GetYPosFromTop(dcRect, -.25),
                 GetXPosFromLeft(dcRect, 1.75), GetYPosFromTop(dcRect, -.25),
-                GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, 1));
+                GetXPosFromLeft(dcRect, math_constants::half), GetYPosFromTop(dcRect, 1));
 
             marker.CloseSubpath();
             gc->FillPath(marker);
@@ -832,17 +833,19 @@ namespace Wisteria::GraphItems
             gc->SetBrush(ColorBrewer::GetColor(Color::ChineseRed));
             auto leafPath = gc->CreatePath();
             // left side of leaf
-            leafPath.MoveToPoint(GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, .75));
+            leafPath.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
+                                 GetYPosFromTop(dcRect, math_constants::three_quarters));
             leafPath.AddQuadCurveToPoint(
                 GetXPosFromLeft(dcRect, 0), GetYPosFromTop(dcRect, .6),
                 // top
-                GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, 0));
+                GetXPosFromLeft(dcRect, math_constants::half), GetYPosFromTop(dcRect, 0));
 
             // right side
             leafPath.AddQuadCurveToPoint(
                 GetXPosFromLeft(dcRect, 1), GetYPosFromTop(dcRect, .6),
                 // top
-                GetXPosFromLeft(dcRect, .5), GetYPosFromTop(dcRect, .75));
+                GetXPosFromLeft(dcRect, math_constants::half),
+                GetYPosFromTop(dcRect, math_constants::three_quarters));
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
