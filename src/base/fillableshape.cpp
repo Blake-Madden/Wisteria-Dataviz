@@ -29,7 +29,7 @@ namespace Wisteria::GraphItems
         memDC.SelectObject(wxNullBitmap);
 
         // if 100% "filled," then just draw the regular bitmap
-        if (compare_doubles_greater_or_equal(m_fillPercent, 1.0))
+        if (compare_doubles_greater_or_equal(m_fillPercent, math_constants::full))
             {
             dc.DrawBitmap(bmp, drawArea.GetLeftTop(), true);
             }
@@ -42,11 +42,15 @@ namespace Wisteria::GraphItems
             Image::SetOpacity(ghostedBmp, 32, true);
             dc.DrawBitmap(ghostedBmp, drawArea.GetLeftTop(), true);
 
-            auto filledBmp = bmp.GetSubBitmap(
-                wxRect(wxPoint(0, yCutOff),
-                       wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)) );
-            dc.DrawBitmap(filledBmp,
-                          drawArea.GetLeftTop() + wxPoint(0, yCutOff), true);
+            // nothing to draw above the ghosted image if empty
+            if (compare_doubles_greater(m_fillPercent, math_constants::empty))
+                {
+                auto filledBmp = bmp.GetSubBitmap(
+                    wxRect(wxPoint(0, yCutOff),
+                        wxSize(bmp.GetWidth(), bmp.GetHeight() * m_fillPercent)));
+                dc.DrawBitmap(filledBmp,
+                    drawArea.GetLeftTop() + wxPoint(0, yCutOff), true);
+                }
             }
 
         // draw the outline
