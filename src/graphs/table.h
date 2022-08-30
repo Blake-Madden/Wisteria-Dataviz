@@ -339,6 +339,8 @@ namespace Wisteria::Graphs
             /// @details This is usually something like a '$' (when using accounting formatting),
             ///     where the character is separated from the main cell value.
             /// @param prefix The character to display.
+            /// @note If the cell's format is Percent or Accounting, then this prefix will be
+            ///     managed by the cell.
             void SetPrefix(const wxString& prefix) noexcept
                 { m_prefix = prefix; }
             /// @brief Sets the number of columns that this cell should consume.

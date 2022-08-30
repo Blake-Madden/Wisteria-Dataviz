@@ -908,9 +908,21 @@ namespace Wisteria::Graphs
                     boxRect.SetWidth(boxRect.GetWidth() - rightEdgeOverhang);
                     }
 
+                // If prefix is user-supplied (not something we controlling), not being color coded,
+                // and cell is left aligned, then we can just add the prefix to the cell's label.
+                // Otherwise, we need to make it as a separate label and place that on the left side.
+                const bool isPrefixSeparateLabel =
+                    (cell.m_horizontalCellAlignment == PageHorizontalAlignment::RightAligned ||
+                     cell.m_horizontalCellAlignment == PageHorizontalAlignment::Centered ||
+                     cell.m_colorCodePrefix ||
+                     cell.m_valueFormat == CellFormat::Percent ||
+                     cell.m_valueFormat == CellFormat::Accounting);
+
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_shared<Label>(
-                    GraphItemInfo(cellText.length() ? cellText : L" ").
+                    GraphItemInfo(
+                        (isPrefixSeparateLabel ? wxString(wxEmptyString) : cell.GetPrefix()) +
+                        (cellText.length() ? cellText : L" ")).
                     Pen(wxNullPen).Padding(5, 5, 5, 5).
                     Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                     Font(cell.m_font).
@@ -957,7 +969,7 @@ namespace Wisteria::Graphs
                 cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
 
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
-                if (cell.GetPrefix().length())
+                if (cell.GetPrefix().length() && isPrefixSeparateLabel)
                     {
                     const wxString prefix = (cell.m_valueFormat == CellFormat::Percent) ?
                         // down and up arrow emojis

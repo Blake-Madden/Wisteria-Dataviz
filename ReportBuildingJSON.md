@@ -500,6 +500,7 @@ The remaining properties are executed in the following order:
   - @c "background": the background color. This can be either a color name or hex-encoded value.
   - @c "bold": @c true to make the cell bold.
   - @c "highlight": @c true to highlight the cell.
+  - @c "prefix": a character to display on the left side of the cell.
   - @c "show-borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "horizontal-page-alignment": how to horizontally align the item within its area.\n

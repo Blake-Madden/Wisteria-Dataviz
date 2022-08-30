@@ -2190,6 +2190,13 @@ namespace Wisteria
                     if (bgcolor.IsOk())
                         { currentCell.SetBackgroundColor(bgcolor); }
 
+                    // prefix
+                    if (cellUpdate->GetProperty(L"prefix")->IsOk())
+                        {
+                        currentCell.SetPrefix(
+                            cellUpdate->GetProperty(L"prefix")->GetValueString());
+                        }
+
                     // is it highlighted
                     if (cellUpdate->GetProperty(L"highlight")->IsOk())
                         {
