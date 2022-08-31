@@ -629,6 +629,7 @@ namespace Wisteria::Graphs
 
         /// @name %Bar Functions
         /// @brief Functions relating to adding and editing bars.
+        /// @note Visual effects can also be controlled at the Bar level.
         /// @{
 
         /** @brief Adds a bar to the chart.
@@ -688,9 +689,10 @@ namespace Wisteria::Graphs
         ///    need to be changed manually.
         [[nodiscard]] std::vector<Bar>& GetBars() noexcept
             { return m_bars; }
-        /// @returns Direct (const) access to the bars.
-        [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
-            { return m_bars; }
+        /// @brief Searches for a bar by axis label.
+        /// @param axisLabel The label of the bar to search for.
+        /// @returns The index the bar if found, @c std::nullopt otherwise.
+        [[nodiscard]] std::optional<size_t> FindBar(const wxString axisLabel);
         /// @}
 
         /// @name Axis Functions
@@ -789,7 +791,6 @@ namespace Wisteria::Graphs
 
         /// @name Label Functions
         /// @brief Functions relating to how labels and shadows are drawn.
-        /// @note Visual effects are controlled at the Bar level.
         /// @{
 
         /** @brief Sets whether to include spaces between the bars when drawn.
@@ -821,6 +822,9 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
+        /// @private
+        [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
+            { return m_bars; }
     protected:
         /// @returns The number of slots that can hold a bar.
         ///    This is used for calculating the width of the bars.

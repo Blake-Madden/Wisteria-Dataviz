@@ -14,9 +14,21 @@ using namespace Wisteria::GraphItems;
 
 namespace Wisteria::Graphs
     {
+    //-----------------------------------
     BarChart::BarChart(Wisteria::Canvas* canvas) :
         Graph2D(canvas)
         { SetBarOrientation(m_barOrientation); }
+
+    //-----------------------------------
+    std::optional<size_t> BarChart::FindBar(const wxString axisLabel)
+        {
+        for (size_t i = 0; i < GetBars().size(); ++i)
+            {
+            if (GetBars()[i].GetAxisLabel().GetText().CmpNoCase(axisLabel) == 0)
+                { return i; }
+            }
+        return std::nullopt;
+        }
 
     //-----------------------------------
     void BarChart::SetBarOrientation(const Orientation orient)
@@ -116,7 +128,8 @@ namespace Wisteria::Graphs
                             const Wisteria::SortDirection direction)
         {
         wxASSERT_LEVEL_2_MSG(IsSortable(),
-                             L"Bars are not sortable. Call SetSortable(true) prior to calling SortBars().");
+                             L"Bars are not sortable. "
+                              "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort)
             { return; }
@@ -138,7 +151,7 @@ namespace Wisteria::Graphs
                 });
             }
         // Because we start at the origin, descending when horizontal goes the opposite way internally.
-        // When it's displayed, descending it will be shown the going largest-to-smallest as one
+        // When it's displayed, descending will be shown as going largest-to-smallest as one
         // would expect.
         if ((direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Vertical) ||
             (direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Horizontal))
@@ -206,9 +219,10 @@ namespace Wisteria::Graphs
         // draw the bars
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
         for (auto& bar : m_bars)
+        for (auto& bar : GetBars())
             {
             double barWidth{ 0 };
-            wxPoint middlePointOfBar;
+            wxPoint middlePointOfBarEnd;
             wxCoord axisOffset{ 0 };
             wxCoord textWidth{ 0 }, textHeight{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
@@ -253,12 +267,11 @@ namespace Wisteria::Graphs
                             (barSlots+1));
                         }
 
-                    // set the left (starting point) of the bar
-                    wxCoord lineXStart(0);
+                    wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
                     if (bar.GetCustomScalingAxisStartPosition().has_value())
                         {
                         GetPhyscialCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                            axisOffset + barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBar);
+                            axisOffset + barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBarEnd);
                         wxPoint customStartPt;
                         GetPhyscialCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
                             axisOffset, bar.GetAxisPosition(), customStartPt);
@@ -268,7 +281,7 @@ namespace Wisteria::Graphs
                         {
                         // right side of the block
                         GetPhyscialCoordinates(GetScalingAxis().GetRange().first + axisOffset +
-                            barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBar);
+                            barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBarEnd);
                         // left side of the block
                         wxPoint pt;
                         GetPhyscialCoordinates(GetScalingAxis().GetRange().first +
@@ -277,10 +290,10 @@ namespace Wisteria::Graphs
                         lineXStart = pt.x + (axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
                         }
 
-                    const wxCoord barLength = middlePointOfBar.x-lineXStart;
+                    const wxCoord barLength = middlePointOfBarEnd.x - lineXStart;
                     axisOffset += barBlock.GetLength();
 
-                    const wxCoord lineYStart = middlePointOfBar.y - safe_divide<double>(barWidth,2.0);
+                    const wxCoord lineYStart = middlePointOfBarEnd.y - safe_divide<double>(barWidth, 2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
                     wxRect barRect(lineXStart, lineYStart, barLength, barWidth);
                     wxRect barNeckRect = barRect;
@@ -366,14 +379,16 @@ namespace Wisteria::Graphs
                                     // in case this bar is way too small because of the scaling then don't bother with the shadow
                                     if (barRect.GetHeight() > scaledShadowOffset)
                                         {
-                                        wxPoint shadowPts[7];
-                                        shadowPts[0] = barRect.GetLeftBottom();
-                                        shadowPts[1] = barRect.GetLeftBottom()+wxPoint(0,scaledShadowOffset);
-                                        shadowPts[2] = barRect.GetRightBottom()+wxPoint(scaledShadowOffset, scaledShadowOffset);
-                                        shadowPts[3] = barRect.GetRightTop()+wxPoint(scaledShadowOffset, scaledShadowOffset);
-                                        shadowPts[4] = barRect.GetRightTop()+wxPoint(0, scaledShadowOffset);
-                                        shadowPts[5] = barRect.GetRightBottom();
-                                        shadowPts[6] = shadowPts[0]; // close polygon
+                                        wxPoint shadowPts[7] =
+                                            {
+                                            barRect.GetLeftBottom(),
+                                            barRect.GetLeftBottom() + wxPoint(0,scaledShadowOffset),
+                                            barRect.GetRightBottom() + wxPoint(scaledShadowOffset, scaledShadowOffset),
+                                            barRect.GetRightTop() + wxPoint(scaledShadowOffset, scaledShadowOffset),
+                                            barRect.GetRightTop() + wxPoint(0, scaledShadowOffset),
+                                            barRect.GetRightBottom(),
+                                            barRect.GetLeftBottom() // close polygon
+                                            };
                                         AddObject(std::make_shared<GraphItems::Polygon>(
                                             GraphItemInfo().Pen(wxNullPen).Brush(GraphItemBase::GetShadowColour()),
                                             shadowPts, std::size(shadowPts)));
@@ -381,7 +396,8 @@ namespace Wisteria::Graphs
                                     }
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
+                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
@@ -584,7 +600,7 @@ namespace Wisteria::Graphs
                         {
                         // top of block
                         GetPhyscialCoordinates(bar.GetAxisPosition(),
-                            bar.GetCustomScalingAxisStartPosition().value() + axisOffset + barBlock.GetLength(), middlePointOfBar);
+                            bar.GetCustomScalingAxisStartPosition().value() + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
                         // bottom of block
                         wxPoint customStartPt;
                         GetPhyscialCoordinates(bar.GetAxisPosition(),
@@ -595,7 +611,7 @@ namespace Wisteria::Graphs
                         {
                         // top of block
                         GetPhyscialCoordinates(bar.GetAxisPosition(),
-                            GetScalingAxis().GetRange().first + axisOffset + barBlock.GetLength(), middlePointOfBar);
+                            GetScalingAxis().GetRange().first + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
                         // bottom of block
                         wxPoint pt;
                         GetPhyscialCoordinates(bar.GetAxisPosition(),
@@ -604,9 +620,9 @@ namespace Wisteria::Graphs
                         }
 
                     axisOffset += barBlock.GetLength();
-                    const wxCoord barLength = lineYStart-middlePointOfBar.y;
+                    const wxCoord barLength = lineYStart-middlePointOfBarEnd.y;
                     const wxCoord lineYEnd = lineYStart-barLength;
-                    const wxCoord lineXStart = middlePointOfBar.x - safe_divide<double>(barWidth,2.0);
+                    const wxCoord lineXStart = middlePointOfBarEnd.x - safe_divide<double>(barWidth,2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
                     wxRect barRect(lineXStart, lineYEnd, barWidth, barLength);
                     wxRect barNeckRect = barRect;
@@ -872,16 +888,35 @@ namespace Wisteria::Graphs
                             }
                         decals.push_back(decalLabel);
                         }
-                    // calculate the positions of the bar labels
-                    // (will be drawn later so that the bars don't overlap them)
+                    }
+                }
+            // after all blocks are built, add the label at the end of the bar
+            if (GetBarOrientation() == Orientation::Horizontal &&
+                bar.GetLabel().IsShown())
+                {
                     bar.GetLabel().SetScaling(GetScaling());
                     bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
-                    textHeight = bar.GetLabel().GetBoundingBox(dc).GetHeight();
+                bar.GetLabel().SetShadowType(GetShadowType());
+                const wxCoord textWidth = bar.GetLabel().GetBoundingBox(dc).GetWidth();
                     bar.GetLabel().SetAnchorPoint(
-                        wxPoint(middlePointOfBar.x,
-                                middlePointOfBar.y -
-                                (labelSpacingFromLine+(textHeight/2))));
+                    wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (textWidth/2),
+                            middlePointOfBarEnd.y));
+                AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
+                middlePointOfBarEnd.x += textWidth + (labelSpacingFromLine * 2);
                     }
+            else if (GetBarOrientation() == Orientation::Vertical &&
+                bar.GetLabel().IsShown())
+                {
+                bar.GetLabel().SetScaling(GetScaling());
+                bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+                bar.GetLabel().SetShadowType(GetShadowType());
+                const wxCoord textHeight = bar.GetLabel().GetBoundingBox(dc).GetHeight();
+                bar.GetLabel().SetAnchorPoint(
+                    wxPoint(middlePointOfBarEnd.x,
+                            middlePointOfBarEnd.y -
+                            (labelSpacingFromLine + (textHeight/2))));
+                AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
+                middlePointOfBarEnd.y -= textHeight + (labelSpacingFromLine * 2);
                 }
             }
 
