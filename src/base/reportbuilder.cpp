@@ -274,6 +274,28 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<BoxEffect> ReportBuilder::ConvertBoxEffect(const wxString& value)
+        {
+        static const std::map<std::wstring_view, BoxEffect> boxEffects =
+            {
+            { L"common-image", BoxEffect::CommonImage },
+            { L"fade-from-bottom-to-top", BoxEffect::FadeFromBottomToTop },
+            { L"fade-from-left-to-right", BoxEffect::FadeFromLeftToRight },
+            { L"fade-from-right-to-left", BoxEffect::FadeFromRightToLeft },
+            { L"fade-from-top-to-bottom", BoxEffect::FadeFromTopToBottom },
+            { L"glassy", BoxEffect::Glassy },
+            { L"serpent", BoxEffect::Serpent },
+            { L"solid", BoxEffect::Solid },
+            { L"stipple", BoxEffect::Stipple }
+            };
+
+        const auto foundValue = boxEffects.find(value.Lower().ToStdWstring());
+        return ((foundValue != boxEffects.cend()) ?
+            std::optional<BoxEffect>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<BinLabelDisplay> ReportBuilder::ConvertBinLabelDisplay(const wxString& value)
         {
         // use standard string, wxString should not be constructed globally

@@ -225,6 +225,9 @@ namespace Wisteria
         /// @brief Converts a string value to a BinLabelDisplay enum value.
         [[nodiscard]] static std::optional<BinLabelDisplay>
             ConvertBinLabelDisplay(const wxString& value);
+        /// @brief Converts a string value to a BoxEffect enum value.
+        [[nodiscard]] static std::optional<BoxEffect>
+            ConvertBoxEffect(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
