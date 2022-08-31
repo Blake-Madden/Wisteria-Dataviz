@@ -211,11 +211,14 @@ namespace Wisteria::Graphs
             SortBars(BarChart::BarSortComparison::SortByAxisLabel,
                      SortDirection::SortAscending);
             }
-        // if no grouping within the bars, then sort the largest counts to the top
+        // if no grouping within the bars, then sort by bar size
         else
             {
             SortBars(BarChart::BarSortComparison::SortByBarLength,
-                     SortDirection::SortDescending);
+                     // largest bars to the top or to the left
+                     (GetBarOrientation() == Orientation::Horizontal ?
+                        SortDirection::SortDescending :
+                        SortDirection::SortAscending));
             }
         }
 
