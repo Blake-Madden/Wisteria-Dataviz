@@ -1595,6 +1595,22 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
+        std::shared_ptr<Graphs::BarChart> barChart)
+        {
+        const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
+        if (bOrientation.CmpNoCase(L"horizontal") == 0)
+            { barChart->SetBarOrientation(Orientation::Horizontal); }
+        else if (bOrientation.CmpNoCase(L"vertical") == 0)
+            { barChart->SetBarOrientation(Orientation::Vertical); }
+
+        const auto boxEffect = ConvertBoxEffect(
+                graphNode->GetProperty(L"box-effect")->GetValueString());
+        if (boxEffect)
+            { barChart->SetBarEffect(boxEffect.value()); }
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<GraphItems::FillableShape>
         ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode)
         {
@@ -1704,7 +1720,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for categorical bar chart."),
+                wxString::Format(_(L"%s: dataset not found for bar chart."),
                                  dsName).ToUTF8());
             }
 
@@ -1720,11 +1736,7 @@ namespace Wisteria
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
                 
-            const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
-            if (bOrientation.CmpNoCase(L"horizontal") == 0)
-                { barChart->SetBarOrientation(Orientation::Horizontal); }
-            else if (bOrientation.CmpNoCase(L"vertical") == 0)
-                { barChart->SetBarOrientation(Orientation::Vertical); }
+            LoadBarChart(graphNode, barChart);
 
             barChart->SetData(foundPos->second, categoryName,
                 (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
@@ -1736,7 +1748,7 @@ namespace Wisteria
         else
             {
             throw std::runtime_error(
-                _(L"Variables not defined for categorical bar chart.").ToUTF8());
+                _(L"Variables not defined for bar chart.").ToUTF8());
             }
         }
 

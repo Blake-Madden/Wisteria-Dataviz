@@ -130,6 +130,11 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadCategoricalBarChart(
                         const wxSimpleJSON::Ptr_t& graphNode,
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads base-level settings for bar charts.
+        /// @param graphNode The graph node to parse.
+        /// @param graph The bar chart to load the base settings to.
+        void LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
+                        std::shared_ptr<Graphs::BarChart> barChart);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
