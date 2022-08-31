@@ -218,13 +218,12 @@ namespace Wisteria::Graphs
 
         // draw the bars
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
-        for (auto& bar : m_bars)
+        std::vector<wxPoint> barMiddleEndPositions;
         for (auto& bar : GetBars())
             {
             double barWidth{ 0 };
             wxPoint middlePointOfBarEnd;
             wxCoord axisOffset{ 0 };
-            wxCoord textWidth{ 0 }, textHeight{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
             wxPoint arrowPoints[7]{ { 0, 0 } };
             for (const auto& barBlock : bar.GetBlocks())
@@ -551,11 +550,6 @@ namespace Wisteria::Graphs
                         // This ensures that decals that go outside of their block are eclipsed by the next block.
                         decals.push_back(decalLabel);
                         }
-                    // calculate the positions of the bar labels
-                    // (will be drawn later so that the bars don't overlap them)
-                    bar.GetLabel().SetScaling(GetScaling());
-                    textWidth = bar.GetLabel().GetBoundingBox(dc).GetWidth();
-                    bar.GetLabel().SetAnchorPoint(wxPoint(middlePointOfBar.x+labelSpacingFromLine+(textWidth/2), middlePointOfBar.y));
                     }
                 else
                     {
