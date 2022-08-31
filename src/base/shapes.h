@@ -71,7 +71,8 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the curly braces within.
         /// @param dc The DC to draw to.
         /// @param side The side of the object that the curly braces are enclosing.\n
-        ///     For example, @c Left means that the left curly braces will be drawn,
+        ///     For example, @c Left means that the left curly braces will be drawn
+        ///     (enclosing what is to the right of them),
         ///     where @c Top will draw curly braces that are opening downward
         ///     (enclosing what is beneath it).
         void DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side);
@@ -150,26 +151,16 @@ namespace Wisteria::GraphItems
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside of the rect.
         [[nodiscard]] double GetXPosFromLeft(const wxRect rect,
-                                             const double percentFromLeft) noexcept
+                                             const double percentFromLeft) const
             {
             return rect.GetLeft() + (rect.GetWidth() * percentFromLeft);
             };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]] double GetYPosFromTop(const wxRect rect,
-                                            const double percentFromLeft) noexcept
+                                            const double percentFromLeft) const
             {
             return rect.GetTop() + (rect.GetHeight() * percentFromLeft);
             };
-        [[nodiscard]] double GetScaling() const noexcept
-            { return m_graphInfo.GetScaling(); }
-
-        [[nodiscard]] double GetDPIScaleFactor() const noexcept
-            {
-            wxASSERT_LEVEL_2_MSG(m_graphInfo.GetDPIScaleFactor().has_value(),
-                                 L"Shape should have a proper DPI scaling.");
-            return (m_graphInfo.GetDPIScaleFactor().has_value() ?
-                    m_graphInfo.GetDPIScaleFactor().value() : 1);
-            }
 
         /// @returns The midpoint of a rect.
         [[nodiscard]] wxPoint GetMidPoint(const wxRect rect) const
@@ -184,6 +175,16 @@ namespace Wisteria::GraphItems
 
         [[nodiscard]] double DownscaleFromScreenAndCanvas(const double value) const noexcept
             { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
+
+        [[nodiscard]] double GetScaling() const noexcept
+            { return m_graphInfo.GetScaling(); }
+
+        [[nodiscard]] double GetDPIScaleFactor() const noexcept
+            {
+            wxASSERT_LEVEL_2_MSG(m_graphInfo.GetDPIScaleFactor().has_value(),
+                                 L"Shape should have a proper DPI scaling.");
+            return m_graphInfo.GetDPIScaleFactor().value_or(1);
+            }
 
         GraphItemInfo m_graphInfo;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
