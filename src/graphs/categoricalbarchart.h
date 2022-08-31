@@ -179,8 +179,6 @@ namespace Wisteria::Graphs
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        uint8_t m_barOopacity{ wxALPHA_OPAQUE };
-        BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
