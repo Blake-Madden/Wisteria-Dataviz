@@ -284,7 +284,6 @@ namespace Wisteria
             { L"fade-from-right-to-left", BoxEffect::FadeFromRightToLeft },
             { L"fade-from-top-to-bottom", BoxEffect::FadeFromTopToBottom },
             { L"glassy", BoxEffect::Glassy },
-            { L"serpent", BoxEffect::Serpent },
             { L"solid", BoxEffect::Solid },
             { L"stipple", BoxEffect::Stipple }
             };
