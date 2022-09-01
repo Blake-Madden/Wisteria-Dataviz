@@ -65,7 +65,11 @@ namespace Wisteria::Icons
                                             with a sign post beneath it.*/
         SunIcon,                       /*!< A sun (with sunbeams).*/
         FlowerIcon,                    /*!< A flower (stigma and petals).*/
-        FallLeafIcon                   /*!< A red leaf.*/
+        FallLeafIcon,                  /*!< A red leaf.*/
+        LeftCurlyBrace,                /*!< A left curly brace (enclosing content to its right).*/
+        RightCurlyBrace,               /*!< A right curly brace (enclosing content to its left).*/
+        TopCurlyBrace,                 /*!< A top curly brace (enclosing content beneath it).*/
+        BottomCurlyBrace               /*!< A bottom curly brace (enclosing content above it).*/
         };
 
     /// @brief Item to draw on a legend.

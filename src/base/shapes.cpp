@@ -169,6 +169,18 @@ namespace Wisteria::GraphItems
             case IconShape::ImageIcon:
                 sh.DrawImage(drawRect, dc, m_iconImage);
                 break;
+            case IconShape::LeftCurlyBrace:
+                sh.DrawCurlyBraces(drawRect, dc, Side::Left);
+                break;
+            case IconShape::RightCurlyBrace:
+                sh.DrawCurlyBraces(drawRect, dc, Side::Right);
+                break;
+            case IconShape::TopCurlyBrace:
+                sh.DrawCurlyBraces(drawRect, dc, Side::Top);
+                break;
+            case IconShape::BottomCurlyBrace:
+                sh.DrawCurlyBraces(drawRect, dc, Side::Bottom);
+                break;
             }
         }
 
