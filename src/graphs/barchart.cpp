@@ -124,8 +124,7 @@ namespace Wisteria::Graphs
         {
         // where the bar actually ends on the scaling axis
         const auto barEnd = bar.GetLength() +
-            (bar.GetCustomScalingAxisStartPosition().has_value() ?
-                bar.GetCustomScalingAxisStartPosition().value() : 0);
+            bar.GetCustomScalingAxisStartPosition().value_or(0);
 
         // if this bar is longer than previous ones, then update the scaling
         if (m_longestBarLength < barEnd)

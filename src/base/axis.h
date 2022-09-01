@@ -32,6 +32,7 @@ namespace Wisteria::Graphs
     class LikertChart;
     class GanttChart;
     class Histogram;
+    class BarChart;
     }
 
 namespace Wisteria
@@ -151,6 +152,7 @@ namespace Wisteria::GraphItems
         friend class Wisteria::Graphs::LikertChart;
         friend class Wisteria::Graphs::GanttChart;
         friend class Wisteria::Graphs::Histogram;
+        friend class Wisteria::Graphs::BarChart;
     public:
         /// @brief A tickmark on an axis.
         struct TickMark
@@ -1254,19 +1256,19 @@ namespace Wisteria::GraphItems
             if (IsVertical() && GetContentTop() && GetContentBottom())
                 {
                 auto topPt = GetTopPoint();
-                topPt.y = GetContentTop().value();
+                topPt.y = GetContentTop().value_or(0);
 
                 auto bottomPt = GetTopPoint();
-                bottomPt.y = GetContentBottom().value();
+                bottomPt.y = GetContentBottom().value_or(0);
                 SetPoints(topPt, bottomPt, dc);
                 }
             else if (IsHorizontal() && GetContentLeft() && GetContentRight())
                 {
                 auto leftPt = GetLeftPoint();
-                leftPt.x = GetContentLeft().value();
+                leftPt.x = GetContentLeft().value_or(0);
 
                 auto rightPt = GetRightPoint();
-                rightPt.x = GetContentRight().value();
+                rightPt.x = GetContentRight().value_or(0);
                 SetPoints(leftPt, rightPt, dc);
                 }
             else
