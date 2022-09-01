@@ -19,6 +19,7 @@
 #include "../data/dataset.h"
 #include "../base/axis.h"
 #include "../base/lines.h"
+#include "../base/shapes.h"
 #include "../math/mathematics.h"
 #include "../util/textreplace.h"
 
