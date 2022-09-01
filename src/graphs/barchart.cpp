@@ -39,7 +39,7 @@ namespace Wisteria::Graphs
                                         Settings::GetDefaultNumberFormat()) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                 wxNumberFormatter::ToString(percentage, 0,
-                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                 L"%" :
                 wxNumberFormatter::ToString(bar.GetLength(), 0,
                                         Settings::GetDefaultNumberFormat()) +
@@ -50,6 +50,27 @@ namespace Wisteria::Graphs
         bar.GetLabel().SetText(labelStr);
         }
 
+    //-----------------------------------
+    void BarChart::AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
+                         std::optional<wxString> decal,
+                         std::optional<wxColour> color,
+                         std::optional<wxBrush> brush)
+        {
+        const auto firstBar = FindBar(firstBarLabel);
+        const auto lastBar = FindBar(lastBarLabel);
+        if (firstBar && lastBar)
+            {
+            m_barGroups.push_back(
+                {
+                std::make_pair(firstBar.value(), lastBar.value()),
+                decal.has_value() ? decal.value() : wxEmptyString,
+                color.has_value() ? color.value() : *wxBLACK,
+                brush.has_value() ? brush.value() : *wxBLACK_BRUSH,
+                });
+            }
+        }
+
+    //-----------------------------------
     std::optional<size_t> BarChart::FindBar(const wxString axisLabel)
         {
         for (size_t i = 0; i < GetBars().size(); ++i)
@@ -163,6 +184,9 @@ namespace Wisteria::Graphs
         if (!IsSortable() || direction == SortDirection::NoSort)
             { return; }
 
+        // bar grpoups connected to bars' positions will need to be removed
+        m_barGroups.clear();
+
         const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
         GetBarAxis().ClearCustomLabels();
 
@@ -247,10 +271,11 @@ namespace Wisteria::Graphs
 
         // draw the bars
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
-        std::vector<wxPoint> barMiddleEndPositions;
-        for (auto& bar : GetBars())
+        double barWidth{ 0 };
+
+        // main bar rendering
+        const auto drawBar = [&](auto& bar)
             {
-            double barWidth{ 0 };
             wxPoint middlePointOfBarEnd;
             wxCoord axisOffset{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
@@ -917,16 +942,16 @@ namespace Wisteria::Graphs
             if (GetBarOrientation() == Orientation::Horizontal &&
                 bar.GetLabel().IsShown())
                 {
-                    bar.GetLabel().SetScaling(GetScaling());
-                    bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
+                bar.GetLabel().SetScaling(GetScaling());
+                bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
                 bar.GetLabel().SetShadowType(GetShadowType());
                 const wxCoord textWidth = bar.GetLabel().GetBoundingBox(dc).GetWidth();
-                    bar.GetLabel().SetAnchorPoint(
+                bar.GetLabel().SetAnchorPoint(
                     wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (textWidth/2),
                             middlePointOfBarEnd.y));
                 AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
                 middlePointOfBarEnd.x += textWidth + (labelSpacingFromLine * 2);
-                    }
+                }
             else if (GetBarOrientation() == Orientation::Vertical &&
                 bar.GetLabel().IsShown())
                 {
@@ -941,21 +966,156 @@ namespace Wisteria::Graphs
                 AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
                 middlePointOfBarEnd.y -= textHeight + (labelSpacingFromLine * 2);
                 }
+
+            return middlePointOfBarEnd;
+            };
+        std::vector<wxPoint> barMiddleEndPositions;
+        barMiddleEndPositions.reserve(GetBars().size());
+        for (auto& bar : GetBars())
+            {
+            // keep track of where each bar ends
+            barMiddleEndPositions.push_back(drawBar(bar));
             }
 
         // draw the decals on top of the blocks
         for (auto& decal : decals)
             { AddObject(decal); }
+        decals.clear();
 
-        // draw the bar labels
-        if (IsShowingBarLabels())
+        for (const auto& barGroup : m_barGroups)
             {
-            for (const auto& bar : GetBars())
+            wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
+            wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
+            double grandTotal{ 0 };
+            // the bars specified in the group may be in different order, so use
+            // min and max to make sure you are using the true start and end bars
+            for (size_t i = std::min(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
+                 i <= std::max(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
+                 ++i)
+                { grandTotal += GetBars()[i].GetLength(); }
+
+            constexpr double bracesWidth{ 30 };
+            double scalingAxisPos{ 0 }, barAxisPos{ 0 };
+            if (GetBarOrientation() == Orientation::Horizontal)
                 {
-                auto label = std::make_shared<GraphItems::Label>(bar.GetLabel());
-                label->SetScaling(GetScaling());
-                label->SetShadowType(GetShadowType());
-                AddObject(label);
+                if (GetScalingAxis().GetValueFromPhysicalCoordinate(
+                    std::max(brackPos1.x, brackPos2.x) + ScaleToScreenAndCanvas(bracesWidth),
+                             scalingAxisPos))
+                    {
+                    // make the curly braces stretch from the top of the first bar
+                    // to the bottom of the last one
+                    const auto yOffset = (brackPos1.y < brackPos2.y) ?
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.first].GetCustomWidth().
+                            value_or(barWidth), 2) :
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
+                            value_or(barWidth), 2);
+                    const auto barsWidth = std::abs(brackPos1.y - brackPos2.y) +
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.first].GetCustomWidth().
+                            value_or(barWidth), 2) +
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
+                            value_or(barWidth), 2);
+                    const auto braces = std::make_shared<Shape>(
+                        GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
+                        Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                        AnchorPoint(wxPoint(
+                            std::max(brackPos1.x, brackPos2.x),
+                            std::min(brackPos1.y, brackPos2.y) - yOffset)).
+                        Anchoring(Anchoring::TopLeftCorner),
+                        Icons::IconShape::RightCurlyBrace,
+                        wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)),
+                        nullptr);
+                    
+                    const auto yPos = std::min(brackPos1.y, brackPos2.y) +
+                        safe_divide<double>(std::abs(brackPos1.y - brackPos2.y), 2);
+                    if (GetBarAxis().GetValueFromPhysicalCoordinate(yPos, barAxisPos))
+                        {
+                        Bar theBar(grandTotal,
+                            {
+                            BarBlock(BarBlockInfo(grandTotal).
+                            Brush(barGroup.m_barBrush).Color(barGroup.m_barColor).
+                            Decal(Label(GraphItemInfo(barGroup.m_barDecal).
+                                FontColor(ColorContrast::BlackOrWhiteContrast(
+                                    barGroup.m_barBrush.IsOk() ?
+                                    barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
+                                )))
+                            },
+                            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+                        UpdateBarLabel(theBar);
+                        theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
+                        theBar.SetAxisPosition(barAxisPos);
+
+                        AddObject(braces);
+                        drawBar(theBar);
+                        for (auto& decal : decals)
+                            { AddObject(decal); }
+                        }
+                    }
+                }
+            else
+                {
+                if (GetScalingAxis().GetValueFromPhysicalCoordinate(
+                    std::min(brackPos1.y, brackPos2.y) -
+                        // space for the braces and a couple DIPs between that and the group bar
+                        ScaleToScreenAndCanvas(bracesWidth + 2),
+                    scalingAxisPos))
+                    {
+                    // make the curly braces stretch from the top of the first bar
+                    // to the bottom of the last one
+                    const auto xOffset = (brackPos1.x < brackPos2.x) ?
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.first].GetCustomWidth().
+                            value_or(barWidth), 2) :
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
+                            value_or(barWidth), 2);
+                    const auto barsWidth = std::abs(brackPos1.x - brackPos2.x) +
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.first].GetCustomWidth().
+                            value_or(barWidth), 2) +
+                        safe_divide<double>(
+                            GetBars()[barGroup.m_barPositions.second].GetCustomWidth().
+                            value_or(barWidth), 2);
+
+                    const auto braces = std::make_shared<Shape>(
+                        GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
+                        Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
+                        AnchorPoint(wxPoint(
+                            std::min(brackPos1.x, brackPos2.x) - xOffset,
+                            std::min(brackPos1.y, brackPos2.y) - ScaleToScreenAndCanvas(bracesWidth))).
+                        Anchoring(Anchoring::TopLeftCorner),
+                        Icons::IconShape::TopCurlyBrace,
+                        wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth),
+                        nullptr);
+
+                    const auto xPos = std::min(brackPos1.x, brackPos2.x) +
+                        safe_divide<double>(std::abs(brackPos1.x - brackPos2.x), 2);
+                    if (GetBarAxis().GetValueFromPhysicalCoordinate(xPos, barAxisPos))
+                        {
+                        Bar theBar(grandTotal,
+                            {
+                            BarBlock(BarBlockInfo(grandTotal).
+                            Brush(barGroup.m_barBrush).Color(barGroup.m_barColor).
+                            Decal(Label(GraphItemInfo(barGroup.m_barDecal).
+                                FontColor(ColorContrast::BlackOrWhiteContrast(
+                                    barGroup.m_barBrush.IsOk() ?
+                                    barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
+                                )))
+                            },
+                            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+                        UpdateBarLabel(theBar);
+                        theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
+                        theBar.SetAxisPosition(barAxisPos);
+
+                        AddObject(braces);
+                        drawBar(theBar);
+                        for (auto& decal : decals)
+                            { AddObject(decal); }
+                        }
+                    }
                 }
             }
         }

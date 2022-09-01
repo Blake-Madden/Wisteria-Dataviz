@@ -621,6 +621,14 @@ namespace Wisteria::Graphs
             double m_axisPosition{ 0 };
             };
 
+        struct BarGroup
+            {
+            std::pair<size_t, size_t> m_barPositions{ 0, 0 };
+            wxString m_barDecal;
+            wxColour m_barColor{ *wxBLACK };
+            wxBrush m_barBrush{ *wxBLACK_BRUSH };
+            };
+
         /** @brief Constructor.
             @param canvas The parent canvas for the plot to be drawn on.*/
         BarChart(Wisteria::Canvas* canvas);
@@ -693,6 +701,27 @@ namespace Wisteria::Graphs
         /// @param axisLabel The label of the bar to search for.
         /// @returns The index the bar if found, @c std::nullopt otherwise.
         [[nodiscard]] std::optional<size_t> FindBar(const wxString axisLabel);
+
+        /** @brief Adds a bracket around a range of bars and draws a bar above that
+                showing the length of the children bars combined.
+            @details This is useful for giving attention to a block of smaller bars
+                that may be eclipsed by a larger bar.
+            @param firstBarLabel The first bar in the group.
+            @param lastBarLabel The last bar in the group.
+            @param decal The label to show on the grouped bar.
+            @param color The color of the grouped bar.
+            @param brush The brush of the grouped bar.*/
+        void AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
+                         std::optional<wxString> decal = std::nullopt,
+                         std::optional<wxColour> color = std::nullopt,
+                         std::optional<wxBrush> brush = std::nullopt);
+        /** @brief Adds a bracket around a range of bars and draws a bar above that
+                showing the length of the children bars combined.
+            @details This is useful for giving attention to a block of smaller bars
+                that may be eclipsed by a larger bar.
+            @param barGroup The bar group information.*/
+        void AddBarGroup(const BarGroup& barGroup)
+            { m_barGroups.push_back(barGroup); }
         /// @}
 
         /// @name Axis Functions
@@ -805,6 +834,18 @@ namespace Wisteria::Graphs
             @param includeLabels Whether to display bars' labels.*/
         void ShowBarLabels(bool includeLabels = true) noexcept
             { m_includeBarLabels = includeLabels; }
+        /// @returns The type of labels being shown on the bars.
+        [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
+            { return m_binLabelDisplay; }
+        /// @brief Sets which type of labels to display for the bars.
+        /// @param display The bin label display to use.
+        void SetBinLabelDisplay(const BinLabelDisplay display)
+            {
+            m_binLabelDisplay = display;
+            // update the bars' labels
+            for (auto& bar : GetBars())
+                { UpdateBarLabel(bar); }
+            }
         /// @}
 
         /// @returns The maximum number of bars displayed before the parent canvas is forced
@@ -825,7 +866,14 @@ namespace Wisteria::Graphs
         /// @private
         [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
             { return m_bars; }
+        /// @private
+        void AddBarGroup(BarGroup&& barGroup)
+            { m_barGroups.emplace_back(barGroup); }
     protected:
+        /// @brief Updates the label at the top (or right) of a bar.
+        ///     This is controlled by the current bin label display and will update it accordingly.
+        /// @param bar The bar to update.
+        void UpdateBarLabel(Bar& bar);
         /// @returns The number of slots that can hold a bar.
         ///    This is used for calculating the width of the bars.
         ///    Using the number of bars to calculate the widths may be inaccurate if
@@ -872,6 +920,7 @@ namespace Wisteria::Graphs
         bool m_includeSpacesBetweenBars{ false };
         bool m_includeBarLabels{ true };
         bool m_isSortable{ false };
+        std::vector<BarGroup> m_barGroups;
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
         size_t m_barsPerDefaultCanvasSize{ 500 };
         Orientation m_barOrientation{ Orientation::Vertical };
