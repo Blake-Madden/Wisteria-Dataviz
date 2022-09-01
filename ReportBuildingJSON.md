@@ -262,6 +262,17 @@ Properties for @c "categorical-bar-chart" nodes:
   Available options are:
   - @c "vertical"
   - @c "horizontal"
+- @c "box-effect": string specifying the effects for the bars.
+  Available options are:
+  - @c "common-image"
+  - @c "fade-from-bottom-to-top"
+  - @c "fade-from-left-to-right"
+  - @c "fade-from-right-to-left"
+  - @c "fade-from-top-to-bottom"
+  - @c "glassy"
+  - @c "serpent"
+  - @c "solid"
+  - @c "stipple"
 - @c "bin-label-display": string specifying how to display labels on the bars.
 - Some base properties available to [graphs](#graph-properties).
 
