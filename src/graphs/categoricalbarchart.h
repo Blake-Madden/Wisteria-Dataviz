@@ -162,9 +162,7 @@ namespace Wisteria::Graphs
                 }
             };
         void Calculate();
-        /// @returns The type of labels being shown on the bars.
-        [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
-            { return m_binLabelDisplay; }
+
         /// @brief Get the color scheme used for the points.
         /// @returns The color scheme used for the points.
         [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
@@ -179,7 +177,6 @@ namespace Wisteria::Graphs
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
         // cat ID and string order

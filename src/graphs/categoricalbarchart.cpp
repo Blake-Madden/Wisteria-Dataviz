@@ -31,7 +31,7 @@ namespace Wisteria::Graphs
         m_useValueColumn = valueColumnName.has_value();
         m_groupIds.clear();
         GetSelectedIds().clear();
-        m_binLabelDisplay = blDisplay;
+        SetBinLabelDisplay(blDisplay);
 
         m_categoricalColumn = m_data->GetCategoricalColumn(categoricalColumnName);
         if (m_categoricalColumn == m_data->GetCategoricalColumns().cend())
@@ -181,29 +181,7 @@ namespace Wisteria::Graphs
 
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
-            {
-            const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
-            const wxString labelStr =
-                (bar.GetLength() == 0 ||
-                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                    wxString(wxEmptyString) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
-                    bar.GetAxisLabel().GetText() :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                    wxNumberFormatter::ToString(bar.GetLength(), 0,
-                                            Settings::GetDefaultNumberFormat()) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                    wxNumberFormatter::ToString(percentage, 0,
-                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                    L"%" :
-                    wxNumberFormatter::ToString(bar.GetLength(), 0,
-                                            Settings::GetDefaultNumberFormat()) +
-                    L" (" +
-                    wxNumberFormatter::ToString(percentage, 0,
-                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                    L"%)";
-            bar.GetLabel().SetText(labelStr);
-            }
+            { UpdateBarLabel(bar); }
 
         // if grouping, then sort by the labels alphabetically
         if (m_useGrouping)

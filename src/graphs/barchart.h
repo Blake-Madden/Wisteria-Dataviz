@@ -865,6 +865,7 @@ namespace Wisteria::Graphs
         std::vector<Bar> m_bars;
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };
         BoxEffect m_barEffect{ BoxEffect::Solid };
+        BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
         double m_highestBarAxisPosition{ std::numeric_limits<double>::lowest() };

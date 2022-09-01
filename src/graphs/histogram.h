@@ -342,13 +342,6 @@ namespace Wisteria::Graphs
         void SetIntervalDisplay(const IntervalDisplay display) noexcept
             { m_intervalDisplay = display; }
 
-        /// @returns The type of labels being shown on the bars.
-        [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
-            { return m_binLabelDisplay; }
-        /// @brief Sets which type of labels to display for the bars.
-        /// @param display The bin label display to use.
-        void SetBinLabelDisplay(const BinLabelDisplay display) noexcept
-            { m_binLabelDisplay = display; }
         /// @returns @c true if a place for each bin is included on the axis,
         ///  even if they have no items.
         /// @sa ShowFullRangeOfValues().
@@ -399,7 +392,6 @@ namespace Wisteria::Graphs
 
         BinningMethod m_binningMethod{ BinningMethod::BinByIntegerRange };
         RoundingMethod m_roundingMethod{ RoundingMethod::NoRounding };
-        BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         IntervalDisplay m_intervalDisplay{ IntervalDisplay::Cutpoints };
         size_t m_maxBinCount{ 255 };
         size_t m_binCount{ 0 };

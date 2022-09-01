@@ -20,6 +20,36 @@ namespace Wisteria::Graphs
         { SetBarOrientation(m_barOrientation); }
 
     //-----------------------------------
+    void BarChart::UpdateBarLabel(Bar& bar)
+        {
+        const double grandTotal = std::accumulate(
+            bar.GetBlocks().cbegin(), bar.GetBlocks().cend(), 0.0,
+            [](auto lhv, auto rhv) noexcept
+            { return lhv + rhv.GetLength(); });
+
+        const double percentage = safe_divide<double>(bar.GetLength(), grandTotal) * 100;
+        const wxString labelStr =
+            (bar.GetLength() == 0 ||
+                GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
+                wxString(wxEmptyString) :
+            (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
+                bar.GetAxisLabel().GetText() :
+            (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
+                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                                        Settings::GetDefaultNumberFormat()) :
+            (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
+                wxNumberFormatter::ToString(percentage, 0,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                L"%" :
+                wxNumberFormatter::ToString(bar.GetLength(), 0,
+                                        Settings::GetDefaultNumberFormat()) +
+                L" (" +
+                wxNumberFormatter::ToString(percentage, 0,
+                                            wxNumberFormatter::Style::Style_NoTrailingZeroes) +
+                L"%)";
+        bar.GetLabel().SetText(labelStr);
+        }
+
     std::optional<size_t> BarChart::FindBar(const wxString axisLabel)
         {
         for (size_t i = 0; i < GetBars().size(); ++i)
@@ -884,7 +914,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 }
-            // after all blocks are built, add the label at the end of the bar
+            // after all blocks are built, add the label at the end of the full bar
             if (GetBarOrientation() == Orientation::Horizontal &&
                 bar.GetLabel().IsShown())
                 {

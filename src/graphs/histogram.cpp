@@ -39,7 +39,7 @@ namespace Wisteria::Graphs
         m_binningMethod = bMethod;
         m_roundingMethod = rounding;
         m_intervalDisplay = iDisplay;
-        m_binLabelDisplay = blDisplay;
+        SetBinLabelDisplay(blDisplay);
         m_displayFullRangeOfValues = showFullRangeOfValues;
         m_startBinsValue = startBinsValue;
 
@@ -255,25 +255,7 @@ namespace Wisteria::Graphs
             }
         // add the bar labels now that they are built
         for (auto& bar : GetBars())
-            {
-            const double percentage = safe_divide<double>(bar.GetLength(), m_validN)*100;
-            const wxString labelStr =
-                (bar.GetLength() == 0 ||
-                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                    wxString(wxEmptyString) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
-                    bar.GetAxisLabel().GetText() :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
-                    wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) :
-                (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                    wxNumberFormatter::ToString(percentage, 0,
-                                                wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
-                    wxNumberFormatter::ToString(bar.GetLength(), 0,
-                                                Settings::GetDefaultNumberFormat()) +
-                    L" (" + wxNumberFormatter::ToString(percentage, 0,
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%)";
-            bar.GetLabel().SetText(labelStr);
-            }
+            { UpdateBarLabel(bar); }
         m_binCount = groups.get_data().size();
         }
 
