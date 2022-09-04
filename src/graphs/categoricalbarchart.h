@@ -64,7 +64,7 @@ namespace Wisteria::Graphs
             }
 
           auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::Decade1980s>());
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
 
           plot->SetData(mpgData, L"manufacturer");
           // to group by model within the manufacturers
@@ -78,14 +78,20 @@ namespace Wisteria::Graphs
     public:
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
-            @param colors The color scheme to apply to the points.\n
-                Leave as null to use the default theme.*/
+            @param brushes The brush scheme, which will contain the color and brush patterns
+                to render the bars with.
+            @param colors The color scheme to apply to the bars underneath the bars' brush patterns.\n
+                This is useful if using a hatched brush, as this color will be solid
+                and show underneath it. Leave as null just use the brush scheme.*/
         explicit CategoricalBarChart(Wisteria::Canvas* canvas,
+                           std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
             Wisteria::Graphs::BarChart(canvas),
-            m_data(nullptr),
-            m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme())
+            m_data(nullptr)
             {
+            SetBrushScheme(brushes != nullptr ? brushes :
+                std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()) );
+            SetColorScheme(colors);
             // categorical axis labels (especially longer ones) usually look
             // better with horizontal bars
             SetBarOrientation(Wisteria::Orientation::Horizontal);
@@ -163,20 +169,11 @@ namespace Wisteria::Graphs
             };
         void Calculate();
 
-        /// @brief Get the color scheme used for the points.
-        /// @returns The color scheme used for the points.
-        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
-            { return m_colorScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
-
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
         // cat ID and string order

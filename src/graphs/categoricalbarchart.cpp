@@ -135,8 +135,12 @@ namespace Wisteria::Graphs
         // add the bars (block-by-block)
         for (const auto& blockTable : groups.get_data())
             {
-            const wxColour blockColor = (m_useGrouping ?
-                GetColorScheme()->GetColor(blockTable.first.m_schemeIndex) : GetColorScheme()->GetColor(0));
+            const wxColour blockColor = GetColorScheme() ?
+                (m_useGrouping ?
+                 GetColorScheme()->GetColor(blockTable.first.m_schemeIndex) : GetColorScheme()->GetColor(0)) :
+                wxTransparentColour;
+            const wxBrush blockBrush = (m_useGrouping ?
+                GetBrushScheme()->GetBrush(blockTable.first.m_schemeIndex) : GetBrushScheme()->GetBrush(0));
 
             wxString blockLabelText = (m_useValueColumn ?
                 wxString::Format(_(L"%s item(s), totalling %s"),
@@ -162,7 +166,7 @@ namespace Wisteria::Graphs
                 Bar theBar(blockTable.first.m_bin,
                     {
                     BarBlock(BarBlockInfo(blockTable.second.second).
-                        Brush(blockColor).SelectionLabel(blockLabel))
+                        Brush(blockBrush).Color(blockColor).SelectionLabel(blockLabel))
                     },
                     wxEmptyString,
                     GraphItems::Label(
@@ -173,7 +177,7 @@ namespace Wisteria::Graphs
             else
                 {
                 BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).
-                    Brush(blockColor).SelectionLabel(blockLabel)) };
+                    Brush(blockBrush).Color(blockColor).SelectionLabel(blockLabel)) };
                 foundBar->AddBlock(block);
                 UpdateScalingAxisFromBar(*foundBar);
                 }
@@ -237,8 +241,8 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK,
-                        GetColorScheme()->GetColor(groupId.first)));
+                    LegendIcon(IconShape::Square, *wxBLACK,
+                        GetBrushScheme()->GetBrush(groupId.first).GetColour()));
             ++lineCount;
             }
 
