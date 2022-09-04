@@ -20,6 +20,7 @@
 #include "../base/axis.h"
 #include "../base/lines.h"
 #include "../base/shapes.h"
+#include "../base/brushes.h"
 #include "../math/mathematics.h"
 #include "../util/textreplace.h"
 

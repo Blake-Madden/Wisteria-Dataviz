@@ -46,7 +46,7 @@ namespace Wisteria::Graphs
             {
             textLines += refLine.m_label + L"\n";
             legend->GetLegendIcons().push_back(
-                LegendIcon(IconShape::HorizontalLineIcon,
+                LegendIcon(IconShape::HorizontalLine,
                            wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()),
                            ColorContrast::ChangeOpacity(refLine.m_pen.GetColour(),
                                                         Settings::GetTranslucencyValue())));
@@ -73,7 +73,7 @@ namespace Wisteria::Graphs
             {
             textLines += refArea.m_label + L"\n";
             legend->GetLegendIcons().push_back(
-                LegendIcon(IconShape::SquareIcon,
+                LegendIcon(IconShape::Square,
                            wxPen(refArea.m_pen.GetColour(), 2, refArea.m_pen.GetStyle()),
                            ColorContrast::ChangeOpacity(refArea.m_pen.GetColour(),
                                                         Settings::GetTranslucencyValue())));
