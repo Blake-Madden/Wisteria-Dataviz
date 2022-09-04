@@ -652,8 +652,8 @@ namespace Wisteria::Colors
         template<typename T>
         [[nodiscard]] std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
             {
-            m_range.first = *std::min_element(values.begin(), values.end());
-            m_range.second = *std::max_element(values.begin(), values.end());
+            m_range.first = *std::min_element(values.cbegin(), values.cend());
+            m_range.second = *std::max_element(values.cbegin(), values.cend());
 
             std::vector<wxColour> colors;
             colors.reserve(values.size());
@@ -681,7 +681,7 @@ namespace Wisteria::Colors
             @note This code is adapted from http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
         [[nodiscard]] wxColour BrewColor(const double value) const;
     private:
-        std::pair<double,double> m_range{ 0,0 };
+        std::pair<double,double> m_range{ 0, 0 };
         std::vector<wxColour> m_colorSpectrum;
         static const std::vector<std::wstring> m_colors;
         };
@@ -711,7 +711,7 @@ namespace Wisteria::Colors
         /// @param color The color to review.
         /// @returns @c true if the color is dark.
         [[nodiscard]] static bool IsDark(const wxColour& color)
-            { return (color.Alpha() > 32 && color.GetLuminance() < .5f); }
+            { return (color.Alpha() > 32 && color.GetLuminance() < math_constants::half); }
         /// @brief Determines whether a color is light
         ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.
@@ -721,12 +721,13 @@ namespace Wisteria::Colors
         /// @returns A darkened version of a color.
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
-        ///     ranging from 0.0 to 1.0 (the lower, the darker).
+        ///     ranging from @c 0.0 to @c 1.0 (the lower, the darker).
         [[nodiscard]] static wxColour Shade(wxColour color,
             const double minimumLuminance = math_constants::half)
             {
             int darkenValue{ 100 };
-            while (color.GetLuminance() > std::clamp(minimumLuminance, 0.0, 1.0) &&
+            while (color.GetLuminance() > std::clamp(minimumLuminance, math_constants::empty,
+                                                     math_constants::full) &&
                    darkenValue > 0)
                 { color = color.ChangeLightness(--darkenValue); }
             return color;
@@ -737,7 +738,7 @@ namespace Wisteria::Colors
         ///     while white will return as an eggshell white.
         /// @param color The color to shade.
         /// @param shadeValue How much to lighten or darken a color
-        ///      (Should be between 0.0 to 1.0.)
+        ///      (Should be between @c 0.0 to @c 1.0.)
         /// @returns The shaded or tinted color.
         [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
                                                   const double shadeValue = .20f)
@@ -747,7 +748,7 @@ namespace Wisteria::Colors
                 color.ChangeLightness(100 - std::clamp(static_cast<int>(shadeValue*100), 0, 100)));
             }
         /// @brief Returns either black or white, depending on which better contrasts
-        ///  against the specified color.
+        ///     against the specified color.
         /// @param color The color to contrast against to see if white or black should go on it.
         /// @returns Black or white; whichever contrasts better against @c color.
         [[nodiscard]] static wxColour BlackOrWhiteContrast(const wxColour& color)
@@ -756,20 +757,20 @@ namespace Wisteria::Colors
         /// @param color1 First color to compare.
         /// @param color2 Second color to compare.
         /// @param delta The difference threshold to use when comparing.
-        ///  Should be between 0.0 to 1.0.
+        ///     Should be between @c 0.0 to @c 1.0.
         [[nodiscard]] static bool AreColorsClose(const wxColour color1, const wxColour color2,
                                                  const double delta = .1f)
             {
             return (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
-                    std::clamp(delta, 0.0, 1.0);
+                    std::clamp(delta, math_constants::empty, math_constants::full);
             }
         /// @brief Shades a color if close to another color (e.g., a background color).
         /// @param mainColor The color to shade (if necessary).
         /// @param secondaryColor The color to compare against.
-        ///  If @c mainColor is close to this, then it will be shaded.
+        ///     If @c mainColor is close to this, then it will be shaded.
         /// @returns If @c mainColor is close to @c secondaryColor,
-        ///  then returns a shaded version of @c mainColor; otherwise,
-        ///  returns the original @c mainColor.
+        ///     then returns a shaded version of @c mainColor; otherwise,
+        ///     returns the original @c mainColor.
         [[nodiscard]] static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
                                                          const wxColour& secondaryColor)
             {
@@ -778,12 +779,12 @@ namespace Wisteria::Colors
             }
     private:
         wxColour m_baseColor{ *wxWHITE };
-        constexpr static double m_tolerance{ .5f };
+        constexpr static double m_tolerance{ math_constants::half };
         };
 
     /// @brief Color schemes to use for grouped data.
     /// @details Some schemes created by Paul Gernale and shared on
-    ///  <a href='https://www.canva.com'>www.canva.com</a>.
+    ///     <a href='https://www.canva.com'>www.canva.com</a>.
     namespace Schemes
         {
         /// @brief Base class for creating a color scheme.
