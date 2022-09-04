@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
             std::shared_ptr<IconScheme> shapes /*= nullptr*/,
             std::shared_ptr<LineStyleScheme> linePenStyles /*= nullptr*/) :
             LinePlot(canvas, colors,
-                shapes != nullptr ? shapes : std::make_shared<IconScheme>(IconScheme{ IconShape::BlankIcon }),
+                shapes != nullptr ? shapes : std::make_shared<IconScheme>(IconScheme{ IconShape::Blank }),
                 linePenStyles != nullptr ? linePenStyles :
                     std::make_shared<LineStyleScheme>(LineStyleScheme{
                         { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Arrows },

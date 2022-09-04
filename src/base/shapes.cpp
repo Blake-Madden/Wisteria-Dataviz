@@ -106,55 +106,55 @@ namespace Wisteria::GraphItems
 
         switch (m_shape)
             {
-            case IconShape::BlankIcon:
+            case IconShape::Blank:
                 // nothing to draw
                 break;
-            case IconShape::ArrowRightIcon:
+            case IconShape::ArrowRight:
                 sh.DrawRightArrow(drawRect, dc);
                 break;
-            case IconShape::HorizontalLineIcon:
+            case IconShape::HorizontalLine:
                 sh.DrawHorizontalLine(drawRect, dc);
                 break;
-            case IconShape::CircleIcon:
+            case IconShape::Circle:
                 sh.DrawCircle(drawRect, dc);
                 break;
-            case IconShape::SquareIcon:
+            case IconShape::Square:
                 sh.DrawSquare(drawRect, dc);
                 break;
-            case IconShape::AsteriskIcon:
+            case IconShape::Asterisk:
                 sh.DrawAsterisk(drawRect, dc);
                 break;
-            case IconShape::PlusIcon:
+            case IconShape::Plus:
                 sh.DrawPlus(drawRect, dc);
                 break;
-            case IconShape::TriangleUpwardIcon:
+            case IconShape::TriangleUpward:
                 sh.DrawUpwardTriangle(drawRect, dc);
                 break;
-            case IconShape::TriangleDownwardIcon:
+            case IconShape::TriangleDownward:
                 sh.DrawDownwardTriangle(drawRect, dc);
                 break;
-            case IconShape::TriangleRightIcon:
+            case IconShape::TriangleRight:
                 sh.DrawRightTriangle(drawRect, dc);
                 break;
-            case IconShape::TriangleLeftIcon:
+            case IconShape::TriangleLeft:
                 sh.DrawLeftTriangle(drawRect, dc);
                 break;
-            case IconShape::DiamondIcon:
+            case IconShape::Diamond:
                 sh.DrawDiamond(drawRect, dc);
                 break;
-            case IconShape::HexagonIcon:
+            case IconShape::Hexagon:
                 sh.DrawHexagon(drawRect, dc);
                 break;
-            case IconShape::BoxPlotIcon:
+            case IconShape::BoxPlot:
                 sh.DrawBoxPlot(drawRect, dc);
                 break;
-            case IconShape::SunIcon:
+            case IconShape::Sun:
                 sh.DrawSun(drawRect, dc);
                 break;
-            case IconShape::FlowerIcon:
+            case IconShape::Flower:
                 sh.DrawFlower(drawRect, dc);
                 break;
-            case IconShape::FallLeafIcon:
+            case IconShape::FallLeaf:
                 sh.DrawFallLeaf(drawRect, dc);
                 break;
             case IconShape::WarningRoadSign:
@@ -166,7 +166,7 @@ namespace Wisteria::GraphItems
             case IconShape::GoRoadSign:
                 sh.DrawGoSign(drawRect, dc);
                 break;
-            case IconShape::ImageIcon:
+            case IconShape::Image:
                 sh.DrawImage(drawRect, dc, m_iconImage);
                 break;
             case IconShape::LeftCurlyBrace:
@@ -418,11 +418,14 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 4> points;
-        points[0] = midPoint + wxPoint(0, -iconRadius);
-        points[1] = midPoint + wxPoint(iconRadius, 0);
-        points[2] = midPoint + wxPoint(0, iconRadius);
-        points[3] = midPoint + wxPoint(-iconRadius, 0);
+        const std::array<wxPoint, 4> points =
+            {
+            midPoint + wxPoint(0, -iconRadius),
+            midPoint + wxPoint(iconRadius, 0),
+            midPoint + wxPoint(0, iconRadius),
+            midPoint + wxPoint(-iconRadius, 0)
+            };
+        
         dc.DrawPolygon(points.size(), &points[0]);
         }
 
@@ -650,13 +653,15 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 6> points;
-        points[0] = midPoint + wxPoint(-iconRadius/2, -iconRadius);
-        points[1] = midPoint + wxPoint(-iconRadius, 0);
-        points[2] = midPoint + wxPoint(-iconRadius/2, iconRadius);
-        points[3] = midPoint + wxPoint(iconRadius/2, iconRadius);
-        points[4] = midPoint + wxPoint(iconRadius, 0);
-        points[5] = midPoint + wxPoint(iconRadius/2, -iconRadius);
+        const std::array<wxPoint, 6> points =
+            {
+            midPoint + wxPoint(-iconRadius / 2, -iconRadius),
+            midPoint + wxPoint(-iconRadius, 0),
+            midPoint + wxPoint(-iconRadius / 2, iconRadius),
+            midPoint + wxPoint(iconRadius / 2, iconRadius),
+            midPoint + wxPoint(iconRadius, 0),
+            midPoint + wxPoint(iconRadius / 2, -iconRadius)
+            };
         dc.DrawPolygon(points.size(), &points[0]);
         }
 

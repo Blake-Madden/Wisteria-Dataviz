@@ -454,9 +454,9 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor())
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor())
                     };
                 legend->SetText(
                     GetPositiveLabel(1) + L"\n" +
@@ -467,8 +467,8 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor())
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor())
                     };
                 legend->SetText(
                     GetPositiveLabel(1) + L"\n" +
@@ -484,11 +484,11 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor()))
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor()))
                     };
                 legend->SetText(
                     GetPositiveLabel(2) + L"\n" +
@@ -501,10 +501,10 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor()))
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor()))
                     };
                 legend->SetText(
                     GetPositiveLabel(2) + L"\n" +
@@ -522,13 +522,13 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNeutralColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNeutralColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
                     };
                 legend->SetText(
                     GetPositiveLabel(3) + L"\n" +
@@ -543,12 +543,12 @@ namespace Wisteria::Graphs
                 {
                 legend->GetLegendIcons() =
                     {
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetPositiveColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, GetNegativeColor()),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor())),
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetPositiveColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetPositiveColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, GetNegativeColor()),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor())),
+                    LegendIcon(IconShape::Square, *wxBLACK, ColorContrast::ShadeOrTint(GetNegativeColor(), .40f))
                     };
                 legend->SetText(
                     GetPositiveLabel(3) + L"\n" +

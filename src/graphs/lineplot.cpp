@@ -282,7 +282,7 @@ namespace Wisteria::Graphs
         const bool showingMarkers = (GetShapeScheme()->GetShapes().size() >= m_lines.size() &&
                                     // multiple lines or one line and it is not using a blank icon
                                     (m_lines.size() > 1 ||
-                                     GetShapeScheme()->GetShape(0) != IconShape::BlankIcon));
+                                     GetShapeScheme()->GetShape(0) != IconShape::Blank));
         wxString legendText;
         size_t lineCount{ 0 };
         for (const auto& line : m_lines)
@@ -312,7 +312,7 @@ namespace Wisteria::Graphs
             else
                 {
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::HorizontalLineIcon,
+                    LegendIcon(IconShape::HorizontalLine,
                         line.GetPen(),
                         line.GetPen().GetColour()));
                 }

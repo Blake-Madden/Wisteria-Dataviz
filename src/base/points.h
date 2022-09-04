@@ -41,7 +41,7 @@ namespace Wisteria::GraphItems
                 applicable here and will be drawn as a circle instead if used.*/
         Point2D(const GraphItems::GraphItemInfo& itemInfo,
                 const size_t radius,
-                const Wisteria::Icons::IconShape& shape = Wisteria::Icons::IconShape::CircleIcon,
+                const Wisteria::Icons::IconShape& shape = Wisteria::Icons::IconShape::Circle,
                 const wxBitmapBundle* img = nullptr) :
             GraphItemBase(itemInfo), m_shape(shape),
             m_iconImage(img), m_radius(radius)
@@ -85,7 +85,7 @@ namespace Wisteria::GraphItems
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] const double parentScaling) final;
 
-        Wisteria::Icons::IconShape m_shape{ Wisteria::Icons::IconShape::CircleIcon };
+        Wisteria::Icons::IconShape m_shape{ Wisteria::Icons::IconShape::Circle };
         const wxBitmapBundle* m_iconImage{ nullptr };
         size_t m_radius{ 4 };
         };

@@ -1402,7 +1402,7 @@ namespace Wisteria
                 {
                 for (const auto& icon : GetLegendIcons())
                     {
-                    if (icon.m_shape != Wisteria::Icons::IconShape::BlankIcon &&
+                    if (icon.m_shape != Wisteria::Icons::IconShape::Blank &&
                         icon.m_shape != Wisteria::Icons::IconShape::HorizontalSeparator &&
                         icon.m_shape != Wisteria::Icons::IconShape::HorizontalArrowRightSeparator)
                         { return true; }

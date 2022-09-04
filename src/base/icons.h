@@ -34,11 +34,11 @@ namespace Wisteria::Icons
     /// @internal Update the constant map in @c ReportBuilder::LoadIconScheme when added a new icon.
     enum class IconShape
         {
-        BlankIcon,                     /*!< Don't draw any icon.*/
-        HorizontalLineIcon,            /*!< A horizontal line.*/
-        ArrowRightIcon,                /*!< An arrow pointing right.*/
-        CircleIcon,                    /*!< A circle.*/
-        ImageIcon,                     /*!< An image, shrunk down to the height of its line
+        Blank,                         /*!< Don't draw any icon.*/
+        HorizontalLine,                /*!< A horizontal line.*/
+        ArrowRight,                    /*!< An arrow pointing right.*/
+        Circle,                        /*!< A circle.*/
+        Image,                         /*!< An image, shrunk down to the height of its line
                                             (legend) or point size (point).*/
         HorizontalSeparator,           /*!< A horizontal line going across the entire legend
                                             and text area of a label.\n
@@ -46,26 +46,26 @@ namespace Wisteria::Icons
         HorizontalArrowRightSeparator, /*!< A horizontal arrow going across the entire legend
                                             and text area of a label.\n
                                             Only applicable for legends.*/
-        ColorGradientIcon,             /*!< A color gradient which fills the entire legend.
+        ColorGradient,                 /*!< A color gradient which fills the entire legend.
                                             Only applicable for legends.*/
-        SquareIcon,                    /*!< A square.*/
-        TriangleUpwardIcon,            /*!< A triangle pointing upward.*/
-        TriangleDownwardIcon,          /*!< A triangle pointing downward.*/
-        TriangleRightIcon,             /*!< A triangle pointing right.*/
-        TriangleLeftIcon,              /*!< A triangle pointing left.*/
-        DiamondIcon,                   /*!< A diamond.*/
-        PlusIcon,                      /*!< A plus sign.*/
-        AsteriskIcon,                  /*!< An asterisk.*/
-        HexagonIcon,                   /*!< A hexagon.*/
-        BoxPlotIcon,                   /*!< A box & whisker plot.*/
+        Square,                        /*!< A square.*/
+        TriangleUpward,                /*!< A triangle pointing upward.*/
+        TriangleDownward,              /*!< A triangle pointing downward.*/
+        TriangleRight,                 /*!< A triangle pointing right.*/
+        TriangleLeft,                  /*!< A triangle pointing left.*/
+        Diamond,                       /*!< A diamond.*/
+        Plus,                          /*!< A plus sign.*/
+        Asterisk,                      /*!< An asterisk.*/
+        Hexagon,                       /*!< A hexagon.*/
+        BoxPlot,                       /*!< A box & whisker plot.*/
         LocationMarker,                /*!< A marker indicating a location on a map.*/
         GoRoadSign,                    /*!< A circular sign that says 'Go' on it,
                                             with a sign post beneath it.*/
         WarningRoadSign,               /*!< A triangular sign containing an exclamation point,
                                             with a sign post beneath it.*/
-        SunIcon,                       /*!< A sun (with sunbeams).*/
-        FlowerIcon,                    /*!< A flower (stigma and petals).*/
-        FallLeafIcon,                  /*!< A red leaf.*/
+        Sun,                           /*!< A sun (with sunbeams).*/
+        Flower,                        /*!< A flower (stigma and petals).*/
+        FallLeaf,                      /*!< A red leaf.*/
         LeftCurlyBrace,                /*!< A left curly brace (enclosing content to its right).*/
         RightCurlyBrace,               /*!< A right curly brace (enclosing content to its left).*/
         TopCurlyBrace,                 /*!< A top curly brace (enclosing content beneath it).*/
@@ -81,7 +81,7 @@ namespace Wisteria::Icons
             @param colors The color gradient to use (must contain at least two colors).
             @note The colors are drawn top to bottom, starting from the first color.*/
         explicit LegendIcon(const std::vector<wxColour>& colors) :
-            m_shape(IconShape::ColorGradientIcon), m_colors(colors)
+            m_shape(IconShape::ColorGradient), m_colors(colors)
             {
             wxASSERT_LEVEL_2_MSG(m_colors.size() >= 2,
                 L"Color gradient legend created with only one color!");
@@ -89,7 +89,7 @@ namespace Wisteria::Icons
         /** @brief Constructs legend icon.
             @param img The image to draw as an icon.*/
         LegendIcon(const wxImage& img) :
-            m_shape(IconShape::ImageIcon), m_img(img)
+            m_shape(IconShape::Image), m_img(img)
             {}
         /** @brief Constructor.
             @param icon The icon type.
@@ -99,9 +99,9 @@ namespace Wisteria::Icons
             m_shape(icon), m_pen(pen), m_brush(brush), m_img(wxNullImage)
             {}
 
-        IconShape m_shape{ IconShape::BlankIcon }; /*!< The icon type.*/
-        wxPen m_pen;                               /*!< The pen to draw with.*/
-        wxBrush m_brush;                           /*!< The brush to paint with.*/
+        IconShape m_shape{ IconShape::Blank }; /*!< The icon type.*/
+        wxPen m_pen;                           /*!< The pen to draw with.*/
+        wxBrush m_brush;                       /*!< The brush to paint with.*/
         /// @brief The image to draw (if shape is set to ImageIcon).
         wxImage m_img;
         /// @brief The color gradient to draw (if shape is set to @c ColorGradientIcon).
@@ -162,7 +162,7 @@ namespace Wisteria::Icons
             [[nodiscard]] IconShape GetShape(const size_t index) const
                 {
                 return (m_shapes.size() == 0) ?
-                    IconShape::BlankIcon : m_shapes.at(index % m_shapes.size());
+                    IconShape::Blank : m_shapes.at(index % m_shapes.size());
                 }
             /** @brief Adds a shape to the scheme.
                 @param shape The shape to add.*/
@@ -194,16 +194,16 @@ namespace Wisteria::Icons
         class StandardShapes : public IconScheme
             {
         public:
-            StandardShapes() : IconScheme({ IconShape::CircleIcon,
-                                            IconShape::SquareIcon,
-                                            IconShape::HexagonIcon,
-                                            IconShape::DiamondIcon,
-                                            IconShape::TriangleUpwardIcon,
-                                            IconShape::TriangleDownwardIcon,
-                                            IconShape::PlusIcon,
-                                            IconShape::AsteriskIcon,
-                                            IconShape::TriangleRightIcon,
-                                            IconShape::TriangleLeftIcon })
+            StandardShapes() : IconScheme({ IconShape::Circle,
+                                            IconShape::Square,
+                                            IconShape::Hexagon,
+                                            IconShape::Diamond,
+                                            IconShape::TriangleUpward,
+                                            IconShape::TriangleDownward,
+                                            IconShape::Plus,
+                                            IconShape::Asterisk,
+                                            IconShape::TriangleRight,
+                                            IconShape::TriangleLeft })
                 {}
             };
 
@@ -211,9 +211,9 @@ namespace Wisteria::Icons
         class Semesters : public IconScheme
             {
         public:
-            Semesters() : IconScheme({ IconShape::FallLeafIcon,
-                                       IconShape::FlowerIcon,
-                                       IconShape::SunIcon })
+            Semesters() : IconScheme({ IconShape::FallLeaf,
+                                       IconShape::Flower,
+                                       IconShape::Sun })
                 {}
             };
         }

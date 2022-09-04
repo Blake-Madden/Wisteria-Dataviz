@@ -152,15 +152,11 @@ namespace Wisteria::GraphItems
         ///     that need to go a little outside of the rect.
         [[nodiscard]] double GetXPosFromLeft(const wxRect rect,
                                              const double percentFromLeft) const
-            {
-            return rect.GetLeft() + (rect.GetWidth() * percentFromLeft);
-            };
+            { return rect.GetLeft() + (rect.GetWidth() * percentFromLeft); };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
         [[nodiscard]] double GetYPosFromTop(const wxRect rect,
                                             const double percentFromLeft) const
-            {
-            return rect.GetTop() + (rect.GetHeight() * percentFromLeft);
-            };
+            { return rect.GetTop() + (rect.GetHeight() * percentFromLeft); };
 
         /// @returns The midpoint of a rect.
         [[nodiscard]] wxPoint GetMidPoint(const wxRect rect) const

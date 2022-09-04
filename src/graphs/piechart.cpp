@@ -1626,7 +1626,7 @@ namespace Wisteria::Graphs
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::HorizontalLineIcon, *wxBLACK_PEN, GetColorScheme()->GetColor(0)));
+            LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN, GetColorScheme()->GetColor(0)));
         legend->GetLegendIcons().emplace_back(
             LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
 
@@ -1666,7 +1666,7 @@ namespace Wisteria::Graphs
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::HorizontalLineIcon,
+                    LegendIcon(IconShape::HorizontalLine,
                         *wxBLACK_PEN,
                         GetColorScheme()->GetColor(currentParentSliceIndex)));
                 legend->GetLegendIcons().emplace_back(
@@ -1677,7 +1677,7 @@ namespace Wisteria::Graphs
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK_PEN, sliceColor));
+                    LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN, sliceColor));
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -1717,7 +1717,7 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::TriangleRightIcon, *wxBLACK_PEN,
+                    LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN,
                         GetColorScheme()->GetColor(i)));
             }
         legend->SetText(legendText.Trim());

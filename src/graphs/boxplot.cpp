@@ -549,7 +549,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            IconShape::CircleIcon), dc);
+                            IconShape::Circle), dc);
                         }
                     else
                         {
@@ -558,7 +558,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            IconShape::CircleIcon), dc);
+                            IconShape::Circle), dc);
                         }
                     }
                 }

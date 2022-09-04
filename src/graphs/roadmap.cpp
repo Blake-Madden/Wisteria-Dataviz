@@ -168,7 +168,7 @@ namespace Wisteria::Graphs
             pavement->AddPoint(
                 Point2D(GraphItemInfo().AnchorPoint({ pt.x, pt.y }).
                     DPIScaling(GetDPIScaleFactor()),
-                    0, IconShape::BlankIcon), dc);
+                    0, IconShape::Blank), dc);
             }
         AddObject(pavement);
 
@@ -188,7 +188,7 @@ namespace Wisteria::Graphs
                     Point2D(GraphItemInfo().
                         AnchorPoint(pt).
                         DPIScaling(GetDPIScaleFactor()),
-                        0, IconShape::BlankIcon), dc);
+                        0, IconShape::Blank), dc);
                 }
             AddObject(laneSep);
             // if a double line, then draw a road colored line down the middle
@@ -207,7 +207,7 @@ namespace Wisteria::Graphs
                         Point2D(GraphItemInfo().
                             AnchorPoint(pt).
                             DPIScaling(GetDPIScaleFactor()),
-                            0, IconShape::BlankIcon), dc);
+                            0, IconShape::Blank), dc);
                     }
                 AddObject(laneSepRoadLine);
                 }

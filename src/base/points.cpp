@@ -203,7 +203,7 @@ namespace Wisteria::GraphItems
                 // find the valid point, draw it, then we're done
                 for (size_t i = 0; i < m_points.size(); ++i)
                     {
-                    if (m_points[i].IsOk() && m_points[i].m_shape == IconShape::BlankIcon)
+                    if (m_points[i].IsOk() && m_points[i].m_shape == IconShape::Blank)
                         {
                         wxDCBrushChanger bc(dc, scaledPen.GetColour());
                         dc.DrawCircle(m_points[i].GetAnchorPoint(), m_points[i].GetRadius());

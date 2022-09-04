@@ -767,7 +767,7 @@ namespace Wisteria::GraphItems
                     scaledIconPen.SetWidth(
                         ScaleToScreenAndCanvas(
                             // if a line icon, make it a minimum of 2 pixels wide
-                            (iconPos->m_shape == IconShape::HorizontalLineIcon ?
+                            (iconPos->m_shape == IconShape::HorizontalLine ?
                              std::max(scaledIconPen.GetWidth(), 2) :
                              scaledIconPen.GetWidth())) );
                     }
@@ -798,7 +798,7 @@ namespace Wisteria::GraphItems
                 // icons only relavant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == IconShape::HorizontalSeparator ||
                     iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
-                    iconPos->m_shape == IconShape::ColorGradientIcon)
+                    iconPos->m_shape == IconShape::ColorGradient)
                     {
                     switch (iconPos->m_shape)
                         {
@@ -822,7 +822,7 @@ namespace Wisteria::GraphItems
                             break;
                         // full-length icons
                         //------------------
-                        case IconShape::ColorGradientIcon:
+                        case IconShape::ColorGradient:
                             if (iconPos->m_colors.size() >= 2)
                                 {
                                 // we need to see how many colors there are and draw separate

@@ -188,7 +188,7 @@ namespace Wisteria::Graphs
             wxString m_label;
 
             LineStyle m_lineStyle{ LineStyle::Lines };
-            Icons::IconShape m_shape{ Icons::IconShape::CircleIcon };
+            Icons::IconShape m_shape{ Icons::IconShape::Circle };
             wxBitmapBundle m_shapeImg;
             wxPen m_linePen{ wxPen(*wxBLACK, 2) };
             };
