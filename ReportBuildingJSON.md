@@ -645,6 +645,10 @@ Properties common to all graph items:
     - @c "fade-from-left-to-right"
     - @c "fade-from-right-to-left"
     - @c "solid"
+- @c "brush-scheme": for graphs that support brush schemes only.\n
+     Contains the following properties:
+     @c "brush-styles": an array of strings specifying the [brush styles](#brush-properties).
+     @c "color-scheme": a color scheme that is mapped to the brush styles.
 - @c "color-scheme": for graphs that support color schemes only.\n
      This can either be an array of color strings or the name of the color scheme.\n
      Refer to @c Wisteria::Colors::Schemes for a list of color schemes.

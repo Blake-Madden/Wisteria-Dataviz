@@ -202,6 +202,12 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
+        /// @brief Loads a brush scheme from a node.
+        /// @param brushSchemeNode Tne node to parse.
+        /// @returns The loaded brush scheme, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Brushes::Schemes::BrushScheme> LoadBrushScheme(
+            const wxSimpleJSON::Ptr_t& brushSchemeNode);
+
         /// @brief Loads an icon scheme from a node.
         /// @param iconSchemeNode Tne node to parse.
         /// @returns The loaded icon scheme, or null upon failure.
@@ -233,6 +239,9 @@ namespace Wisteria
         /// @brief Converts a string value to a BoxEffect enum value.
         [[nodiscard]] static std::optional<BoxEffect>
             ConvertBoxEffect(const wxString& value);
+        /// @brief Converts a string value to a @c wxBrushStyle enum value.
+        [[nodiscard]] static std::optional<wxBrushStyle>
+            ConvertBrushStyle(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and converted into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color

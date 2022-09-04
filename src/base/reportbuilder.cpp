@@ -274,6 +274,26 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<wxBrushStyle> ReportBuilder::ConvertBrushStyle(const wxString& value)
+        {
+        static const std::map<std::wstring, wxBrushStyle> styleValues =
+            {
+            { L"backwards-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_BDIAGONAL_HATCH },
+            { L"forward-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH },
+            { L"cross-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSSDIAG_HATCH },
+            { L"solid", wxBrushStyle::wxBRUSHSTYLE_SOLID },
+            { L"cross-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSS_HATCH },
+            { L"horizontal-hatch", wxBrushStyle::wxBRUSHSTYLE_HORIZONTAL_HATCH },
+            { L"vertical-hatch", wxBrushStyle::wxBRUSHSTYLE_VERTICAL_HATCH }
+            };
+
+        const auto foundValue = styleValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != styleValues.cend()) ?
+            std::optional<wxBrushStyle>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<BoxEffect> ReportBuilder::ConvertBoxEffect(const wxString& value)
         {
         static const std::map<std::wstring_view, BoxEffect> boxEffects =
@@ -334,17 +354,6 @@ namespace Wisteria
     //---------------------------------------------------
     void ReportBuilder::LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush)
         {
-        static const std::map<std::wstring, wxBrushStyle> styleValues =
-            {
-            { L"backwards-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_BDIAGONAL_HATCH },
-            { L"forward-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH },
-            { L"cross-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSSDIAG_HATCH },
-            { L"solid", wxBrushStyle::wxBRUSHSTYLE_SOLID },
-            { L"cross-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSS_HATCH },
-            { L"horizontal-hatch", wxBrushStyle::wxBRUSHSTYLE_HORIZONTAL_HATCH },
-            { L"vertical-hatch", wxBrushStyle::wxBRUSHSTYLE_VERTICAL_HATCH }
-            };
-
         if (brushNode->IsOk())
             {
             if (brushNode->IsValueNull())
@@ -356,10 +365,9 @@ namespace Wisteria
                 if (brushColor.IsOk())
                     { brush.SetColour(brushColor); }
 
-                const auto style = styleValues.find(
-                    brushNode->GetProperty(L"style")->GetValueString().Lower().ToStdWstring());
-                if (style != styleValues.cend())
-                    { brush.SetStyle(style->second); }
+                const auto foundStyle = ConvertBrushStyle(brushNode->GetProperty(L"style")->GetValueString());
+                if (foundStyle)
+                    { brush.SetStyle(foundStyle.value()); }
                 }
             }
         }
@@ -1190,22 +1198,22 @@ namespace Wisteria
                     const auto pivotType = pivot->GetProperty(L"type")->GetValueString(L"wider");
                     if (pivotType.CmpNoCase(L"wider") == 0)
                         {
-                    auto pivotedData = pw.PivotWider(parentToPivot,
-                        pivot->GetProperty(L"id-columns")->GetValueStringVector(),
-                        pivot->GetProperty(L"names-from-column")->GetValueString(),
-                        pivot->GetProperty(L"values-from-columns")->GetValueStringVector(),
-                        pivot->GetProperty(L"names-separator")->GetValueString(L"_"),
-                        pivot->GetProperty(L"names-prefix")->GetValueString(),
-                        pivot->GetProperty(L"fill-value")->GetValueNumber(
-                            std::numeric_limits<double>::quiet_NaN()));
+                        auto pivotedData = pw.PivotWider(parentToPivot,
+                            pivot->GetProperty(L"id-columns")->GetValueStringVector(),
+                            pivot->GetProperty(L"names-from-column")->GetValueString(),
+                            pivot->GetProperty(L"values-from-columns")->GetValueStringVector(),
+                            pivot->GetProperty(L"names-separator")->GetValueString(L"_"),
+                            pivot->GetProperty(L"names-prefix")->GetValueString(),
+                            pivot->GetProperty(L"fill-value")->GetValueNumber(
+                                std::numeric_limits<double>::quiet_NaN()));
 
-                    if (pivotedData)
-                        {
-                        m_datasets.insert_or_assign(
-                            pivot->GetProperty(L"name")->GetValueString(), pivotedData);
-                        LoadDatasetTransformations(pivot, pivotedData);
+                        if (pivotedData)
+                            {
+                            m_datasets.insert_or_assign(
+                                pivot->GetProperty(L"name")->GetValueString(), pivotedData);
+                            LoadDatasetTransformations(pivot, pivotedData);
+                            }
                         }
-                    }
                     else if (pivotType.CmpNoCase(L"longer") == 0)
                         {
                         auto pivotedData = pw.PivotLonger(parentToPivot,
@@ -1220,8 +1228,8 @@ namespace Wisteria
                             m_datasets.insert_or_assign(
                                 pivot->GetProperty(L"name")->GetValueString(), pivotedData);
                             LoadDatasetTransformations(pivot, pivotedData);
-                }
-            }
+                            }
+                        }
                     else
                         {
                         throw std::runtime_error(
@@ -1758,7 +1766,8 @@ namespace Wisteria
                 graphNode->GetProperty(L"bin-label-display")->GetValueString());
 
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
-                LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+                LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
                 
             LoadBarChart(graphNode, barChart);
 
@@ -2952,6 +2961,30 @@ namespace Wisteria
             { position.value() += doubleStartOffset.value(); }
 
         return position;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Brushes::Schemes::BrushScheme> ReportBuilder::LoadBrushScheme(
+        const wxSimpleJSON::Ptr_t& brushSchemeNode)
+        {
+        const auto brushStylesNode = brushSchemeNode->GetProperty(L"brush-styles");
+        if (brushStylesNode->IsOk() && brushStylesNode->IsValueArray())
+            {
+            std::vector<wxBrushStyle> brushStyles;
+            const auto brushStylesVals = brushStylesNode->GetValueArrayString();
+            for (const auto& brushStylesVal : brushStylesVals)
+                {
+                const auto bStyle = ConvertBrushStyle(brushStylesVal);
+                if (bStyle)
+                    { brushStyles.push_back(bStyle.value()); }
+                }
+            const auto colorScheme = LoadColorScheme(brushSchemeNode->GetProperty(L"color-scheme"));
+            if (colorScheme)
+                {
+                return std::make_shared<Brushes::Schemes::BrushScheme>(brushStyles, *colorScheme);
+                }
+            }
+        return nullptr;
         }
 
     //---------------------------------------------------
