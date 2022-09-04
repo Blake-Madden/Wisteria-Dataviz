@@ -90,6 +90,32 @@ namespace Wisteria::Data
             const wxString& namesSep = L"_",
             const wxString& namesPrefix = wxEmptyString,
             const double fillValue = std::numeric_limits<double>::quiet_NaN());
+
+        /** @brief Combines multiple columns into a grouping column and value column.
+                Multiple target grouping columns can also be created if a regular expression
+                is provided to split the initial columns' names.
+            @details Pivoting longer is also known as stacking, casting, or gathering
+                a dataset. This is useful for converting a "one row for each observation" dataset
+                into a dataset with grouping columns (which is generally more appropriate for analyses).
+            @param dataset The dataset to pivot.
+            @param columnsToKeep The columns to not pivot. These will be copied to the new dataset
+                and will have their values filled in all new rows created from their observation.
+                These would usually the ID columns.\n
+                These columns can be of any type, including the ID column.
+            @param fromColumns The continuous column(s) to pivot into longer format.
+            @param namesTo The target column(s) to move the names from the @c fromColumns into.
+            @param valuesTo The column to move the values from the @c fromColumns into.
+            @param namesPattern If needing to split the names of the columns into multiple target columns,
+                this regular expression can be used. It should contain capture groups, where each group
+                will be the name of a new target column.\n
+                Leave blank (the default) to use the full name of @c fromColumns as the labels.*/
+        [[nodiscard]] std::shared_ptr<Dataset> PivotLonger(
+            const std::shared_ptr<const Dataset>& dataset,
+            const std::vector<wxString>& columnsToKeep,
+            const std::vector<wxString>& fromColumns,
+            const std::vector<wxString>& namesTo,
+            const wxString& valuesTo,
+            const wxString& namesPattern = wxEmptyString);
         };
     }
 

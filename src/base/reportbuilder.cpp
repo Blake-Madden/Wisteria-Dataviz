@@ -1187,6 +1187,9 @@ namespace Wisteria
                 if (pivot->IsOk())
                     {
                     Pivot pw;
+                    const auto pivotType = pivot->GetProperty(L"type")->GetValueString(L"wider");
+                    if (pivotType.CmpNoCase(L"wider") == 0)
+                        {
                     auto pivotedData = pw.PivotWider(parentToPivot,
                         pivot->GetProperty(L"id-columns")->GetValueStringVector(),
                         pivot->GetProperty(L"names-from-column")->GetValueString(),
@@ -1201,6 +1204,28 @@ namespace Wisteria
                         m_datasets.insert_or_assign(
                             pivot->GetProperty(L"name")->GetValueString(), pivotedData);
                         LoadDatasetTransformations(pivot, pivotedData);
+                        }
+                    }
+                    else if (pivotType.CmpNoCase(L"longer") == 0)
+                        {
+                        auto pivotedData = pw.PivotLonger(parentToPivot,
+                            pivot->GetProperty(L"columns-to-keep")->GetValueStringVector(),
+                            pivot->GetProperty(L"from-columns")->GetValueStringVector(),
+                            pivot->GetProperty(L"names-to")->GetValueStringVector(),
+                            pivot->GetProperty(L"values-to")->GetValueString(),
+                            pivot->GetProperty(L"names-pattern")->GetValueString());
+
+                        if (pivotedData)
+                            {
+                            m_datasets.insert_or_assign(
+                                pivot->GetProperty(L"name")->GetValueString(), pivotedData);
+                            LoadDatasetTransformations(pivot, pivotedData);
+                }
+            }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: unrecognized pivot method."), pivotType).ToUTF8());
                         }
                     }
                 }

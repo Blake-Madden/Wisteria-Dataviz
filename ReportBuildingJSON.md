@@ -162,6 +162,12 @@ Properties for the @c "datasets" node:
   - @c "name": the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
     otherwise, it will overwrite it.)\n
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - @c "type": a string specifying which type of pivot to use.
+    Available options are:
+    - "wider": pivot wider (the default).
+    - "longer" pivot longer.
+
+  If pivoting wider, the following options are available:
   - @c "id-columns": an array of strings representing the ID columns.
   - @c "names-from-column": a strings representing the 'names from'.
   - @c "values-from-columns": an array of strings representing the 'falues from' columns.
@@ -169,6 +175,16 @@ Properties for the @c "datasets" node:
        join the label from @c namesFromColumn and the value column name.
   - @c "names-prefix": string to prepend to newly created pivot columns.
   - @c "fill-value": numeric value to assign to missing data. The default it so leave it as missing data.
+
+  If pivoting longer, the following options are available:
+  - @c "columns-to-keep": an array of strings specifying the columns to not pivot. These will be copied to the new dataset
+    and will have their values filled in all new rows created from their observation.
+    These would usually the ID columns.\n
+    These columns can be of any type, including the ID column.
+  - @c "from-columns": an array of strings specifying the continuous column(s) to pivot into longer format.
+  - @c "names-to": an array of strings specifying the target column(s) to move the names from the @c "from-columns" into.
+  - @c "values-to": a string specifying the column to move the values from the @c "from-columns" into.
+  - @c "names-pattern": an optional string specifying a regular expression to split the @c "from-columns" names into.
 
   Note that subset and pivot nodes can contain their own transformation and formula sections,
   same as a dataset node.
@@ -592,7 +608,7 @@ Properties common to all graph items:
     - @c "x": the X axis position of the point.
     - @c "y": the Y axis position of the point.
   - @c "anchor": the point to anchor the label.\n
-     Note the the `label`'s @ "anchoring" property will control which part of the label that the
+     Note that the `label`'s @ "anchoring" property will control which part of the label that the
      anchoring point refers to.\n
      If not specified, the graph will attempt to place it at the best location.\n
      This contains the following properties:

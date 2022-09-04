@@ -44,12 +44,12 @@ namespace Wisteria::Data
             throw std::runtime_error(
                 _(L"Invalid dataset being pivoted.").ToUTF8());
             }
-        else if (IdColumns.size() == 0)
+        else if (IdColumns.empty())
             {
             throw std::runtime_error(
                 _(L"ID column(s) required to pivot dataset.").ToUTF8());
             }
-        else if (valuesFromColumns.size() == 0)
+        else if (valuesFromColumns.empty())
             {
             throw std::runtime_error(
                 _(L"'Values from' column(s) required to pivot dataset.").ToUTF8());
@@ -230,5 +230,242 @@ namespace Wisteria::Data
             }
 
         return pivotedData;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Dataset> Pivot::PivotLonger(
+        const std::shared_ptr<const Dataset>& dataset,
+        const std::vector<wxString>& columnsToKeep,
+        const std::vector<wxString>& fromColumns,
+        const std::vector<wxString>& namesTo,
+        const wxString& valuesTo,
+        [[maybe_unused]] const wxString& namesPattern /*= wxEmptyString*/)
+        {
+        if (dataset == nullptr)
+            {
+            throw std::runtime_error(
+                _(L"Invalid dataset being pivoted.").ToUTF8());
+            }
+        else if (columnsToKeep.empty())
+            {
+            throw std::runtime_error(
+                _(L"ID column(s) required to pivot dataset.").ToUTF8());
+            }
+        else if (fromColumns.empty())
+            {
+            throw std::runtime_error(
+                _(L"'From' column(s) required to pivot dataset.").ToUTF8());
+            }
+        else if (namesTo.empty())
+            {
+            throw std::runtime_error(
+                _(L"'Names to' column(s) required to pivot dataset.").ToUTF8());
+            }
+        else if (namesTo.size() > 1 && namesPattern.empty())
+            {
+            throw std::runtime_error(
+                _(L"Multiple 'names to' columns were specified, but no names pattern "
+                   "was provided to split the column names.").ToUTF8());
+            }
+        else if (valuesTo.empty())
+            {
+            throw std::runtime_error(
+                _(L"'Value to' column required to pivot dataset.").ToUTF8());
+            }
+
+        // build string tables from the "from" column names
+        std::vector<ColumnWithStringTable::StringTableType> namesFromStringTables(namesTo.size());
+        // prefill string tables with missing data for all possible labels (from the "from" columns)
+        for (auto& nST : namesFromStringTables)
+            {
+            for (size_t i = 0; i < fromColumns.size(); ++i)
+                { nST.insert(std::make_pair(i, wxEmptyString)); }
+            }
+        wxRegEx namesSplit(namesPattern.length() ? namesPattern : wxString(L"(.*)"));
+        for (size_t i = 0; i < fromColumns.size(); ++i)
+            {
+            if (namesSplit.Matches(fromColumns[i]) && namesSplit.GetMatchCount() > 0)
+                {
+                for (size_t j = 0;
+                     j < std::min(namesSplit.GetMatchCount()-1, namesFromStringTables.size());
+                     ++j)
+                    {
+                    namesFromStringTables[j][i] = namesSplit.GetMatch(fromColumns[i], j+1);
+                    }
+                }
+            }
+
+        auto pivottedData = std::make_shared<Dataset>();
+        pivottedData->GetContinuousColumns().reserve(dataset->GetCategoricalColumns().size());
+        pivottedData->GetCategoricalColumns().reserve(dataset->GetCategoricalColumns().size());
+        pivottedData->GetDateColumns().reserve(dataset->GetDateColumns().size());
+
+        // map of columns between original dataset and pivotted one (of what's being kept)
+        std::vector<std::pair<ColumnConstIterator, ColumnIterator>> columnsToKeepMap;
+        // the pivot columns, where the data and label(s) comes from
+        std::vector<ColumnConstIterator> fromNamesList;
+        // where names go to as labels
+        std::vector<CategoricalColumnIterator> toNamesList;
+        // the one column that the source columns' data are going into
+        ColumnIterator valueTo{ nullptr };
+
+        // find and add the columns being kept, then map the columns between the datasets
+        for (const auto& columnToKeep : columnsToKeep)
+            {
+            if (dataset->GetIdColumn().GetName().CmpNoCase(columnToKeep) == 0)
+                {
+                pivottedData->GetIdColumn().SetName(columnToKeep);
+                columnsToKeepMap.push_back(std::make_pair(&dataset->GetIdColumn(), &pivottedData->GetIdColumn()));
+                }
+            else if (const auto foundVar = dataset->GetCategoricalColumn(columnToKeep);
+                foundVar != dataset->GetCategoricalColumns().cend())
+                {
+                pivottedData->AddCategoricalColumn(columnToKeep).SetStringTable(foundVar->GetStringTable());
+                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                }
+            else if (const auto foundVar = dataset->GetContinuousColumn(columnToKeep);
+                foundVar != dataset->GetContinuousColumns().cend())
+                {
+                pivottedData->AddContinuousColumn(columnToKeep);
+                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                }
+            else if (const auto foundVar = dataset->GetDateColumn(columnToKeep);
+                foundVar != dataset->GetDateColumns().cend())
+                {
+                pivottedData->AddDateColumn(columnToKeep);
+                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                }
+            else
+                {
+                throw std::runtime_error(
+                    wxString::Format( _(L"%s: column not found."), columnToKeep).ToUTF8());
+                }
+            }
+        // find and catalog "from" columns
+        for (const auto& fromColumn : fromColumns)
+            {
+
+            if (const auto foundVar = dataset->GetContinuousColumn(fromColumn);
+                foundVar != dataset->GetContinuousColumns().cend())
+                { fromNamesList.push_back(foundVar); }
+            else
+                {
+                throw std::runtime_error(
+                    wxString::Format( _(L"%s: continous column not found."), fromColumn).ToUTF8());
+                }
+            }
+        // add target column(s) for the pivotted column name (which will become group labels)
+        for (const auto& nameTo : namesTo)
+            {
+            if (nameTo.empty())
+                {
+                throw std::runtime_error(
+                    _(L"'Names to' column name cannot be empty.").ToUTF8());
+                }
+            pivottedData->AddCategoricalColumn(nameTo);
+            }
+        // add target column for continuous values
+        if (valuesTo.empty())
+                {
+                throw std::runtime_error(
+                    _(L"'Values to' column name cannot be empty.").ToUTF8());
+                }
+        pivottedData->AddContinuousColumn(valuesTo);
+        auto valueToTarget = pivottedData->GetContinuousColumnWritable(valuesTo);
+
+        pivottedData->Resize(fromColumns.size() * dataset->GetRowCount());
+
+        // map the columns to keep
+        for (size_t i = 0; i < columnsToKeep.size(); ++i)
+            {
+            auto foundCol = pivottedData->FindColumn(columnsToKeep[i]);
+            if (!foundCol.has_value())
+                {
+                throw std::runtime_error(
+                    _(L"Internal error building target column map.").ToUTF8());
+                }
+            columnsToKeepMap[i].second = foundCol.value();
+            }
+        // map the target name column(s)
+        for (size_t i = 0; i < namesTo.size(); ++i)
+            {
+            auto foundCol = pivottedData->GetCategoricalColumnWritable(namesTo[i]);
+            if (foundCol == pivottedData->GetCategoricalColumns().end())
+                {
+                throw std::runtime_error(
+                    _(L"Internal error building target column map.").ToUTF8());
+                }
+            foundCol->SetStringTable(namesFromStringTables[i]);
+            toNamesList.push_back(foundCol);
+            }
+
+        // go through each observation
+        size_t pivotDataRow{ 0 };
+        for (size_t i = 0; i < dataset->GetRowCount(); ++i)
+            {
+            // ...and pivot its "from" columns
+            for (const auto& fromName : fromNamesList)
+                {
+                // fill in the kept columns (usually IDs columns)
+                for (const auto& keepCol : columnsToKeepMap)
+                    {
+                    // ID columns
+                        {
+                        auto srcCol = std::get_if<const Column<wxString>*>(&keepCol.first);
+                        auto targetlCol = std::get_if<Column<wxString>*>(&keepCol.second);
+                        if (srcCol != nullptr && targetlCol != nullptr)
+                            {
+                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            continue;
+                            }
+                        }
+                    // categorical
+                        {
+                        auto srcCol = std::get_if<CategoricalColumnConstIterator>(&keepCol.first);
+                        auto targetlCol = std::get_if<CategoricalColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetlCol != nullptr)
+                            {
+                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            continue;
+                            }
+                        }
+                    // continuous
+                        {
+                        auto srcCol = std::get_if<ContinuousColumnConstIterator>(&keepCol.first);
+                        auto targetlCol = std::get_if<ContinuousColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetlCol != nullptr)
+                            {
+                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            continue;
+                            }
+                        }
+                    // date
+                        {
+                        auto srcCol = std::get_if<DateColumnConstIterator>(&keepCol.first);
+                        auto targetlCol = std::get_if<DateColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetlCol != nullptr)
+                            {
+                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            continue;
+                            }
+                        }
+                    throw std::runtime_error(
+                        _(L"Internal error mapping from columns.").ToUTF8());
+                    }
+                // fill in the name column(s)
+                for (auto& toName : toNamesList)
+                    { toName->SetValue(pivotDataRow, pivotDataRow % fromColumns.size()); }
+                // fill in the value column
+                // if continuous
+                    {
+                    auto srcCol = std::get_if<ContinuousColumnConstIterator>(&fromName);
+                    if (srcCol != nullptr)
+                        { valueToTarget->SetValue(pivotDataRow, (*srcCol)->GetValue(i)); }
+                    }
+                ++pivotDataRow;
+                }
+            }
+
+        return pivottedData;
         }
     }
