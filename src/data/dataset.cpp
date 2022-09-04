@@ -1049,4 +1049,22 @@ namespace Wisteria::Data
         // set the names for the columns
         SetColumnNames(info);
         }
+
+    //----------------------------------------------
+    std::optional<ColumnIterator> Dataset::FindColumn(const wxString& colName)
+        {
+        if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
+            { return &GetIdColumn(); }
+        else if (auto foundVar = GetCategoricalColumnWritable(colName);
+            foundVar != GetCategoricalColumns().end())
+            { return foundVar; }
+        else if (auto foundVar = GetContinuousColumnWritable(colName);
+            foundVar != GetContinuousColumns().end())
+            { return foundVar; }
+        else if (auto foundVar = GetDateColumnWritable(colName);
+            foundVar != GetDateColumns().end())
+            { return foundVar; }
+        else
+            { return std::nullopt; }
+        }
     }

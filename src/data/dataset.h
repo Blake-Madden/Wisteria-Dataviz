@@ -64,6 +64,7 @@ namespace Wisteria::Data
     // forward declarations for friendships
     class Dataset;
     class DatasetClone;
+    class Pivot;
 
     /// @brief The integral type used for looking up a label from a grouping column's string table.
     /// @details Grouping column string tables are maps that consist of a @c GroupIdType
@@ -296,6 +297,10 @@ namespace Wisteria::Data
             else
                 { return 0; }
             }
+
+        /** @returns The next group ID that can be inserted into the string table.*/
+        [[nodiscard]] GroupIdType GetNextKey()
+            { return GetNextKey(GetStringTable()); }
     private:
         /// @brief Combines duplicate values in the string table and recodes
         ///     the numeric values down the column.
@@ -319,6 +324,23 @@ namespace Wisteria::Data
     /// @brief Constant iterator to a categorical column.
     using CategoricalColumnConstIterator =
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator;
+
+    /// @brief Iterator to a datetime column.
+    using DateColumnIterator =
+        std::vector<Wisteria::Data::Column<wxDateTime>>::iterator;
+    /// @brief Iterator to a continuous column.
+    using ContinuousColumnIterator =
+        std::vector<Wisteria::Data::Column<double>>::iterator;
+    /// @brief Iterator to a categorical column.
+    using CategoricalColumnIterator =
+        std::vector<Wisteria::Data::ColumnWithStringTable>::iterator;
+
+    /// @brief Const iterator to date, continuous, or categorical column, or a const pointer to the ID column.
+    using ColumnConstIterator = std::variant<const Column<wxString>*, CategoricalColumnConstIterator,
+                                             ContinuousColumnConstIterator, DateColumnConstIterator>;
+    /// @brief Iterator to date, continuous, or categorical column, or a pointer to the ID column.
+    using ColumnIterator = std::variant<Column<wxString>*, CategoricalColumnIterator,
+                                        ContinuousColumnIterator, DateColumnIterator>;
 
     /** @brief Class for filling a row in a dataset.
         @details This can be used to chain multiple fields together in a call to @c AddRow():
@@ -673,6 +695,7 @@ namespace Wisteria::Data
     class Dataset
         {
         friend class DatasetClone;
+        friend class Pivot;
         friend class ReportBuilder;
     public:
         /// @brief Description of a column's deduced type when previewing.
@@ -686,7 +709,7 @@ namespace Wisteria::Data
 
         /// @brief The names and data types of columns in a dataset.
         /// @details This is what is returned from ReadColumnInfo() and can be used
-        ///  for selecting variables before importing a dataset.
+        ///     for selecting variables before importing a dataset.
         using ColumnPreviewInfo = std::vector<std::pair<wxString, ColumnImportType>>;
 
         /// @returns The name of the dataset.
@@ -695,7 +718,7 @@ namespace Wisteria::Data
 
         /// @brief Removes all data from the dataset.
         /// @details All continuous, categorical, and date columns will be removed,
-        ///  and the ID column will be cleared.
+        ///     and the ID column will be cleared.
         void Clear() noexcept
             {
             m_idColumn.Clear();
@@ -707,7 +730,7 @@ namespace Wisteria::Data
                 { column.Clear(); }
             }
         /// @brief Reserves memory for the data.
-        /// @param rowCount The number of data points to allocate memory for.
+        /// @param rowCount The number of rows to allocate memory for.
         void Reserve(const size_t rowCount)
             {
             m_idColumn.Reserve(rowCount);
@@ -780,14 +803,20 @@ namespace Wisteria::Data
              necessary columns with generically generated names.*/
         void AddRow(const RowInfo& dataInfo);
         /** @brief During import, sets the column names to the names
-             that the client specified.
+                that the client specified.
             @param info The import specification used when importing the
-             data. The column names are extracted from this.*/
+                data. The column names are extracted from this.*/
         void SetColumnNames(const ImportInfo& info);
 
         /// @returns The number of rows (observations) in the data.
         [[nodiscard]] size_t GetRowCount() const noexcept
             { return m_idColumn.GetRowCount(); }
+
+        /// @brief Finds a column by name, regardless of type.
+        /// @param colName The name of the column.
+        /// @returns A column iterator if found, @c std::nullopt otherwise.
+        ///     Note that the returned iterator is a @c std::variant that needs to be unwrapped.
+        [[nodiscard]] std::optional<ColumnIterator> FindColumn(const wxString& colName);
 
         /// @private
         [[nodiscard]] const Column<wxString>& GetIdColumn() const noexcept
@@ -799,9 +828,9 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a categorical column by name.
             @param columnName The name of the categorical column to look for.
             @returns An iterator to the categorical column if found,
-             `GetCategoricalColumns().cend()` otherwise.
+                `GetCategoricalColumns().cend()` otherwise.
             @note Check the return against `GetCategoricalColumns().cend()`
-             to confirm that the column was found prior to using it.*/
+                to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetCategoricalColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetCategoricalColumns().cbegin(),
@@ -842,9 +871,9 @@ namespace Wisteria::Data
         /** @brief Gets an iterator to a date column by name.
             @param columnName The name of the date column to look for.
             @returns An iterator to the group column if found,
-             `GetDateColumns().cend()` otherwise.
+                `GetDateColumns().cend()` otherwise.
             @note Check the return against `GetDateColumns().cend()`
-             to confirm that the column was found prior to using it.*/
+                to confirm that the column was found prior to using it.*/
         [[nodiscard]] const auto GetDateColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetDateColumns().cbegin(),
@@ -888,7 +917,7 @@ namespace Wisteria::Data
                 `GetContinuousColumns().end()` otherwise.
             @note Check the return against `GetContinuousColumns().cend()`
                 to confirm that the column was found prior to using it.*/
-        [[nodiscard]] const auto GetContinuousColumn(const wxString& columnName) const noexcept
+        [[nodiscard]] ContinuousColumnConstIterator GetContinuousColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetContinuousColumns().cbegin(),
                 GetContinuousColumns().cend(),
@@ -902,7 +931,7 @@ namespace Wisteria::Data
             @note Check the return against `GetContinuousColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetContinuousColumns() unless you need to edit the column.*/
-        [[nodiscard]] auto GetContinuousColumnWritable(const wxString& columnName) noexcept
+        [[nodiscard]] ContinuousColumnIterator GetContinuousColumnWritable(const wxString& columnName) noexcept
             {
             return std::find_if(GetContinuousColumns().begin(),
                 GetContinuousColumns().end(),
@@ -1146,6 +1175,33 @@ namespace Wisteria::Data
         void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
             { m_importContinousMDRecodeValue = recodeVal; }
     private:
+        /// @brief Resizes the data.
+        /// @param rowCount The number of rows to set the dataset to. If increasing the
+        ///     number or rows, new rows will be filled with missing data. If decreasing the
+        ///     number of rows, then the data will be truncated.
+        /// @warning Prefer using Reserve() and AddRow() to allocate memory and to write
+        ///     data to the dataset. This should only be used if directly editing the data
+        ///     in a friend class.
+        void Resize(const size_t rowCount)
+            {
+            m_idColumn.Resize(rowCount, wxEmptyString);
+            for (auto& column : m_dateColumns)
+                { column.Resize(rowCount, wxInvalidDateTime); }
+            for (auto& column : m_categoricalColumns)
+                {
+                auto MDCode = column.FindMissingDataCode();
+                if (!MDCode.has_value())
+                    {
+                    column.GetStringTable().insert(
+                        std::make_pair(column.GetNextKey(), wxEmptyString));
+                    MDCode = column.FindMissingDataCode();
+                    wxASSERT_MSG(MDCode, L"Error creating MD label when resizing column!");
+                    }
+                column.Resize(rowCount, MDCode.value_or(0) );
+                }
+            for (auto& column : m_continuousColumns)
+                { column.Resize(rowCount, std::numeric_limits<double>::quiet_NaN()); }
+            }
         /// @returns The specified continuous column by name or index.
         [[nodiscard]] ContinuousColumnConstIterator
             GetContinuousColumn(const std::variant<wxString, size_t>& column) const noexcept
