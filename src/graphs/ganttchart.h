@@ -318,11 +318,6 @@ namespace Wisteria::Graphs
             }
         void Calculate();
         void RecalcSizes(wxDC& dc) final;
-        
-        /// @brief Get the color scheme used for the boxes.
-        /// @returns The color scheme used for the boxes.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
 
         std::vector<TaskInfo> m_tasks;
         TaskLabelDisplay m_labelDisplay{ TaskLabelDisplay::Days };
@@ -334,8 +329,6 @@ namespace Wisteria::Graphs
 
         std::map<wxString, wxColour, Data::StringCmpNoCase> m_legendLines;
         wxString m_legendTitle;
-
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         };
     }
 

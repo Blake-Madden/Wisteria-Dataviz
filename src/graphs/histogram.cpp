@@ -611,7 +611,7 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::SquareIcon, *wxBLACK,
+                    LegendIcon(IconShape::Square, *wxBLACK,
                         GetColorScheme()->GetColor(groupId)));
             }
         if (options.IsIncludingHeader())

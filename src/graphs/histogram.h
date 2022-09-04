@@ -192,9 +192,9 @@ namespace Wisteria::Graphs
         explicit Histogram(Wisteria::Canvas* canvas,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
             Wisteria::Graphs::BarChart(canvas),
-            m_data(nullptr),
-            m_colorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme())
+            m_data(nullptr)
             {
+            SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
             GetBarAxis().GetGridlinePen() = wxNullPen;
             // doesn't make sense to show these on a histogram
             GetBarAxis().GetGridlinePen() = wxNullPen;
@@ -301,13 +301,6 @@ namespace Wisteria::Graphs
                    GetBinningMethod() == BinningMethod::BinUniqueValues &&
                    !IsShowingFullRangeOfValues(); }
     private:
-        /// @brief Get the color scheme used for the points.
-        /// @returns The color scheme used for the points.
-        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
-            { return m_colorScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
         /// @returns The maximum number of bins that the histogram will create when binning the data.
         [[nodiscard]] size_t GetMaxNumberOfBins() const noexcept
             { return m_maxBinCount; }
@@ -396,7 +389,6 @@ namespace Wisteria::Graphs
         size_t m_maxBinCount{ 255 };
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
         std::optional<double> m_startBinsValue{ std::nullopt };
         bool m_useGrouping{ false };
         std::set<Data::GroupIdType> m_groupIds;

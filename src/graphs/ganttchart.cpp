@@ -18,10 +18,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     GanttChart::GanttChart(Wisteria::Canvas* canvas,
         std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/) :
-        BarChart(canvas),
-        m_colorScheme(colors != nullptr ? colors :
-            Settings::GetDefaultColorScheme())
+        BarChart(canvas)
         {
+        SetColorScheme(colors != nullptr ? colors : Settings::GetDefaultColorScheme());
         SetBarOrientation(Orientation::Horizontal);
         GetRightYAxis().Show(false);
         GetScalingAxis().Show(false);
@@ -403,7 +402,7 @@ namespace Wisteria::Graphs
                 }
             legendText.append(currentLabel.c_str()).append(L"\n");
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::SquareIcon,
+                    LegendIcon(IconShape::Square,
                         legendLine.second,
                         legendLine.second));
             ++lineCount;

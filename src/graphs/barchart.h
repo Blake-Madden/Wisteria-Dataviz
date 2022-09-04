@@ -870,6 +870,30 @@ namespace Wisteria::Graphs
         void AddBarGroup(BarGroup&& barGroup)
             { m_barGroups.emplace_back(barGroup); }
     protected:
+        /// @brief Get the color scheme used for the bars.
+        /// @returns The color scheme used for the bars.
+        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
+            { return m_colorScheme; }
+        /// @private
+        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
+            { return m_colorScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.*/
+        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
+            { m_colorScheme = colors; }
+
+        /// @brief Get the brush scheme used for the bars.
+        /// @returns The brush scheme used for the bars.
+        [[nodiscard]] std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() noexcept
+            { return m_brushScheme; }
+        /// @private
+        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
+            { return m_brushScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.*/
+        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
+            { m_brushScheme = colors; }
+        
         /// @brief Updates the label at the top (or right) of a bar.
         ///     This is controlled by the current bin label display and will update it accordingly.
         /// @param bar The bar to update.
@@ -914,6 +938,9 @@ namespace Wisteria::Graphs
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
+        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
+        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
+
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
         double m_highestBarAxisPosition{ std::numeric_limits<double>::lowest() };
