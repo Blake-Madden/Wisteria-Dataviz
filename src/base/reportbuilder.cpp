@@ -1956,7 +1956,7 @@ namespace Wisteria
         const size_t originalRowCount = table->GetRowCount();
 
         // loads the positions from a row or column stops array
-        const auto loadStops = [this, &originalColumnCount, &originalRowCount](const auto& stopsNode)
+        const auto loadStops = [this, &originalColumnCount, &originalRowCount, &table](const auto& stopsNode)
             {
             std::set<size_t> rowOrColumnStops;
             const auto stops = stopsNode->GetValueArrayObject();
@@ -1965,8 +1965,8 @@ namespace Wisteria
                 for (const auto& stop : stops)
                     {
                     const std::optional<size_t> stopPosition =
-                        LoadPosition(stop->GetProperty(L"position"),
-                            originalColumnCount, originalRowCount);
+                        LoadTablePosition(stop->GetProperty(L"position"),
+                            originalColumnCount, originalRowCount, table);
                     if (stopPosition.has_value())
                         { rowOrColumnStops.insert(stopPosition.value()); }
                     }
@@ -1981,8 +1981,8 @@ namespace Wisteria
             for (const auto& rowAddCommand : rowAddCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(rowAddCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(rowAddCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
                 if (!position.has_value())
                     { continue; }
                 table->InsertRow(position.value());
@@ -2008,8 +2008,8 @@ namespace Wisteria
             for (const auto& rowColorCommand : rowColorCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(rowColorCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(rowColorCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
                 const wxColour bgcolor(
                     ConvertColor(rowColorCommand->GetProperty(L"background")->GetValueString()));
                 const std::set<size_t> colStops =
@@ -2029,8 +2029,8 @@ namespace Wisteria
             for (const auto& rowContentCommand : rowContentCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(rowContentCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(rowContentCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
                 if (!position.has_value())
                     { continue; }
                 const auto hPageAlignment =
@@ -2067,8 +2067,8 @@ namespace Wisteria
             for (const auto& colColorCommand : colColorCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(colColorCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(colColorCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
                 const wxColour bgcolor(
                     ConvertColor(colColorCommand->GetProperty(L"background")->GetValueString()));
                 const std::set<size_t> rowStops =
@@ -2086,8 +2086,8 @@ namespace Wisteria
             for (const auto& columnBordersCommand : columnBordersCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(columnBordersCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(columnBordersCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
                 const auto borderFlags =
                     columnBordersCommand->GetProperty(L"borders")->GetValueArrayBool();
 
@@ -2113,8 +2113,8 @@ namespace Wisteria
             for (const auto& columnHighlightsCommand : columnHighlightsCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadPosition(columnHighlightsCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(columnHighlightsCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
 
                 std::set<size_t> rowStops =
                     loadStops(columnHighlightsCommand->GetProperty(L"stops"));
@@ -2136,12 +2136,12 @@ namespace Wisteria
 
                 // starting column/row
                 const std::optional<size_t> startColumn =
-                    LoadPosition(columnAggregate->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(columnAggregate->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount, table);
                 // ending column/row
                 const std::optional<size_t> endingColumn =
-                    LoadPosition(columnAggregate->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount);
+                    LoadTablePosition(columnAggregate->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount, table);
 
                 const wxColour bkColor(
                     ConvertColor(columnAggregate->GetProperty(L"background")->GetValueString()));
@@ -2196,13 +2196,13 @@ namespace Wisteria
                 // last column and row will be the last aggregates at this point
                 // (if applicable)
                 const std::optional<size_t> rowPosition =
-                    LoadPosition(cellUpdate->GetProperty(L"row"),
+                    LoadTablePosition(cellUpdate->GetProperty(L"row"),
                         table->GetColumnCount(),
-                        table->GetRowCount());
+                        table->GetRowCount(), table);
                 const std::optional<size_t> columnPosition =
-                    LoadPosition(cellUpdate->GetProperty(L"column"),
+                    LoadTablePosition(cellUpdate->GetProperty(L"column"),
                         table->GetColumnCount(),
-                        table->GetRowCount());
+                        table->GetRowCount(), table);
                 Table::TableCell* currentCell =
                     ((rowPosition.has_value() && columnPosition.has_value() &&
                       rowPosition.value() < table->GetRowCount() &&
@@ -2927,17 +2927,15 @@ namespace Wisteria
         // see if it is one of our defined colors
         auto foundPos = values.find(std::wstring_view(colorStr.MakeLower().wc_str()));
         if (foundPos != values.cend())
-            {
-            return Colors::ColorBrewer::GetColor(foundPos->second);
-            }
+            { return Colors::ColorBrewer::GetColor(foundPos->second); }
 
         // otherwise, load it with wx (which will support hex coded values and other names)
         return wxColour(colorStr);
         }
 
     //---------------------------------------------------
-    std::optional<size_t> ReportBuilder::LoadPosition(const wxSimpleJSON::Ptr_t& positionNode,
-        const size_t columnCount, const size_t columnRow)
+    std::optional<size_t> ReportBuilder::LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
+        const size_t columnCount, const size_t columnRow, std::shared_ptr<Graphs::Table> table)
         {
         std::optional<size_t> position;
         const auto origin = positionNode->GetProperty(L"origin");
@@ -2945,10 +2943,19 @@ namespace Wisteria
             {
             if (origin->IsValueString())
                 {
-                if (origin->GetValueString().CmpNoCase(L"last-column") == 0)
+                const auto originStr{ origin->GetValueString() };
+                if (originStr.CmpNoCase(L"last-column") == 0)
                     { position = columnCount-1; }
-                else if (origin->GetValueString().CmpNoCase(L"last-row") == 0)
+                else if (originStr.CmpNoCase(L"last-row") == 0)
                     { position = columnRow-1; }
+                else if (const auto colPos = (table ? table->FindColumnIndex(originStr) : std::nullopt);
+                         colPos.has_value())
+                    { return colPos; }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(_(L"%s: unknown table position origin value."), originStr).ToUTF8());
+                    }
                 }
             else if (origin->IsValueNumber())
                 { position = origin->GetValueNumber(); }

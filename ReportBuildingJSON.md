@@ -170,7 +170,7 @@ Properties for the @c "datasets" node:
   If pivoting wider, the following options are available:
   - @c "id-columns": an array of strings representing the ID columns.
   - @c "names-from-column": a strings representing the 'names from'.
-  - @c "values-from-columns": an array of strings representing the 'falues from' columns.
+  - @c "values-from-columns": an array of strings representing the 'values from' columns.
   - @c "names-separator": If multiple value columns are provided, then this separator will
        join the label from @c namesFromColumn and the value column name.
   - @c "names-prefix": string to prepend to newly created pivot columns.
@@ -432,7 +432,7 @@ Properties for @c "shape" nodes:
 Properties for @c "table" nodes:
 - @c "variables": an array of column names to use from the dataset.\n
   These values can also be variable selection formulas, including the following:
-  - ``{{contains(`value`)}}``: where @c value will be the search pattern, and any column
+  - ``{{contains(`value`)}}``: where @c value will be the search string, and any column
       in the dataset that contains this text will be included.
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
@@ -554,7 +554,8 @@ The remaining properties are executed in the following order:
 Properties for row or column positions:
 - @c "origin": this is either the zero-based index of the row/column, or a string.\n
      The string values available are @c "last-row" or @c "last-column",
-     which will be interpreted as the last row or column in the data, respectively.
+     which will be interpreted as the last row or column in the data, respectively.\n
+     Column names from the dataset can also be used if looking for a column position.
 - @c "offset": a numeric value combined with the value for @c "origin".\n
      This is optional and is useful for when @c "origin" is interpreted at runtime.\n
      For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will

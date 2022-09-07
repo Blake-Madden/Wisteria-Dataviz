@@ -1374,6 +1374,23 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::optional<size_t> Table::FindColumnIndex(const wxString& textToFind)
+        {
+        if (m_table.size() == 0)
+            { return std::nullopt; }
+
+        auto row{ m_table[0]};
+        for (size_t i = 0; i < row.size(); ++i)
+            {
+            if (row[i].IsText() &&
+                row[i].GetDisplayValue().CmpNoCase(textToFind) == 0)
+                { return i; }
+            }
+
+        return std::nullopt;
+        }
+
+    //----------------------------------------------------------------
     void Table::AddFootnote(const wxString& cellValue, const wxString& footnote)
         {
         m_footnotes.push_back(footnote);

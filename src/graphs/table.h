@@ -934,10 +934,15 @@ namespace Wisteria::Graphs
             @param textToFind The text to search for.
             @returns A pointer to the first cell that matches the text, or null if not found.*/
         [[nodiscard]] TableCell* FindCell(const wxString& textToFind);
+
+        /** @brief Searches for the first cell whose content matches the provided text in the first row.
+            @param textToFind The text to search for.
+            @returns The index of the column, or @c std::nullopt if not found.*/
+        [[nodiscard]] std::optional<size_t> FindColumnIndex(const wxString& textToFind);
         /// @}
 
         /** @brief Adds a footnote to the table.
-            @param cellValue The value to look for in the table, which will have a number added after it.
+            @param cellValue The value to look for in the tab3le, which will have a number added after it.
             @param footnote The respective footnote to add to the caption.
             @note Up to nine footnotes are supported.
             @warning Adding a footnote will overwrite the existing caption.*/
