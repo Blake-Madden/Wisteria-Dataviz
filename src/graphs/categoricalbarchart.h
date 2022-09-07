@@ -82,7 +82,7 @@ namespace Wisteria::Graphs
                 to render the bars with.
             @param colors The color scheme to apply to the bars underneath the bars' brush patterns.\n
                 This is useful if using a hatched brush, as this color will be solid
-                and show underneath it. Leave as null just use the brush scheme.*/
+                and show underneath it. Leave as null just to use the brush scheme.*/
         explicit CategoricalBarChart(Wisteria::Canvas* canvas,
                            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :

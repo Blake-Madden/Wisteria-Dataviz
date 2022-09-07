@@ -94,14 +94,18 @@ namespace Wisteria::Icons
         /** @brief Constructor.
             @param icon The icon type.
             @param pen The pen to outline the icon with.
-            @param brush The brush to paint with.*/
-        LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush) :
-            m_shape(icon), m_pen(pen), m_brush(brush), m_img(wxNullImage)
+            @param brush The brush to paint with.
+            @param color A color to show under the brush (if it is a hatch pattern, for example).*/
+        LegendIcon(const IconShape icon, const wxPen& pen, const wxBrush& brush,
+                   std::optional<wxColour> color = std::nullopt) :
+            m_shape(icon), m_pen(pen), m_brush(brush), m_baseColor(color), m_img(wxNullImage)
             {}
 
         IconShape m_shape{ IconShape::Blank }; /*!< The icon type.*/
         wxPen m_pen;                           /*!< The pen to draw with.*/
         wxBrush m_brush;                       /*!< The brush to paint with.*/
+        /// @brief A color to show under the brush if it is hatch pattern.
+        std::optional<wxColour> m_baseColor{ std::nullopt };
         /// @brief The image to draw (if shape is set to ImageIcon).
         wxImage m_img;
         /// @brief The color gradient to draw (if shape is set to @c ColorGradientIcon).

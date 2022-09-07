@@ -62,8 +62,21 @@ namespace Wisteria::Graphs
             {
             // make reverse string table, sorted by label
             std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-            for (const auto& [id, str] : m_groupColumn->GetStringTable())
-                { groups.insert(std::make_pair(str, id)); }
+            if (m_groupColumn->GetStringTable().size())
+                {
+                for (const auto& [id, str] : m_groupColumn->GetStringTable())
+                    { groups.insert(std::make_pair(str, id)); }
+                }
+            // if no string table, then it's just discrete values;
+            // make a reverse "string table" from that
+            else
+                {
+                for (size_t i = 0; i < m_groupColumn->GetRowCount(); ++i)
+                    {
+                    groups.insert(std::make_pair(m_groupColumn->GetValueAsLabel(i),
+                                                 m_groupColumn->GetValue(i)));
+                    }
+                }
             // build a list of group IDs and their respective strings' alphabetical order
             size_t currentIndex{ 0 };
             for (auto& group : groups)
@@ -242,7 +255,10 @@ namespace Wisteria::Graphs
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::Square, *wxBLACK,
-                        GetBrushScheme()->GetBrush(groupId.first).GetColour()));
+                        GetBrushScheme()->GetBrush(groupId.first),
+                        GetColorScheme() ?
+                            std::optional<wxColour>(GetColorScheme()->GetColor(groupId.first)) :
+                            std::nullopt));
             ++lineCount;
             }
 

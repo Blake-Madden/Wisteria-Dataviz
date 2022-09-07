@@ -795,6 +795,15 @@ namespace Wisteria
                 m_selectionBrush = selectionBrush;
                 return *this;
                 }
+            /// @brief Sets the base color, painted underneath the brush.
+            /// @details This is useful if the brush is a hatch pattern.
+            /// @param color The base color.
+            /// @returns A self reference.
+            GraphItemInfo& BaseColor(const std::optional<wxColour>& color)
+                {
+                m_baseColor = color;
+                return *this;
+                }
             /// @brief Sets the scaling.
             /// @param scaling The object's scaling.
             /// @returns A self reference.
@@ -961,6 +970,9 @@ namespace Wisteria
             /// @returns The brush.
             [[nodiscard]] const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
+            /// @returns The base color.
+            [[nodiscard]] const std::optional<wxColour>& GetBaseColor() const noexcept
+                { return m_baseColor; }
             /// @returns The pen.
             [[nodiscard]] const wxPen& GetPen() const noexcept
                 { return m_pen; }
@@ -989,6 +1001,8 @@ namespace Wisteria
             wxPen m_pen{ *wxBLACK_PEN };
             wxBrush m_brush{ *wxWHITE_BRUSH };
             wxBrush m_selectionBrush{ wxNullBrush };
+            /// @brief A color to show under the brush if it is hatch pattern.
+            std::optional<wxColour> m_baseColor{ std::nullopt };
             Wisteria::Anchoring m_anchoring{ Anchoring::Center };
             LabelFit m_labelFit{ LabelFit::DisplayAsIsAutoFrame };
             Wisteria::Orientation m_orientation{ Orientation::Horizontal };

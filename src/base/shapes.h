@@ -147,6 +147,9 @@ namespace Wisteria::GraphItems
         void DrawImage(wxRect rect, wxDC& dc, const wxBitmapBundle* img);
         /// @}
     private:
+        /// @brief Sets the base color (if in use), performs the provided rendering lambda,
+        ///     sets the brush, then runs the rendering lambda again.
+        void DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn);
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside of the rect.

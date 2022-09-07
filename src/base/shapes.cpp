@@ -205,6 +205,18 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn)
+        {
+        if (GetGraphItemInfo().GetBaseColor())
+            {
+            wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBaseColor().value());
+            fn();
+            }
+        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        fn();
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawCircularSign(const wxRect rect, wxDC& dc)
         {
         wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
@@ -355,7 +367,6 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
         
         // whisker
         dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
@@ -374,9 +385,9 @@ namespace Wisteria::GraphItems
                     wxPoint(rect.GetLeft()+(rect.GetWidth()/2) +
                                 rect.GetWidth()/4,
                             rect.GetBottom()));
-        rect.y += (rect.GetHeight()/2)-(rect.GetHeight()/4); // center
+        rect.y += (rect.GetHeight()/2) - (rect.GetHeight()/4); // center
         rect.SetHeight(rect.GetHeight()/2);
-        dc.DrawRectangle(rect);
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawRectangle(rect); });
         // median line
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() +
                             (rect.GetHeight()/2)),
@@ -391,8 +402,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
-        dc.DrawRectangle(rect);
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawRectangle(rect); });
         }
 
     //---------------------------------------------------
@@ -402,8 +412,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
-        dc.DrawCircle(GetMidPoint(rect), GetRadius(rect));
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawCircle(GetMidPoint(rect), GetRadius(rect)); });
         }
 
     //---------------------------------------------------
@@ -413,7 +422,6 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -426,7 +434,7 @@ namespace Wisteria::GraphItems
             midPoint + wxPoint(-iconRadius, 0)
             };
         
-        dc.DrawPolygon(points.size(), &points[0]);
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------
@@ -631,14 +639,17 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
-
-        Polygon::DrawArrow(dc,
+        DrawWithBaseColorAndBrush(dc,
+            [&]()
+            {
+            Polygon::DrawArrow(dc,
                 wxPoint(rect.GetLeft(), rect.GetTop()+rect.GetHeight()/2),
                 wxPoint(rect.GetRight(), rect.GetTop()+rect.GetHeight()/2),
                 wxSize(
                     ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetWidth()),
                     ScaleToScreenAndCanvas(LegendIcon::GetArrowheadSizeDIPs().GetHeight())) );
+            }
+            );
         }
 
     //---------------------------------------------------
@@ -648,7 +659,6 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -662,7 +672,8 @@ namespace Wisteria::GraphItems
             midPoint + wxPoint(iconRadius, 0),
             midPoint + wxPoint(iconRadius / 2, -iconRadius)
             };
-        dc.DrawPolygon(points.size(), &points[0]);
+
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------
@@ -672,16 +683,18 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points;
-        points[0] = midPoint + wxPoint(0, -iconRadius);
-        points[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-        points[2] = midPoint + wxPoint(iconRadius, iconRadius);
-        dc.DrawPolygon(points.size(), &points[0]);
+        const std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(0, -iconRadius),
+            midPoint + wxPoint(-iconRadius, iconRadius),
+            midPoint + wxPoint(iconRadius, iconRadius)
+            };
+
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------
@@ -696,11 +709,14 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points;
-        points[0] = midPoint + wxPoint(0, iconRadius);
-        points[1] = midPoint + wxPoint(-iconRadius, -iconRadius);
-        points[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-        dc.DrawPolygon(points.size(), &points[0]);
+        std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(0, iconRadius),
+            midPoint + wxPoint(-iconRadius, -iconRadius),
+            midPoint + wxPoint(iconRadius, -iconRadius)
+            };
+
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------
@@ -715,11 +731,14 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points;
-        points[0] = midPoint + wxPoint(iconRadius, 0);
-        points[1] = midPoint + wxPoint(-iconRadius, iconRadius);
-        points[2] = midPoint + wxPoint(-iconRadius, -iconRadius);
-        dc.DrawPolygon(points.size(), &points[0]);
+        std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(iconRadius, 0),
+            midPoint + wxPoint(-iconRadius, iconRadius),
+            midPoint + wxPoint(-iconRadius, -iconRadius)
+            };
+
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------
@@ -734,11 +753,14 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points;
-        points[0] = midPoint + wxPoint(-iconRadius, 0);
-        points[1] = midPoint + wxPoint(iconRadius, iconRadius);
-        points[2] = midPoint + wxPoint(iconRadius, -iconRadius);
-        dc.DrawPolygon(points.size(), &points[0]);
+        std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(-iconRadius, 0),
+            midPoint + wxPoint(iconRadius, iconRadius),
+            midPoint + wxPoint(iconRadius, -iconRadius)
+            };
+
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
         }
 
     //---------------------------------------------------

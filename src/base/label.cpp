@@ -853,6 +853,7 @@ namespace Wisteria::GraphItems
                         GraphItemInfo().
                         Pen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen()).
                         Brush(iconPos->m_brush.IsOk() ? iconPos->m_brush : GetBrush()).
+                        BaseColor(iconPos->m_baseColor).
                         Anchoring(Anchoring::TopLeftCorner).
                         Scaling(GetScaling()).
                         DPIScaling(GetDPIScaleFactor()),
