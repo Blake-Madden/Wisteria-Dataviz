@@ -82,7 +82,7 @@ namespace Wisteria::GraphItems
             { m_midPointLabelDisplay = blDisplay; }
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
-        ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1 would be the outer
+        ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1.0 would be the outer
         ///     arc of the pie.
         [[nodiscard]] std::pair<double, double> GetMiddleOfArc(const double pieProportion) const noexcept;
         /// @returns The middle point of the outer rim of the slice's arc.
@@ -121,7 +121,7 @@ namespace Wisteria::GraphItems
         double m_startAngle{ 0 };
         double m_endAngle{ 0 };
         double m_value{ 0 };
-        double m_percent{ 0 };
+        double m_percent{ math_constants::empty };
 
         std::optional<wxPen> m_arcPen;
         std::optional<BinLabelDisplay> m_midPointLabelDisplay;
@@ -359,7 +359,7 @@ namespace Wisteria::Graphs
             bool m_ghost{ false };
             bool m_showText{ true };
             double m_value{ 0.0 };
-            double m_percent{ 0.0 };
+            double m_percent{ math_constants::empty };
             size_t m_parentSliceIndex{ 0 };
             std::optional<BinLabelDisplay> m_midPointLabelDisplay;
             };
@@ -387,7 +387,7 @@ namespace Wisteria::Graphs
             @param groupColumn1Name The main grouping ring.
             @param groupColumn2Name The (optional) second grouping ring.\n
                 This inner ring will be shown as subgroups within each slice
-                within the (parent) outer ring.
+                along the (parent) outer ring.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
