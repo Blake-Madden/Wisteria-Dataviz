@@ -476,19 +476,8 @@ namespace Wisteria::Graphs
                             
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
-                            // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
-                            else if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
-                                (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
-                                { box->GetPen().SetColour(wxTransparentColour); }
-                            // if block's color is similar to the plot's background color,
-                            // then draw a contrasting pen around it
-                            else if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
-                                { box->GetPen().SetColour(ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour())); }
-                            else if (m_includeSpacesBetweenBars)
-                                { box->GetPen().SetColour(barBlock.GetBrush().GetColour()); }
-                            // if no spaces between bars, then draw black outline
                             else
-                                { box->GetPen().SetColour(*wxBLACK); }
+                                { box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK); }
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -511,7 +500,7 @@ namespace Wisteria::Graphs
                                 {
                                 box->SetBackgroundFill(
                                     Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(barBlock.GetColor());
+                                box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
                                 }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
@@ -798,22 +787,12 @@ namespace Wisteria::Graphs
                             wxASSERT_LEVEL_2(box);
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
-                            // if brush (and possibly color) are explicitly transparent, then don't drawn an outline
-                            else if (barBlock.GetBrush().GetColour().GetAlpha() == wxALPHA_TRANSPARENT &&
-                                (!barBlock.GetColor().IsOk() || barBlock.GetColor().GetAlpha() == wxALPHA_TRANSPARENT))
-                                { box->GetPen().SetColour(wxTransparentColour); }
-                            // if block's color is similar to the plot's background color,
-                            // then draw a contrasting pen around it
-                            else if (ColorContrast::AreColorsClose(barBlock.GetBrush().GetColour(), GetBackgroundColor()))
+                            else
                                 {
                                 box->GetPen().SetColour(
-                                    ColorContrast::BlackOrWhiteContrast(barBlock.GetBrush().GetColour()));
+                                    ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
                                 }
-                            else if (m_includeSpacesBetweenBars)
-                                { box->GetPen().SetColour(barBlock.GetBrush().GetColour()); }
-                            // if no spaces between bars, then draw black outline
-                            else
-                                { box->GetPen().SetColour(*wxBLACK); }
+
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -836,7 +815,7 @@ namespace Wisteria::Graphs
                                 {
                                 box->SetBackgroundFill(
                                     Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(barBlock.GetColor());
+                                box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
                                 }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
