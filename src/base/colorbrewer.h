@@ -26,11 +26,11 @@ namespace Wisteria::Colors
     {
     /** @brief List of colors to use with ColorBrewer::GetColor().
         @details This list was adapted from <a href='https://www.colorhexa.com'>www.colorhexa.com</a>,
-         <a href='https://www.canva.com'>www.canva.com</a>, and Sherman-Williams.
+            <a href='https://www.canva.com'>www.canva.com</a>, and Sherman-Williams.
         @internal WARNING for developer:
-         Do not edit this enumeration without updating the color list in ColorBrewer.
-         This enum and color list are generated from an R script (tools/Build Color List.R);
-         use that instead of manually updating this.*/
+            Do not edit this enumeration without updating the color list in ColorBrewer.
+            This enum and color list are generated from an R script (tools/Build Color List.R);
+            use that instead of manually updating this.*/
     enum class Color
         {
         Afternoon,             ///< \htmlonly <div style='background-color:#FBCB78; width:50px;'>&nbsp;</div> \endhtmlonly
@@ -558,7 +558,7 @@ namespace Wisteria::Colors
 
     /** @brief Constructs a color scale for a given range of values.
         @details Brews values within that range to a color representing its
-         position on the color scale.
+            position on the color scale.
 
         @code
          using namespace Wisteria::Colors;
@@ -623,12 +623,12 @@ namespace Wisteria::Colors
             }
         /** @brief Converts a range of numbers into a sequence of color values.
             @details The color values for each number represent where it falls on the color scale,
-             relative to the overall range of values.
+                relative to the overall range of values.
             @param start The start of the data.
             @param end The end of the data.
             @returns A vector of colors respective to each value in the data.
             @note Any NaN values in the range will be mapped to an invalid `wxColour`,
-             so be sure to call `IsOk()` when using the returned colors.*/
+                so be sure to call `IsOk()` when using the returned colors.*/
         template<typename T>
         [[nodiscard]] std::vector<wxColour> BrewColors(const T start, const T end)
             {
@@ -644,11 +644,11 @@ namespace Wisteria::Colors
             }
         /** @brief Converts a range of numbers into a sequence of color values.
             @details The color values for each number represent where it falls on the color scale,
-             relative to the overall range of values.
+                relative to the overall range of values.
             @param values The data to convert into a series of colors.
             @returns A vector of colors respective to each value in the data.
             @note Any NaN values in the range will be mapped to an invalid `wxColour`,
-             so be sure to call `IsOk()` when using the returned colors.*/
+                so be sure to call `IsOk()` when using the returned colors.*/
         template<typename T>
         [[nodiscard]] std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
             {
@@ -692,7 +692,7 @@ namespace Wisteria::Colors
     public:
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
-        ColorContrast(const wxColour& color) : m_baseColor(color) {}
+        explicit ColorContrast(const wxColour& color) : m_baseColor(color) {}
         /// @returns A variation of @c color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
@@ -812,26 +812,26 @@ namespace Wisteria::Colors
                 { return m_colors; }
             /** @brief Gets the color from a given index.
                 @param index The index into the color list to return.
-                 If index is outside of the color scheme but within double the size of the scheme,
-                 then scheme will "wrap around" and return a shaded or tinted version.
-                 If outside of twice the number of colors, then returns black.
+                    If index is outside of the color scheme but within double the size of the scheme,
+                    then scheme will "wrap around" and return a shaded or tinted version.
+                    If outside of twice the number of colors, then returns white.
 
-                 For example, if you have 8 colors and pass in an index of 7,
-                 then it will return the last color.\n
-                 If you pass in index 9, then will return a shaded/tinted version
-                 of the second color.\n
-                 Index 15 will return a shaded/tinted version of the last color,
-                 and index 16 will return black.
+                    For example, if you have 8 colors and pass in an index of 7,
+                    then it will return the last color.\n
+                    If you pass in index 9, then will return a shaded/tinted version
+                    of the second color.\n
+                    Index 15 will return a shaded/tinted version of the last color,
+                    and index 16 will return white.
                 @returns The color from a given index.*/
             [[nodiscard]] wxColour GetColor(const size_t index) const
                 {
                 return (m_colors.size() == 0) ?
-                    *wxBLACK :
+                    *wxWHITE :
                     (index < m_colors.size()) ?
                     m_colors.at(index) :
                     (index < m_colors.size()*2) ?
                     ColorContrast::ShadeOrTint(m_colors.at(index % m_colors.size())) :
-                    *wxBLACK;
+                    *wxWHITE;
                 }
             /** @brief Gets the color from a given index and applies an opacity value to it.
                 @param index The index into the color list to return.
