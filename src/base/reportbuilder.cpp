@@ -124,6 +124,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadPieChart(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"histogram") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadHistogram(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"categorical-bar-chart") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -311,6 +316,54 @@ namespace Wisteria
         const auto foundValue = boxEffects.find(value.Lower().ToStdWstring());
         return ((foundValue != boxEffects.cend()) ?
             std::optional<BoxEffect>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<Histogram::BinningMethod> ReportBuilder::ConvertBinningMethod(const wxString& value)
+        {
+        static const std::map<std::wstring, Histogram::BinningMethod> binMethods =
+            {
+            { L"bin-by-integer-range", Histogram::BinningMethod::BinByIntegerRange },
+            { L"bin-by-range", Histogram::BinningMethod::BinByRange },
+            { L"bin-unique-values", Histogram::BinningMethod::BinUniqueValues }
+            };
+
+        const auto foundValue = binMethods.find(value.Lower().ToStdWstring());
+        return ((foundValue != binMethods.cend()) ?
+            std::optional<Histogram::BinningMethod>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<Histogram::IntervalDisplay> ReportBuilder::ConvertIntervalDisplay(const wxString& value)
+        {
+        static const std::map<std::wstring, Histogram::IntervalDisplay> binIntervals =
+            {
+            { L"cutpoints", Histogram::IntervalDisplay::Cutpoints },
+            { L"midpoints", Histogram::IntervalDisplay::Midpoints }
+            };
+
+        const auto foundValue = binIntervals.find(value.Lower().ToStdWstring());
+        return ((foundValue != binIntervals.cend()) ?
+            std::optional<Histogram::IntervalDisplay>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<RoundingMethod> ReportBuilder::ConvertRoundingMethod(const wxString& value)
+        {
+        static const std::map<std::wstring, RoundingMethod> roundingMethods =
+            {
+            { L"no-rounding", RoundingMethod::NoRounding },
+            { L"round", RoundingMethod::Round },
+            { L"round-down", RoundingMethod::RoundDown },
+            { L"round-up", RoundingMethod::RoundUp }
+            };
+
+        const auto foundValue = roundingMethods.find(value.Lower().ToStdWstring());
+        return ((foundValue != roundingMethods.cend()) ?
+            std::optional<RoundingMethod>(foundValue->second) :
             std::nullopt);
         }
 
@@ -691,27 +744,27 @@ namespace Wisteria
             if (paramPartsCount >= 3)
                 {
                 const wxString funcName = re.GetMatch(var, 1).MakeLower();
-                const wxString columnPattern = ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset);
+                const wxString columnPattern = ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset).MakeLower();
 
                 if (funcName.CmpNoCase(L"contains") == 0)
                     {
-                    // get columns that contain the string (case sensitively)
+                    // get columns that contain the string
                     std::vector<wxString> columns;
-                    if (dataset->GetIdColumn().GetName().Contains(columnPattern))
+                    if (dataset->GetIdColumn().GetName().Lower().Contains(columnPattern))
                         { columns.emplace_back(dataset->GetIdColumn().GetName()); }
                     for (const auto& col : dataset->GetCategoricalColumns())
                         {
-                        if (col.GetName().Contains(columnPattern))
+                        if (col.GetName().Lower().Contains(columnPattern))
                             { columns.emplace_back(col.GetName()); }
                         }
                     for (const auto& col : dataset->GetContinuousColumns())
                         {
-                        if (col.GetName().Contains(columnPattern))
+                        if (col.GetName().Lower().Contains(columnPattern))
                             { columns.emplace_back(col.GetName()); }
                         }
                     for (const auto& col : dataset->GetDateColumns())
                         {
-                        if (col.GetName().Contains(columnPattern))
+                        if (col.GetName().Lower().Contains(columnPattern))
                             { columns.emplace_back(col.GetName()); }
                         }
                     return columns;
@@ -1742,6 +1795,73 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadHistogram(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for histogram."),
+                                 dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto contVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+            const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            const auto binMethod = ConvertBinningMethod(
+                graphNode->GetProperty(L"binning-method")->GetValueString());
+
+            const auto binIntervalDisplay = ConvertIntervalDisplay(
+                graphNode->GetProperty(L"interval-display")->GetValueString());
+
+            const auto binLabel = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"bin-label-display")->GetValueString());
+
+            const auto rounding = ConvertRoundingMethod(
+                graphNode->GetProperty(L"rounding")->GetValueString());
+
+            const std::optional<double> startBinsValue = graphNode->GetProperty(L"bins-start")->IsOk() ?
+                std::optional<double>(graphNode->GetProperty(L"bins-start")->GetValueNumber()) :
+                std::nullopt;
+            const std::optional<size_t> suggestedBinCount = graphNode->GetProperty(L"suggested-bin-count")->IsOk() ?
+                std::optional<double>(graphNode->GetProperty(L"suggested-bin-count")->GetValueNumber()) :
+                std::nullopt;
+            const std::optional<size_t> maxBinCount = graphNode->GetProperty(L"max-bin-count")->IsOk() ?
+                std::optional<double>(graphNode->GetProperty(L"max-bin-count")->GetValueNumber()) :
+                std::nullopt;
+
+            auto histo = std::make_shared<Histogram>(canvas,
+                LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
+                
+            LoadBarChart(graphNode, histo);
+
+            histo->SetData(foundPos->second, contVarName,
+                (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
+                binMethod.value_or(Histogram::BinningMethod::BinByIntegerRange),
+                rounding.value_or(RoundingMethod::NoRounding),
+                binIntervalDisplay.value_or(Histogram::IntervalDisplay::Cutpoints),
+                binLabel.value_or(BinLabelDisplay::BinValue),
+                graphNode->GetProperty(L"show-full-range")->GetValueBool(true),
+                startBinsValue, std::make_pair(suggestedBinCount, maxBinCount) );
+
+            return LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for histogram.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadCategoricalBarChart(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
@@ -2156,6 +2276,8 @@ namespace Wisteria
                     { aggInfo.Type(Table::AggregateType::ChangePercent); }
                 else if (aggType.CmpNoCase(L"total") == 0)
                     { aggInfo.Type(Table::AggregateType::Total); }
+                else if (aggType.CmpNoCase(L"ratio") == 0)
+                    { aggInfo.Type(Table::AggregateType::Ratio); }
                 // invalid agg column type
                 else
                     { continue; }

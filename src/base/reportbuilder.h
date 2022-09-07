@@ -21,6 +21,7 @@
 #include "../graphs/lineplot.h"
 #include "../graphs/piechart.h"
 #include "../graphs/categoricalbarchart.h"
+#include "../graphs/histogram.h"
 #include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
@@ -126,8 +127,16 @@ namespace Wisteria
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
-        /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadCategoricalBarChart(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a histogram node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadHistogram(
                         const wxSimpleJSON::Ptr_t& graphNode,
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads base-level settings for bar charts.
@@ -167,18 +176,22 @@ namespace Wisteria
         /// @param brush[in,out] The brush to apply the loaded settings to.
         void LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush);
 
-        /// @brief Loads a row or column position from a node.
+        /// @brief Loads a row or column position for a table from a node.
         /// @details This support loading the @c origin and @c offset properties.
         /// @param positionNode The node to parse.
         /// @param columnCount The column count in the table.\n
         ///     This is what the constant @c "last-column" is expanded into (minus one).
         /// @param columnRow The row count in the table.\n
         ///     This is what the constant @c "last-row" is expanded into (minus one).
+        /// @param table The table being reviewed.
+        /// @note column and row counts should be the table's original column and row
+        ///     counts, prior to any aggregation columns being added.
         /// @returns The row or column position.
-        [[nodiscard]] std::optional<size_t> LoadPosition(
+        [[nodiscard]] std::optional<size_t> LoadTablePosition(
             const wxSimpleJSON::Ptr_t& positionNode,
             const size_t columnCount,
-            const size_t columnRow);
+            const size_t columnRow,
+            std::shared_ptr<Graphs::Table> table);
 
         /// @brief Loads a image node.
         /// @param imageNode The image node to parse.
@@ -236,6 +249,15 @@ namespace Wisteria
         /// @brief Converts a string value to a BinLabelDisplay enum value.
         [[nodiscard]] static std::optional<BinLabelDisplay>
             ConvertBinLabelDisplay(const wxString& value);
+        /// @brief Converts a string value to a Histogram::BinningMethod enum value.
+        [[nodiscard]] static std::optional<Graphs::Histogram::BinningMethod>
+            ConvertBinningMethod(const wxString& value);
+        /// @brief Converts a string value to a Histogram::IntervalDisplay enum value.
+        [[nodiscard]] static std::optional<Graphs::Histogram::IntervalDisplay>
+            ConvertIntervalDisplay(const wxString& value);
+        /// @brief Converts a string value to a RoundingMethod enum value.
+        [[nodiscard]] static std::optional<RoundingMethod>
+            ConvertRoundingMethod(const wxString& value);
         /// @brief Converts a string value to a BoxEffect enum value.
         [[nodiscard]] static std::optional<BoxEffect>
             ConvertBoxEffect(const wxString& value);

@@ -200,6 +200,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
       - ["line-plot"](#line-plot-properties)
       - ["categorical-bar-chart"](#categorical-bar-chart-properties)
       - ["common-axis"](#common-axis-properties)
+      - ["histogram"](#histogram-properties)
       - ["image"](#image-properties)
       - ["label"](#label-properties)
       - ["pie-chart"](#pie-chart-properties)
@@ -286,7 +287,6 @@ Properties for @c "categorical-bar-chart" nodes:
   - @c "fade-from-right-to-left"
   - @c "fade-from-top-to-bottom"
   - @c "glassy"
-  - @c "serpent"
   - @c "solid"
   - @c "stipple"
 - @c "bin-label-display": string specifying how to display labels on the bars.
@@ -311,6 +311,48 @@ Properties for @c "fillable-shape" nodes:
   - @c "height": the height.
 - @c "fill-percent": the percent to fill the shape, which is a number between @c 0.0 and @c 1.0.\n
   This can either be a numeric or a formula reference.
+
+## Histogram {#histogram-properties}
+Properties for @c "histogram" nodes:
+- @c "variables": an item containing the following properties:
+  - @c "aggregate": the continuous data column to aggregate.
+  - @c "group": the grouping column (this is optional).
+- @c "box-effect": string specifying the effects for the bars.
+  Available options are:
+  - @c "common-image"
+  - @c "fade-from-bottom-to-top"
+  - @c "fade-from-left-to-right"
+  - @c "fade-from-right-to-left"
+  - @c "fade-from-top-to-bottom"
+  - @c "glassy"
+  - @c "solid"
+  - @c "stipple"
+- @c "bin-label-display": string specifying how to display labels on the bars.
+  Available options are:
+  - @c "percentage"
+  - @c "value"
+  - @c "value-and-percentage"
+  - @c "no-display"
+  - @c "bin-name"
+- @c "binning-method": string specifying how to sort the data.
+  Available options are:
+  - @c "bin-by-integer-range"
+  - @c "bin-by-range"
+  - @c "bin-unique-values"
+- @c "interval-display": string specifying how to sort the data.
+  Available options are:
+  - @c "cutpoints"
+  - @c "midpoints"
+- @c "rounding": string specifying how to round the data.
+  Available options are:
+  - @c "no-rounding"
+  - @c "round"
+  - @c "round-down"
+  - @c "round-up"
+- @c "bins-start": number specifying where on the X axis to start the bins.
+- @c "suggested-bin-count": number specifying the suggested number of bins.
+- @c "max-bin-count": number specifying the maximumn number of bins.
+- Some base properties available to [graphs](#graph-properties).
 
 ## Image {#image-properties}
 Properties for @c "image" nodes:
