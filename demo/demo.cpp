@@ -435,7 +435,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<Histogram>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::Decade1980s>());
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
 
         plot->SetData(mtcarsData, L"mpg", 
                       // grouping variable, we won't use one here
@@ -486,7 +486,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<Histogram>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::Decade1980s>());
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"cyl",
                       std::nullopt,
@@ -540,7 +540,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
             // turn off markers by using a shape scheme filled with blank icons
             // (having just one icon in this scheme will get recycled for each line)
-            std::make_shared<IconScheme>(IconScheme{IconShape::BlankIcon}));
+            std::make_shared<IconScheme>(IconScheme{ IconShape::Blank }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -594,7 +594,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                      ColorBrewer::GetColor(Colors::Color::GrannySmithApple) }),
             // use custom markers
             std::make_shared<IconScheme>(IconScheme
-                {IconShape::DiamondIcon, IconShape::HexagonIcon }));
+                {IconShape::Diamond, IconShape::Hexagon }));
         // add padding around the plot
         linePlot->SetCanvasMargins(5, 5, 5, 5);
 
@@ -988,7 +988,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::Decade1980s>());
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()));
 
         plot->SetData(mpgData, L"manufacturer");
 
@@ -1018,7 +1018,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto plot = std::make_shared<CategoricalBarChart>(subframe->m_canvas,
-            std::make_shared<Colors::Schemes::Decade1980s>());
+            std::make_shared<Brushes::Schemes::BrushScheme>(Colors::Schemes::Decade1980s()) );
 
         plot->SetData(mpgData, L"manufacturer", std::nullopt, L"class");
         plot->SetBarOpacity(220);
@@ -1671,7 +1671,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto linePlot = std::make_shared<LinePlot>(subframe->m_canvas, colors,
             // use custom markers
             std::make_shared<IconScheme>(IconScheme
-                { IconShape::DiamondIcon, IconShape::HexagonIcon }));
+                { IconShape::Diamond, IconShape::Hexagon }));
 
         // set the data and use the grouping column from the dataset to create separate lines
         linePlot->SetData(spellingData, L"AVG_GRADE", L"WeeK", L"Gender");
