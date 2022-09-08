@@ -2435,6 +2435,50 @@ namespace Wisteria
                 }
             }
 
+        const auto annotationsNode = graphNode->GetProperty(L"cell-annotations")->GetValueArrayObject();
+        if (annotationsNode.size())
+            {
+            for (const auto& annotation : annotationsNode)
+                {
+                Table::CellAnnotation cellAnnotation{ annotation->GetProperty(L"value")->GetValueString() };
+                if (annotation->GetProperty(L"side")->IsOk())
+                    {
+                    cellAnnotation.m_side =
+                        (annotation->GetProperty(L"side")->GetValueString().CmpNoCase(L"left") == 0) ?
+                        Side::Left : Side::Right;
+                    }
+                cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
+                LoadPen(annotation->GetProperty(L"pen"), cellAnnotation.m_connectionLinePen.value());
+                cellAnnotation.m_bgColor = ConvertColor(annotation->GetProperty(L"background")->GetValueString());
+                
+                const auto cellsNode = annotation->GetProperty(L"cells");
+                if (cellsNode->IsOk() && cellsNode->IsValueObject())
+                    {
+                    const auto outliersNode = cellsNode->GetProperty(L"column-outliers");
+                    const auto topNNode = cellsNode->GetProperty(L"column-top-n");
+                    if (outliersNode->IsOk() && outliersNode->IsValueString())
+                        {
+                        const auto colIndex = table->FindColumnIndex(outliersNode->GetValueString());
+                        if (colIndex.has_value())
+                            {
+                            cellAnnotation.m_cells = table->GetOutliers(colIndex.value());
+                            table->AddCellAnnotation(cellAnnotation);
+                            }
+                        }
+                    else if (topNNode->IsOk() && topNNode->IsValueString())
+                        {
+                        const auto colIndex = table->FindColumnIndex(topNNode->GetValueString());
+                        if (colIndex.has_value())
+                            {
+                            cellAnnotation.m_cells = table->GetTopN(colIndex.value(),
+                                                                    cellsNode->GetProperty(L"n")->GetValueNumber(1));
+                            table->AddCellAnnotation(cellAnnotation);
+                            }
+                        }
+                    }
+                }
+            }
+
         // assign footnotes after all cells have been updated
         const auto footnotesNode = graphNode->GetProperty(L"footnotes")->GetValueArrayObject();
         if (footnotesNode.size())
@@ -3536,6 +3580,8 @@ namespace Wisteria
                 {
                 auto label = LoadLabel(annotation->GetProperty(L"label"),
                                        GraphItems::Label());
+                if (!label)
+                    { continue; }
                 // add outline and background color if not provided in config file
                 if (!label->GetPen().IsOk())
                     { label->GetPen() = *wxBLACK_PEN; }

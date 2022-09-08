@@ -581,13 +581,24 @@ The remaining properties are executed in the following order:
     - @c "right-aligned"
     - @c "centered"
   - @c "text-alignment": how to align the cell's text (if multi-line).\n
-       The available options are:
+    The available options are:
     - @c "flush-left" or @c "ragged-right"
     - @c "flush-right" or @c "ragged-left"
     - @c "centered"
     - @c "justified"
+- @c "cell-annotations": an array of cell annotation specifications, which each contain the following properties:
+  - @c "value":
+  - @c "side":
+  - @c "pen":
+  - @c "background":
+  - @c "cells":
+    The available options are:
+    - @c "column-outliers"
+    - @c "column-top-n"
+      The available options are:
+      - @c "n"
 - @c "footnotes": an array of footnote specifications, which each contain the following properties:
-  - @c "value": the cell value to add a footnote number to. Can include ["constants"](#constants-properties).
+  - @c "value": the cell value (as a string) to add a footnote number to. Can include ["constants"](#constants-properties).
   - @c "footnote": the footnote to add to the caption. Can include ["constants"](#constants-properties).
 
 # Base-level Properties
