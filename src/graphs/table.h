@@ -38,9 +38,14 @@ namespace Wisteria::Graphs
             into larger cells, giving the appearance of grouped data
             (see GroupRow() and GroupColumn()).
             Numerous other functions are available for customizing the content and appearance of cells,
-            rows, and columns (e.g., GetCell() or BoldRow()).\n
+            rows, and columns (e.g., GetCell() or BoldRow()). Rows and columns can also be inserted,
+            which can be useful for group separators.\n
             \n
-            Finally, aggregate columns (e.g., subtotals) can be added to the table via InsertAggregateColumn().
+            After the data was been edited and formatted, aggregate columns and rows (e.g., subtotals)
+            can be added via InsertAggregateColumn() and InsertAggregateRow().\n
+            \n
+            Finally, once the table is built, annotations (see AddCellAnnotation()) and footnotes
+            (see AddFootnote()) can be added to the table.
 
         @par Missing Data:
             Any missing data from the dataset will be displayed as an empty cell.
@@ -156,13 +161,10 @@ namespace Wisteria::Graphs
             // z-scores > 2 as being outliers
             tableGraph->GetOutliers(tableGraph->GetColumnCount()-1, 2);
          // if any outliers, make a note of it off to the side
-         if (ratioOutliers.size())
-            {
-            tableGraph->AddCellAnnotation(
-                { L"Majors with the most lopsided female-to-male ratios",
-                   ratioOutliers, Side::Right }
-                );
-            }
+         tableGraph->AddCellAnnotation(
+            { L"Majors with the most lopsided female-to-male ratios",
+                ratioOutliers, Side::Right }
+            );
 
          // if you also want to place annotations on the left of the table,
          // then center it within its drawing area like so:
@@ -204,7 +206,7 @@ namespace Wisteria::Graphs
             Ratio
             };
 
-        /// @brief Information about how to build an aggregation column.
+        /// @brief Information about how to build an aggregate column/row.
         struct AggregateInfo
             {
             friend class Table;
@@ -261,7 +263,11 @@ namespace Wisteria::Graphs
         using CellValueType = std::variant<double, wxString, wxDateTime,
                                            std::pair<double, double>>;
         /// @brief The row and column position of a cell.
-        using CellPosition = std::pair<size_t, size_t>;
+        struct CellPosition
+            {
+            size_t m_row{ 0 };
+            size_t m_column{ 0 };
+            };
 
         /// @brief An annocation to add to the table, connected to a set of cells.
         struct CellAnnotation
@@ -271,12 +277,19 @@ namespace Wisteria::Graphs
             /// @brief The cells to highlight and connect the note to.
             std::vector<CellPosition> m_cells;
             /// @brief Which side of the table that the note should be on.
-            /// @note This will be overridden if there the page placement
+            /// @note This will be overridden if the page placement
             ///     of the table conflicts with this option. For example,
             ///     if the table is left aligned in the drawing area,
             ///     then this value will be ignored and the note will always
             ///     appear to the right of the table.
             Side m_side{ Side::Right };
+            /// @brief Pen to draw the line connecting highlighted cells with the
+            ///     annotation. If set to @c std::nullopt, then the table
+            ///     highlight pen will be used.
+            std::optional<wxPen> m_connectionLinePen;
+            /// @brief Brush to fill the cell with. Default is an invalid color
+            ///     that won't be used.
+            wxColour m_bgColor;
             };
 
         /// @brief A cell in the table.
@@ -492,7 +505,11 @@ namespace Wisteria::Graphs
             }
         /// @brief Empties the contents of the table.
         void ClearTable() noexcept
-            { m_table.clear(); }
+            {
+            m_table.clear();
+            m_aggregateColumns.clear();
+            m_aggregateRows.clear();
+            }
         /** @brief Sets the font for the entire table.
             @param ft The font to apply.*/
         void SetTableFont(const wxFont& ft)
@@ -506,15 +523,33 @@ namespace Wisteria::Graphs
                     }
                 }
             }
+
+        /// @returns The minimum percent of the drawing area's width that the
+        ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).\n
+        ///     Returning @c std::nullopt indicates that the table is autofitting its width.
+        std::optional<double> GetMinWidthProportion() const noexcept
+            { return m_minWidthProportion; }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @details The default behavior is for the table to fit its content, with extra
         ///     space around it (depending how wide it is).
-        /// @param percent The minimum percent of the area's width that the table should consume.
+        /// @param percent The minimum percent of the area's width that the table should consume.\n
+        ///     Set to @c std::nullopt to turn this feature off and allow the table to autofit its width.
         /// @sa GetPageHorizontalAlignment() for controlling how the table is positioned if this
         ///     value is less than @c 1.0.
-        void SetMinWidthProportion(const double percent)
-            { m_minWidthProportion = std::clamp(percent, 0.0, 1.0); }
+        void SetMinWidthProportion(const std::optional<double> percent)
+            {
+            m_minWidthProportion = percent.has_value() ?
+                std::optional<double>(std::clamp(percent.value(),
+                                                 math_constants::empty, math_constants::full)) :
+                std::nullopt;
+            }
+
+        /// @returns The minimum percent of the drawing area's height that the
+        ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).\n
+        ///     Returning @c std::nullopt indicates that the table is autofitting its height.
+        std::optional<double> GetMinHeightProportion() const noexcept
+            { return m_minHeightProportion; }
         /// @brief Sets the minimum percent of the drawing area's height that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
         /// @details The default behavior is for the table to fit its content, with extra
@@ -522,8 +557,13 @@ namespace Wisteria::Graphs
         /// @param percent The minimum percent of the area's height that the table should consume.
         /// @sa GetPageVerticalAlignment() for controlling how the table is positioned if this
         ///     value is less than @c 1.0.
-        void SetMinHeightProportion(const double percent)
-            { m_minHeightProportion = std::clamp(percent, 0.0, 1.0); }
+        void SetMinHeightProportion(const std::optional<double> percent)
+            {
+            m_minHeightProportion = percent.has_value() ?
+                std::optional<double>(std::clamp(percent.value(),
+                                                 math_constants::empty, math_constants::full)) :
+                std::nullopt;
+            }
 
         /// @returns The pen used to highlight specific cells (e.g., outliers).
         [[nodiscard]] wxPen& GetHighlightPen() noexcept
@@ -893,15 +933,25 @@ namespace Wisteria::Graphs
                 be more liberal in classifying a value as an outlier; a higher value
                 will be more strict.
             @returns The cell positions of the outliers.
-            @warning This should not be called on columns with subtotal rows
-                (see InsertAggregateRow()), as these will this will break the outlier calculation.
-                If you must run this against such a column, be sure to remove these rows
-                from the returned set of cell positions.\n
-                Also, any changes to the structure of the table (inserting more rows or columns)
+            @warning Any changes to the structure of the table (inserting more rows or columns)
                 will make the returned postions incorrect. This should be
-                called after all structural changes to the table.*/
+                called after all structural changes to the table have been made
+                (including the additions of aggregates).*/
         std::vector<CellPosition> GetOutliers(const size_t column,
                                               const double outlierThreshold = 3.0);
+
+        /** @brief Finds the top N values from the specified column.
+            @details This can be used for highlighting max items (and possibly annotating them).
+            @sa AddCellAnnotation().
+            @param column The column to review.
+            @param N The number of top (unique) values to search for.
+            @returns The cell positions of the outliers. (May return ties.)
+            @note In the case of ties, multiple cells will be returned.
+            @warning Any changes to the structure of the table (inserting more rows or columns)
+                will make the returned postions incorrect. This should be
+                called after all structural changes to the table have been made
+                (including the additions of aggregates).*/
+        std::vector<CellPosition> GetTopN(const size_t column, const size_t N = 1);
 
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
         /// @param alternateColor The background color to apply to ever other row.
@@ -925,9 +975,11 @@ namespace Wisteria::Graphs
         ///     @c wxString::FromUTF8() when formatting it for an error message.
         [[nodiscard]] TableCell& GetCell(const size_t row, const size_t column);
 
-        /// @brief Highlights the specified cells and adds a note pointing to them.
+        /// @brief Highlights the specified cell(s) and adds a note pointing to them.
         /// @param cellNote Information about the cell(s) to highlight,
         ///     the note, and where to place it relative to the table.
+        /// @note If the table's minimum width is set to fill the entire width, then
+        ///     this will be turned off and the table will autofit width-wise.
         void AddCellAnnotation(const CellAnnotation& cellNote);
 
         /** @brief Searches for the first cell whose content matches the provided text.
@@ -942,7 +994,8 @@ namespace Wisteria::Graphs
         /// @}
 
         /** @brief Adds a footnote to the table.
-            @param cellValue The value to look for in the tab3le, which will have a number added after it.
+            @param cellValue The value (as a displayed string) to look for in the table,
+                which will have a citation number added after it.
             @param footnote The respective footnote to add to the caption.
             @note Up to nine footnotes are supported.
             @warning Adding a footnote will overwrite the existing caption.*/
@@ -1020,6 +1073,9 @@ namespace Wisteria::Graphs
             @param values The values for the calculation.*/
         void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
                                 const std::vector<double>& values);
+
+        std::map<size_t, AggregateType> m_aggregateColumns;
+        std::map<size_t, AggregateType> m_aggregateRows;
 
         // DIPs for annotation connection lines and space between lines
         static constexpr wxCoord m_labelSpacingFromLine{ 5 };

@@ -384,6 +384,7 @@ namespace Wisteria::Graphs
             {
             const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
             InsertRow(rIndex);
+            m_aggregateRows.insert(std::make_pair(rIndex, aggInfo.m_type));
             if (rowName.has_value())
                 { GetCell(rIndex, 0).SetValue(rowName.value()); }
             BoldRow(rIndex, std::nullopt);
@@ -418,6 +419,7 @@ namespace Wisteria::Graphs
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex);
+            m_aggregateColumns.insert(std::make_pair(columnIndex, aggInfo.m_type));
             if (colName.has_value())
                 { GetCell(0, columnIndex).SetValue(colName.value()); }
             BoldColumn(columnIndex, std::nullopt);
@@ -447,16 +449,43 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::AddCellAnnotation(const CellAnnotation& cellNote)
         {
+        if (cellNote.m_cells.size() == 0)
+            { return; }
+
+        // turn off customized full-width specifiction if adding annotations
+        if (GetMinWidthProportion().has_value() &&
+            compare_doubles(GetMinWidthProportion().value(), math_constants::full))
+            { SetMinWidthProportion(std::nullopt); }
+
         for (const auto& cell : cellNote.m_cells)
-            { GetCell(cell.first, cell.second).Highlight(true); }
+            {
+            GetCell(cell.m_row, cell.m_column).Highlight(true);
+            if (cellNote.m_bgColor.IsOk())
+                {
+                GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
+                }
+            }
         m_cellAnnotations.emplace_back(cellNote);
         }
 
     //----------------------------------------------------------------
     void Table::AddCellAnnotation(CellAnnotation&& cellNote)
         {
+        if (cellNote.m_cells.size() == 0)
+            { return; }
+        // turn off customized full-width specifiction if adding annotations
+        if (GetMinWidthProportion().has_value() &&
+            compare_doubles(GetMinWidthProportion().value(), math_constants::full))
+            { SetMinWidthProportion(std::nullopt); }
+
         for (const auto& cell : cellNote.m_cells)
-            { GetCell(cell.first, cell.second).Highlight(true); }
+            {
+            GetCell(cell.m_row, cell.m_column).Highlight(true);
+            if (cellNote.m_bgColor.IsOk())
+                {
+                GetCell(cell.m_row, cell.m_column).SetBackgroundColor(cellNote.m_bgColor);
+                }
+            }
         m_cellAnnotations.emplace_back(cellNote);
         }
 
@@ -549,6 +578,47 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    std::vector<Table::CellPosition> Table::GetTopN(const size_t column, const size_t N /*= 1*/)
+        {
+        std::vector<CellPosition> topNPositions;
+
+        if (N == 0)
+            { return topNPositions; }
+
+        if (column < GetColumnCount())
+            {
+            std::set<double, std::greater<double>> values;
+            for (size_t row = 0; row < GetRowCount(); ++row)
+                {
+                // skip over aggregate rows (i.e., subtotals)
+                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                    { continue; }
+                const auto val = GetCell(row, column).GetDoubleValue();
+                if (!std::isnan(val))
+                    { values.insert(val); }
+                }
+
+            std::vector<double> maxValues;
+            std::copy_n(values.cbegin(), std::min(values.size(), N), std::back_inserter(maxValues));
+            if (maxValues.size() == 0)
+                { return topNPositions; }
+            const auto maxValBaseline = *std::min_element(maxValues.cbegin(), maxValues.cend());
+
+            // get the positions of cells less than or equal to the top N values
+            for (size_t row = 0; row < GetRowCount(); ++row)
+                {
+                // skip over aggregate rows (i.e., subtotals)
+                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                    { continue; }
+                const auto val = GetCell(row, column).GetDoubleValue();
+                if (!std::isnan(val) && compare_doubles_greater_or_equal(val, maxValBaseline))
+                    { topNPositions.push_back({ row, column }); }
+                }
+            }
+        return topNPositions;
+        }
+
+    //----------------------------------------------------------------
     std::vector<Table::CellPosition> Table::GetOutliers(const size_t column,
                                                         const double outlierThreshold /*= 3.0*/)
         {
@@ -559,6 +629,9 @@ namespace Wisteria::Graphs
             values.reserve(GetRowCount());
             for (size_t row = 0; row < GetRowCount(); ++row)
                 {
+                // skip over aggregate rows (i.e., subtotals)
+                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                    { continue; }
                 const auto val = GetCell(row, column).GetDoubleValue();
                 if (!std::isnan(val))
                     { values.push_back(val); }
@@ -568,12 +641,15 @@ namespace Wisteria::Graphs
             // get the z-scores and see who is an outlier
             for (size_t row = 0; row < GetRowCount(); ++row)
                 {
+                // skip over aggregate rows (i.e., subtotals)
+                if (m_aggregateRows.find(row) != m_aggregateRows.cend())
+                    { continue; }
                 const auto val = GetCell(row, column).GetDoubleValue();
                 if (!std::isnan(val))
                     {
                     const auto zScore = statistics::z_score(val, meanVal, sdVal);
-                    if (zScore > outlierThreshold)
-                        { outlierPositions.push_back(std::make_pair(row, column)); }
+                    if (std::abs(zScore) > outlierThreshold)
+                        { outlierPositions.push_back({ row, column }); }
                     }
                 }
             }
@@ -908,7 +984,7 @@ namespace Wisteria::Graphs
                     boxRect.SetWidth(boxRect.GetWidth() - rightEdgeOverhang);
                     }
 
-                // If prefix is user-supplied (not something we controlling), not being color coded,
+                // If prefix is user-supplied (not something we are controlling), not being color coded,
                 // and cell is left aligned, then we can just add the prefix to the cell's label.
                 // Otherwise, we need to make it as a separate label and place that on the left side.
                 const bool isPrefixSeparateLabel =
@@ -1219,12 +1295,12 @@ namespace Wisteria::Graphs
         AddObject(highlightedBorderLines);
 
         // add gutter messages
-        auto rightGutter = wxRect(
+        const auto rightGutter = wxRect(
             wxPoint(drawArea.GetX() + horizontalAlignmentOffset + tableWidth,
                     drawArea.GetY() + verticalAlignmentOffset),
             wxSize(drawArea.GetWidth() - (horizontalAlignmentOffset + tableWidth),
                    drawArea.GetHeight()));
-        auto leftGutter = wxRect(
+        const auto leftGutter = wxRect(
             wxPoint(drawArea.GetX(), drawArea.GetY() + verticalAlignmentOffset),
             wxSize(horizontalAlignmentOffset, drawArea.GetHeight()));
         const auto connectionOverhangWidth = ScaleToScreenAndCanvas(m_connectionOverhangWidth);
@@ -1234,8 +1310,11 @@ namespace Wisteria::Graphs
             // sort by rows, top-to-bottom
             std::sort(note.m_cells.begin(), note.m_cells.end(),
                 [](const auto& lv, const auto& rv) noexcept
-                    { return lv.first < rv.first; });
-            auto noteConnectionLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
+                    { return lv.m_row < rv.m_row; });
+            auto noteConnectionLines = std::make_shared<Lines>(
+                note.m_connectionLinePen.has_value() ? note.m_connectionLinePen.value() :
+                GetHighlightPen(),
+                GetScaling());
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
             auto gutterSide = DeduceGutterSide(note);
             if (gutterSide == Side::Right)
@@ -1244,7 +1323,7 @@ namespace Wisteria::Graphs
                 // table going into the right gutter
                 for (const auto& cell : note.m_cells)
                     {
-                    const auto cellRect = GetCachedCellRect(cell.first, cell.second);
+                    const auto cellRect = GetCachedCellRect(cell.m_row, cell.m_column);
                     const auto middleOfCellY = cellRect.GetY() + cellRect.GetHeight() / 2;
                     lowestY = std::min(lowestY, middleOfCellY);
                     highestY = std::max(highestY, middleOfCellY);
@@ -1275,13 +1354,14 @@ namespace Wisteria::Graphs
                                 cellsYMiddle)) );
                 // if label is too long to fit, then split it length-wise to fit in the gutter
                 const auto bBox = noteLabel->GetBoundingBox(dc);
-                rightGutter.SetLeft(rightGutter.GetLeft() +
+                auto rightGutterTextArea{ rightGutter };
+                rightGutterTextArea.SetLeft(rightGutterTextArea.GetLeft() +
                                     (connectionOverhangWidth * 2) + labelSpacingFromLine);
-                rightGutter.SetWidth(rightGutter.GetWidth() -
+                rightGutterTextArea.SetWidth(rightGutterTextArea.GetWidth() -
                                      (connectionOverhangWidth * 2) - labelSpacingFromLine);
-                if (!Polygon::IsRectInsideRect(bBox, rightGutter))
+                if (!Polygon::IsRectInsideRect(bBox, rightGutterTextArea))
                     {
-                    noteLabel->SplitTextToFitBoundingBox(dc, rightGutter.GetSize());
+                    noteLabel->SplitTextToFitBoundingBox(dc, rightGutterTextArea.GetSize());
                     const auto boundBox = noteLabel->GetBoundingBox(dc);
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
                                               wxPoint(0, boundBox.GetHeight() / 2));
@@ -1299,7 +1379,7 @@ namespace Wisteria::Graphs
                 // table going into the left gutter
                 for (const auto& cell : note.m_cells)
                     {
-                    const auto cellRect = GetCachedCellRect(cell.first, cell.second);
+                    const auto cellRect = GetCachedCellRect(cell.m_row, cell.m_column);
                     const auto middleOfCellY = cellRect.GetY() + cellRect.GetHeight() / 2;
                     lowestY = std::min(lowestY, middleOfCellY);
                     highestY = std::max(highestY, middleOfCellY);
@@ -1330,11 +1410,12 @@ namespace Wisteria::Graphs
 
                 // if label is too long to fit, then split it length-wise to fit in the gutter
                 const auto bBox = noteLabel->GetBoundingBox(dc);
-                leftGutter.SetWidth(leftGutter.GetWidth() -
+                auto leftGutterTextArea{ leftGutter  };
+                leftGutterTextArea.SetWidth(leftGutterTextArea.GetWidth() -
                                     (connectionOverhangWidth * 2) - labelSpacingFromLine);
-                if (!Polygon::IsRectInsideRect(bBox, leftGutter))
+                if (!Polygon::IsRectInsideRect(bBox, leftGutterTextArea))
                     {
-                    noteLabel->SplitTextToFitBoundingBox(dc, leftGutter.GetSize());
+                    noteLabel->SplitTextToFitBoundingBox(dc, leftGutterTextArea.GetSize());
                     const auto boundBox = noteLabel->GetBoundingBox(dc);
                     noteLabel->SetAnchorPoint(noteLabel->GetAnchorPoint() +
                                               wxPoint(0, boundBox.GetHeight() / 2));
