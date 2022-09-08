@@ -229,9 +229,9 @@ namespace statistics
         @param mean The sample mean.
         @param stdDev The sample standard deviation.
         @todo Need unit tests.*/
-    [[nodiscard]] inline double z_score(const double value, const double mean, const double stdDev)
+    [[nodiscard]] inline double z_score(const double value, const double mean, const double stdDev) noexcept
         {
-        return std::abs(safe_divide<double>(value - mean, stdDev));
+        return safe_divide<double>(value - mean, stdDev);
         }
 
     /** @returns The standard error of the mean from the specified range.
