@@ -1006,9 +1006,8 @@ namespace Wisteria::Graphs
                         (cell.m_bgColor.IsOk() ?
                             ColorContrast::BlackOrWhiteContrast(cell.m_bgColor) : *wxBLACK)).
                     FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE).
-                    Anchoring(Anchoring::Center).
-                    AnchorPoint(wxPoint(boxRect.GetLeft() + (boxRect.GetWidth() / 2),
-                        boxRect.GetTop() + (boxRect.GetHeight() / 2))));
+                    Anchoring(Anchoring::TopLeftCorner).
+                    AnchorPoint(boxRect.GetTopLeft()));
                 if (cell.m_suggestedLineLength.has_value())
                     { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
