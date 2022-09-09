@@ -510,7 +510,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        std::shared_ptr<const Data::Dataset> m_data;
+        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         Data::CategoricalColumnConstIterator m_groupColumn;
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
@@ -523,9 +523,9 @@ namespace Wisteria::Graphs
         bool m_useGrouping{ false };
         bool m_autoSpline{ true };
 
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme;
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_shapeScheme;
-        std::shared_ptr<LineStyleScheme> m_linePenStyles;
+        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_shapeScheme{ nullptr };
+        std::shared_ptr<LineStyleScheme> m_linePenStyles{ nullptr };
 
         PointColorCriteria m_colorIf;
         };
