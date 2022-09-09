@@ -87,21 +87,18 @@ namespace Wisteria
             std::shared_ptr<GraphItems::GraphItemBase> item);
         /// @brief Finalizes loading options for a graph.
         /// @details This will load general graph options from a node,
-        ///     apply them to the graph, and add the graph (and possibly its legend)
-        ///     to the canvas.
+        ///     apply them to the graph, and add the graph (and possibly its legend) to the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed. 
         /// @param[in,out] graph The graph to apply the settings to.
-        /// @returns The graph that was added to the canvas, or null upon failure.
         /// @warning The node's graph-specific loading function should be called first, then
         ///     this should be called to finalize it and add it to the canvas.
         /// @todo many features still needed!
-        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadGraph(
-                        const wxSimpleJSON::Ptr_t& graphNode,
-                        Canvas* canvas, size_t& currentRow, size_t& currentColumn,
-                        std::shared_ptr<Graphs::Graph2D> graph);
+        void LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
+                       Canvas* canvas, size_t& currentRow, size_t& currentColumn,
+                       std::shared_ptr<Graphs::Graph2D> graph);
         /// @brief Loads a line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -143,7 +140,7 @@ namespace Wisteria
         /// @param graphNode The graph node to parse.
         /// @param graph The bar chart to load the base settings to.
         void LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
-                        std::shared_ptr<Graphs::BarChart> barChart);
+                          std::shared_ptr<Graphs::BarChart> barChart);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -315,10 +312,10 @@ namespace Wisteria
             { return L"[ ]*\\([ ]*"; }
         [[nodiscard]] static wxString ClosingParenthesisRegEx()
             { return L"[ ]*\\)"; }
-        // a parameter that is either wrapped in tickmarks (usually a var name)
-        // or double curly braces (a subformula)
+        // a parameter that is either wrapped in tickmarks (usually a var name),
+        // double curly braces (a subformula), or empty string (no parameter)
         [[nodiscard]] static wxString ColumnNameOrFormulaRegEx()
-            { return L"(`[^`]+`|{{[^}]*}})"; }
+            { return L"(`[^`]+`|{{[^}]*}}|[[:space:]]*)"; }
         [[nodiscard]] static wxString NumberRegEx()
             { return L"([[:digit:]]+)"; }
         [[nodiscard]] static wxString ParamSepatatorRegEx()

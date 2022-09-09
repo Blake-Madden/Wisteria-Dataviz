@@ -474,8 +474,10 @@ Properties for @c "shape" nodes:
 Properties for @c "table" nodes:
 - @c "variables": an array of column names to use from the dataset.\n
   These values can also be variable selection formulas, including the following:
-  - ``{{contains(`value`)}}``: where @c value will be the search string, and any column
+  - ``{{matches(`value`)}}``: where @c value will be the regular expression search pattern, and any column
       in the dataset that contains this text will be included.
+  - ``{{everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
+      the categoricals, the continuous columns, and finally the date columns.
 - @c "transpose": @c true to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.\n
 - @c "min-width-proportion": the minimum percent of the drawing area's width that the table should consume

@@ -114,6 +114,16 @@ namespace Wisteria
                                         {
                                         try
                                             {
+                                            /* Along with adding graphs to the canvas, we also keep a list
+                                               of these graphs in case we need to connect any of them to
+                                               a common axis.
+
+                                               Graph loading functions will load the graph to the canvas
+                                               themselves because they may need to add an accompanying legend,
+                                               which that function will add to the canvas also.
+
+                                               Other objects like labels and images will be added to the canvas
+                                               here though, as we know it will just be that one object.*/
                                             if (typeProperty->GetValueString().CmpNoCase(L"line-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -734,40 +744,64 @@ namespace Wisteria
         else
             { return std::nullopt; }
         const wxRegEx re(FunctionStartRegEx() +
-                         L"(contains)" +
+                         L"(everything|matches)" +
                          OpeningParenthesisRegEx() +
                          ColumnNameOrFormulaRegEx() +
                          ClosingParenthesisRegEx());
         if (re.Matches(var))
             {
             const auto paramPartsCount = re.GetMatchCount();
-            if (paramPartsCount >= 3)
-                {
-                const wxString funcName = re.GetMatch(var, 1).MakeLower();
-                const wxString columnPattern = ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset).MakeLower();
+            if (paramPartsCount < 2)
+                { return std::nullopt; }
 
-                if (funcName.CmpNoCase(L"contains") == 0)
+            const wxString funcName = re.GetMatch(var, 1).MakeLower();
+            std::vector<wxString> columns;
+
+            if (funcName.CmpNoCase(L"everything") == 0)
+                {
+                if (dataset->GetIdColumn().GetName().length())
+                    { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                const auto catCols{ dataset->GetCategoricalColumnNames() };
+                const auto contCols{ dataset->GetContinuousColumnNames() };
+                const auto dateCols{ dataset->GetDateColumnNames() };
+                std::copy(catCols.cbegin(), catCols.cend(), std::back_inserter(columns));
+                std::copy(contCols.cbegin(), contCols.cend(), std::back_inserter(columns));
+                std::copy(dateCols.cbegin(), dateCols.cend(), std::back_inserter(columns));
+
+                return columns;
+                }
+            else if (paramPartsCount >= 3)
+                {
+                const wxString columnPattern =
+                    ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset);
+                
+                if (funcName.CmpNoCase(L"matches") == 0)
                     {
-                    // get columns that contain the string
-                    std::vector<wxString> columns;
-                    if (dataset->GetIdColumn().GetName().Lower().Contains(columnPattern))
-                        { columns.emplace_back(dataset->GetIdColumn().GetName()); }
-                    for (const auto& col : dataset->GetCategoricalColumns())
+                    wxRegEx re(columnPattern);
+                    if (re.IsValid())
                         {
-                        if (col.GetName().Lower().Contains(columnPattern))
-                            { columns.emplace_back(col.GetName()); }
+                        // get columns that contain the string
+                        if (re.Matches(dataset->GetIdColumn().GetName()) )
+                            { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                        for (const auto& col : dataset->GetCategoricalColumns())
+                            {
+                            if (re.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        for (const auto& col : dataset->GetContinuousColumns())
+                            {
+                            if (re.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        for (const auto& col : dataset->GetDateColumns())
+                            {
+                            if (re.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        return columns;
                         }
-                    for (const auto& col : dataset->GetContinuousColumns())
-                        {
-                        if (col.GetName().Lower().Contains(columnPattern))
-                            { columns.emplace_back(col.GetName()); }
-                        }
-                    for (const auto& col : dataset->GetDateColumns())
-                        {
-                        if (col.GetName().Lower().Contains(columnPattern))
-                            { columns.emplace_back(col.GetName()); }
-                        }
-                    return columns;
+                    else
+                        { return std::nullopt; }
                     }
                 else
                     { return std::nullopt; }
@@ -1355,7 +1389,7 @@ namespace Wisteria
                     const auto filterNode = subset->GetProperty(L"filter");
                     const auto filterAndNode = subset->GetProperty(L"filter-and");
                     const auto filterOrNode = subset->GetProperty(L"filter-or");
-                    const size_t validFilterTypeNodes =
+                    const auto validFilterTypeNodes =
                         (filterNode->IsOk() ? 1 : 0) +
                         (filterAndNode->IsOk() ? 1 : 0) +
                         (filterOrNode->IsOk() ? 1 : 0);
@@ -1466,9 +1500,7 @@ namespace Wisteria
                     {
                     wxFileName fn(exportPath);
                     if (fn.GetPath().empty())
-                        {
-                        fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath;
-                        }                     
+                        { fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath; }                     
                     if (fn.GetExt().CmpNoCase(L"csv") == 0)
                         { dataset->ExportCSV(fn.GetFullPath()); }
                     else
@@ -1529,13 +1561,13 @@ namespace Wisteria
                                     {
                                     dateName,
                                     (dateParser.CmpNoCase(L"iso-date") == 0 ?
-                                      DateImportMethod::IsoDate :
+                                        DateImportMethod::IsoDate :
                                      dateParser.CmpNoCase(L"iso-combined") == 0 ?
                                         DateImportMethod::IsoCombined :
                                      dateParser.CmpNoCase(L"strptime-format") == 0 ?
-                                      DateImportMethod::StrptimeFormatString :
+                                        DateImportMethod::StrptimeFormatString :
                                      dateParser.CmpNoCase(L"rfc822") == 0 ?
-                                      DateImportMethod::Rfc822 :
+                                        DateImportMethod::Rfc822 :
                                      DateImportMethod::Automatic),
                                     dateFormat
                                     }
@@ -1544,7 +1576,7 @@ namespace Wisteria
                             }
                         }
                     // continuous columns
-                    std::vector<wxString> continuousVars =
+                    const std::vector<wxString> continuousVars =
                         datasetNode->GetProperty(L"continuous-columns")->GetValueStringVector();
                     // categorical columns
                     std::vector<Data::ImportInfo::CategoricalImportInfo> catInfo;
@@ -1670,7 +1702,8 @@ namespace Wisteria
                 variablesNode->GetProperty(L"y")->GetValueString(),
                 variablesNode->GetProperty(L"x")->GetValueString(),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
-            return LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
+            return linePlot;
             }
         else
             {
@@ -1852,7 +1885,8 @@ namespace Wisteria
                 graphNode->GetProperty(L"show-full-range")->GetValueBool(true),
                 startBinsValue, std::make_pair(suggestedBinCount, maxBinCount) );
 
-            return LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);
+            return histo;
             }
         else
             {
@@ -1896,7 +1930,8 @@ namespace Wisteria
                 (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
                 binLabel.has_value() ? binLabel.value() : BinLabelDisplay::BinValue);
 
-            return LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
+            return barChart;
             }
         else
             {
@@ -2022,7 +2057,8 @@ namespace Wisteria
                 if (color.IsOk())
                     { pieChart->SetDonutHoleColor(color); }
                 }
-            return LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, pieChart);
+            return pieChart;
             }
         else
             {
@@ -2491,7 +2527,8 @@ namespace Wisteria
                 }
             }
 
-        return LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, table);
+        return table;
         }
 
     //---------------------------------------------------
@@ -3395,7 +3432,7 @@ namespace Wisteria
     void ReportBuilder::LoadItem(const wxSimpleJSON::Ptr_t& itemNode,
                                  std::shared_ptr<GraphItems::GraphItemBase> item)
         {
-        if (!itemNode->IsOk())
+        if (!itemNode->IsOk() || item == nullptr)
             { return; }
 
         static const std::map<std::wstring_view, Anchoring> anchoringValues =
@@ -3514,8 +3551,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGraph(
-                                  const wxSimpleJSON::Ptr_t& graphNode,
+    void ReportBuilder::LoadGraph(const wxSimpleJSON::Ptr_t& graphNode,
                                   Canvas* canvas, size_t& currentRow, size_t& currentColumn,
                                   std::shared_ptr<Graphs::Graph2D> graph)
         {
@@ -3638,8 +3674,8 @@ namespace Wisteria
                             interestPointPostions.cend(),
                             [](const auto& lhv, const auto& rhv) noexcept
                             { return lhv.y < rhv.y; });
-                        anchorPt.x = safe_divide<double>(maxX->x - minX->x, 2) + minX->x;
-                        anchorPt.y = safe_divide<double>(maxY->y - minY->y, 2) + minY->y;
+                        anchorPt.x = safe_divide(maxX->x - minX->x, 2) + minX->x;
+                        anchorPt.y = safe_divide(maxY->y - minY->y, 2) + minY->y;
                         }
                     if (anchorPt.IsFullySpecified())
                         { graph->AddAnnotation(label, anchorPt, interestPointPostions); }
@@ -3722,10 +3758,10 @@ namespace Wisteria
                     if (foundPos != refAreaValues.cend())
                         { areaStyle = foundPos->second; }
 
-                    std::optional<double> axisPos1 =
+                    const auto axisPos1 =
                         FindAxisPosition(axis, refArea->GetProperty(L"position-1"));
 
-                    std::optional<double> axisPos2 =
+                    const auto axisPos2 =
                         FindAxisPosition(axis, refArea->GetProperty(L"position-2"));
 
                     if (axisPos1.has_value() && axisPos2.has_value())
@@ -3800,6 +3836,5 @@ namespace Wisteria
             {
             canvas->SetFixedObject(currentRow, currentColumn, graph);
             }
-        return graph;
         }
     }
