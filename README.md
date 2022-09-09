@@ -167,7 +167,7 @@ Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) f
 Next, get and build Wisteria:
 
 ```
-git clone https://github.com/Blake-Madden/Wisteria.git --recurse-submodules
+git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
 ```
 
 To build the library and demo, you can use CMake (either directly or by using an IDE).
