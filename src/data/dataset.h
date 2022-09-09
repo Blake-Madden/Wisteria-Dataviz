@@ -1250,7 +1250,7 @@ namespace Wisteria::Data
         double m_importContinousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
 
         // actual data
-        Column<wxString> m_idColumn{ L"IDS" };
+        Column<wxString> m_idColumn;
         std::vector<Column<wxDateTime>> m_dateColumns;
         std::vector<ColumnWithStringTable> m_categoricalColumns;
         std::vector<Column<double>> m_continuousColumns;
