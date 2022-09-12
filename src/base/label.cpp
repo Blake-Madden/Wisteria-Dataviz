@@ -64,7 +64,7 @@ namespace Wisteria::GraphItems
         if (lineTokenizer.CountTokens() > 1)
             {
             m_lineCount = 0;
-            size_t longestLineCharacterCount(0);
+            size_t longestLineCharacterCount{ 0 };
             while (lineTokenizer.HasMoreTokens() )
                 {
                 ++m_lineCount;
@@ -344,403 +344,18 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxRect Label::Draw(wxDC& dc) const
+    void Label::DrawLegendIcons(wxDC& dc) const
         {
-        if (!IsShown())
-            { return wxRect(); }
-        if (IsInDragState())
-            { return GetBoundingBox(dc); }
-        if (GetClippingRect())
-            { dc.SetClippingRegion(GetClippingRect().value()); }
+        const wxCoord averageLineHeight = dc.GetCharHeight();
+        const wxRect contentBoundingBox = GetCachedContentBoundingBox();
 
-        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 ||
-            (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal),
-            L"Vertical legend not supported!");
-        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 || !HasLegendIcons() ||
-            (GetTextOrientation() == Orientation::Horizontal &&
-             GetLeftPadding() >= GetMinLegendWidthDIPs()),
-            wxString::Format(L"Left margin of text label should be at least %d DIPs "
-                "if using legend icons! It is currently %d.",
-                GetMinLegendWidthDIPs(), GetLeftPadding()));
-
-        wxASSERT(GetFont().IsOk());
-        wxDCFontChanger fc(dc, GetFont().Scaled(GetScaling()));
         wxPen scaledPen(GetPen());
         if (scaledPen.IsOk())
             {
             scaledPen.SetWidth(
                 std::max<double>(ScaleToScreenAndCanvas(scaledPen.GetWidth()), 1));
             }
-        // scaledPen might be bogus (if outlining isn't wanted),
-        // just do this to reset when we are done.
-        wxDCPenChanger pc(dc, *wxBLACK_PEN);
-        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        const wxRect boundingBox = GetBoundingBox(dc);
-        const wxRect contentBoundingBox = GetCachedContentBoundingBox();
-
-        // draw the shadow
-        if (GetShadowType() != ShadowType::NoShadow && GetPen().IsOk() && !IsSelected())
-            {
-            wxDCPenChanger pcBg(dc, GetShadowColour());
-            wxDCBrushChanger bcBg(dc, GetShadowColour());
-            if (GetBoxCorners() == BoxCorners::Rounded)
-                {
-                dc.DrawRoundedRectangle(
-                    wxRect(boundingBox.GetLeftTop() +
-                           wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
-                           ScaleToScreenAndCanvas(GetShadowOffset())),
-                           boundingBox.GetSize()), Settings::GetBoxRoundedCornerRadius());
-                }
-            else
-                {
-                dc.DrawRectangle(
-                    wxRect(boundingBox.GetLeftTop() +
-                        wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
-                            ScaleToScreenAndCanvas(GetShadowOffset())),
-                        boundingBox.GetSize()));
-                }
-            }
-        // draw the background, if we are drawing a box around the text
-        // (outline is drawn after the text)
-        if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour)
-            {
-            wxDCBrushChanger bcBg(dc, GetFontBackgroundColor());
-            wxDCPenChanger pcBg(dc, *wxTRANSPARENT_PEN);
-            if (GetBoxCorners() == BoxCorners::Rounded)
-                {
-                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
-                }
-            else
-                {
-                dc.DrawRectangle(boundingBox);
-                }
-            }
-
-        // used for drawing the paper lines
-        const wxPoint textOffset = ((GetTextOrientation() == Orientation::Horizontal) ?
-            wxPoint(ScaleToScreenAndCanvas(GetLeftPadding()),
-                ScaleToScreenAndCanvas(GetTopPadding())) :
-            wxPoint(ScaleToScreenAndCanvas(GetTopPadding()),
-                ScaleToScreenAndCanvas((GetRightPadding())) -
-                ScaleToScreenAndCanvas((GetLeftPadding()))) );
-
-        // get the uniform height of text
-        wxCoord dummyX(0), dummyY(0), averageLineHeight(0);
-        dc.GetMultiLineTextExtent(GetText(), &dummyX, &dummyY, &averageLineHeight);
-        // draw the text
-        dc.SetTextForeground(GetFontColor());
-        if (GetTextOrientation() == Orientation::Horizontal)
-            {
-            // draw and style
-            const size_t linesToDrawCount = safe_divide<double>(boundingBox.GetHeight(),
-                                            averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
-            if (GetLabelStyle() == LabelStyle::NoLabelStyle)
-                {
-                // NOOP, most likely branch
-                }
-            else if (GetLabelStyle() == LabelStyle::IndexCard)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
-                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
-                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::LinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                        boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                        boundingBox.GetLeftTop().y +
-                                        (averageLineHeight*i) +
-                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i)+((i-1) *
-                                std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
-                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetRightPadding()),
-                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
-                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
-                    }
-                }
-            DrawMultiLineText(dc, boundingBox.GetLeftTop());
-            }
-        else
-            {
-            // draw and style
-            const size_t linesToDrawCount =
-                safe_divide<double>(boundingBox.GetWidth(),
-                                    averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
-            if (GetLabelStyle() == LabelStyle::NoLabelStyle)
-                {
-                // NOOP, most likely branch
-                }
-            else if (GetLabelStyle() == LabelStyle::IndexCard)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
-                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
-                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::LinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                               ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y),
-                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y));
-                    }
-                }
-            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
-                {
-                wxDCClipper clip(dc, boundingBox);
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
-                    {
-                    GraphItems::Polygon::DrawArrow(dc,
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftTop().y),
-                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
-                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
-                                boundingBox.GetLeftBottom().y),
-                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
-                    }
-                }
-            DrawVerticalMultiLineText(dc, GetCachedContentBoundingBox().GetLeftTop());
-            }
-        // draw side image
-        if (m_leftImage.IsOk())
-            {
-            if (GetTextOrientation() == Orientation::Horizontal)
-                {
-                const auto bmp = m_leftImage.GetBitmap(
-                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()));
-                // center vertically
-                auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
-                leftCorner.y += safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
-                    safe_divide(bmp.GetHeight(), 2);
-                dc.DrawBitmap(bmp, leftCorner);
-                }
-            else
-                {
-                const auto img = m_leftImage.GetBitmap(
-                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight())).
-                    ConvertToImage().Rotate90(false);
-                // center horizontally
-                auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
-                leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
-                    safe_divide(img.GetHeight(), 2);
-                leftCorner.y -= img.GetWidth();
-                dc.DrawBitmap(img, leftCorner);
-                }
-            }
-
-        // draw the outline
-        if (IsSelected())
-            {
-            wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-            wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
-            if (GetBoxCorners() == BoxCorners::Rounded)
-                {
-                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
-                }
-            else
-                {
-                dc.DrawRectangle(boundingBox);
-                }
-            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
-                {
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
-                dc.DrawRectangle(GetCachedContentBoundingBox());
-                if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
-                    {
-                    const auto bBox = GetBoundingBox(dc);
-                    Label infoLabel(GraphItemInfo(
-                        wxString::Format(L"Scaling: %s\n"
-                                          "Default font size: %d\n"
-                                          "Font size: %d",
-                            wxNumberFormatter::ToString(GetScaling(), 1,
-                                                        wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                            GetFont().GetPointSize(),
-                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
-                        AnchorPoint(bBox.GetTopLeft()).
-                        Anchoring(Anchoring::TopLeftCorner).
-                        FontColor(*wxBLUE).
-                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
-                        FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
-                    infoLabel.Draw(dc);
-                    }
-                }
-            }
-        else if (GetPen().IsOk())
-            {
-            wxDCPenChanger pc2(dc, wxPen(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth())));
-            wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
-            if (GetBoxCorners() == BoxCorners::Rounded)
-                {
-                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
-                }
-            else
-                {
-                dc.DrawRectangle(boundingBox);
-                }
-            }
-
-        // draw as a legend (if applicable)
         if (GetTextOrientation() == Orientation::Horizontal &&
             GetLegendIcons().size())
             {
@@ -864,6 +479,407 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
+        }
+
+    //-------------------------------------------
+    void Label::DrawLabelStyling(wxDC& dc) const
+        {
+        const wxCoord averageLineHeight = dc.GetCharHeight();
+        const wxRect boundingBox = GetBoundingBox(dc);
+        // used for drawing the paper lines
+        const wxPoint textOffset = ((GetTextOrientation() == Orientation::Horizontal) ?
+            wxPoint(ScaleToScreenAndCanvas(GetLeftPadding()),
+                ScaleToScreenAndCanvas(GetTopPadding())) :
+            wxPoint(ScaleToScreenAndCanvas(GetTopPadding()),
+                ScaleToScreenAndCanvas((GetRightPadding())) -
+                ScaleToScreenAndCanvas((GetLeftPadding()))));
+        if (GetTextOrientation() == Orientation::Horizontal)
+            {
+            // draw and style
+            const size_t linesToDrawCount = safe_divide<double>(boundingBox.GetHeight(),
+                                            averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            if (GetLabelStyle() == LabelStyle::NoLabelStyle)
+                {
+                // NOOP, most likely branch
+                }
+            else if (GetLabelStyle() == LabelStyle::IndexCard)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
+                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::LinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc,
+                        wxPoint(boundingBox.GetLeftTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x, boundingBox.GetLeftTop().y+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                                        boundingBox.GetLeftTop().y + (averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                                        boundingBox.GetLeftTop().y +
+                                        (averageLineHeight*i) +
+                                        ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc,
+                        wxPoint(boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + (averageLineHeight*i)+((i-1) *
+                                std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
+                                textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetRightPadding()),
+                                boundingBox.GetLeftTop().y + (averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.y),
+                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                    }
+                }
+            }
+        else
+            {
+            // draw and style
+            const size_t linesToDrawCount =
+                safe_divide<double>(boundingBox.GetWidth(),
+                                    averageLineHeight+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            if (GetLabelStyle() == LabelStyle::NoLabelStyle)
+                {
+                // NOOP, most likely branch
+                }
+            else if (GetLabelStyle() == LabelStyle::IndexCard)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen((i == 1) ?
+                        wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                        wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                              ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::LinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                               ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc,
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y),
+                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::LinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1)));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    wxDCPenChanger pc2(dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
+                                    ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y));
+                    }
+                }
+            else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
+                {
+                wxDCClipper clip(dc, boundingBox);
+                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                    {
+                    GraphItems::Polygon::DrawArrow(dc,
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x+(averageLineHeight*i) +
+                                ((i-1)*std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())))+textOffset.x,
+                                boundingBox.GetLeftBottom().y),
+                        wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
+    wxRect Label::Draw(wxDC& dc) const
+        {
+        if (!IsShown())
+            { return wxRect(); }
+        if (IsInDragState())
+            { return GetBoundingBox(dc); }
+        if (GetClippingRect())
+            { dc.SetClippingRegion(GetClippingRect().value()); }
+
+        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 ||
+            (GetLegendIcons().size() && GetTextOrientation() == Orientation::Horizontal),
+            L"Vertical legend not supported!");
+        wxASSERT_LEVEL_2_MSG(GetLegendIcons().size() == 0 || !HasLegendIcons() ||
+            (GetTextOrientation() == Orientation::Horizontal &&
+             GetLeftPadding() >= GetMinLegendWidthDIPs()),
+            wxString::Format(L"Left margin of text label should be at least %d DIPs "
+                "if using legend icons! It is currently %d.",
+                GetMinLegendWidthDIPs(), GetLeftPadding()));
+
+        wxASSERT_LEVEL_2_MSG(GetFont().IsOk(), L"Invalid font in label!");
+        wxDCFontChanger fc(dc, GetFont().Scaled(GetScaling()));
+
+        const wxRect boundingBox = GetBoundingBox(dc);
+
+        // draw the shadow (only if box is outlined)
+        if (GetShadowType() != ShadowType::NoShadow && GetPen().IsOk() && !IsSelected())
+            {
+            wxDCPenChanger pcBg(dc, GetShadowColour());
+            wxDCBrushChanger bcBg(dc, GetShadowColour());
+            if (GetBoxCorners() == BoxCorners::Rounded)
+                {
+                dc.DrawRoundedRectangle(
+                    wxRect(boundingBox.GetLeftTop() +
+                           wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
+                                   ScaleToScreenAndCanvas(GetShadowOffset())),
+                           boundingBox.GetSize()), Settings::GetBoxRoundedCornerRadius());
+                }
+            else
+                {
+                dc.DrawRectangle(
+                    wxRect(boundingBox.GetLeftTop() +
+                        wxPoint(ScaleToScreenAndCanvas(GetShadowOffset()),
+                                ScaleToScreenAndCanvas(GetShadowOffset())),
+                        boundingBox.GetSize()));
+                }
+            }
+        // draw the background, if we are drawing a box around the text
+        // (outline is drawn after the text)
+        if (GetFontBackgroundColor().IsOk() && GetFontBackgroundColor() != wxTransparentColour)
+            {
+            wxDCBrushChanger bcBg(dc, GetFontBackgroundColor());
+            wxDCPenChanger pcBg(dc, *wxTRANSPARENT_PEN);
+            if (GetBoxCorners() == BoxCorners::Rounded)
+                {
+                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
+                }
+            else
+                {
+                dc.DrawRectangle(boundingBox);
+                }
+            }
+
+        // draw any styling lines on the background (this usually wouldn't be in use)
+        if (GetLabelStyle() != LabelStyle::NoLabelStyle)
+            { DrawLabelStyling(dc); }
+        // draw the text
+        dc.SetTextForeground(GetFontColor());
+        if (GetTextOrientation() == Orientation::Horizontal)
+            { DrawMultiLineText(dc, boundingBox.GetLeftTop()); }
+        else
+            { DrawVerticalMultiLineText(dc, GetCachedContentBoundingBox().GetLeftTop()); }
+
+        // draw side image
+        if (m_leftImage.IsOk())
+            {
+            if (GetTextOrientation() == Orientation::Horizontal)
+                {
+                const auto bmp = m_leftImage.GetBitmap(
+                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight()));
+                // center vertically
+                auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
+                leftCorner.y += safe_divide(GetCachedContentBoundingBox().GetHeight(), 2) -
+                    safe_divide(bmp.GetHeight(), 2);
+                dc.DrawBitmap(bmp, leftCorner);
+                }
+            else
+                {
+                const auto img = m_leftImage.GetBitmap(
+                    CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight())).
+                    ConvertToImage().Rotate90(false);
+                // center horizontally
+                auto leftCorner{ GetCachedContentBoundingBox().GetBottomLeft() };
+                leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
+                    safe_divide(img.GetHeight(), 2);
+                leftCorner.y -= img.GetWidth();
+                dc.DrawBitmap(img, leftCorner);
+                }
+            }
+
+        // draw the outline
+        if (GetPen().IsOk() && !IsSelected())
+            {
+            wxDCPenChanger pc2(dc, wxPen(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth())));
+            wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
+            if (GetBoxCorners() == BoxCorners::Rounded)
+                {
+                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
+                }
+            else
+                {
+                dc.DrawRectangle(boundingBox);
+                }
+            }
+        else if (IsSelected())
+            {
+            wxDCPenChanger pc2(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+            wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
+            if (GetBoxCorners() == BoxCorners::Rounded)
+                {
+                dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
+                }
+            else
+                {
+                dc.DrawRectangle(boundingBox);
+                }
+            if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawBoundingBoxesOnSelection))
+                {
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                dc.DrawRectangle(GetCachedContentBoundingBox());
+                if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawInformationOnSelection))
+                    {
+                    const auto bBox = GetBoundingBox(dc);
+                    Label infoLabel(GraphItemInfo(
+                        wxString::Format(L"Scaling: %s\n"
+                                          "Default font size: %d\n"
+                                          "Font size: %d",
+                            wxNumberFormatter::ToString(GetScaling(), 1,
+                                                        wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            GetFont().GetPointSize(),
+                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
+                        AnchorPoint(bBox.GetTopLeft()).
+                        Anchoring(Anchoring::TopLeftCorner).
+                        FontColor(*wxBLUE).
+                        Pen(*wxBLUE_PEN).DPIScaling(GetDPIScaleFactor()).
+                        FontBackgroundColor(*wxWHITE).Padding(2, 2, 2, 2));
+                    infoLabel.Draw(dc);
+                    }
+                }
+            }
+
+        // draw as a legend (if applicable)
+        if (GetTextOrientation() == Orientation::Horizontal &&
+            GetLegendIcons().size())
+            { DrawLegendIcons(dc); }
 
         if (GetClippingRect())
             { dc.DestroyClippingRegion(); }

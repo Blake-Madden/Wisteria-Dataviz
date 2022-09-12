@@ -87,7 +87,7 @@ namespace Wisteria::GraphItems
 
         /// @returns The minimum width needed for the left padding if including a legend.
         /// @sa SetLeftPadding().
-        [[nodiscard]] static wxCoord GetMinLegendWidthDIPs() noexcept
+        [[nodiscard]] static constexpr wxCoord GetMinLegendWidthDIPs() noexcept
             {
             return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
                    2/* 1 DIP on each side of icon*/;
@@ -305,6 +305,12 @@ namespace Wisteria::GraphItems
         static void FixFont(wxFont& theFont);
         /// @}
     private:
+        /** @brief Draws the line styling onto the background of the label.
+            @param dc The dc to draw on.*/
+        void DrawLabelStyling(wxDC& dc) const;
+        /** @brief Draws the icons for the legend.
+            @param dc The dc to draw on.*/
+        void DrawLegendIcons(wxDC& dc) const;
         /// @returns The size that the left image will be if the provided height is given.
         /// @note This will maintain the image's aspect ratio and the calculated height
         ///     may be smaller than @c textHeight.

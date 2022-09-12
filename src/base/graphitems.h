@@ -1218,7 +1218,7 @@ namespace Wisteria
                                            Pen(wxNullPen).Text(_(L"Number of obs."));
                 @endcode
                 @returns The base attributes.*/
-            [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo() noexcept
+            [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo()
                 {
                 InvalidateCachedBoundingBox();
                 return m_itemInfo;
