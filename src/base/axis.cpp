@@ -1358,7 +1358,7 @@ namespace Wisteria::GraphItems
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
-                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
+                            sh.DrawCurlyBrace(styleAreaRect, dc, Side::Left);
                             }
                         }
 
@@ -1408,7 +1408,7 @@ namespace Wisteria::GraphItems
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
-                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
+                                sh.DrawCurlyBrace(styleAreaRect, dc, Side::Right);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1474,7 +1474,7 @@ namespace Wisteria::GraphItems
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
-                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Right);
+                            sh.DrawCurlyBrace(styleAreaRect, dc, Side::Right);
                             }
                         }
 
@@ -1524,7 +1524,7 @@ namespace Wisteria::GraphItems
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
-                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Left);
+                                sh.DrawCurlyBrace(styleAreaRect, dc, Side::Left);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1590,7 +1590,7 @@ namespace Wisteria::GraphItems
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
-                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);
+                            sh.DrawCurlyBrace(styleAreaRect, dc, Side::Bottom);
                             }
                         }
 
@@ -1639,7 +1639,7 @@ namespace Wisteria::GraphItems
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
-                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
+                                sh.DrawCurlyBrace(styleAreaRect, dc, Side::Top);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)
@@ -1703,7 +1703,7 @@ namespace Wisteria::GraphItems
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
-                            sh.DrawCurlyBraces(styleAreaRect, dc, Side::Top);
+                            sh.DrawCurlyBrace(styleAreaRect, dc, Side::Top);
                             }
                         }
 
@@ -1753,7 +1753,7 @@ namespace Wisteria::GraphItems
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
-                                sh.DrawCurlyBraces(styleAreaRect, dc, Side::Bottom);
+                                sh.DrawCurlyBrace(styleAreaRect, dc, Side::Bottom);
                                 }
                             }
                         if (bracket.GetPerpendicularLabelConnectionLinesAlignment() == AxisLabelAlignment::AlignWithBoundary)

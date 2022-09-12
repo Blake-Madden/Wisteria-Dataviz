@@ -740,6 +740,9 @@ Properties common to all graph items:
   - @c "right-curly-brace"
   - @c "bottom-curly-brace"
   - @c "left-curly-brace"
+  - @c "male"
+  - @c "femaol"
+  - @c "female-business"
 - @c "line-scheme": for graphs that support line schemes only.\n
   This is an array of line specifications (which can be recycled)\n
   Each specification contains the following:

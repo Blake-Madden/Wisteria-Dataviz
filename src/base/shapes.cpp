@@ -100,87 +100,116 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shape::Draw(const wxRect& drawRect, wxDC& dc) const
+    Shape::Shape(const GraphItems::GraphItemInfo& itemInfo,
+        const Icons::IconShape shape,
+        const wxSize sz,
+        const wxBitmapBundle* img /*= nullptr*/) :
+        GraphItemBase(itemInfo), m_shape(shape), m_shapeSizeDIPs(sz),
+        m_sizeDIPs(sz), m_renderer(itemInfo, img)
         {
-        ShapeRenderer sh(GetGraphItemInfo());
-
+        // connect the rendering function to the shape
         switch (m_shape)
             {
             case IconShape::Blank:
                 // nothing to draw
+                m_drawFunction = nullptr;
                 break;
             case IconShape::ArrowRight:
-                sh.DrawRightArrow(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawRightArrow;
                 break;
             case IconShape::HorizontalLine:
-                sh.DrawHorizontalLine(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawHorizontalLine;
                 break;
             case IconShape::Circle:
-                sh.DrawCircle(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawCircle;
                 break;
             case IconShape::Square:
-                sh.DrawSquare(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawSquare;
                 break;
             case IconShape::Asterisk:
-                sh.DrawAsterisk(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawAsterisk;
                 break;
             case IconShape::Plus:
-                sh.DrawPlus(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawPlus;
                 break;
             case IconShape::TriangleUpward:
-                sh.DrawUpwardTriangle(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawUpwardTriangle;
                 break;
             case IconShape::TriangleDownward:
-                sh.DrawDownwardTriangle(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawDownwardTriangle;
                 break;
             case IconShape::TriangleRight:
-                sh.DrawRightTriangle(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawRightTriangle;
                 break;
             case IconShape::TriangleLeft:
-                sh.DrawLeftTriangle(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawLeftTriangle;
                 break;
             case IconShape::Diamond:
-                sh.DrawDiamond(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawDiamond;
                 break;
             case IconShape::Hexagon:
-                sh.DrawHexagon(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawHexagon;
                 break;
             case IconShape::BoxPlot:
-                sh.DrawBoxPlot(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawBoxPlot;
                 break;
             case IconShape::Sun:
-                sh.DrawSun(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawSun;
                 break;
             case IconShape::Flower:
-                sh.DrawFlower(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawFlower;
                 break;
             case IconShape::FallLeaf:
-                sh.DrawFallLeaf(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawFallLeaf;
                 break;
             case IconShape::WarningRoadSign:
-                sh.DrawWarningRoadSign(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawWarningRoadSign;
                 break;
             case IconShape::LocationMarker:
-                sh.DrawGeoMarker(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawGeoMarker;
                 break;
             case IconShape::GoRoadSign:
-                sh.DrawGoSign(drawRect, dc);
+                m_drawFunction = &ShapeRenderer::DrawGoSign;
                 break;
             case IconShape::Image:
-                sh.DrawImage(drawRect, dc, m_iconImage);
+                m_drawFunction = &ShapeRenderer::DrawImage;
                 break;
             case IconShape::LeftCurlyBrace:
-                sh.DrawCurlyBraces(drawRect, dc, Side::Left);
+                m_drawFunction = &ShapeRenderer::DrawLeftCurlyBrace;
                 break;
             case IconShape::RightCurlyBrace:
-                sh.DrawCurlyBraces(drawRect, dc, Side::Right);
+                m_drawFunction = &ShapeRenderer::DrawRightCurlyBrace;
                 break;
             case IconShape::TopCurlyBrace:
-                sh.DrawCurlyBraces(drawRect, dc, Side::Top);
+                m_drawFunction = &ShapeRenderer::DrawTopCurlyBrace;
                 break;
             case IconShape::BottomCurlyBrace:
-                sh.DrawCurlyBraces(drawRect, dc, Side::Bottom);
+                m_drawFunction = &ShapeRenderer::DrawBottomCurlyBrace;
                 break;
+            case IconShape::Male:
+                m_drawFunction = &ShapeRenderer::DrawMale;
+                break;
+            case IconShape::Female:
+                m_drawFunction = &ShapeRenderer::DrawFemale;
+                break;
+            case IconShape::FemaleBusiness:
+                m_drawFunction = &ShapeRenderer::DrawFemaleBusiness;
+                break;
+            }
+        }
+
+    //---------------------------------------------------
+    void Shape::Draw(const wxRect& drawRect, wxDC& dc) const
+        {
+        // apply any brush, pen, etc. changes if necessary
+        if (m_renderNeedsUpdating)
+            { m_renderer.m_graphInfo = GraphItemBase::GetGraphItemInfo(); }
+        m_renderNeedsUpdating = false;
+
+        wxASSERT_LEVEL_2_MSG(m_drawFunction, L"Shape failed to set drawing function!");
+        if (m_drawFunction != nullptr)
+            {
+            (m_renderer.*m_drawFunction)(drawRect, dc);
             }
         }
 
@@ -205,7 +234,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn)
+    void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const
         {
         if (GetGraphItemInfo().GetBaseColor())
             {
@@ -217,10 +246,11 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawCircularSign(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawCircularSign(const wxRect rect, const wxBrush& brush, const wxString& text, wxDC& dc) const
         {
-        wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(1)));
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
+        wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
+        wxDCBrushChanger bc(dc, brush);
 
         const auto radius = GetRadius(rect);
         const auto circleCenter = GetMidPoint(rect);
@@ -228,7 +258,7 @@ namespace Wisteria::GraphItems
         dc.DrawCircle(circleCenter, radius);
 
         // lettering on the sign
-        Label theLabel(GraphItemInfo(GetGraphItemInfo().GetText()).Pen(wxNullPen).
+        Label theLabel(GraphItemInfo(text).Pen(wxNullPen).
             AnchorPoint(circleCenter).Anchoring(Anchoring::Center).
             LabelAlignment(TextAlignment::Centered).
             DPIScaling(GetDPIScaleFactor()));
@@ -248,7 +278,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc) const
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -283,8 +313,8 @@ namespace Wisteria::GraphItems
                 {
                 gc->Rotate(geometry::degrees_to_radians(angle));
                 // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over to
-                // from the translated origin
+                // we need to adjust the points of our middle line back and over from
+                // the translated origin
                 gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
                                points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
                 angle += 45;
@@ -304,7 +334,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -338,8 +368,8 @@ namespace Wisteria::GraphItems
                 {
                 gc->Rotate(geometry::degrees_to_radians(angle));
                 // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over to
-                // from the translated origin
+                // we need to adjust the points of our middle line back and over from
+                // the translated origin
                 gc->DrawEllipse(petalRect.GetTopLeft().x - centerPt.x,
                                 petalRect.GetTopLeft().y - centerPt.y,
                                 petalRect.GetWidth(), petalRect.GetHeight());
@@ -361,7 +391,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawBoxPlot(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawBoxPlot(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -396,7 +426,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawSquare(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawSquare(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -406,7 +436,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawCircle(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawCircle(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -416,7 +446,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawDiamond(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawDiamond(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -438,22 +468,22 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawImage(wxRect rect, wxDC& dc, const wxBitmapBundle* img)
+    void ShapeRenderer::DrawImage(wxRect rect, wxDC& dc) const
         {
-        if (img && img->IsOk())
+        if (m_iconImage && m_iconImage->IsOk())
             {
             const auto downScaledSize = geometry::calculate_downscaled_size(
-                std::make_pair<double, double>(img->GetDefaultSize().GetWidth(),
-                                               img->GetDefaultSize().GetHeight()),
+                std::make_pair<double, double>(m_iconImage->GetDefaultSize().GetWidth(),
+                    m_iconImage->GetDefaultSize().GetHeight()),
                 std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
-            const wxBitmap scaledImg = img->GetBitmap(wxSize(downScaledSize.first,
+            const wxBitmap scaledImg = m_iconImage->GetBitmap(wxSize(downScaledSize.first,
                                                              downScaledSize.second));
             dc.DrawBitmap(scaledImg, rect.GetTopLeft());
             }
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -515,7 +545,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawGoSign(const wxRect rect, wxDC& dc) const
         {
         wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
 
@@ -523,7 +553,7 @@ namespace Wisteria::GraphItems
 
         // sign post
             {
-            wxPoint pt[2] =
+            const wxPoint pt[2] =
                 {
                 rect.GetTopLeft() +
                     wxSize(rect.GetWidth() / 2, iconRadius),
@@ -550,20 +580,15 @@ namespace Wisteria::GraphItems
             }
         // sign
             {
-            const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
-            GetGraphItemInfo().Pen(wxPen(*wxBLACK, signOutlineWidth)).
-                Brush(ColorBrewer::GetColor(Color::KellyGreen));
-
             const auto signRect = wxRect(rect.GetLeftTop(),
                                          wxSize(rect.GetWidth(),
                                                 rect.GetHeight() * math_constants::two_thirds));
-            GetGraphItemInfo().Text(_(L"GO"));
-            DrawCircularSign(signRect, dc);
+            DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen), _(L"GO"), dc);
             }
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawWarningRoadSign(const wxRect rect, wxDC& dc) const
         {
         wxDCBrushChanger bc(dc, ColorBrewer::GetColor(Color::SchoolBusYellow));
 
@@ -633,7 +658,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawRightArrow(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -653,7 +678,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawHexagon(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawHexagon(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -677,7 +702,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawUpwardTriangle(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawUpwardTriangle(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -698,7 +723,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawDownwardTriangle(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawDownwardTriangle(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -709,7 +734,7 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points =
+        const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(0, iconRadius),
             midPoint + wxPoint(-iconRadius, -iconRadius),
@@ -720,7 +745,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawRightTriangle(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawRightTriangle(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -731,7 +756,7 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points =
+        const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(iconRadius, 0),
             midPoint + wxPoint(-iconRadius, iconRadius),
@@ -742,7 +767,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawLeftTriangle(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawLeftTriangle(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -753,7 +778,7 @@ namespace Wisteria::GraphItems
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
         
-        std::array<wxPoint, 3> points =
+        const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(-iconRadius, 0),
             midPoint + wxPoint(iconRadius, iconRadius),
@@ -764,7 +789,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc) const
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -802,8 +827,8 @@ namespace Wisteria::GraphItems
                 {
                 gc->Rotate(geometry::degrees_to_radians(angle));
                 // note that because we translated to the middle of the drawing area,
-                // we need to adjust the points of our middle line back and over to
-                // from the translated origin
+                // we need to adjust the points of our middle line back and over from
+                // the translated origin
                 gc->StrokeLine(points[0].m_x - centerPt.x, points[0].m_y - centerPt.y,
                                points[1].m_x - centerPt.x, points[1].m_y - centerPt.y);
                 angle += 45;
@@ -819,7 +844,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawPlus(wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawPlus(wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -838,7 +863,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawHorizontalLine(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawHorizontalLine(const wxRect rect, wxDC& dc) const
         {
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
@@ -854,7 +879,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc)
+    void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
         wxBitmap bmp(rect.GetSize());
         Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
@@ -912,7 +937,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawCurlyBraces(const wxRect rect, wxDC& dc, const Side side)
+    void ShapeRenderer::DrawCurlyBrace(const wxRect rect, wxDC& dc, const Side side) const
         {
         wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
                      L"Pen should be set in Shape for curly braces!");
@@ -1033,6 +1058,483 @@ namespace Wisteria::GraphItems
                     rightRect.GetBottomRight());
                 gc->StrokePath(lowerCurlPath);
                 }
+
+            wxDELETE(gc);
+            }
+
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawMale(const wxRect rect, wxDC& dc) const
+        {
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
+
+        const wxRect dcRect(memDC.GetSize());
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for male outline!");
+        if (gc)
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetPen());
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            gc->SetPen(scaledPen);
+
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
+
+            auto outlinePath = gc->CreatePath();
+            // draw the head
+            wxRect headRect{ dcRect };
+            headRect.SetHeight(headRect.GetHeight() * .15);
+            const auto headMiddle{ GetMidPoint(headRect) };
+            outlinePath.AddCircle(headMiddle.x, headMiddle.y, GetRadius(headRect));
+
+            // move to the middle of the shoulders
+            wxRect bodyRect{ dcRect };
+            const auto neckHeight{ (dcRect.GetHeight() * 0.025) };
+            bodyRect.SetHeight(bodyRect.GetHeight() - headRect.GetHeight() - neckHeight);
+            bodyRect.SetTop(headRect.GetBottom() + neckHeight);
+            outlinePath.MoveToPoint(wxPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                            bodyRect.GetTop()));
+
+            constexpr auto collarWidth{ 0.3 };
+            constexpr auto shoulderWidth{ 0.1 };
+            constexpr auto shoulderHeight{ 0.1 };
+            constexpr auto armLength{ 0.3 };
+            constexpr auto armWidth{ 0.15 };
+            constexpr auto armpitWidth{ 0.05 };
+            constexpr auto crotchWidth{ 0.05 };
+            constexpr auto sideLength{ 0.9 };
+            constexpr auto lengthBetweenArmAndLegs{ 0.05 };
+            constexpr auto legWidth{ 0.175 };
+            constexpr auto yControlPointOffset{ 0.05 };
+            // left collar and shoulder
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarWidth),
+                                       GetYPosFromTop(bodyRect, 0));
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left arm (left side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                            (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // left hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            (armWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // inside of left arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left armpit
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            armWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left side, down to left foot
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            armWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, sideLength));
+            // left foot
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            armWidth + armpitWidth + (legWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, sideLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            armWidth + armpitWidth + legWidth),
+                                       GetYPosFromTop(bodyRect, sideLength));
+            // inside of left leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            armWidth + armpitWidth + legWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+            // left half of crotch
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+
+            // right half of crotch
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + lengthBetweenArmAndLegs));
+            // inside of right leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, sideLength));
+            // right foot
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           (legWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, sideLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) + legWidth),
+                                       GetYPosFromTop(bodyRect, sideLength));
+            // right side, up to armpit
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                        math_constants::half + (crotchWidth * math_constants::half) + legWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // right armpit
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           legWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // inside of right arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           legWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // right hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           legWidth + armpitWidth + (armWidth * math_constants::half)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           legWidth + armpitWidth + armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // right arm (right side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + (crotchWidth * math_constants::half) +
+                                           legWidth + armpitWidth + armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // right shoulder and collar
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth + shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth)),
+                                       GetYPosFromTop(bodyRect, 0));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, 0));
+
+            gc->FillPath(outlinePath);
+            gc->StrokePath(outlinePath);
+
+            wxDELETE(gc);
+            }
+
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFemale(const wxRect rect, wxDC& dc) const
+        {
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
+
+        const wxRect dcRect(wxRect(memDC.GetSize()).Deflate(
+            GetGraphItemInfo().GetPen().IsOk() ?
+                ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                0));
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
+        if (gc)
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetPen());
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            gc->SetPen(scaledPen);
+
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
+
+            auto outlinePath = gc->CreatePath();
+            // draw the head
+            wxRect headRect{ dcRect };
+            headRect.SetHeight(headRect.GetHeight() * .15);
+            const auto headMiddle{ GetMidPoint(headRect) };
+            outlinePath.AddCircle(headMiddle.x, headMiddle.y, GetRadius(headRect));
+
+            // move to the middle of the shoulders
+            wxRect bodyRect{ dcRect };
+            const auto neckHeight{ (dcRect.GetHeight() * 0.025) };
+            bodyRect.SetHeight(bodyRect.GetHeight() - headRect.GetHeight() - neckHeight);
+            bodyRect.SetTop(headRect.GetBottom() + neckHeight);
+            outlinePath.MoveToPoint(wxPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                            bodyRect.GetTop()));
+
+            constexpr auto collarWidth{ 0.25 };
+            constexpr auto collarShortWidth{ 0.15 };
+            constexpr auto shoulderWidth{ 0.1 };
+            constexpr auto shoulderHeight{ 0.1 };
+            constexpr auto armLength{ 0.25 };
+            constexpr auto armShortLength{ 0.2 };
+            constexpr auto armWidth{ 0.1 };
+            constexpr auto armpitWidth{ 0.05 };
+            constexpr auto waistWidth{ 0.125 };
+            constexpr auto thoraxHeight{ 0.2 };
+            constexpr auto legWidth{ 0.125 };
+            constexpr auto dressWidth{ 0.3 };
+            constexpr auto dressBottom{ 0.675 };
+            constexpr auto ankleWidth{ 0.075 };
+            constexpr auto yControlPointOffset{ 0.05 };
+            constexpr auto xControlPointRightShoulderOffset{ 0.125 };
+            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth * math_constants::quarter };
+            // left collar and shoulder
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
+                                       GetYPosFromTop(bodyRect, 0));
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left arm (left side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, 0),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            // left hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect, 0),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect, armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // inside of left arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left armpit to waist
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            // left waist to bottom of dress
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - dressWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // dress bottom to leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // left leg to ankle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
+                                       GetYPosFromTop(bodyRect, 0.9));
+            // ankle to middle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, 0.9));
+
+            // right side
+            //-----------
+            // ankle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
+                                       GetYPosFromTop(bodyRect, 0.9));
+            // ankle up right leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // dress bottom
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + dressWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // bottom of dress to right waist
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            // waist to right armpit
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // inside of right arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // right hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            // right arm (right side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarWidth + shoulderWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // shoulder and right collar
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarShortWidth),
+                                       GetYPosFromTop(bodyRect, 0));
+            // collar
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, 0));
+
+            gc->FillPath(outlinePath);
+            gc->StrokePath(outlinePath);
+
+            wxDELETE(gc);
+            }
+
+        memDC.SelectObject(wxNullBitmap);
+        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawFemaleBusiness(const wxRect rect, wxDC& dc) const
+        {
+        wxBitmap bmp(rect.GetSize());
+        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+        wxMemoryDC memDC(bmp);
+        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
+        memDC.Clear();
+
+        const wxRect dcRect(wxRect(memDC.GetSize()).Deflate(
+            GetGraphItemInfo().GetPen().IsOk() ?
+                ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+                0));
+
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
+        if (gc)
+            {
+            wxPen scaledPen(GetGraphItemInfo().GetPen());
+            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            gc->SetPen(scaledPen);
+
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
+
+            auto outlinePath = gc->CreatePath();
+            // draw the head
+            wxRect headRect{ dcRect };
+            headRect.SetHeight(headRect.GetHeight() * .15);
+            const auto headMiddle{ GetMidPoint(headRect) };
+            outlinePath.AddCircle(headMiddle.x, headMiddle.y, GetRadius(headRect));
+
+            // move to the middle of the shoulders
+            wxRect bodyRect{ dcRect };
+            const auto neckHeight{ (dcRect.GetHeight() * 0.025) };
+            bodyRect.SetHeight(bodyRect.GetHeight() - headRect.GetHeight() - neckHeight);
+            bodyRect.SetTop(headRect.GetBottom() + neckHeight);
+            outlinePath.MoveToPoint(wxPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                            bodyRect.GetTop()));
+
+            constexpr auto collarWidth{ 0.25 };
+            constexpr auto collarShortWidth{ 0.15 };
+            constexpr auto shoulderWidth{ 0.1 };
+            constexpr auto shoulderHeight{ 0.1 };
+            constexpr auto armLength{ 0.25 };
+            constexpr auto armShortLength{ 0.2 };
+            constexpr auto armWidth{ 0.1 };
+            constexpr auto armpitWidth{ 0.05 };
+            constexpr auto waistWidth{ 0.125 };
+            constexpr auto thoraxHeight{ 0.2 };
+            constexpr auto legWidth{ 0.125 };
+            constexpr auto dressWidth{ legWidth + 0.05 };
+            constexpr auto hipWidth{ dressWidth * 1.6 };
+            constexpr auto dressBottom{ 0.675 };
+            constexpr auto ankleWidth{ 0.075 };
+            constexpr auto yControlPointOffset{ 0.05 };
+            constexpr auto xControlPointRightShoulderOffset{ 0.125 };
+            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth * math_constants::quarter };
+            // left collar and shoulder
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
+                                       GetYPosFromTop(bodyRect, 0));
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left arm (left side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, 0),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            // left hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect, 0),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect, armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // inside of left arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // left armpit to waist
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            // left waist to bottom of dress
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half - hipWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
+                                                      (dressBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                                       GetXPosFromLeft(bodyRect, math_constants::half - dressWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // dress bottom to leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // left leg to ankle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
+                                       GetYPosFromTop(bodyRect, 0.9));
+            // ankle to middle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, 0.9));
+
+            // right side
+            //-----------
+            // ankle
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
+                                       GetYPosFromTop(bodyRect, 0.9));
+            // ankle up right leg
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // dress bottom
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + dressWidth),
+                                       GetYPosFromTop(bodyRect, dressBottom));
+            // bottom of dress to right waist
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + hipWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
+                                                      (dressBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                                       GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+            // waist to right armpit
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // inside of right arm
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+            // right hand
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            // right arm (right side)
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarWidth + shoulderWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight));
+            // shoulder and right collar
+            outlinePath.AddQuadCurveToPoint(
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
+                                       GetYPosFromTop(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect,
+                                           math_constants::half + collarShortWidth),
+                                       GetYPosFromTop(bodyRect, 0));
+            // collar
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
+                                       GetYPosFromTop(bodyRect, 0));
+
+            gc->FillPath(outlinePath);
+            gc->StrokePath(outlinePath);
 
             wxDELETE(gc);
             }

@@ -31,7 +31,8 @@
 namespace Wisteria::Icons
     {
     /// @brief The types of shapes that can be drawn on a legend or plot.
-    /// @internal Update the constant map in @c ReportBuilder::LoadIconScheme when added a new icon.
+    /// @internal Update the constants map in @c ReportBuilder::LoadIconScheme
+    ///     as well as rendering logic to Shape when adding a new icon.
     enum class IconShape
         {
         Blank,                         /*!< Don't draw any icon.*/
@@ -69,7 +70,10 @@ namespace Wisteria::Icons
         LeftCurlyBrace,                /*!< A left curly brace (enclosing content to its right).*/
         RightCurlyBrace,               /*!< A right curly brace (enclosing content to its left).*/
         TopCurlyBrace,                 /*!< A top curly brace (enclosing content beneath it).*/
-        BottomCurlyBrace               /*!< A bottom curly brace (enclosing content above it).*/
+        BottomCurlyBrace,              /*!< A bottom curly brace (enclosing content above it).*/
+        Male,                          /*!< A basic male outline.*/
+        Female,                        /*!< A basic female outline.*/
+        FemaleBusiness                 /*!< A basic female outline (in a business skirt).*/
         };
 
     /// @brief Item to draw on a legend.
@@ -79,7 +83,7 @@ namespace Wisteria::Icons
         {
         /** @brief Constructs a color gradient legend.
             @param colors The color gradient to use (must contain at least two colors).
-            @note The colors are drawn top to bottom, starting from the first color.*/
+            @note The colors are drawn top-to-bottom, starting from the first color.*/
         explicit LegendIcon(const std::vector<wxColour>& colors) :
             m_shape(IconShape::ColorGradient), m_colors(colors)
             {
