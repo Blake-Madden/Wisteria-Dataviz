@@ -241,7 +241,6 @@ namespace Wisteria::GraphItems
     //----------------------------------------------------------------
     wxRect PieSlice::Draw(wxDC& dc) const
         {
-        wxDCBrushChanger bCh(dc, GetBrush());
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
 
@@ -261,6 +260,16 @@ namespace Wisteria::GraphItems
             scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
 
             wxDCPenChanger pc(dc, scaledArcPen);
+
+            // if a base color is in use, draw under a (possibly) hatched brush
+            if (GetGraphItemInfo().GetBaseColor().has_value())
+                {
+                wxDCBrushChanger bCh(dc, GetGraphItemInfo().GetBaseColor().value());
+                dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(),
+                               m_startAngle, m_endAngle);
+                }
+
+            wxDCBrushChanger bCh(dc, GetBrush());
             dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(),
                                m_startAngle, m_endAngle);
             }
@@ -307,11 +316,13 @@ namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     PieChart::PieChart(Canvas* canvas,
+                       std::shared_ptr<Brushes::Schemes::BrushScheme> brushes /*= nullptr*/,
                        std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/) :
         Graph2D(canvas),
-        m_pieColors(colors != nullptr ?
-            colors :
-            Settings::GetDefaultColorScheme())
+        m_pieBrushes(brushes != nullptr ? brushes :
+                     std::make_shared<Brushes::Schemes::BrushScheme>
+                        (*Settings::GetDefaultColorScheme()) ),
+        m_pieColors(colors)
         {
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
@@ -675,13 +686,19 @@ namespace Wisteria::Graphs
         int smallestMiddleLabelFontSize{ GetBottomXAxis().GetFont().GetPointSize() };
         for (size_t i = 0; i < GetOuterPie().size(); ++i)
             {
-            const wxColour sliceColor =
-                (GetOuterPie().at(i).IsGhosted() ?
-                    ColorContrast::ChangeOpacity(GetColorScheme()->GetColor(i), m_ghostOpacity) :
-                    GetColorScheme()->GetColor(i));
+            std::optional<wxColour> sliceColor =
+                GetColorScheme() ?
+                    std::optional<wxColour>(GetOuterPie().at(i).IsGhosted() ?
+                        ColorContrast::ChangeOpacity(GetColorScheme()->GetColor(i), m_ghostOpacity) :
+                        GetColorScheme()->GetColor(i)) :
+                    std::nullopt;
+            wxBrush sliceBrush = GetBrushScheme()->GetBrush(i);
+            sliceBrush.SetColour(GetOuterPie().at(i).IsGhosted() ?
+                    ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(), m_ghostOpacity) :
+                    GetBrushScheme()->GetBrush(i).GetColour());
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
-                Brush(sliceColor).
+                Brush(sliceBrush).BaseColor(sliceColor).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Pen(GetPen()),
                 pieDrawArea,
@@ -694,13 +711,13 @@ namespace Wisteria::Graphs
                     GetOuterPie().at(i).m_description);
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 if (IsUsingColorLabels())
-                    { pSlice->GetHeaderInfo().FontColor(GetColorScheme()->GetColor(i)); }
+                    { pSlice->GetHeaderInfo().FontColor(GetBrushScheme()->GetBrush(i).GetColour()); }
                 pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), .4));
                 }
             else
                 {
                 if (IsUsingColorLabels())
-                    { pSlice->SetFontColor(GetColorScheme()->GetColor(i)); }
+                    { pSlice->SetFontColor(GetBrushScheme()->GetBrush(i).GetColour()); }
                 pSlice->GetFont().MakeBold();
                 }
             AddObject(pSlice);
@@ -744,7 +761,13 @@ namespace Wisteria::Graphs
         // inner pie
         startAngle = 0;
         size_t currentParentSliceIndex{ 0 };
-        auto sliceColor{ GetColorScheme()->GetColor(0) };
+        std::optional<wxColour> sliceColor
+            {
+            GetColorScheme() ?
+                std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
+                std::nullopt
+            };
+        auto sliceBrush{ GetBrushScheme()->GetBrush(0) };
         middleLabels.clear();
         smallestMiddleLabelFontSize = GetBottomXAxis().GetFont().GetPointSize();
 
@@ -771,22 +794,38 @@ namespace Wisteria::Graphs
         // both rings use these
         for (size_t i = 0; i < GetInnerPie().size(); ++i)
             {
-            // slightly adjusted color based on the parent slice color
-            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
-                ColorContrast::ShadeOrTint(sliceColor, .1) :
-                ColorContrast::ShadeOrTint(
-                    GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex, 0.1));
-            const wxColour sliceColorForBrush =
-                (GetInnerPie().at(i).IsGhosted() ?
+            std::optional<wxColour> sliceColorToUse{ sliceColor };
+            if (sliceColor && GetColorScheme())
+                {
+                sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                    ColorContrast::ShadeOrTint(sliceColor.value(), .1) :
+                    ColorContrast::ShadeOrTint(
+                        GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex), 0.1);
+                sliceColorToUse = (GetInnerPie().at(i).IsGhosted() ?
                     // inner slices should be twice as translucent as outer slices since
                     // the outer slices will slightly show through it
-                    ColorContrast::ChangeOpacity(sliceColor, m_ghostOpacity / 2) :
+                    ColorContrast::ChangeOpacity(sliceColor.value(), m_ghostOpacity / 2) :
                     sliceColor);
+                }
+            sliceBrush = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                sliceBrush :
+                GetBrushScheme()->GetBrush(GetInnerPie().at(i).m_parentSliceIndex);
+            sliceBrush.SetColour((currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                ColorContrast::ShadeOrTint(sliceBrush.GetColour(), 0.1) :
+                ColorContrast::ShadeOrTint(
+                    GetBrushScheme()->GetBrush(GetInnerPie().at(i).m_parentSliceIndex).GetColour(), 0.1));
+            wxBrush sliceBrushToUse{ sliceBrush };
+            sliceBrushToUse.SetColour(GetInnerPie().at(i).IsGhosted() ?
+                    // inner slices should be twice as translucent as outer slices since
+                    // the outer slices will slightly show through it
+                    ColorContrast::ChangeOpacity(sliceBrush.GetColour(), m_ghostOpacity / 2) :
+                    sliceBrush.GetColour());
+
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
 
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetInnerPie().at(i).GetGroupLabel()).
-                Brush(sliceColorForBrush).
+                Brush(sliceBrushToUse).BaseColor(sliceColorToUse).
                 DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                 Pen(sliceLine),
                 innerDrawArea,
@@ -802,8 +841,8 @@ namespace Wisteria::Graphs
                 // use the parent slice color for the header, font color for the body
                 if (IsUsingColorLabels())
                     {
-                    pSlice->SetFontColor(GetColorScheme()->GetColor(
-                        GetInnerPie().at(i).m_parentSliceIndex));
+                    pSlice->SetFontColor(GetBrushScheme()->GetBrush(
+                        GetInnerPie().at(i).m_parentSliceIndex).GetColour());
                     }
                 pSlice->SetFontColor(ColorContrast::ShadeOrTint(pSlice->GetFontColor(), 0.4));
                 }
@@ -813,8 +852,8 @@ namespace Wisteria::Graphs
                     {
                     // parent color if using color labels, the inner slice's color
                     // may be too washed out to be legible
-                    pSlice->SetFontColor(GetColorScheme()->GetColor(
-                        GetInnerPie().at(i).m_parentSliceIndex));
+                    pSlice->SetFontColor(GetBrushScheme()->GetBrush(
+                        GetInnerPie().at(i).m_parentSliceIndex).GetColour());
                     }
                 pSlice->GetFont().MakeBold();
                 }
@@ -1626,13 +1665,23 @@ namespace Wisteria::Graphs
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
         currentLine += 2;
         legend->GetLegendIcons().emplace_back(
-            LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN, GetColorScheme()->GetColor(0)));
+            LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN,
+                GetBrushScheme()->GetBrush(0),
+                        GetColorScheme() ?
+                            std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
+                            std::nullopt));
         legend->GetLegendIcons().emplace_back(
             LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
 
         size_t lineCount{ 0 };
         size_t currentParentSliceIndex{ 0 };
-        auto sliceColor{ GetColorScheme()->GetColor(0) };
+        std::optional<wxColour> sliceColor
+            {
+            GetColorScheme() ?
+                std::optional<wxColour>(GetColorScheme()->GetColor(0)) :
+                std::nullopt
+            };
+        auto sliceBrush{ GetBrushScheme()->GetBrush(0) };
         for (size_t i = 0; i < GetInnerPie().size(); ++i)
             {
             if (Settings::GetMaxLegendItemCount() == lineCount)
@@ -1653,10 +1702,20 @@ namespace Wisteria::Graphs
 
             // get the color
             // slightly adjusted color based on the parent slice color
-            sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
-                ColorContrast::ShadeOrTint(sliceColor, .1) :
+            if (sliceColor && GetColorScheme())
+                {
+                sliceColor = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                    ColorContrast::ShadeOrTint(sliceColor.value(), .1) :
+                    ColorContrast::ShadeOrTint(
+                        GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex), .1);
+                }
+            sliceBrush = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                sliceBrush :
+                GetBrushScheme()->GetBrush(GetInnerPie().at(i).m_parentSliceIndex);
+            sliceBrush.SetColour((currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
+                ColorContrast::ShadeOrTint(sliceBrush.GetColour(), .1) :
                 ColorContrast::ShadeOrTint(
-                    GetColorScheme()->GetColor(GetInnerPie().at(i).m_parentSliceIndex, .1));
+                    GetBrushScheme()->GetBrush(GetInnerPie().at(i).m_parentSliceIndex).GetColour(), .1));
             // starting a new group
             if (currentParentSliceIndex != GetInnerPie().at(i).m_parentSliceIndex)
                 {
@@ -1666,9 +1725,7 @@ namespace Wisteria::Graphs
                 legend->GetLinesIgnoringLeftMargin().insert(currentLine);
                 currentLine += 2;
                 legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::HorizontalLine,
-                        *wxBLACK_PEN,
-                        GetColorScheme()->GetColor(currentParentSliceIndex)));
+                    LegendIcon(IconShape::HorizontalLine, *wxBLACK_PEN, *wxBLACK_BRUSH));
                 legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::HorizontalSeparator, *wxBLACK_PEN, *wxBLACK_BRUSH));
                 }
@@ -1677,7 +1734,7 @@ namespace Wisteria::Graphs
             legendText.append(currentLabel.c_str()).append(L"\n");
             ++currentLine;
             legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN, sliceColor));
+                    LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN, sliceBrush, sliceColor));
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -1718,7 +1775,10 @@ namespace Wisteria::Graphs
             legendText.append(currentLabel.c_str()).append(L"\n");
             legend->GetLegendIcons().emplace_back(
                     LegendIcon(IconShape::TriangleRight, *wxBLACK_PEN,
-                        GetColorScheme()->GetColor(i)));
+                        GetBrushScheme()->GetBrush(i),
+                        GetColorScheme() ?
+                            std::optional<wxColour>(GetColorScheme()->GetColor(i)) :
+                            std::nullopt));
             }
         legend->SetText(legendText.Trim());
 

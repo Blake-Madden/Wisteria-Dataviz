@@ -1962,6 +1962,7 @@ namespace Wisteria
             const auto groupVar2Name = variablesNode->GetProperty(L"group-2")->GetValueString();
 
             auto pieChart = std::make_shared<PieChart>(canvas,
+                LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
             pieChart->SetData(foundPos->second,
                 (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),

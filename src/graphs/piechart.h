@@ -369,9 +369,14 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points.\n
-                Leave as null to use the default theme.*/
+            @param brushes The brush scheme, which will contain the color and brush patterns
+                to render the slices with.
+            @param colors The color scheme to apply to the slices underneath the slices'
+                brush patterns.\n
+                This is useful if using a hatched brush, as this color will be solid
+                and show underneath it. Leave as null just to use the brush scheme.*/
         explicit PieChart(Canvas* canvas,
+                          std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
                           std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
 
         /** @brief Sets the data for the chart.
@@ -797,9 +802,11 @@ namespace Wisteria::Graphs
     private:
         void RecalcSizes(wxDC& dc) final;
 
+        const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
+            { return m_pieBrushes; }
         /// @brief Get the color scheme used for the slices.
         /// @returns The color scheme used for the slices.
-        std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const noexcept
+        const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
             { return m_pieColors; }
 
         PieInfo m_innerPie;
@@ -814,6 +821,7 @@ namespace Wisteria::Graphs
                       ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
 
+        std::shared_ptr<Brushes::Schemes::BrushScheme> m_pieBrushes;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_pieColors;
 
         bool m_useColorLabels{ false };
