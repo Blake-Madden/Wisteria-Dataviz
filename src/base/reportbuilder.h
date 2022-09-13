@@ -233,7 +233,7 @@ namespace Wisteria
         /** @brief Loads additional transformation features and applies them to a dataset.
             @param dsNode The datasouce node that the dataset was loaded from.
             @param[in,out] dataset The dataset apply the transformations to.*/
-        [[nodiscard]] void LoadDatasetTransformations(
+        void LoadDatasetTransformations(
             const wxSimpleJSON::Ptr_t& dsNode,
             std::shared_ptr<Data::Dataset>& dataset);
 

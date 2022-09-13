@@ -579,7 +579,7 @@ namespace Wisteria::Graphs
                 LineStyle::Arrows will look odd in this situation, so LineStyle::Lines will
                 be explicitily used.
              @sa SetLabelPlacement().*/
-        [[nodiscard]] void SetInnerPieConnectionLineStyle(const LineStyle lStyle) noexcept
+        void SetInnerPieConnectionLineStyle(const LineStyle lStyle) noexcept
             { m_connectionLineStyle = lStyle; }
 
         /// @returns What the labels on the middle points along the inner ring are displaying.
