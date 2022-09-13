@@ -265,7 +265,9 @@ namespace Wisteria::Graphs
         /// @brief The row and column position of a cell.
         struct CellPosition
             {
+            /// @brief The row of the cell.
             size_t m_row{ 0 };
+            /// @brief The column of the cell.
             size_t m_column{ 0 };
             };
 

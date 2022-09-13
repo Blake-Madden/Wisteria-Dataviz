@@ -108,7 +108,8 @@ namespace Wisteria::Data
             @param namesPattern If needing to split the names of the columns into multiple target columns,
                 this regular expression can be used. It should contain capture groups, where each group
                 will be the name of a new target column.\n
-                Leave blank (the default) to use the full name of @c fromColumns as the labels.*/
+                Leave blank (the default) to use the full name of @c fromColumns as the labels.
+            @returns The pivoted dataset.*/
         [[nodiscard]] std::shared_ptr<Dataset> PivotLonger(
             const std::shared_ptr<const Dataset>& dataset,
             const std::vector<wxString>& columnsToKeep,
