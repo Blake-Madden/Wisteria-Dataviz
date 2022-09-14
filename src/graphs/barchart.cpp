@@ -156,17 +156,29 @@ namespace Wisteria::Graphs
                 IsShowingBarLabels());
 
             // tweak scaling, if possible
-            if (m_longestBarLength > 300 && m_longestBarLength < 1'500)
+            if (m_longestBarLength >= 20'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    next_interval(m_longestBarLength, 3),
-                    GetScalingAxis().GetPrecision(), 100, 1);
+                    next_interval(m_longestBarLength, 4),
+                    GetScalingAxis().GetPrecision(), 5'000, 1);
+                }
+            else if (m_longestBarLength >= 10'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 4),
+                    GetScalingAxis().GetPrecision(), 1'000, 1);
                 }
             else if (m_longestBarLength >= 1'500)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                     next_interval(m_longestBarLength, 4),
                     GetScalingAxis().GetPrecision(), 500, 1);
+                }
+            else if (m_longestBarLength > 300)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 3),
+                    GetScalingAxis().GetPrecision(), 100, 1);
                 }
             }
 
@@ -502,6 +514,9 @@ namespace Wisteria::Graphs
                                     Colors::GradientFill(barBlock.GetColor()));
                                 box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
                                 }
+                            // if the box is really thin, then don't use the outline pen
+                            if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
+                                { box->GetPen() = wxNullPen; }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
                             AddObject(box);
@@ -817,6 +832,9 @@ namespace Wisteria::Graphs
                                     Colors::GradientFill(barBlock.GetColor()));
                                 box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
                                 }
+                            // if the box is really thin, then don't use the outline pen
+                            if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
+                                { box->GetPen() = wxNullPen; }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
                             // add the box to the plot item collection
                             AddObject(box);
