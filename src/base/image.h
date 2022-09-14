@@ -286,6 +286,20 @@ namespace Wisteria::GraphItems
                 are already transparent in the image.*/
         static void SetOpacity(wxImage& image, const uint8_t opacity,
                                const bool preserveTransparentPixels);
+        /** @brief Sets the opacity of a bitmap.
+            @param image The image to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param colorToPreserve Color which will not have its opacity altered.
+                This is useful for preserving highlights in an image.*/
+        static void SetOpacity(wxImage& image, const uint8_t opacity,
+                               const wxColour colorToPreserve);
+        /** @brief Sets the opacity of a bitmap.
+            @param bmp The bitmap to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param colorToPreserve Color which will not have its opacity altered.
+                This is useful for preserving highlights in an image.*/
+        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
+                               const wxColour colorToPreserve);
         /// @returns The size of the image as it is being drawn.
         [[nodiscard]] const wxSize& GetImageSize() const noexcept
             { return m_size; }

@@ -148,6 +148,42 @@ namespace Wisteria::GraphItems
 
     //-------------------------------------------
     void Image::SetOpacity(wxImage& image, const uint8_t opacity,
+                           const wxColour colorToPreserve)
+        {
+        if (!image.IsOk())
+            { return; }
+        if (!colorToPreserve.IsOk())
+            {
+            SetOpacity(image, opacity, true);
+            return;
+            }
+        const long pixelCount = image.GetWidth()*image.GetHeight();
+
+        const auto redChannel = colorToPreserve.GetRed();
+        const auto greenChannel = colorToPreserve.GetGreen();
+        const auto blueChannel = colorToPreserve.GetBlue();
+
+        if (!image.HasAlpha())
+            { image.InitAlpha(); }
+        if (image.HasAlpha())
+            {
+            auto alphaData = image.GetAlpha();
+            const auto rgbData = image.GetData();
+            if (alphaData)
+                {
+                for (long i = 0; i < pixelCount; ++i)
+                    {
+                    if (!(rgbData[i*3] == redChannel &&
+                          rgbData[(i*3) +2] == greenChannel &&
+                          rgbData[(i*3) + 2] == blueChannel))
+                        { alphaData[i] = opacity; }
+                    }
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void Image::SetOpacity(wxImage& image, const uint8_t opacity,
                            const bool preserveTransparentPixels)
         {
         if (!image.IsOk())
@@ -280,6 +316,19 @@ namespace Wisteria::GraphItems
             { return; }
         wxImage bkImage = bmp.ConvertToImage();
         SetOpacity(bkImage, opacity, preserveTransparentPixels);
+
+        bmp = wxBitmap(bkImage);
+        wxASSERT_LEVEL_2(bmp.IsOk());
+        }
+
+    //-------------------------------------------
+    void Image::SetOpacity(wxBitmap& bmp, const uint8_t opacity,
+                           const wxColour colorToPreserve)
+        {
+        if (!bmp.IsOk())
+            { return; }
+        wxImage bkImage = bmp.ConvertToImage();
+        SetOpacity(bkImage, opacity, colorToPreserve);
 
         bmp = wxBitmap(bkImage);
         wxASSERT_LEVEL_2(bmp.IsOk());
