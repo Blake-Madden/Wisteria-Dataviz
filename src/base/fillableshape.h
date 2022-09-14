@@ -20,7 +20,11 @@ namespace Wisteria::GraphItems
     /** @brief Draws a shape onto a canvas that appears to be partially filled.
         @details The lower portion of the shape (which will be the "filled" percent of it)
             will be drawn as normal. The remaining portion will be drawn above that, but
-            will appear heavily translucent (i.e., appearing empty).*/
+            will appear heavily translucent (i.e., appearing empty).\n
+            The effect is achieved by making the brush translucent, while keeping the
+            pen the same. This will result in showing an outline around the entire shape.\n
+            Note that because of this, only shapes that make use of a customizable brush are
+            recommended (i.e., not shapes like plus).*/
     class FillableShape final : public Shape
         {
     public:
@@ -38,7 +42,22 @@ namespace Wisteria::GraphItems
               const wxBitmapBundle* img = nullptr) :
             Shape(itemInfo, shape, sz, img),
             m_fillPercent(std::clamp(fillPercent, math_constants::empty, math_constants::full))
-            {}
+            {
+            // a valid brush is needed, so fall back to black if one is not provided
+            if (!itemInfo.GetBrush().IsOk())
+                {
+                GetBrush() = *wxBLACK_BRUSH;
+                GetRenderer().GetGraphItemInfo().Brush(*wxBLACK_BRUSH);
+                }
+            }
+        /// @private
+        FillableShape(const FillableShape&) = delete;
+        /// @private
+        FillableShape(FillableShape&&) = delete;
+        /// @private
+        FillableShape& operator==(const FillableShape&) = delete;
+        /// @private
+        FillableShape& operator==(FillableShape&&) = delete;
         /** @brief Draws the shape onto the given DC.
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/

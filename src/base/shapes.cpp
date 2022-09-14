@@ -202,9 +202,9 @@ namespace Wisteria::GraphItems
     void Shape::Draw(const wxRect& drawRect, wxDC& dc) const
         {
         // apply any brush, pen, etc. changes if necessary
-        if (m_renderNeedsUpdating)
+        if (m_rendererNeedsUpdating)
             { m_renderer.m_graphInfo = GraphItemBase::GetGraphItemInfo(); }
-        m_renderNeedsUpdating = false;
+        m_rendererNeedsUpdating = false;
 
         wxASSERT_LEVEL_2_MSG(m_shape == IconShape::Blank || m_drawFunction,
             L"Shape failed to set drawing function!");
@@ -1082,9 +1082,12 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for male outline!");
         if (gc)
             {
-            wxPen scaledPen(GetGraphItemInfo().GetPen());
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-            gc->SetPen(scaledPen);
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+                }
 
             gc->SetBrush(GetGraphItemInfo().GetBrush());
 
@@ -1255,9 +1258,12 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {
-            wxPen scaledPen(GetGraphItemInfo().GetPen());
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-            gc->SetPen(scaledPen);
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+                }
 
             gc->SetBrush(GetGraphItemInfo().GetBrush());
 
@@ -1403,9 +1409,12 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {
-            wxPen scaledPen(GetGraphItemInfo().GetPen());
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
-            gc->SetPen(scaledPen);
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+                }
 
             gc->SetBrush(GetGraphItemInfo().GetBrush());
 

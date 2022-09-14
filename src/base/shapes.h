@@ -250,6 +250,14 @@ namespace Wisteria::GraphItems
               const Icons::IconShape shape,
               const wxSize sz,
               const wxBitmapBundle* img = nullptr);
+        /// @private
+        Shape(const Shape&) = delete;
+        /// @private
+        Shape(Shape&&) = delete;
+        /// @private
+        Shape& operator==(const Shape&) = delete;
+        /// @private
+        Shape& operator==(Shape&&) = delete;
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
             @param dc This parameter is ignored.
@@ -260,12 +268,18 @@ namespace Wisteria::GraphItems
             @param dc The DC to render onto.
             @returns The box that the shape is being drawn in.*/
         wxRect Draw(wxDC& dc) const override;
-    protected:
         /** @brief Draws the shape onto the given DC within a given rect.
             @details This is the main drawing routine and should be used by derived classes.
             @param drawRect The rect to draw within.
             @param dc The DC to render onto.*/
         void Draw(const wxRect& drawRect, wxDC& dc) const;
+        /// @returns What type of shape is being drawn.
+        Icons::IconShape GetShape() const noexcept
+            { return m_shape; }
+        /// @returns The size in DIPs.
+        wxSize GetSizeDIPS() const noexcept
+            { return m_sizeDIPs; }
+    protected:
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
@@ -274,10 +288,13 @@ namespace Wisteria::GraphItems
             @param yToMove the amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) noexcept final
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
+        /// @returns The renderer.
+        ShapeRenderer& GetRenderer() noexcept
+            { return m_renderer; }
     private:
-        [[nodiscard]] virtual GraphItemInfo& GetGraphItemInfo() final
+        [[nodiscard]] GraphItemInfo& GetGraphItemInfo() final
             {
-            m_renderNeedsUpdating = true;
+            m_rendererNeedsUpdating = true;
             return GraphItemBase::GetGraphItemInfo();
             }
         void SetDPIScaleFactor(const double scaling) final
@@ -299,7 +316,7 @@ namespace Wisteria::GraphItems
         wxSize m_sizeDIPs{ 0, 0 };
         Icons::IconShape m_shape;
         mutable ShapeRenderer m_renderer;
-        mutable bool m_renderNeedsUpdating{ true };
+        mutable bool m_rendererNeedsUpdating{ true };
         ShapeRenderer::DrawFunction m_drawFunction{ nullptr };
         };
     };

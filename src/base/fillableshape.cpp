@@ -16,17 +16,42 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     wxRect FillableShape::Draw(wxDC& dc) const
         {
+        wxASSERT_MSG(GetBrush().IsOk(), L"Fillable shape must have a valid brush!");
+        if (!GetBrush().IsOk())
+            { return wxRect(); }
         const auto drawArea = GetBoundingBox(dc);
 
         // draw the full shape to a bitmap
         wxBitmap bmp(drawArea.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        wxGCDC gdc(memDC);
-        gdc.SetBrush(*wxTRANSPARENT_BRUSH);
-        gdc.Clear();
-        Shape::Draw(wxRect(drawArea.GetSize()), gdc);
-        memDC.SelectObject(wxNullBitmap);
+        wxBitmap ghostedBmp(drawArea.GetSize());
+
+        // main image
+            {
+            Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
+            wxMemoryDC memDC(bmp);
+            wxGCDC gdc(memDC);
+            gdc.SetBrush(*wxTRANSPARENT_BRUSH);
+            gdc.Clear();
+
+            Shape::Draw(wxRect(drawArea.GetSize()), gdc);
+            memDC.SelectObject(wxNullBitmap);
+            }
+        // ghosted image (brush is translucent, the pen remains the same to show an outline/skeleton of the shape)
+            {
+            Image::SetOpacity(ghostedBmp, wxALPHA_TRANSPARENT);
+            wxMemoryDC memDC(ghostedBmp);
+            wxGCDC gdc(memDC);
+            gdc.SetBrush(*wxTRANSPARENT_BRUSH);
+            gdc.Clear();
+
+            auto shapeInfo{ GraphItemBase::GetGraphItemInfo() };
+            shapeInfo.Brush(wxBrush(Colors::ColorContrast::ChangeOpacity(shapeInfo.GetBrush().GetColour(), 32),
+                            shapeInfo.GetBrush().GetStyle()));
+            Shape ghostShape(shapeInfo, GetShape(), GetSizeDIPS());
+
+            ghostShape.Draw(wxRect(drawArea.GetSize()), gdc);
+            memDC.SelectObject(wxNullBitmap);
+            }
 
         // if 100% "filled," then just draw the regular bitmap
         if (compare_doubles_greater_or_equal(m_fillPercent, math_constants::full))
@@ -35,11 +60,9 @@ namespace Wisteria::GraphItems
             }
         else
             {
-            const auto yCutOff = bmp.GetHeight() * (1.0 - m_fillPercent);
+            const auto yCutOff = bmp.GetHeight() * (math_constants::full - m_fillPercent);
 
-            auto ghostedBmp = bmp.GetSubBitmap(
-                wxSize(bmp.GetWidth(), yCutOff));
-            Image::SetOpacity(ghostedBmp, 32, true);
+            ghostedBmp = ghostedBmp.GetSubBitmap(wxSize(bmp.GetWidth(), yCutOff));
             dc.DrawBitmap(ghostedBmp, drawArea.GetLeftTop(), true);
 
             // nothing to draw above the ghosted image if empty
@@ -53,7 +76,7 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        // draw the outline
+        // draw the bouding box outline
         if (IsSelected())
             {
             wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);

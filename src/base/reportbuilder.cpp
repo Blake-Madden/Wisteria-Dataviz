@@ -1751,7 +1751,7 @@ namespace Wisteria
         wxPen pen(*wxBLACK_PEN);
         LoadPen(shapeNode->GetProperty(L"pen"), pen);
 
-        wxBrush brush(*wxWHITE_BRUSH);
+        wxBrush brush(*wxBLACK_BRUSH);
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         double fillPercent{ math_constants::empty };
