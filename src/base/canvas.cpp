@@ -1190,9 +1190,9 @@ namespace Wisteria
                         }
                     }
                 }
-            wxASSERT_MSG(compare_doubles(tallyColumnsPercent(), 1.0),
+            wxASSERT_MSG(compare_doubles_less_or_equal(tallyColumnsPercent(), 1.0),
                 wxString::Format(L"CalcColumnWidths() failed to set the column widths "
-                    "collectively to 100%%! Percent is %d%%",
+                    "collectively to less than 100%%! Percent is %d%%",
                     static_cast<int>(tallyColumnsPercent() * 100)));
             }
         }

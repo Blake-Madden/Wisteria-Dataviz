@@ -737,15 +737,15 @@ namespace Wisteria::Colors
         ///     For example, black will be returned as dark gray,
         ///     while white will return as an eggshell white.
         /// @param color The color to shade.
-        /// @param shadeValue How much to lighten or darken a color
-        ///      (Should be between @c 0.0 to @c 1.0.)
+        /// @param shadeOrTintValue How much to lighten or darken a color
+        ///      (should be between @c 0.0 to @c 1.0.)
         /// @returns The shaded or tinted color.
         [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
-                                                  const double shadeValue = .20f)
+                                                  const double shadeOrTintValue = .20f)
             {
             return (IsDark(color) ?
-                color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeValue*100), 0, 100)) :
-                color.ChangeLightness(100 - std::clamp(static_cast<int>(shadeValue*100), 0, 100)));
+                color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)) :
+                color.ChangeLightness(100 - std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)));
             }
         /// @brief Returns either black or white, depending on which better contrasts
         ///     against the specified color.
