@@ -21,14 +21,15 @@ namespace Wisteria
         @details This is a bitmask which can be used to control multiple flags.\n
             The following preprocessors can be defined to control which settings are enabled.
     
+        - @c DEBUG_LOG_INFO: enables @ LogExtraInfo.
         - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
         - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
         - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawExtraInformation.
         - @c DEBUG_DRAW_EXP_CODE enables @ IncludeExperimentalCode.
         - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
-            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES and @c DEBUG_FILE_IO
-            are enabled. Otherwise, all debugging features are disabled.
+            By default, if @c wxDEBUG_LEVEL is @c 2, then @c DEBUG_BOXES, @c DEBUG_FILE_IO,
+            and @c DEBUG_LOG_INFO are enabled. Otherwise, all debugging features are disabled.
 
             Note that these are %Wisteria specific debugging features (e.g., bounding boxes
             being rendered). If running in debug mode, other debugging features (e.g., asserts)
@@ -57,10 +58,13 @@ namespace Wisteria
         /** @brief Allows various file output options that should not be available in
                 production releases. For example, allowing configuration files to
                 export dataset silently for debugging purposes.*/
-        AllowFileIO = 0x10
+        AllowFileIO = 0x10,
+        /** @brief Logs various information for additional messages.*/
+        LogExtraInfo = 0x20
         };
 
 #if wxDEBUG_LEVEL >= 2
+    #define DEBUG_LOG_INFO
     #define DEBUG_BOXES
     #define DEBUG_FILE_IO
 #endif
@@ -150,6 +154,9 @@ namespace Wisteria
         inline static size_t m_maxObservationsInBin{ 25 };
         static constexpr int m_debugSettings
         {
+#ifdef DEBUG_LOG_INFO
+        DebugSettings::LogExtraInfo|
+#endif
 #ifdef DEBUG_BOXES
         DebugSettings::DrawBoundingBoxesOnSelection|
 #endif
