@@ -159,11 +159,18 @@ namespace Wisteria::Graphs
             {
             m_longestBarLength = barEnd;
             GetScalingAxis().SetRange(0, m_longestBarLength, 0,
-                // add a little extra padding to the scaling axis if we are using labels.
+                // add a little extra padding to the scaling axis if we are using labels
                 IsShowingBarLabels());
+            const auto currentRange = GetScalingAxis().GetRange();
 
-            // tweak scaling, if possible
-            if (m_longestBarLength >= 20'000)
+            // tweak scaling
+            if (m_longestBarLength >= 50'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 5),
+                    GetScalingAxis().GetPrecision(), 10'000, 1);
+                }
+            else if (m_longestBarLength >= 20'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                     next_interval(m_longestBarLength, 4),
@@ -187,6 +194,17 @@ namespace Wisteria::Graphs
                     next_interval(m_longestBarLength, 3),
                     GetScalingAxis().GetPrecision(), 100, 1);
                 }
+
+            // if showing labels and we just re-adjusted the range, then add an
+            // extra interval for the label
+            if (IsShowingBarLabels() && currentRange != GetScalingAxis().GetRange())
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    GetScalingAxis().GetRange().second + GetScalingAxis().GetInterval(),
+                    GetScalingAxis().GetPrecision(),
+                    GetScalingAxis().GetInterval(),
+                    GetScalingAxis().GetDisplayInterval());
+            }
             }
 
         UpdateCanvasForBars();
