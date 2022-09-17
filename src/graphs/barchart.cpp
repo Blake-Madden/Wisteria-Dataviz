@@ -64,10 +64,17 @@ namespace Wisteria::Graphs
                 {
                 std::make_pair(firstBar.value(), lastBar.value()),
                 decal.has_value() ? decal.value() : wxEmptyString,
-                color.has_value() ? color.value() : *wxBLACK,
-                brush.has_value() ? brush.value() : *wxBLACK_BRUSH,
+                color.has_value() ? color.value() :
+                    (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour),
+                brush.has_value() ? brush.value() : GetBrushScheme()->GetBrush(0),
                 });
             }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': bar label not found when adding bar group."),
+                firstBar.has_value() ? lastBarLabel : firstBarLabel).ToUTF8());
+        }
         }
 
     //-----------------------------------
