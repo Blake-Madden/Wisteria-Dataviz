@@ -218,7 +218,8 @@ namespace Wisteria::Graphs
                              L"Bars are not sortable. "
                               "Call SetSortable(true) prior to calling SortBars().");
         m_sortDirection = direction;
-        if (!IsSortable() || direction == SortDirection::NoSort)
+        if (!IsSortable() || direction == SortDirection::NoSort ||
+            GetBarAxis().IsReversed())
             { return; }
 
         // bar grpoups connected to bars' positions will need to be removed
@@ -227,7 +228,7 @@ namespace Wisteria::Graphs
         const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
         GetBarAxis().ClearCustomLabels();
 
-        // sorts smallest to largest
+        // sorts smallest-to-largest
         if (sortMethod == BarSortComparison::SortByBarLength)
             { std::sort(m_bars.begin(), m_bars.end()); }
         else
@@ -279,6 +280,7 @@ namespace Wisteria::Graphs
         GetCanvas()->CalcAllSizes(measureDC);
         }
 
+    //-----------------------------------
     void BarChart::RecalcSizes(wxDC& dc)
         {
         Graph2D::RecalcSizes(dc);
@@ -672,7 +674,7 @@ namespace Wisteria::Graphs
                         }
 
                     // set the bottom (starting point) of the bar
-                    wxCoord lineYStart(0);
+                    wxCoord lineYStart{ 0 };
                     if (bar.GetCustomScalingAxisStartPosition().has_value())
                         {
                         // top of block
