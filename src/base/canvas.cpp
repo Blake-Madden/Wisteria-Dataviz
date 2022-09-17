@@ -1169,7 +1169,8 @@ namespace Wisteria
             const auto avgWidthDiff = safe_divide<double>(totalDiff, flexibleObjects);
             // this is the only object in the row and doesn't have a fixed width, set it to 100%
             if (GetFixedObjects().at(row).size() == 1 &&
-                GetFixedObjects().at(row).at(0) != nullptr)
+                GetFixedObjects().at(row).at(0) != nullptr &&
+                !GetFixedObjects().at(row).at(0)->IsFixedWidthOnCanvas())
                 {
                 GetFixedObjects().at(row).at(0)->SetCanvasWidthProportion(math_constants::full);
                 }
@@ -1190,10 +1191,22 @@ namespace Wisteria
                         }
                     }
                 }
-            wxASSERT_MSG(compare_doubles_less_or_equal(tallyColumnsPercent(), 1.0),
-                wxString::Format(L"CalcColumnWidths() failed to set the column widths "
-                    "collectively to less than 100%%! Percent is %d%%",
-                    static_cast<int>(tallyColumnsPercent() * 100)));
+            if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::LogExtraInfo))
+                {
+                if (compare_doubles_greater(tallyColumnsPercent(), math_constants::full))
+                    {
+                    wxString widthInfo;
+                    for (const auto& item : GetFixedObjects().at(row))
+                        {
+                        if (item != nullptr)
+                            {
+                            widthInfo += wxString::Format(L"%d, ",
+                                static_cast<int>(item->GetCanvasWidthProportion() * 100));
+                            }
+                        }
+                    wxLogWarning(L"Items in canvas row consuming more than 100%%: " + widthInfo.RemoveLast());
+                    }
+                }
             }
         }
 
@@ -1220,8 +1233,8 @@ namespace Wisteria
             SetFixedObjectsGridSize(GetFixedObjects().size(), column + 1);
             }
         GetFixedObjects().at(row).at(column) = object;
-        // readjust the width if being fit with its content width-wise
-        if (object != nullptr && object->IsFittingContentWidthToCanvas())
+        // re-adjust the proportional width
+        if (object != nullptr)
             {
             object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
             }
