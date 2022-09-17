@@ -702,15 +702,18 @@ namespace Wisteria::Graphs
         /// @returns The index the bar if found, @c std::nullopt otherwise.
         [[nodiscard]] std::optional<size_t> FindBar(const wxString axisLabel);
 
-        /** @brief Adds a bracket around a range of bars and draws a bar above that
-                showing the length of the children bars combined.
+        /** @brief Adds a bracket (inside the plotting area) around a range of bars
+                and draws a bar above that showing the length of the children bars combined.
             @details This is useful for giving attention to a block of smaller bars
                 that may be eclipsed by a larger bar.
             @param firstBarLabel The first bar in the group.
             @param lastBarLabel The last bar in the group.
             @param decal The label to show on the grouped bar.
-            @param color The color of the grouped bar.
-            @param brush The brush of the grouped bar.*/
+            @param color The color of the grouped bar. If @c std::nullopt, the first color from
+                the color scheme will be used (or transparent color, if the color scheme is null).
+            @param brush The brush of the grouped bar. If @c std::nullopt, the first brush from
+                the brush scheme will be used.
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
         void AddBarGroup(const wxString& firstBarLabel, const wxString& lastBarLabel,
                          std::optional<wxString> decal = std::nullopt,
                          std::optional<wxColour> color = std::nullopt,
@@ -790,6 +793,13 @@ namespace Wisteria::Graphs
         ///    going top-to-bottom or left-to-right.
         ///    SortDescending to sort largest-to-smallest (A-Z).
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
+        /// @brief Sorts the bars (based on a specified order of axis labels).
+        /// @param labels The axis labels of the bars, sorted in the new order that they should
+        ///     appear along the axis.
+        /// @param direction SortAscending to sort going top-to-bottom or left-to-right.
+        ///    SortDescending to sort bottom-to-top or right-to-left.
+        /// @throws std::runtime_error If a provided label isn't found, throws an exception.
+        virtual void SortBars(std::vector<wxString> labels, const SortDirection direction);
         /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
         virtual bool IsSortable() const noexcept
             { return m_isSortable; }

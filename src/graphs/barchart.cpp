@@ -74,7 +74,7 @@ namespace Wisteria::Graphs
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': bar label not found when adding bar group."),
                 firstBar.has_value() ? lastBarLabel : firstBarLabel).ToUTF8());
-        }
+            }
         }
 
     //-----------------------------------
@@ -204,10 +204,87 @@ namespace Wisteria::Graphs
                     GetScalingAxis().GetPrecision(),
                     GetScalingAxis().GetInterval(),
                     GetScalingAxis().GetDisplayInterval());
-            }
+                }
             }
 
         UpdateCanvasForBars();
+        }
+
+    //-----------------------------------
+    void BarChart::SortBars(std::vector<wxString> labels,
+                            const Wisteria::SortDirection direction)
+        {
+        wxASSERT_LEVEL_2_MSG(IsSortable(),
+                             L"Bars are not sortable. "
+                              "Call SetSortable(true) prior to calling SortBars().");
+        wxASSERT_LEVEL_2_MSG(labels.size() == GetBars().size(),
+                             L"Number of labels need to match the number of bars when sorting.");
+        m_sortDirection = direction;
+        if (!IsSortable() || direction == SortDirection::NoSort ||
+            GetBarAxis().IsReversed())
+            { return; }
+        else if (labels.size() != GetBars().size())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar label count (%zu) is different from bar count (%zu) when sorting."),
+                labels.size(), GetBars().size()).ToUTF8());
+            }
+
+        // adapted from https://stackoverflow.com/questions/838384/reorder-vector-using-a-vector-of-indices
+        std::vector<size_t> indices;
+        const auto reorderBars = [&indices, this]()
+            {
+            for (size_t s{ 1 }, d{ 0 }; s < indices.size(); ++s)
+                {
+                for (d = indices[s]; d < s; d = indices[d]);
+                if (d == s)
+                    {
+                    while (d = indices[d], d != s)
+                        {
+                        std::swap(GetBars().at(s).m_axisPosition, GetBars().at(d).m_axisPosition);
+                        }
+                    }
+                }
+
+            // sort the bars back into the proper axis positions
+            std::sort(GetBars().begin(), GetBars().end(),
+                [](const auto& lhv, const auto& rhv) noexcept
+                    {
+                    return lhv.GetAxisPosition() < rhv.GetAxisPosition();
+                    });
+            };
+        
+        // reorder the provided labels (if necessary) to match the sorting direction
+        if ((direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Vertical) ||
+            (direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Horizontal))
+            { std::reverse(labels.begin(), labels.end()); }
+        // get the indices into the bars based on the order of the provided labels
+        for (const auto& label : labels)
+            {
+            const auto foundPos = std::find_if(GetBars().cbegin(), GetBars().cend(),
+                [&label](const auto& bar)
+                    {
+                    return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
+                    });
+            if (foundPos == GetBars().cend())
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': bar label not found when sorting."), label).ToUTF8());
+                }
+            indices.push_back(std::distance(GetBars().cbegin(), foundPos));
+            }
+
+        const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
+        GetBarAxis().ClearCustomLabels();
+
+        reorderBars();
+        // reset the bar axis's labels
+        for (const auto& bar : GetBars())
+            { GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel()); }
+
+        GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
+        wxMemoryDC measureDC;
+        GetCanvas()->CalcAllSizes(measureDC);
         }
 
     //-----------------------------------
