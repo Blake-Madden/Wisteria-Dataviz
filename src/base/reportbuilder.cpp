@@ -230,7 +230,7 @@ namespace Wisteria
                                     LoadAxis(commonAxisInfo.m_node, *commonAxis);
                                     LoadItem(commonAxisInfo.m_node, commonAxis);
                                     // force the row to its height and no more
-                                    commonAxis->FitCanvasHeightToContent(true);
+                                    commonAxis->FitCanvasRowHeightToContent(true);
                                     canvas->SetFixedObject(
                                         commonAxisInfo.m_gridPosition.first,
                                         commonAxisInfo.m_gridPosition.second,
@@ -1782,7 +1782,7 @@ namespace Wisteria
         LoadItem(shapeNode, sh);
 
         // fit the column area to this shape
-        sh->FitContentWidthToCanvas(true);
+        sh->SetFixedWidthOnCanvas(true);
         return sh;
         }
 
@@ -1823,7 +1823,7 @@ namespace Wisteria
         LoadItem(shapeNode, sh);
 
         // fit the column area to this shape
-        sh->FitContentWidthToCanvas(true);
+        sh->SetFixedWidthOnCanvas(true);
         return sh;
         }
 
@@ -1855,7 +1855,7 @@ namespace Wisteria
                 graphNode->GetProperty(L"interval-display")->GetValueString());
 
             const auto binLabel = ConvertBinLabelDisplay(
-                graphNode->GetProperty(L"bin-label-display")->GetValueString());
+                graphNode->GetProperty(L"bar-label-display")->GetValueString());
 
             const auto rounding = ConvertRoundingMethod(
                 graphNode->GetProperty(L"rounding")->GetValueString());
@@ -1917,7 +1917,7 @@ namespace Wisteria
             const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
             const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
             const auto binLabel = ConvertBinLabelDisplay(
-                graphNode->GetProperty(L"bin-label-display")->GetValueString());
+                graphNode->GetProperty(L"bar-label-display")->GetValueString());
 
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
@@ -2132,7 +2132,7 @@ namespace Wisteria
             };
 
         // add rows
-        auto rowAddCommands = graphNode->GetProperty(L"rows-add")->GetValueArrayObject();
+        auto rowAddCommands = graphNode->GetProperty(L"row-add")->GetValueArrayObject();
         if (rowAddCommands.size())
             {
             for (const auto& rowAddCommand : rowAddCommands)
@@ -2154,12 +2154,12 @@ namespace Wisteria
                 }
             }
         // group the rows
-        const auto rowGroupings = graphNode->GetProperty(L"rows-group")->GetValueArrayNumber();
+        const auto rowGroupings = graphNode->GetProperty(L"row-group")->GetValueArrayNumber();
         for (const auto& rowGrouping : rowGroupings)
             { table->GroupRow(rowGrouping); }
 
         // color the rows
-        const auto rowColorCommands = graphNode->GetProperty(L"rows-color")->GetValueArrayObject();
+        const auto rowColorCommands = graphNode->GetProperty(L"row-color")->GetValueArrayObject();
         if (rowColorCommands.size())
             {
             for (const auto& rowColorCommand : rowColorCommands)
@@ -2180,7 +2180,7 @@ namespace Wisteria
 
         // change rows' content alignent
         const auto rowContentCommands =
-            graphNode->GetProperty(L"rows-content-align")->GetValueArrayObject();
+            graphNode->GetProperty(L"row-content-align")->GetValueArrayObject();
         if (rowContentCommands.size())
             {
             for (const auto& rowContentCommand : rowContentCommands)
@@ -2213,12 +2213,12 @@ namespace Wisteria
             }
 
         // group the columns
-        const auto columnGroupings = graphNode->GetProperty(L"columns-group")->GetValueArrayNumber();
+        const auto columnGroupings = graphNode->GetProperty(L"column-group")->GetValueArrayNumber();
         for (const auto& columnGrouping : columnGroupings)
             { table->GroupColumn(columnGrouping); }
 
         // color the columns
-        const auto colColorCommands = graphNode->GetProperty(L"columns-color")->GetValueArrayObject();
+        const auto colColorCommands = graphNode->GetProperty(L"column-color")->GetValueArrayObject();
         if (colColorCommands.size())
             {
             for (const auto& colColorCommand : colColorCommands)
@@ -2237,7 +2237,7 @@ namespace Wisteria
 
         // change columns' borders
         const auto columnBordersCommands =
-            graphNode->GetProperty(L"columns-borders")->GetValueArrayObject();
+            graphNode->GetProperty(L"column-borders")->GetValueArrayObject();
         if (columnBordersCommands.size())
             {
             for (const auto& columnBordersCommand : columnBordersCommands)
@@ -2264,7 +2264,7 @@ namespace Wisteria
 
         // highlight cells down a column
         const auto columnHighlightsCommands =
-            graphNode->GetProperty(L"columns-highlight")->GetValueArrayObject();
+            graphNode->GetProperty(L"column-highlight")->GetValueArrayObject();
         if (columnHighlightsCommands.size())
             {
             for (const auto& columnHighlightsCommand : columnHighlightsCommands)
@@ -2282,7 +2282,7 @@ namespace Wisteria
 
         // column/row aggregates
         const auto columnAggregates =
-            graphNode->GetProperty(L"add-aggregates")->GetValueArrayObject();
+            graphNode->GetProperty(L"aggregates")->GetValueArrayObject();
         if (columnAggregates.size())
             {
             for (const auto& columnAggregate : columnAggregates)
@@ -2336,7 +2336,7 @@ namespace Wisteria
 
         // row totals
         const auto rowTotals =
-            graphNode->GetProperty(L"add-row-totals");
+            graphNode->GetProperty(L"row-totals");
         if (rowTotals->IsOk())
             {
             const wxColour bkColor(
@@ -2347,7 +2347,7 @@ namespace Wisteria
 
         // cell updating
         const auto cellUpdates =
-            graphNode->GetProperty(L"cells-update")->GetValueArrayObject();
+            graphNode->GetProperty(L"cell-update")->GetValueArrayObject();
         if (cellUpdates.size())
             {
             for (const auto& cellUpdate : cellUpdates)
@@ -3425,7 +3425,7 @@ namespace Wisteria
                 { image->SetResizeMethod(foundPos->second); }
             LoadItem(imageNode, image);
 
-            image->FitContentWidthToCanvas(true);
+            image->SetFixedWidthOnCanvas(true);
             return image;
             }
         else
@@ -3516,9 +3516,9 @@ namespace Wisteria
 
         LoadPen(itemNode->GetProperty(L"pen"), item->GetPen());
 
-        item->FitContentWidthToCanvas(
-            itemNode->GetProperty(L"fit-to-content-width")->GetValueBool());
-        item->FitCanvasHeightToContent(
+        item->SetFixedWidthOnCanvas(
+            itemNode->GetProperty(L"fixed-width")->GetValueBool());
+        item->FitCanvasRowHeightToContent(
             itemNode->GetProperty(L"fit-row-to-content")->GetValueBool());
         }
 

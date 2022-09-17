@@ -722,7 +722,7 @@ namespace Wisteria
             /// @note Client will need to call Canvas::CalcRowDimensions() after setting all objects
             ///     into its grid for this to take effect.
             /// @returns A self reference.
-            GraphItemInfo& FitContentWidthToCanvas(const bool fit) noexcept
+            GraphItemInfo& FixedWidthOnCanvas(const bool fit) noexcept
                 {
                 m_fitContentWidthToCanvas = fit;
                 return *this;
@@ -1645,7 +1645,7 @@ namespace Wisteria
                 }
             /// @returns @c true if this object's parent row should be as tall as
             ///     this object's height (at the default scaling) and no more.
-            [[nodiscard]] bool IsFittingCanvasRowToContent() const noexcept
+            [[nodiscard]] bool IsFittingCanvasRowHeightToContent() const noexcept
                 { return m_itemInfo.m_fitCanvasRowToContent; }
             /// @brief Tells the canvas that this object's parent row should be as tall as
             ///     this object's height (at the default scaling) and no more.
@@ -1658,11 +1658,11 @@ namespace Wisteria
             ///     item being stretched taller.\n
             ///     Also, the client will need to call Canvas::CalcRowDimensions() after setting all
             ///     objects into its grid for this to take effect.
-            void FitCanvasHeightToContent(const bool fit) noexcept
+            void FitCanvasRowHeightToContent(const bool fit) noexcept
                 { m_itemInfo.m_fitCanvasRowToContent = fit; }
             /// @returns @c true if this object's width within its row should
-            ///     be its calculated widht (at the default scaling) and no more.
-            [[nodiscard]] bool IsFittingContentWidthToCanvas() const noexcept
+            ///     be its calculated width (at the default scaling) and no more.
+            [[nodiscard]] bool IsFixedWidthOnCanvas() const noexcept
                 { return m_itemInfo.m_fitContentWidthToCanvas; }
             /// @brief Tells the canvas to allocate just the necessary width for this item's width
             ///     (at default scaling) within its row, and nothting more.
@@ -1673,7 +1673,7 @@ namespace Wisteria
             ///     (and no more).
             /// @note Client will need to call Canvas::CalcRowDimensions() after setting all objects
             ///     into its grid for this to take effect.
-            void FitContentWidthToCanvas(const bool fit) noexcept
+            void SetFixedWidthOnCanvas(const bool fit) noexcept
                 { m_itemInfo.m_fitContentWidthToCanvas = fit; }
             /// @returns The percent of the canvas width that this object should consume.
             [[nodiscard]] double GetCanvasWidthProportion() const noexcept

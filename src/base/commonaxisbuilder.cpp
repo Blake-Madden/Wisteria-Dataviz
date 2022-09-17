@@ -48,7 +48,7 @@ namespace Wisteria
         commonAxis->SetCanvasMargins(0, 0, 0, 10);
         // Get the canvas size of the axis and add it to the canvas.
         commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(commonAxis));
-        commonAxis->FitContentWidthToCanvas(true);
+        commonAxis->SetFixedWidthOnCanvas(true);
 
         // now that we are done copying the left axis from the first plot,
         // hide the first plot's axis labels
@@ -99,7 +99,7 @@ namespace Wisteria
         commonAxis->SetCanvasMargins(10, 0, 5, 0);
         // get the canvas size of the axis and add it to the canvas
         commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(commonAxis));
-        commonAxis->FitCanvasHeightToContent(true);
+        commonAxis->FitCanvasRowHeightToContent(true);
 
         // now that we are done copying the bottom axis from the first plot,
         // hide the first plot's axis labels

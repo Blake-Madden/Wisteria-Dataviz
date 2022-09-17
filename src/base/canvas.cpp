@@ -774,7 +774,7 @@ namespace Wisteria
                     // the margins will be preserved.
                     auto measuredBox = objectsPos->GetBoundingBox(dc);
                     if (measuredBox.GetWidth() < boundingRect.GetWidth() &&
-                        objectsPos->IsFittingContentWidthToCanvas())
+                        objectsPos->IsFixedWidthOnCanvas())
                         {
                         const auto originalWidth = boundingRect.GetWidth();
                         const auto widthDiff = (originalWidth - measuredBox.GetWidth());
@@ -1012,14 +1012,14 @@ namespace Wisteria
             size_t validObjectsInRow{ 0 };
             for (auto& object : row)
                 {
-                if (object != nullptr && object->IsFittingCanvasRowToContent())
+                if (object != nullptr && object->IsFittingCanvasRowHeightToContent())
                     {
                     rowHeightProportion = rowHeightProportion.has_value() ?
                         std::max(rowHeightProportion.value(), CalcMinHeightProportion(object)) :
                         CalcMinHeightProportion(object);
                     }
                 // also re-adjust the width if being fit with its content width-wise
-                if (object != nullptr && object->IsFittingContentWidthToCanvas())
+                if (object != nullptr && object->IsFixedWidthOnCanvas())
                     {
                     object->SetCanvasWidthProportion(CalcMinWidthProportion(object));
                     CalcColumnWidths(currentRow);
@@ -1159,19 +1159,19 @@ namespace Wisteria
         // if more than 100%, then we need to trim the other items in the row
         if (!compare_doubles(totalPercent, 1.0))
             {
-            const size_t nonFixedObjects = std::count_if(GetFixedObjects().at(row).cbegin(),
+            const size_t flexibleObjects = std::count_if(GetFixedObjects().at(row).cbegin(),
                 GetFixedObjects().at(row).cend(),
                 [](const auto& obj) noexcept
                 {
-                return (obj != nullptr && !obj->IsFittingContentWidthToCanvas());
+                return (obj != nullptr && !obj->IsFixedWidthOnCanvas());
                 });
             const double totalDiff{ totalPercent - 1.0 };
-            const auto avgWidthDiff = safe_divide<double>(totalDiff, nonFixedObjects);
-            // this is the only object in the row, but it was set over 100%, so set it to 100%
+            const auto avgWidthDiff = safe_divide<double>(totalDiff, flexibleObjects);
+            // this is the only object in the row and doesn't have a fixed width, set it to 100%
             if (GetFixedObjects().at(row).size() == 1 &&
                 GetFixedObjects().at(row).at(0) != nullptr)
                 {
-                GetFixedObjects().at(row).at(0)->SetCanvasWidthProportion(1.0);
+                GetFixedObjects().at(row).at(0)->SetCanvasWidthProportion(math_constants::full);
                 }
             // resize all (or just non-fixed width) objects to fit
             else
@@ -1182,8 +1182,8 @@ namespace Wisteria
                     if (currentItem != nullptr &&
                         // if all object are fixed width, then adjust all of them;
                         // otherwise, just adjust non-fixed ones
-                        (!currentItem->IsFittingContentWidthToCanvas() ||
-                          nonFixedObjects == 0))
+                        (!currentItem->IsFixedWidthOnCanvas() ||
+                          flexibleObjects == 0))
                         {
                         currentItem->SetCanvasWidthProportion(
                             currentItem->GetCanvasWidthProportion()-avgWidthDiff);

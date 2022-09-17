@@ -491,20 +491,20 @@ Note that it is recommended to set @c "fit-row-to-content" to @c true for shorte
 Likewise, set @c "fit-row-to-content" to @c false for taller tables that are meant to consume most of a page's height.
 
 The remaining properties are executed in the following order:
-- @c "rows-add": commands a series of rows to be added, which is an array of row properties containing the following:
+- @c "row-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "constants": an array of strings to fill the row with (left-to-right).
   - @c "background": the background color of the row.
-- @c "rows-group": a numeric array representing which rows to apply label grouping to.\n
+- @c "row-group": a numeric array representing which rows to apply label grouping to.\n
      Across each provided row, this will combine consecutive cells with the same label into one cell.
-- @c "rows-color": an array of row and color pairs, which contain the following properties:
+- @c "row-color": an array of row and color pairs, which contain the following properties:
   - @c "position": which row to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the row.
   - @c "stops": an array of which columns to skip over when changing the row's color.\n
        This is an array of @c "position" items.
-- @c "rows-content-align": an array of commands to align the content inside of the cells across a row.
+- @c "row-content-align": an array of commands to align the content inside of the cells across a row.
   - @c "position": which row to change the content alignment in.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "horizontal-page-alignment": how to horizontally align the cells' content.\n
@@ -514,29 +514,29 @@ The remaining properties are executed in the following order:
     - @c "centered"
   - @c "stops": an array of which columns to skip over when changing the column's content alignment.\n
        This is an array of @c "position" items.
-- @c "columns-group": a numeric array representing which columns to apply label grouping to.\n
+- @c "column-group": a numeric array representing which columns to apply label grouping to.\n
      Down each provided column, this will combine consecutive cells with the same label into one cell.
-- @c "columns-color": an array of column and color pairs, which contain the following properties:
+- @c "column-color": an array of column and color pairs, which contain the following properties:
   - @c "position": which column to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the column.
   - @c "stops": an array of which rows to skip over when changing the column's color.\n
        This is an array of @c "position" items.
-- @c "columns-borders": an array of column border specifications, which contain the following:
+- @c "column-borders": an array of column border specifications, which contain the following:
   - @c "position": which column to edit.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "stops": an array of which rows to skip over when changing the column's borders.\n
        This is an array of @c "position" items.
-- @c "columns-highlight": an array of column highlight specifications, which contain the following:
+- @c "column-highlight": an array of column highlight specifications, which contain the following:
   - @c "position": which column to edit.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "stops": an array of which rows to skip over when changing the column's cell highlighting.\n
        This is an array of @c "position" items.
-- @c "add-aggregates": an array of aggregate definitions that will be added to the table.\n
+- @c "aggregates": an array of aggregate definitions that will be added to the table.\n
      Each aggregate node contains the following properties:
   - @c "type": where to add the aggregate.\n
     Available options are:
@@ -554,11 +554,11 @@ The remaining properties are executed in the following order:
   - @c "end": the last column/row that the aggregate column/row should use.\n
        This property is optional, and if not included the last numeric column/row encountered will be used.
        Like @c "start", this is optional and has the same properties.
-- "add-row-totals": adds a grand total row to the bottom of the table.\n
+- @c "row-totals": adds a grand total row to the bottom of the table.\n
   If the first column is grouped and the second colum is text, then this will also insert subtotal rows.\n
   Available options are:
   - @c "background": the background color for the row(s).
-- @c "cells-update": an array of cell updating commands, which contain the following properties:
+- @c "cell-update": an array of cell updating commands, which contain the following properties:
   - @c "column": the column position of the cell to update.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "row": the row position of the cell to update.\n
@@ -630,7 +630,7 @@ Properties for pens:
   - @c "horizontal-hatch"
   - @c "vertical-hatch"
 
-Note that pens can be set to @c null to turn it off.
+Note that a pen can be set to @c null to turn it off.
 
 ## Brush {#brush-properties}
 Properties for brushes:
@@ -805,7 +805,7 @@ Properties common to all items:
   - @c "centered"
 - @c "fit-row-to-content": a boolean value specifying whether the item's calculated height should
      control how tall its canvas row is.
-- @c "fit-to-content-width": a boolean value specifying whether the item should be constrained
+- @c "fixed-width": a boolean value specifying whether the item should be constrained
      to its calculated width within its row.
 
 # Notes {#notes}

@@ -20,7 +20,7 @@ namespace Wisteria::GraphItems
         [[maybe_unused]] wxDC& dc,
         [[maybe_unused]] const double parentScaling)
         {
-        m_sizeDIPs.x = (IsFittingContentWidthToCanvas() ?
+        m_sizeDIPs.x = (IsFixedWidthOnCanvas() ?
             std::min<int>(m_shapeSizeDIPs.GetWidth(),
                           DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth())) :
             DownscaleFromScreenAndCanvas(rect.GetSize().GetWidth()) );

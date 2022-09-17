@@ -196,7 +196,7 @@ auto legend = std::make_shared<GraphItems::Label>(
     Pen(wxNullPen).
     // tells the canvas to limit the width for this legend
     // to its content's calculated width
-    FitContentWidthToCanvas(true).
+    FixedWidthOnCanvas(true).
     // add space for the icons
     Padding(8, 8, 0, Label::GetMinLegendWidth() );
 // set the first line of the text ("Items:"), as the header of the legend
