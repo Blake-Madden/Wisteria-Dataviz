@@ -319,6 +319,7 @@ namespace Wisteria::Graphs
             wxCoord axisOffset{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
             wxPoint arrowPoints[7]{ { 0, 0 } };
+            wxRect barRect;
             for (const auto& barBlock : bar.GetBlocks())
                 {
                 if (GetBarOrientation() == Orientation::Horizontal)
@@ -387,7 +388,7 @@ namespace Wisteria::Graphs
 
                     const wxCoord lineYStart = middlePointOfBarEnd.y - safe_divide<double>(barWidth, 2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
-                    wxRect barRect(lineXStart, lineYStart, barLength, barWidth);
+                    barRect = wxRect(lineXStart, lineYStart, barLength, barWidth);
                     wxRect barNeckRect = barRect;
                     // draw the bar (block)
                     if (barBlock.IsShown() && barLength > 0)
@@ -704,7 +705,7 @@ namespace Wisteria::Graphs
                     const wxCoord lineYEnd = lineYStart-barLength;
                     const wxCoord lineXStart = middlePointOfBarEnd.x - safe_divide<double>(barWidth,2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
-                    wxRect barRect(lineXStart, lineYEnd, barWidth, barLength);
+                    barRect = wxRect(lineXStart, lineYEnd, barWidth, barLength);
                     wxRect barNeckRect = barRect;
                     // draw the bar
                     if (barBlock.IsShown() && barLength > 0)
@@ -967,12 +968,31 @@ namespace Wisteria::Graphs
                 bar.GetLabel().SetScaling(GetScaling());
                 bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
                 bar.GetLabel().SetShadowType(GetShadowType());
-                const wxCoord textWidth = bar.GetLabel().GetBoundingBox(dc).GetWidth();
+
+                auto bBox = bar.GetLabel().GetBoundingBox(dc);
                 bar.GetLabel().SetAnchorPoint(
-                    wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (textWidth/2),
+                    wxPoint(middlePointOfBarEnd.x + labelSpacingFromLine + (bBox.GetWidth()/2),
                             middlePointOfBarEnd.y));
-                AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
-                middlePointOfBarEnd.x += textWidth + (labelSpacingFromLine * 2);
+
+                auto barLabel = std::make_shared<GraphItems::Label>(bar.GetLabel());
+                bBox = barLabel->GetBoundingBox(dc);
+
+                if (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
+                    {
+                    barLabel->Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()), 0);
+                    bBox.Offset((GetPlotAreaBoundingBox().GetRight() - bBox.GetRight()) +
+                        ScaleToScreenAndCanvas(2), 0);
+                    if (barRect.Intersects(bBox))
+                        {
+                        barLabel->SetPadding(2, 2, 2, 2);
+                        barLabel->GetPen() = *wxBLACK_PEN;
+                        barLabel->SetFontBackgroundColor(
+                            ColorContrast::BlackOrWhiteContrast(barLabel->GetFontColor()));
+                        }
+                    }
+
+                AddObject(barLabel);
+                middlePointOfBarEnd.x += bBox.GetWidth() + (labelSpacingFromLine * 2);
                 }
             else if (GetBarOrientation() == Orientation::Vertical &&
                 bar.GetLabel().IsShown())
@@ -980,13 +1000,33 @@ namespace Wisteria::Graphs
                 bar.GetLabel().SetScaling(GetScaling());
                 bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
                 bar.GetLabel().SetShadowType(GetShadowType());
-                const wxCoord textHeight = bar.GetLabel().GetBoundingBox(dc).GetHeight();
+
+                auto bBox = bar.GetLabel().GetBoundingBox(dc);
                 bar.GetLabel().SetAnchorPoint(
                     wxPoint(middlePointOfBarEnd.x,
                             middlePointOfBarEnd.y -
-                            (labelSpacingFromLine + (textHeight/2))));
-                AddObject(std::make_shared<GraphItems::Label>(bar.GetLabel()));
-                middlePointOfBarEnd.y -= textHeight + (labelSpacingFromLine * 2);
+                            (labelSpacingFromLine + (bBox.GetHeight()/2))));
+
+                auto barLabel = std::make_shared<GraphItems::Label>(bar.GetLabel());
+                bBox = barLabel->GetBoundingBox(dc);
+
+                if (!Polygon::IsRectInsideRect(bBox, GetPlotAreaBoundingBox()))
+                    {
+                    barLabel->Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()));
+                    bBox.Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()) -
+                        // wiggle room before adding outlining that will stand out from the other labels
+                        ScaleToScreenAndCanvas(2));
+                    if (barRect.Intersects(bBox))
+                        {
+                        barLabel->SetPadding(2, 2, 2, 2);
+                        barLabel->GetPen() = *wxBLACK_PEN;
+                        barLabel->SetFontBackgroundColor(
+                            ColorContrast::BlackOrWhiteContrast(barLabel->GetFontColor()));
+                        }
+                    }
+
+                AddObject(barLabel);
+                middlePointOfBarEnd.y -= bBox.GetHeight() + (labelSpacingFromLine * 2);
                 }
 
             return middlePointOfBarEnd;
