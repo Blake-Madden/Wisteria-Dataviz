@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
     void BarChart::UpdateBarLabel(Bar& bar)
         {
         const double grandTotal = std::accumulate(
-            bar.GetBlocks().cbegin(), bar.GetBlocks().cend(), 0.0,
+            GetBars().cbegin(), GetBars().cend(), 0.0,
             [](auto lhv, auto rhv) noexcept
             { return lhv + rhv.GetLength(); });
 
