@@ -1716,16 +1716,61 @@ namespace Wisteria
     void ReportBuilder::LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
         std::shared_ptr<Graphs::BarChart> barChart)
         {
-        const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
-        if (bOrientation.CmpNoCase(L"horizontal") == 0)
-            { barChart->SetBarOrientation(Orientation::Horizontal); }
-        else if (bOrientation.CmpNoCase(L"vertical") == 0)
-            { barChart->SetBarOrientation(Orientation::Vertical); }
-
         const auto boxEffect = ConvertBoxEffect(
                 graphNode->GetProperty(L"box-effect")->GetValueString());
         if (boxEffect)
             { barChart->SetBarEffect(boxEffect.value()); }
+
+        // sorting
+        const auto sortNode = graphNode->GetProperty(L"bar-sort");
+        if (sortNode->IsOk())
+            {
+            const auto sortDirection = sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase("ascending") == 0 ?
+                SortDirection::SortAscending : SortDirection::SortDescending;
+            const auto byNode = sortNode->GetProperty(L"by");
+            if (byNode->IsOk())
+                {
+                const auto sortBy = (byNode->GetValueString().CmpNoCase(L"length") == 0 ?
+                    std::optional<BarChart::BarSortComparison>(BarChart::BarSortComparison::SortByBarLength) :
+                    byNode->GetValueString().CmpNoCase(L"label") == 0 ?
+                    std::optional<BarChart::BarSortComparison>(BarChart::BarSortComparison::SortByAxisLabel) :
+                    std::nullopt);
+                if (!sortBy.has_value())
+                    {
+                    throw std::runtime_error(wxString::Format(
+                        _(L"'%s': invalid bar sorting 'by' method."), byNode->GetValueString()).ToUTF8());
+                    }
+                barChart->SortBars(sortBy.value(), sortDirection);
+                }
+            else
+                {
+                // or is sorting by a list of labels with a custom order
+                const auto labelsNode = sortNode->GetProperty(L"labels");
+                if (labelsNode->IsOk() && labelsNode->IsValueArray())
+                    { barChart->SortBars(labelsNode->GetValueStringVector(), sortDirection); }
+                }
+            }
+
+        // bar groups
+        const auto barGroupsNode = graphNode->GetProperty(L"bar-groups");
+        if (barGroupsNode->IsOk() && barGroupsNode->IsValueArray())
+            {
+            const auto barGroups = barGroupsNode->GetValueArrayObject();
+            for (const auto& barGroup : barGroups)
+                {
+                if (barGroup->IsOk())
+                    {
+                    barChart->AddBarGroup(barGroup->GetProperty(L"first-label")->GetValueString(),
+                                          barGroup->GetProperty(L"last-label")->GetValueString(),
+                                          barGroup->GetProperty(L"decal")->GetValueString());
+                    }
+                }
+            }
+
+        const auto binLabel = ConvertBinLabelDisplay(
+            graphNode->GetProperty(L"bar-label-display")->GetValueString());
+        if (binLabel.has_value())
+            { barChart->SetBinLabelDisplay(binLabel.value()); }
         }
 
     //---------------------------------------------------
@@ -1873,9 +1918,13 @@ namespace Wisteria
             auto histo = std::make_shared<Histogram>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
-                
-            LoadBarChart(graphNode, histo);
 
+            const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
+            if (bOrientation.CmpNoCase(L"horizontal") == 0)
+                { histo->SetBarOrientation(Orientation::Horizontal); }
+            else if (bOrientation.CmpNoCase(L"vertical") == 0)
+                { histo->SetBarOrientation(Orientation::Vertical); }
+                
             histo->SetData(foundPos->second, contVarName,
                 (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
                 binMethod.value_or(Histogram::BinningMethod::BinByIntegerRange),
@@ -1885,6 +1934,7 @@ namespace Wisteria
                 graphNode->GetProperty(L"show-full-range")->GetValueBool(true),
                 startBinsValue, std::make_pair(suggestedBinCount, maxBinCount) );
 
+            LoadBarChart(graphNode, histo);
             LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);
             return histo;
             }
@@ -1922,14 +1972,19 @@ namespace Wisteria
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
-                
-            LoadBarChart(graphNode, barChart);
+
+            const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->GetValueString();
+            if (bOrientation.CmpNoCase(L"horizontal") == 0)
+                { barChart->SetBarOrientation(Orientation::Horizontal); }
+            else if (bOrientation.CmpNoCase(L"vertical") == 0)
+                { barChart->SetBarOrientation(Orientation::Vertical); }
 
             barChart->SetData(foundPos->second, categoryName,
                 (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
                 (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
                 binLabel.has_value() ? binLabel.value() : BinLabelDisplay::BinValue);
 
+            LoadBarChart(graphNode, barChart);
             LoadGraph(graphNode, canvas, currentRow, currentColumn, barChart);
             return barChart;
             }

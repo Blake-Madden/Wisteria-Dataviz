@@ -279,17 +279,7 @@ Properties for @c "categorical-bar-chart" nodes:
   Available options are:
   - @c "vertical"
   - @c "horizontal"
-- @c "box-effect": string specifying the effects for the bars.
-  Available options are:
-  - @c "common-image"
-  - @c "fade-from-bottom-to-top"
-  - @c "fade-from-left-to-right"
-  - @c "fade-from-right-to-left"
-  - @c "fade-from-top-to-bottom"
-  - @c "glassy"
-  - @c "solid"
-  - @c "stipple"
-- @c "bin-label-display": string specifying how to display labels on the bars.
+- Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
 ## Common Axis {#common-axis-properties}
@@ -317,23 +307,6 @@ Properties for @c "histogram" nodes:
 - @c "variables": an item containing the following properties:
   - @c "aggregate": the continuous data column to aggregate.
   - @c "group": the grouping column (this is optional).
-- @c "box-effect": string specifying the effects for the bars.
-  Available options are:
-  - @c "common-image"
-  - @c "fade-from-bottom-to-top"
-  - @c "fade-from-left-to-right"
-  - @c "fade-from-right-to-left"
-  - @c "fade-from-top-to-bottom"
-  - @c "glassy"
-  - @c "solid"
-  - @c "stipple"
-- @c "bin-label-display": string specifying how to display labels on the bars.
-  Available options are:
-  - @c "percentage"
-  - @c "value"
-  - @c "value-and-percentage"
-  - @c "no-display"
-  - @c "bin-name"
 - @c "binning-method": string specifying how to sort the data.
   Available options are:
   - @c "bin-by-integer-range"
@@ -352,6 +325,7 @@ Properties for @c "histogram" nodes:
 - @c "bins-start": number specifying where on the X axis to start the bins.
 - @c "suggested-bin-count": number specifying the suggested number of bins.
 - @c "max-bin-count": number specifying the maximumn number of bins.
+- Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
 ## Image {#image-properties}
@@ -537,7 +511,7 @@ The remaining properties are executed in the following order:
   - @c "stops": an array of which rows to skip over when changing the column's cell highlighting.\n
        This is an array of @c "position" items.
 - @c "aggregates": an array of aggregate definitions that will be added to the table.\n
-     Each aggregate node contains the following properties:
+  Each aggregate node contains the following properties:
   - @c "type": where to add the aggregate.\n
     Available options are:
     - @c "row"
@@ -645,6 +619,40 @@ Properties for brushes:
   - @c "vertical-hatch"
 
 Note that brushes can be set to @c null to turn it off.
+
+## Bar Chart {#bar-chart-properties}
+Properties common to all bar-chart derived graphs:
+- @c "box-effect": string specifying the effects for the bars.
+  Available options are:
+  - @c "common-image"
+  - @c "fade-from-bottom-to-top"
+  - @c "fade-from-left-to-right"
+  - @c "fade-from-right-to-left"
+  - @c "fade-from-top-to-bottom"
+  - @c "glassy"
+  - @c "solid"
+  - @c "stipple"
+- @c "bar-label-display": string specifying how to display labels on the bars.
+  Available options are:
+  - @c "percentage"
+  - @c "value"
+  - @c "value-and-percentage"
+  - @c "no-display"
+  - @c "bin-name"
+- @c "bar-sort": properties specifying how to sort the bars (after loading the data).
+  - @c "direction"
+    Available options are:
+    - @c "ascending"
+    - @c "descending"
+  - @c "by": how to sort the bars, by label or length. This will override any @c "labels" option.
+    Available options are:
+    - @c "length"
+    - @c "label"
+  - @c "labels": the bar labels, specified in the order they should be sorted.\n
+       If @c "direction" is @c "ascending", then the bars will be sorted top-to-bottom or
+       left-to-right (based on the order of the provided labels). Otherwise, they will be
+       sorted bottom-to-top or right-to-left.\n
+       Note that this option is ignored if "by" is specified.
 
 ## Graphs {#graph-properties}
 Properties common to all graph items:
