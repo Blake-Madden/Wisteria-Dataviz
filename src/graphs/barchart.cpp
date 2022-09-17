@@ -556,11 +556,16 @@ namespace Wisteria::Graphs
                         wxRect decalRect(barNeckRect); decalRect.Deflate(leftPadding, 0);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo().Scaling(GetScaling()).
-                            Pen(wxNullPen).DPIScaling(GetDPIScaleFactor());
+                        decalLabel->GetGraphItemInfo().Pen(wxNullPen).
+                            Scaling(GetScaling()).
+                            DPIScaling(GetDPIScaleFactor()).
+                            Padding(2, 2, 2, 2);
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
-                            { decalLabel->SetBoundingBox(decalRect, dc, GetScaling()); }
+                            {
+                            decalLabel->SetBoundingBox(decalRect, dc, GetScaling());
+                            decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                            }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
                             { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
@@ -579,7 +584,7 @@ namespace Wisteria::Graphs
                                 {
                                 decalLabel->GetGraphItemInfo().FontBackgroundColor(
                                     ColorContrast::BlackOrWhiteContrast(decalLabel->GetFontColor())).
-                                    Pen(*wxBLACK_PEN).Padding(2, 2, 2, 2);
+                                    Pen(*wxBLACK_PEN);
                                 }
                             }
                         // make multiline decals a little more compact so that
@@ -590,7 +595,7 @@ namespace Wisteria::Graphs
                         decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         // allow selecting the bar underneath this label
                         decalLabel->SetSelectable(false);
-                        // if font is way too small, then show it as a label overlapping the bar instead of a decal.
+                        // if font is way too small, then show it as a label overlapping the bar instead of a decal
                         if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
                             decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
                             decalLabel->GetFont().GetPointSize() < wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()/2)
@@ -623,10 +628,6 @@ namespace Wisteria::Graphs
                             barBlock.GetColor().IsOk() &&
                             barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
                             {
-                            if (decalLabel->GetLeftPadding() == 0 &&
-                                decalLabel->GetTopPadding() == 0)
-                                { decalLabel->Offset(ScaleToScreenAndCanvas(2), -ScaleToScreenAndCanvas(2)); }
-                            decalLabel->SetPadding(2, 2, 2, 2);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -876,12 +877,16 @@ namespace Wisteria::Graphs
                         decalRect.SetHeight(decalRect.GetHeight()-leftPadding);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
-                        decalLabel->GetGraphItemInfo().
-                            Scaling(GetScaling()).Pen(wxNullPen).
-                            DPIScaling(GetDPIScaleFactor());
+                        decalLabel->GetGraphItemInfo().Pen(wxNullPen).
+                            Scaling(GetScaling()).
+                            DPIScaling(GetDPIScaleFactor()).
+                            Padding(2, 2, 2, 2);
                         decalLabel->GetFont().MakeSmaller().MakeSmaller();
                         if (decalLabel->GetLabelFit() == LabelFit::ScaleFontToFit)
-                            { decalLabel->SetBoundingBox(decalRect, dc, GetScaling()); }
+                            {
+                            decalLabel->SetBoundingBox(decalRect, dc, GetScaling());
+                            decalLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+                            }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFit)
                             { decalLabel->SplitTextToFitBoundingBox(dc, decalRect.GetSize()); }
                         else if (decalLabel->GetLabelFit() == LabelFit::SplitTextToFitWidth)
@@ -898,8 +903,7 @@ namespace Wisteria::Graphs
                                 actualDecalRect.GetHeight() - ScaleToScreenAndCanvas(1) > decalRect.GetHeight())
                                 {
                                 decalLabel->GetGraphItemInfo().FontBackgroundColor(
-                                    ColorContrast::BlackOrWhiteContrast(decalLabel->GetFontColor())).
-                                    Pen(*wxBLACK_PEN).Padding(2, 2, 2, 2);
+                                    ColorContrast::BlackOrWhiteContrast(decalLabel->GetFontColor()));
                                 }
                             }
                         // make multiline decals a little more compact so that they have a better chance of fitting
@@ -947,13 +951,6 @@ namespace Wisteria::Graphs
                             barBlock.GetColor().IsOk() &&
                             barBlock.GetBrush().GetStyle() != wxBrushStyle::wxBRUSHSTYLE_SOLID)
                             {
-                            if (decalLabel->GetLeftPadding() == 0 &&
-                                decalLabel->GetTopPadding() == 0)
-                                {
-                                decalLabel->Offset(ScaleToScreenAndCanvas(2),
-                                                  -ScaleToScreenAndCanvas(2));
-                                }
-                            decalLabel->SetPadding(2, 2, 2, 2);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -962,6 +959,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 }
+
             // after all blocks are built, add the label at the end of the full bar
             if (GetBarOrientation() == Orientation::Horizontal &&
                 bar.GetLabel().IsShown())
@@ -1062,6 +1060,8 @@ namespace Wisteria::Graphs
                             BarBlock(BarBlockInfo(grandTotal).
                             Brush(barGroup.m_barBrush).Color(barGroup.m_barColor).
                             Decal(Label(GraphItemInfo(barGroup.m_barDecal).
+                                LabelFitting(LabelFit::SplitTextToFit).
+                                ChildAlignment(RelativeAlignment::Centered).
                                 FontColor(ColorContrast::BlackOrWhiteContrast(
                                     barGroup.m_barBrush.IsOk() ?
                                     barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
@@ -1124,6 +1124,8 @@ namespace Wisteria::Graphs
                             BarBlock(BarBlockInfo(grandTotal).
                             Brush(barGroup.m_barBrush).Color(barGroup.m_barColor).
                             Decal(Label(GraphItemInfo(barGroup.m_barDecal).
+                                LabelFitting(LabelFit::SplitTextToFit).
+                                ChildAlignment(RelativeAlignment::Centered).
                                 FontColor(ColorContrast::BlackOrWhiteContrast(
                                     barGroup.m_barBrush.IsOk() ?
                                     barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
