@@ -147,7 +147,9 @@ namespace Wisteria::GraphItems
             {
             const auto widthFactor = safe_divide<double>(rect.GetWidth(), measureWidthNoSideImages);
             const auto heightFactor = safe_divide<double>(rect.GetHeight(), measuredHeightNoSideImages);
-            SetScaling(GetScaling() * std::min(widthFactor, heightFactor));
+            SetScaling(std::max(GetScaling() * std::min(widthFactor, heightFactor),
+                                // don't go too small, though
+                                math_constants::tenth));
             }
         
         // used for page alignment
