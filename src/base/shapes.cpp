@@ -1287,7 +1287,7 @@ namespace Wisteria::GraphItems
             constexpr auto shoulderWidth{ 0.1 };
             constexpr auto shoulderHeight{ 0.1 };
             constexpr auto armLength{ 0.25 };
-            constexpr auto armShortLength{ 0.2 };
+            constexpr auto armShortLength{ 0.225 };
             constexpr auto armWidth{ 0.1 };
             constexpr auto armpitWidth{ 0.05 };
             constexpr auto waistWidth{ 0.125 };
@@ -1314,7 +1314,7 @@ namespace Wisteria::GraphItems
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
                                        GetXPosFromLeft(bodyRect, armWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
@@ -1361,7 +1361,7 @@ namespace Wisteria::GraphItems
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetXPosFromLeft(bodyRect, math_constants::full - (armWidth * math_constants::quarter)),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
                                        GetXPosFromLeft(bodyRect, math_constants::full),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
@@ -1438,7 +1438,7 @@ namespace Wisteria::GraphItems
             constexpr auto shoulderWidth{ 0.1 };
             constexpr auto shoulderHeight{ 0.1 };
             constexpr auto armLength{ 0.25 };
-            constexpr auto armShortLength{ 0.2 };
+            constexpr auto armShortLength{ 0.225 };
             constexpr auto armWidth{ 0.1 };
             constexpr auto armpitWidth{ 0.05 };
             constexpr auto waistWidth{ 0.125 };
@@ -1466,7 +1466,7 @@ namespace Wisteria::GraphItems
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, 0),
+                                       GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
                                        GetXPosFromLeft(bodyRect, armWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
@@ -1523,7 +1523,7 @@ namespace Wisteria::GraphItems
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, math_constants::full),
+                                       GetXPosFromLeft(bodyRect, math_constants::full - (armWidth * math_constants::quarter)),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
                                        GetXPosFromLeft(bodyRect, math_constants::full),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
