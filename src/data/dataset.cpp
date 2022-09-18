@@ -655,13 +655,13 @@ namespace Wisteria::Data
             noReadColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter, false });
         lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
-        importer.add_row(noReadRow);
+        importer.add_row_definition(noReadRow);
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<wxString> row;
         row.add_column(deliminatedColumn);
-        importer.add_row(row);
+        importer.add_row_definition(row);
 
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
@@ -825,13 +825,13 @@ namespace Wisteria::Data
             noReadColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter, false });
         lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
-        importer.add_row(noReadRow);
+        importer.add_row_definition(noReadRow);
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
         lily_of_the_valley::text_row<wxString> row;
         row.add_column(deliminatedColumn);
-        importer.add_row(row);
+        importer.add_row_definition(row);
 
         lily_of_the_valley::text_preview preview;
         // see how many lines are in the file and resize the container
