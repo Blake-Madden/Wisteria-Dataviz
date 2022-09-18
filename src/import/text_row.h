@@ -133,9 +133,9 @@ namespace lily_of_the_valley
                 { return nullptr; }
             cell_trim trim;
             cell_collapse_quotes<string_typeT> cellQuoteCollapse;
-            const wchar_t* previousPosition = text;
-            const wchar_t* currentPosition = text;
-            size_t currentColumnIndex = 0;
+            const wchar_t* previousPosition{ text };
+            const wchar_t* currentPosition{ text };
+            size_t currentColumnIndex{ 0 };
 
             for (auto pos = m_column_indices.cbegin();
                 pos != m_column_indices.cend();
@@ -198,14 +198,16 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     {
-                                    m_values->at(currentColumnIndex++) =
-                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    m_values->at(currentColumnIndex).assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                    ++currentColumnIndex;
                                     }
                                 else
                                     {
-                                    *m_single_value =
-                                        cellQuoteCollapse(string_typeT(previousPosition,
-                                                           trim.get_trimmed_string_length()));
+                                    m_single_value->assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(*m_single_value);
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -284,14 +286,16 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     {
-                                    m_values->at(currentColumnIndex++) =
-                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    m_values->at(currentColumnIndex).assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                    ++currentColumnIndex;
                                     }
                                 else
                                     {
-                                    *m_single_value =
-                                        cellQuoteCollapse(string_typeT(previousPosition,
-                                                           trim.get_trimmed_string_length()));
+                                    m_single_value->assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(*m_single_value);
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -346,7 +350,7 @@ namespace lily_of_the_valley
                         // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
                             { return ++currentPosition; }
-                        // if this parser is NOT set to skip the column's text then read it in
+                        // if this parser is NOT set to skip the column's text, then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
                             if (currentPosition == nullptr)
@@ -369,14 +373,16 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     {
-                                    m_values->at(currentColumnIndex++) =
-                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    m_values->at(currentColumnIndex).assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                    ++currentColumnIndex;
                                     }
                                 else
                                     {
-                                    *m_single_value =
-                                        cellQuoteCollapse(string_typeT(previousPosition,
-                                                           trim.get_trimmed_string_length()));
+                                    m_single_value->assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(*m_single_value);
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -458,14 +464,16 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     {
-                                    m_values->at(currentColumnIndex++) =
-                                        cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                    m_values->at(currentColumnIndex).assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                    ++currentColumnIndex;
                                     }
                                 else
                                     {
-                                    *m_single_value =
-                                        cellQuoteCollapse(string_typeT(previousPosition,
-                                                           trim.get_trimmed_string_length()));
+                                    m_single_value->assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                    cellQuoteCollapse(*m_single_value);
                                     ++currentColumnIndex;
                                     }
                                 ++m_number_of_columns_last_read;
@@ -528,14 +536,16 @@ namespace lily_of_the_valley
                                 { return nullptr; }
                             if (m_values)
                                 {
-                                m_values->at(currentColumnIndex++) =
-                                    cellQuoteCollapse(string_typeT(previousPosition, trim.get_trimmed_string_length()));
+                                m_values->at(currentColumnIndex).assign(previousPosition,
+                                        trim.get_trimmed_string_length());
+                                cellQuoteCollapse(m_values->at(currentColumnIndex));
+                                ++currentColumnIndex;
                                 }
                             else
                                 {
-                                *m_single_value =
-                                    cellQuoteCollapse(string_typeT(previousPosition,
-                                                       trim.get_trimmed_string_length()));
+                                m_single_value->assign(previousPosition,
+                                    trim.get_trimmed_string_length());
+                                cellQuoteCollapse(*m_single_value);
                                 ++currentColumnIndex;
                                 }
                             ++m_number_of_columns_last_read;

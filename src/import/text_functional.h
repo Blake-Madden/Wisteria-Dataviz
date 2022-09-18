@@ -16,6 +16,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdint>
+#include <cwctype>
 #include <optional>
 
 namespace lily_of_the_valley
@@ -28,20 +29,17 @@ namespace lily_of_the_valley
         {
     public:
         /// @brief Converts doubled up " with a single ".
-        /// @param text The string to convert.
-        /// @returns The transformed text;
-        [[nodiscard]] T operator()(const T& text) const
+        /// @param[in, out] text The string to convert.
+        [[nodiscard]] void operator()(T& text) const
             {
-            auto rText{ text };
             size_t start{ 0 };
             while (start != T::npos)
                 {
-                start = rText.find(L"\"\"", start);
+                start = text.find(L"\"\"", start);
                 if (start == T::npos)
-                    { return rText; }
-                rText.replace(start, 2, L"\"");
+                    { break; }
+                text.replace(start, 2, L"\"");
                 }
-            return rText;
             }
         };
 
@@ -78,13 +76,13 @@ namespace lily_of_the_valley
                 }
             const wchar_t* start = std::find_if_not(valueStart, valueStart+length,
                 [](const auto ch) noexcept
-                    { return iswspace(ch); });
+                    { return std::iswspace(ch); });
             // remove trailing quote (just the last one)
             if (end > start && end[0] == L'\"')
                 { --end; }
             while (end > start)
                 {
-                if (iswspace(end[0]))
+                if (std::iswspace(end[0]))
                     { --end; }
                 else
                     { break; }
@@ -125,7 +123,7 @@ namespace lily_of_the_valley
         /// @returns @c true if character is either whitespace, a semicolor, or comma.
         [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
             {
-            return (iswspace(character) ||
+            return (std::iswspace(character) ||
                     character == L';' || character == L',');
             }
         };
@@ -138,6 +136,7 @@ namespace lily_of_the_valley
         /// @param delim The delimiter to use.
         is_single_delimiter(const wchar_t delim) noexcept : m_delim(delim)
             {}
+        /// @private
         is_single_delimiter() = delete;
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.
@@ -156,6 +155,7 @@ namespace lily_of_the_valley
         /// @param delims The delimiters to use.
         is_one_of_multiple_delimiters(const wchar_t* delims) : m_delims(delims)
             {}
+        /// @private
         is_one_of_multiple_delimiters() = delete;
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.

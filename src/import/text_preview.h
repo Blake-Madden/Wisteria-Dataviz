@@ -58,7 +58,7 @@ namespace lily_of_the_valley
             headerRow.read(text);
             cell_collapse_quotes<std::wstring> collapseQuotes;
             for (auto& header : m_header_names)
-                { header = collapseQuotes(header); }
+                { collapseQuotes(header); }
 
             const wchar_t* currentPos = text;
             const wchar_t* lineStart = nullptr;

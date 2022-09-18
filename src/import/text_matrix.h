@@ -43,11 +43,12 @@ namespace lily_of_the_valley
         text_matrix(std::vector<string_typeT>* vector)
             : m_vector(vector)
             {}
+        /// @private
         text_matrix() = delete;
 
         /** @brief Adds a row definition to the parser.
             @param row The row definition to add.*/
-        inline void add_row(const text_row<string_typeT>& row)
+        void add_row_definition(const text_row<string_typeT>& row)
             { m_rows.push_back(row); }
         /// @brief Clears the row definitions from the parser.
         void remove_rows() noexcept
