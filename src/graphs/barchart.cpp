@@ -38,13 +38,14 @@ namespace Wisteria::Graphs
                 wxNumberFormatter::ToString(bar.GetLength(), 0,
                                         Settings::GetDefaultNumberFormat()) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinPercentage) ?
-                wxNumberFormatter::ToString(percentage, 0,
+                // if less than 1%, then use higher precision so that it doesn't just show as "0%"
+                wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                                         wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                 L"%" :
-                wxNumberFormatter::ToString(bar.GetLength(), 0,
-                                        Settings::GetDefaultNumberFormat()) +
+                // BinValueAndPercentage
+                wxNumberFormatter::ToString(bar.GetLength(), 0, Settings::GetDefaultNumberFormat()) +
                 L" (" +
-                wxNumberFormatter::ToString(percentage, 0,
+                wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
                                             wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                 L"%)";
         bar.GetLabel().SetText(labelStr);
@@ -64,9 +65,9 @@ namespace Wisteria::Graphs
                 {
                 std::make_pair(firstBar.value(), lastBar.value()),
                 decal.has_value() ? decal.value() : wxEmptyString,
-                color.has_value() ? color.value() :
-                    (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour),
                 brush.has_value() ? brush.value() : GetBrushScheme()->GetBrush(0),
+                color.has_value() ? color.value() :
+                    (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour)
                 });
             }
         else

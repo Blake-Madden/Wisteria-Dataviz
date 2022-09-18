@@ -621,12 +621,20 @@ namespace Wisteria::Graphs
             double m_axisPosition{ 0 };
             };
 
+        /** @brief Defines a bar group, which is where a contiguous series of bars have a curly brace
+                wrapped around them (within the plotting area). On the other side of the curly brace,
+                a bar is drawn representing the length of children bars (within the group) combined.*/
         struct BarGroup
             {
+            /// @brief The start and end positions of the group.
             std::pair<size_t, size_t> m_barPositions{ 0, 0 };
+            /// @brief A label to draw on the group bar.
             wxString m_barDecal;
-            wxColour m_barColor{ *wxBLACK };
-            wxBrush m_barBrush{ *wxBLACK_BRUSH };
+            /// @brief The brush to paint the group bar with.
+            wxBrush m_barBrush{ wxNullBrush };
+            /// @brief The base color to paint under the group bar's brush.
+            /// @defails This is useful if the brush is using a hatched pattern.
+            wxColour m_barColor{ wxNullColour };
             };
 
         /** @brief Constructor.
@@ -858,6 +866,15 @@ namespace Wisteria::Graphs
             }
         /// @}
 
+        /// @brief Get the brush scheme used for the bars.
+        /// @returns The brush scheme used for the bars.
+        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
+            { return m_brushScheme; }
+        /// @brief Get the color scheme used for the bars.
+        /// @returns The color scheme used for the bars.
+        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
+            { return m_colorScheme; }
+
         /// @returns The maximum number of bars displayed before the parent canvas is forced
         ///    to be made taller (which will make this chart easier to read).
         [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
@@ -880,25 +897,11 @@ namespace Wisteria::Graphs
         void AddBarGroup(BarGroup&& barGroup)
             { m_barGroups.emplace_back(barGroup); }
     protected:
-        /// @brief Get the color scheme used for the bars.
-        /// @returns The color scheme used for the bars.
-        [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() noexcept
-            { return m_colorScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
         /** @brief Sets the color scheme.
             @param colors The color scheme to use.*/
         void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
             { m_colorScheme = colors; }
-
-        /// @brief Get the brush scheme used for the bars.
-        /// @returns The brush scheme used for the bars.
-        [[nodiscard]] std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() noexcept
-            { return m_brushScheme; }
-        /// @private
-        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
-            { return m_brushScheme; }
+        
         /** @brief Sets the color scheme.
             @param colors The color scheme to use.*/
         void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
