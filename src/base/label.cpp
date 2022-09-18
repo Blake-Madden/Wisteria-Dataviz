@@ -914,6 +914,18 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    bool Label::SplitTextByConjunctions()
+        {
+        auto splitText{ GetText() };
+        // add newline after all conjunctions
+        const wxString andOrString{ L"(&|and|und|y|et|or|oder|o|ou)" };
+        const wxRegEx reConjuctions(wxString::Format(L"(?i)\\b%s\\b", andOrString));
+        auto replacedCount = reConjuctions.ReplaceAll(&splitText, L"\\1\n");
+        SetText(splitText);
+        return (replacedCount > 0);
+        }
+
+    //-------------------------------------------
     bool Label::SplitTextAuto()
         {
         // return if not much to split

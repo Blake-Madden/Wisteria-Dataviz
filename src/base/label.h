@@ -152,6 +152,15 @@ namespace Wisteria::GraphItems
             @returns @c true if the text was successfully split.*/
         bool SplitTextByListItems();
 
+        /** @brief Attempts to split the label into lines, using conjunctions as the separator.
+            @details For example, "Arts and Humanities and Communications" would be split into
+                "Arts and \nHumanities and\nCommunications".
+            @note Along with ampersand, "and" and "or" for English,
+                Spanish, French, and German are supported.
+            @returns @c true if the text was successfully split.
+            @sa SplitTextByListItems() for splitting on commas also.*/
+        bool SplitTextByConjunctions();
+
         /** @brief Splits the text into lines containing only one character.
             @note It is recommended to set the alignment to centered for best appearance.
             @par Example
