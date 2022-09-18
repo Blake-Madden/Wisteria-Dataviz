@@ -694,11 +694,23 @@ namespace Wisteria::GraphItems
         /// @note The axis must be initialized with a series of dates from SetRange();
         ///     otherwise, this will return @c std::nullopt.
         [[nodiscard]] std::optional<double> FindDatePosition(const wxDateTime& date) const noexcept;
-        /// @brief Sets the length (in terms of character count) of each line of any new labels to
-        ///     the specified length.
-        /// @param suggestedMaxLengthPerLine The length that each line of the labels should be
-        ///     shortened to.
+        /// @returns The suggested maximum length for the axis labels.
+        [[nodiscard]] size_t GetLabelLineLength() const noexcept
+            { return m_suggestedMaxLengthPerLine; }
+        /// @brief Sets the length of each line of each axis label.
+        /// @param suggestedMaxLengthPerLine The length that each line should be
+        ///     shortened to. If any line is longer, then the axis label will be split
+        ///     into multiple lines.
         void SetLabelLineLength(const size_t suggestedMaxLengthPerLine);
+        /// @brief Attempts to split longer (> 20 characters) axis labels into multiple lines.
+        /// @details Attempts will be made to split lengthy labels if they contain various
+        ///     separators (e.g., parentheses, slashes), appear to be a comma-separated list, or
+        ///     contain conjunctions.\n
+        ///     Refer to Label::SplitTextAuto(), Label::SplitTextByListItems(), and
+        ///     Label::SplitTextByConjunctions() for how auto-splitting text works.
+        /// @param suggestedMaxLength The suggested maximum lenght that an axis label should be.\n
+        ///     If any label is longer, then an attempt to split it into multiple lines will be made.
+        void SetLabelLengthAuto(const size_t suggestedMaxLength = 20);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.
         /// @param dc The DC to measure the text with.
         [[nodiscard]] bool ShouldLabelsBeStackedToFit(wxDC& dc) const;

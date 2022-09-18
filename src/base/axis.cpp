@@ -1304,7 +1304,7 @@ namespace Wisteria::GraphItems
 
             // if not showing labels, don't include the space between the lines and the
             // non-existant labels when positioning the brackets
-            const auto spaceAreasNeeded = !IsShowingLabels() ?
+            const auto spaceAreasNeeded = !IsShowingLabels() ? 1 : 2;
                 1 : 2;
 
             if (GetAxisType() == AxisType::LeftYAxis)
@@ -3251,6 +3251,40 @@ namespace Wisteria::GraphItems
             {
             Label lab(axisPointPos->GetDisplayValue());
             lab.SplitTextToFitLength(m_suggestedMaxLengthPerLine);
+            axisPointPos->SetDisplayValue(lab.GetText());
+            }
+        }
+
+    //-------------------------------------------
+    void Axis::SetLabelLengthAuto(const size_t suggestedMaxLength /*= 20*/)
+        {
+        // reformat any existing labels
+        for (auto custLabelIter = m_customAxisLabels.begin();
+             custLabelIter != m_customAxisLabels.end();
+             ++custLabelIter)
+            {
+            if (custLabelIter->second.GetText().length() > suggestedMaxLength)
+                {
+                if (!custLabelIter->second.SplitTextAuto())
+                    {
+                    if (!custLabelIter->second.SplitTextByListItems())
+                        { custLabelIter->second.SplitTextByConjunctions(); }
+                    }
+                }
+            }
+        for (auto axisPointPos = m_axisLabels.begin();
+             axisPointPos != m_axisLabels.begin();
+             ++axisPointPos)
+            {
+            Label lab(axisPointPos->GetDisplayValue());
+            if (lab.GetText().length() > suggestedMaxLength)
+                {
+                if (!lab.SplitTextAuto())
+                    {
+                    if (!lab.SplitTextByListItems())
+                        { lab.SplitTextByConjunctions(); }
+                    }
+                }
             axisPointPos->SetDisplayValue(lab.GetText());
             }
         }
