@@ -208,7 +208,7 @@ namespace Wisteria::GraphItems
                     The color of the pen will be applied to the label as well.\n
                 @param lineStyle The style to use for the bracket's lines.*/
             AxisBracket(const double pos1, const double pos2, const double labelPos,
-                        const wxString label, const wxPen pen = *wxBLACK_PEN,
+                        const wxString label, const wxPen pen = wxPenInfo(*wxBLACK, 2),
                         const BracketLineStyle lineStyle = BracketLineStyle::CurlyBraces) :
                 m_startPosition(pos1), m_endPosition(pos2), m_labelPosition(labelPos),
                 m_label(GraphItems::GraphItemInfo(label).Pen(wxNullPen)), m_linePen(pen),
@@ -365,7 +365,7 @@ namespace Wisteria::GraphItems
             wxCoord m_tickMarkLength{ 15 };
             wxCoord m_padding{ 5 };
             Label m_label;
-            wxPen m_linePen{ *wxBLACK_PEN };
+            wxPen m_linePen{ wxPenInfo(*wxBLACK, 2) };
             Orientation m_orientation{ Orientation::Vertical };
             AxisLabelAlignment m_axisLabelAlignment{ AxisLabelAlignment::AlignWithAxisLine };
             BracketLineStyle m_bracketLineStyle{ BracketLineStyle::CurlyBraces };
