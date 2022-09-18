@@ -526,66 +526,36 @@ namespace Wisteria
         LoadPen(axisNode->GetProperty(L"axis-pen"), axis.GetAxisLinePen());
         LoadPen(axisNode->GetProperty(L"gridline-pen"), axis.GetGridlinePen());
 
+        // max line length
+        if (axisNode->GetProperty(L"label-length")->IsOk())
+            {
+            axis.SetLabelLineLength(axisNode->GetProperty(L"label-length")->
+                GetValueNumber(axis.GetLabelLineLength()));
+            }
+
+        if (axisNode->GetProperty(L"label-length-auto")->GetValueBool())
+            { axis.SetLabelLengthAuto(); }
+
         // brackets
         const auto bracketsNode = axisNode->GetProperty(L"brackets");
         if (bracketsNode->IsOk())
             {
-            wxPen bracketPen{ *wxBLACK_PEN };
-            LoadPen(bracketsNode->GetProperty(L"pen"), bracketPen);
-
-            const auto foundBracketStyle = bracketLineValues.find(std::wstring_view(
-                bracketsNode->GetProperty(L"style")->GetValueString().wc_str()));
-
-            // if loading brackets based on the dataset
-            if (bracketsNode->GetProperty(L"dataset")->IsOk())
+            wxPen bracketPen{ wxPenInfo(*wxBLACK, 2) };
+            // individually defined brackets
+            if (bracketsNode->IsValueArray())
                 {
-                const wxString dsName = bracketsNode->GetProperty(L"dataset")->GetValueString();
-                const auto foundDataset = m_datasets.find(dsName);
-                if (foundDataset == m_datasets.cend() ||
-                    foundDataset->second == nullptr)
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(
-                            _(L"%s: dataset not found for axis brackets."), dsName).ToUTF8());
-                    }
-
-                const auto variablesNode = bracketsNode->GetProperty(L"variables");
-                if (variablesNode->IsOk())
-                    {
-                    const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
-                    const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
-
-                    axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
-                    if (bracketPen.IsOk())
-                        {
-                        for (auto& bracket : axis.GetBrackets())
-                            { bracket.GetLinePen() = bracketPen; }
-                        }
-                    if (foundBracketStyle != bracketLineValues.cend())
-                        {
-                        for (auto& bracket : axis.GetBrackets())
-                            { bracket.SetBracketLineStyle(foundBracketStyle->second); }
-                        }
-                    }
-                else
-                    {
-                    throw std::runtime_error(
-                        _(L"Variables not defined for brackets").ToUTF8());
-                    }
-                }
-            // or individually defined brackets
-            else if (bracketsNode->GetProperty(L"bracket-items")->IsOk())
-                {
-                auto brackets = bracketsNode->GetProperty(L"bracket-items")->GetValueArrayObject();
+                const auto brackets = bracketsNode->GetValueArrayObject();
                 for (const auto& bracket : brackets)
                     {
-                    const std::optional<double> axisPos1 =
-                        FindAxisPosition(axis, bracket->GetProperty(L"position-1"));
-                    const std::optional<double> axisPos2 =
-                        FindAxisPosition(axis, bracket->GetProperty(L"position-2"));
+                    LoadPen(bracket->GetProperty(L"pen"), bracketPen);
 
-                    wxPen pen(*wxBLACK_PEN);
-                    LoadPen(bracket->GetProperty(L"pen"), pen);
+                    const auto foundBracketStyle = bracketLineValues.find(std::wstring_view(
+                        bracket->GetProperty(L"style")->GetValueString().wc_str()));
+
+                    const std::optional<double> axisPos1 =
+                        FindAxisPosition(axis, bracket->GetProperty(L"start"));
+                    const std::optional<double> axisPos2 =
+                        FindAxisPosition(axis, bracket->GetProperty(L"end"));
 
                     if (axisPos1.has_value() && axisPos2.has_value())
                         {
@@ -593,10 +563,61 @@ namespace Wisteria
                             Axis::AxisBracket(axisPos1.value(), axisPos2.value(),
                                 safe_divide<double>(axisPos1.value() + axisPos2.value(), 2),
                                 bracket->GetProperty(L"label")->GetValueString(),
-                                pen,
+                                bracketPen,
                                 (foundBracketStyle != bracketLineValues.cend()) ?
-                                    foundBracketStyle->second : BracketLineStyle::Lines));
+                                    foundBracketStyle->second : BracketLineStyle::CurlyBraces));
                         }
+                    }
+                }
+            // or build a series of brackets from a dataset
+            else
+                {
+                LoadPen(bracketsNode->GetProperty(L"pen"), bracketPen);
+                const auto foundBracketStyle = bracketLineValues.find(std::wstring_view(
+                    bracketsNode->GetProperty(L"style")->GetValueString().wc_str()));
+                // if loading brackets based on the dataset
+                if (bracketsNode->GetProperty(L"dataset")->IsOk())
+                    {
+                    const wxString dsName = bracketsNode->GetProperty(L"dataset")->GetValueString();
+                    const auto foundDataset = m_datasets.find(dsName);
+                    if (foundDataset == m_datasets.cend() ||
+                        foundDataset->second == nullptr)
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(
+                                _(L"%s: dataset not found for axis brackets."), dsName).ToUTF8());
+                        }
+
+                    const auto variablesNode = bracketsNode->GetProperty(L"variables");
+                    if (variablesNode->IsOk())
+                        {
+                        const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
+                        const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
+
+                        axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
+                        if (bracketPen.IsOk())
+                            {
+                            for (auto& bracket : axis.GetBrackets())
+                                { bracket.GetLinePen() = bracketPen; }
+                            }
+                        if (foundBracketStyle != bracketLineValues.cend())
+                            {
+                            for (auto& bracket : axis.GetBrackets())
+                                { bracket.SetBracketLineStyle(foundBracketStyle->second); }
+                            }
+                        }
+                    else
+                        {
+                        throw std::runtime_error(
+                            _(L"Variables not defined for brackets").ToUTF8());
+                        }
+                    }
+                else
+                    {
+                    throw std::runtime_error(
+                        _(L"No dataset provided for axis bracktets. "
+                           "Did you intend to define the brackets as an array of "
+                           "start and end points instead?").ToUTF8());
                     }
                 }
 
@@ -1760,9 +1781,52 @@ namespace Wisteria
                 {
                 if (barGroup->IsOk())
                     {
-                    barChart->AddBarGroup(barGroup->GetProperty(L"first-label")->GetValueString(),
-                                          barGroup->GetProperty(L"last-label")->GetValueString(),
-                                          barGroup->GetProperty(L"decal")->GetValueString());
+                    BarChart::BarGroup bGroup;
+                    bGroup.m_barColor = (
+                        ConvertColor(barGroup->GetProperty(L"color")->GetValueString()));
+                    if (!bGroup.m_barColor.IsOk() && barChart->GetColorScheme() != nullptr)
+                        { bGroup.m_barColor = barChart->GetColorScheme()->GetColor(0); }
+                    LoadBrush(barGroup->GetProperty(L"brush"), bGroup.m_barBrush);
+                    if (!bGroup.m_barBrush.IsOk() && barChart->GetBrushScheme() != nullptr)
+                        { bGroup.m_barBrush = barChart->GetBrushScheme()->GetBrush(0); }
+                    bGroup.m_barDecal = barGroup->GetProperty(L"decal")->GetValueString();
+
+                    if (barGroup->GetProperty(L"start")->IsValueNumber())
+                        {
+                        bGroup.m_barPositions.first = barGroup->GetProperty(L"start")->GetValueNumber();
+                        }
+                    else
+                        {
+                        const auto foundBar =
+                            barChart->FindBar(barGroup->GetProperty(L"start")->GetValueString());
+                        if (foundBar.has_value())
+                            { bGroup.m_barPositions.first = foundBar.value(); }
+                        else
+                            {
+                            throw std::runtime_error(wxString::Format(
+                                _(L"'%s': bar label not found when adding bar group."),
+                                barGroup->GetProperty(L"start")->GetValueString()).ToUTF8());
+                            }
+                        }
+                    if (barGroup->GetProperty(L"end")->IsValueNumber())
+                        {
+                        bGroup.m_barPositions.second = barGroup->GetProperty(L"end")->GetValueNumber();
+                        }
+                    else
+                        {
+                        const auto foundBar =
+                            barChart->FindBar(barGroup->GetProperty(L"end")->GetValueString());
+                        if (foundBar.has_value())
+                            { bGroup.m_barPositions.second = foundBar.value(); }
+                        else
+                            {
+                            throw std::runtime_error(wxString::Format(
+                                _(L"'%s': bar label not found when adding bar group."),
+                                barGroup->GetProperty(L"end")->GetValueString()).ToUTF8());
+                            }
+                        }
+                    
+                    barChart->AddBarGroup(bGroup);
                     }
                 }
             }
@@ -3818,10 +3882,10 @@ namespace Wisteria
                         { areaStyle = foundPos->second; }
 
                     const auto axisPos1 =
-                        FindAxisPosition(axis, refArea->GetProperty(L"position-1"));
+                        FindAxisPosition(axis, refArea->GetProperty(L"start"));
 
                     const auto axisPos2 =
-                        FindAxisPosition(axis, refArea->GetProperty(L"position-2"));
+                        FindAxisPosition(axis, refArea->GetProperty(L"end"));
 
                     if (axisPos1.has_value() && axisPos2.has_value())
                         {

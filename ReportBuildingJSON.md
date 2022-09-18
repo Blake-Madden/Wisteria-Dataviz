@@ -238,17 +238,15 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "only-custom-labels"
   - @c "custom-labels-and-values"
   - @c "no-display"
-- @c "brackets": adds brackets to the axis, which included the following properties:
-  - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
-  - @c "simplify": a boolean value indicating whether to simplify the bracket's labels.
-  - @c "style": the style of the braces.\n
-    Available options are:
-    - @c "arrow"
-    - @c "reverse-arrow"
-    - @c "lines"
-    - @c "curly-braces"
-    - @c "no-connection-lines"
+- @c "label-length": a number specifying the suggested maximum length for the axis labels. (Default is 100.)
+- @c "label-length-auto": if @c true, an attempt will be made to split longer axis labels based on
+     various separators in them (e.g., parentheses, commas, conjunctions).
 
+- @c "brackets": adds brackets to the axis,which can be an array of bracket definitions or single set of properties
+  using a dataset.
+  Available options for either method are:
+  - @c "simplify": a boolean value indicating whether to simplify the bracket's labels.
+ 
   If building brackets from a dataset, use the following properties:
   - @c "dataset": the name of the dataset to read the columns from.\n
        Note that this dataset can be different from the dataset used for the first
@@ -257,15 +255,29 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "variables": which include the following properties:
     - @c "label": the labels column.
     - @c "value": the values column. (This can be either a continous, categorical, or date column.)
+  - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
+  - @c "style": the style of the braces.\n
+    Available options are:
+    - @c "arrow"
+    - @c "reverse-arrow"
+    - @c "lines"
+    - @c "curly-braces"
+    - @c "no-connection-lines"
   
-  If building brackets individually, use the following property:
-  - @c "bracket-items": an array of the items with the following properties:
-    - @c "position-1": the starting axis position for the area.\n
-         This can either be a numeric position, a date (as a string), or an axis label.
-    - @c "position-2": the ending axis position for the area.\n
-         This can either be a numeric position, a date (as a string), or an axis label.
-    - @c "label": the text to display on the legend referring to area.
-    - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
+  If building brackets individually, specify an area of items, each with the following properties:
+  - @c "start": the starting axis position for the area.\n
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - @c "end": the ending axis position for the area.\n
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - @c "label": the text to display on the legend referring to area.
+  - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
+  - @c "style": the style of the braces.\n
+    Available options are:
+    - @c "arrow"
+    - @c "reverse-arrow"
+    - @c "lines"
+    - @c "curly-braces" (the default)
+    - @c "no-connection-lines"
 
 ## Categorical Bar Chart {#categorical-bar-chart-properties}
 Properties for @c "categorical-bar-chart" nodes:
@@ -295,7 +307,7 @@ Properties for @c "common-axis" nodes:
 Properties for @c "fillable-shape" nodes:
 - @c "icon": a string specifying the icon to draw the shape as.
 - @c "pen": the pen to draw with, which includes [pen](#pen-properties) properties.
-- @c "brush": the pen to brush with, which includes [brush](#brush-properties) properties.
+- @c "brush": the brush to paint with, which includes [brush](#brush-properties) properties.
 - @c "size": the size of the shape, which contains the following properties:
   - @c "width": the width.
   - @c "height": the height.
@@ -439,7 +451,7 @@ Properties for @c "pie-chart" nodes:
 Properties for @c "shape" nodes:
 - @c "icon": a string specifying the icon to draw the shape as.
 - @c "pen": the pen to draw with, which includes [pen](#pen-properties) properties.
-- @c "brush": the pen to brush with, which includes [brush](#brush-properties) properties.
+- @c "brush": the brush to paint with, which includes [brush](#brush-properties) properties.
 - @c "size": the size of the shape, which contains the following properties:
   - @c "width": the width.
   - @c "height": the height.
@@ -653,6 +665,16 @@ Properties common to all bar-chart derived graphs:
        left-to-right (based on the order of the provided labels). Otherwise, they will be
        sorted bottom-to-top or right-to-left.\n
        Note that this option is ignored if "by" is specified.
+- @c "bar-groups": an array of bar groups, each containing the following properties:
+  - @c "start": the axis label or numeric position to start the group.
+  - @c "end": the axis label or numeric position to end the group.
+  - @c "decal": a label to display on the group bar.
+  - @c "brush": the brush to paint with, which includes [brush](#brush-properties) properties.
+  - @c "color": the base color to paint under the brush. This is useful if the brush is using a hatch pattern.
+
+Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
+any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
+if specifying start and end points for your brackets, be aware that the bars will already be sorted.
 
 ## Graphs {#graph-properties}
 Properties common to all graph items:
@@ -696,9 +718,9 @@ Properties common to all graph items:
     - @c "right-y"
     - @c "left-y"
     - @c "top-y"
-  - @c "position-1": the starting axis position for the area.\n
+  - @c "start": the starting axis position for the area.\n
        This can either be a numeric position, a date (as a string), or an axis label.
-  - @c "position-2": the ending axis position for the area.\n
+  - @c "end": the ending axis position for the area.\n
        This can either be a numeric position, a date (as a string), or an axis label.
   - @c "label": the text to display on the legend referring to area.
   - @c "pen": the definition for the [pen](#pen-properties) properties.\n
