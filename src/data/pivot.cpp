@@ -49,11 +49,6 @@ namespace Wisteria::Data
             throw std::runtime_error(
                 _(L"ID column(s) required to pivot dataset.").ToUTF8());
             }
-        else if (valuesFromColumns.empty())
-            {
-            throw std::runtime_error(
-                _(L"'Values from' column(s) required to pivot dataset.").ToUTF8());
-            }
 
         std::set<PivotedWiderRow> pivotedRows;
         struct IdColumnsInfo
@@ -133,21 +128,32 @@ namespace Wisteria::Data
                 }
 
             // build the pivots
-            const bool includeValueNameInPivotName = (valuesFromColumnsIters.size() > 1);
-            for (const auto& valuesFrom : valuesFromColumnsIters)
+            if (valuesFromColumnsIters.size() > 0)
                 {
-                const wxString colName = namesPrefix +
-                    (includeValueNameInPivotName ?
-                        valuesFrom->GetName() + namesSep + namesFromColumnsIter->GetValueAsLabel(i):
-                        namesFromColumnsIter->GetValueAsLabel(i));
-                pivotedColumns.insert(std::make_pair(colName, valuesFrom->GetValue(i)));
+                const bool includeValueNameInPivotName = (valuesFromColumnsIters.size() > 1);
+                for (const auto& valuesFrom : valuesFromColumnsIters)
+                    {
+                    const wxString colName = namesPrefix +
+                        (includeValueNameInPivotName ?
+                            valuesFrom->GetName() + namesSep + namesFromColumnsIter->GetValueAsLabel(i):
+                            namesFromColumnsIter->GetValueAsLabel(i));
+                    pivotedColumns.insert(std::make_pair(colName, valuesFrom->GetValue(i)));
+                    pivotedColumnNames.insert(colName);
+                    }
+                }
+            // if no value columns to read from, just use frequency counts of each time
+            // a label from the ID column(s) appears
+            else
+                {
+                const wxString colName = namesPrefix + namesFromColumnsIter->GetValueAsLabel(i);
+                pivotedColumns.insert(std::make_pair(colName, 1));
                 pivotedColumnNames.insert(colName);
                 }
 
             const PivotedWiderRow pr{ currentKey, idColumns, pivotedColumns };
             const auto [iter, inserted] = pivotedRows.insert(pr);
-            // observation has already been load, so add new 'names from' labels
-            // as pivot columns to it
+            // observation has already been loaded, so add new 'names from' labels
+            // as we pivot columns to it
             if (!inserted)
                 {
                 auto nh = pivotedRows.extract(iter);

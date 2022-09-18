@@ -71,9 +71,11 @@ namespace Wisteria::Data
             @param namesFromColumn The categorical column that will have each label
                 converted into a new column.
             @param valuesFromColumns Continuous columns that will be copied into the new
-                columns created by teh labels from @c namesFromColumn.\n
+                columns created by the labels from @c namesFromColumn.\n
                 If multiple value columns are provided, then an extra column will be created
-                for each label column for each values column.
+                for each label column for each values column.\n
+                If no columns are provided, then frequency counts of each unique combination
+                of ID labels will be used as the value.
             @param namesSep If multiple value columns are provided, then this separator will
                 join the label from @c namesFromColumn and the value column name.
             @param namesPrefix A string to prepend to newly created pivot columns.
