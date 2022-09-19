@@ -8,6 +8,7 @@
 #############################################################################
 
 # Declare the minimum required CMake version
+# Note that CMake 3.24 is needed if compiling wxWidgets 3.2
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -34,7 +35,7 @@ PROJECT(Wisteria)
 # Setup wxWidgets
 ########################
 
-# UNIX systems: set wxWidgets_CONFIG_EXECUTABLE to the path of wx-config
+# Linx: install the wxWidgets development files to your system
 # Windows: set wxWidgets_ROOT_DIR to the wxWidgets root path
 
 # Find wxWidgets and select its components
@@ -81,8 +82,14 @@ IF(MSVC)
     # about not wrapping all of this logic in try blocks.
     TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
-ELSE()
-    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXMSW__
+# Placeholder code for macOS (needs testing)
+#ELSEIF(APPLE)
+#    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXOSX__
+#        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+#    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+#                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+ELSEIF(UNIX)
+    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
