@@ -163,7 +163,7 @@ namespace Wisteria::Graphs
          // if any outliers, make a note of it off to the side
          tableGraph->AddCellAnnotation(
             { L"Majors with the most lopsided female-to-male ratios",
-                ratioOutliers, Side::Right }
+                ratioOutliers, Side::Right, std::nullopt, wxColour() }
             );
 
          // if you also want to place annotations on the left of the table,
@@ -289,7 +289,7 @@ namespace Wisteria::Graphs
             ///     annotation. If set to @c std::nullopt, then the table
             ///     highlight pen will be used.
             std::optional<wxPen> m_connectionLinePen;
-            /// @brief Brush to fill the cell with. Default is an invalid color
+            /// @brief Color to fill the cell with. Default is an invalid color
             ///     that won't be used.
             wxColour m_bgColor;
             };

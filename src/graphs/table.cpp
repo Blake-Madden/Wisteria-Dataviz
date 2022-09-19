@@ -43,7 +43,7 @@ namespace Wisteria::Graphs
             else if (m_valueFormat == CellFormat::Percent)
                 {
                 return wxNumberFormatter::ToString((*dVal)*100, m_precision,
-                    wxNumberFormatter::Style::Style_None) + L"%";
+                    wxNumberFormatter::Style::Style_WithThousandsSep) + L"%";
                 }
             else if (m_valueFormat == CellFormat::Accounting)
                 {

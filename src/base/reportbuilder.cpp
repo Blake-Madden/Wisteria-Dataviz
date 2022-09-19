@@ -2598,8 +2598,8 @@ namespace Wisteria
                 {
                 Table::CellAnnotation cellAnnotation
                     {
-                    annotation->GetProperty(L"value")->GetValueString()
-
+                    annotation->GetProperty(L"value")->GetValueString(),
+                    std::vector<Table::CellPosition>(), Side::Right, std::nullopt, wxColour()
                     };
                 if (annotation->GetProperty(L"side")->IsOk())
                     {
