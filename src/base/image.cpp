@@ -16,14 +16,37 @@ namespace Wisteria::GraphItems
     //----------------------------------------------------------
     wxSize Image::GetSVGSize(const wxString& filePath)
         {
-        NSVGimage* image{ nullptr };
-        image = nsvgParseFromFile(filePath.c_str(), "px", 96.0f);
-        if (image == nullptr)
-            { return wxDefaultSize; }
-        wxSize sz{ static_cast<int>(image->width) ,
-                   static_cast<int>(image->height) };
-
-        nsvgDelete(image);
+        wxXmlDocument doc;
+        if (!doc.Load(filePath))
+            { return wxSize(32, 32); }
+        wxXmlNode* docNode = doc.GetDocumentNode()->GetChildren();
+        if (docNode == nullptr)
+            { return wxSize(32, 32); }
+        wxString heightStr, widthStr, viewBoxStr;
+        wxSize sz{ wxDefaultCoord, wxDefaultCoord };
+        if (docNode->GetAttribute(L"width", &widthStr))
+            { widthStr.ToInt(&sz.x); }
+        if (docNode->GetAttribute(L"height", &heightStr))
+            { heightStr.ToInt(&sz.y); }
+        // if no width or height attributes
+        if (!sz.IsFullySpecified())
+            {
+            if (docNode->GetAttribute(L"viewBox", &viewBoxStr))
+                {
+                const wxRegEx re(L"([[:digit:].]+[ ]+){2}([[:digit:].]+)[ ]+([[:digit:].]+)");
+                if (re.Matches(viewBoxStr) && re.GetMatchCount() >= 3)
+                    {
+                    widthStr = re.GetMatch(viewBoxStr, 2);
+                    heightStr = re.GetMatch(viewBoxStr, 3);
+                    widthStr.ToInt(&sz.x);
+                    heightStr.ToInt(&sz.y);
+                    }
+                else
+                    { return wxSize(32, 32); }
+                }
+            else
+                { return wxSize(32, 32); }
+            }
 
         return sz;
         }

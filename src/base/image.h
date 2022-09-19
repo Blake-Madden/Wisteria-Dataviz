@@ -20,12 +20,13 @@
 #include <wx/tokenzr.h>
 #include <wx/filename.h>
 #include <wx/bmpbndl.h>
+#include <wx/xml/xml.h>
+#include <wx/regex.h>
 #include "graphitems.h"
 #include "colorbrewer.h"
 #include "../math/mathematics.h"
 #include "../util/memorymappedfile.h"
 #include "../easyexif/exif.h"
-#include "../nanosvg/src/nanosvg.h"
 
 // forward declares
 namespace Wisteria
@@ -134,8 +135,10 @@ namespace Wisteria::GraphItems
             @details This is useful for determining the aspect ratio of an SVG file.
                 This can be passed to a @c wxBitmapBundle when it loads an SVG.
             @param filePath The file path to the SVG file.
-            @returns The default size of the SVG. Will be an invalid size if the
-                file fails to load.*/
+            @returns The default size of the SVG. Will be a 32x32 size if the
+                size can't be read.
+            @note The units (e.g., mm or px) in the SVG are ignored, only the numeric
+                values of the sizes are read.*/
         [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
         /** @brief Either downscales or upscales a size to another, maintaining the
                 original's aspect ratio.
