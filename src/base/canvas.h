@@ -61,15 +61,15 @@ namespace Wisteria
         ///     when it was added to the canvas.
         /// @param object The object to change.
         /// @sa Canvas::SetFixedObject() for when an object's initial scaling is cached.
-        CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object) :
+        explicit CanvasItemScalingChanger(std::shared_ptr<GraphItems::GraphItemBase> object) :
             m_obj(object), m_originalScaling(object->GetScaling())
             { m_obj->SetScaling(m_obj->GetOriginalCanvasScaling()); }
         /// @brief Destructor; resets the object back to its original scaling.
         ~CanvasItemScalingChanger()
             { m_obj->SetScaling(m_originalScaling); }
     private:
-        double m_originalScaling{ 1.0 };
         std::shared_ptr<GraphItems::GraphItemBase> m_obj{ nullptr };
+        double m_originalScaling{ 1.0 };
         };
 
     /// @brief %Canvas for drawing, movable objects.

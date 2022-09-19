@@ -22,7 +22,6 @@ namespace Wisteria::GraphItems
         const BinLabelDisplay labelDisplay,
         const std::shared_ptr<const TextReplace> abbreviate /*= nullptr*/)
         {
-        const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(pieProportion);
         auto pieLabel = std::make_shared<Label>(GetGraphItemInfo());
         switch (labelDisplay)

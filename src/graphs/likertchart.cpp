@@ -81,10 +81,10 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::SetLabels(std::shared_ptr<Data::Dataset>& data,
-                                std::vector<wxString>& questionColumns,
+                                const std::vector<wxString>& questionColumns,
                                 const Data::ColumnWithStringTable::StringTableType& codes)
         {
-        for (auto& catColumnName : questionColumns)
+        for (const auto& catColumnName : questionColumns)
             {
             auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
@@ -599,8 +599,8 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     void LikertChart::SetData(std::shared_ptr<const Data::Dataset> data,
-        std::vector<wxString>& questionColumns,
-        std::optional<wxString> groupColumnName /*= std::nullopt*/)
+        const std::vector<wxString>& questionColumns,
+        const std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
         if (data == nullptr)
             { return; }

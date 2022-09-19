@@ -67,7 +67,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
         wxBitmap previewImg;
         previewImg.CreateWithDIPSize(
             wxSize(canvas->ToDIP(dcWidth),
-                    canvas->ToDIP(dcHeight)),
+                   canvas->ToDIP(dcHeight)),
             canvas->GetDPIScaleFactor());
         wxMemoryDC memDc(previewImg);
         memDc.Clear();
@@ -104,7 +104,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
         gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
         gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
 
-        m_canvas->OnDraw(gcdc);
+        canvas->OnDraw(gcdc);
 #endif
         dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
 
@@ -230,7 +230,6 @@ Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const Rep
         {
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
-        const auto canvasInDIPs = m_canvas->ToDIP(wxSize(w, h));
         const auto scaledHeight =
             geometry::calculate_rescale_height(std::make_pair(w, h), m_originalMinWidth);
 

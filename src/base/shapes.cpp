@@ -195,6 +195,9 @@ namespace Wisteria::GraphItems
             case IconShape::FemaleBusiness:
                 m_drawFunction = &ShapeRenderer::DrawFemaleBusiness;
                 break;
+            default:
+                m_drawFunction = nullptr;
+                break;
             }
         }
 

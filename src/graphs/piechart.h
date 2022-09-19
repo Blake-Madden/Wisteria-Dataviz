@@ -98,7 +98,7 @@ namespace Wisteria::GraphItems
     private:
         wxRect Draw(wxDC& dc) const final;
 
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]] bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
@@ -111,7 +111,7 @@ namespace Wisteria::GraphItems
 
         // obligatory virtual interfaces that aren't implemented
         [[deprecated("Not implemented")]]
-        void SetBoundingBox(const wxRect&, wxDC& dc, const double) final
+        void SetBoundingBox(const wxRect&, wxDC&, const double) final
             { wxFAIL_MSG(L"Not implemented for PieSlice"); }
         [[deprecated("Not implemented")]]
         void Offset(const int, const int) final

@@ -139,8 +139,8 @@ namespace Wisteria::GraphItems
             m_refAreaStyle(refAreaStyle), m_axisPosition2(axisPosition2)
             {}
     private:
-        double m_axisPosition2{ 0 };
         ReferenceAreaStyle m_refAreaStyle{ ReferenceAreaStyle::Solid };
+        double m_axisPosition2{ 0 };
         };
 
     /// @brief An axis on a graph.

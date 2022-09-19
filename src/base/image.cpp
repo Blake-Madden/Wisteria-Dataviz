@@ -17,7 +17,7 @@ namespace Wisteria::GraphItems
     wxSize Image::GetSVGSize(const wxString& filePath)
         {
         NSVGimage* image{ nullptr };
-        image = nsvgParseFromFile(filePath, "px", 96.0f);
+        image = nsvgParseFromFile(filePath.c_str(), "px", 96.0f);
         if (image == nullptr)
             { return wxDefaultSize; }
         wxSize sz{ static_cast<int>(image->width) ,

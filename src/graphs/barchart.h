@@ -283,11 +283,12 @@ namespace Wisteria::Graphs
             /// @brief Constructor
             /// @param info A chainable set of fields to assign to the bar block.
             explicit BarBlock(const BarBlockInfo& info) :
-                m_brush(info.m_brush), m_length(info.m_length),
+                m_brush(info.m_brush), m_outlinePen(info.m_outlinePen),
+                m_color(info.m_color),
+                m_length(info.m_length),
                 m_selectionLabel(info.m_selectionLabel),
                 m_decal(info.m_decal), m_show(info.m_show),
-                m_tag(info.m_tag), m_color(info.m_color),
-                m_outlinePen(info.m_outlinePen)
+                m_tag(info.m_tag)
                 {}
 
             /// @returns The block's brush.

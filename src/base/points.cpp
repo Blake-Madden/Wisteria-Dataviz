@@ -308,7 +308,6 @@ namespace Wisteria::GraphItems
                 { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
             wxDCPenChanger pc(dc, scaledPen);
             const auto boundingBox = GetBoundingBox(dc);
-            const auto iconRadius{ ScaleToScreenAndCanvas(GetRadius())};
 
             // object that can handle drawing various shapes for the icons
             Shape sh(

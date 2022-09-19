@@ -34,7 +34,6 @@ namespace Wisteria
 
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
-        const auto canvasInDIPs = ToDIP(wxSize(w, h));
         const auto scaledHeight =
             geometry::calculate_rescale_height(std::make_pair(w, h), orginalMinWidth);
 

@@ -485,8 +485,8 @@ namespace Wisteria::Graphs
              The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
              when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
-            std::vector<wxString>& questionColumns,
-            std::optional<wxString> groupColumnName = std::nullopt);
+            const std::vector<wxString>& questionColumns,
+            const std::optional<wxString> groupColumnName = std::nullopt);
 
         /** @brief Sets a common string table to the specified categorical columns (i.e., questions) in a dataset.
             @details This should be called after calling SetData().
@@ -496,7 +496,7 @@ namespace Wisteria::Graphs
              from 1 to the highest level of the point scale of the chart.
             @sa CreateLabels().*/
         static void SetLabels(std::shared_ptr<Data::Dataset>& data,
-                              std::vector<wxString>& questionColumns,
+                              const std::vector<wxString>& questionColumns,
                               const Data::ColumnWithStringTable::StringTableType& codes);
 
         /** @brief Creates a stock list of labels to use for a particular Likert scale.

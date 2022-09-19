@@ -1,11 +1,5 @@
 #include "mainframe.h"
 #include "radioboxdlg.h"
-#ifdef __WXGTK__
-    #include <gtk/gtk.h>
-    #include <gtk/gtkpapersize.h>
-    #include <gtk/gtkpagesetup.h>
-    #include <gdk/gdkkeysyms.h>
-#endif
 
 using namespace Wisteria;
 

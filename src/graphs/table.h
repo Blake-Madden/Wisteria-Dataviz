@@ -598,7 +598,7 @@ namespace Wisteria::Graphs
             {
             if (GetColumnCount())
                 {
-                auto insertedRow = m_table.insert(m_table.cbegin() +
+                m_table.insert(m_table.cbegin() +
                         // clamp indices going beyond the row count to m_table.cend()
                         std::clamp<size_t>(rowIndex, 0, GetRowCount()),
                     std::vector<TableCell>(GetColumnCount(), TableCell()));

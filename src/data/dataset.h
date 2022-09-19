@@ -20,6 +20,7 @@
 #include <limits>
 #include <cinttypes>
 #include <variant>
+#include <memory>
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/colour.h>
@@ -696,7 +697,7 @@ namespace Wisteria::Data
         {
         friend class DatasetClone;
         friend class Pivot;
-        friend class ReportBuilder;
+        friend class Wisteria::ReportBuilder;
     public:
         /// @brief Description of a column's deduced type when previewing.
         /// @details This is used by ReadColumnInfo().

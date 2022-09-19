@@ -139,8 +139,8 @@ namespace Wisteria::GraphItems
         const auto measuredHeightNoSideImages = ((GetTextOrientation() == Orientation::Vertical) ?
             (measuredHeight - CalcLeftImageSize(measuredWidth).GetWidth()) : measuredHeight);
         if (// too small in both dimensions, so upscale
-            measureWidthNoSideImages <= rect.GetWidth() &&
-            measuredHeightNoSideImages <= rect.GetHeight() ||
+            (measureWidthNoSideImages <= rect.GetWidth() &&
+             measuredHeightNoSideImages <= rect.GetHeight()) ||
             // or too big in one of the dimensions, so downscale
             (measureWidthNoSideImages > rect.GetWidth() ||
              measuredHeightNoSideImages > rect.GetHeight()) )
@@ -406,9 +406,6 @@ namespace Wisteria::GraphItems
                 const wxCoord yOffset = (GetHeaderInfo().IsEnabled() ?
                     topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) : 0);
                 middleOfCurrentRow += yOffset;
-                const auto midPoint = wxPoint(contentBoundingBox.GetTopLeft() +
-                                              wxPoint(iconMiddleX, middleOfCurrentRow));
-                wxPoint polygonPoints[6]{ {0, 0} };
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
@@ -460,6 +457,8 @@ namespace Wisteria::GraphItems
                                                           iconPos->m_colors[i], iconPos->m_colors[i+1], wxDOWN);
                                     }
                                 }
+                            break;
+                        default:
                             break;
                         };
                     }

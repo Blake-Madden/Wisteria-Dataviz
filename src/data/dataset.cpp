@@ -666,12 +666,12 @@ namespace Wisteria::Data
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
-        size_t rowCount = std::min<size_t>(preview(fileText, delimiter, false, false),
+        size_t rowCount = std::min<size_t>(preview(fileText.wc_str(), delimiter, false, false),
                                            rowPreviewCount+1/*header*/);
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            importer.read(fileText, rowCount, preview.get_header_names().size(), false);
+            importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
             }
         else
             { return columnInfo; }
@@ -835,11 +835,11 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_preview preview;
         // see how many lines are in the file and resize the container
-        const size_t rowCount = preview(fileText, delimiter, false, false);
+        const size_t rowCount = preview(fileText.wc_str(), delimiter, false, false);
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            importer.read(fileText, rowCount, preview.get_header_names().size(), false);
+            importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
             Reserve(rowCount);
             }
         else

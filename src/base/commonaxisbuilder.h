@@ -55,7 +55,7 @@ namespace Wisteria
                 CommonAxisBuilder::BuildYAxis(canvas,
                     { linePlot, boxPlot }, AxisType::RightYAxis));
             @endcode*/
-        static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildYAxis(Canvas* canvas,
+        [[nodiscard]] static std::shared_ptr<GraphItems::Axis> BuildYAxis(Canvas* canvas,
             std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
             AxisType axisType);
         /** @brief Builds a common axis for graphs along a column.
@@ -97,7 +97,7 @@ namespace Wisteria
              // adjust the heights of the rows, auto-fitting the common axis
              canvas->CalcRowDimensions();
             @endcode*/
-        static [[nodiscard]] std::shared_ptr<GraphItems::Axis> BuildXAxis(Canvas* canvas,
+        [[nodiscard]] static std::shared_ptr<GraphItems::Axis> BuildXAxis(Canvas* canvas,
             std::vector<std::shared_ptr<Graphs::Graph2D>> graphs,
             AxisType axisType,
             const bool useCommonLeftAxis = false);

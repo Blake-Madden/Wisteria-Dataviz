@@ -12,6 +12,7 @@
 #ifndef __TEXTREPLACE_H__
 #define __TEXTREPLACE_H__
 
+#include <memory>
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/regex.h>

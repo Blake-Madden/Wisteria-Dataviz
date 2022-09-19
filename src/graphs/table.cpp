@@ -297,7 +297,7 @@ namespace Wisteria::Graphs
             if (aggInfo.m_type == AggregateType::Total)
                 {
                 aggCell.m_value = std::accumulate(values.cbegin(),
-                                                  values.cend(), 0);
+                                                  values.cend(), 0.0);
                 }
             else if (aggInfo.m_type == AggregateType::ChangePercent &&
                 values.size() > 1)

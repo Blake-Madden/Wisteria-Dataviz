@@ -202,40 +202,37 @@ namespace Wisteria
                     // if there are common axis queued, add them now
                     if (m_commonAxesPlaceholders.size())
                         {
+                        std::vector<std::shared_ptr<Graphs::Graph2D>> childGraphs;
                         for (const auto& commonAxisInfo : m_commonAxesPlaceholders)
                             {
-                            std::vector<std::shared_ptr<Graphs::Graph2D>> childGraphs;
-                            for (const auto& commonAxisInfo : m_commonAxesPlaceholders)
+                            for (const auto& childId : commonAxisInfo.m_childrenIds)
                                 {
-                                for (const auto& childId : commonAxisInfo.m_childrenIds)
-                                    {
-                                    auto childGraph = std::find_if(embeddedGraphs.cbegin(), embeddedGraphs.cend(),
-                                        [&childId](const auto& graph) noexcept
-                                          {
-                                          return graph->GetId() == static_cast<long>(childId);
-                                          });
-                                    if (childGraph != embeddedGraphs.end() &&
-                                        (*childGraph) != nullptr)
-                                        { childGraphs.push_back(*childGraph); }
-                                    }
-                                if (childGraphs.size() > 1)
-                                    {
-                                    auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis ||
-                                                       commonAxisInfo.m_axisType == AxisType::TopXAxis) ?
-                                        CommonAxisBuilder::BuildXAxis(canvas,
-                                            childGraphs, commonAxisInfo.m_axisType,
-                                            commonAxisInfo.m_commonPerpendicularAxis) :
-                                        CommonAxisBuilder::BuildYAxis(canvas,
-                                            childGraphs, commonAxisInfo.m_axisType);
-                                    LoadAxis(commonAxisInfo.m_node, *commonAxis);
-                                    LoadItem(commonAxisInfo.m_node, commonAxis);
-                                    // force the row to its height and no more
-                                    commonAxis->FitCanvasRowHeightToContent(true);
-                                    canvas->SetFixedObject(
-                                        commonAxisInfo.m_gridPosition.first,
-                                        commonAxisInfo.m_gridPosition.second,
-                                        commonAxis);
-                                    }
+                                auto childGraph = std::find_if(embeddedGraphs.cbegin(), embeddedGraphs.cend(),
+                                    [&childId](const auto& graph) noexcept
+                                        {
+                                        return graph->GetId() == static_cast<long>(childId);
+                                        });
+                                if (childGraph != embeddedGraphs.end() &&
+                                    (*childGraph) != nullptr)
+                                    { childGraphs.push_back(*childGraph); }
+                                }
+                            if (childGraphs.size() > 1)
+                                {
+                                auto commonAxis = (commonAxisInfo.m_axisType == AxisType::BottomXAxis ||
+                                                    commonAxisInfo.m_axisType == AxisType::TopXAxis) ?
+                                    CommonAxisBuilder::BuildXAxis(canvas,
+                                        childGraphs, commonAxisInfo.m_axisType,
+                                        commonAxisInfo.m_commonPerpendicularAxis) :
+                                    CommonAxisBuilder::BuildYAxis(canvas,
+                                        childGraphs, commonAxisInfo.m_axisType);
+                                LoadAxis(commonAxisInfo.m_node, *commonAxis);
+                                LoadItem(commonAxisInfo.m_node, commonAxis);
+                                // force the row to its height and no more
+                                commonAxis->FitCanvasRowHeightToContent(true);
+                                canvas->SetFixedObject(
+                                    commonAxisInfo.m_gridPosition.first,
+                                    commonAxisInfo.m_gridPosition.second,
+                                    commonAxis);
                                 }
                             }
                         }
@@ -695,9 +692,10 @@ namespace Wisteria
             // font attributes
             if (labelNode->GetProperty(L"bold")->IsOk())
                 {
-                labelNode->GetProperty(L"bold")->GetValueBool() ?
-                    label->GetFont().MakeBold() :
-                    label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                if (labelNode->GetProperty(L"bold")->GetValueBool())
+                    { label->GetFont().MakeBold(); }
+                else
+                    { label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                 }
 
             const auto textAlignment = ConvertTextAlignment(
@@ -712,9 +710,10 @@ namespace Wisteria
                 label->GetHeaderInfo().Enable(true);
                 if (headerNode->GetProperty(L"bold")->IsOk())
                     {
-                    headerNode->GetProperty(L"bold")->GetValueBool() ?
-                        label->GetHeaderInfo().GetFont().MakeBold() :
-                        label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                    if (headerNode->GetProperty(L"bold")->GetValueBool())
+                        { label->GetHeaderInfo().GetFont().MakeBold(); }
+                    else
+                        { label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                     }
                 const wxColour color(
                     ConvertColor(headerNode->GetProperty(L"color")->GetValueString()));
@@ -2556,9 +2555,10 @@ namespace Wisteria
                     // font attributes
                     if (cellUpdate->GetProperty(L"bold")->IsOk())
                         {
-                        cellUpdate->GetProperty(L"bold")->GetValueBool() ?
-                            currentCell->GetFont().MakeBold() :
-                            currentCell->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
+                        if (cellUpdate->GetProperty(L"bold")->GetValueBool())
+                            { currentCell->GetFont().MakeBold(); }
+                        else
+                            { currentCell->GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                         }
 
                     // outer border toggles
@@ -2596,7 +2596,11 @@ namespace Wisteria
             {
             for (const auto& annotation : annotationsNode)
                 {
-                Table::CellAnnotation cellAnnotation{ annotation->GetProperty(L"value")->GetValueString() };
+                Table::CellAnnotation cellAnnotation
+                    {
+                    annotation->GetProperty(L"value")->GetValueString()
+
+                    };
                 if (annotation->GetProperty(L"side")->IsOk())
                     {
                     cellAnnotation.m_side =

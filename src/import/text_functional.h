@@ -30,7 +30,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Converts doubled up " with a single ".
         /// @param[in, out] text The string to convert.
-        [[nodiscard]] void operator()(T& text) const
+        void operator()(T& text) const
             {
             size_t start{ 0 };
             while (start != T::npos)
