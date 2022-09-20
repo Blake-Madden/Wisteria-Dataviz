@@ -76,7 +76,7 @@ namespace Wisteria::GraphItems
                 }
             }
 
-        // draw the bouding box outline
+        // draw the bounding box outline
         if (IsSelected())
             {
             wxDCBrushChanger bc(dc, *wxTRANSPARENT_BRUSH);

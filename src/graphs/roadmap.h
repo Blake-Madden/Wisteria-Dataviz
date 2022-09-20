@@ -47,7 +47,7 @@ namespace Wisteria::Graphs
             /// @brief The name and value (value can be negative,
             ///     in the case of a linear regression coefficient).
             NameAndValue,
-            /// @brief The name and absolutue value of the value.
+            /// @brief The name and absolute value of the value.
             NameAndAbsoluteValue
             };
 
@@ -72,7 +72,7 @@ namespace Wisteria::Graphs
         /// @brief Gets/sets the pen used to draw the lane separator on the road.
         /// @details This is useful for changing the color, pen style, or even removing the
         ///     line on the middle of the road.
-        /// @note Set this to @c wxNullPen to not draw a line down the middle fo the road.
+        /// @note Set this to @c wxNullPen to not draw a line down the middle of the road.
         /// @returns The pen used to draw the road.
         [[nodiscard]] wxPen& GetLaneSeparatorPen() noexcept
             { return m_laneSeparatorPen; }
@@ -145,7 +145,7 @@ namespace Wisteria::Graphs
                 m_name = name;
                 return *this;
                 }
-            /// @brief Sets the item's value (e.g., coefficent in the equation),
+            /// @brief Sets the item's value (e.g., coefficient in the equation),
             ///     which controls the direction and length of a curve in the road.
             /// @details Negative values will place the item on the left side of the graph,
             ///     positive will appear on the right side.
@@ -196,7 +196,7 @@ namespace Wisteria::Graphs
         LaneSeparatorStyle m_laneSepatatorStyle{ LaneSeparatorStyle::SingleLine };
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
-        /// @returns The icon used for negative sentitments, based on current theme.
+        /// @returns The icon used for negative sentiments, based on current theme.
         [[nodiscard]] RoadStopIcon GetNegativeIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?
@@ -206,7 +206,7 @@ namespace Wisteria::Graphs
                                Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow));
             }
 
-        /// @returns The icon used for positive sentitments, based on current theme.
+        /// @returns The icon used for positive sentiments, based on current theme.
         [[nodiscard]] RoadStopIcon GetPositiveIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?

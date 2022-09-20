@@ -105,7 +105,7 @@ namespace Wisteria::Data
              by the parent regular expression will generically fall into the parent category
              (with no sub-category). Set this to @c std::nullopt to not use sub-categories.
             @param patternsColumnName The name of the column with the regular expression in it.
-            @param negationPatternsColumnName The (optinal) name of the columnn with a negating
+            @param negationPatternsColumnName The (optional) name of the column with a negating
              regular expression in it. This is used to negate any match found with the
              @c patternsColumnName column.
             @note Any invalid regular expressions loaded from the file will be logged using
@@ -123,7 +123,7 @@ namespace Wisteria::Data
              that rely on regular expression pattern matching.
             @param contentData The dataset with the text to be classified.
             @param contentColumnName The name of the text column that contains content to
-             be classifed. This would usually be a column of comments from a survey.
+             be classified. This would usually be a column of comments from a survey.
             @returns A pair of datasets.\n
              \n
              The first is a dataset filled with the comments and the categories that they matched against.

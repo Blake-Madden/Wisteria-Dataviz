@@ -768,7 +768,7 @@ namespace Wisteria
                     // Because of this, get its measured width and remove any extra space around its
                     // sides, and then give that extra space back to the items previously calculated
                     // to the left of it.
-                    // Note that the newly measured area is within the bouding box that had the
+                    // Note that the newly measured area is within the bounding box that had the
                     // canvas margins subtracted from it, so if we use this new measurement
                     // the margins will be preserved.
                     auto measuredBox = objectsPos->GetBoundingBox(dc);

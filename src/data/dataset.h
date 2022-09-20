@@ -230,7 +230,7 @@ namespace Wisteria::Data
         void SetStringTable(const StringTableType& sTable)
             { m_stringTable = sTable; }
 
-        /** @brief Applies a regular expression string replacment for all values in
+        /** @brief Applies a regular expression string replacement for all values in
                 the string table.
             @param pattern The regex pattern to replace.
             @param replace The replacement text.
@@ -499,7 +499,7 @@ namespace Wisteria::Data
             /// @details The numeric code assigned to missing data (i.e., empty string)
             ///  is non-deterministic. It will be whatever the next ID in the sequence is when
             ///  the first empty value is encountered in the column.
-            ///  @c ColumnWithStringTable::FindMissingDataCode() can be usded to
+            ///  @c ColumnWithStringTable::FindMissingDataCode() can be used to
             ///  find this code after loading the data.
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             /// @brief The default missing data code.
@@ -800,7 +800,7 @@ namespace Wisteria::Data
              Generally, this should be called in a loop,
              where the RowInfo is constructed with the same set of columns each time.
              Also, it is recommended to add columns prior to calling this
-             (e.e., call AddDateColumn()); otherwise, this function will create any
+             (e.g., call AddDateColumn()); otherwise, this function will create any
              necessary columns with generically generated names.*/
         void AddRow(const RowInfo& dataInfo);
         /** @brief During import, sets the column names to the names
@@ -902,7 +902,7 @@ namespace Wisteria::Data
         /// @returns The date columns.
         [[nodiscard]] std::vector<Column<wxDateTime>>& GetDateColumns() noexcept
             { return m_dateColumns; }
-        /// @returns A vector all all date column names.
+        /// @returns A vector of all date column names.
         /// @sa RemoveColumnNamesFromList().
         [[nodiscard]] std::vector<wxString> GetDateColumnNames() const noexcept
             {
@@ -945,7 +945,7 @@ namespace Wisteria::Data
         /// @returns The continuous columns.
         [[nodiscard]] std::vector<Column<double>>& GetContinuousColumns() noexcept
             { return m_continuousColumns; }
-        /// @returns A vector all all continuous column names.
+        /// @returns A vector of all continuous column names.
         /// @sa RemoveColumnNamesFromList().
         [[nodiscard]] std::vector<wxString> GetContinuousColumnNames() const noexcept
             {
@@ -1071,7 +1071,7 @@ namespace Wisteria::Data
             @throws std::runtime_error If column not found, throws an exception.*/
         void RenameColumn(const wxString& colName, const wxString& newColName);
 
-        /** @brief Applies a regular expression string replacment for all values in
+        /** @brief Applies a regular expression string replacement for all values in
                 the specified categorical column.
             @param colName The categorical column to edit.
             @param pattern The regex pattern to replace.

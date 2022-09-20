@@ -374,9 +374,9 @@ namespace Wisteria
         {
         /** @brief The number of items in (or aggregated value of) each bin.*/
         BinValue,
-        /** @brief The percentage of items in in (or aggregated value of) each bin.*/
+        /** @brief The percentage of items in (or aggregated value of) each bin.*/
         BinPercentage,
-        /** @brief Both the percentage and number of items in in
+        /** @brief Both the percentage and number of items in
                 (or aggregated value of) each bin.*/
         BinValueAndPercentage,
         /** @brief Don't display labels on the bins.*/
@@ -401,7 +401,7 @@ namespace Wisteria
     /// @brief How an object resized to fit into a new bounding box.
     enum class ResizeMethod
         {
-        /// @brief Make the item smaller or larger to fit the bouding box.
+        /// @brief Make the item smaller or larger to fit the bounding box.
         DownscaleOrUpscale,
         /// @brief Only make items smaller if necessary.
         DownscaleOnly,
@@ -607,7 +607,7 @@ namespace Wisteria
             [[nodiscard]] double GetRelativeScaling() const noexcept
                 { return m_relativeScaling; }
             /** @brief Specifies the top line's scaling, relative to the rest of the text.
-                @param scaling The realtive scaling for the top line.
+                @param scaling The relative scaling for the top line.
                 @returns A self reference.*/
             HeaderInfo& RelativeScaling(const double scaling) noexcept
                 {
@@ -713,7 +713,7 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Tells the canvas to allocate just the necessary width for this item's width
-            ///     (at default scaling) within its row, and nothting more.
+            ///     (at default scaling) within its row, and nothing more.
             /// @details This is usually used for legends off to the side of a graph.
             /// @details By default, this is false and canvases will stretch all items in a given
             ///     row equally width-wise.
@@ -960,7 +960,7 @@ namespace Wisteria
             [[nodiscard]] double GetScaling() const noexcept
                 { return m_scaling; }
             /// @returns The scaling when the item was first embedded onto a canvas.
-            /// @note This is only relavant for object embedded into a canvas's grid
+            /// @note This is only relevant for object embedded into a canvas's grid
             ///     and should only be used by canvases internally.
             [[nodiscard]] double GetOriginalCanvasScaling() const noexcept
                 { return m_originalCanvasScaling; }
@@ -1359,7 +1359,7 @@ namespace Wisteria
                     If a @c Label, sets the vertical alignment of the text
                     (if using a minimum user-defined size).\n
                     If a @c Table, sets where the table is vertically placed within
-                    its bouding box.
+                    its bounding box.
                 @param alignment How to align the content.
                 @note This can be used to center or right align a legend vertically
                     if being placed on a canvas (beneath its plot).*/
@@ -1378,7 +1378,7 @@ namespace Wisteria
                     If a @c Label, sets the horizontal alignment of the text
                     (if using a minimum user-defined size).\n
                     If a @c Table, sets where the table is horizontally placed within
-                    its bouding box.
+                    its bounding box.
                 @param alignment How to align the content.
                 @note This can be used to center or right align a legend horizontally
                     if being placed on a canvas (beneath its plot).*/
@@ -1665,7 +1665,7 @@ namespace Wisteria
             [[nodiscard]] bool IsFixedWidthOnCanvas() const noexcept
                 { return m_itemInfo.m_fitContentWidthToCanvas; }
             /// @brief Tells the canvas to allocate just the necessary width for this item's width
-            ///     (at default scaling) within its row, and nothting more.
+            ///     (at default scaling) within its row, and nothing more.
             /// @details This is usually used for legends off to the side of a graph.
             /// @details By default, this is false and canvases will stretch all items in a given
             ///     row equally width-wise.
@@ -1926,7 +1926,7 @@ namespace Wisteria
                     { return; }
                 m_itemInfo.m_originalCanvasScaling = scaling;
                 }
-            /** @returns The orignal canvas scaling of the element.*/
+            /** @returns The original canvas scaling of the element.*/
             [[nodiscard]] double GetOriginalCanvasScaling() const noexcept
                 { return m_itemInfo.m_originalCanvasScaling; }
 

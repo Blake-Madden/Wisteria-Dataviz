@@ -634,7 +634,7 @@ namespace Wisteria::Graphs
             /// @brief The brush to paint the group bar with.
             wxBrush m_barBrush{ wxNullBrush };
             /// @brief The base color to paint under the group bar's brush.
-            /// @defails This is useful if the brush is using a hatched pattern.
+            /// @details This is useful if the brush is using a hatched pattern.
             wxColour m_barColor{ wxNullColour };
             };
 

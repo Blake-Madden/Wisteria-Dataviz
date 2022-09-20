@@ -34,7 +34,7 @@ namespace Wisteria::UI
 
     /// @brief Single-document application parent frame with built-in ribbon, multi-document template,
     ///     and help support.
-    /// @details This is the inital application frame from which children frames are spawned from
+    /// @details This is the initial application frame from which children frames are spawned from
     ///     and managed. This is the main (top-level) window of the application.\n
     ///     \n
     ///     Regarding the help system, this is designed for a folder containing "raw" help files,
@@ -53,7 +53,7 @@ namespace Wisteria::UI
         ///     If more than one file extension, then a selection dialog is shown when the
         ///     client fires a new document event.
         /// @param title The title of the frame.
-        /// @param pos The postion of the frame.
+        /// @param pos The position of the frame.
         /// @param size The size of the frame.
         /// @param style The window style. 
         BaseMainFrame(wxDocManager* manager, wxFrame* frame,

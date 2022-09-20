@@ -708,7 +708,7 @@ namespace Wisteria::GraphItems
         ///     contain conjunctions.\n
         ///     Refer to Label::SplitTextAuto(), Label::SplitTextByListItems(), and
         ///     Label::SplitTextByConjunctions() for how auto-splitting text works.
-        /// @param suggestedMaxLength The suggested maximum lenght that an axis label should be.\n
+        /// @param suggestedMaxLength The suggested maximum length that an axis label should be.\n
         ///     If any label is longer, then an attempt to split it into multiple lines will be made.
         void SetLabelLengthAuto(const size_t suggestedMaxLength = 20);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.

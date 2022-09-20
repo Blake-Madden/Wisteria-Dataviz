@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
          // make the canvas tall since we are stacking two graphs on top of each other
          canvas->SetCanvasMinHeightDIPs(
             canvas->GetDefaultCanvasHeightDIPs() * 2);
-         // also, fit it to the entire page when printing (preferrably in portait)
+         // also, fit it to the entire page when printing (preferrably in portrait)
          canvas->FitToPageWhenPrinting(true);
          
         @endcode

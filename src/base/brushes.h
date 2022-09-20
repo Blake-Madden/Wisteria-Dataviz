@@ -20,7 +20,7 @@ namespace Wisteria::Brushes
     /// @brief Brush schemes.
     namespace Schemes
         {
-        /// @brief Base class for a list of brushs to use for groups.
+        /// @brief Base class for a list of brushes to use for groups.
         class BrushScheme
             {
         public:
@@ -74,7 +74,7 @@ namespace Wisteria::Brushes
             [[nodiscard]] const std::vector<wxBrush>& GetBrushes() const noexcept
                 { return m_brushes; }
             /** @returns The brush from a given index.\n
-                    If no brushs are available, returns a blank icon.
+                    If no brushes are available, returns a blank icon.
                 @param index The index into the brush list to return. If index is outside
                     number of brushes, then it will recycle (i.e., wrap around).
                     For example, if there are 2 brushes, index 1 will return 1;

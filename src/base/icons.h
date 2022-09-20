@@ -126,7 +126,7 @@ namespace Wisteria::Icons
             { return wxSize(2, 2); }
         };
 
-    /// @brief Icons schemese for use on plots and legends.
+    /// @brief Icons schemes for use on plots and legends.
     namespace Schemes
         {
         /// @brief Base class for a list of shapes to use for groups.

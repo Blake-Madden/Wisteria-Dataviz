@@ -190,7 +190,7 @@ namespace Wisteria
             const size_t columnRow,
             std::shared_ptr<Graphs::Table> table);
 
-        /// @brief Loads a image node.
+        /// @brief Loads an image node.
         /// @param imageNode The image node to parse.
         /// @returns The image that was loaded, or null upon failure.
         /// @todo many features still needed!
@@ -198,7 +198,7 @@ namespace Wisteria
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
-        /// @param labelTemplate The template to copy defeault settings from
+        /// @param labelTemplate The template to copy default settings from
         ///     before loading properties.
         /// @returns A Label object, or null upon failure.
         /// @todo many features still needed!
@@ -207,31 +207,31 @@ namespace Wisteria
             const GraphItems::Label labelTemplate);
 
         /// @brief Loads a color scheme from a node.
-        /// @param colorSchemeNode Tne node to parse.
+        /// @param colorSchemeNode The node to parse.
         /// @returns The loaded color scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
         /// @brief Loads a brush scheme from a node.
-        /// @param brushSchemeNode Tne node to parse.
+        /// @param brushSchemeNode The node to parse.
         /// @returns The loaded brush scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Brushes::Schemes::BrushScheme> LoadBrushScheme(
             const wxSimpleJSON::Ptr_t& brushSchemeNode);
 
         /// @brief Loads an icon scheme from a node.
-        /// @param iconSchemeNode Tne node to parse.
+        /// @param iconSchemeNode The node to parse.
         /// @returns The loaded icon scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Loads a line style scheme from a node.
-        /// @param lineStyleSchemeNode Tne node to parse.
+        /// @param lineStyleSchemeNode The node to parse.
         /// @returns The loaded line style scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::LineStyleScheme> LoadLineStyleScheme(
             const wxSimpleJSON::Ptr_t& lineStyleSchemeNode);
 
         /** @brief Loads additional transformation features and applies them to a dataset.
-            @param dsNode The datasouce node that the dataset was loaded from.
+            @param dsNode The datasource node that the dataset was loaded from.
             @param[in,out] dataset The dataset apply the transformations to.*/
         void LoadDatasetTransformations(
             const wxSimpleJSON::Ptr_t& dsNode,
@@ -266,7 +266,7 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(wxString colorStr);
-        /// @brief Converts a string value to a icon shape enum value.
+        /// @brief Converts a string value to an icon shape enum value.
         /// @param iconStr the string name of the icon.
         /// @returns The icon enum value if found, @c std::nullopt otherwise.
         [[nodiscard]] std::optional<Icons::IconShape> ConvertIcon(wxString iconStr);

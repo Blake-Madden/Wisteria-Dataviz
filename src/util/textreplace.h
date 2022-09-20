@@ -67,7 +67,7 @@ namespace Wisteria
             - Communication -> Comm.
             - Communications -> Comm.
             
-            If aggresive, the following will also be included:
+            If aggressive, the following will also be included:
             - Science -> Sci.
             - Social -> Soc.
             - Public -> Pub.*/

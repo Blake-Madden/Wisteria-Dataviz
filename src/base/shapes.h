@@ -75,7 +75,7 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the flower within.
         /// @param dc The DC to draw to.
         void DrawFlower(const wxRect rect, wxDC& dc) const;
-        /// @brief Draws a orange red leaf.
+        /// @brief Draws an orange red leaf.
         /// @param rect The area to draw the leaf within.
         /// @param dc The DC to draw to.
         void DrawFallLeaf(const wxRect rect, wxDC& dc) const;
@@ -136,7 +136,7 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the diamond within.
         /// @param dc The DC to draw to.
         void DrawDiamond(wxRect rect, wxDC& dc) const;
-        /// @brief Draws a upward triangle.
+        /// @brief Draws an upward triangle.
         /// @param rect The area to draw the triangle within.
         /// @param dc The DC to draw to.
         void DrawUpwardTriangle(wxRect rect, wxDC& dc) const;
@@ -283,7 +283,7 @@ namespace Wisteria::GraphItems
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
         [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
-        /** @brief Moves the shaoe by the specified x and y values.
+        /** @brief Moves the shape by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
         void Offset(const int xToMove, const int yToMove) noexcept final

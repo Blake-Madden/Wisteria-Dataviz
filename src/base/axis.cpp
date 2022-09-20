@@ -308,24 +308,24 @@ namespace Wisteria::GraphItems
 
     wxRect Axis::GetProtrudingBoundingBox(wxDC& dc) const
         {
-        wxRect boudingBox = GetBoundingBox(dc);
+        wxRect boundingBox = GetBoundingBox(dc);
         if (GetAxisType() == AxisType::LeftYAxis)
-            { boudingBox.SetRight(GetTopPoint().x); }
+            { boundingBox.SetRight(GetTopPoint().x); }
         else if (GetAxisType() == AxisType::RightYAxis)
             {
-            const auto diff = GetTopPoint().x - boudingBox.GetLeft();
-            boudingBox.SetWidth(boudingBox.GetWidth() - diff);
-            boudingBox.SetLeft(GetTopPoint().x);
+            const auto diff = GetTopPoint().x - boundingBox.GetLeft();
+            boundingBox.SetWidth(boundingBox.GetWidth() - diff);
+            boundingBox.SetLeft(GetTopPoint().x);
             }
         else if (GetAxisType() == AxisType::BottomXAxis)
             {
-            const auto diff = GetTopPoint().y - boudingBox.GetTop();
-            boudingBox.SetTop(GetTopPoint().y);
-            boudingBox.SetHeight(boudingBox.GetHeight()-diff);
+            const auto diff = GetTopPoint().y - boundingBox.GetTop();
+            boundingBox.SetTop(GetTopPoint().y);
+            boundingBox.SetHeight(boundingBox.GetHeight()-diff);
             }
         else if (GetAxisType() == AxisType::TopXAxis)
-            { boudingBox.SetBottom(GetTopPoint().y); }
-        return boudingBox;
+            { boundingBox.SetBottom(GetTopPoint().y); }
+        return boundingBox;
         }
 
     //-------------------------------------------

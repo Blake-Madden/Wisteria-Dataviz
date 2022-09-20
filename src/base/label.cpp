@@ -409,7 +409,7 @@ namespace Wisteria::GraphItems
                 wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
                                        wxPoint(iconMiddleX, middleOfCurrentRow),
                                        wxSize(1, 1)).Inflate(iconRadius) };
-                // icons only relavant to legends that shape renderer doesn't handle
+                // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == IconShape::HorizontalSeparator ||
                     iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
                     iconPos->m_shape == IconShape::ColorGradient)

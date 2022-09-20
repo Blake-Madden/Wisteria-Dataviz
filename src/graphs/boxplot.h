@@ -33,7 +33,7 @@ namespace Wisteria::Graphs
          the line connecting the boxes' midpoints. (This is turned off by default.)
 
         @par %Data:
-         This plot accepts a Data::Dataset, where the a continuous column is the
+         This plot accepts a Data::Dataset, where a continuous column is the
          dependent measurement. A categorical column can optionally be used to create
          separate boxes for different groups in the data.
 

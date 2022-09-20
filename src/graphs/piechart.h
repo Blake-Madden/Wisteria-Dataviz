@@ -568,7 +568,7 @@ namespace Wisteria::Graphs
         /// @returns The inner pie connection line style.
         [[nodiscard]] LineStyle GetInnerPieConnectionLineStyle() const noexcept
             { return m_connectionLineStyle; }
-        /** @brief Ses the line style used for the lines connecting inner slices to
+        /** @brief Sets the line style used for the lines connecting inner slices to
                 their labels outside of the pie.
             @param lStyle The line style to use.
             @note If label placement is LabelPlacement::Flush, then this will be overridden
@@ -577,7 +577,7 @@ namespace Wisteria::Graphs
                 two lines (one going from the inner slice to outside the pie, and then one going
                 from there to the label against the edge of the pie area). Using a style such as
                 LineStyle::Arrows will look odd in this situation, so LineStyle::Lines will
-                be explicitily used.
+                be explicitly used.
              @sa SetLabelPlacement().*/
         void SetInnerPieConnectionLineStyle(const LineStyle lStyle) noexcept
             { m_connectionLineStyle = lStyle; }

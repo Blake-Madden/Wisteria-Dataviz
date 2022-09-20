@@ -1379,7 +1379,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // make the canvas tall since we are stacking two graphs on top of each other
         subframe->m_canvas->SetCanvasMinHeightDIPs(
             subframe->m_canvas->GetDefaultCanvasHeightDIPs() * 2);
-        // also, fit it to the entire page when printing (preferrably in portait)
+        // also, fit it to the entire page when printing (preferrably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
     // W-Curve plot
@@ -1801,7 +1801,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas->GetDefaultCanvasWidthDIPs());
         subframe->m_canvas->SetCanvasMinWidthDIPs(
             subframe->m_canvas->GetDefaultCanvasHeightDIPs());
-        // also, fit it to the entire page when printing (preferrably in portait)
+        // also, fit it to the entire page when printing (preferrably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
 

@@ -249,10 +249,10 @@ namespace Wisteria::GraphItems
             @note The image's new size may be different from the suggested size here, as it will
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);
-        /// @returns How the image's size is adjusted when its boudning box is changed.
+        /// @returns How the image's size is adjusted when its bounding box is changed.
         [[nodiscard]] ResizeMethod GetResizeMethod() const noexcept
             { return m_resizeMethod; }
-        /** @brief Sets how the image's size is adjusted when its boudning box is changed.
+        /** @brief Sets how the image's size is adjusted when its bounding box is changed.
             @details The default it to either upscale or downscale the image as necessary,
                 which will lead to fidelity loss.
             @param resizeMethod How to resize the image.*/

@@ -110,7 +110,7 @@ namespace Wisteria
             /// @warning This should only be used for the first or last row on a page,
             ///     as it requires to adjust the layout of previous items on the page.
             ///     If multiple items are locked on the same page or appear on the middle
-            ///     of the page, this will result in unexpeced page layout.
+            ///     of the page, this will result in unexpected page layout.
             /// @returns A self reference.
             CanvasRowInfo& LockProportion(const bool locked) noexcept
                 {
@@ -227,7 +227,7 @@ namespace Wisteria
         /// @brief Overlays a translucent image on bottom corner of the canvas.
         /// @param watermark The image to draw as a watermark (e.g., a company logo).
         /// @param sz The suggested size of the watermark (in DIPs).\n
-        ///     The image's aspect ratio will be maintained, one of the dimenstions from @c sz
+        ///     The image's aspect ratio will be maintained, one of the dimensions from @c sz
         ///     may be adjusted to be smaller.
         void SetWatermarkLogo(const wxBitmapBundle& watermark, const wxSize sz) noexcept
             {
@@ -410,7 +410,7 @@ namespace Wisteria
         [[nodiscard]] bool IsColumnContentAligned() const noexcept
             { return m_alignColumnContent; }
 
-        /** @brief Accesses attibutes for a row.
+        /** @brief Accesses attributes for a row.
             @details This can be used for adjusting the row's canvas height proportion.
             @param row The row index to access.
             @returns The row information at the specified index.

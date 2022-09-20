@@ -41,7 +41,7 @@ namespace Wisteria::Graphs
             rows, and columns (e.g., GetCell() or BoldRow()). Rows and columns can also be inserted,
             which can be useful for group separators.\n
             \n
-            After the data was been edited and formatted, aggregate columns and rows (e.g., subtotals)
+            After the data has been edited and formatted, aggregate columns and rows (e.g., subtotals)
             can be added via InsertAggregateColumn() and InsertAggregateRow().\n
             \n
             Finally, once the table is built, annotations (see AddCellAnnotation()) and footnotes
@@ -112,7 +112,7 @@ namespace Wisteria::Graphs
             canvas->GetDefaultCanvasWidthDIPs());
          canvas->SetCanvasMinWidthDIPs(
             canvas->GetDefaultCanvasHeightDIPs());
-         // also, fit it to the entire page when printing (preferrably in portait)
+         // also, fit it to the entire page when printing (preferrably in portrait)
          canvas->FitToPageWhenPrinting(true);
         @endcode
         
@@ -255,7 +255,7 @@ namespace Wisteria::Graphs
             /// @brief Displays a value such as @c 0.25 as @c 25%.
             Percent,
             /// @brief Displays numbers in accounting format.
-            /// @details For examle, a negative value would appear as `$    (5,000.00)`.
+            /// @details For example, a negative value would appear as `$    (5,000.00)`.
             Accounting
             };
 
@@ -271,7 +271,7 @@ namespace Wisteria::Graphs
             size_t m_column{ 0 };
             };
 
-        /// @brief An annocation to add to the table, connected to a set of cells.
+        /// @brief An annotation to add to the table, connected to a set of cells.
         struct CellAnnotation
             {
             /// @brief The note to display in the gutter next to the table.
@@ -649,7 +649,7 @@ namespace Wisteria::Graphs
                 is to insert as the last column.
             @param bkColor An optional background for the column.
             @note This should be called after all data has been set because the
-                the aggregation values are calculated as this function is called.*/
+                aggregation values are calculated as this function is called.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
                                    std::optional<wxString> colName = std::nullopt,
                                    std::optional<size_t> colIndex = std::nullopt,
@@ -867,7 +867,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        /** @brief Sets the specified row's cells' horizontal content alginment.
+        /** @brief Sets the specified row's cells' horizontal content alignment.
             @param row The row to have horizontally centered cell content.
             @param alignment How to align the content within the row's cells.
             @param columnStops An optional list of columns within the row to skip.*/
@@ -936,7 +936,7 @@ namespace Wisteria::Graphs
                 will be more strict.
             @returns The cell positions of the outliers.
             @warning Any changes to the structure of the table (inserting more rows or columns)
-                will make the returned postions incorrect. This should be
+                will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
                 (including the additions of aggregates).*/
         std::vector<CellPosition> GetOutliers(const size_t column,
@@ -950,7 +950,7 @@ namespace Wisteria::Graphs
             @returns The cell positions of the outliers. (May return ties.)
             @note In the case of ties, multiple cells will be returned.
             @warning Any changes to the structure of the table (inserting more rows or columns)
-                will make the returned postions incorrect. This should be
+                will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
                 (including the additions of aggregates).*/
         std::vector<CellPosition> GetTopN(const size_t column, const size_t N = 1);
