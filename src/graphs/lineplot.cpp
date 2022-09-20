@@ -188,8 +188,6 @@ namespace Wisteria::Graphs
 
         if (IsXDates())
             {
-            const auto [xStartCurrent, xEndCurrent] = GetBottomXAxis().GetRangeDates();
-
             const auto [minXValue, maxXValue] = GetXMinMaxDates();
 
             GetBottomXAxis().SetRange(minXValue, maxXValue);

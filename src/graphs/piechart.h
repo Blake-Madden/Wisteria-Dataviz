@@ -58,20 +58,18 @@ namespace Wisteria::GraphItems
                           const std::shared_ptr<const TextReplace> abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
-            @param dc The device context to measure the Label with.
             @returns The label, which will already be anchored to the middle of the slices's
                 outer ring.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(wxDC& dc);
+        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel();
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
-            @param dc The device context to measure the Label with.
             @param pieArea A different pie area from what the slice is currently using.
                 This is useful for inner ring slices that need its outer labels to be outside
                 the parent ring.
             @returns The label, which will already be anchored to the middle of the slices's
                 outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
-                          wxDC& dc, const wxRect& pieArea);
+                          const wxRect& pieArea);
         /// @returns The custom midpoint display, specific to this slice.
         [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
             { return m_midPointLabelDisplay; }

@@ -216,7 +216,7 @@ namespace Wisteria::Graphs
         if (GetBinsStart() &&
             !std::isnan(GetBinsStart().value()) &&
             IsShowingFullRangeOfValues() &&
-            groups.get_data().find(BinBlock{ GetBinsStart().value(), 0 }) == groups.get_data().end())
+            groups.get_data().find(BinBlock{ GetBinsStart().value(), 0, 0, wxEmptyString }) == groups.get_data().end())
             {
             Bar theBar(GetBinsStart().value(),
                 { BarBlock(BarBlockInfo().Brush(GetBrushScheme()->GetBrush(0)).

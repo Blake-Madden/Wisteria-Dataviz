@@ -263,7 +263,7 @@ void MyFrame::OnAbout([[maybe_unused]] wxCommandEvent& event)
     wxAboutBox(aboutInfo, this);
     }
 
-void MyFrame::OnOpenProject(wxCommandEvent& event)
+void MyFrame::OnOpenProject([[maybe_unused]] wxCommandEvent& event)
     {
     wxFileDialog fileDlg(this, _(L"Open Project"), wxEmptyString, GetLabel(),
             _(L"Project File (*.json)|*.json"),
@@ -620,10 +620,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // change the color for any point less than 60 to red to show if failing
         linePlot->SetPointColorCriteria(
-                                        [](const double x, const double y)
+                                        []([[maybe_unused]] const double x, const double y)
                                           {
                                           return (y < 60.0) ?
-                                              wxColour(255, 0, 0) :
+                                              *wxRED :
                                               wxColour();
                                           });
 
@@ -698,7 +698,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             companyAcquisitionData->ImportCSV(appDir + L"/datasets/Company Acquisition.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Completion" }).
-                DateColumns({ { L"Start" }, { L"End" } }).
+                DateColumns({
+                    { L"Start", DateImportMethod::Automatic, wxEmptyString },
+                    { L"End", DateImportMethod::Automatic, wxEmptyString }
+                    }).
                 CategoricalColumns({
                     { L"Task" },
                     { L"Description" },
@@ -763,7 +766,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             silverFuturesData->ImportCSV(appDir + L"/datasets/Silver Futures.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
-                DateColumns({ { L"Date" } }));
+                DateColumns({ { L"Date", DateImportMethod::Automatic, wxEmptyString } }));
             }
         catch (const std::exception& err)
             {
@@ -1775,7 +1778,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             {
             tableGraph->AddCellAnnotation(
                 { L"Majors with the most lopsided female-to-male ratios",
-                   ratioOutliers, Side::Right }
+                   ratioOutliers, Side::Right, std::nullopt, wxColour() }
                 );
             }
 
@@ -1827,7 +1830,7 @@ void MyFrame::OnPrintWindow(wxCommandEvent& event)
     pChild->m_canvas->OnPrint(event);
     }
 
-void MyFrame::OnPrintAll(wxCommandEvent& event)
+void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     {
     // get all the open canvases
     std::vector<Canvas*> canvases;

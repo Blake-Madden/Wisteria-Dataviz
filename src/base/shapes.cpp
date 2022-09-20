@@ -104,8 +104,8 @@ namespace Wisteria::GraphItems
         const Icons::IconShape shape,
         const wxSize sz,
         const wxBitmapBundle* img /*= nullptr*/) :
-        GraphItemBase(itemInfo), m_shape(shape), m_shapeSizeDIPs(sz),
-        m_sizeDIPs(sz), m_renderer(itemInfo, img)
+        GraphItemBase(itemInfo), m_shapeSizeDIPs(sz),
+        m_sizeDIPs(sz), m_shape(shape), m_renderer(itemInfo, img)
         {
         // connect the rendering function to the shape
         switch (m_shape)

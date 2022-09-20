@@ -1030,7 +1030,7 @@ namespace Wisteria::Data
             currentItem.Continuous(continuousValues);
 
             // ID column
-            if (idColumnIndex)
+            if (idColumnIndex.has_value())
                 { currentItem.Id(currentRow.at(idColumnIndex.value())); }
             AddRow(currentItem);
             }

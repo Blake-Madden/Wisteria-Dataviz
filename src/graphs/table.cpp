@@ -428,7 +428,7 @@ namespace Wisteria::Graphs
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
-            for (const auto& row : m_table)
+            for ([[maybe_unused]] const auto& row : m_table)
                 {
                 rowValues.clear();
                 // tally values from the whole row, unless a custom range was defined
@@ -1095,10 +1095,10 @@ namespace Wisteria::Graphs
         // draw the row borders
         currentRow = currentColumn = 0;
         rowCellsToSkip.clear();
-        for (const auto& rowHeight : rowHeights)
+        for ([[maybe_unused]] const auto& rowHeight : rowHeights)
             {
             currentColumn = 0;
-            for (const auto& colWidth : columnWidths)
+            for ([[maybe_unused]] const auto& colWidth : columnWidths)
                 {
                 const auto& cell = GetCell(currentRow, currentColumn);
                 // build a list of cells in the following rows that should be skipped
@@ -1501,9 +1501,9 @@ namespace Wisteria::Graphs
 
         // build the caption
         wxString footnoteCaption;
-        for (int i = 0; i < m_footnotes.size(); ++i)
+        for (size_t i = 0; i < m_footnotes.size(); ++i)
             {
-            footnoteCaption += wxString::Format(L"%i. %s\n", i+1, m_footnotes[i]);
+            footnoteCaption += wxString::Format(L"%zu. %s\n", i+1, m_footnotes[i]);
             }
         footnoteCaption.Trim();
         GetCaption().SetText(footnoteCaption);

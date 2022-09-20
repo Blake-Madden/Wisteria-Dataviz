@@ -128,11 +128,11 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& dc)
-        { return CreateOuterLabel(dc, m_pieArea); }
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel()
+        { return CreateOuterLabel(m_pieArea); }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(wxDC& dc, const wxRect& pieArea)
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea)
         {
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(1.0, pieArea);
@@ -552,7 +552,7 @@ namespace Wisteria::Graphs
 
         const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
             {
-            auto outerLabel = pSlice->CreateOuterLabel(dc,
+            auto outerLabel = pSlice->CreateOuterLabel(
                 (isInnerSlice ? outerPieDrawArea : pieDrawArea));
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
@@ -1565,8 +1565,10 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowOuterPieMidPointLabels(const bool show)
+    void PieChart::ShowOuterPieMidPointLabels([[maybe_unused]] const bool show)
         {
+        // 'show' actually is used, but GCC doesn't understand that
+        // and issues an unused variable warning
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
             [&](auto& slice) noexcept
                 { slice.SetMidPointLabelDisplay(show ?
@@ -1576,7 +1578,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowOuterPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow)
+    void PieChart::ShowOuterPieMidPointLabels([[maybe_unused]] const bool show,
+                                              const std::vector<wxString>& labelsToShow)
         {
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
             [&](auto& slice) noexcept
@@ -1628,7 +1631,8 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowInnerPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow)
+    void PieChart::ShowInnerPieMidPointLabels([[maybe_unused]] const bool show,
+                                              const std::vector<wxString>& labelsToShow)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
             [&](auto& slice) noexcept
