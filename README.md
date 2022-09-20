@@ -156,13 +156,16 @@ Building
 
 NOTE: A C++17 compatible compiler is required.
 
-First, you will need to get and build the latest [wxWidgets](https://github.com/wxWidgets/wxWidgets):
+First, if you are on Windows, you will need to get and build the latest
+[wxWidgets](https://github.com/wxWidgets/wxWidgets):
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 ```
 
 Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) for how to build wxWidgets.
+
+If on Linux, install the wxWidgets libraries and development files from your repository manager.
 
 Next, get and build Wisteria:
 
@@ -186,34 +189,19 @@ Assuming that you had built wxWidgets in "C:/SRC/wxWidgets," you can pass this c
 -DwxWidgets_ROOT_DIR=C:/SRC/wxWidgets
 ```
 
-Alternatively, if using Visual Studio, add this to your "CMakeSettings.json" file:
-
-```
-"cmakeCommandArgs": "-DwxWidgets_ROOT_DIR=C:/SRC/wxWidgets",
-```
-
-A note about using Visual Studio is that the output for the library is controlled in the "CMakeSettings.json"
-file by these two items: `buildRoot` and `installRoot`. Adding these lines will specify to write the library
-and demo into the project's "build" folder:
-
-```
-"buildRoot": "${workspaceRoot}\\build\\${name}",
-"installRoot": "${workspaceRoot}\\build\\${name}",
-```
+Alternatively, if using Visual Studio, open the Wisteria folder to load the project.
+Then go to `Project -> CMake Settings for Wisteria...`. Add an entry for `wxWidgets_ROOT_DIR`
+and specify the path to your wxWidgets folder. Save and then build the project.
 
 Linux
 -----------------------------
 
-On Linux, you will need to set `wxWidgets_CONFIG_EXECUTABLE` to where wx-config is located.
-Assuming that you had built wxWidgets in "/home/myname/wxWidgets/gtk-build," you can pass this command line
-option to CMake:
+On Linux, install the wxWidgets 3.2 development files from your repository manager.
 
-```
--DwxWidgets_CONFIG_EXECUTABLE=/home/myname/wxWidgets/gtk-build/wx-config
-```
+Open the "CMakeLists.txt" file in CMake, configure and then generate a make script. Finally, go into
+the build folder that you specified and run `make` to build the library and demo.
 
-If using KDevelop, go to `Project -> Open Configuration... -> Cmake` and you can edit that
-variable there.
+If using KDevelop, you can also open the CMake file and build from there.
 
 Dependencies
 =============================
