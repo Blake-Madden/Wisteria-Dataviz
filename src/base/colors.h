@@ -12,6 +12,9 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
+#ifndef __WISTERIA_COLORS_H__
+#define __WISTERIA_COLORS_H__
+
 namespace Wisteria::Colors
     {
     /** @brief List of colors to use with ColorBrewer::GetColor().
@@ -543,3 +546,7 @@ namespace Wisteria::Colors
         COLOR_COUNT
         };
     }
+
+/** @}*/
+
+#endif //__WISTERIA_COLORS_H__
