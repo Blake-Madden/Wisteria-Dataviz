@@ -5,15 +5,17 @@ SET(WISTERIA_SRC
     src/base/axis.cpp
     src/base/canvas.cpp
     src/base/colorbrewer.cpp
+    src/base/colors.cpp
     src/base/commonaxisbuilder.cpp
-    src/base/graphitems.cpp
     src/base/fillableshape.cpp
+    src/base/graphitems.cpp
     src/base/image.cpp
     src/base/label.cpp
     src/base/lines.cpp
     src/base/points.cpp
     src/base/polygon.cpp
     src/base/reportbuilder.cpp
+    src/base/reportbuildercolors.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
     src/data/clone.cpp
@@ -50,7 +52,7 @@ SET(WISTERIA_SRC
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
     src/util/logfile.cpp
-    src/util/textreplace.cpp
     src/util/memorymappedfile.cpp
+    src/util/textreplace.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp)

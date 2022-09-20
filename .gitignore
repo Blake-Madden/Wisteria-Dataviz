@@ -53,3 +53,4 @@ cpp.hint
 *.out
 *.app
 *.manifest
+*.Rhistory
