@@ -64,7 +64,7 @@ namespace Wisteria::Graphs
             m_barGroups.push_back(
                 {
                 std::make_pair(firstBar.value(), lastBar.value()),
-                decal.has_value() ? decal.value() : wxEmptyString,
+                decal.has_value() ? decal.value() : wxString(wxEmptyString),
                 brush.has_value() ? brush.value() : GetBrushScheme()->GetBrush(0),
                 color.has_value() ? color.value() :
                     (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour)
