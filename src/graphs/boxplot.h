@@ -77,14 +77,17 @@ namespace Wisteria::Graphs
             /// @private
             BoxAndWhisker() = default;
             /** @brief Constructor.
-                @param boxColor The color of the boxes.
-                @param effect The effect to display across the boxes.
+                @param brush The brush of the box.
+                @param color The base color of the box (under the brush).
+                @param effect The effect to display across the box.
                 @param boxCorners The corner display to use.
-                @param opacity The boxes' opacity.*/
-            BoxAndWhisker(const wxColor& boxColor, const BoxEffect effect,
+                @param opacity The box's opacity.*/
+            BoxAndWhisker(const wxBrush& brush,
+                          std::optional<wxColour> color,
+                          const BoxEffect effect,
                           const BoxCorners boxCorners,
                           const uint8_t opacity = wxALPHA_OPAQUE)
-                    : m_boxColor(boxColor), m_opacity(opacity),
+                    : m_brush(brush), m_boxColor(color), m_opacity(opacity),
                       m_boxEffect(effect), m_boxCorners(boxCorners)
                 {}
 
@@ -115,13 +118,13 @@ namespace Wisteria::Graphs
             /// @brief Functions relating to the visual display of the boxes.
             /// @{
 
-            /// @returns The box(es) color.
-            [[nodiscard]] wxColour GetBoxColor() const noexcept
+            /// @returns The box brush.
+            [[nodiscard]] wxBrush GetBrush() const noexcept
+                { return m_brush; }
+
+            /// @returns The box color.
+            [[nodiscard]] std::optional<wxColour> GetColor() const noexcept
                 { return m_boxColor; }
-            /// @brief Sets the color for the box(es).
-            /// @param color The color to set the box.
-            void SetBoxColor(const wxColour color) noexcept
-                { m_boxColor = color; }
 
             /// @returns The opacity (how opaque or translucent) the box is.
             [[nodiscard]] uint8_t GetOpacity() const noexcept
@@ -224,7 +227,8 @@ namespace Wisteria::Graphs
             bool m_displayLabels{ false };
             bool m_showAllPoints{ false };
 
-            wxColour m_boxColor{ *wxGREEN };
+            wxBrush m_brush{ *wxGREEN };
+            std::optional<wxColour> m_boxColor;
             uint8_t m_opacity{ wxALPHA_OPAQUE };
             BoxEffect m_boxEffect{ BoxEffect::Solid };
             BoxCorners m_boxCorners{ BoxCorners::Straight };
@@ -262,6 +266,7 @@ namespace Wisteria::Graphs
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
+            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
 
@@ -337,7 +342,7 @@ namespace Wisteria::Graphs
 
         /// @name Box Effect Functions
         /// @brief Functions relating to the effects used to draw the boxes.
-        /// @note Use the color and shape schemes in the constructor to control the color
+        /// @note Use the brush, color, and shape schemes in the constructor to control the color
         ///     and shapes of the boxes and its points. GetBox() can also be used after a call to
         ///     SetData() to customize the appearance of a box.
         /// @{
@@ -364,18 +369,6 @@ namespace Wisteria::Graphs
             for (auto& box : m_boxes)
                 { box.SetBoxEffect(boxEffect); }
             m_boxEffect = boxEffect;
-            }
-
-        /// @returns The default color of the boxes.
-        [[nodiscard]] wxColour GetBoxColor() const noexcept
-            { return m_boxColour; }
-        /** @brief Sets the default color of the boxes.
-            @param color The color to use.*/
-        void SetBoxColor(const wxColour color) noexcept
-            {
-            for (auto& box : m_boxes)
-                { box.SetBoxColor(color); }
-            m_boxColour = color;
             }
 
         /// @returns How the corners of the boxes are drawn.
@@ -453,7 +446,9 @@ namespace Wisteria::Graphs
 
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
-        wxColour m_boxColour{ Colors::ColorBrewer::GetColor(Colors::Color::BelvedereCream) };
+        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
+        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
+        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_iconScheme{ nullptr };
         wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CelestialBlue) };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };

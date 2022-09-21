@@ -133,10 +133,17 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     BoxPlot::BoxPlot(Canvas* canvas,
+                     std::shared_ptr<Brushes::Schemes::BrushScheme> brushes /*= nullptr*/,
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconScheme> shapes /*= nullptr*/) :
         Graph2D(canvas)
         {
+        m_brushScheme = (brushes != nullptr ? brushes :
+            std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
+        m_colorScheme = colors;
+        m_iconScheme = (shapes != nullptr ? shapes :
+            std::make_shared<Icons::Schemes::StandardShapes>());
+
         GetRightYAxis().Show(false);
         if (GetTopXAxis().GetAxisLinePen().IsOk())
             {
@@ -200,7 +207,11 @@ namespace Wisteria::Graphs
                 { groups.insert(groupId); }
             for (const auto& group : groups)
                 {
-                BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
+                BoxAndWhisker box(m_brushScheme->GetBrush(0),
+                                  (m_colorScheme ?
+                                      std::optional<wxColour>(m_colorScheme->GetColor(0)) :
+                                      std::nullopt),
+                                  GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
                 box.SetData(data, continuousColumnName, groupColumnName, group);
                 boxes.push_back(box);
@@ -208,8 +219,12 @@ namespace Wisteria::Graphs
             }
         else
             {
-            BoxAndWhisker box(GetBoxColor(), GetBoxEffect(),
-                              GetBoxCorners(), GetOpacity());
+            BoxAndWhisker box(m_brushScheme->GetBrush(0),
+                                  (m_colorScheme ?
+                                      std::optional<wxColour>(m_colorScheme->GetColor(0)) :
+                                      std::nullopt),
+                                  GetBoxEffect(),
+                                  GetBoxCorners(), GetOpacity());
             box.SetData(data, continuousColumnName, std::nullopt, 0);
             boxes.push_back(box);
             }
@@ -237,7 +252,7 @@ namespace Wisteria::Graphs
              ++boxPos)
             {
             const size_t axisOffset = (m_boxes.size() > 1) ? 1 : 2;
-            const double boxAxisPosition = (boxPos-m_boxes.begin())+axisOffset;
+            const double boxAxisPosition = (boxPos-m_boxes.begin()) + axisOffset;
             const wxString groupIdLabel = boxPos->m_useGrouping ?
                 m_groupColumn->GetLabelFromID(boxPos->m_groupId) :
                 wxString(L"");
@@ -429,7 +444,7 @@ namespace Wisteria::Graphs
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
                         Image::CreateGlassEffect(
                             wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()),
-                            ColorContrast::ChangeOpacity(box.GetBoxColor(), box.GetOpacity()),
+                            ColorContrast::ChangeOpacity(box.GetBrush().GetColour(), box.GetOpacity()),
                             Orientation::Horizontal));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
@@ -466,20 +481,25 @@ namespace Wisteria::Graphs
                             Brush(GraphItemBase::GetShadowColour()),
                             shadowPts, std::size(shadowPts)));
                         }
+                    wxColour boxColor =( box.GetColor().has_value() ? box.GetColor().value() : wxColour());
+                    if (boxColor.IsOk())
+                        { boxColor = ColorContrast::ChangeOpacity(boxColor, box.GetOpacity()); }
+                    wxBrush brush{ box.GetBrush() };
+                    brush.SetColour(ColorContrast::ChangeOpacity(brush.GetColour(), box.GetOpacity()));
                     auto boxPoly = std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo(boxLabel).
                         Pen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
                         Scaling(GetScaling()).
-                        Brush(ColorContrast::ChangeOpacity(box.GetBoxColor(), box.GetOpacity())),
+                        BaseColor(boxColor).Brush(brush),
                         boxPoints, std::size(boxPoints));
                     constexpr uint8_t boxLightenFactor = 160;
                     if (box.GetBoxEffect() == BoxEffect::FadeFromLeftToRight)
                         {
                         boxPoly->GetBrush() = wxNullBrush;
                         boxPoly->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(box.GetBoxColor(), box.GetOpacity()),
+                            ColorContrast::ChangeOpacity(box.GetBrush().GetColour(), box.GetOpacity()),
                             ColorContrast::ChangeOpacity(
-                                box.GetBoxColor().ChangeLightness(boxLightenFactor),
+                                box.GetBrush().GetColour().ChangeLightness(boxLightenFactor),
                                 box.GetOpacity()),
                             FillDirection::East));
                         }
@@ -487,9 +507,9 @@ namespace Wisteria::Graphs
                         {
                         boxPoly->GetBrush() = wxNullBrush;
                         boxPoly->SetBackgroundFill(Colors::GradientFill(
-                            ColorContrast::ChangeOpacity(box.GetBoxColor(), box.GetOpacity()),
+                            ColorContrast::ChangeOpacity(box.GetBrush().GetColour(), box.GetOpacity()),
                             ColorContrast::ChangeOpacity(
-                                box.GetBoxColor().ChangeLightness(boxLightenFactor),
+                                box.GetBrush().GetColour().ChangeLightness(boxLightenFactor),
                                 box.GetOpacity()),
                             FillDirection::West));
                         }
@@ -549,7 +569,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            IconShape::Circle), dc);
+                            m_iconScheme->GetShape(0)), dc);
                         }
                     else
                         {
@@ -558,7 +578,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            IconShape::Circle), dc);
+                            m_iconScheme->GetShape(0)), dc);
                         }
                     }
                 }
