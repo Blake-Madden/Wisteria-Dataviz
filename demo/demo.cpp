@@ -1700,7 +1700,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         subframe->m_canvas->SetFixedObject(0, 0, linePlot);
 
         // create a box plot with the same data
-        auto boxPlot = std::make_shared<BoxPlot>(subframe->m_canvas, colors);
+        auto boxPlot = std::make_shared<BoxPlot>(subframe->m_canvas,
+            std::make_shared<Brushes::Schemes::BrushScheme>(*colors));
 
         boxPlot->SetData(spellingData, L"AVG_GRADE", std::nullopt);
 
