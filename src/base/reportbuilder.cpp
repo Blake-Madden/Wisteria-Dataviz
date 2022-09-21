@@ -2730,12 +2730,7 @@ namespace Wisteria
         if (foundPos != m_colorMap.cend())
             { return Colors::ColorBrewer::GetColor(foundPos->second); }
 
-        // otherwise, load it with wx (which will support hex coded values and other names)
-        const wxColour theColor(colorStr);
-        // force an opaque alpha channel, using a hex string leaves this channel
-        // invalid under wxGTK
-        return wxColour(theColor.GetRed(), theColor.GetGreen(),
-                        theColor.GetBlue(), wxALPHA_OPAQUE);
+        return wxColour(colorStr);
         }
 
     //---------------------------------------------------
