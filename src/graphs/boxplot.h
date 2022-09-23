@@ -77,13 +77,10 @@ namespace Wisteria::Graphs
             /// @private
             BoxAndWhisker() = default;
             /** @brief Constructor.
-                @param brush The brush of the box.
-                @param color The base color of the box (under the brush).
                 @param effect The effect to display across the box.
                 @param boxCorners The corner display to use.
                 @param opacity The box's opacity.*/
-            BoxAndWhisker(const wxBrush& brush,
-                          const BoxEffect effect,
+            BoxAndWhisker(const BoxEffect effect,
                           const BoxCorners boxCorners,
                           const uint8_t opacity = wxALPHA_OPAQUE)
                     :  m_opacity(opacity),

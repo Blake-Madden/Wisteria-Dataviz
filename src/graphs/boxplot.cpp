@@ -209,8 +209,7 @@ namespace Wisteria::Graphs
                 { groups.insert(groupId); }
             for (const auto& group : groups)
                 {
-                BoxAndWhisker box(m_brushScheme->GetBrush(0),
-                                  GetBoxEffect(),
+                BoxAndWhisker box(GetBoxEffect(),
                                   GetBoxCorners(), GetOpacity());
                 box.SetData(data, continuousColumnName, groupColumnName, group, 0);
                 boxes.push_back(box);
@@ -218,9 +217,8 @@ namespace Wisteria::Graphs
             }
         else
             {
-            BoxAndWhisker box(m_brushScheme->GetBrush(0),
-                                  GetBoxEffect(),
-                                  GetBoxCorners(), GetOpacity());
+            BoxAndWhisker box(GetBoxEffect(),
+                              GetBoxCorners(), GetOpacity());
             box.SetData(data, continuousColumnName, std::nullopt, 0, 0);
             boxes.push_back(box);
             }
