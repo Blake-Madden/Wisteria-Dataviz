@@ -670,6 +670,10 @@ Properties common to all bar-chart derived graphs:
   - @c "decal": a label to display on the group bar.
   - @c "brush": the brush to paint with, which includes [brush](#brush-properties) properties.
   - @c "color": the base color to paint under the brush. This is useful if the brush is using a hatch pattern.
+- @c "decals": an array of decals to add to the bars. This will be an array of nodes containing the following properties:
+  - @c "bar": the axis label of the bar.
+  - @c "block": number specifying which block in the bar to add the decal to. If not specified, defaults to @c 0.
+  - @c "decal": the decal to add to the bar, which will contain ["label"](#label-properties) properties.
 
 Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
 any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
@@ -839,7 +843,8 @@ Properties common to all items:
 
 # Notes {#notes}
 Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
-of color names available, refer to the @c Wisteria::Colors::Color enumeration.
+of color names available, refer to the @c Wisteria::Colors::Color enumeration. Specifying @c null for a color
+will result in a transparent color.
 
 Constants defined in the ["constants"](#constants-properties) can also be referenced, which likewise can
 be named colors or hex encoded values.

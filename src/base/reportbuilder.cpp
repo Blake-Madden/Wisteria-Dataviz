@@ -421,7 +421,7 @@ namespace Wisteria
             else
                 {
                 const wxColour brushColor(
-                    ConvertColor(brushNode->GetProperty(L"color")->GetValueString()));
+                    ConvertColor(brushNode->GetProperty(L"color")));
                 if (brushColor.IsOk())
                     { brush.SetColour(brushColor); }
 
@@ -454,7 +454,7 @@ namespace Wisteria
             else
                 {
                 const wxColour penColor(
-                    ConvertColor(penNode->GetProperty(L"color")->GetValueString()));
+                    ConvertColor(penNode->GetProperty(L"color")));
                 if (penColor.IsOk())
                     { pen.SetColour(penColor); }
 
@@ -653,11 +653,11 @@ namespace Wisteria
             label->GetPen() = wxNullPen;
 
             const wxColour bgcolor(
-                ConvertColor(labelNode->GetProperty(L"background")->GetValueString()));
+                ConvertColor(labelNode->GetProperty(L"background")));
             if (bgcolor.IsOk())
                 { label->SetFontBackgroundColor(bgcolor); }
             const wxColour color(
-                ConvertColor(labelNode->GetProperty(L"color")->GetValueString()));
+                ConvertColor(labelNode->GetProperty(L"color")));
             if (color.IsOk())
                 { label->SetFontColor(color); }
 
@@ -716,7 +716,7 @@ namespace Wisteria
                         { label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                     }
                 const wxColour color(
-                    ConvertColor(headerNode->GetProperty(L"color")->GetValueString()));
+                    ConvertColor(headerNode->GetProperty(L"color")));
                 if (color.IsOk())
                     { label->GetHeaderInfo().FontColor(color); }
 
@@ -1771,6 +1771,25 @@ namespace Wisteria
                 }
             }
 
+        // decals to add to the bars
+        const auto decalsNode = graphNode->GetProperty(L"decals");
+        if (decalsNode->IsOk() && decalsNode->IsValueArray())
+            {
+            const auto decals = decalsNode->GetValueArrayObject();
+            for (const auto& decal : decals)
+                {
+                const auto barPos = barChart->FindBar(decal->GetProperty(L"bar")->GetValueString());
+                if (barPos.has_value())
+                    {
+                    const auto blockIndex = decal->GetProperty(L"block")->GetValueNumber(0);
+                    const auto decalLabel = LoadLabel(decal->GetProperty(L"decal"), GraphItems::Label());
+                    if (decalLabel != nullptr &&
+                        blockIndex < barChart->GetBars().at(barPos.value()).GetBlocks().size())
+                        { barChart->GetBars().at(barPos.value()).GetBlocks().at(blockIndex).SetDecal(*decalLabel); }
+                    }
+                }
+            }
+
         // bar groups
         const auto barGroupsNode = graphNode->GetProperty(L"bar-groups");
         if (barGroupsNode->IsOk() && barGroupsNode->IsValueArray())
@@ -1782,7 +1801,7 @@ namespace Wisteria
                     {
                     BarChart::BarGroup bGroup;
                     bGroup.m_barColor = (
-                        ConvertColor(barGroup->GetProperty(L"color")->GetValueString()));
+                        ConvertColor(barGroup->GetProperty(L"color")));
                     if (!bGroup.m_barColor.IsOk() && barChart->GetColorScheme() != nullptr)
                         { bGroup.m_barColor = barChart->GetColorScheme()->GetColor(0); }
                     LoadBrush(barGroup->GetProperty(L"brush"), bGroup.m_barBrush);
@@ -2172,7 +2191,7 @@ namespace Wisteria
                 if (propNode->IsOk())
                     { pieChart->SetDonutHoleProportion(propNode->GetValueNumber()); }
                 const wxColour color(
-                    ConvertColor(donutHoleNode->GetProperty(L"color")->GetValueString()));
+                    ConvertColor(donutHoleNode->GetProperty(L"color")));
                 if (color.IsOk())
                     { pieChart->SetDonutHoleColor(color); }
                 }
@@ -2266,7 +2285,7 @@ namespace Wisteria
                 for (size_t i = 0; i < values.size(); ++i)
                     { table->GetCell(position.value(), i).SetValue(values[i]); }
                 const wxColour bgcolor(
-                    ConvertColor(rowAddCommand->GetProperty(L"background")->GetValueString()));
+                    ConvertColor(rowAddCommand->GetProperty(L"background")));
                 if (bgcolor.IsOk())
                     { table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt); }
                 }
@@ -2286,7 +2305,7 @@ namespace Wisteria
                     LoadTablePosition(rowColorCommand->GetProperty(L"position"),
                         originalColumnCount, originalRowCount, table);
                 const wxColour bgcolor(
-                    ConvertColor(rowColorCommand->GetProperty(L"background")->GetValueString()));
+                    ConvertColor(rowColorCommand->GetProperty(L"background")));
                 const std::set<size_t> colStops =
                     loadStops(rowColorCommand->GetProperty(L"stops"));
                 if (position.has_value() && bgcolor.IsOk())
@@ -2345,7 +2364,7 @@ namespace Wisteria
                     LoadTablePosition(colColorCommand->GetProperty(L"position"),
                         originalColumnCount, originalRowCount, table);
                 const wxColour bgcolor(
-                    ConvertColor(colColorCommand->GetProperty(L"background")->GetValueString()));
+                    ConvertColor(colColorCommand->GetProperty(L"background")));
                 const std::set<size_t> rowStops =
                     loadStops(colColorCommand->GetProperty(L"stops"));
                 if (position.has_value() && bgcolor.IsOk())
@@ -2419,7 +2438,7 @@ namespace Wisteria
                         originalColumnCount, originalRowCount, table);
 
                 const wxColour bkColor(
-                    ConvertColor(columnAggregate->GetProperty(L"background")->GetValueString()));
+                    ConvertColor(columnAggregate->GetProperty(L"background")));
 
                 Table::AggregateInfo aggInfo;
                 if (startColumn.has_value())
@@ -2458,7 +2477,7 @@ namespace Wisteria
         if (rowTotals->IsOk())
             {
             const wxColour bkColor(
-                    ConvertColor(rowTotals->GetProperty(L"background")->GetValueString()));
+                    ConvertColor(rowTotals->GetProperty(L"background")));
             table->InsertRowTotals(bkColor.IsOk() ?
                                     std::optional<wxColour>(bkColor) : std::nullopt);
             }
@@ -2534,7 +2553,7 @@ namespace Wisteria
                         }
                     // background color
                     const wxColour bgcolor(
-                        ConvertColor(cellUpdate->GetProperty(L"background")->GetValueString()));
+                        ConvertColor(cellUpdate->GetProperty(L"background")));
                     if (bgcolor.IsOk())
                         { currentCell->SetBackgroundColor(bgcolor); }
 
@@ -2609,7 +2628,7 @@ namespace Wisteria
                     }
                 cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
                 LoadPen(annotation->GetProperty(L"pen"), cellAnnotation.m_connectionLinePen.value());
-                cellAnnotation.m_bgColor = ConvertColor(annotation->GetProperty(L"background")->GetValueString());
+                cellAnnotation.m_bgColor = ConvertColor(annotation->GetProperty(L"background"));
                 
                 const auto cellsNode = annotation->GetProperty(L"cells");
                 if (cellsNode->IsOk() && cellsNode->IsValueObject())
@@ -2717,6 +2736,19 @@ namespace Wisteria
             { str.Replace(rep.first, rep.second); }
 
         return str;
+        }
+
+    //---------------------------------------------------
+    wxColour ReportBuilder::ConvertColor(const wxSimpleJSON::Ptr_t& colorNode)
+        {
+        if (!colorNode->IsOk())
+            { return wxNullColour; }
+
+        return (colorNode->IsValueNull() ?
+            // using null in JSON for a color implies that we want
+            // a legit color that is transparent
+            wxTransparentColour :
+            ConvertColor(colorNode->GetValueString()));
         }
 
     //---------------------------------------------------

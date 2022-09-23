@@ -266,6 +266,11 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(wxString colorStr);
+        /// @brief Loads a color from a string.
+        /// @param colorNode A color node to parse.
+        /// @returns The loaded color. Check with @c IsOk() to verify that the color
+        ///     was successfully loaded.
+        [[nodiscard]] wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode);
         /// @brief Converts a string value to a icon shape enum value.
         /// @param iconStr the string name of the icon.
         /// @returns The icon enum value if found, @c std::nullopt otherwise.
