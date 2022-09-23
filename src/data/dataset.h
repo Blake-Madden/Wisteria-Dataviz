@@ -104,7 +104,7 @@ namespace Wisteria::Data
         // the dimensions of the column, only its content.
         friend class Dataset;
         friend class DatasetClone;
-        friend class ReportBuilder;
+        friend class Wisteria::ReportBuilder;
     public:
         /// @brief The data type stored in this column.
         using DataType = T;
