@@ -63,7 +63,8 @@ namespace Wisteria::Data
                     m_categoricalColumn->GetStringTable().cend())
                     {
                     throw std::runtime_error(
-                        _(L"Group ID not found for categorical column filter."));
+                        wxString::Format(_(L"Group ID not found for '%s' column filter."),
+                                         m_categoricalColumn->GetName()) );
                     }
                 }
             else if (const auto val{ std::get_if<wxString>(&subsetCriterion.m_value) };
@@ -76,7 +77,8 @@ namespace Wisteria::Data
                     {
                     throw std::runtime_error(
                         wxString::Format(_(L"'%s': string value not found for "
-                                            "categorical column filter."), *val));
+                                            "'%s' column filter."), *val,
+                                         m_categoricalColumn->GetName()));
                     }
                 }
             else
