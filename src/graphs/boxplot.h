@@ -83,11 +83,10 @@ namespace Wisteria::Graphs
                 @param boxCorners The corner display to use.
                 @param opacity The box's opacity.*/
             BoxAndWhisker(const wxBrush& brush,
-                          std::optional<wxColour> color,
                           const BoxEffect effect,
                           const BoxCorners boxCorners,
                           const uint8_t opacity = wxALPHA_OPAQUE)
-                    : m_brush(brush), m_boxColor(color), m_opacity(opacity),
+                    :  m_opacity(opacity),
                       m_boxEffect(effect), m_boxCorners(boxCorners)
                 {}
 
@@ -117,14 +116,6 @@ namespace Wisteria::Graphs
             /// @name Box Display Functions
             /// @brief Functions relating to the visual display of the boxes.
             /// @{
-
-            /// @returns The box brush.
-            [[nodiscard]] wxBrush GetBrush() const noexcept
-                { return m_brush; }
-
-            /// @returns The box color.
-            [[nodiscard]] std::optional<wxColour> GetColor() const noexcept
-                { return m_boxColor; }
 
             /// @returns The opacity (how opaque or translucent) the box is.
             [[nodiscard]] uint8_t GetOpacity() const noexcept
@@ -192,13 +183,15 @@ namespace Wisteria::Graphs
                 @param useGrouping Whether to filter the data to a specific group ID for this box.
                 @param groupId The group ID for this box. Data points from @c data will only be used for
                     his box if their group ID is @c groupId. Has no effect if @c useGrouping if @c false.
+                @param schemeIndex The index into the icon/color/brush schemes.
                 @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                     The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
                     when formatting it for an error message.*/
             void SetData(std::shared_ptr<const Data::Dataset> data,
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName,
-                         const Data::GroupIdType groupId);
+                         const Data::GroupIdType groupId,
+                         const size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
             [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
@@ -221,19 +214,21 @@ namespace Wisteria::Graphs
                 { m_xAxisPosition = position; }
             /// @}
 
+            /// @returns The box's index into the icon/color/brush schemes.
+            [[nodiscard]] size_t GetSchemeIndex() const noexcept
+                { return m_schemeIndex; }
+
             /// @brief Calculates the outlier and box ranges.
             void Calculate();
 
             bool m_displayLabels{ false };
             bool m_showAllPoints{ false };
 
-            wxBrush m_brush{ *wxGREEN };
-            std::optional<wxColour> m_boxColor;
             uint8_t m_opacity{ wxALPHA_OPAQUE };
             BoxEffect m_boxEffect{ BoxEffect::Solid };
             BoxCorners m_boxCorners{ BoxCorners::Straight };
 
-            std::shared_ptr<const Data::Dataset> m_data;
+            std::shared_ptr<const Data::Dataset> m_data{ nullptr };
             std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
             std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
             wxString m_continuousColumnName;
@@ -242,6 +237,7 @@ namespace Wisteria::Graphs
             Data::Jitter m_jitter{ AxisType::LeftYAxis };
             Data::GroupIdType m_groupId{ 0 };
             bool m_useGrouping{ false };
+            size_t m_schemeIndex{ 0 };
 
             double m_xAxisPosition{ 2 };
             double m_middlePoint{ 0 };
@@ -261,8 +257,9 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
-            @param colors The color scheme to apply to the points.\n
-                Leave as null to use a light blue (recycled for all groups).
+            @param brushes The brushes to paint the boxes with.
+            @param colors The base color scheme to paint under the boxes's brushes.\n
+                This will only have a noticable effect if the brush is non-solid (e.g., hatched).
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
@@ -342,10 +339,25 @@ namespace Wisteria::Graphs
 
         /// @name Box Effect Functions
         /// @brief Functions relating to the effects used to draw the boxes.
-        /// @note Use the brush, color, and shape schemes in the constructor to control the color
-        ///     and shapes of the boxes and its points. GetBox() can also be used after a call to
-        ///     SetData() to customize the appearance of a box.
+        /// @note GetBox() can also be used after a call to SetData() to
+        ///     customize the effect of a specific box.
         /// @{
+        
+        /// @brief Sets the brush scheme to apply to the boxes.
+        /// @param brushes The brushes to use.
+        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> brushes)
+            { m_brushScheme = brushes; }
+
+        /// @brief Sets the color scheme to apply to the boxes.
+        /// @param colors The colors to use.
+        /// @note This will only have a noticable effect if the brush being used is non-solid.
+        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
+            { m_colorScheme = colors; }
+
+        /// @brief Sets the icon scheme to apply to the points.
+        /// @param icons The icons to use.
+        void SetIconScheme(std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> icons)
+            { m_iconScheme = icons; }
 
         /// @returns The opacity (how opaque or translucent) the box is.
         [[nodiscard]] uint8_t GetOpacity() const noexcept
