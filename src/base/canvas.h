@@ -312,7 +312,7 @@ namespace Wisteria
                 gdc.FromDIP(GetCanvasMinWidthDIPs()));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
-                when at 1.0 scaling.
+                when at @c 1.0 scaling.
             @param item The item to measure.
             @returns The percent of the canvas the item may need.
             @details This can be passed to the canvas's `GetRowInfo().HeightProportion()` method.
