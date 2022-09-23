@@ -31,7 +31,7 @@
 /// @brief Math constants.
 namespace math_constants
     {
-    /// @brief Golden ratio
+    /// @brief The golden ratio.
     constexpr double golden_ratio = 1.618;
 
     /// @brief Empty (i.e., 0%).
@@ -39,6 +39,9 @@ namespace math_constants
 
     /// @brief Tenth (i.e., 10%).
     constexpr double tenth = 0.1;
+
+    /// @brief Fifth (i.e., 20%).
+    constexpr double fifth = 0.2;
 
     /// @brief Quarter (i.e., 25%).
     constexpr double quarter = 0.25;
