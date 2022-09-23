@@ -27,7 +27,7 @@ wxColour ColorBrewer::BrewColor(const double value) const
                   "from previous call to BrewColors()!");
     // return invalid color or NaN
     if (std::isnan(value))
-        { return wxColour(); }
+        { return wxNullColour; }
     // verify that we have a valid spectrum initialized
     NON_UNIT_TEST_ASSERT(m_colorSpectrum.size() > 1);
     if (m_colorSpectrum.size() < 2)
@@ -67,6 +67,7 @@ wxColour ColorBrewer::BrewColor(const double value) const
 
 wxColour ColorContrast::Contrast(const wxColour& color)
     {
+    wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Contrast().");
     const auto bgLuminance = m_baseColor.GetLuminance();
     const auto colorLuminance = color.GetLuminance();
     const auto luminanceDifference = std::abs(bgLuminance-colorLuminance);

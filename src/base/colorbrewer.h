@@ -179,7 +179,8 @@ namespace Wisteria::Colors
     public:
         /// @brief Constructor.
         /// @param color The base color to contrast other colors against.
-        explicit ColorContrast(const wxColour& color) : m_baseColor(color) {}
+        explicit ColorContrast(const wxColour& color) : m_baseColor(color)
+            { wxASSERT_MSG(m_baseColor.IsOk(), L"Invalid base color passed to ColorContrast."); }
         /// @returns A variation of @c color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
@@ -187,8 +188,13 @@ namespace Wisteria::Colors
         /// @returns A variation of @c color with a different opacity.
         /// @param color The base color to apply an opacity to.
         /// @param opacity The opacity to use for the new color.
-        [[nodiscard]] static wxColour ChangeOpacity(wxColour color, const uint8_t opacity)
-            { return wxColor(color.Red(), color.Green(), color.Blue(), opacity); }
+        [[nodiscard]] static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
+            {
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to ChangeOpacity().");
+            return (color.IsOk() ?
+                    wxColor(color.Red(), color.Green(), color.Blue(), opacity) :
+                    color);
+            }
         /// @brief Determines whether a color is dark.
         /// @details "Dark" is defined as luminance being less than 50% and
         ///     opacity higher than 32. For example, black having an opacity of 32
@@ -198,7 +204,12 @@ namespace Wisteria::Colors
         /// @param color The color to review.
         /// @returns @c true if the color is dark.
         [[nodiscard]] static bool IsDark(const wxColour& color)
-            { return (color.Alpha() > 32 && color.GetLuminance() < math_constants::half); }
+            {
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark().");
+            return (color.IsOk() &&
+                    color.Alpha() > 32 &&
+                    color.GetLuminance() < math_constants::half);
+            }
         /// @brief Determines whether a color is light
         ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.
@@ -212,6 +223,7 @@ namespace Wisteria::Colors
         [[nodiscard]] static wxColour Shade(wxColour color,
             const double minimumLuminance = math_constants::half)
             {
+            wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
             int darkenValue{ 100 };
             while (color.GetLuminance() > std::clamp(minimumLuminance, math_constants::empty,
                                                      math_constants::full) &&
@@ -228,7 +240,7 @@ namespace Wisteria::Colors
         ///      (should be between @c 0.0 to @c 1.0.)
         /// @returns The shaded or tinted color.
         [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
-                                                  const double shadeOrTintValue = .20f)
+                                                  const double shadeOrTintValue = math_constants::fifth)
             {
             return (IsDark(color) ?
                 color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)) :
@@ -245,11 +257,14 @@ namespace Wisteria::Colors
         /// @param color2 Second color to compare.
         /// @param delta The difference threshold to use when comparing.
         ///     Should be between @c 0.0 to @c 1.0.
+        /// @note Returns @c false if either color is invalid.
         [[nodiscard]] static bool AreColorsClose(const wxColour color1, const wxColour color2,
-                                                 const double delta = .1f)
+                                                 const double delta = math_constants::tenth)
             {
-            return (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
-                    std::clamp(delta, math_constants::empty, math_constants::full);
+            wxASSERT_MSG(color1.IsOk() && color2.IsOk(), L"Invalid color passed to AreColorsClose().");
+            return (color1.IsOk() && color2.IsOk() &&
+                    (std::abs(color1.GetLuminance()-color2.GetLuminance())) <=
+                     std::clamp(delta, math_constants::empty, math_constants::full));
             }
         /// @brief Shades a color if close to another color (e.g., a background color).
         /// @param mainColor The color to shade (if necessary).
@@ -282,19 +297,19 @@ namespace Wisteria::Colors
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
                     be added to this list of colors, essentially double the color count.*/
-            ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors)
+            explicit ColorScheme(std::initializer_list<wxColour> colors) : m_colors(colors)
                 {}
             /** @brief Constructor.
                 @param colors The initializer list of colors to fill the scheme with.
                 @note A series of shaded or tinted versions of these colors will also
                     be added to this list of colors, essentially double the color count.*/
-            ColorScheme(const std::vector<wxColour>& colors) : m_colors(colors)
+            explicit ColorScheme(const std::vector<wxColour>& colors) : m_colors(colors)
                 {}
             /// @private
-            ColorScheme(std::vector<wxColour>&& colors) : m_colors(std::move(colors))
+            explicit ColorScheme(std::vector<wxColour>&& colors) : m_colors(std::move(colors))
                 {}
             /** @brief Gets the list of colors from the scheme.
-                @returns The colors.*/
+                @returns The scheme's colors.*/
             [[nodiscard]] const std::vector<wxColour>& GetColors() const noexcept
                 { return m_colors; }
             /** @brief Gets the color from a given index.
@@ -332,7 +347,16 @@ namespace Wisteria::Colors
             /** @brief Adds a color to the scheme.
                 @param color The color to add.*/
             void AddColor(const wxColour color)
-                { m_colors.push_back(color); }
+                {
+                wxASSERT_MSG(color.IsOk(), L"Invalid color passed to AddColor().");
+                m_colors.push_back(color);
+                }
+            /// @private
+            void AddColor(wxColour&& color)
+                {
+                wxASSERT_MSG(color.IsOk(), L"Invalid color passed to AddColor().");
+                m_colors.push_back(color);
+                }
             /// @brief Removes all colors from the collection.
             void Clear() noexcept
                 { m_colors.clear(); }
