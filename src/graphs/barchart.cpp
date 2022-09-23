@@ -79,7 +79,7 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    std::optional<size_t> BarChart::FindBar(const wxString axisLabel)
+    std::optional<size_t> BarChart::FindBar(const wxString& axisLabel)
         {
         for (size_t i = 0; i < GetBars().size(); ++i)
             {
@@ -595,7 +595,9 @@ namespace Wisteria::Graphs
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
                             else
-                                { box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK); }
+                                { box->GetPen().SetColour(
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                    *wxWHITE : *wxBLACK); }
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -618,7 +620,9 @@ namespace Wisteria::Graphs
                                 {
                                 box->SetBackgroundFill(
                                     Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
+                                box->GetPen().SetColour(
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                    *wxWHITE : *wxBLACK);
                                 }
                             // if the box is really thin, then don't use the outline pen
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
@@ -912,7 +916,7 @@ namespace Wisteria::Graphs
                             else
                                 {
                                 box->GetPen().SetColour(
-                                    ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ? *wxWHITE : *wxBLACK);
                                 }
 
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
@@ -937,7 +941,9 @@ namespace Wisteria::Graphs
                                 {
                                 box->SetBackgroundFill(
                                     Colors::GradientFill(barBlock.GetColor()));
-                                box->GetPen().SetColour(ColorContrast::IsLight(GetBackgroundColor()) ? *wxWHITE : *wxBLACK);
+                                box->GetPen().SetColour(
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                                           *wxWHITE : *wxBLACK);
                                 }
                             // if the box is really thin, then don't use the outline pen
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)

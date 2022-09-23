@@ -709,7 +709,7 @@ namespace Wisteria::Graphs
         /// @brief Searches for a bar by axis label.
         /// @param axisLabel The label of the bar to search for.
         /// @returns The index the bar if found, @c std::nullopt otherwise.
-        [[nodiscard]] std::optional<size_t> FindBar(const wxString axisLabel);
+        [[nodiscard]] std::optional<size_t> FindBar(const wxString& axisLabel);
 
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
                 and draws a bar above that showing the length of the children bars combined.

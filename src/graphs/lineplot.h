@@ -283,7 +283,7 @@ namespace Wisteria::Graphs
                     {
                     return (y < 60.0) ?
                         wxColour(255, 0, 0) :
-                        wxColour();
+                        wxNullColour;
                     });
             @endcode*/
         void SetPointColorCriteria(PointColorCriteria criteria)

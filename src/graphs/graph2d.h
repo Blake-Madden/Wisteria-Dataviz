@@ -232,10 +232,12 @@ namespace Wisteria::Graphs
 
         /// @returns The background color of the plotting area
         ///     (i.e., the area inside the X and Y axes).
-        /// @note By default, this color is invalid and not used, which will allow the parent
-        ///     canvas's background to show through. To see which color is actually being shown
-        ///     in the plotting area, call GetPlotOrCanvasColor().
-        [[nodiscard]] wxColour GetBackgroundColor() const noexcept
+        /// @note By default, this color is transparent, which will allow the parent
+        ///     canvas's background to show through.\n
+        ///     Prefer using GetPlotOrCanvasColor() instead to see which color is actually being
+        ///     shown in the plotting area.
+        /// @sa GetPlotOrCanvasColor().
+        [[nodiscard]] const wxColour& GetBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
                 This is the color of the plotting area (inside the main axes).
@@ -248,8 +250,9 @@ namespace Wisteria::Graphs
         ///     otherwise, returns the canvas's background.
         [[nodiscard]] wxColour GetPlotOrCanvasColor() const noexcept
             {
-            return (m_bgColor.IsOk() && m_bgColor.GetAlpha() != wxALPHA_TRANSPARENT) ?
-                m_bgColor : GetCanvas()->GetBackgroundColor();
+            return (GetBackgroundColor().IsOk() &&
+                    GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
+                    GetBackgroundColor() : GetCanvas()->GetBackgroundColor();
             }
 
         /// @brief Sets a common image to be drawn just within the bars' (or boxes') areas.
@@ -587,8 +590,8 @@ namespace Wisteria::Graphs
 
         std::map<wxString, wxVariant> m_properties;
 
-        // not used by default, keep invalid
-        wxColour m_bgColor;
+        // transparent by default, so the underlying canvas color will show through
+        wxColour m_bgColor{ wxTransparentColour };
 
         wxBitmapBundle m_commonBoxImage;
         wxColour m_imageOutlineColor{ *wxBLACK };
