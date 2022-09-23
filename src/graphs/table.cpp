@@ -421,7 +421,11 @@ namespace Wisteria::Graphs
             InsertColumn(columnIndex);
             m_aggregateColumns.insert(std::make_pair(columnIndex, aggInfo.m_type));
             if (colName.has_value())
-                { GetCell(0, columnIndex).SetValue(colName.value()); }
+                {
+                GetCell(0, columnIndex).SetValue(colName.value());
+                GetCell(0, columnIndex).SetTextAlignment(TextAlignment::Centered);
+                GetCell(0, columnIndex).SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                }
             BoldColumn(columnIndex, std::nullopt);
             if (bkColor.has_value())
                 { SetColumnBackgroundColor(columnIndex, bkColor.value(), std::nullopt); }

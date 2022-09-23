@@ -163,7 +163,7 @@ namespace Wisteria::Graphs
          // if any outliers, make a note of it off to the side
          tableGraph->AddCellAnnotation(
             { L"Majors with the most lopsided female-to-male ratios",
-                ratioOutliers, Side::Right, std::nullopt, wxColour() }
+                ratioOutliers, Side::Right, std::nullopt, wxNullColour }
             );
 
          // if you also want to place annotations on the left of the table,
