@@ -117,7 +117,12 @@ MESSAGE(STATUS "Building the demonstration program...")
 SET(DEMO_APP WisteriaDemo)
 ADD_EXECUTABLE(${DEMO_APP} WIN32 MACOSX_BUNDLE ${DEMO_SRC_FILES})
 # Link required libraries to the executable
-TARGET_LINK_LIBRARIES(${DEMO_APP} Wisteria ${wxWidgets_LIBRARIES})
+IF(WIN32)
+    TARGET_LINK_LIBRARIES(${DEMO_APP} Wisteria ${wxWidgets_LIBRARIES})
+ELSEIF(UNIX)
+    find_library(TBB_LIB tbb)
+    TARGET_LINK_LIBRARIES(${DEMO_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB})
+ENDIF()
 
 # Embed the manifest file
 IF(WIN32)
