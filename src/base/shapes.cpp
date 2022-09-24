@@ -1438,22 +1438,21 @@ namespace Wisteria::GraphItems
 
             constexpr auto collarWidth{ 0.25 };
             constexpr auto collarShortWidth{ 0.15 };
-            constexpr auto shoulderWidth{ 0.1 };
+            constexpr auto shoulderWidth{ 0.06 };
             constexpr auto shoulderHeight{ 0.1 };
             constexpr auto armLength{ 0.25 };
-            constexpr auto armShortLength{ 0.225 };
-            constexpr auto armWidth{ 0.1 };
+            constexpr auto armWidth{ 0.06 };
             constexpr auto armpitWidth{ 0.05 };
             constexpr auto waistWidth{ 0.125 };
             constexpr auto thoraxHeight{ 0.2 };
             constexpr auto legWidth{ 0.125 };
-            constexpr auto dressWidth{ legWidth + 0.05 };
-            constexpr auto hipWidth{ dressWidth * 1.6 };
-            constexpr auto dressBottom{ 0.675 };
+            constexpr auto skirtWidth{ legWidth + 0.05 };
+            constexpr auto hipWidth{ skirtWidth * 1.6 };
+            constexpr auto skirtBottom{ 0.675 };
             constexpr auto ankleWidth{ 0.075 };
-            constexpr auto yControlPointOffset{ 0.05 };
-            constexpr auto xControlPointRightShoulderOffset{ 0.125 };
-            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth * math_constants::quarter };
+            constexpr auto yControlPointOffset{ 0.025 };
+            constexpr auto xControlPointRightShoulderOffset{ 0.15 };
+            constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth };
             // left collar and shoulder
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
                                        GetYPosFromTop(bodyRect, 0));
@@ -1465,13 +1464,16 @@ namespace Wisteria::GraphItems
                                            (math_constants::half - collarWidth - shoulderWidth)),
                                        GetYPosFromTop(bodyRect, shoulderHeight));
             // left arm (left side)
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, 0),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect, armWidth),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) +
+                                            (armWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // inside of left arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
@@ -1485,12 +1487,12 @@ namespace Wisteria::GraphItems
                                        GetXPosFromLeft(bodyRect,
                                            math_constants::half - hipWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                                      (dressBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
-                                       GetXPosFromLeft(bodyRect, math_constants::half - dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                                                      (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                                       GetXPosFromLeft(bodyRect, math_constants::half - skirtWidth),
+                                       GetYPosFromTop(bodyRect, skirtBottom));
             // dress bottom to leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                                       GetYPosFromTop(bodyRect, skirtBottom));
             // left leg to ankle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
                                        GetYPosFromTop(bodyRect, 0.9));
@@ -1505,16 +1507,16 @@ namespace Wisteria::GraphItems
                                        GetYPosFromTop(bodyRect, 0.9));
             // ankle up right leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                                       GetYPosFromTop(bodyRect, skirtBottom));
             // dress bottom
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + skirtWidth),
+                                       GetYPosFromTop(bodyRect, skirtBottom));
             // bottom of dress to right waist
             outlinePath.AddQuadCurveToPoint(
                                        GetXPosFromLeft(bodyRect,
                                            math_constants::half + hipWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                                      (dressBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                                                      (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
                                        GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
             // waist to right armpit
@@ -1522,14 +1524,17 @@ namespace Wisteria::GraphItems
                                            (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight));
             // inside of right arm
-            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - armWidth),
+            outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
+                                        (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
                                        GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, math_constants::full - (armWidth * math_constants::quarter)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect, math_constants::full),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                                       GetXPosFromLeft(bodyRect,
+                                           (math_constants::half + collarWidth + shoulderWidth)),
+                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right arm (right side)
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
                                            math_constants::half + collarWidth + shoulderWidth),
