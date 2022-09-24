@@ -154,74 +154,46 @@ MyFrame::MyFrame()
 wxMenuBar* MyFrame::CreateMainMenubar()
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize{ wxSize(16, 16) };
 
     wxMenu* fileMenu = new wxMenu;
 
-    fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart-subgrouped.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/donut.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/donut-subgrouped.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot-points.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Commom Image)"));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED, _(L"Bar Chart (Categorical Data, Grouped)"));
+    fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Brush)"));
+    fileMenu->Append(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"));
+    fileMenu->Append(MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"));
+    fileMenu->Append(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"));
+    fileMenu->Append(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"));
+    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"));
+    fileMenu->Append(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES, _(L"Histogram (Discrete Category Counts)"));
+    fileMenu->Append(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"));
+    fileMenu->Append(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/boxplot.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap-grouped.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"));
+    fileMenu->Append(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"));
+    fileMenu->Append(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"));
+    fileMenu->Append(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/likert3.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_LIKERT_7POINT, _(L"Likert Chart (7-Point Scale)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"));
+    fileMenu->Append(MyApp::ID_NEW_LIKERT_7POINT, _(L"Likert Chart (7-Point Scale)"));
+    fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"));
+    fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"));
+    fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot.svg", iconSize));
-    fileMenu->Append(MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot-common-axis.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
+    fileMenu->Append(MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"));
     fileMenu->AppendSeparator();
 
-    fileMenu->Append(MyApp::ID_NEW_TABLE, _(L"Table"))->
-        SetBitmap(wxBitmapBundle::FromSVGFile(appDir + L"/res/spreadsheet.svg", iconSize));
+    fileMenu->Append(MyApp::ID_NEW_TABLE, _(L"Table"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(wxID_SAVE, _(L"&Save\tCtrl+S"), _(L"Save as Image"));
