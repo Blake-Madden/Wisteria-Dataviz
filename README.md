@@ -196,7 +196,11 @@ and specify the path to your wxWidgets folder. Save and then build the project.
 Linux
 -----------------------------
 
-On Linux, install the wxGTK3 development files (version 3.2 or higher) from your repository manager.
+On Linux, install the following from your repository manager:
+
+- wxWidgets 3.2
+- wxGTK3 development files (version 3.2 or higher)
+- Threading Building Blocks (libtbb) and its development files
 
 Open the "CMakeLists.txt" file in CMake, configure, and then generate a make script. Finally, go into
 the build folder that you specified and run `make` to build the library and demo.
@@ -206,5 +210,6 @@ If using KDevelop, you can also open the CMake file and build from there.
 Dependencies
 =============================
 
-- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.1.7 or higher
+- [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
 - GTK 3 (Linux)
+- libtbb (Linux)
