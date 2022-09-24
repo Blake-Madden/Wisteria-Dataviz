@@ -193,6 +193,9 @@ namespace Wisteria::Data
             @param val The new value.*/
         void AddValue(const T& val)
             { m_data.push_back(val); }
+        /// @returns The data.
+        [[nodiscard]] const std::vector<T>& GetData() const noexcept
+            { return m_data; }
     private:
         wxString m_name;
         std::vector<T> m_data;
@@ -234,8 +237,30 @@ namespace Wisteria::Data
                 the string table.
             @param pattern The regex pattern to replace.
             @param replace The replacement text.
+            @note If recoding causes duplicate entries in the string table, then those duplicates
+                will be removed and the data will be recoded accordingly.
             @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& pattern, const wxString& replace);
+
+        /** @brief Collapses strings which appear fewer than a minimum number of times.
+            @details This is useful for suppression in higher education reporting.
+                For example, you can specify @c 5 as the min value to combine a categorical
+                column (e.g., county residency) for student data.\n
+                This is similar to what @c forcats::fct_lump_min() does in R.
+            @param minVal The minimum number of times a string must appear in the column to
+                remain in the string table. If its frequency is less than @c minVal, then
+                the value will be lumped into an "other" label.
+            @param otherLabel The label to use for the new category where low-frequency
+                values are lumped into.*/
+        void CollapseMin(const size_t minVal, const wxString& otherLabel = _("Other"));
+
+        /** @brief Collapses strings into an "Other" categorical,
+                except for a list of provided labels.
+            @param labelsToKeep The strings to preserve; all others will be lumped
+                into a new "Other" category.
+            @param otherLabel The label to use for the new category "Other" category.*/
+        void CollapseExcept(const std::vector<wxString>& labelsToKeep,
+                            const wxString& otherLabel = _("Other"));
 
         /** @brief Gets the label from the string table given the numeric code,
                 or the code formatted as a string if not found.
@@ -1078,6 +1103,26 @@ namespace Wisteria::Data
             @param replace The replacement text.
             @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& colName, const wxString& pattern, const wxString& replace);
+
+        /** @brief Collapses strings which appear fewer than a minimum number of times.
+                See `ColumnWithStringTable::CollapseMin()` for further details.
+            @param colName The categorical column to edit.
+            @param minVal The minimum number of times a string must appear in the column to
+                remain in the string table. If its frequency is less than @c minVal, then
+                the value will be lumped into an "other" label.
+            @param otherLabel The label to use for the new category where low-frequency values are lumped into.*/
+        void CollapseMin(const wxString& colName, const size_t minVal,
+                         const wxString& otherLabel = _("Other"));
+
+        /** @brief Collapses strings into an "Other" categorical,
+                except for a list of provided labels.
+            @param colName The categorical column to edit.
+            @param labelsToKeep The strings to preserve; all others will be lumped
+                into a new "Other" category.
+            @param otherLabel The label to use for the new category "Other" category.*/
+        void CollapseExcept(const wxString& colName,
+                            const std::vector<wxString>& labelsToKeep,
+                            const wxString& otherLabel = _("Other"));
 
         /** @brief Reads the column names from a file and deduces their data types.
             @param delimiter The delimiter to parse the columns with.

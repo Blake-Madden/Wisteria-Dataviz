@@ -40,6 +40,78 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void ColumnWithStringTable::CollapseExcept(const std::vector<wxString>& labelsToKeep,
+                                               const wxString& otherLabel /*= _("Other")*/)
+        {
+        bool recodingNeeded{ false };
+        
+        for (auto& strEntry : GetStringTable())
+            {
+            if (const auto foundPos = std::find_if(labelsToKeep.cbegin(), labelsToKeep.cend(),
+                [&strEntry](const auto& labelToKeep)
+                { return strEntry.second.CmpNoCase(labelToKeep) == 0; });
+                foundPos == labelsToKeep.cend())
+                {
+                strEntry.second = otherLabel;
+                recodingNeeded = true;
+                }
+            }
+        if (recodingNeeded)
+            { CollapseStringTable(); }
+        }
+
+    //----------------------------------------------
+    void Dataset::CollapseExcept(const wxString& colName,
+                                 const std::vector<wxString>& labelsToKeep,
+                                 const wxString& otherLabel /*= _("Other")*/)
+        {
+        auto catColumn = GetCategoricalColumnWritable(colName);
+        if (catColumn == GetCategoricalColumns().end())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for category collapsing."), colName).ToUTF8());
+            }
+        catColumn->CollapseExcept(labelsToKeep, otherLabel);
+        }
+
+    //----------------------------------------------
+    void ColumnWithStringTable::CollapseMin(const size_t minVal,
+                                            const wxString& otherLabel /*= _("Other")*/)
+        {
+        frequency_set<GroupIdType> vals;
+        std::for_each(GetData().cbegin(), GetData().cend(),
+            [&vals](const auto& datum)
+            { vals.insert(datum); });
+        bool recodingNeeded{ false };
+        for (const auto& [id, count] : vals.get_data())
+            {
+            if (count < minVal)
+                {
+                auto foundPos = GetStringTable().find(id);
+                wxASSERT_MSG(foundPos != GetStringTable().cend(), L"Unable to find key in string table!");
+                if (foundPos != GetStringTable().cend())
+                    { foundPos->second = otherLabel; }
+                recodingNeeded = true;
+                }
+            }
+        if (recodingNeeded)
+            { CollapseStringTable(); }
+        }
+
+    //----------------------------------------------
+    void Dataset::CollapseMin(const wxString& colName, const size_t minVal,
+                              const wxString& otherLabel /*= _("Other")*/)
+        {
+        auto catColumn = GetCategoricalColumnWritable(colName);
+        if (catColumn == GetCategoricalColumns().end())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for category collapsing."), colName).ToUTF8());
+            }
+        catColumn->CollapseMin(minVal, otherLabel);
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::RecodeRE(const wxString& pattern,
                                          const wxString& replace)
         {

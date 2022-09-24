@@ -1498,6 +1498,26 @@ namespace Wisteria
                     recodeRE->GetProperty(L"replacement")->GetValueString());
                 }
 
+            // category collapsing (min)
+            auto collapseMins = dsNode->GetProperty(L"collapse-min")->GetValueArrayObject();
+            for (const auto& collapseMin : collapseMins)
+                {
+                dataset->CollapseMin(
+                    collapseMin->GetProperty(L"column")->GetValueString(),
+                    collapseMin->GetProperty(L"min")->GetValueNumber(2),
+                    collapseMin->GetProperty(L"other-label")->GetValueString(_("Other")));
+                }
+
+            // category collapsing (except)
+            auto collapseExcepts = dsNode->GetProperty(L"collapse-except")->GetValueArrayObject();
+            for (const auto& collapseExcept : collapseExcepts)
+                {
+                dataset->CollapseExcept(
+                    collapseExcept->GetProperty(L"column")->GetValueString(),
+                    collapseExcept->GetProperty(L"labels-to-keep")->GetValueStringVector(),
+                    collapseExcept->GetProperty(L"other-label")->GetValueString(_("Other")));
+                }
+
             // load any constants defined with this dataset
             CalcFormulas(dsNode->GetProperty(L"formulas"), dataset);
 

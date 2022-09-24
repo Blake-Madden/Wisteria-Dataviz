@@ -80,6 +80,16 @@ Properties for the @c "datasets" node:
     - @c "column": the categorical column to recode.
     - @c "pattern": the regular expression pattern to search for.
     - @c "replacement": the replacement text. Note that capture groups are supported.
+  - @c "collapse-min": collapses strings which appear fewer than a minimum number of times. This is an array of
+    specifications which contain the following:
+    - @c "column": the categorical column to collapse.
+    - @c "min": the minimum number of times a string must appear in the column to remain in the string table.
+    - @c "other-label": the label to use for the new category where low-frequency values are lumped into. Default is "Other".
+  - @c "collapse-except": collapses strings into an "Other" categorical, except for a list of provided labels.
+    This is an array of specifications which contain the following:
+    - @c "column": the categorical column to collapse.
+    - @c "labels-to-keep": an array of strings to preserve; all others will be lumped into a new "Other" category.
+    - @c "other-label": the label to use for the new category where other labels are lumped into. Default is "Other".
 
   Next, a @c "formulas" section can also be loaded from within the dataset's node.
   In this context, this is a formula string which references the dataset.\n
