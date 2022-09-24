@@ -162,7 +162,7 @@ namespace Wisteria::Graphs
             GetScalingAxis().SetRange(0, m_longestBarLength, 0,
                 // add a little extra padding to the scaling axis if we are using labels
                 IsShowingBarLabels());
-            const auto currentRange = GetScalingAxis().GetRange();
+            const auto originalRange = GetScalingAxis().GetRange();
 
             // tweak scaling
             if (m_longestBarLength >= 50'000)
@@ -198,13 +198,24 @@ namespace Wisteria::Graphs
 
             // if showing labels and we just re-adjusted the range, then add an
             // extra interval for the label
-            if (IsShowingBarLabels() && currentRange != GetScalingAxis().GetRange())
+            if (const auto currentRange = GetScalingAxis().GetRange();
+                IsShowingBarLabels() && originalRange != currentRange)
                 {
-                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
-                    GetScalingAxis().GetRange().second + GetScalingAxis().GetInterval(),
-                    GetScalingAxis().GetPrecision(),
-                    GetScalingAxis().GetInterval(),
-                    GetScalingAxis().GetDisplayInterval());
+                const auto extraSpaceAfterBar{ m_longestBarLength -
+                                               (currentRange.second - GetScalingAxis().GetInterval()) };
+                const auto barPercentOfLastInterval{
+                    safe_divide<double>(extraSpaceAfterBar, GetScalingAxis().GetInterval()) };
+                // but only add a new interval if the longest bar is consuming more than
+                // 20% of the current last interval; otherwise, there already is plenty of space
+                // for the label
+                if (barPercentOfLastInterval > math_constants::fifth)
+                    {
+                    GetScalingAxis().SetRange(currentRange.first,
+                        currentRange.second + GetScalingAxis().GetInterval(),
+                        GetScalingAxis().GetPrecision(),
+                        GetScalingAxis().GetInterval(),
+                        GetScalingAxis().GetDisplayInterval());
+                    }
                 }
             }
 

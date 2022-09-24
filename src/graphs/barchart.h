@@ -803,6 +803,7 @@ namespace Wisteria::Graphs
         ///    SortDescending to sort largest-to-smallest (A-Z).
         virtual void SortBars(const BarSortComparison sortMethod, const SortDirection direction);
         /// @brief Sorts the bars (based on a specified order of axis labels).
+        ///     This is similar to what @c forcats::fct_relevel() does in R.
         /// @param labels The axis labels of the bars, sorted in the new order that they should
         ///     appear along the axis.
         /// @param direction SortAscending to sort going top-to-bottom or left-to-right.
