@@ -154,10 +154,16 @@ Release information is available [here](Release.md).
 Building
 =============================
 
-NOTE: A C++17 compatible compiler is required.
+First, download Wisteria:
 
-First, if you are on Windows, you will need to get and build the latest
-[wxWidgets](https://github.com/wxWidgets/wxWidgets):
+```
+git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
+```
+
+Windows
+-----------------------------
+
+Get and build [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher:
 
 ```
 git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
@@ -165,47 +171,33 @@ git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
 
 Refer [here](https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md) for how to build wxWidgets.
 
-If on Linux, install the wxWidgets libraries and development files from your repository manager.
+Next, build Wisteria:
 
-Next, get and build Wisteria:
+If using CMake GUI, open "CMakeLists.txt" and set `wxWidgets_ROOT_DIR` to the
+root folder of wxWidgets. Next, configure and generate a project file for your compiler.
 
-```
-git clone https://github.com/Blake-Madden/Wisteria-Dataviz.git --recurse-submodules
-```
-
-To build the library and demo, you can use CMake (either directly or by using an IDE).
-
-To build the API documentation, open "docs/doxygen/Doxyfile" in Doxygen and run it.
-
-Windows
------------------------------
-
-On Windows, you will need to set `wxWidgets_ROOT_DIR` to the root folder where you have wxWidgets when
-building with CMake.
-
-Assuming that you had built wxWidgets in "C:/SRC/wxWidgets," you can pass this command line CMake:
-
-```
--DwxWidgets_ROOT_DIR=C:/SRC/wxWidgets
-```
-
-Alternatively, if using Visual Studio, open the Wisteria folder to load the project.
+If using Visual Studio, open the Wisteria folder to load the project.
 Then go to `Project -> CMake Settings for Wisteria...`. Add an entry for `wxWidgets_ROOT_DIR`
 and specify the path to your wxWidgets folder. Save and then build the project.
 
 Linux
 -----------------------------
 
-On Linux, install the following from your repository manager:
+Install the following from your repository manager:
 
 - wxWidgets 3.2
 - wxGTK3 development files (version 3.2 or higher)
 - Threading Building Blocks (libtbb) and its development files
 
-Open the "CMakeLists.txt" file in CMake, configure, and then generate a make script. Finally, go into
+Open "CMakeLists.txt" in CMake GUI, configure, and then generate a make script. Finally, go into
 the build folder that you specified and run `make` to build the library and demo.
 
 If using KDevelop, you can also open the CMake file and build from there.
+
+Documentation
+=============================
+
+To build the API documentation, open "docs/doxygen/Doxyfile" in Doxygen and run it.
 
 Dependencies
 =============================
@@ -213,3 +205,8 @@ Dependencies
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
 - GTK 3 (Linux)
 - libtbb (Linux)
+- A C++17 compatible compiler
+
+If using a version of CMake older than 3.24, please refer to
+[wxWidgets's CMake overview](https://docs.wxwidgets.org/trunk/overview_cmake.html) for instructions
+on how to set up CMake to work with wxWidgets 3.2.
