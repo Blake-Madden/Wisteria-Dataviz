@@ -85,6 +85,20 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
+                    // background color
+                    const auto bgColor = ConvertColor(page->GetProperty(L"background-color"));
+                    if (bgColor.IsOk())
+                        { canvas->SetBackgroundColor(bgColor); }
+
+                    // background image
+                    if (page->GetProperty(L"background-image")->IsOk())
+                        {
+                        const auto imgPath = ConvertFilePath(
+                            page->GetProperty(L"background-image")->GetValueString());
+                        canvas->SetBackgroundImage(
+                            wxBitmapBundle(Image::LoadFile(imgPath)));
+                        }
+
                     // copy print settings from report
                     canvas->GetPrinterSettings().SetOrientation(reportPrintSettings.GetOrientation());
 
@@ -3033,6 +3047,27 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    wxString ReportBuilder::ConvertFilePath(const wxString& path)
+        {
+        wxString expandedPath{ path };
+        if (expandedPath.empty())
+            {
+            throw std::runtime_error(
+                wxString(_(L"Filepath is empty.")).ToUTF8());
+            }
+        if (!wxFileName::FileExists(expandedPath))
+            {
+            expandedPath = wxFileName(m_configFilePath).GetPathWithSep() + expandedPath;
+            if (!wxFileName::FileExists(expandedPath))
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: file not found."), expandedPath).ToUTF8());
+                }
+            }
+        return expandedPath;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<GraphItems::Image> ReportBuilder::LoadImage(
         const wxSimpleJSON::Ptr_t& imageNode)
         {
@@ -3044,21 +3079,7 @@ namespace Wisteria
             { L"no-resize", ResizeMethod::NoResize },
             };
 
-        auto path = imageNode->GetProperty(L"path")->GetValueString();
-        if (path.empty())
-            {
-            throw std::runtime_error(
-                wxString(_(L"Image must have a filepath.")).ToUTF8());
-            }
-        if (!wxFileName::FileExists(path))
-            {
-            path = wxFileName(m_configFilePath).GetPathWithSep() + path;
-            if (!wxFileName::FileExists(path))
-                {
-                throw std::runtime_error(
-                    wxString::Format(_(L"%s: image not found."), path).ToUTF8());
-                }
-            }
+        const auto path = ConvertFilePath(imageNode->GetProperty(L"path")->GetValueString());
         auto image = std::make_shared<GraphItems::Image>(path);
         if (image->IsOk())
             {
@@ -3234,6 +3255,32 @@ namespace Wisteria
             const auto captionLabel = LoadLabel(captionProperty, graph->GetCaption());
             if (captionLabel != nullptr)
                 { graph->GetCaption() = *captionLabel; }
+            }
+
+        // background color
+        const auto bgColor = ConvertColor(graphNode->GetProperty(L"background-color"));
+        if (bgColor.IsOk())
+            { graph->SetBackgroundColor(bgColor); }
+
+        // common image used for bar charts/box plots
+        const auto commonImgNode = graphNode->GetProperty(L"common-box-image");
+        if (commonImgNode->IsOk())
+            {
+            const auto imgPath = ConvertFilePath(
+                commonImgNode->GetProperty(L"path")->GetValueString());
+            graph->SetCommonBoxImage(
+                wxBitmapBundle(Image::LoadFile(imgPath)),
+                ConvertColor(commonImgNode->GetProperty(L"outline")));
+            }
+
+        // stipple brush used for bar charts/box plots
+        const auto stippleImgNode = graphNode->GetProperty(L"stipple-image");
+        if (stippleImgNode->IsOk())
+            {
+            const auto imgPath = ConvertFilePath(
+                graphNode->GetProperty(L"stipple-image")->GetValueString());
+            graph->SetStippleBrush(
+                wxBitmapBundle(Image::LoadFile(imgPath)));
             }
 
         // axes

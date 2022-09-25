@@ -237,6 +237,10 @@ namespace Wisteria
             const wxSimpleJSON::Ptr_t& dsNode,
             std::shared_ptr<Data::Dataset>& dataset);
 
+        /// @brief If @c path is fully specified, then returns @c path.
+        ///     Otherwise, tries to return the path relative to the project file.
+        [[nodiscard]] wxString ConvertFilePath(const wxString& path);
+
         /// @brief Converts a string value to a LabelPlaceent enum value.
         [[nodiscard]] static std::optional<LabelPlacement>
             ConvertLabelPlacement(const wxString& value);

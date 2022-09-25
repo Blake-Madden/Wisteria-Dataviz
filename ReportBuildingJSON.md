@@ -203,6 +203,8 @@ Properties for the @c "datasets" node:
 A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.\n
 The @c "pages" node will contain an array of definitions for all pages, each containing the following:
 - @c "name": contains a string value, representing the name of the page.
+- @c "background-color": a string specifying the page's background color.
+- @c "background-image": a string specifying the path to an image to use for the page's background.
 - @c "rows": an array of rows, each containing items to draw on the page (layed out horizontally).\n
   - @c "items": An array of items in the current row.
     - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
@@ -651,7 +653,7 @@ Properties common to all bar-chart derived graphs:
   - @c "fade-from-right-to-left"
   - @c "fade-from-top-to-bottom"
   - @c "glassy"
-  - @c "solid"
+  - @c "solid" (the default)
   - @c "stipple"
 - @c "bar-label-display": string specifying how to display labels on the bars.
   Available options are:
@@ -699,8 +701,14 @@ Properties common to all graph items:
 - @c "sub-title": the subtitle of the graph, which contains ["label"](#label-properties) properties.
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
 - @c "axes": an array of [axis](#axis-properties) objects.
+- @c "background-color": a string specifying the plotting area's background color.
+- @c "common-box-image": properties specifying the image used for a bar chart or box plot's common image.\n
+  Available properties are:
+  - @c "path": string specifying the file path to the image.
+  - @c "outline": string specifying the color for the outline around the bars/boxes.
+- @c "stiple-image": a string specifying the path to an image to use a stipple brush.
 - @c "annotations": text messages that can be added on top of the graph, optionally pointing to positions
-     on the graph. This is an array of annotation definitions, which contain the following properties:
+  on the graph. This is an array of annotation definitions, which contain the following properties:
   - @c "label": the label for the note, , which contains ["label"](#label-properties) properties.
   - @c "interest-points": The points that the note will point at.\n
     This is an array of items which contain the following properties:
