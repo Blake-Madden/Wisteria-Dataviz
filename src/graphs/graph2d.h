@@ -21,6 +21,7 @@
 #include "../base/lines.h"
 #include "../base/shapes.h"
 #include "../base/brushes.h"
+#include "../base/image.h"
 #include "../math/mathematics.h"
 #include "../util/textreplace.h"
 
@@ -255,20 +256,19 @@ namespace Wisteria::Graphs
                     GetBackgroundColor() : GetCanvas()->GetBackgroundColor();
             }
 
-        /// @brief Sets a common image to be drawn just within the bars' (or boxes') areas.
+        /// @brief Sets the outline color when the common image effect in in use.
         /// @details This only applies to graphs which use boxes to visualized data
         ///     (e.g., bar charts, box plots).
-        /// @param boxImage The image to draw across the bars/boxes.
-        /// @param outlineColor The outline color of the bars/boxes.
+        /// @param outlineColor The outline color of the bars/boxes if common image
+        ///     is in effect.
         /// @note This effect will only apply to bars/boxes using the @c CommonImage effect.\n
         ///     If the image is smaller than the plot area, then it will not be used
-        ///     and the bars/boxes will fall back to using a solid color.
-        void SetCommonBoxImage(const wxBitmapBundle& boxImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_commonBoxImage = boxImage;
-            m_imageOutlineColor = outlineColor;
-            }
+        ///     and the bars/boxes will fall back to using a solid color.\n
+        ///     Also, the image used will be the first image in the image scheme, so
+        ///     call SetImageScheme() if wanting to use this effect.
+        /// @sa SetImageScheme().
+        void SetCommonBoxImageOutlineColor(const wxColour& outlineColor) noexcept
+            { m_imageOutlineColor = outlineColor; }
         /// @}
 
         /** @name Property Functions
@@ -303,15 +303,19 @@ namespace Wisteria::Graphs
         virtual std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) = 0;
 
-        // Just hiding these from Doxygen. If these are included inside of groupings,
-        // then the "private" tag will break the group in the generated help.
-        /// @private
-        void SetCommonBoxImage(wxBitmapBundle&& boxImage,
-                               const wxColour& outlineColor) noexcept
-            {
-            m_commonBoxImage = std::move(boxImage);
-            m_imageOutlineColor = outlineColor;
-            }
+        /// @returns The image scheme used for various plots (e.g., bar charts and box plots).
+        [[nodiscard]] const std::shared_ptr<Wisteria::Schemes::ImageScheme>&
+            GetImageScheme() const noexcept
+            { return m_imageScheme; }
+        /** @brief Sets the list of images to connect to the plot.
+            @param imageScheme The image scheme to use.
+            @note If using the @c CommonImage effect for bar charts or box plots, the first
+                image in this scheme will be used.
+            @sa SetCommonBoxImageOutlineColor().*/
+        void SetImageScheme(
+            std::shared_ptr<Wisteria::Schemes::ImageScheme> imageScheme)
+            { m_imageScheme = imageScheme; }
+
         /// @private
         void SetStippleBrush(wxBitmapBundle&& image) noexcept
             { m_stipple = std::move(image); }
@@ -361,9 +365,17 @@ namespace Wisteria::Graphs
             const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
             { AddAnnotation(object, pt, interestPts); }
     protected:
-        /// @returns The image drawn across all bars/boxes.
+        /// @returns The image drawn across all bars/boxes.\n
+        ///     This will be the first image in the image scheme.
         [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
-            { return m_commonBoxImage; }
+            {
+            wxASSERT_MSG(GetImageScheme(),
+                L"Using common box image effect, but image scheme has not been set!");
+            if (GetImageScheme() != nullptr)
+                { return GetImageScheme()->GetImage(0); }
+            else
+                { return m_emptyImage; }
+            }
         /// @returns The color used to outline images used for bars/boxes.
         [[nodiscard]] wxColour GetImageOulineColor() const noexcept
             { return m_imageOutlineColor; }
@@ -522,7 +534,7 @@ namespace Wisteria::Graphs
             m_rect.Offset(wxPoint(xToMove, yToMove));
             m_plotRect.Offset(wxPoint(xToMove, yToMove));
             }
-        /** @brief Draws the items label (if it has one) in the middle of the item if it is selected.
+        /** @brief Draws the items label (if it has one) in the middle of the item if it's selected.
             @param dc The canvas to draw the item on.
             @param scaling This parameter is ignored.
             @param boundingBox This parameter is ignored.*/
@@ -570,8 +582,8 @@ namespace Wisteria::Graphs
         [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
         /// @brief Calculates how much outer axis labels and headers go outside of the
         ///     axes' widths and heights (used to adjust the margins of the plot area).
-        void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin, long& bottomMargin,
-                             wxDC& dc) const;
+        void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin,
+                             long& bottomMargin, wxDC& dc) const;
         /// @brief Calculates how much space is needed around the plot to fit everything
         ///     (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
         ///     recalculates the axes' points' positions.
@@ -593,7 +605,9 @@ namespace Wisteria::Graphs
         // transparent by default, so the underlying canvas color will show through
         wxColour m_bgColor{ wxTransparentColour };
 
-        wxBitmapBundle m_commonBoxImage;
+        std::shared_ptr<Wisteria::Schemes::ImageScheme>
+            m_imageScheme{ nullptr };
+        wxBitmapBundle m_emptyImage;
         wxColour m_imageOutlineColor{ *wxBLACK };
 
         Wisteria::Canvas* m_parentCanvas{ nullptr };

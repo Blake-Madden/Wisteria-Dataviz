@@ -891,10 +891,15 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // make it a horizontal barchart
         plot->SetBarOrientation(Orientation::Vertical);
 
-        plot->SetCommonBoxImage(wxBitmapBundle(
-            // Photo by ThisisEngineering RAEng on Unsplash
-            GraphItems::Image::LoadFile(appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg")),
-            *wxWHITE);
+        plot->SetImageScheme(
+            std::make_shared<Wisteria::Schemes::ImageScheme>(
+                std::vector<wxBitmapBundle>
+                {
+                wxBitmapBundle(
+                    // Photo by ThisisEngineering RAEng on Unsplash
+                    GraphItems::Image::LoadFile(
+                        appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg"))
+                }));
 
         auto barColor = ColorBrewer::GetColor(Color::OceanBoatBlue);
 

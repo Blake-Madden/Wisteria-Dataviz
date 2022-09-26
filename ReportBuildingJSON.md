@@ -702,10 +702,9 @@ Properties common to all graph items:
 - @c "caption": the caption of the graph, which contains ["label"](#label-properties) properties.
 - @c "axes": an array of [axis](#axis-properties) objects.
 - @c "background-color": a string specifying the plotting area's background color.
-- @c "common-box-image": properties specifying the image used for a bar chart or box plot's common image.\n
-  Available properties are:
-  - @c "path": string specifying the file path to the image.
-  - @c "outline": string specifying the color for the outline around the bars/boxes.
+- @c "image-scheme": an array of image filepaths to use for the image scheme.
+- @c "common-box-image-outline": string specifying the color for the outline around the bars/boxes
+     if using a common box image.
 - @c "stiple-image": a string specifying the path to an image to use a stipple brush.
 - @c "annotations": text messages that can be added on top of the graph, optionally pointing to positions
   on the graph. This is an array of annotation definitions, which contain the following properties:

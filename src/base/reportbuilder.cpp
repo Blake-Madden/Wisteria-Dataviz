@@ -3262,16 +3262,21 @@ namespace Wisteria
         if (bgColor.IsOk())
             { graph->SetBackgroundColor(bgColor); }
 
-        // common image used for bar charts/box plots
-        const auto commonImgNode = graphNode->GetProperty(L"common-box-image");
-        if (commonImgNode->IsOk())
+        // image scheme
+        const auto imageSchemeNode = graphNode->GetProperty(L"image-scheme");
+        if (imageSchemeNode->IsOk() && imageSchemeNode->IsValueArray())
             {
-            const auto imgPath = ConvertFilePath(
-                commonImgNode->GetProperty(L"path")->GetValueString());
-            graph->SetCommonBoxImage(
-                wxBitmapBundle(Image::LoadFile(imgPath)),
-                ConvertColor(commonImgNode->GetProperty(L"outline")));
+            std::vector<wxBitmapBundle> images;
+            auto imageScheme = imageSchemeNode->GetValueStringVector();
+            for (auto& image : imageScheme)
+                { images.emplace_back(Image::LoadFile(ConvertFilePath(image))); }
+            graph->SetImageScheme(
+                std::make_shared<Schemes::ImageScheme>(std::move(images)));
             }
+
+        // common image outline used for bar charts/box plots
+        graph->SetCommonBoxImageOutlineColor(
+            graphNode->GetProperty(L"common-box-image-outline")->GetValueString(L"black"));;
 
         // stipple brush used for bar charts/box plots
         const auto stippleImgNode = graphNode->GetProperty(L"stipple-image");

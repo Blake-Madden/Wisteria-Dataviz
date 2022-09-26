@@ -356,6 +356,57 @@ namespace Wisteria::GraphItems
         };
     }
 
+namespace Wisteria::Schemes
+    {
+    /// @brief Class for a list of images.
+    class ImageScheme
+        {
+    public:
+        /// @brief Constructor.
+        /// @param images The vector of images to fill the scheme with.
+        explicit ImageScheme(const std::vector<wxBitmapBundle>& images) :
+            m_images(images)
+            {}
+        /// @private
+        explicit ImageScheme(std::vector<wxBitmapBundle>&& images) :
+            m_images(std::move(images))
+            {}
+        /// @brief Constructor.
+        /// @param images The initializer list of images to fill the scheme with.
+        explicit ImageScheme(const std::initializer_list<wxBitmapBundle>& images) :
+            m_images(images)
+            {}
+        /// @returns The list of images from the scheme.
+        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImages() const noexcept
+            { return m_images; }
+        /** @returns The image at the given index.
+            @param index The index into the image list to return. If index is outside
+                the number of images, then it will recycle (i.e., wrap around).
+                For example, if there are 2 images, index 1 will return 1;
+                however, index 2 will wrap around and return image 0 and
+                index 3 will return image 1.*/
+        [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
+            {
+            return (m_images.size() == 0) ?
+                m_emptyImage :
+                m_images.at(index % m_images.size());
+            }
+        /** @brief Adds an image to the scheme.
+            @param image The image to add.*/
+        void AddImage(const wxBitmapBundle& shape)
+            { m_images.push_back(shape); }
+        /// @private
+        void AddImage(wxBitmapBundle&& shape)
+            { m_images.push_back(shape); }
+        /// @brief Removes all images from the collection.
+        void Clear() noexcept
+            { m_images.clear(); }
+    private:
+        std::vector<wxBitmapBundle> m_images;
+        wxBitmapBundle m_emptyImage;
+        };
+    }
+
 /** @}*/
 
 #endif //__WISTERIA_GRAPHIMAGE_H__
