@@ -393,11 +393,11 @@ namespace Wisteria::Schemes
             }
         /** @brief Adds an image to the scheme.
             @param image The image to add.*/
-        void AddImage(const wxBitmapBundle& shape)
-            { m_images.push_back(shape); }
+        void AddImage(const wxBitmapBundle& image)
+            { m_images.push_back(image); }
         /// @private
-        void AddImage(wxBitmapBundle&& shape)
-            { m_images.push_back(shape); }
+        void AddImage(wxBitmapBundle&& image)
+            { m_images.push_back(image); }
         /// @brief Removes all images from the collection.
         void Clear() noexcept
             { m_images.clear(); }
