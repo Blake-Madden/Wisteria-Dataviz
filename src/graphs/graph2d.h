@@ -369,8 +369,6 @@ namespace Wisteria::Graphs
         ///     This will be the first image in the image scheme.
         [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
             {
-            wxASSERT_MSG(GetImageScheme(),
-                L"Using common box image effect, but image scheme has not been set!");
             if (GetImageScheme() != nullptr)
                 { return GetImageScheme()->GetImage(0); }
             else

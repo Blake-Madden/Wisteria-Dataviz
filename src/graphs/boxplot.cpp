@@ -317,7 +317,7 @@ namespace Wisteria::Graphs
             Image::CropImageToRect(
                 GetCommonBoxImage().GetBitmap(
                     GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                GetPlotAreaBoundingBox()) :
+                GetPlotAreaBoundingBox(), false) :
             wxNullImage;
 
         // draw the boxes

@@ -168,6 +168,10 @@ namespace Wisteria::Graphs
                 }
             };
         void Calculate();
+        /// @brief Simpler way to get the bar slots since this isn't like a histogram that
+        ///     can have gaps in between the bars.
+        [[nodiscard]] size_t GetBarSlotCount() const noexcept final
+            { return GetBars().size(); }
 
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;

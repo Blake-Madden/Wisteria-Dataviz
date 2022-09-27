@@ -162,13 +162,14 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static wxImage LoadFile(const wxString& filePath);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
             @details For example, if the height of the image is closer to the rect's than
-                the width are, then its height will be scaled to the rect's height
-                (while maintaining the aspect ratio). Then, it will be centered horizontally
-                and cropped evenly on each side.
+                the width is, then its height will be scaled to the rect's height
+                (while maintaining the aspect ratio).\n
             @param img The image to fit.
             @param rect The rect to crop the image to.
+            @param centerImage @c true to center the image if it needs cropping.s
             @returns The cropped image.*/
-        [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect);
+        [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
+                                                     const bool centerImage);
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images to stitch.
             @returns The combined image.

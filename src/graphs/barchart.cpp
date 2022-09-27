@@ -137,11 +137,12 @@ namespace Wisteria::Graphs
         if (m_lowestBarAxisPosition > bar.GetAxisPosition() - customWidth)
             { m_lowestBarAxisPosition = bar.GetAxisPosition() - customWidth; }
 
-        GetBarAxis().SetRange((m_lowestBarAxisPosition-GetBarAxis().GetInterval()),
+        GetBarAxis().SetRange(
+                m_lowestBarAxisPosition - GetBarAxis().GetInterval(),
                 m_highestBarAxisPosition + GetBarAxis().GetInterval(),
                 GetBarAxis().GetPrecision(), GetBarAxis().GetInterval(),
                 GetBarAxis().GetDisplayInterval());
-        if (!bar.GetAxisLabel().GetText().empty())
+        if (bar.GetAxisLabel().IsShown() && bar.GetAxisLabel().GetText().length())
             { GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel()); }
 
         if (adjustScalingAxis)
@@ -389,26 +390,19 @@ namespace Wisteria::Graphs
         const wxCoord barSpacing = m_includeSpacesBetweenBars ? ScaleToScreenAndCanvas(10) : 0;
         const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
-
-        // scale the common image to the plot area's size
-        wxImage scaledCommonImg = GetCommonBoxImage().IsOk() ?
-            Image::CropImageToRect(
-                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                GetPlotAreaBoundingBox()) :
-            wxNullImage;
-
-        // draw the bars
+        
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
         double barWidth{ 0 };
+        wxRect barRect;
+        wxImage scaledCommonImg;
 
         // main bar rendering
-        const auto drawBar = [&](auto& bar)
+        const auto drawBar = [&](auto& bar, const bool measureOnly)
             {
             wxPoint middlePointOfBarEnd;
             wxCoord axisOffset{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
             wxPoint arrowPoints[7]{ { 0, 0 } };
-            wxRect barRect;
             for (const auto& barBlock : bar.GetBlocks())
                 {
                 if (GetBarOrientation() == Orientation::Horizontal)
@@ -479,6 +473,11 @@ namespace Wisteria::Graphs
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
                     barRect = wxRect(lineXStart, lineYStart, barLength, barWidth);
                     wxRect barNeckRect = barRect;
+
+                    // if just measuring then we're done
+                    if (measureOnly)
+                        { return middlePointOfBarEnd; }
+
                     // draw the bar (block)
                     if (barBlock.IsShown() && barLength > 0)
                         {
@@ -494,9 +493,11 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
-                            auto barRectAdjustedToPlotArea = barRect;
+                            wxRect barRectAdjustedToPlotArea = barRect;
                             barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
-                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
+                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
+                                 (GetPlotAreaBoundingBox().GetTop() +
+                                     safe_divide(GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight(), 2)) );
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOulineColor()).
@@ -796,10 +797,15 @@ namespace Wisteria::Graphs
                     axisOffset += barBlock.GetLength();
                     const wxCoord barLength = lineYStart-middlePointOfBarEnd.y;
                     const wxCoord lineYEnd = lineYStart-barLength;
-                    const wxCoord lineXStart = middlePointOfBarEnd.x - safe_divide<double>(barWidth,2.0);
+                    const wxCoord lineXStart = middlePointOfBarEnd.x - safe_divide<double>(barWidth, 2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
                     barRect = wxRect(lineXStart, lineYEnd, barWidth, barLength);
                     wxRect barNeckRect = barRect;
+
+                    // if just measuring then we're done
+                    if (measureOnly)
+                        { return middlePointOfBarEnd; }
+
                     // draw the bar
                     if (barBlock.IsShown() && barLength > 0)
                         {
@@ -815,9 +821,13 @@ namespace Wisteria::Graphs
 
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
-                            auto barRectAdjustedToPlotArea = barRect;
-                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
-                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() - GetPlotAreaBoundingBox().GetTop());
+                            wxRect barRectAdjustedToPlotArea = barRect;
+                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() -
+                                (GetPlotAreaBoundingBox().GetLeft() +
+                                    safe_divide(GetPlotAreaBoundingBox().GetWidth() - scaledCommonImg.GetWidth(), 2)) );
+                            barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
+                                (GetPlotAreaBoundingBox().GetTop() +
+                                    GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight()));
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOulineColor()).
@@ -1126,12 +1136,38 @@ namespace Wisteria::Graphs
 
             return middlePointOfBarEnd;
             };
+
+        std::vector<wxPoint> boxCorners;
+        for (auto& bar : GetBars())
+            {
+            drawBar(bar, true);
+            boxCorners.push_back(barRect.GetTopLeft());
+            boxCorners.push_back(barRect.GetTopRight());
+            boxCorners.push_back(barRect.GetBottomLeft());
+            boxCorners.push_back(barRect.GetBottomRight());
+            }
+        const auto [minX, maxX] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
+            [](const auto lhv, const auto rhv) noexcept
+            { return lhv.x < rhv.x; });
+        const auto [minY, maxY] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
+            [](const auto lhv, const auto rhv) noexcept
+            { return lhv.y < rhv.y; });
+
+        // scale the common image to the plot area's size
+        scaledCommonImg = GetCommonBoxImage().IsOk() ?
+            Image::CropImageToRect(
+                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
+                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5), // add padding for rounding issues
+                       (maxY->y - minY->y) + ScaleToScreenAndCanvas(5)), false) :
+            wxNullImage;
+
+        // draw the bars
         std::vector<wxPoint> barMiddleEndPositions;
         barMiddleEndPositions.reserve(GetBars().size());
         for (auto& bar : GetBars())
             {
             // keep track of where each bar ends
-            barMiddleEndPositions.push_back(drawBar(bar));
+            barMiddleEndPositions.push_back(drawBar(bar, false));
             }
 
         // draw the decals on top of the blocks
@@ -1141,8 +1177,8 @@ namespace Wisteria::Graphs
 
         for (const auto& barGroup : m_barGroups)
             {
-            wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
-            wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
+            const wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
+            const wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
             double grandTotal{ 0 };
             // the bars specified in the group may be in different order, so use
             // min and max to make sure you are using the true start and end bars
@@ -1208,7 +1244,7 @@ namespace Wisteria::Graphs
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(braces);
-                        drawBar(theBar);
+                        drawBar(theBar, false);
                         for (auto& decal : decals)
                             { AddObject(decal); }
                         }
@@ -1272,7 +1308,7 @@ namespace Wisteria::Graphs
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(braces);
-                        drawBar(theBar);
+                        drawBar(theBar, false);
                         for (auto& decal : decals)
                             { AddObject(decal); }
                         }

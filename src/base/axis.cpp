@@ -105,6 +105,7 @@ namespace Wisteria::GraphItems
             }
         }
 
+    //-------------------------------------------
     void Axis::SetBoundingBox(const wxRect& rect,
                               [[maybe_unused]] wxDC& dc,
                               [[maybe_unused]] const double parentScaling)
@@ -306,6 +307,7 @@ namespace Wisteria::GraphItems
             { m_maxWidth = rect.GetWidth(); }
         }
 
+    //-------------------------------------------
     wxRect Axis::GetProtrudingBoundingBox(wxDC& dc) const
         {
         wxRect boundingBox = GetBoundingBox(dc);

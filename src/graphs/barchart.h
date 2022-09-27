@@ -917,7 +917,7 @@ namespace Wisteria::Graphs
         ///    This is used for calculating the width of the bars.
         ///    Using the number of bars to calculate the widths may be inaccurate if
         ///    there are missing bars along the bar axis, so this (by default) will use
-        ///    the number of axis labels that would appear under each place that a bar would go.\n
+        ///    the number of axis labels that would appear under each place where a bar would go.\n
         ///    (Note that the outer labels are not counted, just the labels under the bars.)
         /// @note The default behaviour assumes that labels are appearing beneath the middle of
         ///    each bar (instead of cutpoints, like in histograms), so override this if relying
@@ -925,7 +925,7 @@ namespace Wisteria::Graphs
         ///    This should be overridden if bar axis labelling is being done in a different way,
         ///    or if bars are being stacked on top of each other or other interesting situations.
         [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
-            { return GetBarAxis().GetAxisPoints().size()-2; }
+            { return GetBarAxis().GetAxisPoints().size() - 2; }
         /// @brief Recalculates the layout of the elements on the plot.
         /// @details Call this after adding all of your bars.
         /// @param dc The DC to measure content with.

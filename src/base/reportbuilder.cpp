@@ -635,6 +635,10 @@ namespace Wisteria
             if (bracketsNode->GetProperty(L"simplify")->GetValueBool())
                 { axis.SimplifyBrackets(); }
             }
+
+        // show options
+        axis.Show(axisNode->GetProperty(L"show")->GetValueBool(true));
+        axis.ShowOuterLabels(axisNode->GetProperty(L"show-outer-labels")->GetValueBool(true));
         }
 
     //---------------------------------------------------
@@ -1796,12 +1800,14 @@ namespace Wisteria
                     }
                 barChart->SortBars(sortBy.value(), sortDirection);
                 }
+            // or is sorting by a list of labels with a custom order
+            else if (const auto labelsNode = sortNode->GetProperty(L"labels");
+                labelsNode->IsOk() && labelsNode->IsValueArray())
+                { barChart->SortBars(labelsNode->GetValueStringVector(), sortDirection); }
             else
                 {
-                // or is sorting by a list of labels with a custom order
-                const auto labelsNode = sortNode->GetProperty(L"labels");
-                if (labelsNode->IsOk() && labelsNode->IsValueArray())
-                    { barChart->SortBars(labelsNode->GetValueStringVector(), sortDirection); }
+                throw std::runtime_error(
+                    _(L"Sorting method not defined for bar sort.").ToUTF8());
                 }
             }
 
@@ -1887,6 +1893,8 @@ namespace Wisteria
             graphNode->GetProperty(L"bar-label-display")->GetValueString());
         if (binLabel.has_value())
             { barChart->SetBinLabelDisplay(binLabel.value()); }
+
+        barChart->IncludeSpacesBetweenBars(graphNode->GetProperty(L"include-spaces-between-bars")->GetValueBool(true));
         }
 
     //---------------------------------------------------
@@ -2908,7 +2916,7 @@ namespace Wisteria
             const auto colorValues = colorSchemeNode->GetValueStringVector();
             if (colorValues.size() == 0)
                 { return nullptr; }
-            for (auto& color : colorValues)
+            for (const auto& color : colorValues)
                 { colors.emplace_back(ConvertColor(color)); }
             return std::make_shared<Colors::Schemes::ColorScheme>(colors);
             }
@@ -2941,8 +2949,8 @@ namespace Wisteria
         else if (lineStyleSchemeNode->IsValueArray())
             {
             std::vector<std::pair<wxPenStyle, LineStyle>> lineStyles;
-            auto lineStyleValues = lineStyleSchemeNode->GetValueArrayObject();
-            for (auto& lineStyle : lineStyleValues)
+            const auto lineStyleValues = lineStyleSchemeNode->GetValueArrayObject();
+            for (const auto& lineStyle : lineStyleValues)
                 {
                 wxPen pn(*wxBLACK, 1, wxPenStyle::wxPENSTYLE_SOLID);
                 LoadPen(lineStyle->GetProperty(L"pen-style"), pn);
@@ -3021,10 +3029,10 @@ namespace Wisteria
         else if (iconSchemeNode->IsValueArray())
             {
             std::vector<IconShape> icons;
-            auto iconValues = iconSchemeNode->GetValueStringVector();
+            const auto iconValues = iconSchemeNode->GetValueStringVector();
             if (iconValues.size() == 0)
                 { return nullptr; }
-            for (auto& icon : iconValues)
+            for (const auto& icon : iconValues)
                 {
                 const auto iconValue =  ConvertIcon(icon);
                 if (iconValue.has_value())
@@ -3181,6 +3189,9 @@ namespace Wisteria
         else if (vPageAlignment.CmpNoCase(L"centered") == 0)
             { item->SetPageVerticalAlignment(PageVerticalAlignment::Centered); }
 
+        // should the item be shown
+        item->Show(itemNode->GetProperty(L"show")->GetValueBool(true));
+
         item->SetScaling(itemNode->GetProperty(L"scaling")->GetValueNumber(1));
 
         LoadPen(itemNode->GetProperty(L"pen"), item->GetPen());
@@ -3275,8 +3286,11 @@ namespace Wisteria
             }
 
         // common image outline used for bar charts/box plots
-        graph->SetCommonBoxImageOutlineColor(
-            graphNode->GetProperty(L"common-box-image-outline")->GetValueString(L"black"));;
+        if (graphNode->GetProperty(L"common-box-image-outline")->IsOk())
+            {
+            graph->SetCommonBoxImageOutlineColor(
+                ConvertColor(graphNode->GetProperty(L"common-box-image-outline")) );
+            }
 
         // stipple brush used for bar charts/box plots
         const auto stippleImgNode = graphNode->GetProperty(L"stipple-image");

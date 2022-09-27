@@ -52,7 +52,7 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------
-    wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect)
+    wxImage Image::CropImageToRect(const wxImage& img, const wxRect rect, const bool centerImage)
         {
         wxImage scaledCommonImg;
         if (img.IsOk() &&
@@ -73,12 +73,13 @@ namespace Wisteria::GraphItems
                     std::make_pair(img.GetWidth(),
                                    img.GetHeight()),
                     rect.GetSize().GetWidth());
-                scaledCommonImg = img.Scale(rect.GetSize().GetWidth(), scaledHeight);
+                scaledCommonImg = img.Scale(rect.GetSize().GetWidth(), scaledHeight,
+                    wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
 
                 const auto crop = scaledCommonImg.GetHeight() -
                     rect.GetSize().GetHeight();
                 scaledCommonImg = scaledCommonImg.GetSubImage(
-                    wxRect(wxPoint(0, std::floor(safe_divide<double>(crop, 2))),
+                    wxRect(wxPoint(0, centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0),
                            rect.GetSize()));
                 wxASSERT_MSG((scaledCommonImg.GetSize().GetHeight() >=
                     rect.GetSize().GetHeight()),
@@ -92,12 +93,13 @@ namespace Wisteria::GraphItems
                     std::make_pair(img.GetWidth(),
                                    img.GetHeight()),
                     rect.GetSize().GetHeight());
-                scaledCommonImg = img.Scale(scaledWidth, rect.GetSize().GetHeight());
+                scaledCommonImg = img.Scale(scaledWidth, rect.GetSize().GetHeight(),
+                    wxImageResizeQuality::wxIMAGE_QUALITY_HIGH);
 
                 const auto crop = scaledCommonImg.GetWidth() -
                                   rect.GetSize().GetWidth();
                 scaledCommonImg = scaledCommonImg.GetSubImage(
-                    wxRect(wxPoint(std::floor(safe_divide<double>(crop, 2)), 0),
+                    wxRect(wxPoint(centerImage ? std::floor(safe_divide<double>(crop, 2)) : 0, 0),
                            rect.GetSize()));
                 wxASSERT_MSG((scaledCommonImg.GetSize().GetWidth() >=
                               rect.GetSize().GetWidth()),

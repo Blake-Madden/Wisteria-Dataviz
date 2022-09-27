@@ -250,6 +250,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "only-custom-labels"
   - @c "custom-labels-and-values"
   - @c "no-display"
+- @c "show-outer-labels": @true to show the outer labels on the axis.
 - @c "label-length": a number specifying the suggested maximum length for the axis labels. (Default is 100.)
 - @c "label-length-auto": if @c true, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
@@ -662,6 +663,7 @@ Properties common to all bar-chart derived graphs:
   - @c "value-and-percentage"
   - @c "no-display"
   - @c "bin-name"
+- @c "include-spaces-between-bars": @c true to include spaces between bars.
 - @c "bar-sort": properties specifying how to sort the bars (after loading the data).
   - @c "direction"
     Available options are:
@@ -828,6 +830,7 @@ Properties common to all items:
 - @c "pen": the item's pen, which includes [pen](#pen-properties) properties
 - @c "scaling": numeric value of how much to scale the object's size. For example, @c 2.0 will double the
      its default size.
+- @c "show": boolean value specifying whether to show the item.
 - @c "anchoring": controls the starting point of where the object is drawn.\n
   This is usually only relative for objects being embedded on a plot (e.g., annotations).\n
   Available options are:
