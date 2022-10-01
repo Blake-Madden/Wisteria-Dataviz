@@ -18,7 +18,7 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief %Bar chart, which plots data as bars horizontally or vertically along a 2D axis.
+    /** @brief %Bar chart, which charts data as bars horizontally or vertically along a 2D axis.
 
          | Regular   | Stylized |
          | :-------------- | :-------------------------------- |
@@ -347,7 +347,7 @@ namespace Wisteria::Graphs
             /// @details This will be used first when drawing the block.
             ///    If invalid, then the parent bar's custom width will be used.
             ///    If that is invalid, then bars and blocks will have their widths
-            ///    calculated by the plot (the default).
+            ///    calculated by the chart (the default).
             /// @param width The width of the block (in terms of units along the bar axis).
             ///    For example, if the bar axis range is 0-100 and you set 25 here, then the
             ///    block will consume 25% of the width of the axis
@@ -639,7 +639,7 @@ namespace Wisteria::Graphs
             };
 
         /** @brief Constructor.
-            @param canvas The parent canvas for the plot to be drawn on.*/
+            @param canvas The parent canvas for the chart to be drawn on.*/
         BarChart(Wisteria::Canvas* canvas);
         /// @private
         BarChart() = delete;
@@ -747,13 +747,6 @@ namespace Wisteria::Graphs
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
-        /// @returns The axis with the scaling, which is the axis perpendicular
-        ///    to the axis with the bars on it.
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
-            {
-            return (GetBarOrientation() == Orientation::Vertical) ?
-                GetLeftYAxis() : GetBottomXAxis();
-            }
         /// @returns The axis with the scaling (opposite side),
         ///    which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] Wisteria::GraphItems::Axis& GetReverseScalingAxis() noexcept
@@ -774,22 +767,30 @@ namespace Wisteria::Graphs
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetBottomXAxis() : GetLeftYAxis();
             }
-        /// @returns The axis that the bars are being spread across.
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetBarAxis() const noexcept
-            {
-            return (GetBarOrientation() == Orientation::Vertical) ?
-                GetBottomXAxis() : GetLeftYAxis();
-            }
         /// @returns Whether the bars are laid out vertically or
-        ///    horizontally across the plot.
+        ///    horizontally across the chart.
         [[nodiscard]] Orientation GetBarOrientation() const noexcept
             { return m_barOrientation; }
-        /// @brief Sets whether the bars are laid out vertically or horizontally across the plot.
+        /// @brief Sets whether the bars are laid out vertically or horizontally across the chart.
         /// @param orient Which orientation to use for the bars.
         /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
         ///     Also, if aligning with a common X axis, then set this to @c Vertical.
         ///     (Set to @c Horizontal if aligning with a common Y axis.)
         void SetBarOrientation(const Orientation orient);
+        /// @brief Forces the scaling axis to the length of the longest bar, resetting any custom
+        ///     or calculed range.
+        /// @details This is only recommended for when the scaling axis is not being shown and the
+        ///     bar are being used more artistic purposes.\n
+        ///     Call this after all manual calls to @c AddBar or various @c SetData derived functions.
+        /// @warning Bar labels should be set to @c BinLabelDisplay::NoDisplay as the will go
+        ///     outside of the plotting area.
+        void ConstrainScalingAxisToBars()
+            {
+            GetScalingAxis().SetRange(GetScalingAxis().GetRange().first, m_longestBarLength,
+                GetScalingAxis().GetPrecision(),
+                GetScalingAxis().GetInterval(),
+                GetScalingAxis().GetDisplayInterval());
+            }
         /// @}
 
         /// @name Sort Functions
@@ -898,6 +899,18 @@ namespace Wisteria::Graphs
         /// @private
         void AddBarGroup(BarGroup&& barGroup)
             { m_barGroups.emplace_back(barGroup); }
+        /// @private
+        [[nodiscard]] const Wisteria::GraphItems::Axis& GetBarAxis() const noexcept
+            {
+            return (GetBarOrientation() == Orientation::Vertical) ?
+                GetBottomXAxis() : GetLeftYAxis();
+            }
+        /// @private
+        [[nodiscard]] const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
+            {
+            return (GetBarOrientation() == Orientation::Vertical) ?
+                GetLeftYAxis() : GetBottomXAxis();
+            }
     protected:
         /** @brief Sets the color scheme.
             @param colors The color scheme to use.*/
@@ -926,7 +939,7 @@ namespace Wisteria::Graphs
         ///    or if bars are being stacked on top of each other or other interesting situations.
         [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
             { return GetBarAxis().GetAxisPoints().size() - 2; }
-        /// @brief Recalculates the layout of the elements on the plot.
+        /// @brief Recalculates the layout of the elements on the chart.
         /// @details Call this after adding all of your bars.
         /// @param dc The DC to measure content with.
         void RecalcSizes(wxDC& dc) override;
