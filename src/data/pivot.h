@@ -27,6 +27,7 @@ namespace Wisteria::Data
             std::map<wxString, double, StringCmpNoCase>& pivotedColumns) :
             m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
             {}
+        /// @private
         [[nodiscard]] bool operator<(const PivotedWiderRow& that) const
             { return m_Id.CmpNoCase(that.m_Id) < 0; }
         /// @brief Combines rows with the same ID(s), adding new pivoted
@@ -41,8 +42,7 @@ namespace Wisteria::Data
         // ID columns, used for grouping and comparing rows
         // (these should remain in the same order that the client specifies)
         std::vector<std::pair<wxString, CategoricalOrIdDataType>> m_idColumns;
-        // Pivoted column(s) names and values
-        // (these are sorted by name)
+        // Pivoted column(s) names and values (these are sorted by name)
         std::map<wxString, double, StringCmpNoCase> m_pivotedColumns;
         };
 
@@ -93,7 +93,7 @@ namespace Wisteria::Data
             const wxString& namesPrefix = wxEmptyString,
             const double fillValue = std::numeric_limits<double>::quiet_NaN());
 
-        /** @brief Combines multiple columns into a grouping column and value column.
+        /** @brief Combines multiple columns into a grouping column and value column.\n
                 Multiple target grouping columns can also be created if a regular expression
                 is provided to split the initial columns' names.
             @details Pivoting longer is also known as stacking, casting, or gathering

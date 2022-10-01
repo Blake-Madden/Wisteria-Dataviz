@@ -23,7 +23,7 @@ namespace Wisteria::Data
     class DatasetClone
         {
     public:
-        /// @brief Constructor.
+        /// @private
         DatasetClone() = default;
         /// @private
         DatasetClone(const DatasetClone&) = delete;
@@ -33,7 +33,7 @@ namespace Wisteria::Data
         DatasetClone& operator=(const DatasetClone&) = delete;
         /// @private
         DatasetClone& operator=(DatasetClone&&) = delete;
-        /// @brief Virtual destructor.
+        /// @private
         virtual ~DatasetClone() {}
         /** @brief Sets the source dataset to clone from.
             @param fromDataset The dataset to clone.
