@@ -313,16 +313,16 @@ namespace Wisteria::Graphs
             }
 
         // scale the common image to the plot area's size
-        wxImage scaledCommonImg = GetCommonBoxImage().IsOk() ?
-            Image::CropImageToRect(
-                GetCommonBoxImage().GetBitmap(
-                    GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                GetPlotAreaBoundingBox(), false) :
-            wxNullImage;
+        wxImage scaledCommonImg;
+        wxCoord highestBoxHeight{ 0 };
+        wxCoord boxesLeft{ 0 };
 
-        // draw the boxes
-        for (auto& box : m_boxes)
+        // main box renderer
+        const auto drawBox = [&](auto& box, const bool measureOnly)
             {
+            if (box.GetData()->GetRowCount() == 0)
+                { return; }
+
             GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
             GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetLowerControlLimit(),
@@ -334,8 +334,14 @@ namespace Wisteria::Graphs
             GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetUpperWhisker(),
                                    box.m_upperOutlierRangeCoordinate);
 
-            if (box.GetData()->GetRowCount() == 0)
-                { continue; }
+            // calculate the box (interquartile range)
+            box.m_boxRect = wxRect(box.m_upperQuartileCoordinate.x-((boxWidth/2)),
+                box.m_upperQuartileCoordinate.y, boxWidth+1,
+                // in case quartile range is nothing, set the box height to one
+                std::max(box.m_lowerQuartileCoordinate.y - box.m_upperQuartileCoordinate.y, 1));
+
+            if (measureOnly)
+                { return; }
 
             // only draw a whisker if there is more than one datum
             // (which would certainly be the case, usually)
@@ -375,11 +381,6 @@ namespace Wisteria::Graphs
                     linePoints, std::size(linePoints)));
                 }
 
-            // calculate the box (interquartile range)
-            box.m_boxRect = wxRect(box.m_upperQuartileCoordinate.x-((boxWidth/2)),
-                box.m_upperQuartileCoordinate.y, boxWidth+1,
-                // in case quartile range is nothing, set the box height to one
-                std::max(box.m_lowerQuartileCoordinate.y - box.m_upperQuartileCoordinate.y, 1));
             if (box.GetData()->GetRowCount() > 1)
                 {
                 const wxString boxLabel =
@@ -396,10 +397,8 @@ namespace Wisteria::Graphs
                 if (box.GetBoxEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                     {
                     auto boxRectAdjustedToPlotArea = box.m_boxRect;
-                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() -
-                                                      GetPlotAreaBoundingBox().GetLeft());
-                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() -
-                                                     GetPlotAreaBoundingBox().GetTop());
+                    boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - boxesLeft);
+                    boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - highestBoxHeight);
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).Pen(GetImageOulineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
@@ -588,7 +587,37 @@ namespace Wisteria::Graphs
                 }
             AddObject(dataPoints);
             AddObject(outliers);
+            };
+
+        std::vector<wxPoint> boxCorners;
+        for (auto& box : m_boxes)
+            {
+            drawBox(box, true);
+            boxCorners.push_back(box.m_boxRect.GetTopLeft());
+            boxCorners.push_back(box.m_boxRect.GetTopRight());
+            boxCorners.push_back(box.m_boxRect.GetBottomLeft());
+            boxCorners.push_back(box.m_boxRect.GetBottomRight());
             }
+        const auto [minX, maxX] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
+            [](const auto lhv, const auto rhv) noexcept
+            { return lhv.x < rhv.x; });
+        const auto [minY, maxY] = std::minmax_element(boxCorners.cbegin(), boxCorners.cend(),
+            [](const auto lhv, const auto rhv) noexcept
+            { return lhv.y < rhv.y; });
+        highestBoxHeight = minY->y;
+        boxesLeft = minX->x;
+
+        // scale the common image to the plot area's size
+        scaledCommonImg = GetCommonBoxImage().IsOk() ?
+            Image::CropImageToRect(
+                GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
+                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5), // add padding for rounding issues
+                       (maxY->y - minY->y) + ScaleToScreenAndCanvas(5)), false) :
+            wxNullImage;
+
+        // draw the boxes
+        for (auto& box : m_boxes)
+            { drawBox(box, false); }
 
         // draw the connection points
         if (GetPen().IsOk() && GetBoxCount() >= 2)
