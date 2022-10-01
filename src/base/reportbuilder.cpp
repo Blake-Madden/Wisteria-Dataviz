@@ -91,7 +91,7 @@ namespace Wisteria
                         { canvas->SetBackgroundColor(bgColor); }
 
                     // background image
-                    if (page->GetProperty(L"background-image")->IsOk())
+                    if (page->HasProperty(L"background-image"))
                         {
                         const auto imgPath = ConvertFilePath(
                             page->GetProperty(L"background-image")->GetValueString());
@@ -142,6 +142,11 @@ namespace Wisteria
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadBoxPlot(item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"pie-chart") == 0)
                                                 {
@@ -472,7 +477,7 @@ namespace Wisteria
                 if (penColor.IsOk())
                     { pen.SetColour(penColor); }
 
-                if (penNode->GetProperty(L"width")->IsOk())
+                if (penNode->HasProperty(L"width"))
                     { pen.SetWidth(penNode->GetProperty(L"width")->GetValueNumber(1)); }
 
                 const auto style = styleValues.find(
@@ -538,7 +543,7 @@ namespace Wisteria
         LoadPen(axisNode->GetProperty(L"gridline-pen"), axis.GetGridlinePen());
 
         // max line length
-        if (axisNode->GetProperty(L"label-length")->IsOk())
+        if (axisNode->HasProperty(L"label-length"))
             {
             axis.SetLabelLineLength(axisNode->GetProperty(L"label-length")->
                 GetValueNumber(axis.GetLabelLineLength()));
@@ -587,7 +592,7 @@ namespace Wisteria
                 const auto foundBracketStyle = bracketLineValues.find(std::wstring_view(
                     bracketsNode->GetProperty(L"style")->GetValueString().wc_str()));
                 // if loading brackets based on the dataset
-                if (bracketsNode->GetProperty(L"dataset")->IsOk())
+                if (bracketsNode->HasProperty(L"dataset"))
                     {
                     const wxString dsName = bracketsNode->GetProperty(L"dataset")->GetValueString();
                     const auto foundDataset = m_datasets.find(dsName);
@@ -708,7 +713,7 @@ namespace Wisteria
             label->SetLineSpacing(labelNode->GetProperty(L"line-spacing")->GetValueNumber(1));
 
             // font attributes
-            if (labelNode->GetProperty(L"bold")->IsOk())
+            if (labelNode->HasProperty(L"bold"))
                 {
                 if (labelNode->GetProperty(L"bold")->GetValueBool())
                     { label->GetFont().MakeBold(); }
@@ -726,7 +731,7 @@ namespace Wisteria
             if (headerNode->IsOk())
                 {
                 label->GetHeaderInfo().Enable(true);
-                if (headerNode->GetProperty(L"bold")->IsOk())
+                if (headerNode->HasProperty(L"bold"))
                     {
                     if (headerNode->GetProperty(L"bold")->GetValueBool())
                         { label->GetHeaderInfo().GetFont().MakeBold(); }
@@ -880,10 +885,10 @@ namespace Wisteria
 
     //---------------------------------------------------
     ReportBuilder::ValuesType ReportBuilder::CalcFormula(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         const wxRegEx re(FunctionStartRegEx() +
-            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn)" +
+            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now)" +
             OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -923,6 +928,8 @@ namespace Wisteria
                 }
             else if (funcName.CmpNoCase(L"continuouscolumn") == 0)
                 { return ExpandColumnSelection(formula, dataset); }
+            else if (funcName.CmpNoCase(L"now") == 0)
+                { return CalcNow(formula); }
             }
         // note that formula may just be a constant (e.g., color string),
         // so return that if it can't be calculated into something else
@@ -931,7 +938,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     wxString ReportBuilder::ExpandColumnSelection(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         const wxRegEx re(FunctionStartRegEx() +
             L"(continuouscolumn)" + OpeningParenthesisRegEx() +
@@ -963,7 +970,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double> ReportBuilder::CalcGroupCount(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1014,7 +1021,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double> ReportBuilder::CalcGroupPercentDecimal(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1048,7 +1055,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<wxString> ReportBuilder::CalcGroupPercent(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1083,7 +1090,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double> ReportBuilder::CalcValidN(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1172,7 +1179,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     wxString ReportBuilder::ConvertColumnOrGroupParameter(wxString columnStr,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (columnStr.starts_with(L"`") && columnStr.ends_with(L"`"))
             { columnStr = columnStr.substr(1, columnStr.length() - 2); }
@@ -1193,7 +1200,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double> ReportBuilder::CalcGrandTotal(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1225,7 +1232,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<double> ReportBuilder::CalcTotal(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1266,7 +1273,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     ReportBuilder::ValuesType ReportBuilder::CalcMinMax(const wxString& formula,
-        const std::shared_ptr<const Data::Dataset>& dataset)
+        const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         if (dataset == nullptr)
             {
@@ -1306,6 +1313,51 @@ namespace Wisteria
                 { return formula; }
             }
         return formula;
+        }
+     
+    //---------------------------------------------------
+    wxString ReportBuilder::CalcNow(const wxString& formula) const
+        {
+        const wxRegEx re(FunctionStartRegEx() +
+                         L"(now)" + OpeningParenthesisRegEx() +
+                         StringOrEmptyRegEx() + ClosingParenthesisRegEx());
+        if (re.Matches(formula))
+            {
+            const auto paramPartsCount = re.GetMatchCount();
+            if (paramPartsCount >= 2)
+                {
+                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
+                wxString paramValue = re.GetMatch(formula, 2).MakeLower();
+                if (paramValue.starts_with(L"`") && paramValue.ends_with(L"`"))
+                    { paramValue = paramValue.substr(1, paramValue.length() - 2); }
+
+                if (paramValue.empty())
+                    { return wxDateTime::Now().Format(); }
+                // which part of the date is requested?
+                else if (paramValue == L"year")
+                    { return std::to_wstring(wxDateTime::Now().GetYear()); }
+                else if (paramValue == L"month")
+                    { return std::to_wstring(wxDateTime::Now().GetMonth()); }
+                else if (paramValue == L"monthname")
+                    { return wxDateTime::GetMonthName(wxDateTime::Now().GetMonth()); }
+                else if (paramValue == L"monthshortname")
+                    { return wxDateTime::GetMonthName(wxDateTime::Now().GetMonth(), wxDateTime::Name_Abbr); }
+                else if (paramValue == L"day")
+                    { return std::to_wstring(wxDateTime::Now().GetDay()); }
+                else if (paramValue == L"dayname")
+                    { return wxDateTime::GetWeekDayName(wxDateTime::Now().GetWeekDay()); }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(
+                        _(L"%s: unknown parameter passed to Now()."), paramValue).ToUTF8());
+                    }
+                }
+            // no param, just return full date
+            else
+                { return wxDateTime::Now().Format(); }
+            }
+        return wxDateTime::Now().Format();
         }
 
     //---------------------------------------------------
@@ -1895,6 +1947,10 @@ namespace Wisteria
             { barChart->SetBinLabelDisplay(binLabel.value()); }
 
         barChart->IncludeSpacesBetweenBars(graphNode->GetProperty(L"include-spaces-between-bars")->GetValueBool(true));
+
+        if (graphNode->HasProperty(L"constrain-scaling-axis-to-bars") &&
+            graphNode->GetProperty(L"constrain-scaling-axis-to-bars")->GetValueBool())
+            { barChart->ConstrainScalingAxisToBars(); }
         }
 
     //---------------------------------------------------
@@ -2029,13 +2085,13 @@ namespace Wisteria
             const auto rounding = ConvertRoundingMethod(
                 graphNode->GetProperty(L"rounding")->GetValueString());
 
-            const std::optional<double> startBinsValue = graphNode->GetProperty(L"bins-start")->IsOk() ?
+            const std::optional<double> startBinsValue = graphNode->HasProperty(L"bins-start") ?
                 std::optional<double>(graphNode->GetProperty(L"bins-start")->GetValueNumber()) :
                 std::nullopt;
-            const std::optional<size_t> suggestedBinCount = graphNode->GetProperty(L"suggested-bin-count")->IsOk() ?
+            const std::optional<size_t> suggestedBinCount = graphNode->HasProperty(L"suggested-bin-count") ?
                 std::optional<double>(graphNode->GetProperty(L"suggested-bin-count")->GetValueNumber()) :
                 std::nullopt;
-            const std::optional<size_t> maxBinCount = graphNode->GetProperty(L"max-bin-count")->IsOk() ?
+            const std::optional<size_t> maxBinCount = graphNode->HasProperty(L"max-bin-count") ?
                 std::optional<double>(graphNode->GetProperty(L"max-bin-count")->GetValueNumber()) :
                 std::nullopt;
 
@@ -2120,6 +2176,52 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadBoxPlot(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for box plot."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+            const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
+
+            auto boxPlot = std::make_shared<BoxPlot>(canvas,
+                LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")));
+            boxPlot->SetData(foundPos->second,
+                aggVarName,
+                (groupVar1Name.length() ? std::optional<wxString>(groupVar1Name) : std::nullopt));
+
+            const auto boxEffect = ConvertBoxEffect(
+                graphNode->GetProperty(L"box-effect")->GetValueString());
+            if (boxEffect)
+                { boxPlot->SetBoxEffect(boxEffect.value()); }
+
+            boxPlot->ShowAllPoints(graphNode->GetProperty(L"show-all-points")->GetValueBool());
+            boxPlot->ShowLabels(graphNode->GetProperty(L"show-labels")->GetValueBool());
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, boxPlot);
+            return boxPlot;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for box plot.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadPieChart(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
@@ -2179,6 +2281,12 @@ namespace Wisteria
                 {
                 pieChart->UseColorLabels(
                     graphNode->GetProperty(L"color-labels")->GetValueBool());
+                }
+
+            if (graphNode->HasProperty(L"ghost-opacity"))
+                {
+                pieChart->SetGhostOpacity(
+                    graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
                 }
 
             // showcase the slices
@@ -2276,6 +2384,17 @@ namespace Wisteria
             }
 
         auto table = std::make_shared<Graphs::Table>(canvas);
+
+        // load table defaults
+        // change columns' borders
+        const auto borderDefaults =
+            graphNode->GetProperty(L"default-borders")->GetValueArrayBool();
+        table->SetDefaultBorders(
+            (borderDefaults.size() > 0 ? borderDefaults[0] : true),
+            (borderDefaults.size() > 1 ? borderDefaults[1] : true),
+            (borderDefaults.size() > 2 ? borderDefaults[2] : true),
+            (borderDefaults.size() > 3 ? borderDefaults[3] : true));
+
         table->SetData(foundPos->second, variables,
             graphNode->GetProperty(L"transpose")->GetValueBool());
 
@@ -2310,6 +2429,29 @@ namespace Wisteria
             return rowOrColumnStops;
             };
 
+        // group the rows
+        const auto rowGroupings = graphNode->GetProperty(L"row-group")->GetValueArrayNumber();
+        for (const auto& rowGrouping : rowGroupings)
+            { table->GroupRow(rowGrouping); }
+
+        // group the columns
+        const auto columnGroupings = graphNode->GetProperty(L"column-group")->GetValueArrayNumber();
+        for (const auto& columnGrouping : columnGroupings)
+            { table->GroupColumn(columnGrouping); }
+
+        // apply zebra stripes to loaded data before we just adding custom rows/columns, manually changing
+        // row/column colors, etc.
+        if (graphNode->HasProperty(L"alternate-row-color"))
+            {
+            const auto altRowColorNode = graphNode->GetProperty(L"alternate-row-color");
+            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"),
+                originalColumnCount, originalRowCount, table);
+            std::set<size_t> colStops =
+                loadStops(altRowColorNode->GetProperty(L"stops"));
+            table->ApplyAlternateRowColors(ConvertColor(altRowColorNode->GetProperty(L"color")),
+                startRow.value_or(0), colStops);
+            }
+
         // add rows
         auto rowAddCommands = graphNode->GetProperty(L"row-add")->GetValueArrayObject();
         if (rowAddCommands.size())
@@ -2332,10 +2474,6 @@ namespace Wisteria
                     { table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt); }
                 }
             }
-        // group the rows
-        const auto rowGroupings = graphNode->GetProperty(L"row-group")->GetValueArrayNumber();
-        for (const auto& rowGrouping : rowGroupings)
-            { table->GroupRow(rowGrouping); }
 
         // color the rows
         const auto rowColorCommands = graphNode->GetProperty(L"row-color")->GetValueArrayObject();
@@ -2353,6 +2491,49 @@ namespace Wisteria
                 if (position.has_value() && bgcolor.IsOk())
                     {
                     table->SetRowBackgroundColor(position.value(), bgcolor, colStops);
+                    }
+                }
+            }
+
+        // bold the rows
+        const auto rowBoldCommands = graphNode->GetProperty(L"row-bold")->GetValueArrayObject();
+        if (rowBoldCommands.size())
+            {
+            for (const auto& rowBoldCommand : rowBoldCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(rowBoldCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::set<size_t> colStops =
+                    loadStops(rowBoldCommand->GetProperty(L"stops"));
+                if (position.has_value())
+                    { table->BoldRow(position.value(), colStops); }
+                }
+            }
+
+        // change rows' borders
+        const auto rowBordersCommands =
+            graphNode->GetProperty(L"row-borders")->GetValueArrayObject();
+        if (rowBordersCommands.size())
+            {
+            for (const auto& rowBordersCommand : rowBordersCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(rowBordersCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const auto borderFlags =
+                    rowBordersCommand->GetProperty(L"borders")->GetValueArrayBool();
+
+                const std::set<size_t> rowStops =
+                    loadStops(rowBordersCommand->GetProperty(L"stops"));
+                if (position.has_value() && borderFlags.size() > 0)
+                    {
+                    table->SetRowBorders(position.value(),
+                        (borderFlags.size() > 0 ? borderFlags[0] : true),
+                        (borderFlags.size() > 1 ? borderFlags[1] : true),
+                        (borderFlags.size() > 2 ? borderFlags[2] : true),
+                        (borderFlags.size() > 3 ? borderFlags[3] : true),
+                        rowStops);
                     }
                 }
             }
@@ -2391,11 +2572,6 @@ namespace Wisteria
                 }
             }
 
-        // group the columns
-        const auto columnGroupings = graphNode->GetProperty(L"column-group")->GetValueArrayNumber();
-        for (const auto& columnGrouping : columnGroupings)
-            { table->GroupColumn(columnGrouping); }
-
         // color the columns
         const auto colColorCommands = graphNode->GetProperty(L"column-color")->GetValueArrayObject();
         if (colColorCommands.size())
@@ -2411,6 +2587,22 @@ namespace Wisteria
                     loadStops(colColorCommand->GetProperty(L"stops"));
                 if (position.has_value() && bgcolor.IsOk())
                     { table->SetColumnBackgroundColor(position.value(), bgcolor, rowStops); }
+                }
+            }
+
+        // bold the columns
+        const auto colBoldCommands = graphNode->GetProperty(L"column-bold")->GetValueArrayObject();
+        if (colBoldCommands.size())
+            {
+            for (const auto& colBoldCommand : colBoldCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(colBoldCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::set<size_t> rowStops =
+                    loadStops(colBoldCommand->GetProperty(L"stops"));
+                if (position.has_value())
+                    { table->BoldColumn(position.value(), rowStops); }
                 }
             }
 
@@ -2478,6 +2670,14 @@ namespace Wisteria
                 const std::optional<size_t> endingColumn =
                     LoadTablePosition(columnAggregate->GetProperty(L"end"),
                         originalColumnCount, originalRowCount, table);
+                // (optional) overriding cell borders
+                const auto cellBorders =
+                    columnAggregate->GetProperty(L"borders")->GetValueArrayBool();
+                std::bitset<4> borders{ 0 };
+                borders[0] = (cellBorders.size() > 0 ? cellBorders[0] : table->IsShowingTopBorder());
+                borders[1] = (cellBorders.size() > 1 ? cellBorders[1] : table->IsShowingRightBorder());
+                borders[2] = (cellBorders.size() > 2 ? cellBorders[2] : table->IsShowingBottomBorder());
+                borders[3] = (cellBorders.size() > 3 ? cellBorders[3] : table->IsShowingLeftBorder());
 
                 const wxColour bkColor(
                     ConvertColor(columnAggregate->GetProperty(L"background")));
@@ -2501,14 +2701,16 @@ namespace Wisteria
                 if (whereType.CmpNoCase(L"column") == 0)
                     {
                     table->InsertAggregateColumn(aggInfo, aggName,
-                        std::nullopt, (bkColor.IsOk() ?
-                                       std::optional<wxColour>(bkColor): std::nullopt));
+                        std::nullopt, 
+                        columnAggregate->GetProperty(L"use-adjacent-color")->GetValueBool(),
+                        (cellBorders.size() ? std::optional<std::bitset<4>>(borders) : std::nullopt));
                     }
                 else if (whereType.CmpNoCase(L"row") == 0)
                     {
                     table->InsertAggregateRow(aggInfo, aggName,
                         std::nullopt, (bkColor.IsOk() ?
-                                       std::optional<wxColour>(bkColor) : std::nullopt));
+                                       std::optional<wxColour>(bkColor) : std::nullopt),
+                        (cellBorders.size() ? std::optional<std::bitset<4>>(borders) : std::nullopt));
                     }
                 }
             }
@@ -2600,21 +2802,21 @@ namespace Wisteria
                         { currentCell->SetBackgroundColor(bgcolor); }
 
                     // prefix
-                    if (cellUpdate->GetProperty(L"prefix")->IsOk())
+                    if (cellUpdate->HasProperty(L"prefix"))
                         {
                         currentCell->SetPrefix(
                             cellUpdate->GetProperty(L"prefix")->GetValueString());
                         }
 
                     // is it highlighted
-                    if (cellUpdate->GetProperty(L"highlight")->IsOk())
+                    if (cellUpdate->HasProperty(L"highlight"))
                         {
                         currentCell->Highlight(
                             cellUpdate->GetProperty(L"highlight")->GetValueBool());
                         }
 
                     // font attributes
-                    if (cellUpdate->GetProperty(L"bold")->IsOk())
+                    if (cellUpdate->HasProperty(L"bold"))
                         {
                         if (cellUpdate->GetProperty(L"bold")->GetValueBool())
                             { currentCell->GetFont().MakeBold(); }
@@ -2662,7 +2864,7 @@ namespace Wisteria
                     annotation->GetProperty(L"value")->GetValueString(),
                     std::vector<Table::CellPosition>(), Side::Right, std::nullopt, wxColour()
                     };
-                if (annotation->GetProperty(L"side")->IsOk())
+                if (annotation->HasProperty(L"side"))
                     {
                     cellAnnotation.m_side =
                         (annotation->GetProperty(L"side")->GetValueString().CmpNoCase(L"left") == 0) ?
@@ -2770,6 +2972,18 @@ namespace Wisteria
                         }
                     }
                 }
+            // or a function like "Now()" that doesn't require a dataset
+            else
+                {
+                const auto calcStr = CalcFormula(re.GetMatch(processText.data(), 1), nullptr);
+                if (const auto strVal{ std::get_if<wxString>(&calcStr) };
+                    strVal != nullptr)
+                    {
+                    replacements.insert_or_assign(
+                        std::wstring(processText.substr(start, len)),
+                        *strVal);
+                    }
+                }
             processText = processText.substr(start + len);
             }
 
@@ -2835,7 +3049,7 @@ namespace Wisteria
                 { position = origin->GetValueNumber(); }
             }
         std::optional<double> doubleStartOffset =
-            positionNode->GetProperty(L"offset")->IsOk() ?
+            positionNode->HasProperty(L"offset") ?
             std::optional<double>(positionNode->GetProperty(L"offset")->GetValueNumber()) :
             std::nullopt;
         if (position.has_value() && doubleStartOffset.has_value())
@@ -3136,6 +3350,18 @@ namespace Wisteria
         if (foundPos != anchoringValues.cend())
             { item->SetAnchoring(foundPos->second); }
 
+        // outline
+        const auto outlineFlagsNode = itemNode->GetProperty(L"outline");
+        if (outlineFlagsNode->IsOk() && outlineFlagsNode->IsValueArray())
+            {
+            const auto outlineFlags = outlineFlagsNode->GetValueArrayBool();
+            item->GetGraphItemInfo().Outline(
+                (outlineFlags.size() > 0 ? outlineFlags[0] : false),
+                (outlineFlags.size() > 1 ? outlineFlags[1] : false),
+                (outlineFlags.size() > 2 ? outlineFlags[2] : false),
+                (outlineFlags.size() > 3 ? outlineFlags[3] : false));
+            }
+
         // child-alignment
         const auto childPlacement = itemNode->GetProperty(L"relative-alignment")->GetValueString();
         if (childPlacement.CmpNoCase(L"flush-left") == 0)
@@ -3286,7 +3512,7 @@ namespace Wisteria
             }
 
         // common image outline used for bar charts/box plots
-        if (graphNode->GetProperty(L"common-box-image-outline")->IsOk())
+        if (graphNode->HasProperty(L"common-box-image-outline"))
             {
             graph->SetCommonBoxImageOutlineColor(
                 ConvertColor(graphNode->GetProperty(L"common-box-image-outline")) );

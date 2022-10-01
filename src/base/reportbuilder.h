@@ -22,6 +22,7 @@
 #include "../graphs/piechart.h"
 #include "../graphs/categoricalbarchart.h"
 #include "../graphs/histogram.h"
+#include "../graphs/boxplot.h"
 #include "../graphs/table.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
@@ -118,6 +119,15 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadPieChart(
                         const wxSimpleJSON::Ptr_t& graphNode,
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a box plot node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadBoxPlot(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a categorical barchart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -296,22 +306,23 @@ namespace Wisteria
         void CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
                           const std::shared_ptr<const Data::Dataset>& dataset);
         [[nodiscard]] ValuesType CalcFormula(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         // can be a continous min/max or string (case insensitive)
         [[nodiscard]] ValuesType CalcMinMax(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcValidN(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcTotal(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcGrandTotal(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcGroupCount(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcGroupPercentDecimal(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<wxString> CalcGroupPercent(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
+        [[nodiscard]] wxString CalcNow(const wxString& formula) const;
         
         // helpers for builing formula regexes
         //------------------------------------
@@ -329,6 +340,9 @@ namespace Wisteria
             { return L"([[:digit:]]+)"; }
         [[nodiscard]] static wxString ParamSepatatorRegEx()
             { return L"[ ]*,[ ]*"; }
+        // a parameter that is either wrapped in tickmarks or empty string (no parameter)
+        [[nodiscard]] static wxString StringOrEmptyRegEx()
+            { return L"(`[^`]+`|[[:space:]]*)"; }
 
         // Converts a formula parameter into a column name(s) or group value.
         // Arguments may be a hard-coded column name (which will be enclosed in tickmarks),
@@ -336,7 +350,7 @@ namespace Wisteria
         // that formula (which can be a column selection function, column aggregate function,
         // or group value).
         [[nodiscard]] wxString ConvertColumnOrGroupParameter(wxString columnStr,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
 
         // variable selection functions
         //-----------------------------
@@ -346,7 +360,7 @@ namespace Wisteria
             const std::shared_ptr<const Data::Dataset>& dataset);
         /// @brief Converts a single column selection function into a column name.
         [[nodiscard]] wxString ExpandColumnSelection(const wxString& formula,
-            const std::shared_ptr<const Data::Dataset>& dataset);
+            const std::shared_ptr<const Data::Dataset>& dataset) const;
 
         // the datasets used by all subitems in the report
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;

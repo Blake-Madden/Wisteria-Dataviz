@@ -147,6 +147,8 @@ Properties for the @c "datasets" node:
   Total({{ContinuousColumn(0)}})
   ```
 
+  Along with the dataset-related functions, [additional functions](#additional-functions) are also available.
+
   Next, the @c "subsets" section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
   - @c "name": the name of the subset. (This should be different from the dataset that it is subsetting;
@@ -210,6 +212,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
     - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
       Available options are:
       - ["line-plot"](#line-plot-properties)
+      - ["box-chart"](#box-plot-properties)
       - ["categorical-bar-chart"](#categorical-bar-chart-properties)
       - ["common-axis"](#common-axis-properties)
       - ["histogram"](#histogram-properties)
@@ -291,6 +294,24 @@ The @c "pages" node will contain an array of definitions for all pages, each con
     - @c "lines"
     - @c "curly-braces" (the default)
     - @c "no-connection-lines"
+
+## Box Plot {#box-plot-properties}
+Properties for @c "box-plot" nodes:
+- @c "variables": an item containing the following properties:
+  - @c "aggregate": The column containing the data.
+  - @c "group-1": a (optional) grouping column to divide the boxes into (along the X axis).
+- @c "box-effect": string specifying the effects for the boxes.
+  Available options are:
+  - @c "common-image" (This will require an @c "image-scheme" to be defined.)
+  - @c "fade-from-bottom-to-top"
+  - @c "fade-from-left-to-right"
+  - @c "fade-from-right-to-left"
+  - @c "fade-from-top-to-bottom"
+  - @c "glassy"
+  - @c "solid" (the default)
+  - @c "stipple"
+- @c "show-all-points": @true to show all points. By default, only outliers are shown.
+- @c "show-labels": @true to show slabels on the hinges, midpoint, and outliers.
 
 ## Categorical Bar Chart {#categorical-bar-chart-properties}
 Properties for @c "categorical-bar-chart" nodes:
@@ -418,7 +439,7 @@ Properties for @c "pie-chart" nodes:
   - @c "flush" (the default)
   - @c "next-to-parent"
 - @c "inner-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
-     of the slices (within the inner pie).\n
+  of the slices (within the inner pie).\n
   Available options are:
   - @c "value"
   - @c "percentage" (the default)
@@ -426,7 +447,7 @@ Properties for @c "pie-chart" nodes:
   - @c "bin-name"
   - @c "no-display"
 - @c "outer-pie-midpoint-label-display": a string specifying what to display on the labels in the middle
-     of the slices (within the outer pie, or pie if only one grouping variable is in use).\n
+  of the slices (within the outer pie, or pie if only one grouping variable is in use).\n
   Available options are:
   - @c "value"
   - @c "percentage" (the default)
@@ -449,6 +470,7 @@ Properties for @c "pie-chart" nodes:
   - @c "by-group": if showcasing the inner pie, @c true will show the smallest/largest slice for within each group.
   - @c "show-outer-pie-labels": if showcasing the inner pie, @c true keep the outer pie labels shown.
 - @c "color-labels": @c true to apply the slice colors to their respective outer labels.
+- @c "ghost-opacity": number specifying the opacity for ghosted labels.
 - @c "include-outer-pie-labels": @c true to show the outer labels for the outer pie
      (or main pie, if only using one grouping variable).
 - @c "include-inner-pie-labels": @c true to show the outer labels for the inner pie
@@ -484,24 +506,47 @@ Properties for @c "table" nodes:
 - @c "min-height-proportion": the minimum percent of the drawing area's height that the table should consume
      (between @c 0.0 to @c 1.0, representing 0% to 100%).
 - @c "highlight-pen": the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
+- @c "default-borders": an array of boolean values, representing whether the default borders of the
+      cell should be drawn. These values go clockwise, starting at 12 o'clock.
 - Some base properties available to [graphs](#graph-properties).
 
 Note that it is recommended to set @c "fit-row-to-content" to @c true for shorter tables to better fit them to the page.
 Likewise, set @c "fit-row-to-content" to @c false for taller tables that are meant to consume most of a page's height.
 
 The remaining properties are executed in the following order:
+- @c "row-group": a numeric array representing which rows to apply label grouping to.\n
+     Across each provided row, this will combine consecutive cells with the same label into one cell.
+- @c "column-group": a numeric array representing which columns to apply label grouping to.\n
+     Down each provided column, this will combine consecutive cells with the same label into one cell.
+- @c "alternate-row-color": applies "zebra stripes" down the rows.
+  Available options are:
+  - @c "color": the base row color for the starting row; a shaded/tinted version of this color will be applied
+       to every other row.
+  - @c "start": the row to start the alternating from. (Default is 0.)
+  - @c "stops": an array of which columns to skip over when applying the row alternating color.\n
+       This is an array of @c "position" items.
 - @c "row-add": commands a series of rows to be added, which is an array of row properties containing the following:
   - @c "position": where to insert the row.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "constants": an array of strings to fill the row with (left-to-right).
   - @c "background": the background color of the row.
-- @c "row-group": a numeric array representing which rows to apply label grouping to.\n
-     Across each provided row, this will combine consecutive cells with the same label into one cell.
 - @c "row-color": an array of row and color pairs, which contain the following properties:
   - @c "position": which row to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the row.
   - @c "stops": an array of which columns to skip over when changing the row's color.\n
+       This is an array of @c "position" items.
+- @c "row-bold": an array of rows, which contain the following properties:
+  - @c "position": which row to make bold.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "stops": an array of which columns to skip over when bolding the row.\n
+       This is an array of @c "position" items.
+- @c "row-borders": an array of row border specifications, which contain the following:
+  - @c "position": which row to edit.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "borders": an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "stops": an array of which rows to skip over when changing the row's borders.\n
        This is an array of @c "position" items.
 - @c "row-content-align": an array of commands to align the content inside of the cells across a row.
   - @c "position": which row to change the content alignment in.\n
@@ -513,13 +558,16 @@ The remaining properties are executed in the following order:
     - @c "centered"
   - @c "stops": an array of which columns to skip over when changing the column's content alignment.\n
        This is an array of @c "position" items.
-- @c "column-group": a numeric array representing which columns to apply label grouping to.\n
-     Down each provided column, this will combine consecutive cells with the same label into one cell.
 - @c "column-color": an array of column and color pairs, which contain the following properties:
   - @c "position": which column to apply a background color.\n
        Refer to the [position](#position-properties) properties that are available.
   - @c "background": the background color of the column.
   - @c "stops": an array of which rows to skip over when changing the column's color.\n
+       This is an array of @c "position" items.
+- @c "column-bold": an array of columns, which contain the following properties:
+  - @c "position": which column to make bold.\n
+       Refer to the [position](#position-properties) properties that are available.
+  - @c "stops": an array of which rows to skip over when making the column bold.\n
        This is an array of @c "position" items.
 - @c "column-borders": an array of column border specifications, which contain the following:
   - @c "position": which column to edit.\n
@@ -531,8 +579,6 @@ The remaining properties are executed in the following order:
 - @c "column-highlight": an array of column highlight specifications, which contain the following:
   - @c "position": which column to edit.\n
        Refer to the [position](#position-properties) properties that are available.
-  - @c "borders": an array of boolean values, representing whether the borders of the
-       cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "stops": an array of which rows to skip over when changing the column's cell highlighting.\n
        This is an array of @c "position" items.
 - @c "aggregates": an array of aggregate definitions that will be added to the table.\n
@@ -546,6 +592,8 @@ The remaining properties are executed in the following order:
     - @c "percent-change"
     - @c "total"
   - @c "background": the background color for the column/row. This can be either a color name or hex-encoded value.
+  - @c "use-adjacent-color": @c true to use the color of the cell adjacent to this column.
+       @c false will apply a light gray to the column.
   - @c "name": the name for the newly added aggregate column/row.
   - @c "start": the first column/row that the aggregate column/row should use.\n
        This property is optional, and if not included the first numeric column/row encountered will be used.\n
@@ -553,6 +601,9 @@ The remaining properties are executed in the following order:
   - @c "end": the last column/row that the aggregate column/row should use.\n
        This property is optional, and if not included the last numeric column/row encountered will be used.
        Like @c "start", this is optional and has the same properties.
+  - @c "borders": an array of boolean values, representing whether the borders of the
+      cell should be drawn. These values go clockwise, starting at 12 o'clock.\n
+      This is optional and overrides the default cell borders.
 - @c "row-totals": adds a grand total row to the bottom of the table.\n
   If the first column is grouped and the second colum is text, then this will also insert subtotal rows.\n
   Available options are:
@@ -648,7 +699,7 @@ Note that brushes can be set to @c null to turn it off.
 Properties common to all bar-chart derived graphs:
 - @c "box-effect": string specifying the effects for the bars.
   Available options are:
-  - @c "common-image"
+  - @c "common-image" (This will require an @c "image-scheme" to be defined.)
   - @c "fade-from-bottom-to-top"
   - @c "fade-from-left-to-right"
   - @c "fade-from-right-to-left"
@@ -688,6 +739,7 @@ Properties common to all bar-chart derived graphs:
   - @c "bar": the axis label of the bar.
   - @c "block": number specifying which block in the bar to add the decal to. If not specified, defaults to @c 0.
   - @c "decal": the decal to add to the bar, which will contain ["label"](#label-properties) properties.
+- @c "constrain-scaling-axis-to-bars": @c true to force the scaling axis to the longest bar.
 
 Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
 any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
@@ -827,7 +879,9 @@ Properties common to all items:
      starting at 12 o'clock.
 - @c "padding": a numeric array (one to four numbers), representing the item's padding going clockwise,
      starting at 12 o'clock.
-- @c "pen": the item's pen, which includes [pen](#pen-properties) properties
+- @c "pen": the item's pen, which includes [pen](#pen-properties) properties.
+- @c "outline": a boolean array, specifying the item's border outlines to draw going clockwise,
+     starting at 12 o'clock. Note that @c "pen" must be valid and that this is not supported by all objects.
 - @c "scaling": numeric value of how much to scale the object's size. For example, @c 2.0 will double the
      its default size.
 - @c "show": boolean value specifying whether to show the item.
@@ -860,6 +914,20 @@ Properties common to all items:
      control how tall its canvas row is.
 - @c "fixed-width": a boolean value specifying whether the item should be constrained
      to its calculated width within its row.
+
+# Additional Functions {#additional-functions}
+Along with the dataset-related functions that can be used for dataset formulas, other functions are also available.
+These functions can be used in a dataset's formulas section, the @c "constants" section, and even in-place (e.g., in a label's text value).
+- ``Now(`value`)``:
+    Returns the a string representing the current date and time (or date component).
+    - @c value: the part of today's date to return (if not provided, then the full date and time are returned).
+      The following options are available:
+      - @c "Year": the year.
+      - @c "Day": the day of the month.
+      - @c "DayName": the day of the month as a name (e.g., Tuesday).
+      - @c "Month": the numeric value of the month.
+      - @c "MonthName": the name of the month.
+      - @c "MonthShortName": the abbreviated name of the month.s
 
 # Notes {#notes}
 Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
