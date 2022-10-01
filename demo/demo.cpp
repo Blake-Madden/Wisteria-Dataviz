@@ -1734,12 +1734,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         tableGraph->GroupColumn(0);
 
         // add ratio aggregate column and group row totals
-        const wxColour aggColumnBkColor =
-            ColorBrewer::GetColor(Colors::Color::LightGray,
-                                  Settings::GetTranslucencyValue());
         tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
-                                          _(L"Ratio"), std::nullopt, aggColumnBkColor);
-        tableGraph->InsertRowTotals(aggColumnBkColor);
+                                          _(L"Ratio"), std::nullopt);
+        tableGraph->InsertRowTotals();
 
         // make the headers and row groups bold (and center the headers)
         tableGraph->BoldRow(0);
@@ -1824,7 +1821,7 @@ void MyFrame::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
         { return; }
 
     // add them to a report printer (using the first canvas's print settings)
-    auto printOut = std::make_unique<ReportPrintout>(canvases, GetLabel());
+    auto printOut = std::make_unique<ReportPrintout>(canvases, canvases[0]->GetLabel());
 #if defined(__WXMSW__) || defined(__WXOSX__)
     wxPrinterDC dc = wxPrinterDC(canvases[0]->GetPrinterSettings());
 #else
