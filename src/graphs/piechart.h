@@ -410,6 +410,17 @@ namespace Wisteria::Graphs
         void UseColorLabels(const bool useColors) noexcept
             { m_useColorLabels = useColors; }
 
+        /// @returns The opacity level applied to "ghosted" slices.
+        [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
+            { return m_ghostOpacity; }
+        /** @brief Sets the opacity level for "ghosted" slices.
+            @param opacity The opacity level (should be between @c 0 to @c 255).
+            @note If setting this to @c 0 (fully transparent), then you should set
+                the pie's pen to a darker color.
+            @sa GhostOuterPieSlices(), GhostInnerPieSlices().*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept
+            { m_ghostOpacity = opacity; }
+
         /** @brief Sets the text replacement object to abbreviate midpoint labels
                 to make them fit (if necessary).
             @details The default is to use the (aggressive) English abbreviation interface.
@@ -824,7 +835,7 @@ namespace Wisteria::Graphs
 
         bool m_useColorLabels{ false };
 
-        const uint8_t m_ghostOpacity{ 32 };
+        uint8_t m_ghostOpacity{ 32 };
 
         std::shared_ptr<const TextReplace> m_abbreviate{ std::make_shared<AbbreviateEnglish>(true) };
 
