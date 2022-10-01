@@ -284,16 +284,14 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const auto centerPt = wxPoint(0, 0) +
-            wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
+        const auto centerPt = rect.GetTopLeft() +
+            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for sun icon!");
         if (gc)
             {
@@ -303,8 +301,8 @@ namespace Wisteria::GraphItems
             // a line going from the middle of the left side to the middle of the right
             const std::array<wxPoint2DDouble, 2> points =
                 {
-                wxPoint(0, memDC.GetSize().GetHeight() / 2),
-                wxPoint(memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight() / 2)
+                wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight() / 2)),
+                wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight() / 2))
                 };
             // save current transform matrix state
             gc->PushState();
@@ -326,30 +324,23 @@ namespace Wisteria::GraphItems
             // restore transform matrix
             gc->PopState();
             // draw the sun
-            const wxRect sunRect = wxRect(memDC.GetSize()).Deflate(memDC.GetSize().GetWidth()/4);
+            const wxRect sunRect = wxRect(rect).Deflate(rect.GetWidth()/4);
             gc->DrawEllipse(sunRect.GetTopLeft().x, sunRect.GetTopLeft().y,
                             sunRect.GetWidth(), sunRect.GetHeight());
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const auto centerPt = wxPoint(0, 0) +
-            wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
+        const auto centerPt = rect.GetTopLeft() +
+            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for flower icon!");
         if (gc)
             {
@@ -358,8 +349,8 @@ namespace Wisteria::GraphItems
             gc->SetBrush(ColorBrewer::GetColor(Color::Wisteria));
             // a line going from the middle of the left side to the middle of the right
             wxRect petalRect(
-                wxPoint(memDC.GetSize().GetWidth()/2, memDC.GetSize().GetHeight()/2),
-                wxSize(memDC.GetSize().GetWidth()/2, memDC.GetSize().GetHeight()/6));
+                wxPoint(rect.GetLeft() + (rect.GetWidth()/2), rect.GetTop() + (rect.GetHeight()/2)),
+                wxSize(rect.GetWidth()/2, rect.GetHeight()/6));
             petalRect.Offset(wxPoint(0, petalRect.GetHeight() / 2));
             // save current transform matrix state
             gc->PushState();
@@ -383,15 +374,10 @@ namespace Wisteria::GraphItems
             gc->PopState();
             // draw the middle of flower
             gc->SetBrush(ColorBrewer::GetColor(Color::BabyBlue));
-            const wxRect flowerRect = wxRect(memDC.GetSize()).Deflate(memDC.GetSize().GetWidth()/4);
+            const wxRect flowerRect = wxRect(rect).Deflate(rect.GetWidth()/4);
             gc->DrawEllipse(flowerRect.GetTopLeft().x, flowerRect.GetTopLeft().y,
                             flowerRect.GetWidth(), flowerRect.GetHeight());
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
@@ -489,15 +475,13 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const wxRect dcRect(memDC.GetSize());
+        const wxRect dcRect(rect);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for geo marker!");
         if (gc)
             {
@@ -512,9 +496,10 @@ namespace Wisteria::GraphItems
             marker.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
                                GetYPosFromTop(dcRect, 1));
             marker.AddCurveToPoint(
-                GetXPosFromLeft(dcRect, -.75), GetYPosFromTop(dcRect, -.25),
-                GetXPosFromLeft(dcRect, 1.75), GetYPosFromTop(dcRect, -.25),
-                GetXPosFromLeft(dcRect, math_constants::half), GetYPosFromTop(dcRect, 1));
+                GetXPosFromLeft(dcRect, -.75), GetYPosFromTop(dcRect, -math_constants::quarter),
+                GetXPosFromLeft(dcRect, 1.75), GetYPosFromTop(dcRect, -math_constants::quarter),
+                GetXPosFromLeft(dcRect, math_constants::half),
+                GetYPosFromTop(dcRect, math_constants::full));
 
             marker.CloseSubpath();
             gc->FillPath(marker);
@@ -540,12 +525,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(*wxWHITE);
             gc->DrawEllipse(topRect.GetTopLeft().x, topRect.GetTopLeft().y,
                 topRect.GetWidth(), topRect.GetHeight());
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
@@ -795,16 +775,14 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const auto centerPt = wxPoint(0, 0) +
-            wxSize(memDC.GetSize().GetWidth() / 2, memDC.GetSize().GetHeight() / 2);
+        const auto centerPt = rect.GetTopLeft() +
+            wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for asterisk icon!");
         if (gc)
             {
@@ -817,8 +795,8 @@ namespace Wisteria::GraphItems
             // a line going from the middle of the left side to the middle of the right
             const std::array<wxPoint2DDouble, 2> points =
                 {
-                wxPoint(0, memDC.GetSize().GetHeight() / 2),
-                wxPoint(memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight() / 2)
+                wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight() / 2)),
+                wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight() / 2))
                 };
             // save current transform matrix state
             gc->PushState();
@@ -839,12 +817,7 @@ namespace Wisteria::GraphItems
                 }
             // restore transform matrix
             gc->PopState();
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
@@ -885,15 +858,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const wxRect dcRect(memDC.GetSize());
-
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
@@ -903,19 +872,19 @@ namespace Wisteria::GraphItems
             gc->SetBrush(ColorBrewer::GetColor(Color::ChineseRed));
             auto leafPath = gc->CreatePath();
             // left side of leaf
-            leafPath.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
-                                 GetYPosFromTop(dcRect, math_constants::three_quarters));
+            leafPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
+                                 GetYPosFromTop(rect, math_constants::three_quarters));
             leafPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(dcRect, 0), GetYPosFromTop(dcRect, .6),
+                GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, .6),
                 // top
-                GetXPosFromLeft(dcRect, math_constants::half), GetYPosFromTop(dcRect, 0));
+                GetXPosFromLeft(rect, math_constants::half), GetYPosFromTop(rect, 0));
 
             // right side
             leafPath.AddQuadCurveToPoint(
-                GetXPosFromLeft(dcRect, 1), GetYPosFromTop(dcRect, .6),
+                GetXPosFromLeft(rect, 1), GetYPosFromTop(rect, .6),
                 // top
-                GetXPosFromLeft(dcRect, math_constants::half),
-                GetYPosFromTop(dcRect, math_constants::three_quarters));
+                GetXPosFromLeft(rect, math_constants::half),
+                GetYPosFromTop(rect, math_constants::three_quarters));
             leafPath.CloseSubpath();
             gc->FillPath(leafPath);
             gc->StrokePath(leafPath);
@@ -926,18 +895,13 @@ namespace Wisteria::GraphItems
             // draw the stem
             auto stemPath = gc->CreatePath();
             // start of middle of bottom
-            stemPath.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
-                                                 dcRect.GetBottom());
+            stemPath.MoveToPoint(GetXPosFromLeft(rect, math_constants::half),
+                                                 rect.GetBottom());
             // draw to the top middle
-            stemPath.AddLineToPoint(GetXPosFromLeft(dcRect, math_constants::half),
-                                                    dcRect.GetTop());
+            stemPath.AddLineToPoint(GetXPosFromLeft(rect, math_constants::half),
+                                                    rect.GetTop());
             gc->StrokePath(stemPath);
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
@@ -945,17 +909,15 @@ namespace Wisteria::GraphItems
         {
         wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
                      L"Pen should be set in Shape for curly braces!");
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        wxRect drawRect(rect);
+
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");
         if (gc && (side == Side::Left || side == Side::Right))
             {
-            wxRect drawRect(rect.GetSize());
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
@@ -1006,12 +968,9 @@ namespace Wisteria::GraphItems
                     lowerRect.GetBottomLeft());
                 gc->StrokePath(lowerCurlPath);
                 }
-
-            wxDELETE(gc);
             }
         else if (gc && (side == Side::Bottom || side == Side::Top))
             {
-            wxRect drawRect(rect.GetSize());
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
@@ -1062,26 +1021,19 @@ namespace Wisteria::GraphItems
                     rightRect.GetBottomRight());
                 gc->StrokePath(lowerCurlPath);
                 }
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawMale(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const wxRect dcRect(memDC.GetSize());
+        const wxRect dcRect(rect);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for male outline!");
         if (gc)
             {
@@ -1235,29 +1187,23 @@ namespace Wisteria::GraphItems
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawFemale(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const wxRect dcRect(wxRect(memDC.GetSize()).Deflate(
+        wxRect dcRect(rect);
+        dcRect.Deflate(
             GetGraphItemInfo().GetPen().IsOk() ?
                 ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
-                0));
+                0);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {
@@ -1386,29 +1332,23 @@ namespace Wisteria::GraphItems
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
 
     //---------------------------------------------------
     void ShapeRenderer::DrawFemaleBusiness(const wxRect rect, wxDC& dc) const
         {
-        wxBitmap bmp(rect.GetSize());
-        Image::SetOpacity(bmp, wxALPHA_TRANSPARENT);
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxTRANSPARENT_BRUSH);
-        memDC.Clear();
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, wxPen());
+        wxDCBrushChanger bc(dc, wxBrush());
 
-        const wxRect dcRect(wxRect(memDC.GetSize()).Deflate(
+        wxRect dcRect(rect);
+        dcRect.Deflate(
             GetGraphItemInfo().GetPen().IsOk() ?
-                ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
-                0));
+            ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
+            0);
 
-        auto gc = wxGraphicsContext::Create(memDC);
+        auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {
@@ -1553,11 +1493,6 @@ namespace Wisteria::GraphItems
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);
-
-            wxDELETE(gc);
             }
-
-        memDC.SelectObject(wxNullBitmap);
-        dc.DrawBitmap(bmp, rect.GetTopLeft(), true);
         }
     }
