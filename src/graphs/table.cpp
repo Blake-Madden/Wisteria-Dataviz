@@ -378,7 +378,8 @@ namespace Wisteria::Graphs
     void Table::InsertAggregateRow(const AggregateInfo& aggInfo,
                                    std::optional<wxString> rowName /*= std::nullopt*/,
                                    std::optional<size_t> rowIndex /*= std::nullopt*/,
-                                   std::optional<wxColour> bkColor /*= std::nullopt*/)
+                                   std::optional<wxColour> bkColor /*= std::nullopt*/,
+                                   std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
         if (GetColumnCount())
             {
@@ -388,8 +389,20 @@ namespace Wisteria::Graphs
             if (rowName.has_value())
                 { GetCell(rIndex, 0).SetValue(rowName.value()); }
             BoldRow(rIndex, std::nullopt);
-            if (bkColor.has_value())
-                { SetRowBackgroundColor(rIndex, bkColor.value(), std::nullopt); }
+
+            SetRowBackgroundColor(rIndex,
+                bkColor.has_value() ?
+                bkColor.value() :
+                ColorBrewer::GetColor(Colors::Color::LightGray,
+                    Settings::GetTranslucencyValue()),
+                std::nullopt);
+
+            // if overriding default borders for the cells in this column
+            if (borders.has_value())
+                {
+                SetRowBorders(rIndex, borders.value().test(0), borders.value().test(1),
+                                 borders.value().test(2), borders.value().test(3));
+                }
 
             std::vector<double> colValues;
             for (size_t currentCol = 0; currentCol < GetColumnCount(); ++currentCol)
@@ -413,7 +426,8 @@ namespace Wisteria::Graphs
     void Table::InsertAggregateColumn(const AggregateInfo& aggInfo,
                                       std::optional<wxString> colName /*= std::nullopt*/,
                                       std::optional<size_t> colIndex /*= std::nullopt*/,
-                                      std::optional<wxColour> bkColor /*= std::nullopt*/)
+                                      std::optional<bool> useAdjacentColors /*= std::nullopt*/,
+                                      std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
         if (GetColumnCount())
             {
@@ -427,8 +441,30 @@ namespace Wisteria::Graphs
                 GetCell(0, columnIndex).SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
                 }
             BoldColumn(columnIndex, std::nullopt);
-            if (bkColor.has_value())
-                { SetColumnBackgroundColor(columnIndex, bkColor.value(), std::nullopt); }
+
+            if (useAdjacentColors.has_value() && useAdjacentColors.value() &&
+                (columnIndex > 0 || GetColumnCount() > 1))
+                {
+                const auto adjacentColumnIndex = ((columnIndex > 0) ? columnIndex - 1 : columnIndex + 1);
+                for (size_t i = 0; i < m_table.size(); ++i)
+                    {
+                    auto& cell = m_table[i][columnIndex];
+                    cell.m_bgColor = m_table[i][adjacentColumnIndex].m_bgColor;
+                    }
+                }
+            else
+                {
+                SetColumnBackgroundColor(columnIndex,
+                    ColorBrewer::GetColor(Colors::Color::LightGray,
+                        Settings::GetTranslucencyValue()),
+                    std::nullopt);
+                }
+            // if overriding default borders for the cells in this column
+            if (borders.has_value())
+                {
+                SetColumnBorders(columnIndex, borders.value().test(0), borders.value().test(1),
+                                 borders.value().test(2), borders.value().test(3));
+                }
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
@@ -494,14 +530,44 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void Table::ApplyAlternateRowColors(const wxColour alternateColor,
-        const size_t startRow /*= 0*/)
+    void Table::ApplyAlternateRowColors(const wxColour baseColor,
+        const size_t startRow /*= 0*/,
+        std::optional<std::set<size_t>> columnStops /*= std::nullopt*/)
         {
-        bool isAlternate{ false };
-        for (size_t i = startRow; i < GetRowCount(); ++i)
+        if (!baseColor.IsOk())
+            { return; }
+
+        const auto alternateColor = ColorContrast::ShadeOrTint(baseColor, math_constants::tenth);
+
+        // start with base color
+        SetRowBackgroundColor(startRow, baseColor, columnStops);
+        // start alternating
+        for (size_t row = startRow+1; row < GetRowCount(); ++row)
             {
-            SetRowBackgroundColor(i, (isAlternate ? alternateColor : *wxWHITE), std::nullopt);
-            isAlternate = !isAlternate;
+            auto& currentRow = m_table[row];
+            for (size_t col = 0; col < currentRow.size(); ++col)
+                {
+                // explicitly skipping this column
+                if (columnStops.has_value() &&
+                    columnStops.value().find(col) != columnStops.value().cend())
+                    { continue; }
+                // If this cell eclipsed by the cell above it? Skip if so.
+                else if (const auto parentCell = GetParentRowWiseCell(row, col);
+                    parentCell.has_value())
+                    { continue; }
+                else
+                    {
+                    // Use the alternate color based on the next visible cell above
+                    // this one. If the cell above is eclipsed by a multi-row cell,
+                    // then use the cell eclipsing that one.
+                    const auto& cellAbove = m_table[row-1][col];
+                    const auto cellAboveParent = GetParentRowWiseCell(row-1, col);
+                    const wxColour colorAbove = cellAboveParent.has_value() ?
+                        cellAboveParent.value().m_bgColor : cellAbove.m_bgColor;
+                    currentRow[col].m_bgColor =
+                        (colorAbove == baseColor ? alternateColor : baseColor);
+                    }
+                }
             }
         }
 
@@ -687,7 +753,7 @@ namespace Wisteria::Graphs
                 auto bBox = measuringLabel.GetBoundingBox(dc);
                 // prefix will need 5 DPIs added to each side
                 if (cell.GetPrefix().length())
-                    { bBox.Inflate(wxSize(ScaleToScreenAndCanvas(5), 0)); }
+                    { bBox.Inflate(wxSize(ScaleToScreenAndCanvas(10), 0)); }
                 // if cell consumes multiple rows, then divides its height across them
                 // and set the cells in the rows beneath to the remaining height
                 rowHeights[currentRow] =
@@ -1124,6 +1190,7 @@ namespace Wisteria::Graphs
 
         auto highlightedBorderLines = std::make_shared<Lines>(GetHighlightPen(), GetScaling());
         auto borderLines = std::make_shared<Lines>(GetPen(), GetScaling());
+        borderLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
         currentRow = currentColumn = 0;
         currentXPos = drawArea.GetX();
         currentYPos = drawArea.GetY();
@@ -1318,6 +1385,7 @@ namespace Wisteria::Graphs
                 note.m_connectionLinePen.has_value() ? note.m_connectionLinePen.value() :
                 GetHighlightPen(),
                 GetScaling());
+            noteConnectionLines->GetPen().SetCap(wxPenCap::wxCAP_BUTT);
             wxCoord lowestY{ drawArea.GetBottom() }, highestY{ drawArea.GetTop() };
             auto gutterSide = DeduceGutterSide(note);
             if (gutterSide == Side::Right)

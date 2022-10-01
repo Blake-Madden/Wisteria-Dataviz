@@ -302,11 +302,21 @@ namespace Wisteria::Graphs
             /// @brief Constructor.
             /// @param value The value for the cell.
             /// @param bgColor The cell's background color.
-            TableCell(const CellValueType& value, const wxColour bgColor) :
-                m_value(value), m_bgColor(bgColor)
+            /// @param showTopBorder Whether to show the top border.
+            /// @param showRightBorder Whether to show the right border.
+            /// @param showBottomBorder Whether to show the bottom border.
+            /// @param showLeftBorder Whether to show the left border.
+            TableCell(
+                const CellValueType& value,
+                const wxColour bgColor,
+                const bool showTopBorder = true,
+                const bool showRightBorder = true,
+                const bool showBottomBorder = true,
+                const bool showLeftBorder = true) :
+                m_value(value), m_bgColor(bgColor),
+                m_showTopBorder(showTopBorder), m_showRightBorder(showRightBorder),
+                m_showBottomBorder(showBottomBorder), m_showLeftBorder(showLeftBorder)
                 {}
-            /// @private
-            TableCell() = default;
             /// @brief Gets the value as it is displayed in the cell.
             /// @returns The displayable string for the cell.
             [[nodiscard]] wxString GetDisplayValue() const;
@@ -457,10 +467,10 @@ namespace Wisteria::Graphs
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
 
-            bool m_showLeftBorder{ true };
             bool m_showTopBorder{ true };
             bool m_showRightBorder{ true };
             bool m_showBottomBorder{ true };
+            bool m_showLeftBorder{ true };
 
             bool m_isHighlighted{ false };
             };
@@ -503,7 +513,12 @@ namespace Wisteria::Graphs
             {
             m_table.resize(rows);
             for (auto& row : m_table)
-                { row.resize(cols); }
+                {
+                row.resize(cols,
+                    TableCell(std::numeric_limits<double>::quiet_NaN(),
+                        *wxWHITE, m_showTopBorder, m_showRightBorder,
+                        m_showBottomBorder, m_showLeftBorder));
+                }
             }
         /// @brief Empties the contents of the table.
         void ClearTable() noexcept
@@ -601,7 +616,10 @@ namespace Wisteria::Graphs
                 m_table.insert(m_table.cbegin() +
                         // clamp indices going beyond the row count to m_table.cend()
                         std::clamp<size_t>(rowIndex, 0, GetRowCount()),
-                    std::vector<TableCell>(GetColumnCount(), TableCell()));
+                    std::vector<TableCell>(GetColumnCount(),
+                        TableCell(std::numeric_limits<double>::quiet_NaN(),
+                                  *wxWHITE, m_showTopBorder, m_showRightBorder,
+                                  m_showBottomBorder, m_showLeftBorder)));
                 }
             }
         /// @brief Inserts an empty column at the given index.
@@ -620,7 +638,9 @@ namespace Wisteria::Graphs
                     row.insert(row.cbegin() +
                         // clamp indices going beyond the column count to row.cend()
                         std::clamp<size_t>(colIndex, 0, row.size()),
-                        TableCell());
+                        TableCell(std::numeric_limits<double>::quiet_NaN(),
+                                 *wxWHITE, m_showTopBorder, m_showRightBorder,
+                                 m_showBottomBorder, m_showLeftBorder));
                     }
                 }
             }
@@ -632,6 +652,7 @@ namespace Wisteria::Graphs
             @param rowIndex Where to (optionally) insert the row. The default
                 is to insert as the last row.
             @param bkColor An optional background for the row.
+            @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
                 the aggregation values are calculated as this function is called.
             @sa InsertRowTotals() for a simplified way to insert a total row
@@ -639,7 +660,8 @@ namespace Wisteria::Graphs
         void InsertAggregateRow(const AggregateInfo& aggInfo,
                                 std::optional<wxString> rowName = std::nullopt,
                                 std::optional<size_t> rowIndex = std::nullopt,
-                                std::optional<wxColour> bkColor = std::nullopt);
+                                std::optional<wxColour> bkColor = std::nullopt,
+                                std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Adds an aggregate (e.g., total) column into the table.
             @param aggInfo Which type of aggregation to use in the column.
             @param colName An optional value for the first row of the new
@@ -647,13 +669,17 @@ namespace Wisteria::Graphs
                 This will be overwritten by a calculated value if the top row is not text.
             @param colIndex Where to (optionally) insert the column. The default
                 is to insert as the last column.
-            @param bkColor An optional background for the column.
+            @param useAdjacentColors @c true to use the color of the cell adjacent to this column.
+                @c false will apply a light gray to the column.\n
+                @c true is recommended if using alternate row colors.
+            @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
                 aggregation values are calculated as this function is called.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
                                    std::optional<wxString> colName = std::nullopt,
                                    std::optional<size_t> colIndex = std::nullopt,
-                                   std::optional<wxColour> bkColor = std::nullopt);
+                                   std::optional<bool> useAdjacentColors = std::nullopt,
+                                   std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Inserts total (and possibly subtotal) rows into a table.
             @details If the first column contains grouped labels (see GroupColumn())
                 and the second column contains labels, then subtotal rows will be inserted
@@ -769,6 +795,28 @@ namespace Wisteria::Graphs
                 }
             }
 
+        [[nodiscard]] bool IsShowingTopBorder() const noexcept
+            { return m_showTopBorder; }
+        [[nodiscard]] bool IsShowingRightBorder() const noexcept
+            { return m_showRightBorder; }
+        [[nodiscard]] bool IsShowingBottomBorder() const noexcept
+            { return m_showBottomBorder; }
+        [[nodiscard]] bool IsShowingLeftBorder() const noexcept
+            { return m_showLeftBorder; }
+        /** @brief Sets the borders for all future cells.
+            @note Call this prior to adding any rows or columns for this to take effect.
+            @param showTopBorder Whether to show the cells' top borders.
+            @param showRightBorder Whether to show the cells' right borders.
+            @param showBottomBorder Whether to show the cells' bottom borders.
+            @param showLeftBorder Whether to show the cells' left borders.*/
+        void SetDefaultBorders(const bool showTopBorder, const bool showRightBorder,
+            const bool showBottomBorder, const bool showLeftBorder)
+            {
+            m_showTopBorder = showTopBorder;
+            m_showRightBorder = showRightBorder;
+            m_showBottomBorder = showBottomBorder;
+            m_showLeftBorder = showLeftBorder;
+            }
         /** @brief Sets the borders for all cells across the specified row.
             @param row The row to edit.
             @param showTopBorder Whether to show the cells' top borders.
@@ -956,12 +1004,17 @@ namespace Wisteria::Graphs
         std::vector<CellPosition> GetTopN(const size_t column, const size_t N = 1);
 
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
-        /// @param alternateColor The background color to apply to ever other row.
+        /// @param baseColor The base background color, where a shaded or tinted version will
+        ///     be applied to ever other row.
         /// @param startRow The row to start from (default is @c 0).
-        /// @note This will have no effect until the table's dimensions have been specified
+        /// @param columnStops An optional list of columns within the row to skip.
+        /// @note If any cells are multi-row, then the zebra stripes will be applied only to
+        ///     the visible cells.
+        /// @warning This will have no effect until the table's dimensions have been specified
         ///     via SetData() or SetTableSize().
-        void ApplyAlternateRowColors(const wxColour alternateColor,
-                                     const size_t startRow = 0);
+        void ApplyAlternateRowColors(const wxColour baseColor,
+                                     const size_t startRow = 0,
+                                     std::optional<std::set<size_t>> columnStops = std::nullopt);
         /// @}
 
         /// @name Cell Functions
@@ -1092,6 +1145,12 @@ namespace Wisteria::Graphs
         std::vector<CellAnnotation> m_cellAnnotations;
 
         wxPen m_highlightPen{ wxPen(*wxRED_PEN) };
+
+        // default borders
+        bool m_showTopBorder{ true };
+        bool m_showRightBorder{ true };
+        bool m_showBottomBorder{ true };
+        bool m_showLeftBorder{ true };
 
         // cached values
         std::vector<std::vector<wxRect>> m_cachedCellRects;
