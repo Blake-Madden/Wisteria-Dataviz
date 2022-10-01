@@ -274,10 +274,10 @@ namespace Wisteria::GraphItems
         wxDCFontChanger fc(dc, (GetFont().Scaled(GetScaling())) );
 
         wxStringTokenizer tokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
-        if (tokenizer.CountTokens() == 0)
-            { return; }
-        const wxCoord spaceBetweenLines = (tokenizer.CountTokens()-1) *
-                                           std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+        const wxCoord spaceBetweenLines = ((tokenizer.CountTokens() == 0) ?
+                                            0 :
+                                            (tokenizer.CountTokens()-1) *
+                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) );
 
         if (GetTextOrientation() == Orientation::Horizontal)
             {
@@ -288,9 +288,9 @@ namespace Wisteria::GraphItems
                 ((firstLineEnd != std::wstring::npos) ? firstLineEnd : 0), 2);
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos)
                 { dc.GetMultiLineTextExtent(GetText().substr(secondLineStart), &width, &height); }
-            else
+            else if (GetText().length())
                 { dc.GetMultiLineTextExtent(GetText(), &width, &height); }
-            // bounding box is padded four (horizontal) and two (vertical) pixels around text (if outlined)
+            // add padding around text
             width += ScaleToScreenAndCanvas(GetLeftPadding()) +
                      ScaleToScreenAndCanvas(GetRightPadding());
             height += spaceBetweenLines +
@@ -312,6 +312,32 @@ namespace Wisteria::GraphItems
                 height += topLineSize.GetHeight();
                 }
             width += CalcLeftImageSize(height).GetWidth();
+            // if drawing outline, then calculate that also in case the pen width is large
+            if (GetPen().IsOk() &&
+                (GetGraphItemInfo().IsShowingTopOutline() ||
+                 GetGraphItemInfo().IsShowingBottomOutline() ||
+                 GetGraphItemInfo().IsShowingLeftOutline() ||
+                 GetGraphItemInfo().IsShowingRightOutline()))
+                {
+                const auto penWidthScaled = ScaleToScreenAndCanvas(GetPen().GetWidth());
+                height += (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                width += (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+                // Situation where there is an outline with a thick pen, but little or no text
+                // and both sides of a dimension's outline are turned off. In this case,
+                // we want to force that dimension to be a thick as the lines of the *other*
+                // dimension so that the bounding box doesn't get scaled down below
+                // the other dimension.
+                const auto leftRightOutlineWidth =
+                    (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+                const auto topBottomOutlineWidth =
+                    (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                height = std::max<double>(height, leftRightOutlineWidth);
+                width = std::max<double>(width, topBottomOutlineWidth);
+                }
             }
         else
             {
@@ -342,6 +368,27 @@ namespace Wisteria::GraphItems
                 width += topLineSize.GetHeight();
                 }
             height += CalcLeftImageSize(width).GetWidth();
+            if (GetPen().IsOk() &&
+                (GetGraphItemInfo().IsShowingTopOutline() ||
+                 GetGraphItemInfo().IsShowingBottomOutline() ||
+                 GetGraphItemInfo().IsShowingLeftOutline() ||
+                 GetGraphItemInfo().IsShowingRightOutline()))
+                {
+                const auto penWidthScaled = ScaleToScreenAndCanvas(GetPen().GetWidth());
+                width += (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                height += (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+
+                const auto leftRightOutlineWidth =
+                    (GetGraphItemInfo().IsShowingRightOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingLeftOutline() ? penWidthScaled : 0);
+                const auto topBottomOutlineWidth =
+                    (GetGraphItemInfo().IsShowingTopOutline() ? penWidthScaled : 0) +
+                    (GetGraphItemInfo().IsShowingBottomOutline() ? penWidthScaled : 0);
+                height = std::max<double>(height, topBottomOutlineWidth);
+                width = std::max<double>(width, leftRightOutlineWidth);
+                }
             }
         }
 
@@ -829,15 +876,37 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (GetPen().IsOk() && !IsSelected())
             {
-            wxDCPenChanger pc2(dc, wxPen(GetPen().GetColour(), ScaleToScreenAndCanvas(GetPen().GetWidth())));
-            wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
+            wxDCPenChanger pc2(dc, wxPen(wxPenInfo(GetPen().GetColour(),
+                                         ScaleToScreenAndCanvas(GetPen().GetWidth()),
+                                         GetPen().GetStyle()).Cap(wxPenCap::wxCAP_BUTT)));
             if (GetBoxCorners() == BoxCorners::Rounded)
                 {
+                wxDCBrushChanger bcBg(dc, *wxTRANSPARENT_BRUSH);
                 dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius());
                 }
-            else
+            else if (GetTextOrientation() == Orientation::Horizontal)
                 {
-                dc.DrawRectangle(boundingBox);
+                if (GetGraphItemInfo().IsShowingTopOutline())
+                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                if (GetGraphItemInfo().IsShowingBottomOutline())
+                    { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight()); }
+
+                if (GetGraphItemInfo().IsShowingRightOutline())
+                    { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                if (GetGraphItemInfo().IsShowingLeftOutline())
+                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft()); }
+                }
+            else // vertical text
+                {
+                if (GetGraphItemInfo().IsShowingRightOutline())
+                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                if (GetGraphItemInfo().IsShowingLeftOutline())
+                    { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight()); }
+
+                if (GetGraphItemInfo().IsShowingBottomOutline())
+                    { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                if (GetGraphItemInfo().IsShowingTopOutline())
+                    { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft()); }
                 }
             }
         else if (IsSelected())
@@ -1088,8 +1157,13 @@ namespace Wisteria::GraphItems
         const wxCoord spaceBetweenLines = (GetLineCount()-1) *
                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
-        pt.y += GetCachedContentBoundingBox().GetHeight();
-        const wxCoord leftOffset = CalcPageHorizontalOffset(dc);
+        pt.y += GetCachedContentBoundingBox().GetHeight() +
+            // if drawing outline, then calculate that also in case the pen width is large
+            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingRightOutline()) ?
+                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+        const wxCoord leftOffset = CalcPageHorizontalOffset(dc) +
+            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
+                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 
         // render the text
         wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };
@@ -1263,8 +1337,13 @@ namespace Wisteria::GraphItems
         const wxCoord spaceBetweenLines = (GetLineCount()-1) *
                                            std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
 
-        pt.y += CalcPageVerticalOffset(dc) + ScaleToScreenAndCanvas(GetTopPadding());
-        const wxCoord leftOffset = CalcPageHorizontalOffset(dc);
+        pt.y += CalcPageVerticalOffset(dc) + ScaleToScreenAndCanvas(GetTopPadding()) +
+            // if drawing outline, then calculate that also in case the pen width is large
+            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingTopOutline()) ?
+                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
+        const wxCoord leftOffset = CalcPageHorizontalOffset(dc) +
+            ((GetPen().IsOk() && GetGraphItemInfo().IsShowingLeftOutline()) ?
+                ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 
         // render the text
         wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };

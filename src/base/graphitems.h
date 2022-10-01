@@ -18,6 +18,7 @@
 #include <array>
 #include <memory>
 #include <optional>
+#include <bitset>
 #include <wx/wx.h>
 #include <wx/gdicmn.h>
 #include <wx/dcgraph.h>
@@ -954,6 +955,29 @@ namespace Wisteria
                 m_clippingRect = clippingRect;
                 return *this;
                 }
+            /// @brief Sets the flags for which outlines around the object are shown.
+            /// @param top @true to show the top outline.
+            /// @param top @true to show the right outline.
+            /// @param top @true to show the bottom outline.
+            /// @param top @true to show the left outline.
+            /// @note This is only relevant for object which are meant to draw an outline
+            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
+            ///     option, which may be irrelevant for some objects.\n
+            ///     Also, if the object is using a box corner style that is set to
+            ///     @c BoxCorners::Rounded, then these flags will be ignored and the entire
+            ///     outline is drawn. (This is the case for Labels.)
+            ///     Finally, note that this is turned off for all objects by default
+            ///     *except* for Labels.
+            /// @returns A self reference.
+            GraphItemInfo& Outline(const bool top, const bool right,
+                                   const bool bottom, const bool left)
+                {
+                m_outline.set(0, top);
+                m_outline.set(1, right);
+                m_outline.set(2, bottom);
+                m_outline.set(3, left);
+                return *this;
+                }
             // Accessors
             //----------
             /// @returns The scaling.
@@ -979,6 +1003,30 @@ namespace Wisteria
             /// @returns The text.
             [[nodiscard]] const wxString& GetText() const noexcept
                 { return m_text; }
+            /// @returns @c true if drawing a top border (with the object's pen).
+            /// @note This is only relevant for object which are meant to draw an outline
+            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
+            ///     option, which may be irrelevant for some objects.
+            [[nodiscard]] bool IsShowingTopOutline() const noexcept
+                { return m_outline[0]; }
+            /// @returns @c true if drawing a right border (with the object's pen).
+            /// @note This is only relevant for object which are meant to draw an outline
+            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
+            ///     option, which may be irrelevant for some objects.
+            [[nodiscard]] bool IsShowingRightOutline() const noexcept
+                { return m_outline[1]; }
+            /// @returns @c true if drawing a bottom border (with the object's pen).
+            /// @note This is only relevant for object which are meant to draw an outline
+            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
+            ///     option, which may be irrelevant for some objects.
+            [[nodiscard]] bool IsShowingBottomOutline() const noexcept
+                { return m_outline[2]; }
+            /// @returns @c true if drawing a left border (with the object's pen).
+            /// @note This is only relevant for object which are meant to draw an outline
+            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
+            ///     option, which may be irrelevant for some objects.
+            [[nodiscard]] bool IsShowingLeftOutline() const noexcept
+                { return m_outline[3]; }
         private:
             bool m_show{ true };
             bool m_isSelectable{ true };
@@ -1001,6 +1049,7 @@ namespace Wisteria
             wxPen m_pen{ *wxBLACK_PEN };
             wxBrush m_brush{ *wxWHITE_BRUSH };
             wxBrush m_selectionBrush{ wxNullBrush };
+            std::bitset<4> m_outline{ 0 };
             /// @brief A color to show under the brush if it is hatch pattern.
             std::optional<wxColour> m_baseColor{ std::nullopt };
             Wisteria::Anchoring m_anchoring{ Anchoring::Center };

@@ -57,6 +57,7 @@ namespace Wisteria::GraphItems
         /// @private
         Label() noexcept
             {
+            GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             GetPen() = wxNullPen;
             }
@@ -65,6 +66,7 @@ namespace Wisteria::GraphItems
         explicit Label(const GraphItems::GraphItemInfo& itemInfo) :
               GraphItemBase(itemInfo)
             {
+            GetGraphItemInfo().Outline(true, true, true, true);
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
             CalcLongestLineLength();
@@ -74,6 +76,7 @@ namespace Wisteria::GraphItems
         explicit Label(const wxString& text) :
               GraphItemBase(1.0f, text)
             {
+            GetGraphItemInfo().Outline(true, true, true, true);
             GetPen() = wxNullPen;
             ShowLabelWhenSelected(false);
             InvalidateCachedBoundingBox();
