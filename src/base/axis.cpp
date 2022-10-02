@@ -1802,7 +1802,7 @@ namespace Wisteria::GraphItems
                     // with the standard padding
                     if (!(axisPtIter == GetAxisPoints().cbegin() &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushRight) &&
-                        !(axisPtIter == GetAxisPoints().cend() &&
+                        !(axisPtIter == GetAxisPoints().cend()-1 &&
                           GetParallelLabelAlignment() == RelativeAlignment::FlushLeft))
                         { AdjustLabelSizeIfUsingBackgroundColor(axisLabel, dc, true); }
                     else
