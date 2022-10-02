@@ -199,7 +199,7 @@ namespace Wisteria::GraphItems
                 for (long i = 0; i < pixelCount; ++i)
                     {
                     if (!(rgbData[i*3] == redChannel &&
-                          rgbData[(i*3) +2] == greenChannel &&
+                          rgbData[(i*3) + 1] == greenChannel &&
                           rgbData[(i*3) + 2] == blueChannel))
                         { alphaData[i] = opacity; } // cppcheck-suppress unreadVariable
                     }
