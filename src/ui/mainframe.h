@@ -141,7 +141,7 @@ namespace Wisteria::UI
     public:
         /// @brief Constructor.
         /// @param frame The main frame to connect the D'n'D support to.
-        DropFiles(BaseMainFrame *frame) :
+        explicit DropFiles(BaseMainFrame *frame) :
             m_frame(frame)
             {}
         /// @private

@@ -107,7 +107,7 @@ namespace Wisteria::Graphs
                 An example would be inserting a @c Label as a sticky note.*/
         void AddAnnotation(std::shared_ptr<GraphItems::GraphItemBase> object,
                            const wxPoint pt,
-                           const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
+                           const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             {
             if (object != nullptr)
                 {
@@ -362,7 +362,7 @@ namespace Wisteria::Graphs
         [[deprecated("Use AddAnnotation() instead.")]]
         void AddEmbeddedObject(std::shared_ptr<GraphItems::GraphItemBase> object,
             const wxPoint pt,
-            const std::vector<wxPoint> interestPts = std::vector<wxPoint>())
+            const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             { AddAnnotation(object, pt, interestPts); }
     protected:
         /// @returns The image drawn across all bars/boxes.\n

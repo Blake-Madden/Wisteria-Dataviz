@@ -1376,7 +1376,7 @@ namespace Wisteria::GraphItems
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with
                 the same DC.*/
-        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
+        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const final;
         /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
             @param dc The DC to measure with.*/
         [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& dc) const;

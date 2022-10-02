@@ -1310,6 +1310,7 @@ namespace Wisteria::GraphItems
 
             if (GetAxisType() == AxisType::LeftYAxis)
                 {
+                // cppcheck-suppress duplicateAssignExpression
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
 
                 auto labelWidth = !IsShowingLabels() ?
@@ -1433,6 +1434,7 @@ namespace Wisteria::GraphItems
                 auto labelWidth = !IsShowingLabels() ?
                     0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
+                // cppcheck-suppress duplicateAssignExpression
                 long connectionX = GetLeftPoint().x, connectionXDoubleSided = GetLeftPoint().x;
                 connectionX += (labelWidth + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
@@ -1550,6 +1552,7 @@ namespace Wisteria::GraphItems
                 auto labelHeight = !IsShowingLabels() ?
                     0 : GetTallestTextLabel(dc).GetBoundingBox(dc).GetHeight();
                 labelHeight = IsStackingLabels() ? labelHeight*2 : labelHeight;
+                // cppcheck-suppress duplicateAssignExpression
                 long connectionY = GetTopPoint().y, connectionYDoubleSided = GetTopPoint().y;
                 connectionY += (labelHeight + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine()))*spaceAreasNeeded));

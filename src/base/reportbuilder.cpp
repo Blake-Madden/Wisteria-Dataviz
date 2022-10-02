@@ -667,7 +667,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<GraphItems::Label> ReportBuilder::LoadLabel(
-        const wxSimpleJSON::Ptr_t& labelNode, const GraphItems::Label labelTemplate)
+        const wxSimpleJSON::Ptr_t& labelNode, const GraphItems::Label& labelTemplate)
         {
         if (labelNode->IsOk())
             {
@@ -738,18 +738,18 @@ namespace Wisteria
                     else
                         { label->GetHeaderInfo().GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                     }
-                const wxColour color(
+                const wxColour headerColor(
                     ConvertColor(headerNode->GetProperty(L"color")));
-                if (color.IsOk())
-                    { label->GetHeaderInfo().FontColor(color); }
+                if (headerColor.IsOk())
+                    { label->GetHeaderInfo().FontColor(headerColor); }
 
                 label->GetHeaderInfo().RelativeScaling(
                     headerNode->GetProperty(L"relative-scaling")->GetValueNumber(1));
 
-                const auto textAlignment = ConvertTextAlignment(
+                const auto headerTextAlignment = ConvertTextAlignment(
                     headerNode->GetProperty(L"text-alignment")->GetValueString());
-                if (textAlignment.has_value())
-                    { label->GetHeaderInfo().LabelAlignment(textAlignment.value()); }
+                if (headerTextAlignment.has_value())
+                    { label->GetHeaderInfo().LabelAlignment(headerTextAlignment.value()); }
                 }
 
             LoadItem(labelNode, label);
@@ -820,25 +820,25 @@ namespace Wisteria
                 
                 if (funcName.CmpNoCase(L"matches") == 0)
                     {
-                    wxRegEx re(columnPattern);
-                    if (re.IsValid())
+                    const wxRegEx columnRE(columnPattern);
+                    if (columnRE.IsValid())
                         {
                         // get columns that contain the string
-                        if (re.Matches(dataset->GetIdColumn().GetName()) )
+                        if (columnRE.Matches(dataset->GetIdColumn().GetName()) )
                             { columns.emplace_back(dataset->GetIdColumn().GetName()); }
                         for (const auto& col : dataset->GetCategoricalColumns())
                             {
-                            if (re.Matches(col.GetName()))
+                            if (columnRE.Matches(col.GetName()))
                                 { columns.emplace_back(col.GetName()); }
                             }
                         for (const auto& col : dataset->GetContinuousColumns())
                             {
-                            if (re.Matches(col.GetName()))
+                            if (columnRE.Matches(col.GetName()))
                                 { columns.emplace_back(col.GetName()); }
                             }
                         for (const auto& col : dataset->GetDateColumns())
                             {
-                            if (re.Matches(col.GetName()))
+                            if (columnRE.Matches(col.GetName()))
                                 { columns.emplace_back(col.GetName()); }
                             }
                         return columns;
@@ -1506,14 +1506,14 @@ namespace Wisteria
                     else if (filterAndNode->IsOk())
                         {
                         std::vector<ColumnFilterInfo> cf;
-                        const auto filterNodes = filterAndNode->GetValueArrayObject();
-                        if (filterNodes.size() == 0)
+                        const auto filterAndNodes = filterAndNode->GetValueArrayObject();
+                        if (filterAndNodes.size() == 0)
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
                             }
-                        for (const auto& filterNode : filterNodes)
-                            { cf.emplace_back(loadColumnFilter(filterNode)); }
+                        for (const auto& filternode : filterAndNodes)
+                            { cf.emplace_back(loadColumnFilter(filternode)); }
                             
                         subsettedDataset = dataSubsetter.SubsetAnd(parentToSubset, cf);
                         }
@@ -1521,14 +1521,14 @@ namespace Wisteria
                     else if (filterOrNode->IsOk())
                         {
                         std::vector<ColumnFilterInfo> cf;
-                        const auto filterNodes = filterOrNode->GetValueArrayObject();
-                        if (filterNodes.size() == 0)
+                        const auto filterOrNodes = filterOrNode->GetValueArrayObject();
+                        if (filterOrNodes.size() == 0)
                             {
                             throw std::runtime_error(
                                 _(L"Subset missing filters.").ToUTF8());
                             }
-                        for (const auto& filterNode : filterNodes)
-                            { cf.emplace_back(loadColumnFilter(filterNode)); }
+                        for (const auto& filternode : filterOrNodes)
+                            { cf.emplace_back(loadColumnFilter(filternode)); }
 
                         subsettedDataset = dataSubsetter.SubsetOr(parentToSubset, cf);
                         }

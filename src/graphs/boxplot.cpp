@@ -138,14 +138,13 @@ namespace Wisteria::Graphs
                      std::shared_ptr<Brushes::Schemes::BrushScheme> brushes /*= nullptr*/,
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconScheme> shapes /*= nullptr*/) :
-        Graph2D(canvas)
+        Graph2D(canvas),
+        m_brushScheme((brushes != nullptr ? brushes :
+            std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme())) ),
+        m_colorScheme(colors),
+        m_iconScheme((shapes != nullptr ? shapes :
+            std::make_shared<Icons::Schemes::StandardShapes>()) )
         {
-        m_brushScheme = (brushes != nullptr ? brushes :
-            std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
-        m_colorScheme = colors;
-        m_iconScheme = (shapes != nullptr ? shapes :
-            std::make_shared<Icons::Schemes::StandardShapes>());
-
         GetRightYAxis().Show(false);
         if (GetTopXAxis().GetAxisLinePen().IsOk())
             {

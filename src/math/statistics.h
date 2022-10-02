@@ -360,7 +360,7 @@ namespace statistics
     public:
         /** @brief Constructor that accepts data and analyzes it.
             @param data The data to analyze.*/
-        find_outliers(const std::vector<double>& data)
+        explicit find_outliers(const std::vector<double>& data)
             : m_current_position(data.cbegin()), m_end(data.cend())
             { set_data(data); }
         /** @brief Sets the data and analyzes it.

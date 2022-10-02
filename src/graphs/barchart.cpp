@@ -1245,6 +1245,7 @@ namespace Wisteria::Graphs
 
                         AddObject(braces);
                         drawBar(theBar, false);
+                        // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
                             { AddObject(decal); }
                         }
@@ -1309,6 +1310,7 @@ namespace Wisteria::Graphs
 
                         AddObject(braces);
                         drawBar(theBar, false);
+                        // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
                             { AddObject(decal); }
                         }

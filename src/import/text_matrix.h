@@ -40,7 +40,7 @@ namespace lily_of_the_valley
             @details This is optimal for situations where you want to simply load
              the entire file into a single vector, instead of a 2D matrix.
             @param vector The string vector to write the parsed data to.*/
-        text_matrix(std::vector<string_typeT>* vector)
+        explicit text_matrix(std::vector<string_typeT>* vector)
             : m_vector(vector)
             {}
         /// @private

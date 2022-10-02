@@ -57,6 +57,7 @@ namespace lily_of_the_valley
             headerRow.allow_column_resizing(true);
             headerRow.read(text);
             cell_collapse_quotes<std::wstring> collapseQuotes;
+            // cppcheck-suppress knownEmptyContainer
             for (auto& header : m_header_names)
                 { collapseQuotes(header); }
 

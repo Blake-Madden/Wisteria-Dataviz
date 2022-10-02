@@ -17,6 +17,7 @@ namespace Wisteria::Data
         for (const auto& [id, strValue] : GetStringTable())
             { dupMap.insert(strValue, id); }
 
+        // cppcheck-suppress unusedVariable
         for (const auto& [str, idsAndFreq] : dupMap.get_data())
             {
             // found a string that appears more than once in the string table

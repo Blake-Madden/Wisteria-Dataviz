@@ -228,7 +228,7 @@ namespace Wisteria::GraphItems
             @param dc An existing graphics context to measure the label on.
             @note This is a more optimal alternative to GetBoundingBox(), which doesn't have to
                 create its own temporary @c wxDC.*/
-        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const;
+        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const final;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.

@@ -89,7 +89,7 @@ namespace Wisteria::Data
             @param dominantAxis The axis that holds the important value;
                 the opposite axis will be jittered.\n
                 For example, LeftYAxis will cause jittering along the x axis.*/
-        Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis)
+        explicit Jitter(const AxisType dominantAxis) : m_dominantAxis(dominantAxis)
             {}
         /// @private
         Jitter() = delete;

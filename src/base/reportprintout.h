@@ -24,8 +24,9 @@ namespace Wisteria
         /// @brief Constructor.
         /// @param canvases The vector of canvases (i.e., pages) of the report to print.
         /// @param title The title of the report.
-        ReportPrintout(std::vector<Canvas*> canvases, const wxString& title) : wxPrintout(title)
-            { m_canvases = canvases; }
+        ReportPrintout(const std::vector<Canvas*>& canvases, const wxString& title) :
+            wxPrintout(title), m_canvases(canvases)
+            {}
         /** @returns @c true if specified page number is within the range of pages being printed.
             @param pageNum The page number to check for.
             @note Page # is 1-indexed.*/

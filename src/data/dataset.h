@@ -280,6 +280,7 @@ namespace Wisteria::Data
             @param str The string value to look up.*/
         [[nodiscard]] std::optional<GroupIdType> GetIDFromLabel(const wxString& str) const
             {
+            // cppcheck-suppress unassignedVariable
             for (const auto& [key, value] : m_stringTable)
                 {
                 if (value.CmpNoCase(str) == 0)
@@ -299,6 +300,7 @@ namespace Wisteria::Data
         [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
             const StringTableType& stringTable)
             {
+            // cppcheck-suppress unassignedVariable
             for (const auto& [key, value] : stringTable)
                 {
                 if (value.empty())
@@ -317,6 +319,7 @@ namespace Wisteria::Data
             {
             if (stringTable.size())
                 {
+                // cppcheck-suppress unassignedVariable
                 const auto& [key, value] = *stringTable.crbegin();
                 return key + 1;
                 }

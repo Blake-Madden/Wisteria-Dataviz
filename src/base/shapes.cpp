@@ -202,7 +202,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void Shape::Draw(const wxRect& drawRect, wxDC& dc) const
+    void Shape::Draw(const wxRect& drawRect, wxDC& dc) const // cppcheck-suppress constParameter
         {
         // apply any brush, pen, etc. changes if necessary
         if (m_rendererNeedsUpdating)

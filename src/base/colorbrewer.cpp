@@ -39,9 +39,9 @@ wxColour ColorBrewer::BrewColor(const double value) const
     // Fraction between "idx1" and "idx2" where our value is.
     double fractBetween{ 0 };
 
-    if (normalizedValue <= 0)
+    if (compare_doubles_less_or_equal(normalizedValue, 0))
         { idx1 = idx2 = 0; }
-    else if (normalizedValue >= 1)
+    else if (compare_doubles_greater_or_equal(normalizedValue, 1))
         { idx1 = idx2 = m_colorSpectrum.size()-1; }
     else
         {
@@ -91,7 +91,7 @@ wxColour ColorContrast::Contrast(const wxColour& color)
                 { return color.ChangeLightness(100+((adjustmentNeeded+m_tolerance)*100)); }
             }
         // or if background is darker
-        else if (bgLuminance < colorLuminance)
+        else
             {
             // make the text lighter
             if ((colorLuminance+adjustmentNeeded) <= 1)

@@ -214,7 +214,7 @@ namespace Wisteria
         /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<GraphItems::Label> LoadLabel(
             const wxSimpleJSON::Ptr_t& labelNode,
-            const GraphItems::Label labelTemplate);
+            const GraphItems::Label& labelTemplate);
 
         /// @brief Loads a color scheme from a node.
         /// @param colorSchemeNode Tne node to parse.

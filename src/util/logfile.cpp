@@ -9,11 +9,11 @@
 #include "logfile.h"
 
 //--------------------------------------------------
-LogFile::LogFile()
-    {
+LogFile::LogFile() :
     // will be a unique file name on a per day basis
-    m_logFilePath = wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
-        wxTheApp->GetAppName() + wxDateTime::Now().FormatISODate() + L".log";
+    m_logFilePath(wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() +
+        wxTheApp->GetAppName() + wxDateTime::Now().FormatISODate() + L".log")
+    {
     wxFile logFile;
     if (!logFile.Create(m_logFilePath, true))
         {

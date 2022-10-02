@@ -737,10 +737,10 @@ namespace Wisteria::Graphs
         rowHeights.clear();
         rowHeights.resize(GetRowCount());
 
-        size_t currentRow{ 0 }, currentColumn{ 0 };
+        size_t currentRow{ 0 };
         for (const auto& row : m_table)
             {
-            currentColumn = 0;
+            size_t currentColumn{ 0 };
             for (const auto& cell : row)
                 {
                 // make empty cells at least a space so that an empty

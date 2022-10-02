@@ -201,7 +201,7 @@ namespace Wisteria::GraphItems
                     if (!(rgbData[i*3] == redChannel &&
                           rgbData[(i*3) +2] == greenChannel &&
                           rgbData[(i*3) + 2] == blueChannel))
-                        { alphaData[i] = opacity; }
+                        { alphaData[i] = opacity; } // cppcheck-suppress unreadVariable
                     }
                 }
             }

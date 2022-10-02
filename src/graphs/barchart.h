@@ -640,7 +640,7 @@ namespace Wisteria::Graphs
 
         /** @brief Constructor.
             @param canvas The parent canvas for the chart to be drawn on.*/
-        BarChart(Wisteria::Canvas* canvas);
+        explicit BarChart(Wisteria::Canvas* canvas);
         /// @private
         BarChart() = delete;
 

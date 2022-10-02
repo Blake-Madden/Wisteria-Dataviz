@@ -134,7 +134,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param delim The delimiter to use.
-        is_single_delimiter(const wchar_t delim) noexcept : m_delim(delim)
+        explicit is_single_delimiter(const wchar_t delim) noexcept : m_delim(delim)
             {}
         /// @private
         is_single_delimiter() = delete;
@@ -153,7 +153,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param delims The delimiters to use.
-        is_one_of_multiple_delimiters(const wchar_t* delims) : m_delims(delims)
+        explicit is_one_of_multiple_delimiters(const wchar_t* delims) : m_delims(delims)
             {}
         /// @private
         is_one_of_multiple_delimiters() = delete;

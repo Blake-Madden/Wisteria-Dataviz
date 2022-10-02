@@ -522,7 +522,7 @@ namespace Wisteria::Graphs
              Also, this will throw an exception if any response is higher than 7.*/
         [[nodiscard]] static LikertSurveyQuestionFormat DeduceScale(
             const std::shared_ptr<Data::Dataset>& data,
-            std::vector<wxString>& questionColumns,
+            const std::vector<wxString>& questionColumns,
             std::optional<wxString> groupColumnName = std::nullopt);
 
         /** @brief Collapses the data into the simplest scale
@@ -550,7 +550,7 @@ namespace Wisteria::Graphs
             @note If the data's scale is already 3- or 2-point, then the data will stay the same but the
              question (i.e., categorical) columns' string tables will be reset to use the respective stock labels.*/
         [[nodiscard]] static LikertSurveyQuestionFormat Simplify(std::shared_ptr<Data::Dataset>& data,
-            std::vector<wxString>& questionColumns,
+            const std::vector<wxString>& questionColumns,
             LikertSurveyQuestionFormat currentFormat);
 
         /// @name Chart Type Functions
@@ -576,6 +576,7 @@ namespace Wisteria::Graphs
                    (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
                     GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized) ? 6 :
                    (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
+                   // cppcheck-suppress duplicateValueTernary
                     GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized) ? 7 :7;
             }
 
@@ -726,7 +727,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
+                                       const std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 5-point scale dataset to 3-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
@@ -749,7 +750,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
+                                       const std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 6-point scale dataset to 2-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 2.
@@ -771,7 +772,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
+                                       const std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Converts a 7-point scale dataset to 3-point.
             @details Basically, this collapses all negative levels to 1 and all positive levels to 3.
@@ -794,7 +795,7 @@ namespace Wisteria::Graphs
                 });
             @endcode*/
         static void Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                       std::vector<wxString>& questionColumns,
+                                       const std::vector<wxString>& questionColumns,
                                        const Data::ColumnWithStringTable::StringTableType& condensedCodes);
         /** @brief Gets the categorized version of survey format
              (e.g., ThreePoint -> ThreePointCategorized).

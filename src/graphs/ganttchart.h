@@ -207,8 +207,8 @@ namespace Wisteria::Graphs
             TaskInfo() = default;
             /// @brief Constructor.
             /// @param name The name of the task.
-            explicit TaskInfo(const wxString& name)
-                { m_name = name; }
+            explicit TaskInfo(const wxString& name) : m_name(name)
+                {}
             /// @brief Sets who is carrying out the task.
             /// @param resource The resources assigned to the task.
             /// @returns A self reference.

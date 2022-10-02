@@ -104,7 +104,7 @@ public:
         @param filePath Path to the file to map.
         @param readOnly Flag specifying whether to open the file as read only.
         @param autoBufferOnException Flag specifying whether to attempt to buffer the file if the mapping fails. An exception may still be thrown if the buffering fails. Note that this is not recommended for large files as the buffer will be as large as the file.*/
-    MemoryMappedFile(const wxString& filePath, bool readOnly = true, const bool autoBufferOnException = false) :
+    explicit MemoryMappedFile(const wxString& filePath, bool readOnly = true, const bool autoBufferOnException = false) :
     #ifdef __WXMSW__
         m_hFile(INVALID_HANDLE_VALUE),
         m_hsection(NULL),

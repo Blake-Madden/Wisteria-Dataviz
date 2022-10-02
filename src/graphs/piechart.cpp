@@ -526,9 +526,9 @@ namespace Wisteria::Graphs
                 // otherwise, use whatever width we have, making it more of a square
                 const auto goldenRatioWidth = fullDrawArea.GetHeight() * math_constants::golden_ratio;
                 const auto newWidth = std::min<double>(goldenRatioWidth, fullDrawArea.GetWidth());
-                const auto widthDiff = fullDrawArea.GetWidth() - newWidth;
+                const auto newWidthDiff = fullDrawArea.GetWidth() - newWidth;
                 fullDrawArea.SetWidth(newWidth);
-                fullDrawArea.SetX(fullDrawArea.GetX() + (widthDiff/2));
+                fullDrawArea.SetX(fullDrawArea.GetX() + (newWidthDiff/2));
                 }
             }
 
@@ -1013,9 +1013,9 @@ namespace Wisteria::Graphs
                         outerLabel->SetAnchorPoint(fullDrawArea.GetBottomLeft());
                         outerLabel->SetAnchoring(Anchoring::BottomLeftCorner);
                         }
-                    else if (nextLabel)
+                    else
                         {
-                        auto nextLabelBox = nextLabel->GetBoundingBox(dc);
+                        nextLabelBox = nextLabel->GetBoundingBox(dc);
                         nextLabelBox.SetX(fullDrawArea.GetLeft());
                         nextLabelBox.SetY(nextLabelBox.GetY() - (nextLabelBox.GetHeight()/2));
                         if (outerLabel->GetBoundingBox(dc).Intersects(nextLabelBox))

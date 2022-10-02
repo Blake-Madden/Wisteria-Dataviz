@@ -92,7 +92,7 @@ namespace Wisteria::Icons
             }
         /** @brief Constructs legend icon.
             @param img The image to draw as an icon.*/
-        LegendIcon(const wxImage& img) :
+        explicit LegendIcon(const wxImage& img) :
             m_shape(IconShape::Image), m_img(img)
             {}
         /** @brief Constructor.

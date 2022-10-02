@@ -84,7 +84,7 @@ namespace Wisteria
         public:
             /// @brief Constructor.
             /// @param prop The proportion of the canvas's height that this row consumes.
-            CanvasRowInfo(const double prop) : m_heightProportion(prop)
+            explicit CanvasRowInfo(const double prop) : m_heightProportion(prop)
                 {}
             /// @returns The height proportion of the canvas that this row consumes.
             [[nodiscard]] double GetHeightProportion() const noexcept

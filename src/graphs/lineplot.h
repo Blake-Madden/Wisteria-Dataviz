@@ -174,7 +174,7 @@ namespace Wisteria::Graphs
             ///  only be used for this line if their group ID is @c groupId.
             /// @param groupName The display name of the group.\m
             ///     This is useful for a client to find a line by name and then customize it.
-            void SetGroupInfo(std::optional<const wxString>& groupColumnName,
+            void SetGroupInfo(const std::optional<const wxString>& groupColumnName,
                               const Data::GroupIdType groupId,
                               const wxString& groupName)
                 {

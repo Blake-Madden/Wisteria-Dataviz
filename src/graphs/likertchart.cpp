@@ -39,6 +39,7 @@ namespace Wisteria::Graphs
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
              LikertSurveyQuestionFormat::SevenPointCategorized :
+             // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPointCategorized;
         }
 
@@ -65,6 +66,7 @@ namespace Wisteria::Graphs
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
              LikertSurveyQuestionFormat::SevenPoint :
+             // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPoint;
         }
 
@@ -86,7 +88,7 @@ namespace Wisteria::Graphs
         {
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -99,7 +101,7 @@ namespace Wisteria::Graphs
     //-----------------------------------
     LikertChart::LikertSurveyQuestionFormat LikertChart::Simplify(
         std::shared_ptr<Data::Dataset>& data,
-        std::vector<wxString>& questionColumns,
+        const std::vector<wxString>& questionColumns,
         LikertSurveyQuestionFormat currentFormat)
         {
         // 7 -> 3
@@ -155,7 +157,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse4PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& questionColumns,
+                                         const std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
@@ -167,7 +169,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -188,7 +190,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse6PointsTo2(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& questionColumns,
+                                         const std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 3, L"String table should have 3 values!");
@@ -200,7 +202,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -223,7 +225,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse5PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& questionColumns,
+                                         const std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
@@ -235,7 +237,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -258,7 +260,7 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void LikertChart::Collapse7PointsTo3(std::shared_ptr<Data::Dataset>& data,
-                                         std::vector<wxString>& questionColumns,
+                                         const std::vector<wxString>& questionColumns,
                                          const Data::ColumnWithStringTable::StringTableType& condensedCodes)
         {
         wxASSERT_LEVEL_2_MSG(condensedCodes.size() == 4, L"String table should have 4 values!");
@@ -270,7 +272,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -364,13 +366,13 @@ namespace Wisteria::Graphs
     //-----------------------------------
     LikertChart::LikertSurveyQuestionFormat LikertChart::DeduceScale(
         const std::shared_ptr<Data::Dataset>& data,
-        std::vector<wxString>& questionColumns,
+        const std::vector<wxString>& questionColumns,
         std::optional<wxString> groupColumnName /*= std::nullopt*/)
         {
         Data::GroupIdType maxVal{ 0 };
         for (const auto& catColumnName : questionColumns)
             {
-            auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -408,6 +410,7 @@ namespace Wisteria::Graphs
             (maxVal == 4) ? LikertSurveyQuestionFormat::FourPoint :
             (maxVal == 3) ? LikertSurveyQuestionFormat::ThreePoint :
             (maxVal == 2) ? LikertSurveyQuestionFormat::TwoPoint :
+            // cppcheck-suppress duplicateValueTernary
             LikertSurveyQuestionFormat::TwoPoint;
 
         return (uniqueGroups.size() > 1) ? MakeFormatCategorized(format) : format;
@@ -632,7 +635,7 @@ namespace Wisteria::Graphs
              questionIter != questionColumns.crend();
              ++questionIter)
             {
-            auto categoricalColumn = data->GetCategoricalColumn(*questionIter);
+            const auto categoricalColumn = data->GetCategoricalColumn(*questionIter);
             if (categoricalColumn == data->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(wxString::Format(
