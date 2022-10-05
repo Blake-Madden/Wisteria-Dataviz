@@ -19,6 +19,7 @@
 #include "../data/subset.h"
 #include "../data/pivot.h"
 #include "../graphs/lineplot.h"
+#include "../graphs/wcurveplot.h"
 #include "../graphs/piechart.h"
 #include "../graphs/categoricalbarchart.h"
 #include "../graphs/histogram.h"
@@ -110,6 +111,16 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLinePlot(
                         const wxSimpleJSON::Ptr_t& graphNode,
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a w-curve plot node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        /// @todo many features still needed!
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadWCurvePlot(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a pie chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -323,6 +334,7 @@ namespace Wisteria
         [[nodiscard]] std::optional<wxString> CalcGroupPercent(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] wxString CalcNow(const wxString& formula) const;
+        [[nodiscard]] wxString FormatPageNumber(const wxString& formula) const;
         
         // helpers for builing formula regexes
         //------------------------------------
@@ -366,6 +378,8 @@ namespace Wisteria
         std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;
         std::map<wxString, ValuesType, Data::StringCmpNoCase> m_values;
         wxString m_name;
+
+        size_t m_pageNumber{ 1 };
 
         static std::map<std::wstring_view, Wisteria::Colors::Color> m_colorMap;
 

@@ -21,6 +21,8 @@ namespace Wisteria
 
         m_configFilePath = filePath;
 
+        m_pageNumber = 1;
+
         std::vector<Canvas*> reportPages;
         std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> embeddedGraphs;
 
@@ -85,6 +87,10 @@ namespace Wisteria
                     auto canvas = new Canvas(parent);
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
+                    // page numbering
+                    if (page->HasProperty(L"pagenumbering"))
+                        { m_pageNumber = 1; }
+
                     // background color
                     const auto bgColor = ConvertColor(page->GetProperty(L"background-color"));
                     if (bgColor.IsOk())
@@ -142,6 +148,11 @@ namespace Wisteria
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"w-curve-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadWCurvePlot(item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
                                                 {
@@ -262,6 +273,8 @@ namespace Wisteria
                     // the aspect ratio of its content
                     canvas->MaintainAspectRatio(rowCount > 1);
                     reportPages.push_back(canvas);
+
+                    ++m_pageNumber;
                     }
                 }
             }
@@ -888,7 +901,7 @@ namespace Wisteria
         const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         const wxRegEx re(FunctionStartRegEx() +
-            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now)" +
+            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname)" +
             OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -930,6 +943,10 @@ namespace Wisteria
                 { return ExpandColumnSelection(formula, dataset); }
             else if (funcName.CmpNoCase(L"now") == 0)
                 { return CalcNow(formula); }
+            else if (funcName.CmpNoCase(L"pagenumber") == 0)
+                { return FormatPageNumber(formula); }
+            else if (funcName.CmpNoCase(L"reportname") == 0)
+                { return m_name; }
             }
         // note that formula may just be a constant (e.g., color string),
         // so return that if it can't be calculated into something else
@@ -1314,6 +1331,18 @@ namespace Wisteria
             }
         return formula;
         }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::FormatPageNumber(const wxString& formula) const
+        {
+        const wxRegEx re(FunctionStartRegEx() +
+            L"(pagenumber)" + OpeningParenthesisRegEx() +
+            StringOrEmptyRegEx() + ClosingParenthesisRegEx());
+        return re.Matches(formula) ?
+            wxNumberFormatter::ToString(m_pageNumber, 0,
+                wxNumberFormatter::Style::Style_WithThousandsSep) :
+            wxString(wxEmptyString);
+        }
      
     //---------------------------------------------------
     wxString ReportBuilder::CalcNow(const wxString& formula) const
@@ -1332,7 +1361,9 @@ namespace Wisteria
                     { paramValue = paramValue.substr(1, paramValue.length() - 2); }
 
                 if (paramValue.empty())
-                    { return wxDateTime::Now().Format(); }
+                    { return wxDateTime::Now().FormatDate(); }
+                else if (paramValue == L"fancy")
+                    { return wxDateTime::Now().Format(L"%B %d, %Y"); }
                 // which part of the date is requested?
                 else if (paramValue == L"year")
                     { return std::to_wstring(wxDateTime::Now().GetYear()); }
@@ -1782,6 +1813,48 @@ namespace Wisteria
                     LoadDatasetTransformations(datasetNode, dataset);
                     }
                 }
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadWCurvePlot(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for W-curve plot."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            auto wcurvePlot = std::make_shared<WCurvePlot>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
+                LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
+                LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
+            wcurvePlot->SetData(foundPos->second,
+                variablesNode->GetProperty(L"y")->GetValueString(),
+                variablesNode->GetProperty(L"x")->GetValueString(),
+                (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
+            if (graphNode->HasProperty(L"time-interval-label"))
+                {
+                wcurvePlot->SetTimeIntervalLabel(
+                    graphNode->GetProperty(L"time-interval-label")->GetValueString());
+                }
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, wcurvePlot);
+            return wcurvePlot;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for W-curve plot.").ToUTF8());
             }
         }
 
@@ -2529,10 +2602,51 @@ namespace Wisteria
                 if (position.has_value() && borderFlags.size() > 0)
                     {
                     table->SetRowBorders(position.value(),
-                        (borderFlags.size() > 0 ? borderFlags[0] : true),
-                        (borderFlags.size() > 1 ? borderFlags[1] : true),
-                        (borderFlags.size() > 2 ? borderFlags[2] : true),
-                        (borderFlags.size() > 3 ? borderFlags[3] : true),
+                        (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                        (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                        (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                        (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                        rowStops);
+                    }
+
+                // borders specified individually
+                if (rowBordersCommand->HasProperty(L"top-border"))
+                    {
+                    table->SetRowBorders(position.value(),
+                        rowBordersCommand->GetProperty(L"top-border")->
+                            GetValueBool(table->IsShowingTopBorder()),
+                        std::nullopt,
+                        std::nullopt,
+                        std::nullopt,
+                        rowStops);
+                    }
+                if (rowBordersCommand->HasProperty(L"right-border"))
+                    {
+                    table->SetRowBorders(position.value(),
+                        std::nullopt,
+                        rowBordersCommand->GetProperty(L"right-border")->
+                            GetValueBool(table->IsShowingRightBorder()),
+                        std::nullopt,
+                        std::nullopt,
+                        rowStops);
+                    }
+                if (rowBordersCommand->HasProperty(L"bottom-border"))
+                    {
+                    table->SetRowBorders(position.value(),
+                        std::nullopt,
+                        std::nullopt,
+                        rowBordersCommand->GetProperty(L"bottom-border")->
+                            GetValueBool(table->IsShowingBottomBorder()),
+                        std::nullopt);
+                    }
+                if (rowBordersCommand->HasProperty(L"left-border"))
+                    {
+                    table->SetRowBorders(position.value(),
+                        std::nullopt,
+                        std::nullopt,
+                        std::nullopt,
+                        rowBordersCommand->GetProperty(L"left-border")->
+                            GetValueBool(table->IsShowingLeftBorder()),
                         rowStops);
                     }
                 }
@@ -2624,10 +2738,51 @@ namespace Wisteria
                 if (position.has_value() && borderFlags.size() > 0)
                     {
                     table->SetColumnBorders(position.value(),
-                        (borderFlags.size() > 0 ? borderFlags[0] : true),
-                        (borderFlags.size() > 1 ? borderFlags[1] : true),
-                        (borderFlags.size() > 2 ? borderFlags[2] : true),
-                        (borderFlags.size() > 3 ? borderFlags[3] : true),
+                        (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                        (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                        (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                        (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                        rowStops);
+                    }
+
+                // borders specified individually
+                if (columnBordersCommand->HasProperty(L"top-border"))
+                    {
+                    table->SetColumnBorders(position.value(),
+                        columnBordersCommand->GetProperty(L"top-border")->
+                            GetValueBool(table->IsShowingTopBorder()),
+                        std::nullopt,
+                        std::nullopt,
+                        std::nullopt,
+                        rowStops);
+                    }
+                if (columnBordersCommand->HasProperty(L"right-border"))
+                    {
+                    table->SetColumnBorders(position.value(),
+                        std::nullopt,
+                        columnBordersCommand->GetProperty(L"right-border")->
+                            GetValueBool(table->IsShowingRightBorder()),
+                        std::nullopt,
+                        std::nullopt,
+                        rowStops);
+                    }
+                if (columnBordersCommand->HasProperty(L"bottom-border"))
+                    {
+                    table->SetColumnBorders(position.value(),
+                        std::nullopt,
+                        std::nullopt,
+                        columnBordersCommand->GetProperty(L"bottom-border")->
+                            GetValueBool(table->IsShowingBottomBorder()),
+                        std::nullopt);
+                    }
+                if (columnBordersCommand->HasProperty(L"left-border"))
+                    {
+                    table->SetColumnBorders(position.value(),
+                        std::nullopt,
+                        std::nullopt,
+                        std::nullopt,
+                        columnBordersCommand->GetProperty(L"left-border")->
+                            GetValueBool(table->IsShowingLeftBorder()),
                         rowStops);
                     }
                 }
@@ -2703,6 +2858,8 @@ namespace Wisteria
                     table->InsertAggregateColumn(aggInfo, aggName,
                         std::nullopt, 
                         columnAggregate->GetProperty(L"use-adjacent-color")->GetValueBool(),
+                        (bkColor.IsOk() ?
+                            std::optional<wxColour>(bkColor) : std::nullopt),
                         (cellBorders.size() ? std::optional<std::bitset<4>>(borders) : std::nullopt));
                     }
                 else if (whereType.CmpNoCase(L"row") == 0)
@@ -2800,6 +2957,26 @@ namespace Wisteria
                         ConvertColor(cellUpdate->GetProperty(L"background")));
                     if (bgcolor.IsOk())
                         { currentCell->SetBackgroundColor(bgcolor); }
+
+                    // an image to the left side of it
+                    const auto leftSideNode = cellUpdate->GetProperty(L"left-side-image");
+                    if (leftSideNode->IsOk())
+                        {
+                        auto path = leftSideNode->GetProperty(L"path")->GetValueString();
+                        if (path.length())
+                            {
+                            if (!wxFileName::FileExists(path))
+                                {
+                                path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                                if (!wxFileName::FileExists(path))
+                                    {
+                                    throw std::runtime_error(
+                                        wxString::Format(_(L"%s: label side image not found."), path).ToUTF8());
+                                    }
+                                }
+                            currentCell->SetLeftSideImage(Image::LoadFile(path));
+                            }
+                        }
 
                     // prefix
                     if (cellUpdate->HasProperty(L"prefix"))
@@ -3025,6 +3202,8 @@ namespace Wisteria
     std::optional<size_t> ReportBuilder::LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
         const size_t columnCount, const size_t columnRow, std::shared_ptr<Graphs::Table> table)
         {
+        if (!positionNode->IsOk())
+            { return std::nullopt; }
         std::optional<size_t> position;
         const auto origin = positionNode->GetProperty(L"origin");
         if (origin->IsOk())
@@ -3048,6 +3227,8 @@ namespace Wisteria
             else if (origin->IsValueNumber())
                 { position = origin->GetValueNumber(); }
             }
+        else if (positionNode->IsValueNumber())
+            { position = positionNode->GetValueNumber(); }
         std::optional<double> doubleStartOffset =
             positionNode->HasProperty(L"offset") ?
             std::optional<double>(positionNode->GetProperty(L"offset")->GetValueNumber()) :

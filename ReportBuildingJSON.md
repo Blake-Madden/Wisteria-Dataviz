@@ -85,7 +85,7 @@ Properties for the @c "datasets" node:
     - @c "column": the categorical column to collapse.
     - @c "min": the minimum number of times a string must appear in the column to remain in the string table.
     - @c "other-label": the label to use for the new category where low-frequency values are lumped into. Default is "Other".
-  - @c "collapse-except": collapses strings into an "Other" categorical, except for a list of provided labels.
+  - @c "collapse-except": collapses strings into an "Other" category, except for a list of provided labels.
     This is an array of specifications which contain the following:
     - @c "column": the categorical column to collapse.
     - @c "labels-to-keep": an array of strings to preserve; all others will be lumped into a new "Other" category.
@@ -220,6 +220,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
       - ["label"](#label-properties)
       - ["pie-chart"](#pie-chart-properties)
       - ["table"](#table-properties)
+      - ["w-curve-plot"](#w-curve-plot-properties)
       - @c null: a @c null value will act as a placeholder for the previous column.\n
         If an entire row contains nulls, then the previous row will consume that row
         (meaning it will grow that much in height).
@@ -546,6 +547,10 @@ The remaining properties are executed in the following order:
        Refer to the [position](#position-properties) properties that are available.
   - @c "borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "right-border": boolean specifying whether to show the cell's right border.
+  - @c "top-border": boolean specifying whether to show the cell's top border.
+  - @c "bottom-border": boolean specifying whether to show the cell's bottom border.
+  - @c "left-border": boolean specifying whether to show the cell's left border.
   - @c "stops": an array of which rows to skip over when changing the row's borders.\n
        This is an array of @c "position" items.
 - @c "row-content-align": an array of commands to align the content inside of the cells across a row.
@@ -574,6 +579,10 @@ The remaining properties are executed in the following order:
        Refer to the [position](#position-properties) properties that are available.
   - @c "borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - @c "right-border": boolean specifying whether to show the cell's right border.
+  - @c "top-border": boolean specifying whether to show the cell's top border.
+  - @c "bottom-border": boolean specifying whether to show the cell's bottom border.
+  - @c "left-border": boolean specifying whether to show the cell's left border.
   - @c "stops": an array of which rows to skip over when changing the column's borders.\n
        This is an array of @c "position" items.
 - @c "column-highlight": an array of column highlight specifications, which contain the following:
@@ -624,6 +633,9 @@ The remaining properties are executed in the following order:
   - @c "bold": @c true to make the cell bold.
   - @c "highlight": @c true to highlight the cell.
   - @c "prefix": a character to display on the left side of the cell.
+  - @c "left-side-image": properties specifying an image to display on the left side of the label.
+    The available options are:
+    - @c "path": string specifying the image path to load.
   - @c "show-borders": an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - @c "horizontal-page-alignment": how to horizontally align the item within its area.\n
@@ -652,6 +664,15 @@ The remaining properties are executed in the following order:
   - @c "value": the cell value (as a string) to add a footnote number to. Can include ["constants"](#constants-properties).
   - @c "footnote": the footnote to add to the caption. Can include ["constants"](#constants-properties).
 
+## W-Curve Plot {#w-curve-plot-properties}
+Properties for @c "w-curve-plot" nodes:
+- @c "variables": an item containing the following properties:
+  - @c "x": the X column.
+  - @c "y": the Y column.
+  - @c "group": the grouping column (this is optional).
+- @c "time-interval-label": string the label for the major time intervals used in the data collection (e.g., "semester" or "year").
+- Some base properties available to [graphs](#graph-properties).
+
 # Base-level Properties
 
 ## Positions {#position-properties}
@@ -664,6 +685,8 @@ Properties for row or column positions:
      This is optional and is useful for when @c "origin" is interpreted at runtime.\n
      For example, if @c origin is @c "last-row" and @c offset is @c -1, then this will
      result in the second-to-last row.
+
+A position can also be a number if not needing to use the @ "origin"/"offset" features.
 
 ## Pen {#pen-properties}
 Properties for pens:
@@ -918,16 +941,19 @@ Properties common to all items:
 # Additional Functions {#additional-functions}
 Along with the dataset-related functions that can be used for dataset formulas, other functions are also available.
 These functions can be used in a dataset's formulas section, the @c "constants" section, and even in-place (e.g., in a label's text value).
+- ``ReportName()``: the report's name.
+- ``PageNumber()``: the current page number.
 - ``Now(`value`)``:
     Returns the a string representing the current date and time (or date component).
-    - @c value: the part of today's date to return (if not provided, then the full date and time are returned).
+    - @c value: the part of today's date to return (if not provided, then the full date is returned).
       The following options are available:
       - @c "Year": the year.
       - @c "Day": the day of the month.
       - @c "DayName": the day of the month as a name (e.g., Tuesday).
       - @c "Month": the numeric value of the month.
       - @c "MonthName": the name of the month.
-      - @c "MonthShortName": the abbreviated name of the month.s
+      - @c "MonthShortName": the abbreviated name of the month.
+      - @c "Fancy": returns the date formatted as full month name, day, and four-digit year.
 
 # Notes {#notes}
 Color values can either be hex encoded (e.g., @c "#FF0000" for red) or a named value (@c "pumpkin"). For a full list
