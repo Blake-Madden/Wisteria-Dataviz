@@ -50,11 +50,6 @@ namespace Wisteria
             @returns @c true if printing page was successful.*/
         bool OnPrintPage(int page) final;
     private:
-        // Same as base version, but removes "Printing " from the prefix.
-        // This is necessary so that "Printing " doesn't appear in the title when
-        // printing to PDF.
-        bool OnBeginDocument([[maybe_unused]] int startPage, [[maybe_unused]] int endPage) final
-            { return GetDC()->StartDoc(GetTitle()); }
         /// @returns The margin around the printing area.
         [[nodiscard]] wxCoord GetMarginPadding(const size_t pageNumber) const
             {
