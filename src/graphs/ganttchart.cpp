@@ -283,7 +283,7 @@ namespace Wisteria::Graphs
                     GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
                         std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
                         Label::GetMinLegendWidthDIPs())) );
-                    br.GetAxisLabel().SetLeftSideImage(img);
+                    br.GetAxisLabel().SetLeftImage(img);
                     }
                 AddBar(br, false);
                 }
@@ -364,7 +364,7 @@ namespace Wisteria::Graphs
                     GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
                         std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
                         Label::GetMinLegendWidthDIPs())) );
-                    arrowBar.GetAxisLabel().SetLeftSideImage(img);
+                    arrowBar.GetAxisLabel().SetLeftImage(img);
                     }
                 AddBar(arrowBar, false);
                 }

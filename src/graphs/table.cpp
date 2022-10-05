@@ -754,7 +754,7 @@ namespace Wisteria::Graphs
                     { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 measuringLabel.SetFont(cell.m_font);
                 if (cell.m_leftImage.IsOk())
-                    { measuringLabel.SetLeftSideImage(cell.m_leftImage); }
+                    { measuringLabel.SetLeftImage(cell.m_leftImage); }
                 auto bBox = measuringLabel.GetBoundingBox(dc);
                 // prefix will need 5 DPIs added to each side
                 if (cell.GetPrefix().length())
@@ -1084,7 +1084,7 @@ namespace Wisteria::Graphs
                     Anchoring(Anchoring::TopLeftCorner).
                     AnchorPoint(boxRect.GetTopLeft()));
                 if (cell.m_leftImage.IsOk())
-                    { cellLabel->SetLeftSideImage(cell.m_leftImage); }
+                    { cellLabel->SetLeftImage(cell.m_leftImage); }
                 if (cell.m_suggestedLineLength.has_value())
                     { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());

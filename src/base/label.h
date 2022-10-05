@@ -216,7 +216,7 @@ namespace Wisteria::GraphItems
                 the height will be scaled to the height of the text (preserving the aspect ratio).
             @warning This will reset any legend that the label currently has.
             @param bmp The image to use.*/
-        void SetLeftSideImage(const wxBitmapBundle& bmp)
+        void SetLeftImage(const wxBitmapBundle& bmp)
             { m_leftImage = bmp; }
         /// @}
 

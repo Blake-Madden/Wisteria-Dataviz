@@ -371,7 +371,7 @@ namespace Wisteria::Graphs
             /// @brief Sets an image to appear to the left of the cell's text.
             /// @param bmp The image to use.\n
             ///     Note that this image will be scaled down to the cell's height.
-            void SetLeftSideImage(const wxBitmapBundle& bmp)
+            void SetLeftImage(const wxBitmapBundle& bmp)
                 { m_leftImage = bmp; }
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.

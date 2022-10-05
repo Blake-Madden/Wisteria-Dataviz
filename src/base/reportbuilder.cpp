@@ -713,7 +713,7 @@ namespace Wisteria
                                 wxString::Format(_(L"%s: label side image not found."), path).ToUTF8());
                             }
                         }
-                    label->SetLeftSideImage(Image::LoadFile(path));
+                    label->SetLeftImage(Image::LoadFile(path));
                     }
                 }
 
@@ -2974,7 +2974,7 @@ namespace Wisteria
                                         wxString::Format(_(L"%s: label side image not found."), path).ToUTF8());
                                     }
                                 }
-                            currentCell->SetLeftSideImage(Image::LoadFile(path));
+                            currentCell->SetLeftImage(Image::LoadFile(path));
                             }
                         }
 
