@@ -179,7 +179,9 @@ namespace Wisteria::Graphs
                 Bar theBar(blockTable.first.m_bin,
                     {
                     BarBlock(BarBlockInfo(blockTable.second.second).
-                        Brush(blockBrush).Color(blockColor).SelectionLabel(blockLabel))
+                        Brush(blockBrush).Color(blockColor).
+                        Tag(blockTable.first.m_groupName).
+                        SelectionLabel(blockLabel))
                     },
                     wxEmptyString,
                     GraphItems::Label(
@@ -189,8 +191,13 @@ namespace Wisteria::Graphs
                 }
             else
                 {
-                BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).
-                    Brush(blockBrush).Color(blockColor).SelectionLabel(blockLabel)) };
+                BarBlock block
+                    {
+                    BarBlock(BarBlockInfo(blockTable.second.second).
+                        Brush(blockBrush).Color(blockColor).
+                        Tag(blockTable.first.m_groupName).
+                        SelectionLabel(blockLabel))
+                    };
                 foundBar->AddBlock(block);
                 UpdateScalingAxisFromBar(*foundBar);
                 }
