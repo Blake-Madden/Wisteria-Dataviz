@@ -530,7 +530,10 @@ namespace Wisteria::Graphs
                                       wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(),
                                               box.m_middleCoordinate.y) };
             AddObject(std::make_shared<GraphItems::Polygon>(
-                GraphItemInfo().Pen(*wxBLACK_PEN).Brush(*wxBLACK_BRUSH).Scaling(GetScaling()),
+                GraphItemInfo().Pen(wxPenInfo(ColorContrast::BlackOrWhiteContrast(
+                        m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour()) ).
+                    Cap(wxPenCap::wxCAP_BUTT)).
+                    Scaling(GetScaling()),
                 boxLinePts, 2));
 
             // draw the points (grouped)
