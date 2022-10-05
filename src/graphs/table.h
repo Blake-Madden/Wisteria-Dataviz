@@ -366,8 +366,13 @@ namespace Wisteria::Graphs
             /// @param prefix The character to display.
             /// @note If the cell's format is Percent or Accounting, then this prefix will be
             ///     managed by the cell.
-            void SetPrefix(const wxString& prefix) noexcept
+            void SetPrefix(const wxString& prefix)
                 { m_prefix = prefix; }
+            /// @brief Sets an image to appear to the left of the cell's text.
+            /// @param bmp The image to use.\n
+            ///     Note that this image will be scaled down to the cell's height.
+            void SetLeftSideImage(const wxBitmapBundle& bmp)
+                { m_leftImage = bmp; }
             /// @brief Sets the number of columns that this cell should consume.
             /// @param colCount The number of cells that this should consume horizontally.
             void SetColumnCount(const int colCount) noexcept
@@ -459,6 +464,7 @@ namespace Wisteria::Graphs
             wxString m_prefix;
             // setting to true will make the prefix red if the value is negative
             bool m_colorCodePrefix{ false };
+            wxBitmapBundle m_leftImage;
 
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
             std::optional<TextAlignment> m_textAlignment;
@@ -671,7 +677,10 @@ namespace Wisteria::Graphs
                 is to insert as the last column.
             @param useAdjacentColors @c true to use the color of the cell adjacent to this column.
                 @c false will apply a light gray to the column.\n
-                @c true is recommended if using alternate row colors.
+                @c true is recommended if using alternate row colors.\n
+                Note that this will override the @c bkColor if this is @c true.
+            @param bkColor A color to fill the column with.\n
+                Note that this is ignored if @c useAdjacentColors is @c true.
             @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
                 aggregation values are calculated as this function is called.*/
@@ -679,6 +688,7 @@ namespace Wisteria::Graphs
                                    std::optional<wxString> colName = std::nullopt,
                                    std::optional<size_t> colIndex = std::nullopt,
                                    std::optional<bool> useAdjacentColors = std::nullopt,
+                                   std::optional<wxColour> bkColor = std::nullopt,
                                    std::optional<std::bitset<4>> borders = std::nullopt);
         /** @brief Inserts total (and possibly subtotal) rows into a table.
             @details If the first column contains grouped labels (see GroupColumn())
@@ -825,8 +835,8 @@ namespace Wisteria::Graphs
             @param showLeftBorder Whether to show the cells' left borders.
             @param columnStops An optional list of columns within the row to skip.*/
         void SetRowBorders(const size_t row,
-            const bool showTopBorder, const bool showRightBorder,
-            const bool showBottomBorder, const bool showLeftBorder,
+            std::optional<bool> showTopBorder, std::optional<bool> showRightBorder,
+            std::optional<bool> showBottomBorder, std::optional<bool> showLeftBorder,
             std::optional<std::set<size_t>> columnStops = std::nullopt)
             {
             if (row < GetRowCount())
@@ -838,10 +848,14 @@ namespace Wisteria::Graphs
                         columnStops.value().find(i) != columnStops.value().cend())
                         { continue; }
                     auto& cell = currentRow[i];
-                    cell.ShowTopBorder(showTopBorder);
-                    cell.ShowRightBorder(showRightBorder);
-                    cell.ShowBottomBorder(showBottomBorder);
-                    cell.ShowLeftBorder(showLeftBorder);
+                    if (showTopBorder.has_value())
+                        { cell.ShowTopBorder(showTopBorder.value()); }
+                    if (showRightBorder.has_value())
+                        { cell.ShowRightBorder(showRightBorder.value()); }
+                    if (showBottomBorder.has_value())
+                        {cell.ShowBottomBorder(showBottomBorder.value()); }
+                    if (showLeftBorder.has_value())
+                        { cell.ShowLeftBorder(showLeftBorder.value()); }
                     }
                 }
             }
@@ -853,8 +867,8 @@ namespace Wisteria::Graphs
             @param showLeftBorder Whether to show the cells' left borders.
             @param rowStops An optional list of rows within the column to skip.*/
         void SetColumnBorders(const size_t column,
-            const bool showTopBorder, const bool showRightBorder,
-            const bool showBottomBorder, const bool showLeftBorder,
+            std::optional<bool> showTopBorder, std::optional<bool> showRightBorder,
+            std::optional<bool> showBottomBorder, std::optional<bool> showLeftBorder,
             std::optional<std::set<size_t>> rowStops = std::nullopt)
             {
             if (GetColumnCount() > 0 && column < GetColumnCount())
@@ -865,10 +879,14 @@ namespace Wisteria::Graphs
                         rowStops.value().find(i) != rowStops.value().cend())
                         { continue; }
                     auto& cell = m_table[i][column];
-                    cell.ShowTopBorder(showTopBorder);
-                    cell.ShowRightBorder(showRightBorder);
-                    cell.ShowBottomBorder(showBottomBorder);
-                    cell.ShowLeftBorder(showLeftBorder);
+                    if (showTopBorder.has_value())
+                        { cell.ShowTopBorder(showTopBorder.value()); }
+                    if (showRightBorder.has_value())
+                        { cell.ShowRightBorder(showRightBorder.value()); }
+                    if (showBottomBorder.has_value())
+                        { cell.ShowBottomBorder(showBottomBorder.value()); }
+                    if (showLeftBorder.has_value())
+                        { cell.ShowLeftBorder(showLeftBorder.value()); }
                     }
                 }
             }

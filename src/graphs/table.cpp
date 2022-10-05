@@ -392,9 +392,8 @@ namespace Wisteria::Graphs
 
             SetRowBackgroundColor(rIndex,
                 bkColor.has_value() ?
-                bkColor.value() :
-                ColorBrewer::GetColor(Colors::Color::LightGray,
-                    Settings::GetTranslucencyValue()),
+                    bkColor.value() :
+                    ColorBrewer::GetColor(Colors::Color::LightGray),
                 std::nullopt);
 
             // if overriding default borders for the cells in this column
@@ -427,6 +426,7 @@ namespace Wisteria::Graphs
                                       std::optional<wxString> colName /*= std::nullopt*/,
                                       std::optional<size_t> colIndex /*= std::nullopt*/,
                                       std::optional<bool> useAdjacentColors /*= std::nullopt*/,
+                                      std::optional<wxColour> bkColor /*= std::nullopt*/,
                                       std::optional<std::bitset<4>> borders /*= std::nullopt*/)
         {
         if (GetColumnCount())
@@ -452,11 +452,14 @@ namespace Wisteria::Graphs
                     cell.m_bgColor = m_table[i][adjacentColumnIndex].m_bgColor;
                     }
                 }
+            else if (bkColor.has_value() && bkColor.value().IsOk())
+                {
+                SetColumnBackgroundColor(columnIndex, bkColor.value(), std::nullopt);
+                }
             else
                 {
                 SetColumnBackgroundColor(columnIndex,
-                    ColorBrewer::GetColor(Colors::Color::LightGray,
-                        Settings::GetTranslucencyValue()),
+                    ColorBrewer::GetColor(Colors::Color::LightGray),
                     std::nullopt);
                 }
             // if overriding default borders for the cells in this column
@@ -750,6 +753,8 @@ namespace Wisteria::Graphs
                 if (cell.m_suggestedLineLength.has_value())
                     { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 measuringLabel.SetFont(cell.m_font);
+                if (cell.m_leftImage.IsOk())
+                    { measuringLabel.SetLeftSideImage(cell.m_leftImage); }
                 auto bBox = measuringLabel.GetBoundingBox(dc);
                 // prefix will need 5 DPIs added to each side
                 if (cell.GetPrefix().length())
@@ -1078,6 +1083,8 @@ namespace Wisteria::Graphs
                     FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE).
                     Anchoring(Anchoring::TopLeftCorner).
                     AnchorPoint(boxRect.GetTopLeft()));
+                if (cell.m_leftImage.IsOk())
+                    { cellLabel->SetLeftSideImage(cell.m_leftImage); }
                 if (cell.m_suggestedLineLength.has_value())
                     { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
