@@ -18,17 +18,17 @@ namespace Wisteria::Graphs
     {
     /** @brief W-Curve plot, which displays experiential, longitudinal data.
         @details An example of this is students' sense of belonging responses across semesters or years.
-         Another example can be customers' satisfaction over the course of product releases.
+            Another example can be customers' satisfaction over the course of product releases.
 
-         In regards to student experiential data, this plot demonstrates W-Curve theory. This postulates
-         that students' campus experience begins positively, then follows a pattern of dipping and rising
-         over the subsequent semesters.
+            In regards to student experiential data, this plot demonstrates W-Curve theory. This postulates
+            that students' campus experience begins positively, then follows a pattern of dipping and rising
+            over the subsequent semesters.
         @image html WCurve.svg width=90%
         @par %Data:
-         This plot accepts a Data::Dataset where one continuous column (i.e., Y) is the dependent measurement,
-         another continuous column (i.e., X) is the time interval,
-         and a categorical column is the observation's name or ID. Below is an example where X is @c YEAR,
-         Y is @c BELONG, and group is @c NAME.
+            This plot accepts a Data::Dataset where one continuous column (i.e., Y) is the dependent measurement,
+            another continuous column (i.e., X) is the time interval,
+            and a categorical column is the observation's name or ID. Below is an example where X is @c YEAR,
+            Y is @c BELONG, and group is @c NAME.
 
          | YEAR | BELONG | NAME   |
          | --:  | --:    | :--    |
@@ -52,7 +52,7 @@ namespace Wisteria::Graphs
          was recorded for the observation.
 
         @par Missing Data:
-         Refer to LinePlot for how missing data is handled.
+            Refer to LinePlot for how missing data is handled.
 
         @par Example:
         @code
@@ -108,8 +108,8 @@ namespace Wisteria::Graphs
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
         @par Citation:
-         This graphic is adapted from the article "Are We Listening? Using Student Stories as a
-         Framework for Persistence" by Monica C. Grau and MaryAnn Swain.
+            This graphic is adapted from the article "Are We Listening? Using Student Stories as a
+            Framework for Persistence" by Monica C. Grau and MaryAnn Swain.
     */
     class WCurvePlot final : public LinePlot
         {
@@ -117,45 +117,45 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.
             @param colors The color scheme to apply to the points.
-             Leave as null to use the default theme.
+                Leave as null to use the default theme.
             @param shapes The shape scheme to use for the points.
-             Leave as null to not show points.
-             Set to a new shape scheme filled with IconShape::BlankIcon to not show
-             markers for certain lines/groups.
+                Leave as null to not show points.
+                Set to a new shape scheme filled with IconShape::BlankIcon to not show
+                markers for certain lines/groups.
             @param linePenStyles The line styles to use for the lines.
-             The default is a mixed series of pen styles and arrow lines.
-             Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT
-             to not show any lines.*/
+                The default is a mixed series of pen styles and arrow lines.
+                Set to a new line scheme filled with @c wxPenStyle::wxTRANSPARENT
+                to not show any lines.*/
         explicit WCurvePlot(Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Icons::Schemes::IconScheme > shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr);
         /** @brief Sets the data.
             @details Along with the X and Y points, separate lines will be created based on
-             the grouping column in the data. The group ID assigned to each line will also
-             select which color, marker shape, and line style to use.
+                the grouping column in the data. The group ID assigned to each line will also
+                select which color, marker shape, and line style to use.
             @param data The data to use for the plot.
             @param yColumnName The Y column data, which represents the sentiment values.
             @param xColumnName The X column data, which represents the time interval value
-             (e.g., which semester the score was recorded).
+                (e.g., which semester the score was recorded).
             @param groupColumnName The grouping column to use.
-             This is required and cannot be @c std::nullopt.
+                This is required and cannot be @c std::nullopt.
             @note To add missing points to the data so that a gap in the line will appear,
-             set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
+                set the point in question to NaN (@c std::numeric_limits<double>::quiet_NaN()).
             @warning The data points are drawn in the order that they appear in the dataset.
-             The plot will make no effort to sort the data or ensure that it is.
-             This is by design in case you need a line series to go backwards in certain spots
-             (e.g., a downward spiral).
+                The plot will make no effort to sort the data or ensure that it is.
+                This is by design in case you need a line series to go backwards in certain spots
+                (e.g., a downward spiral).
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& yColumnName,
             const wxString& xColumnName,
             std::optional<const wxString> groupColumnName) final;
         /// @brief Sets the label for the major time intervals used in the data collection
-        ///  (e.g., "semester" or "year").
-        ///  This is drawn on the top axis labels.
+        ///     (e.g., "semester" or "year").
+        ///     This is drawn on the top axis labels.
         /// @param label The time interval label.
         void SetTimeIntervalLabel(const wxString& label)
             {

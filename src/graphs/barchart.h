@@ -399,10 +399,7 @@ namespace Wisteria::Graphs
             friend BarChart;
         public:
             /// @private
-            Bar() noexcept :
-                m_opacity(wxALPHA_OPAQUE), m_barEffect(BoxEffect::Solid),
-                m_barShape(BarShape::Rectangle)
-                {}
+            Bar() = default;
             /** @brief Constructor.
                 @param axisPosition The position on the parent axis to anchor this bar.
                 @param blocks The blocks used to build the bar.
@@ -418,7 +415,7 @@ namespace Wisteria::Graphs
                 const BoxEffect effect, const uint8_t opacity = wxALPHA_OPAQUE,
                 const std::optional<double> customWidth = std::nullopt) :
                 m_blocks(blocks), m_opacity(opacity),
-                m_barEffect(effect), m_barShape(BarShape::Rectangle),
+                m_barEffect(effect),
                 m_axisLabel(axisLabel),
                 m_barLabel(Wisteria::GraphItems::GraphItemInfo(barLabel).Pen(wxNullPen)),
                 m_customWidth(customWidth),
@@ -518,7 +515,7 @@ namespace Wisteria::Graphs
                 }
             /** @brief The custom width used for the bar along the bar axis.
                 @details Not normally used, this is usually meant for situations where the
-                 bars must fit together a very specific way (e.g., ranges on a histogram).
+                    bars must fit together a very specific way (e.g., ranges on a histogram).
                 @returns The custom width (will be @c std::nullopt if invalid).*/
             [[nodiscard]] std::optional<double> GetCustomWidth() const noexcept
                 { return m_customWidth; }
@@ -527,14 +524,14 @@ namespace Wisteria::Graphs
             /** @name Block Functions
                 @brief Functions related to the blocks that make up the bar
                 @details Most bars will consist of a single block, but you can construct
-                 a bar out of multiple blocks that stack up on each other as well. This is useful
-                 for grouping and showing ranges inside the bar.*/
+                    a bar out of multiple blocks that stack up on each other as well. This is
+                    useful for grouping or showing ranges inside the bar.*/
             /// @{
 
             /** @brief Adds a block to the bar along the scaling axis (i.e., how "tall" the bar is).
                 @param block The to add to the bar.
                 @note If calling this, be sure to adjust the range of the scaling axis if need be.
-                 Normally, it's preferred to let AddBar() handle this.*/
+                    Normally, it's preferred to let AddBar() handle this.*/
             void AddBlock(const BarBlock& block) noexcept
                 {
                 m_blocks.emplace_back(block);
@@ -550,15 +547,16 @@ namespace Wisteria::Graphs
             /// @returns The bar's blocks.
             std::vector<BarBlock>& GetBlocks() noexcept
                 { return m_blocks; }
-            /** @brief Searches for a block in the bar with the provided tag.
+            /** @brief Searches for a block in the bar with the provided tag.\n
+                    Tags may be a categorical label added to the block, or a user-provided value.
                 @param tag The tag to look for.
                 @returns An iterator to the first block with the given tag,
-                 or `GetBlocks().end()` if not found.*/
-            std::vector<BarBlock>::iterator FindBlock(const wxString& tag) noexcept
+                    or `GetBlocks().cend()` if not found.*/
+            std::vector<BarBlock>::const_iterator FindBlock(const wxString& tag) const noexcept
                 {
-                return std::find_if(GetBlocks().begin(), GetBlocks().end(),
+                return std::find_if(GetBlocks().cbegin(), GetBlocks().cend(),
                     [&](const auto& block)
-                    { return block.GetTag() == tag; });
+                    { return block.GetTag().CmpNoCase(tag) == 0; });
                 }
             /// @}
 
@@ -580,13 +578,13 @@ namespace Wisteria::Graphs
             [[nodiscard]] std::optional<double> GetCustomScalingAxisStartPosition() const noexcept
                 { return m_customScalingStartPosition; }
             /** @brief Sets a custom position on the **scaling** axis to start drawing the bar.
-                @details Normally a bar begins at the start of the scaling axis, so this can be used
-                 to make it start higher/more to the right.
+                @details Normally a bar begins at the start of the scaling axis, so this can be
+                    used to make it start higher/more to the right.
 
-                 As an example, if a bar's length is 40 and you specify its axis start position as 80,
-                 then it will start at 80 and end at 120. (And 0-79 will be a blank spot in the bar.)
+                    As an example, if a bar's length is 40 and you specify its axis start position as 80,
+                    then it will start at 80 and end at 120. (And 0-79 will be a blank spot along the bar.)
                 @param position The position to start drawing the bar. Set this to NaN (the default)
-                 to disable this.*/
+                    to disable this.*/
             void SetCustomScalingAxisStartPosition(const std::optional<double> position)
                 {
                 m_customScalingStartPosition = position;
@@ -606,6 +604,13 @@ namespace Wisteria::Graphs
             /// @private
             const std::vector<BarBlock>& GetBlocks() const noexcept
                 { return m_blocks; }
+            /// @private
+            std::vector<BarBlock>::iterator FindBlock(const wxString& tag) noexcept
+                {
+                return std::find_if(GetBlocks().begin(), GetBlocks().end(),
+                    [&](const auto& block)
+                    { return block.GetTag().CmpNoCase(tag) == 0; });
+                }
         private:
             std::vector<BarBlock> m_blocks;
             uint8_t m_opacity{ wxALPHA_OPAQUE };
@@ -617,7 +622,7 @@ namespace Wisteria::Graphs
             double m_length{ 0 };
             // only used if a bar must be a specific width
             std::optional<double> m_customWidth{ std::nullopt };
-            // only used if a bar must somewhere other than the start of the scaling axis
+            // only used if a bar is somewhere other than the start of the scaling axis
             std::optional<double> m_customScalingStartPosition{ std::nullopt };
             double m_axisPosition{ 0 };
             };
@@ -651,9 +656,9 @@ namespace Wisteria::Graphs
 
         /** @brief Adds a bar to the chart.
             @param bar The bar to add.
-            @param adjustScalingAxis @c true to adjust the scaling axis to fit the bar.
-             @c false is only recommended if you will be setting the scaling axis manually
-             and don't want the chart adjusting it for you.*/
+            @param adjustScalingAxis @c true to adjust the scaling axis to fit the bar.\n
+                @c false is only recommended if you will be setting the scaling axis manually
+                and don't want the chart adjusting it for you.*/
         void AddBar(Bar bar, const bool adjustScalingAxis = true);
         /// @brief Removes all bars from the chart.
         /// @param resetAxes @c true to reset axes. @c true is recommended if you will be adding
