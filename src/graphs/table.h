@@ -804,13 +804,16 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-
+        /// @returns @c true if the top border for cells is shown by default.
         [[nodiscard]] bool IsShowingTopBorder() const noexcept
             { return m_showTopBorder; }
+        /// @returns @c true if the right border for cells is shown by default.
         [[nodiscard]] bool IsShowingRightBorder() const noexcept
             { return m_showRightBorder; }
+        /// @returns @c true if the bottom border for cells is shown by default.
         [[nodiscard]] bool IsShowingBottomBorder() const noexcept
             { return m_showBottomBorder; }
+        /// @returns @c true if the left border for cells is shown by default.
         [[nodiscard]] bool IsShowingLeftBorder() const noexcept
             { return m_showLeftBorder; }
         /** @brief Sets the borders for all future cells.

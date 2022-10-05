@@ -254,7 +254,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
   - @c "only-custom-labels"
   - @c "custom-labels-and-values"
   - @c "no-display"
-- @c "show-outer-labels": @true to show the outer labels on the axis.
+- @c "show-outer-labels": @c true to show the outer labels on the axis.
 - @c "label-length": a number specifying the suggested maximum length for the axis labels. (Default is 100.)
 - @c "label-length-auto": if @c true, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
@@ -311,8 +311,8 @@ Properties for @c "box-plot" nodes:
   - @c "glassy"
   - @c "solid" (the default)
   - @c "stipple"
-- @c "show-all-points": @true to show all points. By default, only outliers are shown.
-- @c "show-labels": @true to show slabels on the hinges, midpoint, and outliers.
+- @c "show-all-points": @c true to show all points. By default, only outliers are shown.
+- @c "show-labels": @c true to show slabels on the hinges, midpoint, and outliers.
 
 ## Categorical Bar Chart {#categorical-bar-chart-properties}
 Properties for @c "categorical-bar-chart" nodes:

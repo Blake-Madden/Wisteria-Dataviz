@@ -956,10 +956,10 @@ namespace Wisteria
                 return *this;
                 }
             /// @brief Sets the flags for which outlines around the object are shown.
-            /// @param top @true to show the top outline.
-            /// @param top @true to show the right outline.
-            /// @param top @true to show the bottom outline.
-            /// @param top @true to show the left outline.
+            /// @param top @c true to show the top outline.
+            /// @param right @c true to show the right outline.
+            /// @param bottom @c true to show the bottom outline.
+            /// @param left @c true to show the left outline.
             /// @note This is only relevant for object which are meant to draw an outline
             ///     (e.g., Labels and Graphs). This only returns the object's flag for this
             ///     option, which may be irrelevant for some objects.\n
