@@ -558,6 +558,38 @@ namespace Wisteria::Graphs
                     [&](const auto& block)
                     { return block.GetTag().CmpNoCase(tag) == 0; });
                 }
+            /** @brief Searches for the first block in the bar whose tag matches the
+                    provided regular expression.\n
+                    (Tags may be a categorical label added to the block, or a user-provided value.)
+                @param pattern The regex to match against.
+                @returns An iterator to the first matching block,
+                    or `GetBlocks().cend()` if not found.*/
+            std::vector<BarBlock>::const_iterator FindFirstBlockRE(const wxString& pattern) const noexcept
+                {
+                wxRegEx re(pattern);
+                if (!re.IsValid())
+                    { return GetBlocks().cend(); }
+
+                return std::find_if(GetBlocks().cbegin(), GetBlocks().cend(),
+                    [&](const auto& block)
+                    { return re.Matches(block.GetTag()); });
+                }
+            /** @brief Searches for the last block in the bar whose tag matches the
+                    provided regular expression.\n
+                    (Tags may be a categorical label added to the block, or a user-provided value.)
+                @param pattern The regex to match against.
+                @returns A reverse iterator to the last matching block,
+                    or `GetBlocks().crend()` if not found.*/
+            std::vector<BarBlock>::const_reverse_iterator FindLastBlockRE(const wxString& pattern) const noexcept
+                {
+                wxRegEx re(pattern);
+                if (!re.IsValid())
+                    { return GetBlocks().crend(); }
+
+                return std::find_if(GetBlocks().crbegin(), GetBlocks().crend(),
+                    [&](const auto& block)
+                    { return re.Matches(block.GetTag()); });
+                }
             /// @}
 
             /** @name Positioning Functions
@@ -715,6 +747,20 @@ namespace Wisteria::Graphs
         /// @param axisLabel The label of the bar to search for.
         /// @returns The index the bar if found, @c std::nullopt otherwise.
         [[nodiscard]] std::optional<size_t> FindBar(const wxString& axisLabel);
+        /** @brief Finds the start of a bar block.
+            @param barIndex Which bar to use.
+            @param blockTag The tag to identify the bar block to find.
+            @returns The position along the scaling axis where the block begins, or @c std::nullopt
+                if not found.*/
+        [[nodiscard]] std::optional<double> FindBarBlockStart(const size_t barIndex,
+                                                              const wxString& blockTag) const;
+        /** @brief Finds the end of a bar block.
+            @param barIndex Which bar to use.
+            @param blockTag The tag to identify the bar block to find.
+            @returns The position along the scaling axis where the block ends, or @c std::nullopt
+                if not found.*/
+        [[nodiscard]] std::optional<double> FindBarBlockEnd(const size_t barIndex,
+                                                            const wxString& blockTag) const;
 
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
                 and draws a bar above that showing the length of the children bars combined.
@@ -752,16 +798,9 @@ namespace Wisteria::Graphs
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
-        /// @returns The axis with the scaling (opposite side),
+        /// @returns The opposide side scaling axis,
         ///    which is the axis perpendicular to the axis with the bars on it.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetReverseScalingAxis() noexcept
-            {
-            return (GetBarOrientation() == Orientation::Vertical) ?
-                GetRightYAxis() : GetTopXAxis();
-            }
-        /// @returns The axis with the scaling (opposite side),
-        ///    which is the axis perpendicular to the axis with the bars on it.
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetReverseScalingAxis() const noexcept
+        [[nodiscard]] Wisteria::GraphItems::Axis& GetOppositeScalingAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetRightYAxis() : GetTopXAxis();
@@ -778,16 +817,69 @@ namespace Wisteria::Graphs
             { return m_barOrientation; }
         /// @brief Sets whether the bars are laid out vertically or horizontally across the chart.
         /// @param orient Which orientation to use for the bars.
+        /// @note All axis brackets will be removed when changing bar orientation, so all bracket
+        ///     operations should be called after calling this.
         /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
         ///     Also, if aligning with a common X axis, then set this to @c Vertical.
         ///     (Set to @c Horizontal if aligning with a common Y axis.)
         void SetBarOrientation(const Orientation orient);
+        /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
+            @param firstBarBlock The tag of the bar block of the first bar where the
+                bracket should begin.\n
+                The bracket will be drawn at the start of this block.
+            @param lastBarBlock The tag of the bar block of the first bar where the
+                bracket should end.\n
+                The bracket will be drawn to the end of this block.
+            @param bracketLabel The label for the bracket.
+            @note This should be called after all bars have been added and
+                bar orientation has been set.
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
+        void AddFirstBarBracket(const wxString& firstBarBlock,
+                                const wxString& lastBarBlock, const wxString& bracketLabel);
+        /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
+            @param firstBarBlockPattern A regular expression matching the tag of the bar block
+                of the first bar where the bracket should begin.\n
+                The bracket will be drawn at the start of this block.
+            @param lastBarBlockPattern A regular expression matching the tag of the bar block
+                of the first bar where the bracket should end.\n
+                The bracket will be drawn to the end of this block.
+            @param bracketLabel The label for the bracket.
+            @note This should be called after all bars have been added and
+                bar orientation has been set.
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
+        void AddFirstBarBracketRE(const wxString& firstBarBlockPattern,
+                                  const wxString& lastBarBlockPattern, const wxString& bracketLabel);
+        /** @brief Adds an axis bracket (opposite scaling axis) referencing the last bar.
+            @param firstBarBlock The bar block of the last bar where the bracket should begin.\n
+                The bracket will be drawn at the start of this block.
+            @param lastBarBlock The bar block of the last bar where the bracket should end.\n
+                The bracket will be drawn to the end of this block.
+            @param bracketLabel The label for the bracket.
+            @note This should be called after all bars have been added and
+                bar orientation has been set.
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
+        void AddLastBarBracket(const wxString& firstBarBlock,
+                               const wxString& lastBarBlock, const wxString& bracketLabel);
+        /** @brief Adds an axis bracket (scaling axis) referencing the first bar.
+            @param firstBarBlockPattern A regular expression matching the tag of the bar block
+                of the last bar where the bracket should begin.\n
+                The bracket will be drawn at the start of this block.
+            @param lastBarBlockPattern A regular expression matching the tag of the bar block
+                of the last bar where the bracket should end.\n
+                The bracket will be drawn to the end of this block.
+            @param bracketLabel The label for the bracket.
+            @note This should be called after all bars have been added and
+                bar orientation has been set.
+            @throws std::runtime_error If a provided label isn't found, throws an exception.*/
+        void AddLastBarBracketRE(const wxString& firstBarBlockPattern,
+                                 const wxString& lastBarBlockPattern,
+                                 const wxString& bracketLabel);
         /// @brief Forces the scaling axis to the length of the longest bar, resetting any custom
-        ///     or calculed range.
+        ///     or calculated range.
         /// @details This is only recommended for when the scaling axis is not being shown and the
-        ///     bar are being used more artistic purposes.\n
-        ///     Call this after all manual calls to @c AddBar or various @c SetData derived functions.
-        /// @warning Bar labels should be set to @c BinLabelDisplay::NoDisplay as the will go
+        ///     bars are being used more for artistic purposes.\n
+        ///     Call this after all manual calls to @c AddBar or various @c SetData() derived functions.
+        /// @warning Bar labels should be set to @c BinLabelDisplay::NoDisplay as they will go
         ///     outside of the plotting area.
         void ConstrainScalingAxisToBars()
             {
@@ -915,6 +1007,12 @@ namespace Wisteria::Graphs
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
+            }
+        /// @private
+        [[nodiscard]] const Wisteria::GraphItems::Axis& GetOppositeScalingAxis() const noexcept
+            {
+            return (GetBarOrientation() == Orientation::Vertical) ?
+                GetRightYAxis() : GetTopXAxis();
             }
     protected:
         /** @brief Sets the color scheme.

@@ -90,8 +90,193 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
+    std::optional<double> BarChart::FindBarBlockStart(const size_t barIndex,
+                                                      const wxString& blockTag) const
+        {
+        if (GetScalingAxis().IsReversed())
+            { return std::nullopt; }
+        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
+        if (barIndex >= GetBars().size())
+            { return std::nullopt; }
+
+        const auto& bar = GetBars()[barIndex];
+
+        auto block = bar.FindBlock(blockTag);
+        if (block == bar.GetBlocks().cend())
+            { return std::nullopt; }
+        return std::accumulate(bar.GetBlocks().cbegin(), block,
+            GetScalingAxis().GetRange().first,
+            [](const auto& initVal, const auto& val) noexcept
+            { return initVal + val.GetLength(); });
+        }
+
+    //-----------------------------------
+    std::optional<double> BarChart::FindBarBlockEnd(const size_t barIndex,
+                                                    const wxString& blockTag) const
+        {
+        if (GetScalingAxis().IsReversed())
+            { return std::nullopt; }
+        wxASSERT_MSG(barIndex < GetBars().size(), L"Bar index out of range!");
+        if (barIndex >= GetBars().size())
+            { return std::nullopt; }
+
+        const auto& bar = GetBars()[barIndex];
+
+        auto block = bar.FindBlock(blockTag);
+        if (block == bar.GetBlocks().cend())
+            { return std::nullopt; }
+        return std::accumulate(bar.GetBlocks().cbegin(), ++block,
+            GetScalingAxis().GetRange().first,
+            [](const auto& initVal, const auto& val) noexcept
+            { return initVal + val.GetLength(); });
+        }
+
+    //-----------------------------------
+    void BarChart::AddFirstBarBracket(const wxString& firstBarBlock,
+                                      const wxString& lastBarBlock, const wxString& bracketLabel)
+        {
+        wxASSERT_MSG(GetBars().size(), L"No bars available when adding an axis bracket!");
+        if (GetBars().size() == 0)
+            {
+            throw std::runtime_error(
+                _(L"No bars available when adding an axis bracket.").ToUTF8());
+            }
+
+        const auto blocksStart = FindBarBlockStart(0, firstBarBlock);
+        const auto blocksEnd = FindBarBlockEnd(0, lastBarBlock);
+
+        if (blocksStart.has_value() && blocksEnd.has_value())
+            {
+            GetScalingAxis().AddBracket(
+                Axis::AxisBracket(blocksStart.value(), blocksEnd.value(),
+                    safe_divide(blocksStart.value() + blocksEnd.value(), 2.0),
+                    bracketLabel));
+            }
+        else if (!blocksStart.has_value())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' not found when adding an axis bracket."),
+                firstBarBlock).ToUTF8());
+            }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' not found when adding an axis bracket."),
+                lastBarBlock).ToUTF8());
+            }
+        }
+
+    //-----------------------------------
+    void BarChart::AddFirstBarBracketRE(const wxString& firstBarBlockPattern,
+                                        const wxString& lastBarBlockPattern,
+                                        const wxString& bracketLabel)
+        {
+        wxASSERT_MSG(GetBars().size(), L"No bars available when adding an axis bracket!");
+        if (GetBars().size() == 0)
+            {
+            throw std::runtime_error(
+                _(L"No bars available when adding an axis bracket.").ToUTF8());
+            }
+
+        const auto firstBlock = GetBars()[0].FindFirstBlockRE(firstBarBlockPattern);
+        const auto lastBlock = GetBars()[0].FindLastBlockRE(lastBarBlockPattern);
+
+        if (firstBlock == GetBars()[0].GetBlocks().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' pattern not found when adding an axis bracket."),
+                firstBarBlockPattern).ToUTF8());
+            }
+        if (lastBlock == GetBars()[0].GetBlocks().crend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' pattern not found when adding an axis bracket."),
+                lastBarBlockPattern).ToUTF8());
+            }
+
+        AddFirstBarBracket(firstBlock->GetTag(), lastBlock->GetTag(), bracketLabel);
+        }
+
+    //-----------------------------------
+    void BarChart::AddLastBarBracket(const wxString& firstBarBlock,
+                                     const wxString& lastBarBlock, const wxString& bracketLabel)
+        {
+        wxASSERT_MSG(GetBars().size(), L"No bars when adding an axis bracket!");
+        if (GetBars().size() == 0)
+            {
+            throw std::runtime_error(
+                _(L"No bars when adding an axis bracket.").ToUTF8());
+            }
+        const size_t barIndex{ GetBars().size() - 1 };
+
+        const auto blocksStart = FindBarBlockStart(barIndex, firstBarBlock);
+        const auto blocksEnd = FindBarBlockEnd(barIndex, lastBarBlock);
+
+        if (blocksStart.has_value() && blocksEnd.has_value())
+            {
+            if (GetBarOrientation() == Orientation::Vertical)
+                { MirrorYAxis(true); }
+            else
+                { MirrorXAxis(true); }
+            GetOppositeScalingAxis().AddBracket(
+                Axis::AxisBracket(blocksStart.value(), blocksEnd.value(),
+                    safe_divide(blocksStart.value() + blocksEnd.value(), 2.0),
+                    bracketLabel));
+            }
+        else if (!blocksStart.has_value())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' not found when adding an axis bracket."),
+                firstBarBlock).ToUTF8());
+            }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' not found when adding an axis bracket."),
+                lastBarBlock).ToUTF8());
+            }
+        }
+
+    //-----------------------------------
+    void BarChart::AddLastBarBracketRE(const wxString& firstBarBlockPattern,
+                                       const wxString& lastBarBlockPattern,
+                                       const wxString& bracketLabel)
+        {
+        wxASSERT_MSG(GetBars().size(), L"No bars when adding an axis bracket!");
+        if (GetBars().size() == 0)
+            {
+            throw std::runtime_error(
+                _(L"No bars when adding an axis bracket.").ToUTF8());
+            }
+        const size_t barIndex{ GetBars().size() - 1 };
+
+        const auto firstBlock = GetBars()[barIndex].FindFirstBlockRE(firstBarBlockPattern);
+        const auto lastBlock = GetBars()[barIndex].FindLastBlockRE(lastBarBlockPattern);
+
+        if (firstBlock == GetBars()[barIndex].GetBlocks().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' pattern not found when adding an axis bracket."),
+                firstBarBlockPattern).ToUTF8());
+            }
+        if (lastBlock == GetBars()[barIndex].GetBlocks().crend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"Bar block '%s' pattern not found when adding an axis bracket."),
+                lastBarBlockPattern).ToUTF8());
+            }
+
+        AddLastBarBracket(firstBlock->GetTag(), lastBlock->GetTag(), bracketLabel);
+        }
+
+    //-----------------------------------
     void BarChart::SetBarOrientation(const Orientation orient)
         {
+        if (GetBarOrientation() != orient)
+            {
+            GetBarAxis().ClearBrackets();
+            GetScalingAxis().ClearBrackets();
+            }
         m_barOrientation = orient;
         // if both axis grid lines are turned off then don't do anything, but if one of them
         // is turned on then intelligently display just the one relative to the new orientation
