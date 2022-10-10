@@ -20,6 +20,126 @@ The following details the available options for JSON project files.
     Available options are:
     - @c "landscape" or @c "horizontal"
     - @c "portrait" or @c "vertical"
+  - @c "paper-size": the paper size to print to.
+    Available options are:
+    - @c "paper-letter": Letter, 8 1/2 by 11 inches.
+    - @c "paper-legal": Legal, 8 1/2 by 14 inches.
+    - @c "paper-a4": A4 Sheet, 210 by 297 millimeters.
+    - @c "paper-csheet": C Sheet, 17 by 22 inches.
+    - @c "paper-dsheet": D Sheet, 22 by 34 inches.
+    - @c "paper-esheet": E Sheet, 34 by 44 inches.
+    - @c "paper-lettersmall": Letter Small, 8 12 by 11 inches.
+    - @c "paper-tabloid": Tabloid, 11 by 17 inches.
+    - @c "paper-ledger": Ledger, 17 by 11 inches.
+    - @c "paper-statement": Statement, 5 1/2 by 8 1.
+    - @c "paper-executive": Executive, 7 1/4 by 10 1.
+    - @c "paper-a3": A3 sheet, 297 by 420 millimeters.
+    - @c "paper-a4small": A4 small sheet, 210 by 297 millimeters.
+    - @c "paper-a5": A5 sheet, 148 by 210 millimeters.
+    - @c "paper-b4": B4 sheet, 250 by 354 millimeters.
+    - @c "paper-b5": B5 sheet, 182-by-257-millimeter paper.
+    - @c "paper-folio": Folio, 8-1/2-by-13-inch paper.
+    - @c "paper-quarto": Quarto, 215-by-275-millimeter paper.
+    - @c "paper-10x14": 10-by-14-inch sheet.
+    - @c "paper-11x17": 11-by-17-inch sheet.
+    - @c "paper-note": Note, 8 1/2 by 11 inches.
+    - @c "paper-env-9": #9 Envelope, 3 78 by 8 7.
+    - @c "paper-env-10": #10 Envelope, 4 1/8 by 9 1.
+    - @c "paper-env-11": #11 Envelope, 4 1/2 by 10 3.
+    - @c "paper-env-12": #12 Envelope, 4 34 by 11 inches.
+    - @c "paper-env-14": #14 Envelope, 5 by 11 1/2 inches.
+    - @c "paper-env-dl": DL Envelope, 110 by 220 millimeters.
+    - @c "paper-env-c5": C5 Envelope, 162 by 229 millimeters.
+    - @c "paper-env-c3": C3 Envelope, 324 by 458 millimeters.
+    - @c "paper-env-c4": C4 Envelope, 229 by 324 millimeters.
+    - @c "paper-env-c6": C6 Envelope, 114 by 162 millimeters.
+    - @c "paper-env-c65": C65 Envelope, 114 by 229 millimeters.
+    - @c "paper-env-b4": B4 Envelope, 250 by 353 millimeters.
+    - @c "paper-env-b5": B5 Envelope, 176 by 250 millimeters.
+    - @c "paper-env-b6": B6 Envelope, 176 by 125 millimeters.
+    - @c "paper-env-italy": Italy Envelope, 110 by 230 millimeters.
+    - @c "paper-env-monarch": Monarch Envelope, 3 78 by 7 1.
+    - @c "paper-env-personal": 6 34 Envelope, 3 5.
+    - @c "paper-fanfold-us": US Std Fanfold, 14 78 by 11 inches.
+    - @c "paper-fanfold-std-german": German Std Fanfold, 8 1/2 by 1/2 inches.
+    - @c "paper-fanfold-lgl-german": German Legal Fanfold, 8 1/2 by 13 inches.
+    - @c "paper-iso-b4": B4 (ISO) 250 x 353 mm.
+    - @c "paper-japanese-postcard": Japanese Postcard 100 x 148 mm.
+    - @c "paper-9x11": 9 x 11 in.
+    - @c "paper-10x11": 10 x 11 in.
+    - @c "paper-15x11": 15 x 11 in.
+    - @c "paper-env-invite": Envelope Invite 220 x 220 mm.
+    - @c "paper-letter-extra": Letter Extra 9 \275 x 12 in.
+    - @c "paper-legal-extra": Legal Extra 9 \275 x 15 in.
+    - @c "paper-tabloid-extra": Tabloid Extra 11.69 x 18 in.
+    - @c "paper-a4-extra": A4 Extra 9.27 x 12.69 in.
+    - @c "paper-letter-transverse": Letter Transverse 8 \275 x 11 in.
+    - @c "paper-a4-transverse": A4 Transverse 210 x 297 mm.
+    - @c "paper-letter-extra-transverse": Letter Extra Transverse 9\275 x 12 in.
+    - @c "paper-a-plus": SuperA.
+    - @c "paper-b-plus": SuperB.
+    - @c "paper-letter-plus": Letter Plus 8.5 x 12.69 in.
+    - @c "paper-a4-plus": A4 Plus 210 x 330 mm.
+    - @c "paper-a5-transverse": A5 Transverse 148 x 210 mm.
+    - @c "paper-b5-transverse": B5 (JIS) Transverse 182 x 257 mm.
+    - @c "paper-a3-extra": A3 Extra 322 x 445 mm.
+    - @c "paper-a5-extra": A5 Extra 174 x 235 mm.
+    - @c "paper-b5-extra": B5 (ISO) Extra 201 x 276 mm.
+    - @c "paper-a2": A2 420 x 594 mm.
+    - @c "paper-a3-transverse": A3 Transverse 297 x 420 mm.
+    - @c "paper-a3-extra-transverse": A3 Extra Transverse 322 x 445 mm.
+    - @c "paper-dbl-japanese-postcard": Japanese Double Postcard 200 x 148 mm.
+    - @c "paper-a6": A6 105 x 148 mm.
+    - @c "paper-jenv-kaku2": Japanese Envelope Kaku #2.
+    - @c "paper-jenv-kaku3": Japanese Envelope Kaku #3.
+    - @c "paper-jenv-chou3": Japanese Envelope Chou #3.
+    - @c "paper-jenv-chou4": Japanese Envelope Chou #4.
+    - @c "paper-letter-rotated": Letter Rotated 11 x 8 1/2 in.
+    - @c "paper-a3-rotated": A3 Rotated 420 x 297 mm.
+    - @c "paper-a4-rotated": A4 Rotated 297 x 210 mm.
+    - @c "paper-a5-rotated": A5 Rotated 210 x 148 mm.
+    - @c "paper-b4-jis-rotated": B4 (JIS) Rotated 364 x 257 mm.
+    - @c "paper-b5-jis-rotated": B5 (JIS) Rotated 257 x 182 mm.
+    - @c "paper-japanese-postcard-rotated": Japanese Postcard Rotated 148 x 100 mm.
+    - @c "paper-dbl-japanese-postcard-rotated": Double Japanese Postcard Rotated 148 x 200 mm.
+    - @c "paper-a6-rotated": A6 Rotated 148 x 105 mm.
+    - @c "paper-jenv-kaku2-rotated": Japanese Envelope Kaku #2 Rotated.
+    - @c "paper-jenv-kaku3-rotated": Japanese Envelope Kaku #3 Rotated.
+    - @c "paper-jenv-chou3-rotated": Japanese Envelope Chou #3 Rotated.
+    - @c "paper-jenv-chou4-rotated": Japanese Envelope Chou #4 Rotated.
+    - @c "paper-b6-jis": B6 (JIS) 128 x 182 mm.
+    - @c "paper-b6-jis-rotated": B6 (JIS) Rotated 182 x 128 mm.
+    - @c "paper-12x11": 12 x 11 in.
+    - @c "paper-jenv-you4": Japanese Envelope You #4.
+    - @c "paper-jenv-you4-rotated": Japanese Envelope You #4 Rotated.
+    - @c "paper-p16k": PRC 16K 146 x 215 mm.
+    - @c "paper-p32k": PRC 32K 97 x 151 mm.
+    - @c "paper-p32kbig": PRC 32K(Big) 97 x 151 mm.
+    - @c "paper-penv-1": PRC Envelope #1 102 x 165 mm.
+    - @c "paper-penv-2": PRC Envelope #2 102 x 176 mm.
+    - @c "paper-penv-3": PRC Envelope #3 125 x 176 mm.
+    - @c "paper-penv-4": PRC Envelope #4 110 x 208 mm.
+    - @c "paper-penv-5": PRC Envelope #5 110 x 220 mm.
+    - @c "paper-penv-6": PRC Envelope #6 120 x 230 mm.
+    - @c "paper-penv-7": PRC Envelope #7 160 x 230 mm.
+    - @c "paper-penv-8": PRC Envelope #8 120 x 309 mm.
+    - @c "paper-penv-9": PRC Envelope #9 229 x 324 mm.
+    - @c "paper-penv-10": PRC Envelope #10 324 x 458 mm.
+    - @c "paper-p16k-rotated": PRC 16K Rotated.
+    - @c "paper-p32k-rotated": PRC 32K Rotated.
+    - @c "paper-p32kbig-rotated": PRC 32K(Big) Rotated.
+    - @c "paper-penv-1-rotated": PRC Envelope #1 Rotated 165 x 102 mm.
+    - @c "paper-penv-2-rotated": PRC Envelope #2 Rotated 176 x 102 mm.
+    - @c "paper-penv-3-rotated": PRC Envelope #3 Rotated 176 x 125 mm.
+    - @c "paper-penv-4-rotated": PRC Envelope #4 Rotated 208 x 110 mm.
+    - @c "paper-penv-5-rotated": PRC Envelope #5 Rotated 220 x 110 mm.
+    - @c "paper-penv-6-rotated": PRC Envelope #6 Rotated 230 x 120 mm.
+    - @c "paper-penv-7-rotated": PRC Envelope #7 Rotated 230 x 160 mm.
+    - @c "paper-penv-8-rotated": PRC Envelope #8 Rotated 309 x 120 mm.
+    - @c "paper-penv-9-rotated": PRC Envelope #9 Rotated 324 x 229 mm.
+    - @c "paper-penv-10-rotated": PRC Envelope #10 Rotated 458 x 324 m.
+    - @c "paper-a0": A0 Sheet 841 x 1189 mm.
+    - @c "paper-a1": A1 Sheet 594 x 841 mm.
 
 ## Constants {#constants-properties}
 Properties for the @c "constants" node:
@@ -169,6 +289,22 @@ Properties for the @c "datasets" node:
          Note that string values can reference constants loaded from the ["constants"](#constants-properties) section
          or @c "formulas" section of the parent dataset.
 
+  Next, the @c "merges" section of the dataset's node is parsed. This is an array of pivot specifications which
+  contain the following properties:
+  - @c "name": the name of the merged dataset. (This should be different from the datasets being merged;
+    otherwise, it will overwrite them.)\n
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - @c "type": a string specifying which type of merge to use.
+    Available options are:
+    - "left-join-unique": (unique) left join the dataset with another dataset (the default).
+  - @c "other-dataset": the other dataset to merge the current dataset with. This should be a name referencing
+    a previously loaded dataset.
+  - @c "by": an array of properties specifying which columns to join by. Each item should contain the following:
+    - @c "left-column": the column from the current dataset.
+    - @c "right-column": the column from the other dataset.
+  - @c "suffix": if columns in the right dataset already appear in the left dataset, then append this suffix to
+    to column to make it unique.
+
   Finally, the @c "pivots" section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:
   - @c "name": the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
@@ -207,6 +343,10 @@ The @c "pages" node will contain an array of definitions for all pages, each con
 - @c "name": contains a string value, representing the name of the page.
 - @c "background-color": a string specifying the page's background color.
 - @c "background-image": a string specifying the path to an image to use for the page's background.
+- @c "page-numbering": string specifying the numbering style that `PageNumber()` will return.
+  Available options are:
+  - @c "arabic"
+  Note that this will also reset the current page number to @c 1.
 - @c "rows": an array of rows, each containing items to draw on the page (layed out horizontally).\n
   - @c "items": An array of items in the current row.
     - @c "type": the type of object that the item is (e.g., @c Wisteria::Graphs::Table, @c Wisteria::Graphs::LinePlot, etc.)\n
@@ -286,7 +426,7 @@ The @c "pages" node will contain an array of definitions for all pages, each con
        This can either be a numeric position, a date (as a string), or an axis label.
   - @c "end": the ending axis position for the area.\n
        This can either be a numeric position, a date (as a string), or an axis label.
-  - @c "label": the text to display on the legend referring to area.
+  - @c "label": the text to display on next to the brackets.
   - @c "pen": the bracket line, which includes [pen](#pen-properties) properties.
   - @c "style": the style of the braces.\n
     Available options are:
@@ -404,9 +544,13 @@ Properties for @c "label" nodes:
   - @c "flush-right" or @c "ragged-left"
   - @c "centered"
   - @c "justified"
-- @c "left-side-image": properties specifying an image to display on the left side of the label.
+- @c "left-image": properties specifying an image to display on the left side of the label.
   The available options are:
   - @c "path": string specifying the image path to load.
+- @c "top-image": properties specifying an image to display above the label.
+  The available options are:
+  - @c "path": string specifying the image path to load.
+  - @c "offset": number specifying how far from the top of the label's box to draw the image. (Default is @c 0.)
 - @c "header": attributes to apply to the first row of the label.\n
      The following sub-properties are available:
   - @c "bold": @c true to make the header bold.
@@ -633,7 +777,7 @@ The remaining properties are executed in the following order:
   - @c "bold": @c true to make the cell bold.
   - @c "highlight": @c true to highlight the cell.
   - @c "prefix": a character to display on the left side of the cell.
-  - @c "left-side-image": properties specifying an image to display on the left side of the label.
+  - @c "left-image": properties specifying an image to display on the left side of the label.
     The available options are:
     - @c "path": string specifying the image path to load.
   - @c "show-borders": an array of boolean values, representing whether the borders of the
@@ -739,6 +883,7 @@ Properties common to all bar-chart derived graphs:
   - @c "bin-name"
 - @c "include-spaces-between-bars": @c true to include spaces between bars.
 - @c "bar-sort": properties specifying how to sort the bars (after loading the data).
+  Available options are:
   - @c "direction"
     Available options are:
     - @c "ascending"
@@ -762,6 +907,15 @@ Properties common to all bar-chart derived graphs:
   - @c "bar": the axis label of the bar.
   - @c "block": number specifying which block in the bar to add the decal to. If not specified, defaults to @c 0.
   - @c "decal": the decal to add to the bar, which will contain ["label"](#label-properties) properties.
+- @c "first-bar-brackets": properties adding axis brackets that reference the first bar.
+  Available options are:
+  - @c "label": string for the bracket's label.
+  - @c "start-block-re": a regular expression used to find the starting block for the bracket.
+  - @c "end-block-re": a regular expression used to find the ending block for the bracket.
+
+  If the "re" variations of the starting and ending labels are available, then these properties are used:
+  - @c "start-block": string specifying the tag of the starting block of the bar.
+  - @c "end-block": string specifying the tag of the ending block of the bar.
 - @c "constrain-scaling-axis-to-bars": @c true to force the scaling axis to the longest bar.
 
 Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,

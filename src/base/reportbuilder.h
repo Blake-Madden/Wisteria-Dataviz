@@ -18,6 +18,7 @@
 #include "fillableshape.h"
 #include "../data/subset.h"
 #include "../data/pivot.h"
+#include "../data/join.h"
 #include "../graphs/lineplot.h"
 #include "../graphs/wcurveplot.h"
 #include "../graphs/piechart.h"
@@ -60,8 +61,6 @@ namespace Wisteria
         ///     referencing them by name.
         /// @param subsetsNode The subsets node.
         /// @param parentToSubset The dataset connected to the current dataset node.
-        ///     This will usually be the dataset being subsetted, unless a subset
-        ///     explicitly references something else (e.g., a previous subset from the same section).
         void LoadSubsets(const wxSimpleJSON::Ptr_t& subsetsNode,
                          const std::shared_ptr<const Data::Dataset>& parentToSubset);
         /// @brief Loads the pivots node into @c m_datasets.
@@ -69,10 +68,15 @@ namespace Wisteria
         ///     referencing them by name.
         /// @param pivotsNode The pivots node.
         /// @param parentToPivot The dataset connected to the current dataset node.
-        ///     This will usually be the dataset being pivoted, unless a pivot
-        ///     explicitly references something else (e.g., a previous pivot from the same section).
         void LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
                         const std::shared_ptr<const Data::Dataset>& parentToPivot);
+        /// @brief Loads the merges node into @c m_datasets.
+        /// @details These (merged) datasets are used by objects throughout the report,
+        ///     referencing them by name.
+        /// @param pivotsNode The pivots node.
+        /// @param datasetToMerge The dataset connected to the current dataset node.
+        void LoadMerges(const wxSimpleJSON::Ptr_t& mergesNode,
+                        const std::shared_ptr<const Data::Dataset>& datasetToMerge);
         /// @brief Loads a common axis node into @c m_commonAxesPostions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then
@@ -262,6 +266,9 @@ namespace Wisteria
         ///     Otherwise, tries to return the path relative to the project file.
         [[nodiscard]] wxString ConvertFilePath(const wxString& path);
 
+        /// @brief Converts a string value to a @c wxPaperSize enum value.
+        [[nodiscard]] static std::optional<wxPaperSize>
+            ConvertPaperSize(const wxString& value);
         /// @brief Converts a string value to a LabelPlaceent enum value.
         [[nodiscard]] static std::optional<LabelPlacement>
             ConvertLabelPlacement(const wxString& value);

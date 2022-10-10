@@ -53,6 +53,11 @@ namespace Wisteria
             else if (orientation.CmpNoCase(L"vertical") == 0 ||
                 orientation.CmpNoCase(L"portrait") == 0)
                 { reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT); }
+
+            const auto paperSize = ConvertPaperSize(printNode->GetProperty(L"paper-size")->
+                GetValueString(L"paper-letter"));
+            if (paperSize.has_value())
+                { reportPrintSettings.SetPaperId(paperSize.value()); }
             }
 
         const auto datasetsNode = json->GetProperty(L"datasets");
@@ -88,7 +93,7 @@ namespace Wisteria
                     canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
 
                     // page numbering
-                    if (page->HasProperty(L"pagenumbering"))
+                    if (page->HasProperty(L"page-numbering"))
                         { m_pageNumber = 1; }
 
                     // background color
@@ -280,6 +285,137 @@ namespace Wisteria
             }
 
         return reportPages;
+        }
+
+    //---------------------------------------------------
+    std::optional<wxPaperSize> ReportBuilder::ConvertPaperSize(const wxString& value)
+        {
+        static const std::map<std::wstring, wxPaperSize> paperSizeValues =
+            {
+            { L"paper-letter", wxPaperSize::wxPAPER_LETTER },
+            { L"paper-legal", wxPaperSize::wxPAPER_LEGAL },
+            { L"paper-a4", wxPaperSize::wxPAPER_A4 },
+            { L"paper-csheet", wxPaperSize::wxPAPER_CSHEET },
+            { L"paper-dsheet", wxPaperSize::wxPAPER_DSHEET },
+            { L"paper-esheet", wxPaperSize::wxPAPER_ESHEET },
+            { L"paper-lettersmall", wxPaperSize::wxPAPER_LETTERSMALL },
+            { L"paper-tabloid", wxPaperSize::wxPAPER_TABLOID },
+            { L"paper-ledger", wxPaperSize::wxPAPER_LEDGER },
+            { L"paper-statement", wxPaperSize::wxPAPER_STATEMENT },
+            { L"paper-executive", wxPaperSize::wxPAPER_EXECUTIVE },
+            { L"paper-a3", wxPaperSize::wxPAPER_A3 },
+            { L"paper-a4small", wxPaperSize::wxPAPER_A4SMALL },
+            { L"paper-a5", wxPaperSize::wxPAPER_A5 },
+            { L"paper-b4", wxPaperSize::wxPAPER_B4 },
+            { L"paper-b5", wxPaperSize::wxPAPER_B5 },
+            { L"paper-folio", wxPaperSize::wxPAPER_FOLIO },
+            { L"paper-quarto", wxPaperSize::wxPAPER_QUARTO },
+            { L"paper-10x14", wxPaperSize::wxPAPER_10X14 },
+            { L"paper-11x17", wxPaperSize::wxPAPER_11X17 },
+            { L"paper-note", wxPaperSize::wxPAPER_NOTE },
+            { L"paper-env-9", wxPaperSize::wxPAPER_ENV_9 },
+            { L"paper-env-10", wxPaperSize::wxPAPER_ENV_10 },
+            { L"paper-env-11", wxPaperSize::wxPAPER_ENV_11 },
+            { L"paper-env-12", wxPaperSize::wxPAPER_ENV_12 },
+            { L"paper-env-14", wxPaperSize::wxPAPER_ENV_14 },
+            { L"paper-env-dl", wxPaperSize::wxPAPER_ENV_DL },
+            { L"paper-env-c5", wxPaperSize::wxPAPER_ENV_C5 },
+            { L"paper-env-c3", wxPaperSize::wxPAPER_ENV_C3 },
+            { L"paper-env-c4", wxPaperSize::wxPAPER_ENV_C4 },
+            { L"paper-env-c6", wxPaperSize::wxPAPER_ENV_C6 },
+            { L"paper-env-c65", wxPaperSize::wxPAPER_ENV_C65 },
+            { L"paper-env-b4", wxPaperSize::wxPAPER_ENV_B4 },
+            { L"paper-env-b5", wxPaperSize::wxPAPER_ENV_B5 },
+            { L"paper-env-b6", wxPaperSize::wxPAPER_ENV_B6 },
+            { L"paper-env-italy", wxPaperSize::wxPAPER_ENV_ITALY },
+            { L"paper-env-monarch", wxPaperSize::wxPAPER_ENV_MONARCH },
+            { L"paper-env-personal", wxPaperSize::wxPAPER_ENV_PERSONAL },
+            { L"paper-fanfold-us", wxPaperSize::wxPAPER_FANFOLD_US },
+            { L"paper-fanfold-std-german", wxPaperSize::wxPAPER_FANFOLD_STD_GERMAN },
+            { L"paper-fanfold-lgl-german", wxPaperSize::wxPAPER_FANFOLD_LGL_GERMAN },
+            { L"paper-iso-b4", wxPaperSize::wxPAPER_ISO_B4 },
+            { L"paper-japanese-postcard", wxPaperSize::wxPAPER_JAPANESE_POSTCARD },
+            { L"paper-9x11", wxPaperSize::wxPAPER_9X11 },
+            { L"paper-10x11", wxPaperSize::wxPAPER_10X11 },
+            { L"paper-15x11", wxPaperSize::wxPAPER_15X11 },
+            { L"paper-env-invite", wxPaperSize::wxPAPER_ENV_INVITE },
+            { L"paper-letter-extra", wxPaperSize::wxPAPER_LETTER_EXTRA },
+            { L"paper-legal-extra", wxPaperSize::wxPAPER_LEGAL_EXTRA },
+            { L"paper-tabloid-extra", wxPaperSize::wxPAPER_TABLOID_EXTRA },
+            { L"paper-a4-extra", wxPaperSize::wxPAPER_A4_EXTRA },
+            { L"paper-letter-transverse", wxPaperSize::wxPAPER_LETTER_TRANSVERSE },
+            { L"paper-a4-transverse", wxPaperSize::wxPAPER_A4_TRANSVERSE },
+            { L"paper-letter-extra-transverse", wxPaperSize::wxPAPER_LETTER_EXTRA_TRANSVERSE },
+            { L"paper-a-plus", wxPaperSize::wxPAPER_A_PLUS },
+            { L"paper-b-plus", wxPaperSize::wxPAPER_B_PLUS },
+            { L"paper-letter-plus", wxPaperSize::wxPAPER_LETTER_PLUS },
+            { L"paper-a4-plus", wxPaperSize::wxPAPER_A4_PLUS },
+            { L"paper-a5-transverse", wxPaperSize::wxPAPER_A5_TRANSVERSE },
+            { L"paper-b5-transverse", wxPaperSize::wxPAPER_B5_TRANSVERSE },
+            { L"paper-a3-extra", wxPaperSize::wxPAPER_A3_EXTRA },
+            { L"paper-a5-extra", wxPaperSize::wxPAPER_A5_EXTRA },
+            { L"paper-b5-extra", wxPaperSize::wxPAPER_B5_EXTRA },
+            { L"paper-a2", wxPaperSize::wxPAPER_A2 },
+            { L"paper-a3-transverse", wxPaperSize::wxPAPER_A3_TRANSVERSE },
+            { L"paper-a3-extra-transverse", wxPaperSize::wxPAPER_A3_EXTRA_TRANSVERSE },
+            { L"paper-dbl-japanese-postcard", wxPaperSize::wxPAPER_DBL_JAPANESE_POSTCARD },
+            { L"paper-a6", wxPaperSize::wxPAPER_A6 },
+            { L"paper-jenv-kaku2", wxPaperSize::wxPAPER_JENV_KAKU2 },
+            { L"paper-jenv-kaku3", wxPaperSize::wxPAPER_JENV_KAKU3 },
+            { L"paper-jenv-chou3", wxPaperSize::wxPAPER_JENV_CHOU3 },
+            { L"paper-jenv-chou4", wxPaperSize::wxPAPER_JENV_CHOU4 },
+            { L"paper-letter-rotated", wxPaperSize::wxPAPER_LETTER_ROTATED },
+            { L"paper-a3-rotated", wxPaperSize::wxPAPER_A3_ROTATED },
+            { L"paper-a4-rotated", wxPaperSize::wxPAPER_A4_ROTATED },
+            { L"paper-a5-rotated", wxPaperSize::wxPAPER_A5_ROTATED },
+            { L"paper-b4-jis-rotated", wxPaperSize::wxPAPER_B4_JIS_ROTATED },
+            { L"paper-b5-jis-rotated", wxPaperSize::wxPAPER_B5_JIS_ROTATED },
+            { L"paper-japanese-postcard-rotated", wxPaperSize::wxPAPER_JAPANESE_POSTCARD_ROTATED },
+            { L"paper-dbl-japanese-postcard-rotated", wxPaperSize::wxPAPER_DBL_JAPANESE_POSTCARD_ROTATED },
+            { L"paper-a6-rotated", wxPaperSize::wxPAPER_A6_ROTATED },
+            { L"paper-jenv-kaku2-rotated", wxPaperSize::wxPAPER_JENV_KAKU2_ROTATED },
+            { L"paper-jenv-kaku3-rotated", wxPaperSize::wxPAPER_JENV_KAKU3_ROTATED },
+            { L"paper-jenv-chou3-rotated", wxPaperSize::wxPAPER_JENV_CHOU3_ROTATED },
+            { L"paper-jenv-chou4-rotated", wxPaperSize::wxPAPER_JENV_CHOU4_ROTATED },
+            { L"paper-b6-jis", wxPaperSize::wxPAPER_B6_JIS },
+            { L"paper-b6-jis-rotated", wxPaperSize::wxPAPER_B6_JIS_ROTATED },
+            { L"paper-12x11", wxPaperSize::wxPAPER_12X11 },
+            { L"paper-jenv-you4", wxPaperSize::wxPAPER_JENV_YOU4 },
+            { L"paper-jenv-you4-rotated", wxPaperSize::wxPAPER_JENV_YOU4_ROTATED },
+            { L"paper-p16k", wxPaperSize::wxPAPER_P16K },
+            { L"paper-p32k", wxPaperSize::wxPAPER_P32K },
+            { L"paper-p32kbig", wxPaperSize::wxPAPER_P32KBIG },
+            { L"paper-penv-1", wxPaperSize::wxPAPER_PENV_1 },
+            { L"paper-penv-2", wxPaperSize::wxPAPER_PENV_2 },
+            { L"paper-penv-3", wxPaperSize::wxPAPER_PENV_3 },
+            { L"paper-penv-4", wxPaperSize::wxPAPER_PENV_4 },
+            { L"paper-penv-5", wxPaperSize::wxPAPER_PENV_5 },
+            { L"paper-penv-6", wxPaperSize::wxPAPER_PENV_6 },
+            { L"paper-penv-7", wxPaperSize::wxPAPER_PENV_7 },
+            { L"paper-penv-8", wxPaperSize::wxPAPER_PENV_8 },
+            { L"paper-penv-9", wxPaperSize::wxPAPER_PENV_9 },
+            { L"paper-penv-10", wxPaperSize::wxPAPER_PENV_10 },
+            { L"paper-p16k-rotated", wxPaperSize::wxPAPER_P16K_ROTATED },
+            { L"paper-p32k-rotated", wxPaperSize::wxPAPER_P32K_ROTATED },
+            { L"paper-p32kbig-rotated", wxPaperSize::wxPAPER_P32KBIG_ROTATED },
+            { L"paper-penv-1-rotated", wxPaperSize::wxPAPER_PENV_1_ROTATED },
+            { L"paper-penv-2-rotated", wxPaperSize::wxPAPER_PENV_2_ROTATED },
+            { L"paper-penv-3-rotated", wxPaperSize::wxPAPER_PENV_3_ROTATED },
+            { L"paper-penv-4-rotated", wxPaperSize::wxPAPER_PENV_4_ROTATED },
+            { L"paper-penv-5-rotated", wxPaperSize::wxPAPER_PENV_5_ROTATED },
+            { L"paper-penv-6-rotated", wxPaperSize::wxPAPER_PENV_6_ROTATED },
+            { L"paper-penv-7-rotated", wxPaperSize::wxPAPER_PENV_7_ROTATED },
+            { L"paper-penv-8-rotated", wxPaperSize::wxPAPER_PENV_8_ROTATED },
+            { L"paper-penv-9-rotated", wxPaperSize::wxPAPER_PENV_9_ROTATED },
+            { L"paper-penv-10-rotated", wxPaperSize::wxPAPER_PENV_10_ROTATED },
+            { L"paper-a0", wxPaperSize::wxPAPER_A0 },
+            { L"paper-a1", wxPaperSize::wxPAPER_A1 }
+            };
+
+        const auto foundValue = paperSizeValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != paperSizeValues.cend()) ?
+            std::optional<wxPaperSize>(foundValue->second) :
+            std::nullopt);
         }
 
     //---------------------------------------------------
@@ -698,10 +834,10 @@ namespace Wisteria
                 { label->SetFontColor(color); }
 
             // an image to the left side of it
-            const auto leftSideNode = labelNode->GetProperty(L"left-side-image");
-            if (leftSideNode->IsOk())
+            if (const auto imgNode = labelNode->GetProperty(L"left-image");
+                imgNode->IsOk())
                 {
-                auto path = leftSideNode->GetProperty(L"path")->GetValueString();
+                auto path = imgNode->GetProperty(L"path")->GetValueString();
                 if (path.length())
                     {
                     if (!wxFileName::FileExists(path))
@@ -710,10 +846,30 @@ namespace Wisteria
                         if (!wxFileName::FileExists(path))
                             {
                             throw std::runtime_error(
-                                wxString::Format(_(L"%s: label side image not found."), path).ToUTF8());
+                                wxString::Format(_(L"%s: label image not found."), path).ToUTF8());
                             }
                         }
                     label->SetLeftImage(Image::LoadFile(path));
+                    }
+                }
+            // top image
+            if (const auto imgNode = labelNode->GetProperty(L"top-image");
+                imgNode->IsOk())
+                {
+                auto path = imgNode->GetProperty(L"path")->GetValueString();
+                if (path.length())
+                    {
+                    if (!wxFileName::FileExists(path))
+                        {
+                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                        if (!wxFileName::FileExists(path))
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"%s: label image not found."), path).ToUTF8());
+                            }
+                        }
+                    label->SetTopImage(Image::LoadFile(path),
+                        imgNode->GetProperty(L"offset")->GetValueNumber(0));
                     }
                 }
 
@@ -1392,6 +1548,56 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    void ReportBuilder::LoadMerges(const wxSimpleJSON::Ptr_t& mergesNode,
+                                   const std::shared_ptr<const Data::Dataset>& datasetToMerge)
+        {
+        if (mergesNode->IsOk())
+            {
+            auto merges = mergesNode->GetValueArrayObject();
+            for (const auto& merge : merges)
+                {
+                if (merge->IsOk())
+                    {
+                    const wxString dsName = merge->GetProperty(L"other-dataset")->GetValueString();
+                    const auto foundPos = m_datasets.find(dsName);
+                    if (foundPos == m_datasets.cend() ||
+                        foundPos->second == nullptr)
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: dataset not found for dataset merging."), dsName).ToUTF8());
+                        }
+
+                    const auto mergeType = merge->GetProperty(L"type")->GetValueString(L"left-join-unique");
+                    if (mergeType.CmpNoCase(L"left-join-unique") == 0)
+                        {
+                        std::vector<std::pair<wxString, wxString>> bys;
+                        const auto byCols = merge->GetProperty(L"by")->GetValueArrayObject();
+                        for (const auto& byCol : byCols)
+                            {
+                            bys.push_back(std::make_pair(byCol->GetProperty(L"left-column")->GetValueString(),
+                                                         byCol->GetProperty(L"right-column")->GetValueString()));
+                            }
+                        auto mergedData = DatasetJoin::LeftJoinUnique(datasetToMerge, foundPos->second,
+                            bys, merge->GetProperty(L"suffix")->GetValueString(L".x"));
+
+                        if (mergedData)
+                            {
+                            m_datasets.insert_or_assign(
+                                merge->GetProperty(L"name")->GetValueString(), mergedData);
+                            LoadDatasetTransformations(merge, mergedData);
+                            }
+                        }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: unrecognized dataset merging method."), mergeType).ToUTF8());
+                        }
+                    }
+                }
+            }
+        }
+
+    //---------------------------------------------------
     void ReportBuilder::LoadPivots(const wxSimpleJSON::Ptr_t& pivotsNode,
                                    const std::shared_ptr<const Data::Dataset>& parentToPivot)
         {
@@ -1627,6 +1833,9 @@ namespace Wisteria
 
             // load any pivots of this dataset
             LoadPivots(dsNode->GetProperty(L"pivots"), dataset);
+
+            // load any merges of this dataset
+            LoadMerges(dsNode->GetProperty(L"merges"), dataset);
 
             const auto exportPath =
                     dsNode->GetProperty(L"export-path")->GetValueString();
@@ -2010,6 +2219,54 @@ namespace Wisteria
                         }
                     
                     barChart->AddBarGroup(bGroup);
+                    }
+                }
+            }
+
+        // bar brackets
+        if (const auto barBracketsNode = graphNode->GetProperty(L"first-bar-brackets");
+            barBracketsNode->IsOk() && barBracketsNode->IsValueArray())
+            {
+            const auto barBrackets = barBracketsNode->GetValueArrayObject();
+            for (const auto& barBracket : barBrackets)
+                {
+                if (barBracket->HasProperty(L"start-block-re") &&
+                    barBracket->HasProperty(L"end-block-re"))
+                    {
+                    barChart->AddFirstBarBracketRE(
+                        barBracket->GetProperty(L"start-block-re")->GetValueString(),
+                        barBracket->GetProperty(L"end-block-re")->GetValueString(),
+                        barBracket->GetProperty(L"label")->GetValueString());
+                    }
+                else
+                    {
+                    barChart->AddFirstBarBracket(
+                        barBracket->GetProperty(L"start-block")->GetValueString(),
+                        barBracket->GetProperty(L"end-block")->GetValueString(),
+                        barBracket->GetProperty(L"label")->GetValueString());
+                    }
+                }
+            }
+        if (const auto barBracketsNode = graphNode->GetProperty(L"last-bar-brackets");
+            barBracketsNode->IsOk() && barBracketsNode->IsValueArray())
+            {
+            const auto barBrackets = barBracketsNode->GetValueArrayObject();
+            for (const auto& barBracket : barBrackets)
+                {
+                if (barBracket->HasProperty(L"start-block-re") &&
+                    barBracket->HasProperty(L"end-block-re"))
+                    {
+                    barChart->AddLastBarBracketRE(
+                        barBracket->GetProperty(L"start-block-re")->GetValueString(),
+                        barBracket->GetProperty(L"end-block-re")->GetValueString(),
+                        barBracket->GetProperty(L"label")->GetValueString());
+                    }
+                else
+                    {
+                    barChart->AddLastBarBracket(
+                        barBracket->GetProperty(L"start-block")->GetValueString(),
+                        barBracket->GetProperty(L"end-block")->GetValueString(),
+                        barBracket->GetProperty(L"label")->GetValueString());
                     }
                 }
             }
@@ -2959,7 +3216,7 @@ namespace Wisteria
                         { currentCell->SetBackgroundColor(bgcolor); }
 
                     // an image to the left side of it
-                    const auto leftSideNode = cellUpdate->GetProperty(L"left-side-image");
+                    const auto leftSideNode = cellUpdate->GetProperty(L"left-image");
                     if (leftSideNode->IsOk())
                         {
                         auto path = leftSideNode->GetProperty(L"path")->GetValueString();
