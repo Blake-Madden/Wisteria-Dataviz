@@ -11,6 +11,37 @@
 namespace Wisteria::Data
     {
     //----------------------------------------------
+    void ColumnWithStringTable::FillWithMissingData()
+        {
+        auto mdCode = FindMissingDataCode();
+        if (!mdCode.has_value())
+            {
+            GetStringTable().insert(std::make_pair(GetNextKey(), wxEmptyString));
+            mdCode = FindMissingDataCode();
+            }
+        wxASSERT_MSG(mdCode, L"Error creating MD code for caterical column!");
+        if (mdCode.has_value())
+            { Fill(mdCode.value()); }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': unable to fill column with missing data."), GetName()).ToUTF8());
+            }
+        }
+
+    //----------------------------------------------
+    bool ColumnWithStringTable::IsMissingData(const size_t index) const
+        {
+        wxASSERT_MSG(index < GetRowCount(), L"Invalid index in call to Column::IsMissingData()");
+        if (index >= GetRowCount())
+                { return false; }
+        auto mdCode = FindMissingDataCode();
+        if (!mdCode.has_value())
+            { return false; }
+        return GetValue(index) == mdCode.value();
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::CollapseStringTable()
         {
         multi_value_aggregate_map<wxString, GroupIdType> dupMap;

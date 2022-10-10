@@ -111,7 +111,7 @@ namespace Wisteria::Data
 
         /** @brief Constructor.
             @param title The title of the column.
-             This is useful for identifying the column in a dataset.*/
+                This is useful for identifying the column in a dataset.*/
         explicit Column(const wxString& title) : m_name(title)
             {}
         /// @private
@@ -123,27 +123,6 @@ namespace Wisteria::Data
         /// @brief Functions relating to transforming data in the column.
         /// @{
 
-        /** @brief Sets a value in the data.
-            @param index The index into the data to set.
-            @param val The new value.*/
-        void SetValue(const size_t index, const T& val)
-            {
-            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::SetValue()");
-            if (index >= m_data.size())
-                { return; }
-            m_data.at(index) = val;
-            }
-        /// @brief Recodes all instances of a value in the column to a new value.
-        /// @param oldValue The value to replace.
-        /// @param newValue The new value to replace with.
-        void Recode(const T& oldValue, const T& newValue)
-            { std::replace(m_data.begin(), m_data.end(), oldValue, newValue); }
-        /** @brief Fills the data with a value.
-            @param val The value to fill the data with.*/
-        void Fill(const T& val)
-            { std::fill(m_data.begin(), m_data.end(), val); }
-        /// @}
-
         /// @returns The raw data.
         [[nodiscard]] const std::vector<T>& GetValues() const noexcept
             { return m_data; }
@@ -154,6 +133,55 @@ namespace Wisteria::Data
             wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::GetValue()");
             return m_data.at(index);
             }
+        /** @brief Sets a value in the data.
+            @param index The index into the data to set.
+            @param val The new value.*/
+        void SetValue(const size_t index, const T& val)
+            {
+            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::SetValue()");
+            if (index >= m_data.size())
+                { return; }
+            m_data.at(index) = val;
+            }
+        /// @returns @c true if value at the given index is missing data.
+        /// @param index The index into the data to read.
+        [[nodiscard]] virtual bool IsMissingData(const size_t index) const
+            {
+            wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::IsMissingData()");
+            if (index >= m_data.size())
+                { return false; }
+            if constexpr (std::is_floating_point<T>())
+                { return GetValue(index) == std::numeric_limits<T>::quiet_NaN(); }
+            else if constexpr (std::is_same_v<T, wxString>)
+                { return GetValue(index).empty(); }
+            else if constexpr (std::is_same_v<T, wxDateTime>)
+                { return !GetValue(index).IsValid(); }
+            else
+                { return false; }
+            }
+        /// @brief Recodes all instances of a value in the column to a new value.
+        /// @param oldValue The value to replace.
+        /// @param newValue The new value to replace with.
+        void Recode(const T& oldValue, const T& newValue)
+            { std::replace(m_data.begin(), m_data.end(), oldValue, newValue); }
+        /** @brief Fills the data with a value.
+            @param val The value to fill the data with.*/
+        void Fill(const T& val)
+            { std::fill(m_data.begin(), m_data.end(), val); }
+        /// @brief Fills the column with missing data.
+        ///     Missing data will be dependent on the columns data type. For example,
+        ///     a date column will be filled with @c wxInvalidDateTime.
+        virtual void FillWithMissingData()
+            {
+            if constexpr (std::is_floating_point<T>())
+                { Fill(std::numeric_limits<T>::quiet_NaN()); }
+            else if constexpr (std::is_same_v<T, wxString>)
+                { Fill(wxEmptyString); }
+            else if constexpr (std::is_same_v<T, wxDateTime>)
+                { Fill(wxInvalidDateTime); }
+            }
+        /// @}
+        
         /// @returns The number of rows.
         [[nodiscard]] size_t GetRowCount() const noexcept
             { return m_data.size(); }
@@ -214,7 +242,7 @@ namespace Wisteria::Data
 
         /** @brief Constructor.
             @param title The title of the column.
-             This is useful for identifying the column in a dataset.*/
+                This is useful for identifying the column in a dataset.*/
         explicit ColumnWithStringTable(const wxString& title) : Column(title)
             {}
         /// @private
@@ -230,15 +258,31 @@ namespace Wisteria::Data
             { return m_stringTable; }
         /// @brief Sets the string table.
         /// @param sTable The new string table for the column.
+        /// @warning If the column already contains data, then it is the caller's responsibility
+        ///     to recode any of the existing data. This includes missing data in the column,
+        ///     which by default will be mapped to @c 0.
+        ///     (The new string table may have a different code for MD, so the existing values in the column
+        ///     will need to be recoded in that case.)
         void SetStringTable(const StringTableType& sTable)
             { m_stringTable = sTable; }
+
+        /// @brief Fills the column with missing data.
+        void FillWithMissingData() final;
+        /// @returns @c true if value at the given index is missing data.
+        /// @param index The index into the data to read.
+        /// @warning If reviewing numerous rows, then it is recommended to call
+        ///     FindMissingDataCode() and compare values from GetValue() against that instead.
+        ///     This function has to call FindMissingDataCode() (making it less than optimal)
+        ///     and is only meant for convenience.
+        [[nodiscard]] bool IsMissingData(const size_t index) const final;
 
         /** @brief Applies a regular expression string replacement for all values in
                 the string table.
             @param pattern The regex pattern to replace.
             @param replace The replacement text.
             @note If recoding causes duplicate entries in the string table, then those duplicates
-                will be removed and the data will be recoded accordingly.
+                will be removed and the data will be recoded accordingly. In other words, the
+                string table may be collapsed in the case of duplicates.
             @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& pattern, const wxString& replace);
 
@@ -411,8 +455,8 @@ namespace Wisteria::Data
              info().Continuous({ 3.1, 5.5 })
              @endcode
 
-             This will result in 3.1 being set for the first continuous column
-             and 5.5 for the second continuous column.
+             This will result in @c 3.1 being set for the first continuous column
+             and @c 5.5 for the second continuous column.
             @param values The column names.
             @returns A self reference.*/
         RowInfo& Continuous(const std::vector<double>& values)

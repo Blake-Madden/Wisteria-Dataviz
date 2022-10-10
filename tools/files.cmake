@@ -20,6 +20,7 @@ SET(WISTERIA_SRC
     src/base/shapes.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
+    src/data/join.cpp
     src/data/pivot.cpp
     src/data/subset.cpp
     src/data/textclassifier.cpp
@@ -54,5 +55,6 @@ SET(WISTERIA_SRC
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/textreplace.cpp
+    src/wxSimpleJSON/out/build/x64-Debug/CMakeFiles/3.23.22060601-MSVC_2/CompilerIdCXX/CMakeCXXCompilerId.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp)
