@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "printerheaderfooterdlg.h"
+#include "../data/dataset.h"
 
 using namespace Wisteria::UI;
 
@@ -58,7 +59,7 @@ void PrinterHeaderFooterDlg::UCaseEmbeddedTags(wxString& str)
 bool PrinterHeaderFooterDlg::Validate()
     {
     wxRegEx re(L"(@[[:alpha:]]+@)");
-    const std::set<wxString> supportedTags =
+    const std::set<wxString, Wisteria::Data::StringCmpNoCase> supportedTags =
         { L"@TITLE@", L"@DATE@",
           L"@TIME@", L"@PAGENUM@",
           L"@PAGESCNT@" };
