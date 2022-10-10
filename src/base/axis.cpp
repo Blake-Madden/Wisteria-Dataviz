@@ -475,7 +475,7 @@ namespace Wisteria::GraphItems
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
-                auto title{ GetTitle() };
+                Label title{ GetTitle() };
                 title.SetScaling(GetScaling());
                 topLeftCorner.x -= title.GetBoundingBox(dc).GetWidth() +
                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -520,7 +520,7 @@ namespace Wisteria::GraphItems
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
-                auto title{ GetTitle() };
+                Label title{ GetTitle() };
                 title.SetScaling(GetScaling());
                 bottomRightCorner.x += title.GetBoundingBox(dc).GetWidth() +
                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -556,7 +556,7 @@ namespace Wisteria::GraphItems
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
-                auto title{ GetTitle() };
+                Label title{ GetTitle() };
                 title.SetScaling(GetScaling());
                 bottomRightCorner.y += title.GetBoundingBox(dc).GetHeight() +
                                        ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -591,7 +591,7 @@ namespace Wisteria::GraphItems
                 }
             if (GetTitle().IsShown() && GetTitle().GetText().length())
                 {
-                auto title{ GetTitle() };
+                Label title{ GetTitle() };
                 title.SetScaling(GetScaling());
                 topLeftCorner.y -= title.GetBoundingBox(dc).GetHeight() +
                                    ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -3469,9 +3469,12 @@ namespace Wisteria::GraphItems
             wxString label = GetBrackets()[i].GetLabel().GetText();
             // out of 4-digit sequence, only keep the last 2
             reReplace.ReplaceAll(&label, LR"(\1)");
-            // if no prefix like "FY", then it's just a year sequence;
+            // replace 'FY' or 'AY' with apostrophe in front of the first truncated number
+            if (rePrefix.Matches(label))
+                { rePrefix.ReplaceFirst(&label, L"\'"); }
+            // else if no prefix like "FY", then it's just a year sequence;
             // add apostrophe in front of the first truncated number
-            if (!rePrefix.Matches(label))
+            else
                 { label.insert(0, 1, L'\''); }
             // if using hypthens, replace with en dashes to be fancier
             label.Replace(L"-", L"\x2013");

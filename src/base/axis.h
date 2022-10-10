@@ -1045,10 +1045,10 @@ namespace Wisteria::GraphItems
         /** @brief Simplifies the labels along the brackets.
             @note This should be called after all brackets have been added.
             @details This will be various simplifications, such as the following:
-            - If brackets contain a pattern like `1979-80` or `FY1979-1980`,
-              then the first one will be preserved, but the remaining ones will
-              be shortened to `'79-80` or `FY79-80`. (This will only be applied
-              if all dates are in the same century.)*/
+            - If brackets contain a pattern like `1979-80`, `FY1979-1980`, or `AY1979-1980`,
+              then the first one will be preserved, but the remaining ones will be
+              shortened to `'79-80`.
+              (This will only be applied if all dates are in the same century.)*/
         void SimplifyBrackets();
         /// @}
 
