@@ -108,7 +108,7 @@ namespace Wisteria
         graphs.begin()->get()->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         graphs.begin()->get()->GetTopXAxis().GetTitle().Show(false);
 
-        // tell the canvas to align the plots and stand-alone axes across each column
+        // tell the canvas to align the plots and stand-alone axes down each column
         canvas->AlignColumnContent(true);
 
         if (useCommonLeftAxis)

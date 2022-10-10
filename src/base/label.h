@@ -218,6 +218,20 @@ namespace Wisteria::GraphItems
             @param bmp The image to use.*/
         void SetLeftImage(const wxBitmapBundle& bmp)
             { m_leftImage = bmp; }
+        /** @brief Adds an image to the top side of the text.
+            @details The image's size will be its original size,
+                but the width will be scaled to the width of the text if necessary
+                (preserving the aspect ratio).
+            @warning This will reset any legend that the label currently has.
+            @param bmp The image to use.
+            @param offset The offset (in DIPs) from the top to draw the image.\n
+                This can be useful for drawing the icon below the ascendor line of the text
+                (or even underneath the text).*/
+        void SetTopImage(const wxBitmapBundle& bmp, const size_t offset = 0)
+            {
+            m_topImage = bmp;
+            m_topImageOffset = offset;
+            }
         /// @}
 
         /// @name Bounding Box Functions
@@ -328,6 +342,11 @@ namespace Wisteria::GraphItems
         ///     may be smaller than @c textHeight.
         /// @param textHeight The current height of the label.
         [[nodiscard]] wxSize CalcLeftImageSize(const wxCoord textHeight) const;
+        /// @returns The size that the top image will be if the provided width is given.
+        /// @note This will maintain the image's aspect ratio and the calculated width
+        ///     may be smaller than @c textWidth.
+        /// @param textWidth The current width of the label.
+        [[nodiscard]] wxSize CalcTopImageSize(const wxCoord textWidth) const;
         /// @returns Number of lines of text in the label.
         [[nodiscard]] size_t GetLineCount() const noexcept
             { return m_lineCount; }
@@ -385,6 +404,8 @@ namespace Wisteria::GraphItems
         std::set<size_t> m_linesIgnoringLeftMargin;
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         wxBitmapBundle m_leftImage;
+        wxBitmapBundle m_topImage;
+        size_t m_topImageOffset{ 0 };
         };
     }
 

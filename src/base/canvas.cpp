@@ -875,7 +875,7 @@ namespace Wisteria
                     {
                     std::vector<wxCoord> leftPoints;
                     std::vector<wxCoord> rightPoints;
-                    // go through each row and adjust the current column
+                    // go through each row and gather the current column's width and position
                     for (auto fixedObjectsRowPos = GetFixedObjects().begin();
                          fixedObjectsRowPos != GetFixedObjects().end();
                          ++fixedObjectsRowPos)
@@ -885,7 +885,7 @@ namespace Wisteria
                             noMoreColumns = true;
                             break;
                             }
-                        auto& objectPos = fixedObjectsRowPos->at(colIndex);
+                        const auto& objectPos = fixedObjectsRowPos->at(colIndex);
                         if (objectPos != nullptr &&
                             !objectPos->GetContentRect().IsEmpty())
                             {
@@ -898,6 +898,7 @@ namespace Wisteria
                         { break; }
                     if (leftPoints.size() && rightPoints.size())
                         {
+                        // apply the smallest content area to the items in the column
                         const auto leftPt = *std::max_element(leftPoints.cbegin(),
                                                               leftPoints.cend());
                         const auto rightPt = *std::min_element(rightPoints.cbegin(),
@@ -912,7 +913,7 @@ namespace Wisteria
                                 {
                                 objectPos->SetContentLeft(leftPt);
                                 objectPos->SetContentRight(rightPt);
-                                // recalculate the size of the object after adjust its content area;
+                                // recalculate the size of the object after adjusting its content area;
                                 // if that changed the size of the object (should be smaller),
                                 // then push everything to the right of it over to the left.
                                 const auto oldBoundingBox = objectPos->GetBoundingBox(dc);
@@ -1063,7 +1064,7 @@ namespace Wisteria
         // proportionally to fit
         const auto totalHeightProportion =
             std::accumulate(m_rowsInfo.cbegin(), m_rowsInfo.cend(), 0.0,
-                [](const auto initVal, const auto val) noexcept
+                [](const auto& initVal, const auto& val) noexcept
                 { return initVal + val.GetHeightProportion(); });
         if (totalHeightProportion > 1)
             {
@@ -1241,7 +1242,7 @@ namespace Wisteria
         // filled with null placeholders
         const size_t validItemsInRow = std::accumulate(GetFixedObjects().at(row).cbegin(),
             GetFixedObjects().at(row).cend(), 0,
-            [](const auto initVal, const auto& item) noexcept
+            [](const auto& initVal, const auto& item) noexcept
             { return initVal + (item == nullptr ? 0 : 1); });
         if (validItemsInRow > 0)
             { CalcColumnWidths(row); }
@@ -1289,7 +1290,7 @@ namespace Wisteria
             { dc.GradientFillLinear(GetCanvasRect(dc), GetBackgroundColor(), *wxWHITE, wxSOUTH); }
         else
             {
-            // if background color is bad, then just fill the canvas with white.
+            // If background color is bad, then just fill the canvas with white.
             // Otherwise, fill with color
             wxDCBrushChanger bc(dc, !GetBackgroundColor().IsOk() ?
                                 *wxWHITE_BRUSH : wxBrush(GetBackgroundColor()) );

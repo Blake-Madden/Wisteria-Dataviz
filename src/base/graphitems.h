@@ -1913,11 +1913,10 @@ namespace Wisteria
                     }
                 return false;
                 }
-            /// @brief Returns the rectangle (relative to the canvas) of the object's
-            ///     main content.
+            /// @brief Returns the rectangle (relative to the canvas) of the object's main content.
             /// @details This is object specific and is used by the canvas
-            ///     when aligning objects across a row. For example, this can be used to
-            ///     align the axes of multiple plots.
+            ///     when aligning objects across a row or down a column.
+            ///     For example, this can be used to align the axes of multiple plots.
             /// @returns The content area.
             [[nodiscard]] virtual wxRect GetContentRect() const noexcept
                 { return wxRect(); }

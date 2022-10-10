@@ -393,8 +393,11 @@ namespace Wisteria
         [[nodiscard]] bool IsRowContentAligned() const noexcept
             { return m_alignRowContent; }
 
-        /** @brief Whether to align the content of items across each column.
-            @details For example, this will set the X axes of the plots
+        /** @brief Whether to align the content of items down each column.
+            @details Items (e.g., graphs) will have their content adjusted
+                to the width and positions of the smallest item (that supports `GetContentRect()`)
+                from the column. (Items not overriding `GetContentRect()` will be ignored.)\n
+                As an example use case, this will set the X axes of the plots
                 (as well as stand-alone axes) down a column to have the same width and positions.
             @param align @c true to align column contents.
             @note If the grid is jagged, then the content alignment will stop on the first
