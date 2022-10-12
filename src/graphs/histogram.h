@@ -186,7 +186,7 @@ namespace Wisteria::Graphs
             // the name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;
             /// @private
-            [[nodiscard]] bool operator<(const BinBlock& that) const noexcept
+            [[nodiscard]] bool operator<(const BinBlock& that) const
                 {
                 if (m_bin != that.m_bin)
                     { return m_bin < that.m_bin; }
