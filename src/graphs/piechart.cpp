@@ -688,12 +688,12 @@ namespace Wisteria::Graphs
             std::optional<wxColour> sliceColor =
                 GetColorScheme() ?
                     std::optional<wxColour>(GetOuterPie().at(i).IsGhosted() ?
-                        ColorContrast::ChangeOpacity(GetColorScheme()->GetColor(i), m_ghostOpacity) :
+                        ColorContrast::ChangeOpacity(GetColorScheme()->GetColor(i), GetGhostOpacity()) :
                         GetColorScheme()->GetColor(i)) :
                     std::nullopt;
             wxBrush sliceBrush = GetBrushScheme()->GetBrush(i);
             sliceBrush.SetColour(GetOuterPie().at(i).IsGhosted() ?
-                    ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(), m_ghostOpacity) :
+                    ColorContrast::ChangeOpacity(GetBrushScheme()->GetBrush(i).GetColour(), GetGhostOpacity()) :
                     GetBrushScheme()->GetBrush(i).GetColour());
             auto pSlice = std::make_shared<PieSlice>(
                 GraphItemInfo(GetOuterPie().at(i).GetGroupLabel()).
@@ -803,7 +803,7 @@ namespace Wisteria::Graphs
                 sliceColorToUse = (GetInnerPie().at(i).IsGhosted() ?
                     // inner slices should be twice as translucent as outer slices since
                     // the outer slices will slightly show through it
-                    ColorContrast::ChangeOpacity(sliceColor.value(), m_ghostOpacity / 2) :
+                    ColorContrast::ChangeOpacity(sliceColor.value(), GetGhostOpacity() / 2) :
                     sliceColor);
                 }
             sliceBrush = (currentParentSliceIndex == GetInnerPie().at(i).m_parentSliceIndex) ?
@@ -817,7 +817,7 @@ namespace Wisteria::Graphs
             sliceBrushToUse.SetColour(GetInnerPie().at(i).IsGhosted() ?
                     // inner slices should be twice as translucent as outer slices since
                     // the outer slices will slightly show through it
-                    ColorContrast::ChangeOpacity(sliceBrush.GetColour(), m_ghostOpacity / 2) :
+                    ColorContrast::ChangeOpacity(sliceBrush.GetColour(), GetGhostOpacity() / 2) :
                     sliceBrush.GetColour());
 
             currentParentSliceIndex = GetInnerPie().at(i).m_parentSliceIndex;
