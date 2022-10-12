@@ -276,7 +276,7 @@ namespace Wisteria::GraphItems
         {
         if (!image.IsOk())
             { return wxNullImage; }
-        wxImage Silhouette = image.ConvertToMono(0,0,0);
+        wxImage Silhouette = image.ConvertToMono(0, 0, 0);
         SetColorTransparent(Silhouette, *wxWHITE);
         if (!opaque)
             {
@@ -323,9 +323,9 @@ namespace Wisteria::GraphItems
         // create a shiny overlay
         memDC.GradientFillLinear(wxRect(0, 0,
                                     (direction == Orientation::Vertical) ?
-                                        fillSize.GetWidth() : fillSize.GetWidth()*.25,
+                                        fillSize.GetWidth() : fillSize.GetWidth() * math_constants::quarter,
                                     (direction == Orientation::Vertical) ?
-                                        fillSize.GetHeight()*.25 : fillSize.GetHeight()),
+                                        fillSize.GetHeight() * math_constants::quarter : fillSize.GetHeight()),
                                  color.ChangeLightness(115),color.ChangeLightness(155),
                                  (direction == Orientation::Vertical) ? wxSOUTH : wxEAST);
         memDC.SelectObject(wxNullBitmap);

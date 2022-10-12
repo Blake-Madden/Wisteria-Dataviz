@@ -166,7 +166,7 @@ namespace Wisteria::GraphItems
                 (while maintaining the aspect ratio).\n
             @param img The image to fit.
             @param rect The rect to crop the image to.
-            @param centerImage @c true to center the image if it needs cropping.s
+            @param centerImage @c true to center the image if it needs cropping.
             @returns The cropped image.*/
         [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
                                                      const bool centerImage);
