@@ -126,7 +126,8 @@ namespace Wisteria::Graphs
             [[nodiscard]] BoxEffect GetBoxEffect() const noexcept
                 { return m_boxEffect; }
             /** @brief Sets the effect displayed on the boxes.
-                @param boxEffect The effect to use.*/
+                @param boxEffect The effect to use.
+                @sa SetImageScheme().*/
             void SetBoxEffect(const BoxEffect boxEffect) noexcept
                 { m_boxEffect = boxEffect; }
             /// @returns How the corners of the boxes are drawn.

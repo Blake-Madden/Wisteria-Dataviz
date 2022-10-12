@@ -357,6 +357,8 @@ namespace Wisteria
         Stipple,
         /// @brief A subimage of a larger image shared by all boxes.
         CommonImage,
+        /// @brief An image scaled down to fit the box.
+        Image,
         /// @private
         EFFECTS_COUNT
         };

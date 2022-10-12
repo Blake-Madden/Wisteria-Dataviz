@@ -317,7 +317,7 @@ namespace Wisteria::Graphs
         wxCoord boxesLeft{ 0 };
 
         // main box renderer
-        const auto drawBox = [&](auto& box, const bool measureOnly)
+        const auto drawBox = [&](auto& box, const bool measureOnly, const size_t boxIndex)
             {
             if (box.GetData()->GetRowCount() == 0)
                 { return; }
@@ -406,6 +406,22 @@ namespace Wisteria::Graphs
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
                     boxImage->SetShadowType(GetShadowType());
+                    AddObject(boxImage);
+                    }
+                else if (box.GetBoxEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
+                    {
+                    const auto& barScaledImage = GetImageScheme()->GetImage(boxIndex);
+                    auto boxImage = std::make_shared<Image>(
+                        GraphItemInfo(boxLabel).
+                        Pen(GetImageOulineColor()).
+                        AnchorPoint(box.m_boxRect.GetLeftTop()),
+                        Image::CropImageToRect(
+                            barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                            wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()), true));
+                    boxImage->SetOpacity(box.GetOpacity());
+                    boxImage->SetAnchoring(Anchoring::TopLeftCorner);
+                    boxImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
+                        ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
                     AddObject(boxImage);
                     }
                 else if (box.GetBoxEffect() == BoxEffect::Stipple &&
@@ -594,7 +610,7 @@ namespace Wisteria::Graphs
         std::vector<wxPoint> boxCorners;
         for (auto& box : m_boxes)
             {
-            drawBox(box, true);
+            drawBox(box, true, 0); // index just used for images, not irrelevant here
             boxCorners.push_back(box.m_boxRect.GetTopLeft());
             boxCorners.push_back(box.m_boxRect.GetTopRight());
             boxCorners.push_back(box.m_boxRect.GetBottomLeft());
@@ -618,8 +634,8 @@ namespace Wisteria::Graphs
             wxNullImage;
 
         // draw the boxes
-        for (auto& box : m_boxes)
-            { drawBox(box, false); }
+        for (size_t i = 0; i < m_boxes.size(); ++i)
+            { drawBox(m_boxes[i], false, i); }
 
         // draw the connection points
         if (GetPen().IsOk() && GetBoxCount() >= 2)

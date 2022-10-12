@@ -310,10 +310,16 @@ namespace Wisteria::Graphs
         /** @brief Sets the list of images to connect to the plot.
             @param imageScheme The image scheme to use.
             @note If using the @c CommonImage effect for bar charts or box plots, the first
-                image in this scheme will be used.
-            @sa SetCommonBoxImageOutlineColor().*/
-        void SetImageScheme(
-            std::shared_ptr<Wisteria::Schemes::ImageScheme> imageScheme)
+                image in this scheme will be used.\n
+                For the @c Image effect, the bars/boxes' position on the graph will be the
+                index in the image scheme. For example, the first bar will use the first image,
+                the second bar the second image, etc. Also, if a bar is using grouping, the same image
+                will be used for each block within the bar. This option is preferrable to @c Stipple
+                when you are wanting different images for different bars. It can also be preferrable
+                to @c Stipple when using photographs (instead of icons) as the @c Stipple will scale
+                the image to fit, whereas @c Image will crop and center the image.
+            @sa SetCommonBoxImageOutlineColor(), BoxPlot::SetBoxEffect(), BarChart::SetBarEffect().*/
+        void SetImageScheme(std::shared_ptr<Wisteria::Schemes::ImageScheme> imageScheme)
             { m_imageScheme = imageScheme; }
 
         /// @private

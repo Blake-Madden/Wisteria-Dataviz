@@ -582,7 +582,7 @@ namespace Wisteria::Graphs
         wxImage scaledCommonImg;
 
         // main bar rendering
-        const auto drawBar = [&](auto& bar, const bool measureOnly)
+        const auto drawBar = [&](auto& bar, const bool measureOnly, size_t barIndex)
             {
             wxPoint middlePointOfBarEnd;
             wxCoord axisOffset{ 0 };
@@ -592,7 +592,7 @@ namespace Wisteria::Graphs
                 {
                 if (GetBarOrientation() == Orientation::Horizontal)
                     {
-                    /* if the bar (or block) is set to cover a specific range
+                    /* If the bar (or block) is set to cover a specific range
                        (e.g., histograms do this) then calculate
                        the width of the bar based on the coordinates.
                        Otherwise, just divvy up the bars evenly to fit the plot window.*/
@@ -688,6 +688,22 @@ namespace Wisteria::Graphs
                                 Pen(GetImageOulineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
+                            barImage->SetOpacity(bar.GetOpacity());
+                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            AddObject(barImage);
+                            }
+                        else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
+                            {
+                            const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
+                            auto barImage = std::make_shared<Image>(
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
+                                Pen(GetImageOulineColor()).
+                                AnchorPoint(wxPoint(lineXStart, lineYStart)),
+                                     Image::CropImageToRect(
+                                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                                         barRect, true));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
@@ -1024,6 +1040,22 @@ namespace Wisteria::Graphs
                                 ShadowType::RightSideShadow : ShadowType::NoShadow);
                             AddObject(barImage);
                             }
+                        else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
+                            {
+                            const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
+                            auto barImage = std::make_shared<Image>(
+                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
+                                Pen(GetImageOulineColor()).
+                                AnchorPoint(wxPoint(lineXStart, lineYEnd)),
+                                     Image::CropImageToRect(
+                                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                                         barRect, true));
+                            barImage->SetOpacity(bar.GetOpacity());
+                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            AddObject(barImage);
+                            }
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
                                  GetStippleBrush().IsOk() )
                             {
@@ -1325,7 +1357,7 @@ namespace Wisteria::Graphs
         std::vector<wxPoint> boxCorners;
         for (auto& bar : GetBars())
             {
-            drawBar(bar, true);
+            drawBar(bar, true, 0); // index is only used for image, irrelevant here
             boxCorners.push_back(barRect.GetTopLeft());
             boxCorners.push_back(barRect.GetTopRight());
             boxCorners.push_back(barRect.GetBottomLeft());
@@ -1349,10 +1381,10 @@ namespace Wisteria::Graphs
         // draw the bars
         std::vector<wxPoint> barMiddleEndPositions;
         barMiddleEndPositions.reserve(GetBars().size());
-        for (auto& bar : GetBars())
+        for (size_t i = 0; i < GetBars().size(); ++i)
             {
             // keep track of where each bar ends
-            barMiddleEndPositions.push_back(drawBar(bar, false));
+            barMiddleEndPositions.push_back(drawBar(GetBars()[i], false, i));
             }
 
         // draw the decals on top of the blocks
@@ -1429,7 +1461,7 @@ namespace Wisteria::Graphs
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(braces);
-                        drawBar(theBar, false);
+                        drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
                             { AddObject(decal); }
@@ -1494,7 +1526,7 @@ namespace Wisteria::Graphs
                         theBar.SetAxisPosition(barAxisPos);
 
                         AddObject(braces);
-                        drawBar(theBar, false);
+                        drawBar(theBar, false, 0);
                         // cppcheck-suppress knownEmptyContainer
                         for (auto& decal : decals)
                             { AddObject(decal); }
