@@ -409,6 +409,7 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
+    void BarChart::ShowcaseBars(const std::vector<wxString>& labels)
     void BarChart::SortBars(std::vector<wxString> labels,
                             const Wisteria::SortDirection direction)
         {

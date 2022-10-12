@@ -730,12 +730,30 @@ namespace Wisteria::Graphs
             { return m_barEffect; }
         /// @brief Sets the bar effect.
         /// @param effect The bar effect to apply.
+        /// @sa SetImageScheme().
         void SetBarEffect(const BoxEffect effect) noexcept
             {
             m_barEffect = effect;
             for (auto& bar : GetBars())
                 { bar.SetEffect(effect); }
             }
+        /** @brief Sets the specified bars (by axis label) to be fully opaque,
+                and all other to a lighter opacity.
+            @param labels The bars to showcase.
+            @note Call SetGhostOpacity() prior to this to control how translucent
+                the non-showcased (i.e., "ghosted") bars are.
+            @sa SetGhostOpacity().*/
+        void ShowcaseBars(const std::vector<wxString>& labels);
+        /// @returns The opacity level applied to "ghosted" slices.
+        [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
+            { return m_ghostOpacity; }
+        /** @brief Sets the opacity level for "ghosted" bars.\
+                This is only used if ShowcaseBars() is called; this is the
+                opacity applied to bars not being showcased.
+            @param opacity The opacity level (should be between @c 0 to @c 255).
+            @sa ShowcaseBars().*/
+        void SetGhostOpacity(const uint8_t opacity) noexcept
+            { m_ghostOpacity = opacity; }
         /// @returns Direct access to the bars.
         /// @note If changing the length of the bar directly, then you will need
         ///    to adjust the scaling axis as well.\n
@@ -1067,6 +1085,7 @@ namespace Wisteria::Graphs
     private:
         std::vector<Bar> m_bars;
         uint8_t m_barOopacity{ wxALPHA_OPAQUE };
+        uint8_t m_ghostOpacity{ 32 }; // used for showcasing
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
