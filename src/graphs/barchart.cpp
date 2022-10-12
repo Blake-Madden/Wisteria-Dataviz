@@ -410,6 +410,19 @@ namespace Wisteria::Graphs
 
     //-----------------------------------
     void BarChart::ShowcaseBars(const std::vector<wxString>& labels)
+        {
+        for (auto& bar : GetBars())
+            {
+            const auto foundPos = std::find_if(labels.cbegin(), labels.cend(),
+                [&bar](const auto& label)
+                    {
+                    return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0;
+                    });
+            bar.SetOpacity((foundPos == labels.cend()) ? GetGhostOpacity() : wxALPHA_OPAQUE);
+            }
+        }
+
+    //-----------------------------------
     void BarChart::SortBars(std::vector<wxString> labels,
                             const Wisteria::SortDirection direction)
         {
@@ -422,7 +435,46 @@ namespace Wisteria::Graphs
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
             { return; }
-        else if (labels.size() != GetBars().size())
+        // if not all labels were provided, then get the other bar labels that weren't
+        // provided and sort those, pushing them all beneath the provided bars
+        if (labels.size() != GetBars().size())
+            {
+            std::vector<wxString> otherLabelBars;
+            // verify that provided labels are in the existing bars
+            for (const auto& label : labels)
+                {
+                const auto foundPos = std::find_if(GetBars().cbegin(), GetBars().cend(),
+                    [&label](const auto& bar)
+                        {
+                        return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
+                        });
+                if (foundPos == GetBars().cend())
+                    {
+                    throw std::runtime_error(wxString::Format(
+                        _(L"'%s': bar label not found when sorting."), label).ToUTF8());
+                    }
+                }
+            // get the bar labels that the caller did not specify
+            for (const auto& bar : GetBars())
+                {
+                const auto foundPos = std::find_if(labels.cbegin(), labels.cend(),
+                    [&bar](const auto& label)
+                        {
+                        return label.CmpNoCase(bar.GetAxisLabel().GetText()) == 0;
+                        });
+                if (foundPos == labels.cend())
+                    { otherLabelBars.push_back(bar.GetAxisLabel().GetText()); }
+                }
+            // sort them, set the expected order, and copy them after the labels the caller provided
+            std::sort(otherLabelBars.begin(), otherLabelBars.end(),
+                [](const auto& lhv, const auto& rhv)
+                { return lhv.CmpNoCase(rhv) < 0; });
+            if ((direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Vertical) ||
+                (direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Horizontal))
+                { std::reverse(otherLabelBars.begin(), otherLabelBars.end()); }
+            std::copy(otherLabelBars.cbegin(), otherLabelBars.cend(), std::back_inserter(labels));
+            }
+        if (labels.size() != GetBars().size())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"Bar label count (%zu) is different from bar count (%zu) when sorting."),

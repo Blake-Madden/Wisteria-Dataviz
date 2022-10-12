@@ -924,6 +924,9 @@ namespace Wisteria::Graphs
         ///     appear along the axis.
         /// @param direction SortAscending to sort going top-to-bottom or left-to-right.
         ///    SortDescending to sort bottom-to-top or right-to-left.
+        /// @note If not all bar labels are provided, then the given labels will be grouped
+        ///     to the top (or left) and the rest of the bars will be sorted after those
+        ///     alphabetically.
         /// @throws std::runtime_error If a provided label isn't found, throws an exception.
         virtual void SortBars(std::vector<wxString> labels, const SortDirection direction);
         /// @returns @c true if the bars can be sorted (i.e., reordered) in terms of bar length.
