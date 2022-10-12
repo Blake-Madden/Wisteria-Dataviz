@@ -429,8 +429,6 @@ namespace Wisteria::Graphs
         wxASSERT_LEVEL_2_MSG(IsSortable(),
                              L"Bars are not sortable. "
                               "Call SetSortable(true) prior to calling SortBars().");
-        wxASSERT_LEVEL_2_MSG(labels.size() == GetBars().size(),
-                             L"Number of labels need to match the number of bars when sorting.");
         m_sortDirection = direction;
         if (!IsSortable() || direction == SortDirection::NoSort ||
             GetBarAxis().IsReversed())
@@ -890,6 +888,15 @@ namespace Wisteria::Graphs
                                     ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                                     *wxWHITE : *wxBLACK);
                                 }
+
+                            // if the bar is totally transparent, then draw a contrasting outline
+                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT)
+                                {
+                                box->GetPen().SetColour(
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                    *wxBLACK : *wxWHITE);
+                                }
+
                             // if the box is really thin, then don't use the outline pen
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetPen() = wxNullPen; }
@@ -1236,6 +1243,15 @@ namespace Wisteria::Graphs
                                     ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                                                            *wxWHITE : *wxBLACK);
                                 }
+
+                            // if the bar is totally transparent, then draw a contrasting outline
+                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT)
+                                {
+                                box->GetPen().SetColour(
+                                    ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                    *wxBLACK : *wxWHITE);
+                                }
+
                             // if the box is really thin, then don't use the outline pen
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetPen() = wxNullPen; }
