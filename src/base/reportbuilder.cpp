@@ -479,6 +479,7 @@ namespace Wisteria
         static const std::map<std::wstring_view, BoxEffect> boxEffects =
             {
             { L"common-image", BoxEffect::CommonImage },
+            { L"image", BoxEffect::Image },
             { L"fade-from-bottom-to-top", BoxEffect::FadeFromBottomToTop },
             { L"fade-from-left-to-right", BoxEffect::FadeFromLeftToRight },
             { L"fade-from-right-to-left", BoxEffect::FadeFromRightToLeft },
@@ -2144,6 +2145,14 @@ namespace Wisteria
                     _(L"Sorting method not defined for bar sort.").ToUTF8());
                 }
             }
+
+        if (graphNode->HasProperty(L"ghost-opacity"))
+            { barChart->SetGhostOpacity(graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32)); }
+
+        // showcasing
+        if (const auto showcaseNode = graphNode->GetProperty(L"showcase-bars");
+            showcaseNode->IsOk() && showcaseNode->IsValueArray())
+            { barChart->ShowcaseBars(showcaseNode->GetValueStringVector()); }
 
         // decals to add to the bars
         const auto decalsNode = graphNode->GetProperty(L"decals");

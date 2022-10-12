@@ -444,6 +444,7 @@ Properties for @c "box-plot" nodes:
 - @c "box-effect": string specifying the effects for the boxes.
   Available options are:
   - @c "common-image" (This will require an @c "image-scheme" to be defined.)
+  - @c "image" (This will require an @c "image-scheme" to be defined.)
   - @c "fade-from-bottom-to-top"
   - @c "fade-from-left-to-right"
   - @c "fade-from-right-to-left"
@@ -882,6 +883,8 @@ Properties common to all bar-chart derived graphs:
   - @c "no-display"
   - @c "bin-name"
 - @c "include-spaces-between-bars": @c true to include spaces between bars.
+- @c "ghost-opacity": number specifying the opacity level of non-showcased bars.
+- @c "showcase-bars": an array of strings specifying which bars to showcase.
 - @c "bar-sort": properties specifying how to sort the bars (after loading the data).
   Available options are:
   - @c "direction"

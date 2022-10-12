@@ -256,7 +256,9 @@ namespace Wisteria::Graphs
                 Bar theBar(IsShowingFullRangeOfValues() ? blockTable.first.m_bin : barNumber,
                     {
                     BarBlock(BarBlockInfo(blockTable.second.second).
-                        Brush(blockBrush).Color(blockColor).SelectionLabel(GraphItems::Label(blockLabel)))
+                        Tag(blockTable.first.m_groupName).
+                        Brush(blockBrush).Color(blockColor).
+                        SelectionLabel(GraphItems::Label(blockLabel)))
                     },
                     wxEmptyString,
                     IsShowingFullRangeOfValues() ? GraphItems::Label(wxEmptyString) :
@@ -276,8 +278,12 @@ namespace Wisteria::Graphs
                 }
             else
                 {
-                BarBlock block{ BarBlock(BarBlockInfo(blockTable.second.second).
-                    Brush(blockBrush).Color(blockColor).SelectionLabel(GraphItems::Label(blockLabel))) };
+                BarBlock block{
+                    BarBlock(BarBlockInfo(blockTable.second.second).
+                        Tag(blockTable.first.m_groupName).
+                        Brush(blockBrush).Color(blockColor).
+                        SelectionLabel(GraphItems::Label(blockLabel)))
+                    };
                 if (blockTable.second.first.size() > 1)
                     {
                     block.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
@@ -445,7 +451,7 @@ namespace Wisteria::Graphs
                 { total += blocks.second.first; }
            }
 
-        /* remove any following bins that do not have anything in them (might happen if the range
+        /* Remove any following bins that do not have anything in them (might happen if the range
            had to be expanded to create neat intervals). Leading bins are handled separately in the
            loop below because the range min value makes removing bins here more tricky.*/
         while (bins.size())
@@ -460,7 +466,7 @@ namespace Wisteria::Graphs
         bool firstBinWithValuesFound = false;
         for (size_t i = 0; i < bins.size(); ++i)
             {
-            Bar theBar(startingBarAxisPosition+(i*BinSize),
+            Bar theBar(startingBarAxisPosition + (i*BinSize),
                 std::vector<BarBlock>(),
                 wxEmptyString, GraphItems::Label(),
                 GetBarEffect(), GetBarOpacity(),
@@ -500,8 +506,17 @@ namespace Wisteria::Graphs
                     block.second.second.size() > 1)
                     { blockLabel += L"..."; }
 
-                BarBlock theBlock{ BarBlock(BarBlockInfo(block.second.first).
-                    Brush(blockBrush).Color(blockColor).SelectionLabel(GraphItems::Label(blockLabel)))  };
+                const wxString blockTag = (m_useGrouping ?
+                    m_groupColumn->GetLabelFromID(block.first) :
+                    wxString(L""));
+
+                BarBlock theBlock
+                    {
+                    BarBlock(BarBlockInfo(block.second.first).
+                        Tag(blockTag).
+                        Brush(blockBrush).Color(blockColor).
+                        SelectionLabel(GraphItems::Label(blockLabel)))
+                    };
                 if (block.second.second.size() > 1)
                     {
                     theBlock.GetSelectionLabel().SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
