@@ -501,6 +501,7 @@ namespace Wisteria::Graphs
                     auto boxPoly = std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo(boxLabel).
                         Pen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
+                        Outline(true, true, true, true).
                         Scaling(GetScaling()).
                         BaseColor(boxColor).Brush(brush),
                         boxPoints, std::size(boxPoints));

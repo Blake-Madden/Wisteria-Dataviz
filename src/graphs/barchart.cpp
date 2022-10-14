@@ -847,7 +847,7 @@ namespace Wisteria::Graphs
                         // color-filled bar
                         else
                             {
-                            std::shared_ptr<GraphItems::Polygon> box;
+                            std::shared_ptr<GraphItems::Polygon> box{ nullptr };
                             GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
@@ -875,6 +875,7 @@ namespace Wisteria::Graphs
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Outline(true, true, true, true).
                                     ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
                                 }
@@ -893,7 +894,9 @@ namespace Wisteria::Graphs
                                 arrowPoints[6] = barNeckRect.GetBottomLeft();
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
+                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Outline(true, true, true, true).
+                                    ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
                                 }
 
@@ -940,10 +943,12 @@ namespace Wisteria::Graphs
                                     *wxBLACK : *wxWHITE);
                                 }
 
-                            // if the box is really thin, then don't use the outline pen
+                            // if the box is really thin, then don't use the outline pen on its sides
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
-                                { box->GetPen() = wxNullPen; }
+                                { box->GetGraphItemInfo().Outline(true, false, true, false); }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
+                            // clip box to not be on top of axes
+                            box->SetClippingRect(drawArea);
                             // add the box to the plot item collection
                             AddObject(box);
                             }
@@ -1229,7 +1234,9 @@ namespace Wisteria::Graphs
 
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).ShowLabelWhenSelected(true),
+                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Outline(true, true, true, true).
+                                    ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
@@ -1251,6 +1258,7 @@ namespace Wisteria::Graphs
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                     Pen(wxPen(*wxBLACK)).Brush(blockBrush).
+                                    Outline(true, true, true, true).
                                     Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
                                 }
@@ -1299,10 +1307,12 @@ namespace Wisteria::Graphs
                                     *wxBLACK : *wxWHITE);
                                 }
 
-                            // if the box is really thin, then don't use the outline pen
+                            // if the box is really thin, then don't use the outline pen on the top/bottom
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
-                                { box->GetPen() = wxNullPen; }
+                                { box->GetGraphItemInfo().Outline(false, true, false, true); }
                             box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
+                            // clip box to not be on top of axes
+                            box->SetClippingRect(drawArea);
                             // add the box to the plot item collection
                             AddObject(box);
                             }
