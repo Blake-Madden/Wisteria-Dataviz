@@ -265,21 +265,36 @@ namespace Wisteria::GraphItems
                 // translated into SVG properly.
                 if (GetShape() == PolygonShape::Rectangle)
                     {
-                    const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
-                    dc.GradientFillLinear(theRect,
-                        GetBackgroundFill().GetColor1(), GetBackgroundFill().GetColor2(),
-                        (GetBackgroundFill().GetDirection() == FillDirection::North ? wxNORTH :
-                         GetBackgroundFill().GetDirection() == FillDirection::East ? wxEAST :
-                         GetBackgroundFill().GetDirection() == FillDirection::West ? wxWEST :
-                         wxSOUTH) );
-                    wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
-                    dc.DrawRectangle(theRect);
+                    // draw color area
+                        {
+                        wxDCPenChanger pc2(dc, wxNullPen);
+                        const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
+                        dc.GradientFillLinear(theRect,
+                            GetBackgroundFill().GetColor1(), GetBackgroundFill().GetColor2(),
+                            (GetBackgroundFill().GetDirection() == FillDirection::North ? wxNORTH :
+                                GetBackgroundFill().GetDirection() == FillDirection::East ? wxEAST :
+                                GetBackgroundFill().GetDirection() == FillDirection::West ? wxWEST :
+                                wxSOUTH));
+                        wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
+                        dc.DrawRectangle(theRect);
+                        }
+                    // draw the outline
+                    if (dc.GetPen().IsOk())
+                        {
+                        if (GetGraphItemInfo().IsShowingTopOutline())
+                            { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                        if (GetGraphItemInfo().IsShowingRightOutline())
+                            { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                        if (GetGraphItemInfo().IsShowingBottomOutline())
+                            { dc.DrawLine(boundingBox.GetBottomRight(), boundingBox.GetBottomLeft()); }
+                        if (GetGraphItemInfo().IsShowingLeftOutline())
+                            { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetTopLeft()); }
+                        }
                     }
-                // a spline doesn't use a brush, so just draw it
+                // a spline doesn't use a fill color, so just draw it
                 else if (GetShape() == PolygonShape::Spline)
                     { dc.DrawSpline(m_scaledPoints.size(), &m_scaledPoints[0]); }
                 // irregular polygon
-                // @bug SVG exporting of this will lack the gradient
                 else
                     {
                     if (dc.IsKindOf(wxCLASSINFO(wxGCDC)))
@@ -339,6 +354,26 @@ namespace Wisteria::GraphItems
             else if (GetShape() == PolygonShape::Rectangle &&
                      GetBoxCorners() == BoxCorners::Rounded)
                 { dc.DrawRoundedRectangle(boundingBox, Settings::GetBoxRoundedCornerRadius()); }
+            else if (GetShape() == PolygonShape::Rectangle)
+                {
+                // draw brush area
+                    {
+                    wxDCPenChanger pc2(dc, wxNullPen);
+                    dc.DrawRectangle(boundingBox);
+                    }
+                // draw the outline
+                if (dc.GetPen().IsOk())
+                    {
+                    if (GetGraphItemInfo().IsShowingTopOutline())
+                        { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
+                    if (GetGraphItemInfo().IsShowingRightOutline())
+                        { dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight()); }
+                    if (GetGraphItemInfo().IsShowingBottomOutline())
+                        { dc.DrawLine(boundingBox.GetBottomRight(), boundingBox.GetBottomLeft()); }
+                    if (GetGraphItemInfo().IsShowingLeftOutline())
+                        { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetTopLeft()); }
+                    }
+                }
             else
                 { dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]); }
             }

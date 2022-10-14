@@ -639,6 +639,21 @@ namespace Wisteria::Graphs
             wxCoord axisOffset{ 0 };
             wxPoint boxPoints[4]{ { 0, 0 } };
             wxPoint arrowPoints[7]{ { 0, 0 } };
+            wxRect drawArea{ GetPlotAreaBoundingBox() };
+            if (GetLeftYAxis().GetPen().IsOk())
+                {
+                drawArea.SetWidth(drawArea.GetWidth() -
+                    ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
+                drawArea.SetLeft(drawArea.GetLeft() +
+                    ScaleToScreenAndCanvas(GetLeftYAxis().GetPen().GetWidth()));
+                }
+            if (GetBottomXAxis().GetPen().IsOk())
+                {
+                drawArea.SetHeight(drawArea.GetHeight() -
+                    ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
+                drawArea.SetTop(drawArea.GetTop() +
+                    ScaleToScreenAndCanvas(GetBottomXAxis().GetPen().GetWidth()));
+                }
             for (const auto& barBlock : bar.GetBlocks())
                 {
                 if (GetBarOrientation() == Orientation::Horizontal)
@@ -743,6 +758,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
@@ -759,6 +775,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
@@ -782,6 +799,7 @@ namespace Wisteria::Graphs
                             // note that stipples have their own shadows (a silhouette), so turn off the
                             // Image's native shadow renderer.
                             barImage->SetShadowType(ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Glassy)
@@ -799,6 +817,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         // color-filled bar
@@ -1098,6 +1117,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
@@ -1114,6 +1134,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Stipple &&
@@ -1137,6 +1158,7 @@ namespace Wisteria::Graphs
                             // note that stipples have their own shadows (a silhouette), so turn off the
                             // Image's native shadow renderer.
                             barImage->SetShadowType(ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else if (bar.GetEffect() == BoxEffect::Glassy)
@@ -1154,6 +1176,7 @@ namespace Wisteria::Graphs
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
                                 ShadowType::RightSideShadow : ShadowType::NoShadow);
+                            barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
                         else

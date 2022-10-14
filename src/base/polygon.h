@@ -57,7 +57,10 @@ namespace Wisteria::GraphItems
             Irregular  /*!< No real shape to it.*/
             };
         /// @private
-        Polygon() = default;
+        Polygon()
+            {
+            GetGraphItemInfo().Outline(true, true, true, true);
+            };
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
             @param points The points of the polygon.

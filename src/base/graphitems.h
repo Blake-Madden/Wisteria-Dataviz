@@ -1510,11 +1510,16 @@ namespace Wisteria
                 InvalidateCachedBoundingBox();
                 }
 
-            /** @brief Gets/sets the area that the object's rendering is restricted to.
+            /** @brief Gets the area that the object's rendering is restricted to.
                 @details By default, objects are drawn as-is and are not clipped.
                 @returns The clipping area, which by default is @c std::nullopt.*/
             [[nodiscard]] std::optional<wxRect>& GetClippingRect() noexcept
                 { return m_itemInfo.m_clippingRect; }
+            /** @brief Sets the area that the object's rendering is restricted to.
+                @details By default, objects are drawn as-is and are not clipped.
+                @param clipRect The clipping rect, or @c std::nullopt to turn off clipping.*/
+            void SetClippingRect(std::optional<wxRect> clipRect)
+                { m_itemInfo.m_clippingRect = clipRect; }
             /// @}
 
             /** @name Padding Functions
