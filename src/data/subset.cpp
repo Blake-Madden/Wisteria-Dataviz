@@ -4,7 +4,7 @@ namespace Wisteria::Data
     {
     //---------------------------------------------------
     ColumnFilter::ColumnFilter(const std::shared_ptr<const Dataset>& fromDataset,
-        const ColumnFilterInfo subsetCriterion)
+        const ColumnFilterInfo& subsetCriterion)
         {
         wxASSERT_MSG(fromDataset, L"Invalid dataset passed to column filter.");
         // reset everything
@@ -267,7 +267,7 @@ namespace Wisteria::Data
     //---------------------------------------------------
     std::shared_ptr<Dataset> Subset::SubsetSimple(
             const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo columnFilter)
+            const ColumnFilterInfo& columnFilter)
         {
         if (fromDataset == nullptr)
             { return nullptr; }

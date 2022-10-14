@@ -342,15 +342,6 @@ namespace Wisteria::Graphs
         void SetRoundingMethod(const RoundingMethod rounding) noexcept
             { m_roundingMethod = rounding; }
 
-        /** In range mode, set this to cutpoints to place the bars in between
-                axis lines so that the range of the bins are shown on the sides of the bars.\n
-                Set this to midpoints to place the bars on top of the axis lines
-                so that a custom bin range label (for integer range mode) or a midpoint label
-                (non-integer mode) is shown at the bottom of the bar.
-            @param display The interval display to use.*/
-        void SetIntervalDisplay(const IntervalDisplay display) noexcept
-            { m_intervalDisplay = display; }
-
         /// @returns @c true if a place for each bin is included on the axis,
         ///     even if they have no items.
         /// @sa ShowFullRangeOfValues().

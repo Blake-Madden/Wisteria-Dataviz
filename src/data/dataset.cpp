@@ -848,8 +848,8 @@ namespace Wisteria::Data
             (catColumnNames.length() ? catColumnNames + delimiter : wxString()) +
             (dateColumnNames.length() ? dateColumnNames + delimiter : wxString()) +
             (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString());
-        if (colNames.length() && colNames.Last() == delimiter)
-            { colNames.RemoveLast();}
+        if (colNames.length() && colNames[colNames.length()-1] == delimiter)
+            { colNames.RemoveLast(); }
         
         wxString fileContent = colNames + L'\n';
 
@@ -884,8 +884,8 @@ namespace Wisteria::Data
                                       wxNumberFormatter::Style::Style_NoTrailingZeroes))).
                            append(1, delimiter);
                 }
-            if (currentRow.length() && currentRow.Last() == delimiter)
-                { currentRow.RemoveLast();}
+            if (currentRow.length() && currentRow[currentRow.length()-1] == delimiter)
+                { currentRow.RemoveLast(); }
             fileContent.append(currentRow).append(1, L'\n');
             }
 
@@ -966,14 +966,17 @@ namespace Wisteria::Data
         // column index with specialized import method
         struct catIndexInfo
             {
+            // cppcheck-suppress unusedStructMember
             size_t m_index{ 0 };
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
+            // cppcheck-suppress unusedStructMember
             GroupIdType m_mdCode{ 0 };
             };
 
         // column index with specialized import method
         struct dateIndexInfo
             {
+            // cppcheck-suppress unusedStructMember
             size_t m_index{ 0 };
             DateImportMethod m_importMethod{ DateImportMethod::Automatic };
             wxString m_formatStr;

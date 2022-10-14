@@ -38,8 +38,8 @@ namespace Wisteria::Graphs
              LikertSurveyQuestionFormat::SixPointCategorized :
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
+            // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPointCategorized :
-             // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPointCategorized;
         }
 
@@ -65,8 +65,8 @@ namespace Wisteria::Graphs
              LikertSurveyQuestionFormat::SixPoint :
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
+            // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPoint :
-             // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPoint;
         }
 
@@ -409,8 +409,8 @@ namespace Wisteria::Graphs
             (maxVal == 5) ? LikertSurveyQuestionFormat::FivePoint :
             (maxVal == 4) ? LikertSurveyQuestionFormat::FourPoint :
             (maxVal == 3) ? LikertSurveyQuestionFormat::ThreePoint :
-            (maxVal == 2) ? LikertSurveyQuestionFormat::TwoPoint :
             // cppcheck-suppress duplicateValueTernary
+            (maxVal == 2) ? LikertSurveyQuestionFormat::TwoPoint :
             LikertSurveyQuestionFormat::TwoPoint;
 
         return (uniqueGroups.size() > 1) ? MakeFormatCategorized(format) : format;

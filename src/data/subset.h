@@ -37,7 +37,7 @@ namespace Wisteria::Data
         /// @param fromDataset The dataset to subset.
         /// @param subsetCriterion The filter criteria.
         ColumnFilter(const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo subsetCriterion);
+            const ColumnFilterInfo& subsetCriterion);
         /** @brief Determines if the given row in the dataset meets the criteria
                 of this filter.
             @param rowPosition The row index in the dataset to review.
@@ -110,7 +110,7 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         [[nodiscard]] std::shared_ptr<Dataset> SubsetSimple(
             const std::shared_ptr<const Dataset>& fromDataset,
-            const ColumnFilterInfo columnFilter);
+            const ColumnFilterInfo& columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.
             @details In other words, if any of the filters match against an observation,
                 then it will included in the subset.
