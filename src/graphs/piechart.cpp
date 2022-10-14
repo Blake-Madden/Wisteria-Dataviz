@@ -1265,6 +1265,7 @@ namespace Wisteria::Graphs
                 donutHoleLabel->GetGraphItemInfo().Pen(wxNullPen).
                     DPIScaling(GetDPIScaleFactor()).Scaling(GetScaling()).
                     LabelPageVerticalAlignment(PageVerticalAlignment::Centered).
+                    LabelPageHorizontalAlignment(PageHorizontalAlignment::Centered).
                     Anchoring(Anchoring::Center).
                     AnchorPoint(centerPt);
 
@@ -1690,6 +1691,7 @@ namespace Wisteria::Graphs
             if (Settings::GetMaxLegendItemCount() == lineCount)
                 {
                 legendText.append(L"\u2026");
+                // cppcheck-suppress unreadVariable
                 ++currentLine;
                 break;
                 }
