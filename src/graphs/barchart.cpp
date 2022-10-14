@@ -351,7 +351,31 @@ namespace Wisteria::Graphs
             const auto originalRange = GetScalingAxis().GetRange();
 
             // tweak scaling
-            if (m_longestBarLength >= 50'000)
+            if (m_longestBarLength >= 3'000'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 7),
+                    GetScalingAxis().GetPrecision(), 1'000'000, 1);
+                }
+            else if (m_longestBarLength >= 1'500'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 7),
+                    GetScalingAxis().GetPrecision(), 500'000, 1);
+                }
+            else if (m_longestBarLength >= 800'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 6),
+                    GetScalingAxis().GetPrecision(), 100'000, 1);
+                }
+            else if (m_longestBarLength >= 400'000)
+                {
+                GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
+                    next_interval(m_longestBarLength, 6),
+                    GetScalingAxis().GetPrecision(), 50'000, 1);
+                }
+            else if (m_longestBarLength >= 50'000)
                 {
                 GetScalingAxis().SetRange(GetScalingAxis().GetRange().first,
                     next_interval(m_longestBarLength, 5),
