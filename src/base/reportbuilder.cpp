@@ -1679,25 +1679,31 @@ namespace Wisteria
             Comparison cmp = (foundPos != cmpOperators.cend() ?
                 foundPos->second : Comparison::Equals);
                             
-            const auto valueNode = filterNode->GetProperty(L"value");
+            const auto valuesNode = filterNode->GetProperty(L"values");
                             
-            if (valueNode->IsOk())
+            if (valuesNode->IsOk())
                 {
-                wxDateTime dt;
-                const bool isDate =
-                    (valueNode->IsValueString() &&
-                        (dt.ParseDateTime(valueNode->GetValueString()) ||
-                         dt.ParseDate(valueNode->GetValueString())));
-                ColumnFilterInfo cFilter 
+                ColumnFilterInfo cFilter
                     {
                     filterNode->GetProperty(L"column")->GetValueString(),
                     cmp,
-                    (isDate ?
-                        DatasetValueType(dt) :
-                        valueNode->IsValueString() ?
-                        DatasetValueType(ExpandConstants(valueNode->GetValueString())) :
-                        DatasetValueType(valueNode->GetValueNumber()))
+                    std::vector<DatasetValueType>()
                     };
+                const auto filterValues = valuesNode->GetValueArrayObject();
+                for (const auto& filterValue : filterValues)
+                    {
+                    wxDateTime dt;
+                    const bool isDate =
+                        (filterValue->IsValueString() &&
+                            (dt.ParseDateTime(filterValue->GetValueString()) ||
+                                dt.ParseDate(filterValue->GetValueString())));
+                    cFilter.m_values.push_back(isDate ?
+                        DatasetValueType(dt) :
+                        filterValue->IsValueString() ?
+                        DatasetValueType(ExpandConstants(filterValue->GetValueString())) :
+                        DatasetValueType(filterValue->GetValueNumber()));
+                    }
+                    
                 return cFilter;
                 }
             else
