@@ -357,6 +357,8 @@ namespace Wisteria
             { return L"(`[^`]+`|{{[^}]*}}|[[:space:]]*)"; }
         [[nodiscard]] static wxString NumberRegEx()
             { return L"([[:digit:]]+)"; }
+        [[nodiscard]] static wxString NumberOrStringRegEx()
+            { return L"(`[^`]+`|[[:digit:]]+)"; }
         [[nodiscard]] static wxString ParamSepatatorRegEx()
             { return L"[ ]*,[ ]*"; }
         // a parameter that is either wrapped in tickmarks or empty string (no parameter)

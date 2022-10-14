@@ -1116,16 +1116,35 @@ namespace Wisteria
         {
         const wxRegEx re(FunctionStartRegEx() +
             L"(continuouscolumn)" + OpeningParenthesisRegEx() +
-            NumberRegEx() + ClosingParenthesisRegEx());
+            NumberOrStringRegEx() + ClosingParenthesisRegEx());
         if (re.Matches(formula))
             {
+            if (dataset->GetContinuousColumns().size() == 0)
+                {
+                throw std::runtime_error(
+                    wxString(
+                        _(L"ContinuousColumn() failed. "
+                           "There are no continuous columns in the dataset.")).ToUTF8());
+                }
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
-                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
-                const wxString columnIndexStr = re.GetMatch(formula, 2);
                 unsigned long columnIndex{ 0 };
-                if (columnIndexStr.ToULong(&columnIndex))
+                wxString columnIndexStr = re.GetMatch(formula, 2);
+                if (columnIndexStr.starts_with(L"`") && columnIndexStr.ends_with(L"`"))
+                    {
+                    columnIndexStr = columnIndexStr.substr(1, columnIndexStr.length() - 2);
+                    if (columnIndexStr.CmpNoCase(L"last") == 0)
+                        { columnIndex = dataset->GetContinuousColumns().size() - 1; }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(
+                                _(L"'%s': unknown constant for continuous column index."),
+                                columnIndexStr).ToUTF8());
+                        }
+                    }
+                else if (columnIndexStr.ToULong(&columnIndex))
                     {
                     if (columnIndex >= dataset->GetContinuousColumns().size())
                         {
@@ -1133,8 +1152,15 @@ namespace Wisteria
                         wxString::Format(
                             _(L"%lu: invalid continuous column index."), columnIndex).ToUTF8());
                         }
-                    return dataset->GetContinuousColumn(columnIndex).GetName();
                     }
+                else
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(
+                            _(L"'%s': unable to convert value for continuous column index."),
+                            columnIndexStr).ToUTF8());
+                    }
+                return dataset->GetContinuousColumn(columnIndex).GetName();
                 }
             }
 
@@ -1161,7 +1187,6 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 4)
                 {
-                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
                 const wxString groupName =
                     ConvertColumnOrGroupParameter(re.GetMatch(formula, 2), dataset);
                 // if the group value is an embedded formula, then calculate it
@@ -1285,7 +1310,6 @@ namespace Wisteria
             const auto paramPartsCount = reSimple.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
-                const wxString funcName = reSimple.GetMatch(formula, 1).MakeLower();
                 const wxString columnName =
                     ConvertColumnOrGroupParameter(reSimple.GetMatch(formula, 2), dataset);
                 if (dataset->GetCategoricalColumn(columnName) !=
@@ -1308,7 +1332,6 @@ namespace Wisteria
             const auto paramPartsCount = reExtended.GetMatchCount();
             if (paramPartsCount >= 5)
                 {
-                const wxString funcName = reExtended.GetMatch(formula, 1).MakeLower();
                 const wxString columnName =
                     ConvertColumnOrGroupParameter(reExtended.GetMatch(formula, 2), dataset);
                 const wxString groupName =
@@ -1390,7 +1413,6 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 2)
                 {
-                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
                 // only continuous can be totalled
                 double total{ 0 };
                 for (size_t i = 0; i < dataset->GetContinuousColumns().size(); ++i)
@@ -1422,7 +1444,6 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 3)
                 {
-                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
                 const wxString columnName = ConvertColumnOrGroupParameter(
                                                 re.GetMatch(formula, 2), dataset);
                 // only continuous can be totalled
@@ -1512,7 +1533,6 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 2)
                 {
-                const wxString funcName = re.GetMatch(formula, 1).MakeLower();
                 wxString paramValue = re.GetMatch(formula, 2).MakeLower();
                 if (paramValue.starts_with(L"`") && paramValue.ends_with(L"`"))
                     { paramValue = paramValue.substr(1, paramValue.length() - 2); }
@@ -1690,6 +1710,11 @@ namespace Wisteria
                     std::vector<DatasetValueType>()
                     };
                 const auto filterValues = valuesNode->GetValueArrayObject();
+                if (filterValues.empty())
+                    {
+                    throw std::runtime_error(
+                        _(L"No values were provided for subset filtering.").ToUTF8());
+                    }
                 for (const auto& filterValue : filterValues)
                     {
                     wxDateTime dt;
@@ -1985,7 +2010,7 @@ namespace Wisteria
                         if (!wxFileName::FileExists(path))
                             {
                             throw std::runtime_error(
-                                wxString(_(L"Dataset not found.")).ToUTF8());
+                                wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
                             }
                         }
                     // import using the user-provided parser or deduce from the file extension
@@ -3392,7 +3417,7 @@ namespace Wisteria
         while (re.Matches(processText.data()))
             {
             // catalog all the placeholders and their replacements
-            re.GetMatch(&start, &len, 0);
+            [[maybe_unused]] const auto fullMatchResult = re.GetMatch(&start, &len, 0);
             const auto foundVal = m_values.find(
                 re.GetMatch(processText.data(), 1));
             if (foundVal != m_values.cend())
