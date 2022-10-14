@@ -254,6 +254,12 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, IsSelected() ?
             wxPen(*wxBLACK, 2*scaledPen.GetWidth(), wxPENSTYLE_DOT) : scaledPen);
 
+        // don't use manual outline drawing unless one side is explicitly turned off
+        const bool usingCustomOutline = (!GetGraphItemInfo().IsShowingTopOutline() ||
+            !GetGraphItemInfo().IsShowingRightOutline() ||
+            !GetGraphItemInfo().IsShowingBottomOutline() ||
+            !GetGraphItemInfo().IsShowingLeftOutline());
+
         // using a color fill (possibly a gradient)
         if (GetBackgroundFill().IsOk())
             {
@@ -267,7 +273,6 @@ namespace Wisteria::GraphItems
                     {
                     // draw color area
                         {
-                        wxDCPenChanger pc2(dc, wxNullPen);
                         const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
                         dc.GradientFillLinear(theRect,
                             GetBackgroundFill().GetColor1(), GetBackgroundFill().GetColor2(),
@@ -276,10 +281,11 @@ namespace Wisteria::GraphItems
                                 GetBackgroundFill().GetDirection() == FillDirection::West ? wxWEST :
                                 wxSOUTH));
                         wxDCBrushChanger bc2(dc, *wxTRANSPARENT_BRUSH);
+                        wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
                         dc.DrawRectangle(theRect);
                         }
                     // draw the outline
-                    if (dc.GetPen().IsOk())
+                    if (usingCustomOutline && dc.GetPen().IsOk())
                         {
                         if (GetGraphItemInfo().IsShowingTopOutline())
                             { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
@@ -358,11 +364,11 @@ namespace Wisteria::GraphItems
                 {
                 // draw brush area
                     {
-                    wxDCPenChanger pc2(dc, wxNullPen);
+                    wxDCPenChanger pc2(dc, (usingCustomOutline ? wxNullPen : dc.GetPen()));
                     dc.DrawRectangle(boundingBox);
                     }
                 // draw the outline
-                if (dc.GetPen().IsOk())
+                if (usingCustomOutline && dc.GetPen().IsOk())
                     {
                     if (GetGraphItemInfo().IsShowingTopOutline())
                         { dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight()); }
