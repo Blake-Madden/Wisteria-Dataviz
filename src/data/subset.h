@@ -16,15 +16,17 @@
 
 namespace Wisteria::Data
     {
-    /// @brief Criterion used for matching a row in a dataset.
+    /// @brief Criteria used for matching a row in a dataset.
     struct ColumnFilterInfo
         {
         /// @brief The column name in the dataset to compare against.
         wxString m_columnName;
         /// @brief How to compare the values from the column against the provided value.
         Comparison m_comparisonType{ Comparison::Equals };
-        /// @brief The value to compare with.
-        DatasetValueType m_value;
+        /// @brief The values to compare with.
+        /// @details This will be an OR operation, where if a value in the data matches *any* of
+        ///     these values, then it's a match.
+        std::vector<DatasetValueType> m_values;
         };
 
     /// @private
@@ -47,10 +49,10 @@ namespace Wisteria::Data
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
         std::vector<Wisteria::Data::Column<wxDateTime>>::const_iterator m_dateColumn;
 
-        GroupIdType m_groupIdValue;
-        wxString m_stringValue;
-        wxDateTime m_dateTimeValue{ wxInvalidDateTime };
-        double m_doubleValue{ std::numeric_limits<double>::quiet_NaN() };
+        std::vector<GroupIdType> m_groupIdValues{ 0 };
+        std::vector<wxString> m_stringValues;
+        std::vector<wxDateTime> m_dateTimeValues{ wxInvalidDateTime };
+        std::vector<double> m_doubleValues{ std::numeric_limits<double>::quiet_NaN() };
 
         Comparison m_comparisonType{ Comparison::Equals };
 
@@ -72,15 +74,15 @@ namespace Wisteria::Data
          // dataset with only female observations
          const auto subset =
             dsSubset.SubsetSimple(theData,
-                ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" });
+                ColumnFilterInfo{ L"Gender", Comparison::Equals, { L"Female" } });
          // "subset" can now be exported or plotted
 
          // dataset with only female observations starting from Week 3 or later
          const auto subset2 =
             dsSubset.SubsetAnd(theData,
                 {
-                ColumnFilterInfo{ L"Gender", Comparison::Equals, L"Female" },
-                ColumnFilterInfo{ L"WEEK_NAME", Comparison::GreaterThanOrEqualTo, L"Week 3" }
+                ColumnFilterInfo{ L"Gender", Comparison::Equals, { L"Female" } },
+                ColumnFilterInfo{ L"WEEK_NAME", Comparison::GreaterThanOrEqualTo, { L"Week 3" } }
                 });
         @endcode
     */
@@ -97,10 +99,10 @@ namespace Wisteria::Data
         Subset& operator=(const Subset&) = delete;
         /// @private
         Subset& operator=(Subset&&) = delete;
-        /** @brief Creates a subset, based on a single criterion.
+        /** @brief Creates a subset, based on a single column's criteria.
             @param fromDataset The source datasource to subset.
-            @param columnFilter The criterion for subsetting, defining the column and value
-                to filter on and how to compare the values.
+            @param columnFilter The criteria for subsetting, defining the column and value(s)
+                to filter on, and how to compare the values.
             @returns The subset dataset.
             @throws std::runtime_error If the column or filter value can't be found,
                 throws an exception.\n
@@ -110,7 +112,7 @@ namespace Wisteria::Data
             const std::shared_ptr<const Dataset>& fromDataset,
             const ColumnFilterInfo columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.
-            @details In other words, if any of the filters match against an observation
+            @details In other words, if any of the filters match against an observation,
                 then it will included in the subset.
             @param fromDataset The source datasource to subset.
             @param columnFilters The criteria for subsetting, defining the columns, values

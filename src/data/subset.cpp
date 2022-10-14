@@ -13,10 +13,10 @@ namespace Wisteria::Data
         m_categoricalColumn = fromDataset->GetCategoricalColumns().cend();
         m_dateColumn = fromDataset->GetDateColumns().cend();
 
-        m_groupIdValue = 0;
-        m_stringValue.clear();
-        m_dateTimeValue = wxInvalidDateTime;
-        m_doubleValue = std::numeric_limits<double>::quiet_NaN();
+        m_groupIdValues.clear();
+        m_stringValues.clear();
+        m_dateTimeValues.clear();
+        m_doubleValues.clear();
 
         // set the comparison method
         m_comparisonType = subsetCriterion.m_comparisonType;
@@ -55,93 +55,106 @@ namespace Wisteria::Data
         // if categorical, then set the comparison value
         if (m_columnType == ColumnType::Categorical)
             {
-            if (const auto val{ std::get_if<GroupIdType>(&subsetCriterion.m_value) };
-                val != nullptr)
+            for (const auto& value : subsetCriterion.m_values)
                 {
-                m_groupIdValue = *val;
-                if (m_categoricalColumn->GetStringTable().find(m_groupIdValue) ==
-                    m_categoricalColumn->GetStringTable().cend())
+                if (const auto val{ std::get_if<GroupIdType>(&value) };
+                    val != nullptr)
                     {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"Group ID not found for '%s' column filter."),
-                                         m_categoricalColumn->GetName()) );
+                    m_groupIdValues.push_back(*val);
+                    if (m_categoricalColumn->GetStringTable().find(*val) ==
+                        m_categoricalColumn->GetStringTable().cend())
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"Group ID not found for '%s' column filter."),
+                                             m_categoricalColumn->GetName()) );
+                        }
                     }
-                }
-            else if (const auto val{ std::get_if<wxString>(&subsetCriterion.m_value) };
-                val != nullptr)
-                {
-                const auto code = m_categoricalColumn->GetIDFromLabel(*val);
-                if (code.has_value())
-                    { m_groupIdValue = code.value(); }
+                else if (const auto val{ std::get_if<wxString>(&value) };
+                    val != nullptr)
+                    {
+                    const auto code = m_categoricalColumn->GetIDFromLabel(*val);
+                    if (code.has_value())
+                        { m_groupIdValues.push_back(code.value()); }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"'%s': string value not found for "
+                                                "'%s' column filter."), *val,
+                                             m_categoricalColumn->GetName()));
+                        }
+                    }
                 else
                     {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"'%s': string value not found for "
-                                            "'%s' column filter."), *val,
-                                         m_categoricalColumn->GetName()));
+                    throw std::runtime_error(_(L"Categorical column filter requires either "
+                        "a groud ID or string value for filtering."));
                     }
-                }
-            else
-                {
-                throw std::runtime_error(_(L"Categorical column filter requires either "
-                    "a groud ID or string value for filtering."));
-                }
 
-            // group ID is set, but that will only work for == or !=.
-            // if using other operators, then we need to use string comparisons later.
-            if (m_comparisonType != Comparison::Equals &&
-                m_comparisonType != Comparison::NotEquals)
-                {
-                m_stringValue = m_categoricalColumn->GetLabelFromID(m_groupIdValue);
+                // group ID is set, but that will only work for == or !=.
+                // if using other operators, then we need to use string comparisons later.
+                if (m_comparisonType != Comparison::Equals &&
+                    m_comparisonType != Comparison::NotEquals)
+                    {
+                    wxASSERT_MSG(m_groupIdValues.size(), L"No items in group IDs when building subset?!");
+                    m_stringValues.push_back(m_categoricalColumn->GetLabelFromID(m_groupIdValues.back()));
+                    }
                 }
             }
         // continuous column
         else if (m_columnType == ColumnType::Continuous)
             {
-            if (const auto val{ std::get_if<double>(&subsetCriterion.m_value) };
-                val != nullptr)
-                { m_doubleValue = *val; }
-            else
+            for (const auto& value : subsetCriterion.m_values)
                 {
-                throw std::runtime_error(_(L"Continuous column filter requires "
-                    "a double value for filtering."));
+                if (const auto val{ std::get_if<double>(&value) };
+                    val != nullptr)
+                    { m_doubleValues.push_back(*val); }
+                else
+                    {
+                    throw std::runtime_error(_(L"Continuous column filter requires "
+                        "a double value for filtering."));
+                    }
                 }
             }
         // datetime column
         else if (m_columnType == ColumnType::Date)
             {
-            if (const auto val{ std::get_if<wxDateTime>(&subsetCriterion.m_value) };
-                val != nullptr)
-                { m_dateTimeValue = *val; }
-            else if (const auto val{ std::get_if<wxString>(&subsetCriterion.m_value) };
-                val != nullptr)
+            for (const auto& value : subsetCriterion.m_values)
                 {
-                wxDateTime dt;
-                if (dt.ParseDateTime(*val) || dt.ParseDate(*val))
-                    { m_dateTimeValue = dt; }
+                if (const auto val{ std::get_if<wxDateTime>(&value) };
+                    val != nullptr)
+                    { m_dateTimeValues.push_back(*val); }
+                else if (const auto val{ std::get_if<wxString>(&value) };
+                    val != nullptr)
+                    {
+                    wxDateTime dt;
+                    if (dt.ParseDateTime(*val) || dt.ParseDate(*val))
+                        { m_dateTimeValues.push_back(dt); }
+                    else
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: string unable to be parsed for date filter."),
+                                             *val));
+                        }
+                    }
                 else
                     {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"%s: string unable to be parsed for date filter."),
-                                         *val));
+                    throw std::runtime_error(_(L"Date column filter requires "
+                        "a datetime or string value for filtering."));
                     }
-                }
-            else
-                {
-                throw std::runtime_error(_(L"Date column filter requires "
-                    "a datetime or string value for filtering."));
                 }
             }
         // ID column, comparing as strings
         else if (m_columnType == ColumnType::ID)
             {
-            if (const auto val{ std::get_if<wxString>(&subsetCriterion.m_value) };
-                val != nullptr)
-                { m_stringValue = *val; }
-            else
+            for (const auto& value : subsetCriterion.m_values)
                 {
-                throw std::runtime_error(_(L"ID column filter requires "
-                    "a string value for filtering."));
+                if (const auto val{ std::get_if<wxString>(&value) };
+                    val != nullptr)
+                    { m_stringValues.push_back(*val); }
+                else
+                    {
+                    throw std::runtime_error(_(L"ID column filter requires "
+                        "a string value for filtering."));
+                    }
                 }
             }
         }
@@ -154,81 +167,99 @@ namespace Wisteria::Data
             if (m_comparisonType == Comparison::Equals ||
                 m_comparisonType == Comparison::NotEquals)
                 {
-                // more optimal to compare integral types, so do that if
-                // reviewing == or !=
-                return (
-                    m_comparisonType == Comparison::Equals ?
-                        m_categoricalColumn->GetValue(rowPosition) == m_groupIdValue :
-                        m_categoricalColumn->GetValue(rowPosition) != m_groupIdValue);
+                for (const auto& idVal : m_groupIdValues)
+                    {
+                    // more optimal to compare integral types, so do that if
+                    // reviewing == or !=
+                    if (m_comparisonType == Comparison::Equals ?
+                            m_categoricalColumn->GetValue(rowPosition) == idVal :
+                            m_categoricalColumn->GetValue(rowPosition) != idVal)
+                        { return true; }
+                    }
                 }
             else
                 {
                 // < or > will require comparing as the strings though since
                 // group IDs probably aren't ordered the same ways as the strings
                 // would be alphabetically
-                const auto currentString =
-                    m_categoricalColumn->GetLabelFromID(
-                        m_categoricalColumn->GetValue(rowPosition));
-                const auto cmpResult = currentString.CmpNoCase(m_stringValue);
-                return (
-                    m_comparisonType == Comparison::LessThan ?
-                        cmpResult < 0 :
-                    m_comparisonType == Comparison::LessThanOrEqualTo ?
-                        cmpResult <= 0 :
-                    m_comparisonType == Comparison::GreaterThan ?
-                        cmpResult > 0 :
-                    // GreaterThanOrEqualTo
-                        cmpResult >= 0);
+                for (const auto& str : m_stringValues)
+                    {
+                    const auto currentString =
+                        m_categoricalColumn->GetLabelFromID(
+                            m_categoricalColumn->GetValue(rowPosition));
+                    const auto cmpResult = currentString.CmpNoCase(str);
+                    if (m_comparisonType == Comparison::LessThan ?
+                            cmpResult < 0 :
+                        m_comparisonType == Comparison::LessThanOrEqualTo ?
+                            cmpResult <= 0 :
+                        m_comparisonType == Comparison::GreaterThan ?
+                            cmpResult > 0 :
+                        // GreaterThanOrEqualTo
+                            cmpResult >= 0)
+                        { return true; }
+                    }
                 }
             }
         else if (m_columnType == ColumnType::Continuous)
             {
-            const auto& dVal = m_continuousColumn->GetValue(rowPosition);
-            return (m_comparisonType == Comparison::Equals ?
-                        compare_doubles(dVal, m_doubleValue) :
+            for (const auto& val : m_doubleValues)
+                {
+                const auto& dVal = m_continuousColumn->GetValue(rowPosition);
+                if (m_comparisonType == Comparison::Equals ?
+                    compare_doubles(dVal, val) :
                     m_comparisonType == Comparison::NotEquals ?
-                        !compare_doubles(dVal, m_doubleValue) :
+                    !compare_doubles(dVal, val) :
                     m_comparisonType == Comparison::LessThan ?
-                        compare_doubles_less(dVal, m_doubleValue) :
+                    compare_doubles_less(dVal, val) :
                     m_comparisonType == Comparison::LessThanOrEqualTo ?
-                        compare_doubles_less_or_equal(dVal, m_doubleValue) :
+                    compare_doubles_less_or_equal(dVal, val) :
                     m_comparisonType == Comparison::GreaterThan ?
-                        compare_doubles_greater(dVal, m_doubleValue) :
+                    compare_doubles_greater(dVal, val) :
                     // GreaterThanOrEqualTo
-                        compare_doubles_greater_or_equal(dVal, m_doubleValue));
+                    compare_doubles_greater_or_equal(dVal, val))
+                    { return true; }
+                }
             }
         else if (m_columnType == ColumnType::Date)
             {
-            const auto& dtVal = m_dateColumn->GetValue(rowPosition);
-            return (m_comparisonType == Comparison::Equals ?
-                        dtVal == m_dateTimeValue :
+            for (const auto& dt : m_dateTimeValues)
+                {
+                const auto& dtVal = m_dateColumn->GetValue(rowPosition);
+                if (m_comparisonType == Comparison::Equals ?
+                    dtVal == dt :
                     m_comparisonType == Comparison::NotEquals ?
-                        dtVal != m_dateTimeValue :
+                    dtVal != dt :
                     m_comparisonType == Comparison::LessThan ?
-                        dtVal < m_dateTimeValue :
+                    dtVal < dt :
                     m_comparisonType == Comparison::LessThanOrEqualTo ?
-                        dtVal <= m_dateTimeValue :
+                    dtVal <= dt :
                     m_comparisonType == Comparison::GreaterThan ?
-                        dtVal > m_dateTimeValue :
+                    dtVal > dt :
                     // GreaterThanOrEqualTo
-                        dtVal >= m_dateTimeValue);
+                    dtVal >= dt)
+                    { return true; }
+                }
             }
         else if (m_columnType == ColumnType::ID)
             {
-            const auto cmpResult =
-                m_idColumn->GetValue(rowPosition).CmpNoCase(m_stringValue);
-            return (m_comparisonType == Comparison::Equals ?
-                        cmpResult == 0 :
+            for (const auto& str : m_stringValues)
+                {
+                const auto cmpResult =
+                    m_idColumn->GetValue(rowPosition).CmpNoCase(str);
+                if (m_comparisonType == Comparison::Equals ?
+                    cmpResult == 0 :
                     m_comparisonType == Comparison::NotEquals ?
-                        cmpResult != 0 :
+                    cmpResult != 0 :
                     m_comparisonType == Comparison::LessThan ?
-                        cmpResult < 0 :
+                    cmpResult < 0 :
                     m_comparisonType == Comparison::LessThanOrEqualTo ?
-                        cmpResult <= 0 :
+                    cmpResult <= 0 :
                     m_comparisonType == Comparison::GreaterThan ?
-                        cmpResult > 0 :
+                    cmpResult > 0 :
                     // GreaterThanOrEqualTo
-                        cmpResult >= 0);
+                    cmpResult >= 0)
+                    { return true; }
+                }
             }
         return false;
         }
