@@ -106,8 +106,10 @@ namespace Wisteria::Graphs
 
         /** @brief Sets the data.
             @param data The data to use for the histogram.
-            @param categoricalColumnName The categorical column from the dataset with the labels to
-                group the data into. The labels in this column will become the bars.
+            @param categoricalColumnName The categorical or ID column from the dataset with the
+                labels to group the data into. The labels in this column will become the bars.\n
+                Note that using the ID column here will be less optimal than a categorical column,
+                so this should avoided for larger datasets.
             @param valueColumnName The column with values to sum for each category.
                 If not used (@c std::nullopt), then the frequency of the observations
                 in each group will be used.
@@ -149,8 +151,10 @@ namespace Wisteria::Graphs
     private:
         struct CatBarBlock
             {
-            // group ID in the main categorical column
+            // group ID in the main categorical column, used for the bar axis position ordering
             Data::GroupIdType m_bin{ 0 };
+            // the name of the parent bar
+            wxString m_binName;
             // 0-based index into the color scheme
             // (based on the alphabetically order of the group label from
             //  the secondary group column)
@@ -174,10 +178,12 @@ namespace Wisteria::Graphs
             { return GetBars().size(); }
 
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
+        const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
+        bool m_useIDColumnForBars{ false };
         bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
         // cat ID and string order

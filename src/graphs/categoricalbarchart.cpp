@@ -30,15 +30,24 @@ namespace Wisteria::Graphs
         m_useGrouping = groupColumnName.has_value();
         m_useValueColumn = valueColumnName.has_value();
         m_groupIds.clear();
+        m_useIDColumnForBars = false;
         GetSelectedIds().clear();
         SetBinLabelDisplay(blDisplay);
+
+        m_idColumn = &m_data->GetIdColumn();
 
         m_categoricalColumn = m_data->GetCategoricalColumn(categoricalColumnName);
         if (m_categoricalColumn == m_data->GetCategoricalColumns().cend())
             {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': categorical column not found for categorical bar chart."),
-                categoricalColumnName).ToUTF8());
+            // see if they are using the ID column for the bars
+            if (m_idColumn->GetName().CmpNoCase(categoricalColumnName) == 0)
+                { m_useIDColumnForBars = true; }
+            else
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': categorical/ID column not found for categorical bar chart."),
+                    categoricalColumnName).ToUTF8());
+                }
             }
         m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
@@ -101,7 +110,9 @@ namespace Wisteria::Graphs
         GetBarAxis().ShowOuterLabels(false);
 
         // set axis labels
-        GetBarAxis().GetTitle().SetText(m_categoricalColumn->GetName());
+        GetBarAxis().GetTitle().SetText(m_useIDColumnForBars ?
+            m_idColumn->GetName() :
+            m_categoricalColumn->GetName());
         GetScalingAxis().GetTitle().SetText(_(L"Frequency"));
         }
 
@@ -113,6 +124,14 @@ namespace Wisteria::Graphs
 
         // calculate how many observations are in each group
         aggregate_frequency_set<CatBarBlock> groups;
+        std::map<wxString, size_t, Data::StringCmpNoCase> m_IDsMap;
+        if (m_useIDColumnForBars)
+            {
+            for (size_t i = 0; i < m_data->GetRowCount(); ++i)
+                {
+                m_IDsMap.insert(std::make_pair(m_idColumn->GetValue(i), m_IDsMap.size()));
+                }
+            }
 
         double grandTotal{ 0 };
         for (size_t i = 0; i < m_data->GetRowCount(); ++i)
@@ -134,15 +153,38 @@ namespace Wisteria::Graphs
                 if (pos != m_groupIds.end())
                     { colorIndex = pos->second; }
                 }
-            groups.insert(
-                // the current category ID (and group's color index and label, if applicable)
-                CatBarBlock{
-                    m_categoricalColumn->GetValue(i),
-                    (m_useGrouping ? colorIndex : 0),
-                    (m_useGrouping ?
-                        m_groupColumn->GetLabelFromID(m_groupColumn->GetValue(i)) :
-                        wxString(L"")) },
-                groupTotal);
+            if (m_useIDColumnForBars)
+                {
+                const auto ID = m_IDsMap.find(m_idColumn->GetValue(i));
+                wxASSERT_MSG((ID != m_IDsMap.cend()),
+                             L"Error finding bar index for ID value!");
+                if (ID != m_IDsMap.cend())
+                    {
+                    groups.insert(
+                        // the current category ID (and group's color index and label, if applicable)
+                        CatBarBlock{
+                            ID->second,
+                            m_idColumn->GetValue(i),
+                            (m_useGrouping ? colorIndex : 0),
+                            (m_useGrouping ?
+                                m_groupColumn->GetLabelFromID(m_groupColumn->GetValue(i)) :
+                                wxString(L"")) },
+                        groupTotal);
+                    }
+                }
+            else
+                {
+                groups.insert(
+                    // the current category ID (and group's color index and label, if applicable)
+                    CatBarBlock{
+                        m_categoricalColumn->GetValue(i),
+                        m_categoricalColumn->GetLabelFromID(m_categoricalColumn->GetValue(i)),
+                        (m_useGrouping ? colorIndex : 0),
+                        (m_useGrouping ?
+                            m_groupColumn->GetLabelFromID(m_groupColumn->GetValue(i)) :
+                            wxString(L"")) },
+                    groupTotal);
+                }
             }
 
         // add the bars (block-by-block)
@@ -172,7 +214,7 @@ namespace Wisteria::Graphs
             GraphItems::Label blockLabel(blockLabelText);
 
             auto foundBar = std::find_if(GetBars().begin(), GetBars().end(),
-                [&blockTable](const auto& bar)
+                [&blockTable](const auto& bar) noexcept
                     { return compare_doubles(bar.GetAxisPosition(), blockTable.first.m_bin); });
             if (foundBar == GetBars().end())
                 {
@@ -184,8 +226,7 @@ namespace Wisteria::Graphs
                         SelectionLabel(blockLabel))
                     },
                     wxEmptyString,
-                    GraphItems::Label(
-                        m_categoricalColumn->GetLabelFromID(blockTable.first.m_bin)),
+                    GraphItems::Label(blockTable.first.m_binName),
                     GetBarEffect(), GetBarOpacity());
                 AddBar(theBar);
                 }
