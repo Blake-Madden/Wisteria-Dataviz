@@ -991,10 +991,20 @@ namespace Wisteria::Graphs
         /// @returns The brush scheme used for the bars.
         [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
             { return m_brushScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.
+            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
+        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
+            { m_brushScheme = colors; }
         /// @brief Get the color scheme used for the bars.
         /// @returns The color scheme used for the bars.
         [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
             { return m_colorScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.
+            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
+        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
+            { m_colorScheme = colors; }
 
         /// @returns The maximum number of bars displayed before the parent canvas is forced
         ///    to be made taller (which will make this chart easier to read).
@@ -1036,16 +1046,6 @@ namespace Wisteria::Graphs
                 GetRightYAxis() : GetTopXAxis();
             }
     protected:
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.*/
-        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
-            { m_colorScheme = colors; }
-        
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.*/
-        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
-            { m_brushScheme = colors; }
-        
         /// @brief Updates the label at the top (or right) of a bar.
         ///     This is controlled by the current bin label display and will update it accordingly.
         /// @param bar The bar to update.
