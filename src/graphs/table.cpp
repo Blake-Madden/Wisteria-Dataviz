@@ -471,7 +471,7 @@ namespace Wisteria::Graphs
 
             size_t currentRow{ 0 };
             std::vector<double> rowValues;
-            for ([[maybe_unused]] const auto& row : m_table)
+            for (size_t rowCounter = 0; rowCounter < m_table.size(); ++rowCounter)
                 {
                 rowValues.clear();
                 // tally values from the whole row, unless a custom range was defined
@@ -1172,10 +1172,10 @@ namespace Wisteria::Graphs
         // draw the row borders
         currentRow = currentColumn = 0;
         rowCellsToSkip.clear();
-        for ([[maybe_unused]] const auto& rowHeight : rowHeights)
+        for (size_t rowHeightCounter = 0; rowHeightCounter < rowHeights.size(); ++rowHeightCounter)
             {
             currentColumn = 0;
-            for ([[maybe_unused]] const auto& colWidth : columnWidths)
+            for (size_t colWidthCounter = 0; colWidthCounter < columnWidths.size(); ++colWidthCounter)
                 {
                 const auto& cell = GetCell(currentRow, currentColumn);
                 // build a list of cells in the following rows that should be skipped
