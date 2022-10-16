@@ -966,13 +966,6 @@ namespace Wisteria::Graphs
             @note If using custom widths for bars, then this is ignored.*/
         void IncludeSpacesBetweenBars(bool includeSpaces = true) noexcept
             { m_includeSpacesBetweenBars = includeSpaces; }
-        /// @returns Whether labels above (or to the right of) the bars should be displayed.
-        [[nodiscard]] bool IsShowingBarLabels() const noexcept
-            { return m_includeBarLabels; }
-        /** @brief Sets whether to display labels above (or to the right) of the bars.
-            @param includeLabels Whether to display bars' labels.*/
-        void ShowBarLabels(bool includeLabels = true) noexcept
-            { m_includeBarLabels = includeLabels; }
         /// @returns The type of labels being shown on the bars.
         [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
             { return m_binLabelDisplay; }
@@ -1098,7 +1091,6 @@ namespace Wisteria::Graphs
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };
         double m_highestBarAxisPosition{ std::numeric_limits<double>::lowest() };
         bool m_includeSpacesBetweenBars{ false };
-        bool m_includeBarLabels{ true };
         bool m_isSortable{ false };
         std::vector<BarGroup> m_barGroups;
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };

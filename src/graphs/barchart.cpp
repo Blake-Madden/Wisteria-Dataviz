@@ -347,7 +347,7 @@ namespace Wisteria::Graphs
             m_longestBarLength = barEnd;
             GetScalingAxis().SetRange(0, m_longestBarLength, 0,
                 // add a little extra padding to the scaling axis if we are using labels
-                IsShowingBarLabels());
+                (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay));
             const auto originalRange = GetScalingAxis().GetRange();
 
             // tweak scaling
@@ -409,7 +409,7 @@ namespace Wisteria::Graphs
             // if showing labels and we just re-adjusted the range, then add an
             // extra interval for the label
             if (const auto currentRange = GetScalingAxis().GetRange();
-                IsShowingBarLabels() && originalRange != currentRange)
+                (GetBinLabelDisplay() != BinLabelDisplay::NoDisplay) && originalRange != currentRange)
                 {
                 const auto extraSpaceAfterBar{ m_longestBarLength -
                                                (currentRange.second - GetScalingAxis().GetInterval()) };
