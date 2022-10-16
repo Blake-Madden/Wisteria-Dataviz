@@ -826,24 +826,6 @@ namespace Wisteria::Graphs
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
-                        else if (bar.GetEffect() == BoxEffect::Glassy)
-                            {
-                            wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently "
-                                                  "supported with glassy bar effect.");
-                            auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(wxNullPen).
-                                AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                                Image::CreateGlassEffect(wxSize(barLength, barWidth),
-                                    blockColor, Orientation::Vertical));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
-                            }
                         // color-filled bar
                         else
                             {
@@ -916,6 +898,13 @@ namespace Wisteria::Graphs
                                     blockLightenedColor,
                                     FillDirection::East));
                                 }
+                            else if (bar.GetEffect() == BoxEffect::Glassy)
+                                {
+                                box->GetBrush() = wxNullBrush;
+                                box->SetBackgroundFill(Colors::GradientFill(
+                                    blockColor, blockColor, // second color not used
+                                    FillDirection::South));
+                                }
                             else if (bar.GetEffect() == BoxEffect::FadeFromTopToBottom)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -946,7 +935,9 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on its sides
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(true, false, true, false); }
-                            box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
+                            box->SetShape((bar.GetEffect() == BoxEffect::Glassy) ?
+                                GraphItems::Polygon::PolygonShape::GlassyRectangle :
+                                GraphItems::Polygon::PolygonShape::Rectangle);
                             // clip box to not be on top of axes
                             box->SetClippingRect(drawArea);
                             // add the box to the plot item collection
@@ -1190,24 +1181,6 @@ namespace Wisteria::Graphs
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
-                        else if (bar.GetEffect() == BoxEffect::Glassy)
-                            {
-                            wxASSERT_LEVEL_2_MSG((bar.GetShape() == BarShape::Rectangle),
-                                                 L"Non-rectangular shapes not currently "
-                                                  "supported with glassy bar effect.");
-                            auto barImage = std::make_shared<Image>(
-                                GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(wxNullPen).
-                                AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                                Image::CreateGlassEffect(wxSize(barWidth, barLength),
-                                    blockColor, Orientation::Horizontal));
-                            barImage->SetOpacity(bar.GetOpacity());
-                            barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideShadow : ShadowType::NoShadow);
-                            barImage->SetClippingRect(drawArea);
-                            AddObject(barImage);
-                            }
                         else
                             {
                             std::shared_ptr<GraphItems::Polygon> box{ nullptr };
@@ -1288,6 +1261,13 @@ namespace Wisteria::Graphs
                                     blockLightenedColor,
                                     FillDirection::South));
                                 }
+                            else if (bar.GetEffect() == BoxEffect::Glassy)
+                                {
+                                box->GetBrush() = wxNullBrush;
+                                box->SetBackgroundFill(Colors::GradientFill(
+                                    blockColor, blockColor,
+                                    FillDirection::East));
+                                }
                             // in case an explicit color is used for the background
                             // and the brush is perhaps a hatch to be draw on top of it
                             else if (barBlock.GetColor().IsOk())
@@ -1310,7 +1290,9 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on the top/bottom
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(false, true, false, true); }
-                            box->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
+                            box->SetShape((bar.GetEffect() == BoxEffect::Glassy) ?
+                                GraphItems::Polygon::PolygonShape::GlassyRectangle :
+                                GraphItems::Polygon::PolygonShape::Rectangle);
                             // clip box to not be on top of axes
                             box->SetClippingRect(drawArea);
                             // add the box to the plot item collection

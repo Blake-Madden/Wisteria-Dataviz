@@ -213,6 +213,7 @@ namespace Wisteria::GraphItems
             @param color The base color to fill the box with.
             @param direction The direction of the glassy shine.
             @returns The glassy image.*/
+        [[deprecated("Use Polygon::SetShape() with GlassyRectangle instead.")]]
         [[nodiscard]] static wxImage CreateGlassEffect(const wxSize fillSize, const wxColour color,
                                                        const Orientation direction);
         /** @brief Changes each pixel of a given color with another one in a given image,

@@ -52,15 +52,20 @@ namespace Wisteria::GraphItems
         /// @brief Hints for how to draw the polygon.
         enum class PolygonShape
             {
-            Spline,    /*!< A curved line.*/
-            Rectangle, /*!< A rectangle or square.*/
-            Irregular  /*!< No real shape to it.*/
+            /// @brief A curved line.
+            Spline,
+            /// @brief A rectangle or square.
+            Rectangle,
+            /// @brief A rectangle or square with a glassy sheen.
+            /// @note If using this shape, call SetBackgroundFill() to set the color and direction
+            ///     of the glass effect. (The brush will be ignored.) 
+            GlassyRectangle,
+            /// @brief No real shape.
+            Irregular
             };
         /// @private
         Polygon()
-            {
-            GetGraphItemInfo().Outline(true, true, true, true);
-            };
+            { GetGraphItemInfo().Outline(true, true, true, true); };
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
             @param points The points of the polygon.
@@ -74,8 +79,10 @@ namespace Wisteria::GraphItems
         /// @{
 
         /** @brief Specifies how to draw the polygon.
-                Basically, this is a hint to optimize the drawing.
-            @param shape The shape of the polygon.*/
+            @details Basically, this is a hint to optimize the drawing.
+            @param shape The shape of the polygon.
+            @note If using GlassyRectangle, call SetBackgroundFill() to set the color and
+                direction of the glass effect. (The brush will be ignored.) */
         void SetShape(const PolygonShape shape) noexcept
             { m_polygonShape = shape; }
         /// @returns The polygon's shape.
@@ -98,7 +105,8 @@ namespace Wisteria::GraphItems
         /** @brief Sets the "canvas" color of the shape.
             @details This is useful if you are painting with a translucent or hatched
                 brush and you need a specific color to show underneath it
-                (other than what is on the underlying DC).
+                (other than what is on the underlying DC).\n
+                This also can be useful if using a color gradient, rather than a brush.
             @param fill The color information (a single color or gradient) of the polygon's canvas.
             @note If this is not specified, then whatever is being drawn under the
                 polygon will appear under it (this would be the usual behavior).

@@ -266,6 +266,7 @@ namespace Wisteria::GraphItems
             wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
             if (GetBackgroundFill().IsGradient())
                 {
+                const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
                 // Optimized for rectangle.
                 // Also, this enables the draw commands of the gradient to be
                 // translated into SVG properly.
@@ -273,7 +274,6 @@ namespace Wisteria::GraphItems
                     {
                     // draw color area
                         {
-                        const auto theRect{ GetRectFromPoints(&m_scaledPoints[0]) };
                         dc.GradientFillLinear(theRect,
                             GetBackgroundFill().GetColor1(), GetBackgroundFill().GetColor2(),
                             (GetBackgroundFill().GetDirection() == FillDirection::North ? wxNORTH :
@@ -296,6 +296,24 @@ namespace Wisteria::GraphItems
                         if (GetGraphItemInfo().IsShowingLeftOutline())
                             { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetTopLeft()); }
                         }
+                    }
+                else if (GetShape() == PolygonShape::GlassyRectangle)
+                    {
+                    const bool isVertical = (GetBackgroundFill().GetDirection() == FillDirection::South ||
+                                             GetBackgroundFill().GetDirection() == FillDirection::North);
+                    // fill with the color
+                    dc.GradientFillLinear(theRect, GetBackgroundFill().GetColor1(),
+                        GetBackgroundFill().GetColor1().ChangeLightness(140),
+                        isVertical ? wxSOUTH : wxEAST);
+                    // create a shiny overlay
+                    dc.GradientFillLinear(wxRect(theRect.GetX(), theRect.GetY(),
+                        isVertical ?
+                        theRect.GetWidth() : theRect.GetWidth() * math_constants::quarter,
+                        isVertical ?
+                        theRect.GetHeight() * math_constants::quarter : theRect.GetHeight()),
+                        GetBackgroundFill().GetColor1().ChangeLightness(115),
+                        GetBackgroundFill().GetColor1().ChangeLightness(155),
+                        isVertical ? wxSOUTH : wxEAST);
                     }
                 // a spline doesn't use a fill color, so just draw it
                 else if (GetShape() == PolygonShape::Spline)

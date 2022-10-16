@@ -444,28 +444,10 @@ namespace Wisteria::Graphs
                     boxImage->SetShadowType(ShadowType::NoShadow);
                     AddObject(boxImage);
                     }
-                else if (box.GetBoxEffect() == BoxEffect::Glassy)
-                    {
-                    auto boxImage = std::make_shared<Image>(
-                        GraphItemInfo(boxLabel).
-                        Pen(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
-                        AnchorPoint(box.m_boxRect.GetLeftTop()),
-                        Image::CreateGlassEffect(
-                            wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()),
-                            ColorContrast::ChangeOpacity(
-                                m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour(),
-                                                        box.GetOpacity()),
-                            Orientation::Horizontal));
-                    boxImage->SetOpacity(box.GetOpacity());
-                    boxImage->SetAnchoring(Anchoring::TopLeftCorner);
-                    boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
-                    boxImage->SetShadowType(GetShadowType());
-                    AddObject(boxImage);
-                    }
                 // color-filled box
                 else
                     {
-                    wxPoint boxPoints[4];
+                    wxPoint boxPoints[4]{ {0, 0} };
                     GraphItems::Polygon::GetRectPoints(box.m_boxRect, boxPoints);
                     // Polygons don't support drop shadows, so need to manually add
                     // a shadow as another polygon
@@ -532,7 +514,19 @@ namespace Wisteria::Graphs
                                 box.GetOpacity()),
                             FillDirection::West));
                         }
-                    boxPoly->SetShape(GraphItems::Polygon::PolygonShape::Rectangle);
+                    else if (box.GetBoxEffect() == BoxEffect::Glassy)
+                        {
+                        auto blockColor = ColorContrast::ChangeOpacity(
+                            m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour(),
+                            box.GetOpacity());
+                        boxPoly->GetBrush() = wxNullBrush;
+                        boxPoly->SetBackgroundFill(Colors::GradientFill(
+                            blockColor, blockColor,
+                            FillDirection::East));
+                        }
+                    boxPoly->SetShape((box.GetBoxEffect() == BoxEffect::Glassy) ?
+                        GraphItems::Polygon::PolygonShape::GlassyRectangle :
+                        GraphItems::Polygon::PolygonShape::Rectangle);
                     boxPoly->SetBoxCorners(GetBoxCorners());
                     boxPoly->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
                     // add the box to the plot item collection
