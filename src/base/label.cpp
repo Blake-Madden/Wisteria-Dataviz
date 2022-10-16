@@ -1235,7 +1235,8 @@ namespace Wisteria::GraphItems
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
         wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
-        if (GetTextAlignment() == TextAlignment::Justified)
+        if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter ||
+            GetTextAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
                 (ScaleToScreenAndCanvas(GetTopPadding()) +
@@ -1245,7 +1246,8 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetLeftPadding()) +
                 ScaleToScreenAndCanvas(GetRightPadding())) );
             }
-        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter ||
+            GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
                 (ScaleToScreenAndCanvas(GetTopPadding()) +
@@ -1265,7 +1267,7 @@ namespace Wisteria::GraphItems
         std::vector<wxString> tokenizedLineLetters;
 
         const auto trackTextLine = [&dc, &tokenizedLineLetters]
-                                   (wxString& textLine, const wxSize textSz)
+                                   (wxString& textLine, const wxSize textSz, bool atCharacter)
             {
             constexpr wchar_t hairSpace{ 0x200A };
             // Measure 10 hair spaces (with the current font)
@@ -1278,17 +1280,24 @@ namespace Wisteria::GraphItems
             // more spaces (spread evenly throughout) until it fits
             if (dc.GetTextExtent(textLine).GetWidth() < textSz.GetHeight())
                 {
-                wxString wordStr;
-                for (const auto letter : textLine)
+                if (atCharacter)
                     {
-                    tokenizedLineLetters.emplace_back(letter);
-                    wordStr += letter;
+                    // break the line into separate letters
+                    for (const auto letter : textLine)
+                        { tokenizedLineLetters.emplace_back(letter); }
+                    }
+                else
+                    {
+                    // split at each space (i.e., word)
+                    wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
+                    while (tkzr.HasMoreTokens())
+                        { tokenizedLineLetters.emplace_back(tkzr.GetNextToken()); }
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)
                     { return; }
                 // use hair spaces between letters for more precise tracking
-                auto lineDiff = textSz.GetHeight() - dc.GetTextExtent(wordStr).GetWidth();
+                const auto lineDiff = textSz.GetHeight() - dc.GetTextExtent(textLine).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
                 const auto hairSpacesPerWordPair = std::max(1.0,
@@ -1339,11 +1348,17 @@ namespace Wisteria::GraphItems
                     offest = (fullTextSzForHeader.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
                         (HasLegendIcons() ? 0 : leftOffset);
                     }
-                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
                     offest = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token, fullTextSzForHeader);
+                    trackTextLine(token, fullTextSzForHeader, true);
+                    }
+                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
+                    {
+                    offest = HasLegendIcons() ? 0 :
+                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    trackTextLine(token, fullTextSzForHeader, false);
                     }
                 }
             else
@@ -1360,10 +1375,15 @@ namespace Wisteria::GraphItems
                     offest = fullTextSz.GetHeight() - lineX -
                         ScaleToScreenAndCanvas(GetLeftPadding());
                     }
-                else if (GetTextAlignment() == TextAlignment::Justified)
+                else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
                     offest = ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token, fullTextSz);
+                    trackTextLine(token, fullTextSz, true);
+                    }
+                else if (GetTextAlignment() == TextAlignment::JustifiedAtWord)
+                    {
+                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    trackTextLine(token, fullTextSz, false);
                     }
                 }
             if (!dc.GetFont().IsOk())
@@ -1418,7 +1438,8 @@ namespace Wisteria::GraphItems
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
         wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
-        if (GetTextAlignment() == TextAlignment::Justified)
+        if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter ||
+            GetTextAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSz.SetWidth(fullTextSz.GetWidth() -
                 (ScaleToScreenAndCanvas(GetLeftPadding()) +
@@ -1428,7 +1449,8 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetTopPadding()) +
                 ScaleToScreenAndCanvas(GetBottomPadding())) );
             }
-        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+        if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter ||
+            GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
             {
             fullTextSzForHeader.SetWidth(fullTextSzForHeader.GetWidth() -
                 (ScaleToScreenAndCanvas(GetLeftPadding()) +
@@ -1448,7 +1470,7 @@ namespace Wisteria::GraphItems
         std::vector<wxString> tokenizedLineLetters;
 
         const auto trackTextLine = [&dc, &tokenizedLineLetters]
-                                   (wxString& textLine, const wxSize textSz)
+                                   (wxString& textLine, const wxSize textSz, bool atCharacter)
             {
             constexpr wchar_t hairSpace{ 0x200A };
 
@@ -1462,18 +1484,24 @@ namespace Wisteria::GraphItems
             // hair spaces (spread evenly throughout) until it fits
             if (dc.GetTextExtent(textLine).GetWidth() < textSz.GetWidth())
                 {
-                // break the line into separate letters
-                wxString wordStr;
-                for (const auto letter : textLine)
+                if (atCharacter)
                     {
-                    tokenizedLineLetters.emplace_back(letter);
-                    wordStr += letter;
+                    // break the line into separate letters
+                    for (const auto letter : textLine)
+                        { tokenizedLineLetters.emplace_back(letter); }
+                    }
+                else
+                    {
+                    // split at each space (i.e., word)
+                    wxStringTokenizer tkzr(textLine, L" ", wxStringTokenizerMode::wxTOKEN_RET_DELIMS);
+                    while (tkzr.HasMoreTokens())
+                        { tokenizedLineLetters.emplace_back(tkzr.GetNextToken()); }
                     }
                 // need at least two letters for justifying text
                 if (tokenizedLineLetters.size() < 2)
                     { return; }
                 // use hair spaces between letters for more precise tracking
-                auto lineDiff = textSz.GetWidth() - dc.GetTextExtent(wordStr).GetWidth();
+                const auto lineDiff = textSz.GetWidth() - dc.GetTextExtent(textLine).GetWidth();
                 long hairSpacesNeeded = std::ceil(safe_divide<double>(lineDiff, hairSpaceWidth));
                 const auto letterSpaces = tokenizedLineLetters.size() - 1;
                 const auto hairSpacesPerWordPair = std::max(1.0,
@@ -1530,11 +1558,17 @@ namespace Wisteria::GraphItems
                               ScaleToScreenAndCanvas(GetLeftPadding())) +
                              (HasLegendIcons() ? 0 : leftOffset);
                     }
-                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Justified)
+                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
                     offest = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token, fullTextSzForHeader);
+                    trackTextLine(token, fullTextSzForHeader, true);
+                    }
+                else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
+                    {
+                    offest = HasLegendIcons() ? 0 :
+                        leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
+                    trackTextLine(token, fullTextSzForHeader, false);
                     }
                 }
             else
@@ -1551,10 +1585,15 @@ namespace Wisteria::GraphItems
                     offest = fullTextSz.GetWidth() - lineX -
                              ScaleToScreenAndCanvas(GetRightPadding());
                     }
-                else if (GetTextAlignment() == TextAlignment::Justified)
+                else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
                     offest = ScaleToScreenAndCanvas(GetLeftPadding());
-                    trackTextLine(token, fullTextSz);
+                    trackTextLine(token, fullTextSz, true);
+                    }
+                else if (GetTextAlignment() == TextAlignment::JustifiedAtWord)
+                    {
+                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    trackTextLine(token, fullTextSz, false);
                     }
                 }
             if (!dc.GetFont().IsOk())

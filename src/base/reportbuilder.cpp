@@ -444,7 +444,9 @@ namespace Wisteria
             { L"ragged-right", TextAlignment::RaggedRight },
             { L"ragged-left", TextAlignment::RaggedLeft },
             { L"centered", TextAlignment::Centered },
-            { L"justified", TextAlignment::Justified }
+            { L"justified", TextAlignment::Justified },
+            { L"justified-at-character", TextAlignment::JustifiedAtCharacter },
+            { L"justified-at-word", TextAlignment::JustifiedAtWord }
             };
         
         const auto foundValue = textAlignValues.find(value.Lower().ToStdWstring());

@@ -123,8 +123,9 @@ namespace Wisteria
 
     /// @brief How an element is aligned to whatever it is being drawn on.
     /// @note @c FlushRight and @c FlushBottom (and likewise, right and bottom)
-    ///  are synonyms for each other. That way, if the parent's orientation changes,
-    ///  the relative alignment of the subobject will adjust logically without having to be changed.
+    ///     are synonyms for each other. That way, if the parent's orientation changes,
+    ///     the relative alignment of the subobject will adjust logically without
+    ///     having to be changed.
     enum class RelativeAlignment
         {
         FlushLeft,                /*!< Flush left/ragged right.*/
@@ -173,20 +174,30 @@ namespace Wisteria
     /// @sa PageVerticalAlignment, PageHorizontalAlignment
     enum class TextAlignment
         {
-        FlushLeft,               /*!< Text is flush left/ragged right.
-                                      (This is the default.)*/
-        RaggedRight = FlushLeft, /*!< Text is flush left/ragged right.*/
-        FlushRight,              /*!< Text is flush right/ragged left.*/
-        RaggedLeft = FlushRight, /*!< Text is flush right/ragged left.*/
-        Centered,                /*!< Text is centered.*/
-        Justified                /*!< Multiline text is tracked (space inserted)
-                                      to make lines equal width.*/
+        /// @brief Text is flush left/ragged right. (This is the default for Labels.)
+        FlushLeft,
+        /// @brief Same as FlushLeft.
+        RaggedRight = FlushLeft,
+        /// @brief Text is flush right/ragged left.
+        FlushRight,
+        /// @brief Same as FlushRight.
+        RaggedLeft = FlushRight,
+        /// @brief Text is centered.
+        Centered,
+        /// @brief Multiline text is tracked (space inserted) to make lines equal width.
+        ///     Hair spaces are inserted between each character.
+        JustifiedAtCharacter,
+        /// @brief Same as JustifiedAtCharacter.
+        Justified = JustifiedAtCharacter,
+        /// @brief Multiline text is tracked (space inserted) to make lines equal width.
+        ///     Hair spaces are inserted between each word.
+        JustifiedAtWord
         };
 
     /// @brief @brief How a label's text is aligned within its user-defined bounding box,
-    ///  going from top-to-bottom.
+    ///     going from top-to-bottom.
     /// @note This is only relevant if a Label is using a minimum user-defined size,
-    ///  and only if the user-defined size is taller than the text.
+    ///     and only if the user-defined size is taller than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageVerticalAlignment
         {
@@ -196,9 +207,9 @@ namespace Wisteria
         };
 
     /// @brief @brief How a label's text is aligned within its user-defined bounding box,
-    ///  going from left-to-right.
+    ///     going from left-to-right.
     /// @note This is only relevant if a Label is using a minimum user-defined size,
-    ///  and only if the user-defined size is wider than the text.
+    ///     and only if the user-defined size is wider than the text.
     /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
     enum class PageHorizontalAlignment
         {
@@ -245,8 +256,8 @@ namespace Wisteria
         };
 
     /// @brief A hint as to where a generated legend may be placed on a canvas.
-    ///  These hints are used by a plot to determine how padding, outlining,
-    ///  and canvas proportions should be used when creating a legend.
+    ///     These hints are used by a plot to determine how padding, outlining,
+    ///     and canvas proportions should be used when creating a legend.
     enum class LegendCanvasPlacementHint
         {
         EmbeddedOnGraph,    /*!< The legend will be on the plot.
@@ -472,6 +483,7 @@ namespace Wisteria
     class StandardLineStyles : public LineStyleScheme
         {
     public:
+        /// @brief Constructor.
         StandardLineStyles() : LineStyleScheme({
             { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines },
             { wxPenStyle::wxPENSTYLE_DOT, LineStyle::Lines },
@@ -741,13 +753,14 @@ namespace Wisteria
                 }
             /// @brief Sets the percent of the canvas height that this object should consume.
             /// @note The object will be drawn from its row position, so this is recommended
-            ///  only for items in the top row. For example, if this is set to 1.0 for an item
-            ///  in the top row of a two-row canvas, then it will consume both rows. However,
-            ///  if an item in a two-row canvas is set to 1.0, then the bottom half of the object
-            ///  will go off of the canvas. Also, this should only be used if the canvas is aligning
-            ///  its columns' content; otherwise, this object will be drawn on top of rows' content
-            ///  beneath it. Likewise, the canvas's row alignment should be turned off, as that
-            ///  would try to adjust the object's height and negate this setting.
+            ///     only for items in the top row. For example, if this is set to @c 1.0 for an item
+            ///     in the top row of a two-row canvas, then it will consume both rows. However,
+            ///     if an item in a two-row canvas is set to @c 1.0, then the bottom half of the
+            ///     object will go off of the canvas. Also, this should only be used if the canvas
+            ///     is aligning its columns' content; otherwise, this object will be drawn on
+            ///     top of rows' content beneath it. Likewise, the canvas's row alignment should
+            ///     be turned off, as that would try to adjust the object's height and
+            ///     negate this setting.
             /// @param canvasHeightProportion The percent of the canvas height that this object
             ///     should consume.
             /// @returns A self reference.
@@ -1231,9 +1244,9 @@ namespace Wisteria
 
             /** @brief Sets whether the object should be moved as the canvas scaling is changed.
                 @details In other words, the object is not connected to coordinates on the canvas,
-                 but rather sits arbitrarily on the canvas and has to have its coordinates adjusted
-                 as the canvas gets rescaled.\n
-                 This is meant for movable objects on a canvas that a client can manually move.
+                    but rather sits arbitrarily on the canvas and has to have its coordinates
+                    adjusted as the canvas gets rescaled.\n
+                    This is meant for movable objects on a canvas that a client can manually move.
                 @param freeFloat Whether the object should be free floating.*/
             virtual void SetFreeFloating(const bool freeFloat)
                 {
@@ -1254,12 +1267,12 @@ namespace Wisteria
             [[nodiscard]] virtual wxRect GetBoundingBox(wxDC& dc) const = 0;
             /** @brief Override this to set the rectangular area of the object.
                 @param rect The rectangle to bound the object to.
-                 This is relative to the parent canvas.
+                    This is relative to the parent canvas.
                 @param dc The DC to measure content with.
                 @param parentScaling The scaling of the parent drawing this element.
-                 Usually is not used, but may be used for objects to have a consistent scaling size.
+                    Usually is not used, but may be used for objects to have a consistent scaling size.
                 @note Derived variations should call InvalidateCachedBoundingBox() and
-                 SetCachedBoundingBox().*/
+                    SetCachedBoundingBox().*/
             virtual void SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling) = 0;
 
             /** @brief Gets/sets the item's base attributes (e.g., anchoring, font info).
@@ -1277,16 +1290,16 @@ namespace Wisteria
 
             /** @brief Controls the anchoring of this item on its parent.
                 @details When an item is drawn, its anchoring indicates what its point
-                 is referencing.\n
-                 For example, if an item is anchored to its center, then the item's point
-                 refers to its center and it will be drawn on its parent based on that.
+                    is referencing.\n
+                    For example, if an item is anchored to its center, then the item's point
+                    refers to its center and it will be drawn on its parent based on that.
                 @details This can be useful for lining up multiple labels a certain way
-                 (e.g., left aligned).
+                    (e.g., left aligned).
                 @param placement The method for how the point controls the anchoring
-                 of this object.
+                    of this object.
                 @note This will have no effect on objects with more than one point
-                 (e.g., @c Axes::Axis, @c Points2D).
-                 This mostly related to objects such as Label and Image.*/
+                    (e.g., @c Axes::Axis, @c Points2D).
+                    This mostly related to objects such as Label and Image.*/
             void SetAnchoring(const Wisteria::Anchoring placement)
                 {
                 m_itemInfo.m_anchoring = placement;
@@ -1810,17 +1823,17 @@ namespace Wisteria
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
                 @returns The bounding box that the element was drawn with.
-                 If the element is not being displayed, then an invalid @c wxRect
-                 will usually be returned.*/
+                    If the element is not being displayed, then an invalid @c wxRect
+                    will usually be returned.*/
             virtual wxRect Draw(wxDC& dc) const = 0;
             /** @brief Draws the element's label (if it has one) in the middle of the
-                 element if it is selected.
+                    element if it is selected.
                 @param dc The canvas to draw the element on.
                 @param scaling The scaling to draw the text with.
-                 This may be different from the scaling used by the element itself,
-                 depending on what the scaling is of the caller.
+                    This may be different from the scaling used by the element itself,
+                    depending on what the scaling is of the caller.
                 @param boundingBox An optional bounding box to attempt to constrain
-                 the selection label to.*/
+                    the selection label to.*/
             virtual void DrawSelectionLabel(wxDC& dc, const double scaling,
                                             const wxRect boundingBox = wxRect()) const;
             /** @brief Recompute coordinates and sizes within this object.
@@ -1876,7 +1889,7 @@ namespace Wisteria
                  may affect bounding box calculations.
                 @param cached The bounding box to use.
                 @note The cached bounding box is mutable, so this function can be called within
-                 const functions (e.g. GetBoundingBox()).*/
+                    const functions (e.g. GetBoundingBox()).*/
             void SetCachedBoundingBox(const wxRect cached) const noexcept
                 { m_cachedBoundingBox = cached; }
             /** @returns The bounding box calculated from the last call to GetBoundingBox()

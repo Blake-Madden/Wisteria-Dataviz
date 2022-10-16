@@ -581,7 +581,8 @@ Properties for `"label"` nodes:
   - `"flush-left"` or `"ragged-right"`
   - `"flush-right"` or `"ragged-left"`
   - `"centered"`
-  - `"justified"`
+  - `"justified"` or `"justified-at-character"`
+  - `"justified-at-word"`
 - `"left-image"`: properties specifying an image to display on the left side of the label.<br />
   The available options are:
   - `"path"`: string specifying the image path to load.
