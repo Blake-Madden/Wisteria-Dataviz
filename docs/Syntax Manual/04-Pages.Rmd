@@ -1,0 +1,31 @@
+# (PART) Pages {-}
+
+# Pages {#pages-properties}
+
+A page is a grid-based container, where items (e.g., plots, labels) are layed out row-wise.<br />
+The `"pages"` node will contain an array of definitions for all pages, each containing the following:
+
+- `"name"` contains a string value, representing the name of the page.
+- `"background-color"`: a string specifying the page's background color.
+- `"background-image"`: a string specifying the path to an image to use for the page's background.
+- `"page-numbering"` string specifying the numbering style that `PageNumber()` will return.
+  Available options are:
+  - `"arabic"`
+  Note that this will also reset the current page number to `1`.
+- `"rows"`: an array of rows, each containing items to draw on the page (layed out horizontally).<br />
+  - `"items"`: an array of items in the current row.
+    - `"type"`: the type of object that the item is (e.g., `Wisteria::Graphs::Table`, `Wisteria::Graphs::LinePlot`, etc.)<br />
+      Available options are:
+      - ["line-plot"](#line-plot-properties)
+      - ["box-chart"](#box-plot-properties)
+      - ["categorical-bar-chart"](#categorical-bar-chart-properties)
+      - ["common-axis"](#common-axis-properties)
+      - ["histogram"](#histogram-properties)
+      - ["image"](#image-properties)
+      - ["label"](#label-properties)
+      - ["pie-chart"](#pie-chart-properties)
+      - ["table"](#table-properties)
+      - ["w-curve-plot"](#w-curve-plot-properties)
+      - `null`: a `null` value will act as a placeholder for the previous column.<br />
+        If an entire row contains nulls, then the previous row will consume that row
+        (meaning it will grow that much in height).

@@ -1,0 +1,220 @@
+# Datasets {#datasets-properties}
+
+Properties for the `"datasets"` node:
+
+- `"datasets"`: contains an array of datasets, which are referenced by other items in the report.
+  - `"name"`: the name of the dataset.<br />
+  This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - `"path"`: the full file path of the dataset.
+  - `"importer"` how to import the dataset.<br />
+    This is optional and the default is to import the file based on its file extension.<br />
+    Available options are:
+    - `"tsv"`: a tab-delimited text file.
+    - `"csv"`: a comma-delimited text file.
+  - `"continuous-md-recode-value"` numeric value used to substitute missing data in continuous columns.<br />
+    This property is optional.
+  - `"id-column"`: the ID column.<br />
+    This property is optional.
+  - `"continuous-columns"`: an array of continuous column names to import.<br />
+    This property is optional.
+  - `"categorical-columns"`: an array of categorical column specifications.<br />
+    This property is optional.<br />
+    Each specification consists of the following:
+    - `"name"`: the name of the column.
+    - `"parser"` how to read the column.<br />
+      Available options are:
+      - `"as-integers"` imports the column as discrete integers.
+      - `"as-strings"` imports the column as text. (If not specified, this will be the default).
+  - `"date-columns"`: an array of date column specifications.<br />
+    This property is optional.<br />
+    Each specification consists of the following:
+    - `"name"`: the name of the column.
+    - `"parser"` how to parse the column's date strings.<br />
+      Available options are:
+      - `"iso-date"`
+      - `"iso-combined"`
+      - `"rfc822"`
+      - `"strptime-format"`
+      - `"automatic"` (if not specified, this will be the default).
+    - `"format"` if `"parser"` is set to `"strptime-format"`,
+         then this is the user-defined format to parse with.
+
+  Next, any transformation commands for a dataset node are executed. These are performed in the following order:
+
+  - `"columns-rename"`: an array of column rename commands, which contain the following:
+    - `"name"`: the column to rename.
+    - `"new-name"`: the new name for the column.
+  - `"recode-re"`: an array of categorical column recode commands. This will apply a regular expression
+       text replace for each label in the provided column(s). Each set of commands contains the following properties:
+    - `"column"`: the categorical column to recode.
+    - `"pattern"`: the regular expression pattern to search for.
+    - `"replacement"`: the replacement text. Note that capture groups are supported.
+  - `"collapse-min"` collapses strings which appear fewer than a minimum number of times. This is an array of
+    specifications which contain the following:
+    - `"column"`: the categorical column to collapse.
+    - `"min"`: the minimum number of times a string must appear in the column to remain in the string table.
+    - `"other-label"`: the label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
+  - `"collapse-except"` collapses strings into an "Other" category, except for a list of provided labels.
+    This is an array of specifications which contain the following:
+    - `"column"`: the categorical column to collapse.
+    - `"labels-to-keep"`: an array of strings to preserve; all others will be lumped into a new `"Other"` category.
+    - `"other-label"`: the label to use for the new category where other labels are lumped into. Default is `"Other"`.
+
+  Next, a `"formulas"` section can also be loaded from within the dataset's node.
+  In this context, this is a formula string which references the dataset.<br />
+  This is an array of specifications which include the following properties:
+
+  - `"name"`: the key used for the item. Other items in the project reference this using the syntax `{{name}}`, where `name` is the look-up key.
+  - `"value"`: a string containing one of the following formulas:
+    - ``Min(`column`)``:
+      Returns the minimum value of the given column from the dataset.
+      - `column`: the column name from the dataset.
+    - ``Max(`column`)``:
+      Returns the maximum value of the given column from the dataset.
+      - `column`: the column name from the dataset.
+    - ``Total(`column`)``:
+      Returns the total of the given continuous column from the dataset.
+      - `column`: the column name from the dataset.
+    - ``GrandTotal()``:
+      Returns the total of all continuous columns from the dataset.
+    - ``N(`column`)``:
+      Returns the valid number of observations in the given column from the dataset.
+      - `column`: the column name from the dataset.
+    - ``N(`column`, `groupColum`, `groupId`)``:
+      Returns the valid number of observations in the given column from the dataset, using group filtering.<br />
+      - `column`: the column name from the dataset.
+      - `groupColum`: a group column to filter on.
+      - `groupId`: the group ID to filter on.
+    - ``GroupCount(`groupColum`, `groupId`)``:
+      Returns the number of occurrences of `groupId` in the categorical column `groupColum`.<br />
+      - `groupColum`: the group column.
+      - `groupId`: the group ID to count.
+    - ``GroupPercentDecimal(`groupColum`, `groupId`)``:
+      Returns the decimal percent (i.e., `0.0` to `1.0`) of the categorical column `groupColum`
+      that has the group ID `groupId`.<br />
+      - `groupColum`: the group column.
+      - `groupId`: the group ID to count.
+    - ``GroupPercent(`groupColum`, `groupId`)``:
+      Returns the percent (as a string, such as `"75%"`) of the categorical column `groupColum`
+      that has the group ID `groupId`.<br />
+      - `groupColum`: the group column.
+      - `groupId`: the group ID to count.
+  
+  Note that formula arguments can either be a string (wrapped in a pair of \`) or an embedded formula
+  (which must be wrapped in a set of `{{`: and `}}`).<br />
+  For example, the group ID can be a formula getting the highest label from the grouping column:<br />
+
+  ```
+  N(`Degree`, `Academic Year`, {{max(`Academic Year`)}})
+  ```
+
+  Also, instead of referencing columns by name, functions are also available for referencing columns by index.
+  - ``ContinuousColumn(index)``: returns the name of the continuous column at the given index. Index can either
+    be a number or `last` (returns the last continuous column).
+
+  The following example would return the total of the first continuous column:
+
+  ```
+  Total({{ContinuousColumn(0)}})
+  ```
+
+  The following example would return the total of the last continuous column:
+
+  ```
+  Total({{ContinuousColumn(`last`)}})
+  ```
+
+  Along with the dataset-related functions, [additional functions](#additional-functions) are also available.
+
+  Next, the `"subsets"` section of the dataset's node is parsed. This is an array of subset specifications which
+  contain the following properties:
+  - `"name"`: the name of the subset. (This should be different from the dataset that it is subsetting;
+    otherwise, it will overwrite it.)<br />
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - `"filter"`: the subset filtering definition, which will contain the following:
+    - `"column"`: the column from the dataset to filter on.
+    - `"operator"` how to compare the values from the column with the filter's value.
+      Available options are:
+      - `"="` or `"=="` equals (the default)
+      - `"!="` or `"<>"` not equals
+      - `"<"` less than
+      - `"<="` less than or equal to
+      - `">"` greater than
+      - `">="` great than or equal to
+    - `"values"`: an array of values to filter the column on. These can be numbers, strings, or dates
+         (depending on the column's data type).<br />
+         Multiple values will be an OR operation, where if a value in the data matches *any* of these
+         values, then it's a match.
+         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section
+         or `"formulas"` section of the parent dataset.
+  - `"filter-or"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
+    are ORed together, meaning that if any condition for a row is true, then it will be included in the subset.
+  - `"filter-and"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
+    are ANDed together, meaning that all conditions for a row must be met for it to be included in the subset.
+
+  Next, the `"merges"` section of the dataset's node is parsed. This is an array of pivot specifications which
+  contain the following properties:
+  - `"name"`: the name of the merged dataset. (This should be different from the datasets being merged;
+    otherwise, it will overwrite them.)<br />
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - `"type"`: a string specifying which type of merge to use.
+    Available options are:
+    - "left-join-unique"` (unique) left join the dataset with another dataset (the default).
+  - `"other-dataset"`: the other dataset to merge the current dataset with. This should be a name referencing
+    a previously loaded dataset.
+  - `"by"`: an array of properties specifying which columns to join by. Each item should contain the following:
+    - `"left-column"`: the column from the current dataset.
+    - `"right-column"`: the column from the other dataset.
+  - `"suffix"` if columns in the right dataset already appear in the left dataset, then append this suffix to
+    to column to make it unique.
+
+  Finally, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
+  contain the following properties:
+  - `"name"`: the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
+    otherwise, it will overwrite it.)<br />
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+  - `"type"`: a string specifying which type of pivot to use.
+    Available options are:
+    - `"wider"` pivot wider (the default).
+    - `"longer"` pivot longer.
+
+  If pivoting wider, the following options are available:
+  - `"id-columns"`: an array of strings representing the ID columns.
+  - `"names-from-column"`: a strings representing the 'names from'.
+  - `"values-from-columns"`: an array of strings representing the 'values from' columns.
+  - `"names-separator"` If multiple value columns are provided, then this separator will
+       join the label from `namesFromColumn` and the value column name.
+  - `"names-prefix"` string to prepend to newly created pivot columns.
+  - `"fill-value"` numeric value to assign to missing data. The default it so leave it as missing data.
+
+  If pivoting longer, the following options are available:
+  - `"columns-to-keep"`: an array of strings specifying the columns to not pivot. These will be copied to the new dataset
+    and will have their values filled in all new rows created from their observation.
+    These would usually the ID columns.<br />
+    These columns can be of any type, including the ID column.
+  - `"from-columns"`: an array of strings specifying the continuous column(s) to pivot into longer format.
+  - `"names-to"`: an array of strings specifying the target column(s) to move the names from the `"from-columns"` into.
+  - `"values-to"`: a string specifying the column to move the values from the `"from-columns"` into.
+  - `"names-pattern"`: an optional string specifying a regular expression to split the `"from-columns"` names into.
+
+  Note that subset and pivot nodes can contain their own transformation and formula sections,
+  same as a dataset node.
+
+# Additional Functions {#additional-functions}
+
+Along with the dataset-related functions that can be used for dataset formulas, other functions are also available.
+These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a label's text value).
+
+- ``ReportName()``: the report's name.
+- ``PageNumber()``: the current page number.
+- ``Now(`value`)``:
+    Returns the a string representing the current date and time (or date component).
+    - `value`: the part of today's date to return (if not provided, then the full date is returned).
+      The following options are available:
+      - `"Year"`: the year.
+      - `"Day"`: the day of the month.
+      - `"DayName"`: the day of the month as a name (e.g., Tuesday).
+      - `"Month"`: the numeric value of the month.
+      - `"MonthName"`: the name of the month.
+      - `"MonthShortName"`: the abbreviated name of the month.
+      - `"Fancy"` returns the date formatted as full month name, day, and four-digit year.

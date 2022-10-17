@@ -1,0 +1,91 @@
+# (PART) Page Items{-}
+
+# Basic Page Items
+
+## Common Axis {#common-axis-properties}
+
+Properties for `"common-axis"` nodes:
+
+- All properties available to [axis](#axis-properties) nodes are included.<br />
+  Note that `"axis-type"` will specify where to place the common axis.
+- `"child-ids"`: a numeric array of IDs of the graphs that this common axis will manage.<br />
+     IDs are assigned to graphs using the `"id"` property, which should be numeric.
+- `"common-perpendicular-axis"` if `"axis-type"` is `"bottom-x"`: and this is `true`,
+     then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
+
+## Fillable Shape {#fillable-shape-properties}
+
+Properties for `"fillable-shape"` nodes:
+
+- `"icon"`: a string specifying the icon to draw the shape as.
+- `"pen"`: the pen to draw with, which includes [pen](#pen-properties) properties.
+- `"brush"`: the brush to paint with, which includes [brush](#brush-properties) properties.
+- `"size"`: the size of the shape, which contains the following properties:
+  - `"width"`: the width.
+  - `"height"`: the height.
+- `"fill-percent"`: the percent to fill the shape, which is a number between `0.0` and `1.0`.<br />
+  This can either be a numeric or a formula reference.
+
+## Image {#image-properties}
+
+Properties for `"image"` nodes:
+
+- `"path"`: the file path of the image to load.
+- `"resize-method"`: How the image's size is adjusted when its boudning box is changed.<br />
+  Available options are:
+  - `"downscale-only"`
+  - `"downscale-or-upscale"`
+  - `"upscale-only"`
+  - `"no-resize"`
+
+## Label {#label-properties}
+
+Properties for `"label"` nodes:
+
+- `"text"`: the title's text.<br />
+  Note that this property supports embedded formulas that can reference user-defined values loaded from the
+  ["constants"](#constants-properties) section.
+- `"orientation"` string specifying the orientation of the text.<br />
+  Available options are:
+  - `"vertical"`
+  - `"horizontal"`
+- `"background"`: the background color. This can be either a color name or hex-encoded value.
+- `"color"`: the font color. This can be either a color name or hex-encoded value.
+- `"bold"`: `true` to make the text bold.
+- `"line-spacing"`: a number representing the spaces between lines (if text is multiline).
+- `"text-alignment"`: how to align the label's text.<br />
+  The available options are:
+  - `"flush-left"` or `"ragged-right"`
+  - `"flush-right"` or `"ragged-left"`
+  - `"centered"`
+  - `"justified"` or `"justified-at-character"`
+  - `"justified-at-word"`
+- `"left-image"`: properties specifying an image to display on the left side of the label.<br />
+  The available options are:
+  - `"path"`: string specifying the image path to load.
+- `"top-image"`: properties specifying an image to display above the label.
+  The available options are:
+  - `"path"`: string specifying the image path to load.
+  - `"offset"`: number specifying how far from the top of the label's box to draw the image. (Default is `0`.)
+- `"header"`: attributes to apply to the first row of the label.<br />
+     The following sub-properties are available:
+  - `"bold"`: `true` to make the header bold.
+  - `"color"`: the font color for the header. This can be either a color name or hex-encoded value.
+  - `"relative-scaling:"` numeric value of how much to scale the header's font size relative to the label's scaling.
+       For example, `2.0` will double the header's default font size compared to the rest of the label.<br />
+       Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
+       `"scaling"` property.
+
+Note that it is recommended to set `"fit-row-to-content"` to `true` if the label is a separate
+object on the canvas (i.e., not a label on another object).
+
+## Shape {#shape-properties}
+
+Properties for `"shape"` nodes:
+
+- `"icon"`: a string specifying the icon to draw the shape as.
+- `"pen"`: the pen to draw with, which includes [pen](#pen-properties) properties.
+- `"brush"`: the brush to paint with, which includes [brush](#brush-properties) properties.
+- `"size"`: the size of the shape, which contains the following properties:
+  - `"width"`: the width.
+  - `"height"`: the height.

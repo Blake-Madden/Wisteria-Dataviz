@@ -54,3 +54,5 @@ cpp.hint
 *.app
 *.manifest
 *.Rhistory
+.Rproj.user
+/docs/Syntax Manual/_book

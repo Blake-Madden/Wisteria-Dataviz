@@ -1,0 +1,131 @@
+# (PART) Project Settings {-}
+
+# Project Section
+
+- `"name"` contains a string value, representing the name of the report.
+- `"print"` properties related to printer settings.<br />
+  Available options are:
+  - `"orientation"` string specifying the print orientation.<br />
+    Available options are:
+    - `"landscape"` or `"horizontal"`
+    - `"portrait"` or `"vertical"`
+  - `"paper-size"`: the paper size to print to.<br />
+    Available options are:
+    - `"paper-letter"`: Letter, 8 1/2 by 11 inches.
+    - `"paper-legal"`: Legal, 8 1/2 by 14 inches.
+    - `"paper-a4"`: A4 Sheet, 210 by 297 millimeters.
+    - `"paper-csheet"`: C Sheet, 17 by 22 inches.
+    - `"paper-dsheet"`: D Sheet, 22 by 34 inches.
+    - `"paper-esheet"`: E Sheet, 34 by 44 inches.
+    - `"paper-lettersmall"`: Letter Small, 8 1/2 by 11 inches.
+    - `"paper-tabloid"`: Tabloid, 11 by 17 inches.
+    - `"paper-ledger"`: Ledger, 17 by 11 inches.
+    - `"paper-statement"`: Statement, 5 1/2 by 8 1.
+    - `"paper-executive"`: Executive, 7 1/4 by 10 1.
+    - `"paper-a3"`: A3 sheet, 297 by 420 millimeters.
+    - `"paper-a4small"`: A4 small sheet, 210 by 297 millimeters.
+    - `"paper-a5"`: A5 sheet, 148 by 210 millimeters.
+    - `"paper-b4"`: B4 sheet, 250 by 354 millimeters.
+    - `"paper-b5"`: B5 sheet, 182-by-257-millimeter paper.
+    - `"paper-folio"`: Folio, 8-1/2-by-13-inch paper.
+    - `"paper-quarto"`: Quarto, 215-by-275-millimeter paper.
+    - `"paper-10x14"`: 10-by-14-inch sheet.
+    - `"paper-11x17"`: 11-by-17-inch sheet.
+    - `"paper-note"`: Note, 8 1/2 by 11 inches.
+    - `"paper-env-9"`: #9 Envelope, 3 78 by 8 7.
+    - `"paper-env-10"`: #10 Envelope, 4 1/8 by 9 1.
+    - `"paper-env-11"`: #11 Envelope, 4 1/2 by 10 3.
+    - `"paper-env-12"`: #12 Envelope, 4 3/4 by 11 inches.
+    - `"paper-env-14"`: #14 Envelope, 5 by 11 1/2 inches.
+    - `"paper-env-dl"`: DL Envelope, 110 by 220 millimeters.
+    - `"paper-env-c5"`: C5 Envelope, 162 by 229 millimeters.
+    - `"paper-env-c3"`: C3 Envelope, 324 by 458 millimeters.
+    - `"paper-env-c4"`: C4 Envelope, 229 by 324 millimeters.
+    - `"paper-env-c6"`: C6 Envelope, 114 by 162 millimeters.
+    - `"paper-env-c65"`: C65 Envelope, 114 by 229 millimeters.
+    - `"paper-env-b4"`: B4 Envelope, 250 by 353 millimeters.
+    - `"paper-env-b5"`: B5 Envelope, 176 by 250 millimeters.
+    - `"paper-env-b6"`: B6 Envelope, 176 by 125 millimeters.
+    - `"paper-env-italy"`: Italy Envelope, 110 by 230 millimeters.
+    - `"paper-env-monarch"`: Monarch Envelope, 3 78 by 7 1.
+    - `"paper-env-personal"`: 6 3/4 Envelope, 3 5.
+    - `"paper-fanfold-us"`: US Std Fanfold, 14 78 by 11 inches.
+    - `"paper-fanfold-std-german"`: German Std Fanfold, 8 1/2 by 1/2 inches.
+    - `"paper-fanfold-lgl-german"`: German Legal Fanfold, 8 1/2 by 13 inches.
+    - `"paper-iso-b4"`: B4 (ISO) 250 x 353 mm.
+    - `"paper-japanese-postcard"`: Japanese Postcard 100 x 148 mm.
+    - `"paper-9x11"`: 9 x 11 in.
+    - `"paper-10x11"`: 10 x 11 in.
+    - `"paper-15x11"`: 15 x 11 in.
+    - `"paper-env-invite"`: Envelope Invite 220 x 220 mm.
+    - `"paper-letter-extra"`: Letter Extra 9 \275 x 12 in.
+    - `"paper-legal-extra"`: Legal Extra 9 \275 x 15 in.
+    - `"paper-tabloid-extra"`: Tabloid Extra 11.69 x 18 in.
+    - `"paper-a4-extra"`: A4 Extra 9.27 x 12.69 in.
+    - `"paper-letter-transverse"`: Letter Transverse 8 \275 x 11 in.
+    - `"paper-a4-transverse"`: A4 Transverse 210 x 297 mm.
+    - `"paper-letter-extra-transverse"`: Letter Extra Transverse 9\275 x 12 in.
+    - `"paper-a-plus"`: SuperA.
+    - `"paper-b-plus"`: SuperB.
+    - `"paper-letter-plus"`: Letter Plus 8.5 x 12.69 in.
+    - `"paper-a4-plus"`: A4 Plus 210 x 330 mm.
+    - `"paper-a5-transverse"`: A5 Transverse 148 x 210 mm.
+    - `"paper-b5-transverse"`: B5 (JIS) Transverse 182 x 257 mm.
+    - `"paper-a3-extra"`: A3 Extra 322 x 445 mm.
+    - `"paper-a5-extra"`: A5 Extra 174 x 235 mm.
+    - `"paper-b5-extra"`: B5 (ISO) Extra 201 x 276 mm.
+    - `"paper-a2"`: A2 420 x 594 mm.
+    - `"paper-a3-transverse"`: A3 Transverse 297 x 420 mm.
+    - `"paper-a3-extra-transverse"`: A3 Extra Transverse 322 x 445 mm.
+    - `"paper-dbl-japanese-postcard"`: Japanese Double Postcard 200 x 148 mm.
+    - `"paper-a6"`: A6 105 x 148 mm.
+    - `"paper-jenv-kaku2"`: Japanese Envelope Kaku #2.
+    - `"paper-jenv-kaku3"`: Japanese Envelope Kaku #3.
+    - `"paper-jenv-chou3"`: Japanese Envelope Chou #3.
+    - `"paper-jenv-chou4"`: Japanese Envelope Chou #4.
+    - `"paper-letter-rotated"`: Letter Rotated 11 x 8 1/2 in.
+    - `"paper-a3-rotated"`: A3 Rotated 420 x 297 mm.
+    - `"paper-a4-rotated"`: A4 Rotated 297 x 210 mm.
+    - `"paper-a5-rotated"`: A5 Rotated 210 x 148 mm.
+    - `"paper-b4-jis-rotated"`: B4 (JIS) Rotated 364 x 257 mm.
+    - `"paper-b5-jis-rotated"`: B5 (JIS) Rotated 257 x 182 mm.
+    - `"paper-japanese-postcard-rotated"`: Japanese Postcard Rotated 148 x 100 mm.
+    - `"paper-dbl-japanese-postcard-rotated"`: Double Japanese Postcard Rotated 148 x 200 mm.
+    - `"paper-a6-rotated"`: A6 Rotated 148 x 105 mm.
+    - `"paper-jenv-kaku2-rotated"`: Japanese Envelope Kaku #2 Rotated.
+    - `"paper-jenv-kaku3-rotated"`: Japanese Envelope Kaku #3 Rotated.
+    - `"paper-jenv-chou3-rotated"`: Japanese Envelope Chou #3 Rotated.
+    - `"paper-jenv-chou4-rotated"`: Japanese Envelope Chou #4 Rotated.
+    - `"paper-b6-jis"`: B6 (JIS) 128 x 182 mm.
+    - `"paper-b6-jis-rotated"`: B6 (JIS) Rotated 182 x 128 mm.
+    - `"paper-12x11"`: 12 x 11 in.
+    - `"paper-jenv-you4"`: Japanese Envelope You #4.
+    - `"paper-jenv-you4-rotated"`: Japanese Envelope You #4 Rotated.
+    - `"paper-p16k"`: PRC 16K 146 x 215 mm.
+    - `"paper-p32k"`: PRC 32K 97 x 151 mm.
+    - `"paper-p32kbig"`: PRC 32K(Big) 97 x 151 mm.
+    - `"paper-penv-1"`: PRC Envelope #1 102 x 165 mm.
+    - `"paper-penv-2"`: PRC Envelope #2 102 x 176 mm.
+    - `"paper-penv-3"`: PRC Envelope #3 125 x 176 mm.
+    - `"paper-penv-4"`: PRC Envelope #4 110 x 208 mm.
+    - `"paper-penv-5"`: PRC Envelope #5 110 x 220 mm.
+    - `"paper-penv-6"`: PRC Envelope #6 120 x 230 mm.
+    - `"paper-penv-7"`: PRC Envelope #7 160 x 230 mm.
+    - `"paper-penv-8"`: PRC Envelope #8 120 x 309 mm.
+    - `"paper-penv-9"`: PRC Envelope #9 229 x 324 mm.
+    - `"paper-penv-10"`: PRC Envelope #10 324 x 458 mm.
+    - `"paper-p16k-rotated"`: PRC 16K Rotated.
+    - `"paper-p32k-rotated"`: PRC 32K Rotated.
+    - `"paper-p32kbig-rotated"`: PRC 32K(Big) Rotated.
+    - `"paper-penv-1-rotated"`: PRC Envelope #1 Rotated 165 x 102 mm.
+    - `"paper-penv-2-rotated"`: PRC Envelope #2 Rotated 176 x 102 mm.
+    - `"paper-penv-3-rotated"`: PRC Envelope #3 Rotated 176 x 125 mm.
+    - `"paper-penv-4-rotated"`: PRC Envelope #4 Rotated 208 x 110 mm.
+    - `"paper-penv-5-rotated"`: PRC Envelope #5 Rotated 220 x 110 mm.
+    - `"paper-penv-6-rotated"`: PRC Envelope #6 Rotated 230 x 120 mm.
+    - `"paper-penv-7-rotated"`: PRC Envelope #7 Rotated 230 x 160 mm.
+    - `"paper-penv-8-rotated"`: PRC Envelope #8 Rotated 309 x 120 mm.
+    - `"paper-penv-9-rotated"`: PRC Envelope #9 Rotated 324 x 229 mm.
+    - `"paper-penv-10-rotated"`: PRC Envelope #10 Rotated 458 x 324 m.
+    - `"paper-a0"`: A0 Sheet 841 x 1189 mm.
+    - `"paper-a1"`: A1 Sheet 594 x 841 mm.

@@ -1,0 +1,322 @@
+# (PART) Graphs{-}
+
+# Graphs
+
+## Box Plot {#box-plot-properties}
+
+Properties for `"box-plot"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"aggregate"`: the column containing the data.
+  - `"group-1"`: a (optional) grouping column to divide the boxes into (along the X axis).
+- `"box-effect"` string specifying the effects for the boxes.
+  Available options are:
+  - `"common-image"` (This will require an `"image-scheme"` to be defined.)
+  - `"image" `(This will require an `"image-scheme"` to be defined.)
+  - `"fade-from-bottom-to-top"`
+  - `"fade-from-left-to-right"`
+  - `"fade-from-right-to-left"`
+  - `"fade-from-top-to-bottom"`
+  - `"glassy"`
+  - `"solid"` (the default)
+  - `"stipple"`
+- `"show-all-points"`: `true` to show all points. By default, only outliers are shown.
+- `"show-labels"`: `true` to show slabels on the hinges, midpoint, and outliers.
+
+## Categorical Bar Chart {#categorical-bar-chart-properties}
+
+Properties for `"categorical-bar-chart"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"aggregate"`: the (optional) aggregate count column.<br />
+       These are the values accumulated into the respective labels from the group column(s).<br />
+       If this column is not provided, then frequency counts of the labels from the group column(s) are used.
+  - `"category"`: the categorical (or ID) column containing the items to group and count.
+  - `"group"`: a (optional) grouping column to further divide the main categorical data into.
+- `"bar-orientation"` string specifying the orientation of the bars.<br />
+  Available options are:
+  - `"vertical"`
+  - `"horizontal"`
+- Properties available to [bar charts](#bar-chart-properties).
+- Some base properties available to [graphs](#graph-properties).
+
+## Histogram {#histogram-properties}
+
+Properties for `"histogram"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"aggregate"`: the continuous data column to aggregate.
+  - `"group"`: the grouping column (this is optional).
+- `"binning-method"`: string specifying how to sort the data.
+  Available options are:
+  - `"bin-by-integer-range"`
+  - `"bin-by-range"`
+  - `"bin-unique-values"`
+- `"interval-display"` string specifying how to sort the data.
+  Available options are:
+  - `"cutpoints"`
+  - `"midpoints"`
+- `"rounding"`: string specifying how to round the data.
+  Available options are:
+  - `"no-rounding"`
+  - `"round"`
+  - `"round-down"`
+  - `"round-up"`
+- `"bins-start"`: number specifying where on the X axis to start the bins.
+- `"suggested-bin-count"`: number specifying the suggested number of bins.
+- `"max-bin-count"`: number specifying the maximumn number of bins.
+- Properties available to [bar charts](#bar-chart-properties).
+- Some base properties available to [graphs](#graph-properties).
+
+## Line Plot {#line-plot-properties}
+
+Properties for `"line-plot"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"x"`: the X column.
+  - `"y"`: the Y column.
+  - `"group"`: the grouping column (this is optional).
+- Some base properties available to [graphs](#graph-properties).
+
+## Pie Chart {#pie-chart-properties}
+
+Properties for `"pie-chart"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"aggregate"`: the (optional) aggregate count column.<br />
+       These are the values accumulated into the respective labels from the group column(s).<br />
+       If this column is not provided, then frequency counts of the labels from the group column(s) are used.
+  - `"group-1"`: the inner-ring grouping column (or only ring, if `"group-2"` isn't used).
+  - `"group-2"`: the outer-ring grouping column (this is optional).
+- `"label-placement"`: a string specifying where to align the outer labels.<br />
+  Available options are:
+  - `"flush"` (the default)
+  - `"next-to-parent"`
+- `"inner-pie-midpoint-label-display"`: a string specifying what to display on the labels in the middle
+  of the slices (within the inner pie).<br />
+  Available options are:
+  - `"value"`
+  - `"percentage"` (the default)
+  - `"value-and-percentage"`
+  - `"bin-name"`
+  - `"no-display"`
+- `"outer-pie-midpoint-label-display"`: a string specifying what to display on the labels in the middle
+  of the slices (within the outer pie, or pie if only one grouping variable is in use).<br />
+  Available options are:
+  - `"value"`
+  - `"percentage"` (the default)
+  - `"value-and-percentage"`
+  - `"bin-name"`
+  - `"no-display"`
+- `"showcase-slices-groups"`: an array of strings specifying which inners slices to showcase,
+  based on the parent group(s). All outer labelling will be turned off, and the showcased inner
+  slices' labels will be shown. The parent slices' colors will be solid, like their children inner slices.
+- `"showcase-slices"` draw attention to a slice (or series of slices).<br />
+  Available options are:
+  - `"pie"` which pie to showcase.<br />
+    Available options are:
+    - `"inner"`
+    - `"outer"`
+  - `"category"` which type of slices to showcase.<br />
+    Available options are:
+    - `"smallest"`
+    - `"largest"`
+  - `"by-group"`: if showcasing the inner pie, `true` will show the smallest/largest slice for within each group.
+  - `"show-outer-pie-labels"` if showcasing the inner pie, `true` keep the outer pie labels shown.
+- `"color-labels"`: `true` to apply the slice colors to their respective outer labels.
+- `"ghost-opacity"`: number specifying the opacity for ghosted labels.
+- `"include-outer-pie-labels"`: `true` to show the outer labels for the outer pie
+     (or main pie, if only using one grouping variable).
+- `"include-inner-pie-labels"`: `true` to show the outer labels for the inner pie
+     (if a second grouping variable is in use).
+- `"donut-hole"`: donut hole properties, which include:
+  - `"proportion"`: a value between `0.0` and `0.95`, specifying how much of the pie the hole should consume.
+  - `"label"`: the [label](#label-properties) shown in the middle of the hole.<br />
+        Note that this label will be implicitly justified and centered within the hole.
+  - `"color"`: the color of the donut hole.
+- Some base properties available to [graphs](#graph-properties).
+
+## Table {#table-properties}
+
+Properties for `"table"` nodes:
+
+- `"variables"`: an array of column names to use from the dataset.<br />
+  These values can also be variable selection formulas, including the following:
+  - ``{{matches(`value`)}}``: where `value` will be the regular expression search pattern, and any column
+      in the dataset that contains this text will be included.
+  - ``{{everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
+      the categoricals, the continuous columns, and finally the date columns.
+- `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
+     the rows and vice versa.<br />
+- `"min-width-proportion"`: the minimum percent of the drawing area's width that the table should consume
+     (between `0.0` to `1.0`, representing 0% to 100%).
+- `"min-height-proportion"`: the minimum percent of the drawing area's height that the table should consume
+     (between `0.0` to `1.0`, representing 0% to 100%).
+- `"highlight-pen"`: the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
+- `"default-borders"`: an array of boolean values, representing whether the default borders of the
+      cell should be drawn. These values go clockwise, starting at 12 o'clock.
+- Some base properties available to [graphs](#graph-properties).
+
+Note that it is recommended to set `"fit-row-to-content"` to `true` for shorter tables to better fit them to the page.
+Likewise, set `"fit-row-to-content"` to `false` for taller tables that are meant to consume most of a page's height.
+
+The remaining properties are executed in the following order:
+- `"row-group"`: a numeric array representing which rows to apply label grouping to.<br />
+     Across each provided row, this will combine consecutive cells with the same label into one cell.
+- `"column-group"`: a numeric array representing which columns to apply label grouping to.<br />
+     Down each provided column, this will combine consecutive cells with the same label into one cell.
+- `"alternate-row-color"`: applies "zebra stripes" down the rows.
+  Available options are:
+  - `"color"`: the base row color for the starting row; a shaded/tinted version of this color will be applied
+       to every other row.
+  - `"start"`: the row to start the alternating from. (Default is `0`.)
+  - `"stops"`: an array of which columns to skip over when applying the row alternating color.<br />
+       This is an array of `"position"` items.
+- `"row-add"`: commands a series of rows to be added, which is an array of row properties containing the following:
+  - `"position"`: where to insert the row.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"constants"`: an array of strings to fill the row with (left-to-right).
+  - `"background"`: the background color of the row.
+- `"row-color"`: an array of row and color pairs, which contain the following properties:
+  - `"position"`: which row to apply a background color.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"background"`: the background color of the row.
+  - `"stops"`: an array of which columns to skip over when changing the row's color.<br />
+       This is an array of `"position"` items.
+- `"row-bold"`: an array of rows, which contain the following properties:
+  - `"position"` which row to make bold.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"stops"`: an array of which columns to skip over when bolding the row.<br />
+       This is an array of `"position"` items.
+- `"row-borders"`: an array of row border specifications, which contain the following:
+  - `"position"` which row to edit.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"borders"`: an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"right-border"` boolean specifying whether to show the cell's right border.
+  - `"top-border"` boolean specifying whether to show the cell's top border.
+  - `"bottom-border"` boolean specifying whether to show the cell's bottom border.
+  - `"left-border"` boolean specifying whether to show the cell's left border.
+  - `"stops"`: an array of which rows to skip over when changing the row's borders.<br />
+       This is an array of `"position"` items.
+- `"row-content-align"`: an array of commands to align the content inside of the cells across a row.
+  - `"position"` which row to change the content alignment in.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"horizontal-page-alignment"` how to horizontally align the cells' content.<br />
+    Available options are:
+    - `"left-aligned"`
+    - `"right-aligned"`
+    - `"centered"`
+  - `"stops"`: an array of which columns to skip over when changing the column's content alignment.<br />
+       This is an array of `"position"` items.
+- `"column-color"`: an array of column and color pairs, which contain the following properties:
+  - `"position"` which column to apply a background color.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"background"`: the background color of the column.
+  - `"stops"`: an array of which rows to skip over when changing the column's color.<br />
+       This is an array of `"position"` items.
+- `"column-bold"`: an array of columns, which contain the following properties:
+  - `"position"` which column to make bold.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"stops"`: an array of which rows to skip over when making the column bold.<br />
+       This is an array of `"position"` items.
+- `"column-borders"`: an array of column border specifications, which contain the following:
+  - `"position"` which column to edit.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"borders"`: an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"right-border"` boolean specifying whether to show the cell's right border.
+  - `"top-border"` boolean specifying whether to show the cell's top border.
+  - `"bottom-border"` boolean specifying whether to show the cell's bottom border.
+  - `"left-border"` boolean specifying whether to show the cell's left border.
+  - `"stops"`: an array of which rows to skip over when changing the column's borders.<br />
+       This is an array of `"position"` items.
+- `"column-highlight"`: an array of column highlight specifications, which contain the following:
+  - `"position"` which column to edit.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"stops"`: an array of which rows to skip over when changing the column's cell highlighting.<br />
+       This is an array of `"position"` items.
+- `"aggregates"`: an array of aggregate definitions that will be added to the table.<br />
+  Each aggregate node contains the following properties:
+  - `"type"` where to add the aggregate.<br />
+    Available options are:
+    - `"row"`
+    - `"column"`
+  - `"aggregate-type"`: the type of aggregate to add.<br />
+    Available options are:
+    - `"percent-change"`
+    - `"total"`
+  - `"background"`: the background color for the column/row. This can be either a color name or hex-encoded value.
+  - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
+       `false` will apply a light gray to the column.
+  - `"name"`: the name for the newly added aggregate column/row.
+  - `"start"`: the first column/row that the aggregate column/row should use.<br />
+       This property is optional, and if not included the first numeric column/row encountered will be used.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"end"`: the last column/row that the aggregate column/row should use.<br />
+       This property is optional, and if not included the last numeric column/row encountered will be used.
+       Like `"start"`, this is optional and has the same properties.
+  - `"borders"`: an array of boolean values, representing whether the borders of the
+      cell should be drawn. These values go clockwise, starting at 12 o'clock.<br />
+      This is optional and overrides the default cell borders.
+- `"row-totals"`: adds a grand total row to the bottom of the table.<br />
+  If the first column is grouped and the second colum is text, then this will also insert subtotal rows.<br />
+  Available options are:
+  - `"background"`: the background color for the row(s).
+- `"cell-update"`: an array of cell updating commands, which contain the following properties:
+  - `"column"`: the column position of the cell to update.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"row"`: the row position of the cell to update.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"value-to-find"`: if `"row"/"column"`: are not provided, this is a cell value to search for.
+       The first cell that matches this text will be returned and that is the cell that will be updated.
+  - `"column-count"`: the number of columns that this cell should consume.<br />
+       This can either be a number, or the string `"all"` (meaning all columns).
+  - `"row-count"`: the number of rows that this cell should consume.<br />
+       This can either be a number, or the string `"all"` (meaning all rows).
+  - `"value"`: a numeric, string, or date value to assign to the cell.
+  - `"background"`: the background color. This can be either a color name or hex-encoded value.
+  - `"bold"`: `true` to make the cell bold.
+  - `"highlight"`: `true` to highlight the cell.
+  - `"prefix"`: a character to display on the left side of the cell.
+  - `"left-image"`: properties specifying an image to display on the left side of the label.
+    The available options are:
+    - `"path"`: string specifying the image path to load.
+  - `"show-borders"`: an array of boolean values, representing whether the borders of the
+       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+  - `"horizontal-page-alignment"`: how to horizontally align the item within its area.<br />
+    Available options are:
+    - `"left-aligned"`
+    - `"right-aligned"`
+    - `"centered"`
+  - `"text-alignment"` how to align the cell's text (if multi-line).<br />
+    The available options are:
+    - `"flush-left"`or `"ragged-right"`
+    - `"flush-right"`or `"ragged-left"`
+    - `"centered"`
+    - `"justified"`
+- `"cell-annotations"`: an array of cell annotation specifications, which each contain the following properties:
+  - `"value"`
+  - `"side"`
+  - `"pen"`
+  - `"background"`
+  - `"cells"`
+    The available options are:
+    - `"column-outliers"`
+    - `"column-top-n"`
+      The available options are:
+      - `"n"`
+- `"footnotes"`: an array of footnote specifications, which each contain the following properties:
+  - `"value"`: the cell value (as a string) to add a footnote number to. Can include ["constants"](#constants-properties).
+  - `"footnote"`: the footnote to add to the caption. Can include ["constants"](#constants-properties).
+
+## W-Curve Plot {#w-curve-plot-properties}
+
+Properties for `"w-curve-plot"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"x"`: the X column.
+  - `"y"`: the Y column.
+  - `"group"`: the grouping column (this is optional).
+- `"time-interval-label"` string the label for the major time intervals used in the data collection (e.g., `"semester"` or `"year"`).
+- Some base properties available to [graphs](#graph-properties).

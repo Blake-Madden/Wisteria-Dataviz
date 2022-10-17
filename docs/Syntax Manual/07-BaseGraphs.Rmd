@@ -1,0 +1,190 @@
+## Graphs {#graph-properties}
+
+Properties common to all graph items:
+
+- `"dataset"`: if the object requires a dataset (most graphs do), then this is the name of the dataset.<br />
+     Note that this is the unique name of the dataset loaded from the report's
+     ["datasets"](#datasets-properties) section, not a filepath.<br />
+     Also, this is optional if the item type doesn't require a dataset (e.g., a `Wisteria::GraphItems::Label`).
+- `"title"`: the title of the graph, which contains ["label"](#label-properties) properties.
+- `"sub-title"`: the subtitle of the graph, which contains ["label"](#label-properties) properties.
+- `"caption"`: the caption of the graph, which contains ["label"](#label-properties) properties.
+- `"axes"`: an array of [axis](#axis-properties) objects.
+- `"background-color"`: a string specifying the plotting area's background color.
+- `"image-scheme"`: an array of image filepaths to use for the image scheme.
+- `"common-box-image-outline"`: string specifying the color for the outline around the bars/boxes
+     if using a common box image.
+- `"stiple-image"`: a string specifying the path to an image to use a stipple brush.
+- `"annotations"`: text messages that can be added on top of the graph, optionally pointing to positions
+  on the graph. This is an array of annotation definitions, which contain the following properties:
+  - `"label"`: the label for the note, , which contains ["label"](#label-properties) properties.
+  - `"interest-points"`: The points that the note will point at.<br />
+    This is an array of items which contain the following properties:
+    - `"x"`: the X axis position of the point.
+    - `"y"`: the Y axis position of the point.
+  - `"anchor"`: the point to anchor the label.<br />
+     Note that the `label`'s `"anchoring"` property will control which part of the label that the
+     anchoring point refers to.<br />
+     If not specified, the graph will attempt to place it at the best location.<br />
+     This contains the following properties:
+     - `"x"`: the X axis position of the point.
+     - `"y"`: the Y axis position of the point.
+- `"reference-lines"`: an array of reference line definitions, which contain the following properties:
+  - `"axis-type"`: the axis to add the reference line to.<br />
+    Available options are:
+    - `"bottom-x"`
+    - `"right-y"`
+    - `"left-y"`
+    - `"top-y"`
+  - `"position"`: the axis position for the line.<br />
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"label"`: the text to display on the legend referring to line.
+  - `"pen"`: the definition for the [pen](#pen-properties) properties.
+- `"reference-areas"`: an array of reference area definitions, which contain the following properties:
+  - `"axis-type"`: the axis to add the reference area to.<br />
+    Available options are:
+    - `"bottom-x"`
+    - `"right-y"`
+    - `"left-y"`
+    - `"top-y"`
+  - `"start"`: the starting axis position for the area.<br />
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"end"`: the ending axis position for the area.<br />
+       This can either be a numeric position, a date (as a string), or an axis label.
+  - `"label"`: the text to display on the legend referring to area.
+  - `"pen"`: the definition for the [pen](#pen-properties) properties.<br />
+        The color is used for the surrounding reference lines, and a tinted version
+        is used the area.
+  - `"style"`: the style to apply to the reference area.<br />
+    Available options are:
+    - `"fade-from-left-to-right"`
+    - `"fade-from-right-to-left"`
+    - `"solid"`
+- `"brush-scheme"` for graphs that support brush schemes only.<br />
+     Contains the following properties:
+     `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
+     `"color-scheme"`: a color scheme that is mapped to the brush styles.
+- `"color-scheme"` for graphs that support color schemes only.<br />
+     This can either be an array of color strings or the name of the color scheme.<br />
+     Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
+- `"icon-scheme"` for graphs that support icon/marker schemes only.<br />
+  This an either be an icon scheme name or an array of icon strings (which can be recycled)<br />
+  Refer to `Wisteria::Icons::Schemes` for a list of icon schemes.<br />
+  The following individual icons are available:
+  - `"blank"`
+  - `"horizontal-line"`
+  - `"arrow-right"`
+  - `"circle"`
+  - `"image"`
+  - `"horizontal-separator"`
+  - `"horizontal-arrow-right-separator"`
+  - `"color-gradient"`
+  - `"square"`
+  - `"triangle-upward"`
+  - `"triangle-downward"`
+  - `"triangle-right"`
+  - `"triangle-left"`
+  - `"diamond"`
+  - `"plus"`
+  - `"asterisk"`
+  - `"hexagon"`
+  - `"box-plot"`
+  - `"location-marker"`
+  - `"go-road-sign"`
+  - `"warning-road-sign"`
+  - `"sun"`
+  - `"flower"`
+  - `"fall-leaf"`
+  - `"top-curly-brace"`
+  - `"right-curly-brace"`
+  - `"bottom-curly-brace"`
+  - `"left-curly-brace"`
+  - `"male"`
+  - `"female"`
+  - `"female-business"`
+- `"line-scheme"` for graphs that support line schemes only.<br />
+  This is an array of line specifications (which can be recycled)<br />
+  Each specification contains the following:
+  - `"line-style"`: a string specifying the line style.<br />
+    Available options are:
+    - `"lines"`
+    - `"arrows"`
+    - `"spline"`
+  - `"pen-style"`: a [pen](#pen-properties) specificaiton (although only the pen style is used)
+- `"legend"`: an item containing the following properties:
+  - `"placement"` where to place the legend.<br />
+    Available options are:
+    - `"left"`
+    - `"right"` (the default)
+    - `"top"`
+    - `"bottom"`
+  - `"include-header"` `true` to include a header (the default), `false` to not.
+  - `"title"` if `"include-header"` is `true`, a string specifying the title of the legend.
+  - `"ring"` for pie charts, which ring to use for the legend.<br />
+    Available options are:
+    - `"outer"` only the outer (or only) ring is included. (This is the default.)
+    - `"inner"`: the inner and outer rings are included in the legend.
+
+## Bar Chart {#bar-chart-properties}
+
+Properties common to all bar-chart derived graphs:
+
+- `"box-effect"`: string specifying the effects for the bars.
+  Available options are:
+  - `"common-image"` (This will require an `"image-scheme"` to be defined.)
+  - `"fade-from-bottom-to-top"`
+  - `"fade-from-left-to-right"`
+  - `"fade-from-right-to-left"`
+  - `"fade-from-top-to-bottom"`
+  - `"glassy"`
+  - `"solid"` (the default)
+  - `"stipple"`
+- `"bar-label-display"`: string specifying how to display labels on the bars.
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+  - `"value-and-percentage"`
+  - `"no-display"`
+  - `"bin-name"`
+- `"include-spaces-between-bars"`: `true` to include spaces between bars.
+- `"ghost-opacity"`: number specifying the opacity level of non-showcased bars.
+- `"showcase-bars"`: an array of strings specifying which bars to showcase.
+- `"bar-sort"`: properties specifying how to sort the bars (after loading the data).
+  Available options are:
+  - `"direction"`
+    Available options are:
+    - `"ascending"`
+    - `"descending"`
+  - `"by"` how to sort the bars, by label or length. This will override any `"labels"` option.
+    Available options are:
+    - `"length"`
+    - `"label"`
+  - `"labels"`: the bar labels, specified in the order they should be sorted.<br />
+       If `"direction"` is `"ascending"`, then the bars will be sorted top-to-bottom or
+       left-to-right (based on the order of the provided labels). Otherwise, they will be
+       sorted bottom-to-top or right-to-left.<br />
+       Note that this option is ignored if `"by"` is specified.
+- `"bar-groups"`: an array of bar groups, each containing the following properties:
+  - `"start"`: the axis label or numeric position to start the group.
+  - `"end"`: the axis label or numeric position to end the group.
+  - `"decal"`: a label to display on the group bar.
+  - `"brush"`: the brush to paint with, which includes [brush](#brush-properties) properties.
+  - `"color"`: the base color to paint under the brush. This is useful if the brush is using a hatch pattern.
+- `"decals"`: an array of decals to add to the bars. This will be an array of nodes containing the following properties:
+  - `"bar"`: the axis label of the bar.
+  - `"block"`: number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
+  - `"decal"`: the decal to add to the bar, which will contain ["label"](#label-properties) properties.
+- `"first-bar-brackets"`: properties adding axis brackets that reference the first bar.
+  Available options are:
+  - `"label"`: string for the bracket's label.
+  - `"start-block-re"`: a regular expression used to find the starting block for the bracket.
+  - `"end-block-re"`: a regular expression used to find the ending block for the bracket.
+
+  If the `"re"` variations of the starting and ending labels are available, then these properties are used:
+  - `"start-block"`: string specifying the tag of the starting block of the bar.
+  - `"end-block"`: string specifying the tag of the ending block of the bar.
+- `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
+
+Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
+any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
+if specifying start and end points for your brackets, be aware that the bars will already be sorted.
