@@ -145,7 +145,7 @@ Properties for the `"datasets"` node:
          (depending on the column's data type).<br />
          Multiple values will be an OR operation, where if a value in the data matches *any* of these
          values, then it's a match.
-         Note that string values can reference constants loaded from the ["constants"](#constants-properties) section
+         Note that string values can reference constants loaded from the [constants](#constants-properties) section
          or `"formulas"` section of the parent dataset.
   - `"filter-or"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
     are ORed together, meaning that if any condition for a row is true, then it will be included in the subset.
@@ -199,22 +199,3 @@ Properties for the `"datasets"` node:
 
   Note that subset and pivot nodes can contain their own transformation and formula sections,
   same as a dataset node.
-
-# Additional Functions {#additional-functions}
-
-Along with the dataset-related functions that can be used for dataset formulas, other functions are also available.
-These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a label's text value).
-
-- ``ReportName()``: the report's name.
-- ``PageNumber()``: the current page number.
-- ``Now(`value`)``:
-    Returns the a string representing the current date and time (or date component).
-    - `value`: the part of today's date to return (if not provided, then the full date is returned).
-      The following options are available:
-      - `"Year"`: the year.
-      - `"Day"`: the day of the month.
-      - `"DayName"`: the day of the month as a name (e.g., Tuesday).
-      - `"Month"`: the numeric value of the month.
-      - `"MonthName"`: the name of the month.
-      - `"MonthShortName"`: the abbreviated name of the month.
-      - `"Fancy"` returns the date formatted as full month name, day, and four-digit year.

@@ -1,8 +1,8 @@
-# (PART) Graphs{-}
+# (PART) Graphs {-}
 
 # Graphs
 
-## Box Plot {#box-plot-properties}
+## Box Plot {#box-plot-properties .unnumbered}
 
 Properties for `"box-plot"` nodes:
 
@@ -21,9 +21,9 @@ Properties for `"box-plot"` nodes:
   - `"solid"` (the default)
   - `"stipple"`
 - `"show-all-points"`: `true` to show all points. By default, only outliers are shown.
-- `"show-labels"`: `true` to show slabels on the hinges, midpoint, and outliers.
+- `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
 
-## Categorical Bar Chart {#categorical-bar-chart-properties}
+## Categorical Bar Chart {#categorical-bar-chart-properties .unnumbered}
 
 Properties for `"categorical-bar-chart"` nodes:
 
@@ -40,23 +40,23 @@ Properties for `"categorical-bar-chart"` nodes:
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
-## Histogram {#histogram-properties}
+## Histogram {#histogram-properties .unnumbered}
 
 Properties for `"histogram"` nodes:
 
 - `"variables"`: an item containing the following properties:
   - `"aggregate"`: the continuous data column to aggregate.
   - `"group"`: the grouping column (this is optional).
-- `"binning-method"`: string specifying how to sort the data.
+- `"binning-method"`: string specifying how to sort the data.<br />
   Available options are:
   - `"bin-by-integer-range"`
   - `"bin-by-range"`
   - `"bin-unique-values"`
-- `"interval-display"` string specifying how to sort the data.
+- `"interval-display"` string specifying how to sort the data.<br />
   Available options are:
   - `"cutpoints"`
   - `"midpoints"`
-- `"rounding"`: string specifying how to round the data.
+- `"rounding"`: string specifying how to round the data.<br />
   Available options are:
   - `"no-rounding"`
   - `"round"`
@@ -68,7 +68,7 @@ Properties for `"histogram"` nodes:
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
-## Line Plot {#line-plot-properties}
+## Line Plot {#line-plot-properties .unnumbered}
 
 Properties for `"line-plot"` nodes:
 
@@ -78,7 +78,7 @@ Properties for `"line-plot"` nodes:
   - `"group"`: the grouping column (this is optional).
 - Some base properties available to [graphs](#graph-properties).
 
-## Pie Chart {#pie-chart-properties}
+## Pie Chart {#pie-chart-properties .unnumbered}
 
 Properties for `"pie-chart"` nodes:
 
@@ -136,7 +136,7 @@ Properties for `"pie-chart"` nodes:
   - `"color"`: the color of the donut hole.
 - Some base properties available to [graphs](#graph-properties).
 
-## Table {#table-properties}
+## Table {#table-properties .unnumbered}
 
 Properties for `"table"` nodes:
 
@@ -161,11 +161,12 @@ Note that it is recommended to set `"fit-row-to-content"` to `true` for shorter 
 Likewise, set `"fit-row-to-content"` to `false` for taller tables that are meant to consume most of a page's height.
 
 The remaining properties are executed in the following order:
+
 - `"row-group"`: a numeric array representing which rows to apply label grouping to.<br />
      Across each provided row, this will combine consecutive cells with the same label into one cell.
 - `"column-group"`: a numeric array representing which columns to apply label grouping to.<br />
      Down each provided column, this will combine consecutive cells with the same label into one cell.
-- `"alternate-row-color"`: applies "zebra stripes" down the rows.
+- `"alternate-row-color"`: applies "zebra stripes" down the rows.<br />
   Available options are:
   - `"color"`: the base row color for the starting row; a shaded/tinted version of this color will be applied
        to every other row.
@@ -279,8 +280,8 @@ The remaining properties are executed in the following order:
   - `"bold"`: `true` to make the cell bold.
   - `"highlight"`: `true` to highlight the cell.
   - `"prefix"`: a character to display on the left side of the cell.
-  - `"left-image"`: properties specifying an image to display on the left side of the label.
-    The available options are:
+  - `"left-image"`: properties specifying an image to display on the left side of the label.<br />
+    Available options are:
     - `"path"`: string specifying the image path to load.
   - `"show-borders"`: an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
@@ -290,7 +291,7 @@ The remaining properties are executed in the following order:
     - `"right-aligned"`
     - `"centered"`
   - `"text-alignment"` how to align the cell's text (if multi-line).<br />
-    The available options are:
+    Available options are:
     - `"flush-left"`or `"ragged-right"`
     - `"flush-right"`or `"ragged-left"`
     - `"centered"`
@@ -301,16 +302,16 @@ The remaining properties are executed in the following order:
   - `"pen"`
   - `"background"`
   - `"cells"`
-    The available options are:
+    Available options are:
     - `"column-outliers"`
     - `"column-top-n"`
       The available options are:
-      - `"n"`
+      - `"n"`: number specifying how many top items should be returned.
 - `"footnotes"`: an array of footnote specifications, which each contain the following properties:
-  - `"value"`: the cell value (as a string) to add a footnote number to. Can include ["constants"](#constants-properties).
-  - `"footnote"`: the footnote to add to the caption. Can include ["constants"](#constants-properties).
+  - `"value"`: the cell value (as a string) to add a footnote number to. Can include [constants](#constants-properties).
+  - `"footnote"`: the footnote to add to the caption. Can include [constants](#constants-properties).
 
-## W-Curve Plot {#w-curve-plot-properties}
+## W-Curve Plot {#w-curve-plot-properties .unnumbered}
 
 Properties for `"w-curve-plot"` nodes:
 

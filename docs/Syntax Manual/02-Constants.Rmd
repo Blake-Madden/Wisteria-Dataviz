@@ -12,3 +12,22 @@ Properties for the `"constants"` node:
     If a number, then it will be formatted to the current locale when displayed in the report.<br />
 
 Note that datasets have a similar `"formulas"` section which can create constants from self-referencing formulas.
+
+## Additional Functions {#additional-functions .unnumbered}
+
+Along with constants and the dataset-related functions, other functions are also available.
+These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a label's text value).
+
+- ``ReportName()``: the report's name.
+- ``PageNumber()``: the current page number.
+- ``Now(`value`)``:
+    Returns the a string representing the current date and time (or date component).
+    - `value`: the part of today's date to return (if not provided, then the full date is returned).
+      The following options are available:
+      - `` `Year` ``: the year.
+      - `` `Day` ``: the day of the month.
+      - `` `DayName` ``: the day of the month as a name (e.g., Tuesday).
+      - `` `Month` ``: the numeric value of the month.
+      - `` `MonthName` ``: the name of the month.
+      - `` `MonthShortName` ``: the abbreviated name of the month.
+      - `` `Fancy` `` returns the date formatted as full month name, day, and four-digit year.

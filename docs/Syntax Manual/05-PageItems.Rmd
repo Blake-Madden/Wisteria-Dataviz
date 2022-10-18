@@ -2,7 +2,54 @@
 
 # Basic Page Items
 
-## Common Axis {#common-axis-properties}
+## All Items {#item-properties .unnumbered}
+
+Properties common to all items:
+
+- `"id"`: a (unique) numeric identifier for the item. This can be referenced by other items in the report.<br />
+     An example can be adding an ID to a graph and then inserting a [common-axis](#common-axis-properties) to the
+     report that accepts this ID.
+- `"canvas-margins"`: a numeric array (one to four numbers), representing the item's canvas margin going clockwise,
+     starting at 12 o'clock.
+- `"padding"`: a numeric array (one to four numbers), representing the item's padding going clockwise,
+     starting at 12 o'clock.
+- `"pen"`: the item's pen, which includes [pen](#pen-properties) properties.
+- `"outline"`: a boolean array, specifying the item's border outlines to draw going clockwise,
+     starting at 12 o'clock. Note that `"pen"` must be valid and that this is not supported by all objects.
+- `"scaling"` numeric value of how much to scale the object's size. For example, `2.0` will double the
+     its default size.
+- `"show"` boolean value specifying whether to show the item.
+- `"anchoring"` controls the starting point of where the object is drawn.<br />
+  This is usually only relative for objects being embedded on a plot (e.g., annotations).<br />
+  Available options are:
+  - `"bottom-left-corner"`
+  - `"bottom-right-corner"`
+  - `"center"` (the default)
+  - `"top-left-corner"`
+  - `"top-right-corner"`
+- `"relative-alignment"` how an object is aligned with its parent (e.g., an axis title relative to its axis).<br />
+  Available options are:
+  - `"flush-left"`
+  - `"flush-right"`
+  - `"flush-top"`
+  - `"flush-bottom"`
+  - `"centered"`
+- `"horizontal-page-alignment"` how to horizontally align the item within its area.<br />
+  Available options are:
+  - `"left-aligned"`
+  - `"right-aligned"`
+  - `"centered"`
+- `"vertical-page-alignment"` how to vertically align the item within its area.<br />
+  Available options are:
+  - `"top-aligned"`
+  - `"bottom-aligned"`
+  - `"centered"`
+- `"fit-row-to-content"`: a boolean value specifying whether the item's calculated height should
+     control how tall its canvas row is.
+- `"fixed-width"`: a boolean value specifying whether the item should be constrained
+     to its calculated width within its row.
+
+## Common Axis {#common-axis-properties .unnumbered}
 
 Properties for `"common-axis"` nodes:
 
@@ -13,7 +60,7 @@ Properties for `"common-axis"` nodes:
 - `"common-perpendicular-axis"` if `"axis-type"` is `"bottom-x"`: and this is `true`,
      then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
 
-## Fillable Shape {#fillable-shape-properties}
+## Fillable Shape {#fillable-shape-properties .unnumbered}
 
 Properties for `"fillable-shape"` nodes:
 
@@ -26,7 +73,7 @@ Properties for `"fillable-shape"` nodes:
 - `"fill-percent"`: the percent to fill the shape, which is a number between `0.0` and `1.0`.<br />
   This can either be a numeric or a formula reference.
 
-## Image {#image-properties}
+## Image {#image-properties .unnumbered}
 
 Properties for `"image"` nodes:
 
@@ -38,13 +85,13 @@ Properties for `"image"` nodes:
   - `"upscale-only"`
   - `"no-resize"`
 
-## Label {#label-properties}
+## Label {#label-properties .unnumbered}
 
 Properties for `"label"` nodes:
 
 - `"text"`: the title's text.<br />
   Note that this property supports embedded formulas that can reference user-defined values loaded from the
-  ["constants"](#constants-properties) section.
+  [constants](#constants-properties) section.
 - `"orientation"` string specifying the orientation of the text.<br />
   Available options are:
   - `"vertical"`
@@ -79,7 +126,7 @@ Properties for `"label"` nodes:
 Note that it is recommended to set `"fit-row-to-content"` to `true` if the label is a separate
 object on the canvas (i.e., not a label on another object).
 
-## Shape {#shape-properties}
+## Shape {#shape-properties .unnumbered}
 
 Properties for `"shape"` nodes:
 
