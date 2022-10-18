@@ -49,6 +49,7 @@ SET(WISTERIA_SRC
     src/ui/opacitydlg.cpp
     src/ui/printerheaderfooterdlg.cpp
     src/ui/radioboxdlg.cpp
+    src/ui/sidebar.cpp
     src/ui/thumbnail.cpp
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
