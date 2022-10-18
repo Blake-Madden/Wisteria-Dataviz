@@ -515,12 +515,28 @@ namespace Wisteria::Graphs
         const double leftYLabelScaling = GetLeftYAxis().CalcBestScalingToFitLabels(dc);
         const double rightYLabelScaling = GetRightYAxis().CalcBestScalingToFitLabels(dc);
 
-        const double smallestLabelScaling = std::min({ bottomXLabelScaling, topXLabelScaling,
+        const double smallestMainAxesLabelScaling = std::min({
+                                                       bottomXLabelScaling, topXLabelScaling,
                                                        leftYLabelScaling, rightYLabelScaling });
+        double smallestCustomAxisLabelScaling = smallestMainAxesLabelScaling;
+        if (GetCustomAxes().size())
+            {
+            const auto& smallestScaledCustomAxis = *std::min_element(GetCustomAxes().cbegin(),
+                GetCustomAxes().cend(),
+                [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.GetAxisLabelScaling(),
+                                              rhv.GetAxisLabelScaling()); });
+            smallestCustomAxisLabelScaling = smallestScaledCustomAxis.GetAxisLabelScaling();
+            }
+        const double smallestLabelScaling = std::min(smallestMainAxesLabelScaling,
+                                                     smallestCustomAxisLabelScaling);
         GetBottomXAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetTopXAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetLeftYAxis().SetAxisLabelScaling(smallestLabelScaling);
         GetRightYAxis().SetAxisLabelScaling(smallestLabelScaling);
+
+        for (auto& customAxis : GetCustomAxes())
+            { customAxis.SetAxisLabelScaling(smallestLabelScaling); }
 
         // adjust plot margins again in case stacking or common axis
         // label scaling was changed
