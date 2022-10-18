@@ -478,6 +478,10 @@ namespace Wisteria::GraphItems
             m_widestLabel.SetDPIScaleFactor(scaling);
             m_tallestLabel.SetDPIScaleFactor(scaling);
             }
+        /** @private
+            @brief Sets the scaling of the axis.
+            @param scaling The scaling to use.*/
+        void SetScaling(const double scaling) final;
 
         /// @brief Which parts of the axis should be reset when Reset() is called.
         enum class AxisResetLevel
@@ -1340,9 +1344,7 @@ namespace Wisteria::GraphItems
         ///     to fill the entire place available to them.
         void AdjustLabelSizeIfUsingBackgroundColor(Label& axisLabel, wxDC& dc,
                                                    const bool useMaxWidth) const;
-        /// @brief Sets the scaling of the axis.
-        /// @param scaling The scaling to use.
-        void SetScaling(const double scaling) final;
+
         /** @brief Retrieves the value along the axis from a physical
                 (relative to parent plot) coordinate.
             @param coordinate The physical coordinate to look up.

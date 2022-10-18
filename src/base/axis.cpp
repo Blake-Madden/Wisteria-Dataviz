@@ -2377,38 +2377,29 @@ namespace Wisteria::GraphItems
 
         if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
             {
-            auto longestLabel{ GetWidestTextLabel(dc) };
-            auto longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
+            const auto longestLabel{ GetWidestTextLabel(dc) };
+            const auto longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
 
-            while (currentScaling > 1.0 && longestWidth > m_maxLabelWidth)
-                {
-                currentScaling -= 0.1;
-                longestLabel.SetScaling(currentScaling);
-                longestWidth = longestLabel.GetBoundingBox(dc).GetWidth();
-                }
+            if (longestWidth > m_maxLabelWidth)
+                { currentScaling *= safe_divide<double>(m_maxLabelWidth, longestWidth); }
             }
         else if (GetAxisLabelOrientation() == AxisLabelOrientation::Perpendicular)
             {
-            auto tallestLabel = GetTallestTextLabel(dc);
-            auto tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
+            const auto tallestLabel = GetTallestTextLabel(dc);
+            const auto tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
 
-            // 1.0 will be the lowest scaling that we would recommend. Even if that continues to cause overlaps,
-            // we don't want to suggest a scaling smaller than the default that the parent is probably using.
-            while (currentScaling > 1.0 && tallestHeight > m_maxLabelWidth)
-                {
-                currentScaling -= .1;
-                tallestLabel.SetScaling(currentScaling);
-                tallestHeight = tallestLabel.GetBoundingBox(dc).GetHeight();
-                }
+            if (tallestHeight > m_maxLabelWidth)
+                { currentScaling *= safe_divide<double>(m_maxLabelWidth, tallestHeight); }
             }
         else
             {
             SetAxisLabelScaling(GetScaling());
             return GetScaling();
             }
-        // 1.0 will be the lowest scaling that we would recommend. Even if that continues to cause overlaps,
-        // we don't want to suggest a scaling smaller than the default that the parent is probably using.
-        SetAxisLabelScaling(std::max(1.0, currentScaling));
+        // 3/4 scaling will be the lowest scaling that we would recommend.
+        // Even if that continues to cause overlaps,
+        // we don't want to suggest a scaling that's too small to read.
+        SetAxisLabelScaling(std::max(math_constants::three_quarters, currentScaling));
         return GetAxisLabelScaling();
         }
 
