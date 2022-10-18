@@ -1,3 +1,14 @@
+/** @addtogroup UI
+    @brief User interface classes.
+    @date 2005-2022
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
+@{*/
+
 #ifndef __BASEMAINFRAME_H__
 #define __BASEMAINFRAME_H__
 
@@ -151,5 +162,7 @@ namespace Wisteria::UI
         BaseMainFrame* m_frame{ nullptr };
         };
     }
+
+/** @}*/
 
 #endif //__BASEMAINFRAME_H__

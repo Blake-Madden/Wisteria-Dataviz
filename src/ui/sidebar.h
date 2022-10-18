@@ -1,4 +1,4 @@
-/** @addtogroup Graphics
+/** @addtogroup UI
     @brief User interface classes.
     @date 2005-2022
     @copyright Blake Madden
@@ -18,397 +18,511 @@
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
 #include <wx/artprov.h>
+#include <wx/uilocale.h>
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <optional>
 
 DECLARE_EVENT_TYPE(wxEVT_SIDEBAR_CLICK, -1)
 DECLARE_EVENT_TYPE(wxEVT_SIDEBAR_SHOWHIDE_CLICK, -1)
 
-/** @breif A visually-enhanced tree control, similar to Outlook's sidebar.
-    @details The control organizes data into categories (a top-level "folder")
-        and items (sub-items under the categories).*/
-class wxSideBar final : public wxScrolledCanvas
+namespace Wisteria::UI
     {
-    /// @brief Constructor.
-    explicit wxSideBar(wxWindow* parent, wxWindowID id = wxID_ANY);
-    wxSideBar(const wxSideBar&) = delete;
-    wxSideBar(wxSideBar&&) = delete;
-    wxSideBar& operator=(const wxSideBar&) = delete;
-    wxSideBar& operator=(wxSideBar&&) = delete;
+    /// @brief Visual effect for a sidebar control.
+    enum class SidebarStyle
+        {
+        /// @brief A glassy appearance
+        Glassy,
+        /// @brief A flat appearance.
+        Flat
+        };
 
+    /// @brief A scheme of colors to apply to a sidebar control.
     struct SideBarColorScheme
         {
+        /// @brief Background color of control.
         wxColour m_backgroundColor;
+        /// @brief Text color.
         wxColour m_foregroundColor;
+        /// @brief Background color of item when it's selected.
+        wxColour m_activeColor;
+        /// @brief Font color of item when it's selected.
+        wxColour m_activeFontColor;
+        /// @brief Background color of folders.
+        wxColour m_parentColor;
+        /// @brief Background color of item when mouse is over it.
+        wxColour m_highlightColor;
+        /// @brief Font color of item when mouse is over it.
+        wxColour m_highlightFontColor;
+        };
+
+    /** @brief A visually-enhanced tree control, similar to Outlook's sidebar.
+        @details The control organizes data into a folder
+            and items (sub-items under the folders).*/
+    class SideBar final : public wxScrolledCanvas
+        {
+    public:
+        /// @brief Constructor.
+        /// @param parent The parent window.
+        /// @param id The control's ID.
+        explicit SideBar(wxWindow* parent, wxWindowID id = wxID_ANY);
+        /// @private
+        SideBar(const SideBar&) = delete;
+        /// @private
+        SideBar(SideBar&&) = delete;
+        /// @private
+        SideBar& operator=(const SideBar&) = delete;
+        /// @private
+        SideBar& operator=(SideBar&&) = delete;
+    
+        /// @brief A child item (i.e., child of a "folder") in the sidebar.
+        struct SideBarSubItem
+            {
+            /// @private
+            [[nodiscard]] bool operator<(const SideBarSubItem& that) const
+                {
+                return wxUILocale::GetCurrent().
+                    CompareStrings(m_label, that.m_label, wxCompare_CaseInsensitive) < 0;
+                }
+            /// @brief The string to display for the item.
+            wxString m_label;
+            /// @brief An ID to assign to the item.
+            wxWindowID m_id{ wxID_ANY };
+            /// @brief Index into the image list to use for the item.
+            /// @details Leave as @c std::nullopt to not show an icon.
+            std::optional<size_t> m_iconIndex{ std::nullopt };
+            /// @private
+            wxRect m_Rect;
+            };
+
+        /// @brief A top-level (i.e., "folder") item in the sidebar.
+        class SideBarItem
+            {
+            friend class SideBar;
+        public:
+            /// @brief Opens the folder to display its children nodes.
+            void Expand() noexcept
+                {
+                if (m_subItems.size())
+                    { m_isExpanded = true; }
+                }
+            /// @brief Closes the folder, hiding its children.
+            void Collapse() noexcept
+                {
+                if (m_subItems.size())
+                    { m_isExpanded = false; }
+                }
+            /// @returns The number of child items in this folder.
+            [[nodiscard]] size_t GetSubItemCount() const noexcept
+                { return m_subItems.size(); }
+            /// @returns @c true if the selected item in the sidebar is
+            ///     one of this folder's children.
+            [[nodiscard]] bool IsSubItemSelected() const noexcept
+                {
+                return (m_activeItem.has_value() &&
+                        m_activeItem.value() < m_subItems.size());
+                }
+            /// @brief Sorts the folder's subitems alphabetically
+            ///     (locale sensitive, case insensitively).
+            void SortSubItems()
+                { std::sort(m_subItems.begin(), m_subItems.end()); }
+            /// @returns The item's ID.
+            [[nodiscard]] wxWindowID GetId() const noexcept
+                { return m_id; }
+        private:
+            wxString m_label;
+            wxWindowID m_id{ wxID_ANY };
+            std::optional<size_t> m_iconIndex{ std::nullopt };
+            wxRect m_Rect;
+            std::vector<SideBarSubItem> m_subItems;
+            std::optional<size_t> m_highlightedItem{ std::nullopt };
+            std::optional<size_t> m_activeItem{ std::nullopt };
+            bool m_isExpanded{ false };
+            };
+
+        /** @brief Collapses all of the items that have subitems.*/
+        void CollapseAll();
+        /** @brief Expands all of the items that have subitems.*/
+        void ExpandAll();
+
+        /// @name Editing Functions
+        /// @brief Functions relating to inserting and editing items.
+        /// @{
+
+        /** @brief Inserts a (root level) item.
+            @param position The positions to insert the item.
+            @param label The label to be displayed on the item.
+            @param Id The numeric ID of the item.
+            @param iconIndex The icon (index into the image list) to be displayed on the item.\n
+                Set to @c std::optional to not display an icon.*/
+        void InsertItem(const size_t position, const wxString& label, const wxWindowID Id,
+                        std::optional<size_t> iconIndex);
+        /** @brief Insert a subitem under the specified root item.
+            @param parentItemId The ID of the parent item to insert this under.
+            @param label The label to display on the item.
+            @param Id The numeric ID of the item.
+            @param iconIndex The icon (index into the image list) to be displayed on the item.\n
+                Set to @c std::optional to not display an icon.
+            @returns @c true if the item was inserted, @c false if not added
+                (e.g., will fail if parent item is not found).*/
+        bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label, 
+                               const wxWindowID Id, std::optional<size_t> iconIndex);
+
+        /** @brief Accesses a (root-level) item.
+            @param item The item to access (by index).
+            @returns The folder at item index.*/
+        [[nodiscard]] SideBarItem& GetFolder(const size_t item)
+            {
+            wxASSERT_MSG(item < m_items.size(), L"Invalid item in call to GetFolder()!");
+            return m_items.at(item);
+            }
+
+        /** @brief Deletes all items from the sidebar.*/
+        void DeleteAllFolders()
+            {
+            m_items.clear();
+            m_highlightedItem = std::nullopt;
+            m_activeItem = std::nullopt;
+            RecalcSizes();
+            Refresh();
+            }
+        /** @brief Deletes a specific (root-level) folder (by index).
+            @param index The index of the folder to delete.*/
+        void DeleteFolder(const size_t index)
+            {
+            m_items.erase(m_items.begin() + index);
+            m_highlightedItem = std::nullopt;
+            if (m_items.size() == 0)
+                { m_activeItem = std::nullopt; }
+            else if (!m_activeItem.has_value() || m_activeItem.value() >= m_items.size())
+                { m_activeItem = 0; }
+            RecalcSizes();
+            Refresh();
+            }
+
+        /** @brief Sets the control's image list.
+            @param imageList A vector of bitmaps to use as the image list.*/
+        void SetImageList(const std::vector<wxBitmap>& imageList)
+            { m_imageList = imageList; }
+        /** @returns The control's image list.*/
+        [[nodiscard]] std::vector<wxBitmap>& GetImageList() noexcept
+            { return m_imageList; }
+        /// @}
+
+        /// @name Folder Functions
+        /// @brief Functions relating to root-level folder (not related to editing).
+        /// @{
+
+        /** @returns The total of (root level) items.
+            @note Subitems are not included in this count.*/
+        [[nodiscard]] size_t GetFolderCount() const noexcept
+            { return m_items.size(); }
+        
+        /** @returns The label of a given root item.
+            @param item The index of the item in the list of root items.*/
+        [[nodiscard]] wxString GetFolderText(const size_t item) const
+            {
+            if (item >= GetFolderCount())
+                { return wxEmptyString; }
+            return m_items[item].m_label;
+            }
+        /** @brief Scrolls to folder (by index) if not fully visible.
+            @param index The index of the folder to make visible.*/
+        void EnsureFolderVisible(const size_t index);
+        /// @}
+
+        /// @name Selection Functions
+        /// @brief Functions relating to item selection.
+        /// @{
+
+        /** @brief Selects a root-level item.
+            @param item The position of the item to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+        void SelectFolder(const size_t item, const bool setFocus = true,
+                            const bool sendEvent = true);
+        /** @brief Selects a subitem.
+            @param item The position of the parent item to select.
+            @param subItem The position of the subitem (relative to its parent) to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+        void SelectSubItem(const size_t item, const size_t subItem,
+                           const bool setFocus = true, const bool sendEvent = true);
+        /** @brief Selects a subitem.
+            @param item The position of the parent item and subitem (relative to its parent) to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+        void SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
+                           const bool sendEvent = true)
+            { SelectSubItem(item.first, item.second, setFocus, sendEvent); }
+        /** @brief Selects a folder or subitem.
+            @param item The position of the item to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+        void SelectAnyItem(const size_t item, const bool setFocus = true,
+                           const bool sendEvent = true);
+        /** @returns The position of the selected root-level item, or @c std::nullopt
+                if nothing is selected.
+            @note If a subitem is selected, this will return the position of its parent item.*/
+        [[nodiscard]] std::optional<size_t> GetSelectedFolder() const noexcept
+            { return m_activeItem; }
+        /** @brief Gets the position of the selected item (or sub item).
+            @returns The raw position of the selected item,
+                meaning the index of the item including subitems.\n
+                Returns @c std::nullopt if nothing is selected.*/
+        [[nodiscard]] std::optional<size_t> GetSelectedAnyItem() const;
+        /** @returns The ID of the selected root-level item, or @c std::nullopt if nothing is selected.
+            @note If a subitem is selected, this will return the ID of its parent item.*/
+        [[nodiscard]] std::optional<wxWindowID> GetSelectedFolderId() const
+            {
+            return IsFolderSelected() ?
+                std::optional<wxWindowID>(m_items[GetSelectedFolder().value()].m_id) : std::nullopt;
+            }
+        /** @brief Gets parent position and ID of its selected subitem, or a pair of
+                @c std::nullopt if no subitem is selected.
+            @returns The position of the parent and the subitem's ID.*/
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<wxWindowID>>
+            GetSelectedSubItemId() const;
+        /** @returns The label of the selected folder
+                (or subitem if the folder has a select subitem).*/
+        [[nodiscard]] wxString GetSelectedLabel() const;
+        /** @returns Whether a (root-level) item is selected in the sidebar.*/
+        [[nodiscard]] bool IsFolderSelected() const noexcept
+            {
+            return (m_activeItem.has_value() &&
+                    m_activeItem.value() < GetFolderCount());
+            }
+        /// @}
+
+        /// @name Search Functions
+        /// @brief Functions relating to searching for items in the control.
+        /// @{
+
+        /** @brief Search for a (root-level) item by ID.
+            @param Id The ID of the item to search for.
+            @return The position of the item, or @c std::nullopt if not found.*/
+        [[nodiscard]] std::optional<size_t> FindFolder(const wxWindowID Id) const;
+        /** @brief Searches for a sub item by ID.
+            @note This it will search within all of the root-level items.
+            @param Id The ID of the sub item to search for.
+            @returns If found, returns the parent's index and the subitem's index. Returns a
+                pair of @c std::nullopt otherwise.*/
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(const wxWindowID Id) const;
+        /** @brief Searches for a sub item by ID, but only within a specified parent item
+            @param parentId The parent item's ID to search within.
+            @param subItemId The ID of the sub item to search for.
+            @returns If found, returns the parent's index and the subitem's index. Returns a
+                pair of @c std::nullopt otherwise.*/
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(const wxWindowID parentId, const wxWindowID subItemId) const;
+        /** Searches for a sub item by ID, but only within a specified parent item
+            @param parentId The parent item's ID to search within.
+            @param subItem Information about the subitem to search for. While try to find
+                the best match based on @c subItem's ID, label, and icon.
+            @returns If found, returns the parent's index and the subitem's index. Returns a
+                pair of @c std::nullopt otherwise.*/
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
+        /** Searches for a sub item by label. Note that it will search within all of the root-level items.
+            @param label The Label of the sub item to search for.
+            @returns If found, returns the parent's index and the subitem's index. Returns a
+                pair of std::nullopt otherwise.*/
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(const wxString& label) const;
+        /// @}
+
+        /// @name Show/Hide Toolbar Functions
+        /// @brief Functions relating to the show/hide toolbar.
+        /// @{
+
+        /** @brief Specifies whether a small toolbar which can show/hide the control should
+                be included at the top.
+            @param show Set to true to include the show/hide toolbar.*/
+        void IncludeShowHideToolbar(const bool show) noexcept
+            { m_includeShowHideToolbar = show; }
+        /// @returns Whether or not a "show/hide" toolbar is being displayed at the top of the control.
+        [[nodiscard]] bool HasShowHideToolbar() const noexcept
+            { return m_includeShowHideToolbar; }
+
+        /// @brief Shows the control.
+        void Maximize();
+        /// @brief Hides the control.
+        void Minimize();
+
+        /// @returns True if this control is fully expanded for the user.
+        /// @note This only applies if the show/hide toolbar is being displayed.
+        [[nodiscard]] bool IsExpanded() const noexcept
+            { return m_isExpanded; }
+        /// @}
+
+        /// @name Appearance Functions
+        /// @brief Functions relating to the appearance of the control.
+        /// @{
+
+        /** @brief Sets the color for the currently selected item.
+            @param color The color to use.*/
+        void SetActiveColour(const wxColour color) noexcept
+            { m_activeColor = color; }
+        /** @brief Sets the font color for the currently selected item.
+            @param color The color to use.*/
+        void SetActiveFontColour(const wxColour color) noexcept
+            { m_activeFontColor = color; }
+        /** @brief Sets the color for the parents.
+            @param color The color to use.*/
+        void SetParentColour(const wxColour color) noexcept
+            { m_parentColor = color; }
+        /** @brief Sets the color for items that are being moused over.
+            @param color The color to use.*/
+        void SetHighlightColour(const wxColour color) noexcept
+            { m_highlightColor = color; }
+        /** @brief Sets the font color for items that are being moused over.
+            @param color The color to use.*/
+        void SetHighlightFontColour(const wxColour color) noexcept
+            { m_highlightFontColor = color; }
+        /** @brief Sets the entire coloring schema of the control.
+            @param colorScheme The color scheme to use.*/
+        void SetColorScheme(const SideBarColorScheme& colorScheme)
+            {
+            SetBackgroundColour(colorScheme.m_backgroundColor);
+            SetForegroundColour(colorScheme.m_foregroundColor);
+            SetActiveColour(colorScheme.m_activeColor);
+            SetActiveFontColour(colorScheme.m_activeFontColor);
+            SetParentColour(colorScheme.m_parentColor);
+            SetHighlightColour(colorScheme.m_highlightColor);
+            SetHighlightFontColour(colorScheme.m_highlightFontColor);
+            }
+
+        /// @returns Which sort of effect is being used to render the control.
+        [[nodiscard]] SidebarStyle GetStyle() const noexcept
+            { return m_style; }
+        /// @brief Sets the visual effect to render the control.
+        /// @param style The style to use.
+        void SetStyle(const SidebarStyle style) noexcept
+            { m_style = style; }
+
+        /** @brief Sets the minimum width of the control to fit its widest item.
+            @returns The new width of the control.*/
+        size_t AdjustWidthToFitItems();
+        /// @}
+
+        /** @brief Saves information about which items are selected and expanded.*/
+        void SaveState();
+        /** @brief Selects and expands/collapses items previously saved from call to SaveState().*/
+        void ResetState();
+
+        /// @brief Perform initial layout and size calculations.
+        /// @note This should be called after filling the image list and adding all items.
+        void Realize();
+
+        /// @private
+        [[nodiscard]] const std::vector<wxBitmap>& GetImageList() const noexcept
+            { return m_imageList; }
+        /// @private
+        [[nodiscard]] const SideBarItem& GetFolder(const size_t item) const
+            {
+            wxASSERT_MSG(item < m_items.size(), L"Invalid item in call to GetFolder()!");
+            return m_items.at(item);
+            }
+    protected:
+        /** @brief Gets the width (label, icon, and padding) of a given root item.
+            @details The item's subitem width are factored into this (including their margins),
+                so the width of the widest subitem will be returned if wider than the root item.
+            @param item The position of the root item.
+            @returns The item's width.*/
+        [[nodiscard]] size_t GetFolderWidth(const size_t item);
+        /// @brief Updates the areas and positions for the items and returns their collective height.
+        /// @returns The total height of all items.
+        size_t CalculateItemRects();
+        /// @brief Recalculates the control's content.
+        void RecalcSizes();
+        /// @brief Removes selection.
+        void ClearHighlightedItems() noexcept;
+        /// @returns @c true if an item's icon ID is valid.
+        /// @param iconId The icon ID to validate.
+        bool IsValidImageId(std::optional<size_t> iconId) const
+            {
+            return (iconId.has_value() &&
+                iconId.value() < GetImageList().size() &&
+                GetImageList()[iconId.value()].IsOk());
+            }
+        /// @returns The height of the toolbar (if being shown).
+        [[nodiscard]] int GetToolbarHeight() const
+            {
+            return HasShowHideToolbar() ?
+                FromDIP(wxSize(16,16)).GetHeight() + GetPaddingHeight() : 0;
+            }
+    private:
+        // events
+        void OnPaint([[maybe_unused]] wxPaintEvent& event);
+        void OnMouseChange(wxMouseEvent& event);
+        void OnMouseClick(wxMouseEvent& event);
+        void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
+        void OnDblClick(wxMouseEvent& event);
+        void OnChar(wxKeyEvent& event);
+        void OnResize(wxSizeEvent& event);
+        void OnDraw(wxDC& dc) final;
+
+        /** @brief Renders a glassy surface across a box.
+            @param dc The device context to render on.
+            @param rect The box to draw the effect on.
+            @param color The base color to fill the box with.*/
+        void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
+
+        std::vector<wxBitmap> m_imageList;
+        [[nodiscard]] wxCoord GetItemHeight() const noexcept
+            { return m_itemHeight; }
+        [[nodiscard]] wxCoord GetPaddingWidth() const
+            {
+            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 2,
+                                  wxSizerFlags::GetDefaultBorder() * 2)).GetWidth();
+            }
+        [[nodiscard]] wxCoord GetPaddingHeight() const
+            {
+            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder()*2,
+                           wxSizerFlags::GetDefaultBorder()*2)).GetHeight();
+            }
+        [[nodiscard]] wxCoord GetSubitemIndentation() const
+            { return GetPaddingWidth() * 2; }
+        /// @returns The width of the sidebar when hidden,
+        ///     which would be the width of a 16x16 icon (scaled to system's DPI)
+        ///     plus the system padding.
+        [[nodiscard]] wxCoord GetHideWidth() const
+            { return FromDIP(wxSize(16, 16)).GetWidth() + GetPaddingWidth(); }
+        wxCoord m_itemHeight{ 0 };
+        std::optional<size_t> m_highlightedItem{ std::nullopt };
+        std::optional<size_t> m_activeItem{ std::nullopt };
+        std::optional<size_t> m_savedActiveItem{ std::nullopt };
+        SidebarStyle m_style{ SidebarStyle::Flat };
+
+        struct SideBarStateInfo
+            {
+            explicit SideBarStateInfo(const SideBarItem& that) noexcept : m_id(that.m_id),
+                m_activeItem(that.m_activeItem),
+                m_isExpanded(that.m_isExpanded)
+                {}
+            [[nodiscard]] bool operator<(const SideBarStateInfo& that) const noexcept
+                { return m_id < that.m_id; }
+            wxWindowID m_id{ wxID_ANY };
+            std::optional<size_t> m_activeItem{ std::nullopt };
+            bool m_isExpanded{ true };
+            };
+        std::set<SideBarStateInfo> m_stateInfo;
+
+        std::vector<SideBarItem> m_items;
+
         wxColour m_activeColor;
         wxColour m_activeFontColor;
         wxColour m_parentColor;
         wxColour m_highlightColor;
         wxColour m_highlightFontColor;
-        };
-    enum class VisualEffect
-        {
-        Glass,
-        Flat
-        };
-    struct SideBarSubItem
-        {
-        [[nodiscard]] bool operator<(const SideBarSubItem& that) const
-            { return m_Label.CmpNoCase(that.m_Label) < 0; }
-        wxString m_Label;
-        wxWindowID m_id{ wxID_ANY };
-        long m_iconIndex{ -1 };
-        wxRect m_Rect;
-        };
-    struct SideBarItem
-        {
-        SideBarItem() noexcept : m_id(wxID_ANY), m_IconIndex(-1),
-            m_highlightedItem(static_cast<size_t>(wxNOT_FOUND)), m_activeItem(static_cast<size_t>(wxNOT_FOUND)),
-            m_isExpanded(false)
-            {}
-        void Expand() noexcept
-            {
-            if (m_subItems.size())
-                { m_isExpanded = true; }
-            }
-        void Collapse() noexcept
-            {
-            if (m_subItems.size())
-                { m_isExpanded = false; }
-            }
-        [[nodiscard]] size_t GetSubItemCount() const noexcept
-            { return m_subItems.size(); }
-        [[nodiscard]] bool IsSubItemSelected() const noexcept
-            {
-            return (m_activeItem != static_cast<size_t>(wxNOT_FOUND)) &&
-                    m_activeItem < m_subItems.size();
-            }
-        void SortSubItems()
-            { std::sort(m_subItems.begin(), m_subItems.end()); }
-        wxString m_Label;
-        wxWindowID m_id { wxID_ANY };
-        long m_IconIndex{ -1 };
-        wxRect m_Rect;
-        std::vector<SideBarSubItem> m_subItems;
-        size_t m_highlightedItem{ static_cast<size_t>(wxNOT_FOUND) };
-        size_t m_activeItem{ static_cast<size_t>(wxNOT_FOUND) };
-        bool m_isExpanded{ false };
-        };
 
-    void Maximize();
-    void Minimize();
-
-    /** @returns The total of (root level) items.
-        @note Subitems are not included in this count.*/
-    [[nodiscard]] size_t GetCategoryCount() const noexcept
-        { return m_items.size(); }
-
-    /** @brief Inserts a (root level) item.
-        @param position The positions to insert the item.
-        @param label The label to be displayed on the item.
-        @param Id The numeric ID of the item.
-        @param iconIndex The icon (index into the image list) to be displayed on the item. Set to -1 to not display an icon.*/
-    void InsertItem(const size_t position, const wxString& label, const wxWindowID Id, const long iconIndex);
-    /** @brief Insert a subitem under the specified root item.
-        @param parentItemId The ID of the parent item to insert this under.
-        @param label The label to display on the item.
-        @param Id The numeric ID of the item.
-        @param iconIndex The icon (index into the image list) to be displayed on the item. Set to -1 to not display an icon.
-        @returns True if the item was inserted, false if not added (e.g., will fail if parent item is not found).*/
-    bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label, 
-                           const wxWindowID Id, const long iconIndex);
-    /** @brief Gets the width (label, icon, and padding) of a given root item.
-        @details The item's subitem width are factored into this (including their margins),
-            so the width of the widest subitem will be returns if wider than the root item.
-        @param item The position of the root item.
-        @returns The item's width.*/
-    [[nodiscard]] size_t GetCategoryWidth(const size_t item);
-
-    /** @brief Deletes all items from the sidebar.*/
-    void DeleteAllCategories()
-        {
-        m_items.clear();
-        m_highlightedItem = static_cast<size_t>(wxNOT_FOUND);
-        m_activeItem = static_cast<size_t>(wxNOT_FOUND);
-        CalculateSizes();
-        Refresh();
-        }
-    /** @brief Deletes a specific (root-level) item (by index)*/
-    void DeleteCategory(const size_t item)
-        {
-        m_items.erase(m_items.begin()+item);
-        m_highlightedItem = static_cast<size_t>(wxNOT_FOUND);
-        if (m_items.size() == 0)
-            { m_activeItem = static_cast<size_t>(wxNOT_FOUND); }
-        else if (m_activeItem >= m_items.size())
-            { m_activeItem = 0; }
-        CalculateSizes();
-        Refresh();
-        }
-
-    /** @brief Collapses all of the items that have subitems.*/
-    void CollapseAll();
-    /** @brief Expands all of the items that have subitems.*/
-    void ExpandAll();
-
-    /** @brief Selects a root-level item.
-        @param item The position of the item to select.
-        @param setFocus Whether to set the keyboard focus to the control.
-        @param sendEvent Whether to send a wxEVT_SIDEBAR_CLICK event.*/
-    void SelectCategory(const size_t item, const bool setFocus = true, const bool sendEvent = true);
-    /** @brief Selects a subitem.
-        @param item The position of the parent item to select.
-        @param subItem The position of the subitem (relative to its parent) to select.
-        @param setFocus Whether to set the keyboard focus to the control.
-        @param sendEvent Whether to send a wxEVT_SIDEBAR_CLICK event.*/
-    void SelectSubItem(const size_t item, const size_t subItem, const bool setFocus = true, const bool sendEvent = true);
-    /** @brief Selects a subitem.
-        @param item The position of the parent item and subitem (relative to its parent) to select.
-        @param setFocus Whether to set the keyboard focus to the control.
-        @param sendEvent Whether to send a wxEVT_SIDEBAR_CLICK event.*/
-    void SelectSubItem(const std::pair<size_t,size_t>& item, const bool setFocus = true, const bool sendEvent = true)
-        { SelectSubItem(item.first, item.second, setFocus, sendEvent); }
-    /** @brief Selects a category or subitem.
-        @param item The position of the item to select.
-        @param setFocus Whether to set the keyboard focus to the control.
-        @param sendEvent Whether to send a wxEVT_SIDEBAR_CLICK event.*/
-    void SelectAnyItem(const size_t item, const bool setFocus = true, const bool sendEvent = true);
-    /** @returns The position of the selected root-level item, or wxNOT_FOUND if nothing is selected.
-        @note If a subitem is selected, this will return the position of its parent item.*/
-    [[nodiscard]] size_t GetSelectedCategory() const noexcept
-        { return m_activeItem; }
-    /** Gets the position of the selected item (or sub item).
-        @return The raw position of the selected item, meaning the index of the item including subitems.*/
-    [[nodiscard]] size_t GetSelectedAnyItem() const;
-    /** @returns The ID of the selected root-level item, or wxNOT_FOUND if nothing is selected.
-        @note If a subitem is selected, this will return the ID of its parent item.*/
-    [[nodiscard]] wxWindowID GetSelectedCategoryId() const
-        { return IsCategorySelected() ? m_items[GetSelectedCategory()].m_id : wxNOT_FOUND; }
-    /** @brief Gets the ID of the selected subitem, or wxNOT_FOUND if no subitem is selected.
-        @returns The position of the parent ID and the subitem ID.*/
-    [[nodiscard]] std::pair<wxWindowID,wxWindowID> GetSelectedSubItemId() const;
-    /** @returns The label of the selected category (or subitem if the category has a select subitem).*/
-    [[nodiscard]] wxString GetSelectedLabel() const;
-    /** @returns Whether a (root-level) item is selected in the list.*/
-    [[nodiscard]] bool IsCategorySelected() const noexcept
-        { return (m_activeItem != static_cast<size_t>(wxNOT_FOUND)) && m_activeItem < GetCategoryCount(); }
-
-    /** @brief Accesses a (root-level) item (as a constant).
-        @param item The item to access (by index).
-        @returns The category at item index.*/
-    [[nodiscard]] const SideBarItem& GetCategory(const size_t item) const
-        {
-        wxASSERT(item < m_items.size());
-        return m_items[item];
-        }
-    /** @brief Accesses a (root-level) item.
-        @param item The item to access (by index).
-        @returns The category at item index.*/
-    [[nodiscard]] SideBarItem& GetCategory(const size_t item)
-        {
-        wxASSERT(item < m_items.size());
-        return m_items[item];
-        }
-    /** @returns The label of a given root item.
-        @param item The index of the item in the list of root items.*/
-    [[nodiscard]] wxString GetCategoryText(const size_t item) const
-        {
-        if (item >= GetCategoryCount())
-            { return wxEmptyString; }
-        return m_items[item].m_Label;
-        }
-
-    /** @brief Search for a (root-level) item by ID.
-        @param Id The ID of the item to search for.
-        @return@ The position of the item, or wxNOT_FOUND if not found.*/
-    [[nodiscard]] long FindCategory(const wxWindowID Id) const;
-    /** @brief Searches for a sub item by ID.
-        @note This it will search within all of the root-level items.
-        @param Id The ID of the sub item to search for.
-        @returns If found, returns the parent's index and the subitem's index. Returns a
-            pair of @c wxNOT_FOUND otherwise.*/
-    [[nodiscard]] std::pair<long,long> FindSubItem(const wxWindowID Id) const;
-    /** @brief Searches for a sub item by ID, but only within a specified parent item
-        @param parentId The parent item's ID to search within.
-        @param subItemId The ID of the sub item to search for.
-        @returns If found, returns the parent's index and the subitem's index. Returns a
-            pair of @c wxNOT_FOUND otherwise.*/
-    [[nodiscard]] std::pair<long,long> FindSubItem(const wxWindowID parentId, const wxWindowID subItemId) const;
-    /** Searches for a sub item by ID, but only within a specified parent item
-        @param parentId The parent item's ID to search within.
-        @param subItem Information about the subitem to search for. While try to find
-         the best match based on @subItem's ID, label, and icon.
-        @returns If found, returns the parent's index and the subitem's index. Returns a
-         pair of @c wxNOT_FOUND otherwise.*/
-    [[nodiscard]] std::pair<long, long> FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
-        
-    /** Searches for a sub item by label. Note that it will search within all of the root-level items.
-        @param label The Label of the sub item to search for.
-        @returns If found, returns the parent's index and the subitem's index. Returns a
-         pair of wxNOT_FOUND otherwise.*/
-    [[nodiscard]] std::pair<long,long> FindSubItem(const wxString& label) const;
-
-    /** @brief Sets the control's image list.
-        @param imageList A vector of bitmaps to use as the image list.*/
-    void SetImageList(const std::vector<wxBitmap>& imageList)
-        { m_imageList = imageList; }
-    /** @returns The control's image list.*/
-    [[nodiscard]] std::vector<wxBitmap>& GetImageList() noexcept
-        { return m_imageList; }
-    /** @returns The control's image list (constant version).*/
-    [[nodiscard]] const std::vector<wxBitmap>& GetImageList() const noexcept
-        { return m_imageList; }
-
-    /** @brief Sets the color for the currently selected item.*/
-    void SetActiveColour(const wxColour color) noexcept
-        { m_activeColor = color; }
-    /** @brief Sets the font color for the currently selected item.*/
-    void SetActiveFontColour(const wxColour color) noexcept
-        { m_activeFontColor = color; }
-    /** @brief Sets the color for the parents.*/
-    void SetParentColour(const wxColour color) noexcept
-        { m_parentColor = color; }
-    /** @brief Sets the color for items that are being moused over.*/
-    void SetHighlightColour(const wxColour color) noexcept
-        { m_highlightColor = color; }
-    /** @brief Sets the font color for items that are being moused over.*/
-    void SetHighlightFontColour(const wxColour color) noexcept
-        { m_highlightFontColor = color; }
-    /** @brief Sets the entire coloring schema of the control.
-        @param colorScheme The color scheme to use.*/
-    void SetColorScheme(const SideBarColorScheme& colorScheme)
-        {
-        SetBackgroundColour(colorScheme.m_backgroundColor);
-        SetForegroundColour(colorScheme.m_foregroundColor);
-        SetActiveColour(colorScheme.m_activeColor);
-        SetActiveFontColour(colorScheme.m_activeFontColor);
-        SetParentColour(colorScheme.m_parentColor);
-        SetHighlightColour(colorScheme.m_highlightColor);
-        SetHighlightFontColour(colorScheme.m_highlightFontColor);
-        }
-
-    /** @brief Sets the minimum width of the control to fit its widest item.
-        @returns The new width of the control.*/
-    size_t AdjustWidthToFitItems();
-
-    /** @brief Saves information about which items are selected and expanded.*/
-    void SaveState();
-    /** @brief Selects and expands/collapses items previously saved from call to SaveState().*/
-    void ResetState();
-
-    /** @brief Scrolls to category (by index) if not fully visible.*/
-    void EnsureCategoryVisible(const size_t category);
-
-    /** @brief Specifies whether a small toolbar which can show/hide the control should
-        be included at the top.
-        @param show Set to true to include the show/hide toolbar.*/
-    void IncludeShowHideToolbar(const bool show) noexcept
-        { m_includeShowHideToolbar = show; }
-    /// @returns Whether or not a show/hide toolbar is being displayed at the top of the control.
-    [[nodiscard]] bool HasShowHideToolbar() const noexcept
-        { return m_includeShowHideToolbar; }
-    /// @returns True if this control is fully expanded for the user.
-    /// @note This only applies if the show/hide toolbar is being displayed.
-    [[nodiscard]] bool IsExpanded() const noexcept
-        { return m_isExpanded; }
-    /// @returns Which sort of effect is being used to render the control
-    [[nodiscard]] VisualEffect GetVisualEffect() const noexcept
-        { return m_effect; }
-    /// @brief Sets the visual effect to render the control
-    void SetVisualEffect(const VisualEffect effect) noexcept
-        { m_effect = effect; }
-    /// @brief Perform initial layout and size calculations.
-    /// @note This should be called after filling the image list and adding all items.
-    void Realize();
-
-    /** @brief Renders a glassy surface across a box.
-        @param dc The device context to render on.
-        @param rect The box to draw the effect on.
-        @param color The base color to fill the box with.*/
-    void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
-protected:
-    // Updates the areas and positions for the items and returns their collective height.
-    size_t CalculateItemRects();
-    void CalculateSizes();
-    void ClearHighlightedItems() noexcept;
-    // Indicates whether an item's icon ID is valid
-    bool IsValidImageId(const size_t iconId) const
-        {
-        return (iconId != wxNOT_FOUND &&
-            iconId < GetImageList().size() &&
-            GetImageList()[iconId].IsOk());
-        }
-    [[nodiscard]] int GetToolbarHeight() const
-        {
-        return HasShowHideToolbar() ?
-            FromDIP(wxSize(16,16)).GetHeight() + GetPaddingHeight() : 0;
-        }
-private:
-    // events
-    void OnPaint([[maybe_unused]] wxPaintEvent& event);
-    void OnMouseChange(wxMouseEvent& event);
-    void OnMouseClick(wxMouseEvent& event);
-    void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
-    void OnDblClick(wxMouseEvent& event);
-    void OnChar(wxKeyEvent& event);
-    void OnResize(wxSizeEvent& event);
-    void OnDraw(wxDC& dc) final;
-
-    std::vector<wxBitmap> m_imageList;
-    [[nodiscard]] wxCoord GetItemHeight() const noexcept
-        { return m_itemHeight; }
-    [[nodiscard]] wxCoord GetPaddingWidth() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 2,
-                              wxSizerFlags::GetDefaultBorder() * 2)).GetWidth();
-        }
-    [[nodiscard]] wxCoord GetPaddingHeight() const
-        {
-        return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder()*2,
-                       wxSizerFlags::GetDefaultBorder()*2)).GetHeight();
-        }
-    [[nodiscard]] wxCoord GetSubitemIndentation() const
-        { return GetPaddingWidth() * 2; }
-    /// @returns The width of the sidebar when hidden,
-    ///     which would be the width of a 16x16 icon (scaled to system's DPI)
-    ///     plus the system padding.
-    [[nodiscard]] wxCoord GetHideWidth() const
-        { return FromDIP(wxSize(16, 16)).GetWidth() + GetPaddingWidth(); }
-    wxCoord m_itemHeight{ 0 };
-    size_t m_highlightedItem{ 0 };
-    size_t m_activeItem{ 0 };
-    size_t m_savedActiveItem{ 0 };
-    VisualEffect m_effect{ VisualEffect::Flat };
-
-    struct SideBarStateInfo
-        {
-        explicit SideBarStateInfo(const SideBarItem& that) noexcept : m_id(that.m_id),
-            m_activeItem(that.m_activeItem),
-            m_isExpanded(that.m_isExpanded)
-            {}
-        [[nodiscard]] bool operator<(const SideBarStateInfo& that) const noexcept
-            { return m_id < that.m_id; }
-        wxWindowID m_id{ wxID_ANY };
-        size_t m_activeItem{ 0 };
+        bool m_includeShowHideToolbar{ true };
         bool m_isExpanded{ true };
+        wxRect m_toolbarRect;
         };
-    std::set<SideBarStateInfo> m_stateInfo;
-
-    std::vector<SideBarItem> m_items;
-
-    wxColour m_activeColor;
-    wxColour m_activeFontColor;
-    wxColour m_parentColor;
-    wxColour m_highlightColor;
-    wxColour m_highlightFontColor;
-
-    bool m_includeShowHideToolbar{ true };
-    bool m_isExpanded{ true };
-    wxRect m_toolbarRect;
-
-    wxDECLARE_EVENT_TABLE();
-    };
+    }
 
 /** @}*/
 

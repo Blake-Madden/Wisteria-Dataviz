@@ -1,4 +1,4 @@
-/** @addtogroup Graphics
+/** @addtogroup UI
     @brief User interface classes.
     @date 2005-2022
     @copyright Blake Madden
