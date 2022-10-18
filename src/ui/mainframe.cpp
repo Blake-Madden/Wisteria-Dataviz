@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////
+// Name:        mainframe.cpp
+// Author:      Blake Madden
+// Copyright:   (c) 2005-2022 Blake Madden
+// Licence:     3-Clause BSD licence
+// SPDX-License-Identifier: BSD-3-Clause
+///////////////////////////////////////////////////////////////////////////////
+
 #include "mainframe.h"
 #include "radioboxdlg.h"
 
@@ -8,8 +16,8 @@ wxDocTemplate* Wisteria::UI::DocManager::SelectDocumentType(wxDocTemplate **temp
     {
     wxArrayString strings;
     wxDocTemplate **data = new wxDocTemplate *[noTemplates];
-    int i;
-    int n = 0;
+    int i{ 0 };
+    int n{ 0 };
 
     for (i = 0; i < noTemplates; i++)
     {

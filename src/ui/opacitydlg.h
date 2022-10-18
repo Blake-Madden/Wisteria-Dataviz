@@ -1,5 +1,5 @@
 /** @addtogroup Graphics
-    @brief Graphing classes.
+    @brief User interface classes.
     @date 2005-2022
     @copyright Blake Madden
     @author Blake Madden
