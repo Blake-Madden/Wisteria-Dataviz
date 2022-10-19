@@ -8,8 +8,8 @@
 #include <wx/wupdlock.h>
 #include "sidebar.h"
 
-wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent );
-wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent );
+wxDECLARE_EXPORTED_EVENT(WXDLLIMPEXP_CORE, EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent);
+wxDECLARE_EXPORTED_EVENT(WXDLLIMPEXP_CORE, EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
 
 namespace Wisteria::UI
     {
@@ -19,20 +19,12 @@ namespace Wisteria::UI
     public:
         // flags for DoSetSelection()
         /// @private
-        const int SetSelection_SendEvent = 1;
+        static constexpr int SetSelection_SendEvent = 1;
 
         /// @brief Constructor.
         /// @param parent The parent window.
         /// @param id The ID of this control.
-        SideBarBook(wxWindow *parent, wxWindowID id) :
-            wxControl(parent, id, wxDefaultPosition, wxDefaultSize,
-                      wxBK_LEFT, wxDefaultValidator, wxT("SideBarBook")),
-            m_selection(wxNOT_FOUND), m_fitToCurrentPage(false),
-            m_sidebar(nullptr), m_controlSizer(nullptr)
-            {
-            m_sidebar = new SideBar(this);
-            m_sidebar->SetMinSize(wxSize(100, -1));
-            }
+        SideBarBook(wxWindow *parent, wxWindowID id);
 
         /** @brief Adds a folder and its connected page.
             @param page The (dialog) page to connect.
@@ -58,7 +50,7 @@ namespace Wisteria::UI
         /// @returns The panel which represents the given page.
         /// @param n The index of the page to return.
         [[nodiscard]] wxWindow* GetPage(size_t n) const
-            { return m_pages[n]; }
+            { return m_pages.at(n); }
         /// @returns The current page or null if none.
         [[nodiscard]] wxWindow* GetCurrentPage() const
             {
@@ -85,7 +77,7 @@ namespace Wisteria::UI
         /// @returns @c true if all pages were deleted successfully.
         bool DeleteAllPages();
 
-        /// @returns The the sidebar.
+        /// @returns The sidebar.
         [[nodiscard]] SideBar* GetSideBar() noexcept
             { return m_sidebar; }
         /// @private
@@ -110,7 +102,7 @@ namespace Wisteria::UI
         // included
         /// @private
         int DoSetSelection(size_t nPage, int flags = 0);
-        /// @brief Femove one page from the control and delete it.
+        /// @brief Remove one page from the control and delete it.
         /// @param n The index of the page to delete.
         /// @returns @c true if the page was successfully deleted.
         bool DeletePage(size_t n);
@@ -183,7 +175,7 @@ namespace Wisteria::UI
         SideBar* m_sidebar{ nullptr };
 
         // Whether to shrink to fit current page
-        bool m_fitToCurrentPage{ true };
+        bool m_fitToCurrentPage{ false };
 
         // the sizer containing the control
         wxSizer* m_controlSizer{ nullptr };
@@ -193,8 +185,7 @@ namespace Wisteria::UI
         // control without any pages).
         int m_selection{ wxNOT_FOUND };
 
-        DECLARE_EVENT_TABLE()
-        DECLARE_DYNAMIC_CLASS_NO_COPY(SideBarBook)
+        wxDECLARE_DYNAMIC_CLASS_NO_COPY(SideBarBook);
         };
     }
 
@@ -202,17 +193,10 @@ namespace Wisteria::UI
 // listbook event class and related stuff
 // ----------------------------------------------------------------------------
 
-// wxListbookEvent is obsolete and defined for compatibility only (notice that
-// we use #define and not typedef to also keep compatibility with the existing
-// code which forward declares it)
-#define wxListbookEvent wxBookCtrlEvent
-typedef wxBookCtrlEventFunction wxListbookEventFunction;
-#define wxListbookEventHandler(func) wxBookCtrlEventHandler(func)
-
 #define EVT_SIDEBARBOOK_PAGE_CHANGED(winid, fn) \
-    wx__DECLARE_EVT1(wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
+    wx__DECLARE_EVT1(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
 
 #define EVT_SIDEBARBOOK_PAGE_CHANGING(winid, fn) \
-    wx__DECLARE_EVT1(wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
+    wx__DECLARE_EVT1(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
 
 #endif // __SIDEBARBOOK_H__

@@ -10,8 +10,8 @@
 
 using namespace Wisteria::UI;
 
-DEFINE_EVENT_TYPE(wxEVT_SIDEBAR_CLICK)
-DEFINE_EVENT_TYPE(wxEVT_SIDEBAR_SHOWHIDE_CLICK)
+wxDEFINE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
+wxDEFINE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 //---------------------------------------------------
 SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/) 
@@ -69,7 +69,6 @@ std::optional<size_t> SideBar::GetSelectedAnyItem() const
         ++selectedSubItem;
         selectedSubItem += m_items[i].GetSubItemCount();
         }
-    ++selectedSubItem;
     selectedSubItem += m_items[GetSelectedFolder().value()].m_activeItem.has_value() ?
         m_items[GetSelectedFolder().value()].m_activeItem.value() : 0;
     return selectedSubItem;
@@ -682,7 +681,7 @@ void SideBar::Minimize()
     SetMinSize(wxSize(GetHideWidth(), wxDefaultCoord));
     SetSize(GetHideWidth(), wxDefaultCoord);
 
-    wxCommandEvent cevent(wxEVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
+    wxCommandEvent cevent(EVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
     cevent.SetEventObject(this);
     GetEventHandler()->ProcessEvent(cevent);
     }
@@ -696,7 +695,7 @@ void SideBar::Maximize()
     SetMinSize(wxSize(sideBarMinimumWidth, wxDefaultCoord));
     SetSize(sideBarMinimumWidth, wxDefaultCoord);
 
-    wxCommandEvent cevent(wxEVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
+    wxCommandEvent cevent(EVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
     cevent.SetEventObject(this);
     GetEventHandler()->ProcessEvent(cevent);
     }
@@ -855,7 +854,7 @@ void SideBar::EnsureFolderVisible(const size_t index)
 
 //-------------------------------------------
 void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
-                             const bool sendEvent /*= true*/)
+                           const bool sendEvent /*= true*/)
     {
     if (item >= GetFolderCount())
         { return; }
@@ -881,7 +880,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
+        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
         cevent.SetString(m_items[GetSelectedFolder().value()].m_label);
         cevent.SetInt(m_items[GetSelectedFolder().value()].m_id);
         cevent.SetEventObject(this);
@@ -941,7 +940,7 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
 
     if (sendEvent)
         {
-        wxCommandEvent cevent(wxEVT_SIDEBAR_CLICK, GetId());
+        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
         cevent.SetString(m_items[GetSelectedFolder().value()].m_subItems[subItem].m_label);
         cevent.SetExtraLong(m_items[GetSelectedFolder().value()].m_id);
         cevent.SetInt(m_items[GetSelectedFolder().value()].m_subItems[subItem].m_id);

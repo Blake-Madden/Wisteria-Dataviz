@@ -2,15 +2,24 @@
 
 using namespace Wisteria::UI;
 
-IMPLEMENT_DYNAMIC_CLASS(SideBarBook, wxControl)
+wxIMPLEMENT_DYNAMIC_CLASS(SideBarBook, wxControl)
 
-wxDEFINE_EVENT( wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent );
-wxDEFINE_EVENT( wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent );
+wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
+wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent);
 
-BEGIN_EVENT_TABLE(SideBarBook, wxControl)
-    EVT_COMMAND(wxID_ANY, wxEVT_SIDEBAR_CLICK, SideBarBook::OnListSelected)
-    EVT_SIZE(SideBarBook::OnSize)
-END_EVENT_TABLE()
+//---------------------------------------------------
+SideBarBook::SideBarBook(wxWindow *parent, wxWindowID id) :
+            wxControl(parent, id, wxDefaultPosition, wxDefaultSize,
+                      wxBK_LEFT, wxDefaultValidator, L"SideBarBook")
+    {
+    m_sidebar = new SideBar(this);
+    m_sidebar->IncludeShowHideToolbar(false);
+    m_sidebar->SetMinSize(wxSize(100, -1));
+
+    // bind events
+    Bind(EVT_SIDEBAR_CLICK, &SideBarBook::OnListSelected, this, wxID_ANY);
+    Bind(wxEVT_SIZE, &SideBarBook::OnSize, this);
+    }
 
 //---------------------------------------------------
 void SideBarBook::UpdateSize()
@@ -33,11 +42,11 @@ void SideBarBook::UpdateSelectedPage(size_t newsel)
 
 //---------------------------------------------------
 wxBookCtrlEvent* SideBarBook::CreatePageChangingEvent() const
-    { return new wxBookCtrlEvent(wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, m_windowId); }
+    { return new wxBookCtrlEvent(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, m_windowId); }
 
 //---------------------------------------------------
 void SideBarBook::MakeChangedEvent(wxBookCtrlEvent &event)
-    { event.SetEventType(wxEVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED); }
+    { event.SetEventType(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED); }
 
 //---------------------------------------------------
 bool SideBarBook::AddPage(wxWindow *page,
@@ -118,9 +127,9 @@ void SideBarBook::OnListSelected([[maybe_unused]] wxCommandEvent& event)
     const int oldSel = GetSelection();
     if (!selNew.has_value() || selNew.value() >= GetPageCount())
         { return; }
-    //if previous and new items are the same then don't change anything
+    // if previous and new items are the same then don't change anything
     else if (oldSel != wxNOT_FOUND && oldSel < static_cast<int>(GetPageCount()) &&
-        (oldSel == selNew.value() || m_pages[oldSel] == m_pages[selNew.value()]) )
+        (static_cast<size_t>(oldSel) == selNew.value() || m_pages[oldSel] == m_pages[selNew.value()]) )
         { return; }
     else
         { SetSelection(selNew.value()); }
@@ -143,7 +152,7 @@ bool SideBarBook::DeletePage(size_t nPage)
 int SideBarBook::DoSetSelection(size_t n, int flags)
 {
     wxCHECK_MSG( n < GetPageCount(), wxNOT_FOUND,
-                 wxT("invalid page index in DoSetSelection()") );
+                 L"invalid page index in DoSetSelection()");
 
     wxWindowUpdateLocker noUpdates(this);
 
@@ -299,7 +308,6 @@ wxRect SideBarBook::GetPageRect() const
             if (rectPage.height < 0)
                 rectPage.height = 0;
             break;
-
         case wxBK_LEFT:
             rectPage.x = size.x + GetInternalBorder();
             [[fallthrough]];
@@ -309,7 +317,7 @@ wxRect SideBarBook::GetPageRect() const
                 rectPage.width = 0;
             break;
         default:
-            wxFAIL_MSG( wxT("unexpected alignment") );
+            wxFAIL_MSG(L"unexpected alignment");
         }
 
     return rectPage;
@@ -359,17 +367,14 @@ void SideBarBook::DoSize()
             case wxBK_LEFT:
                 // posCtrl is already ok
                 break;
-
             case wxBK_BOTTOM:
                 posCtrl.y = sizeClient.y - sizeNew.y;
                 break;
-
             case wxBK_RIGHT:
                 posCtrl.x = sizeClient.x - sizeNew.x;
                 break;
-
             default:
-                wxFAIL_MSG( wxT("unexpected alignment") );
+                wxFAIL_MSG(L"unexpected alignment");
         }
 
         if ( GetSideBar()->GetPosition() != posCtrl )
@@ -384,7 +389,7 @@ void SideBarBook::DoSize()
         if ( !page )
         {
             wxASSERT_MSG(false,
-                wxT("Null page in a control that does not allow null pages?") );
+                L"Null page in a control that does not allow null pages?");
             continue;
         }
 
@@ -400,9 +405,9 @@ bool SideBarBook::DoInsertPage(size_t nPage,
                            [[maybe_unused]] int imageId)
 {
     wxCHECK_MSG( page, false,
-                 wxT("NULL page in SideBarBook::DoInsertPage()") );
+                 L"NULL page in SideBarBook::DoInsertPage()");
     wxCHECK_MSG( nPage <= m_pages.size(), false,
-                 wxT("invalid page index in SideBarBook::DoInsertPage()") );
+                 L"invalid page index in SideBarBook::DoInsertPage()");
 
     m_pages.insert(m_pages.begin() + nPage, page);
     if ( page )

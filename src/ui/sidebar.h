@@ -24,8 +24,8 @@
 #include <algorithm>
 #include <optional>
 
-DECLARE_EVENT_TYPE(wxEVT_SIDEBAR_CLICK, -1)
-DECLARE_EVENT_TYPE(wxEVT_SIDEBAR_SHOWHIDE_CLICK, -1)
+wxDECLARE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
+wxDECLARE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 namespace Wisteria::UI
     {
@@ -425,7 +425,40 @@ namespace Wisteria::UI
             wxASSERT_MSG(item < m_items.size(), L"Invalid item in call to GetFolder()!");
             return m_items.at(item);
             }
-    protected:
+        /// @private
+        [[nodiscard]] std::optional<size_t> FindFolder(const std::optional<wxWindowID> Id) const
+            { return (Id.has_value() ? FindFolder(Id.value()) : std::nullopt); }
+        /// @private
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(std::optional<wxWindowID> parentId, std::optional<wxWindowID> subItemId) const
+            {
+            return ((parentId.has_value() && subItemId.has_value()) ?
+                FindSubItem(parentId.value(), subItemId.value()) :
+                std::make_pair(std::nullopt, std::nullopt));
+            }
+        /// @private
+        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+            FindSubItem(std::optional<wxWindowID> Id) const
+            {
+            return (Id.has_value() ? FindSubItem(Id.value()) :
+                std::make_pair(std::nullopt, std::nullopt));
+            }
+        /// @private
+        void SelectFolder(std::optional<size_t> item, const bool setFocus = true,
+            const bool sendEvent = true)
+            {
+            if (item.has_value())
+                { SelectFolder(item.value(), setFocus, sendEvent); }
+            }
+        /// @private
+        void SelectSubItem(
+            const std::pair<std::optional<size_t>, std::optional<size_t>> item,
+            const bool setFocus = true, const bool sendEvent = true)
+            {
+            if (item.first.has_value() && item.second.has_value())
+                { SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent); }
+            }
+    private:
         /** @brief Gets the width (label, icon, and padding) of a given root item.
             @details The item's subitem width are factored into this (including their margins),
                 so the width of the widest subitem will be returned if wider than the root item.
@@ -453,7 +486,7 @@ namespace Wisteria::UI
             return HasShowHideToolbar() ?
                 FromDIP(wxSize(16,16)).GetHeight() + GetPaddingHeight() : 0;
             }
-    private:
+ 
         // events
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
         void OnMouseChange(wxMouseEvent& event);
