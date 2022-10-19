@@ -1,3 +1,14 @@
+/** @addtogroup UI
+    @brief User interface classes.
+    @date 2005-2022
+    @copyright Blake Madden
+    @author Blake Madden
+    @details This program is free software; you can redistribute it and/or modify
+     it under the terms of the 3-Clause BSD License.
+
+     SPDX-License-Identifier: BSD-3-Clause
+@{*/
+
 #ifndef __SIDEBARBOOK_H__
 #define __SIDEBARBOOK_H__
 
@@ -188,6 +199,8 @@ namespace Wisteria::UI
         wxDECLARE_DYNAMIC_CLASS_NO_COPY(SideBarBook);
         };
     }
+
+/** @}*/
 
 // ----------------------------------------------------------------------------
 // listbook event class and related stuff
