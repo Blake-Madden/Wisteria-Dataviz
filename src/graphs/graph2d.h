@@ -256,7 +256,7 @@ namespace Wisteria::Graphs
                     GetBackgroundColor() : GetCanvas()->GetBackgroundColor();
             }
 
-        /// @brief Sets the outline color when the common image effect in in use.
+        /// @brief Sets the outline color when the common image effect in use.
         /// @details This only applies to graphs which use boxes to visualized data
         ///     (e.g., bar charts, box plots).
         /// @param outlineColor The outline color of the bars/boxes if common image

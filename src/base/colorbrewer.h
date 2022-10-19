@@ -200,7 +200,7 @@ namespace Wisteria::Colors
         ///     opacity higher than 32. For example, black having an opacity of 32
         ///     would mean it has 1/8 of the opacity of a fully opaque black;
         ///     this would appear more like a very light gray, rather than black, and would
-        ///     be consided not dark.
+        ///     be considered not dark.
         /// @param color The color to review.
         /// @returns @c true if the color is dark.
         [[nodiscard]] static bool IsDark(const wxColour& color)
@@ -698,17 +698,17 @@ namespace Wisteria::Colors
                 {}
             };
 
-        /** @brief Artic color scheme.
+        /** @brief Arctic color scheme.
              \htmlonly
              <div style='background-color:#1995AD; width:50px;'>&nbsp;</div>
              <div style='background-color:#A1D6E2; width:50px;'>&nbsp;</div>
              <div style='background-color:#F1F1F2; width:50px;'>&nbsp;</div>
              <div style='background-color:#BCBABE; width:50px;'>&nbsp;</div>
              \endhtmlonly*/
-        class ArticChill : public ColorScheme
+        class ArcticChill : public ColorScheme
             {
         public:
-            ArticChill() : ColorScheme({
+            ArcticChill() : ColorScheme({
                 ColorBrewer::GetColor(Color::GlacierBlue),
                 ColorBrewer::GetColor(Color::Ice),
                 ColorBrewer::GetColor(Color::Overcast),

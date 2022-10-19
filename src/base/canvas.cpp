@@ -11,7 +11,7 @@
 #include "axis.h"
 #include "reportprintout.h"
 
-DEFINE_EVENT_TYPE(EVT_WISTERIA_CANVAS_DCLICK)
+wxDEFINE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 using namespace Wisteria::GraphItems;
 using namespace Wisteria::Colors;

@@ -215,7 +215,7 @@ namespace Wisteria
             const size_t columnRow,
             std::shared_ptr<Graphs::Table> table);
 
-        /// @brief Loads a image node.
+        /// @brief Loads an image node.
         /// @param imageNode The image node to parse.
         /// @returns The image that was loaded, or null upon failure.
         /// @todo many features still needed!
@@ -303,7 +303,7 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode);
-        /// @brief Converts a string value to a icon shape enum value.
+        /// @brief Converts a string value to an icon shape enum value.
         /// @param iconStr the string name of the icon.
         /// @returns The icon enum value if found, @c std::nullopt otherwise.
         [[nodiscard]] std::optional<Icons::IconShape> ConvertIcon(wxString iconStr);

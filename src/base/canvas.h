@@ -46,7 +46,7 @@
 #include "../ui/imageexportdlg.h"
 #include "../ui/radioboxdlg.h"
 
-DECLARE_EVENT_TYPE(EVT_WISTERIA_CANVAS_DCLICK, -1)
+wxDECLARE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 namespace Wisteria
     {

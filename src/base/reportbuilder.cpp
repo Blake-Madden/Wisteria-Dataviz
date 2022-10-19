@@ -3582,7 +3582,7 @@ namespace Wisteria
             { L"slytherin", std::make_shared<Colors::Schemes::Slytherin>() },
             { L"campfire", std::make_shared<Colors::Schemes::Campfire>() },
             { L"coffeeshop", std::make_shared<Colors::Schemes::CoffeeShop>() },
-            { L"articchill", std::make_shared<Colors::Schemes::ArticChill>() },
+            { L"arcticchill", std::make_shared<Colors::Schemes::ArcticChill>() },
             { L"backtoschool", std::make_shared<Colors::Schemes::BackToSchool>() },
             { L"boxofchocolates", std::make_shared<Colors::Schemes::BoxOfChocolates>() },
             { L"cosmopolitan", std::make_shared<Colors::Schemes::Cosmopolitan>() },
