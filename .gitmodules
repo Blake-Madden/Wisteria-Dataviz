@@ -7,3 +7,6 @@
 [submodule "src/wxSimpleJSON"]
 	path = src/wxSimpleJSON
 	url = https://github.com/Blake-Madden/wxSimpleJSON.git
+[submodule "src/CRCpp"]
+	path = src/CRCpp
+	url = https://github.com/d-bahr/CRCpp.git
