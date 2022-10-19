@@ -44,6 +44,7 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/ui/app.cpp
+    src/ui/getdirdlg.cpp
     src/ui/imageexportdlg.cpp
     src/ui/mainframe.cpp
     src/ui/opacitydlg.cpp
