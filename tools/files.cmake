@@ -50,6 +50,7 @@ SET(WISTERIA_SRC
     src/ui/printerheaderfooterdlg.cpp
     src/ui/radioboxdlg.cpp
     src/ui/sidebar.cpp
+    src/ui/sidebarbook.cpp
     src/ui/thumbnail.cpp
     src/ui/variableselectdlg.cpp
     src/util/formulaformat.cpp
