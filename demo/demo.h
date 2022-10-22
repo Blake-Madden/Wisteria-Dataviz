@@ -42,39 +42,45 @@
 #include "../src/import/text_matrix.h"
 #include "../src/util/logfile.h"
 
+#ifndef __WISTERIA_DEMO_H__
+#define __WISTERIA_DEMO_H__
+
 // Define a new application
 class MyApp final : public wxApp
     {
 public:
     virtual bool OnInit() final;
-    static constexpr int ID_NEW_BOXPLOT{ wxID_HIGHEST+1 };
-    static constexpr int ID_NEW_HISTOGRAM{ wxID_HIGHEST+2 };
-    static constexpr int ID_NEW_GANTT{ wxID_HIGHEST+3 };
-    static constexpr int ID_NEW_LINEPLOT{ wxID_HIGHEST+4 };
-    static constexpr int ID_NEW_BARCHART{ wxID_HIGHEST+5 };
-    static constexpr int ID_NEW_WCURVE{ wxID_HIGHEST+6 };
-    static constexpr int ID_NEW_LIKERT_3POINT{ wxID_HIGHEST+7 };
-    static constexpr int ID_NEW_HEATMAP{ wxID_HIGHEST+8 };
-    static constexpr int ID_NEW_HEATMAP_GROUPED{ wxID_HIGHEST+9 };
-    static constexpr int ID_NEW_PIECHART{ wxID_HIGHEST+10 };
-    static constexpr int ID_NEW_PIECHART_GROUPED{ wxID_HIGHEST+11 };
-    static constexpr int ID_NEW_DONUTCHART{ wxID_HIGHEST+12 };
-    static constexpr int ID_NEW_DONUTCHART_GROUPED{ wxID_HIGHEST+13 };
-    static constexpr int ID_NEW_LINEPLOT_CUSTOMIZED{ wxID_HIGHEST+14 };
-    static constexpr int ID_NEW_BARCHART_STYLIZED{ wxID_HIGHEST+15 };
-    static constexpr int ID_NEW_LIKERT_7POINT{ wxID_HIGHEST+16 };
-    static constexpr int ID_NEW_MULTIPLOT{ wxID_HIGHEST+17 };
-    static constexpr int ID_NEW_MULTIPLOT_COMMON_AXIS{ wxID_HIGHEST+18 };
-    static constexpr int ID_NEW_CANDLESTICK_AXIS{ wxID_HIGHEST+19 };
-    static constexpr int ID_NEW_BARCHART_IMAGE{ wxID_HIGHEST+20 };
-    static constexpr int ID_NEW_HISTOGRAM_UNIQUE_VALUES{ wxID_HIGHEST+21 };
-    static constexpr int ID_NEW_CATEGORICAL_BARCHART{ wxID_HIGHEST+22 };
-    static constexpr int ID_NEW_CATEGORICAL_BARCHART_GROUPED{ wxID_HIGHEST+23 };
-    static constexpr int ID_NEW_CATEGORICAL_BARCHART_STIPPLED{ wxID_HIGHEST+24 };
-    static constexpr int ID_NEW_LR_ROADMAP_GRAPH{ wxID_HIGHEST+25 };
-    static constexpr int ID_NEW_PROCON_ROADMAP_GRAPH{ wxID_HIGHEST+26 };
-    static constexpr int ID_NEW_TABLE{ wxID_HIGHEST+27 };
-    static constexpr int ID_PRINT_ALL{ wxID_HIGHEST+28 };
+    enum ControlIDs
+        {
+        ID_NEW_BOXPLOT = wxID_HIGHEST+1,
+        ID_NEW_HISTOGRAM,
+        ID_NEW_GANTT,
+        ID_NEW_LINEPLOT,
+        ID_NEW_BARCHART,
+        ID_NEW_WCURVE,
+        ID_NEW_LIKERT_3POINT,
+        ID_NEW_HEATMAP,
+        ID_NEW_HEATMAP_GROUPED,
+        ID_NEW_PIECHART,
+        ID_NEW_PIECHART_GROUPED,
+        ID_NEW_DONUTCHART,
+        ID_NEW_DONUTCHART_GROUPED,
+        ID_NEW_LINEPLOT_CUSTOMIZED,
+        ID_NEW_BARCHART_STYLIZED,
+        ID_NEW_LIKERT_7POINT,
+        ID_NEW_MULTIPLOT,
+        ID_NEW_MULTIPLOT_COMMON_AXIS,
+        ID_NEW_CANDLESTICK_AXIS,
+        ID_NEW_BARCHART_IMAGE,
+        ID_NEW_HISTOGRAM_UNIQUE_VALUES,
+        ID_NEW_CATEGORICAL_BARCHART,
+        ID_NEW_CATEGORICAL_BARCHART_GROUPED,
+        ID_NEW_CATEGORICAL_BARCHART_STIPPLED,
+        ID_NEW_LR_ROADMAP_GRAPH,
+        ID_NEW_PROCON_ROADMAP_GRAPH,
+        ID_NEW_TABLE,
+        ID_PRINT_ALL
+        };
     };
 
 // Define a new frame
@@ -83,7 +89,6 @@ class MyFrame final : public wxMDIParentFrame
 public:
     MyFrame();
     static wxMenuBar* CreateMainMenubar();
-
 private:
     void InitToolBar(wxToolBar* toolBar);
 
@@ -107,3 +112,5 @@ public:
 private:
     Wisteria::Canvas* m_canvas{ nullptr };
     };
+
+#endif //__WISTERIA_DEMO_H__
