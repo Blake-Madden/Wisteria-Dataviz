@@ -547,9 +547,9 @@ namespace Wisteria::UI
 
         wxColour m_activeColor;
         wxColour m_activeFontColor;
-        wxColour m_parentColor;
         wxColour m_highlightColor;
         wxColour m_highlightFontColor;
+        wxColour m_parentColor;
 
         bool m_includeShowHideToolbar{ true };
         bool m_isExpanded{ true };
