@@ -26,8 +26,8 @@ namespace Wisteria::UI
     {
     /// @brief A dialog with a banner and series of radio buttons to choose from.
     /// @details (Descriptions can also be included for each option.)
-    ///  This dialog is similar to wxSingleChoiceDialog, but uses radio buttons
-    ///  instead of a list.
+    ///     This dialog is similar to @c wxSingleChoiceDialog, but uses radio buttons
+    ///     instead of a list.
     class RadioBoxDlg final : public DialogWithHelp
         {
     public:
@@ -53,7 +53,8 @@ namespace Wisteria::UI
                  const bool showHelpButton = false,
                  wxWindowID id = wxID_ANY,
                  const wxPoint& pos = wxDefaultPosition,
-                 const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE) : m_choices(choices),
+                 const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE) :
+                 m_choices(choices),
                  m_descriptions(descriptions), m_bannerLabel(bannerLabel),
                  m_bannerDescription(bannerDescription), m_optionsLabel(optionsLabel)
             {

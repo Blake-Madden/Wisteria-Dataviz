@@ -30,7 +30,8 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
     mainSizer->AddStretchSpacer(wxSizerFlags::GetDefaultBorder());
     if (m_descriptions.GetCount() > 0)
         {
-        m_descriptionLabel = new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1, FromDIP(wxSize(125,125)).GetHeight()), wxHW_SCROLLBAR_AUTO|wxBORDER_THEME|wxHW_NO_SELECTION);
+        m_descriptionLabel = new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition,
+            wxSize(-1, FromDIP(wxSize(125,125)).GetHeight()), wxHW_SCROLLBAR_AUTO|wxBORDER_THEME|wxHW_NO_SELECTION);
         if (m_selected < static_cast<int>(m_descriptions.GetCount()))
             {
             m_descriptionLabel->SetPage(
@@ -43,7 +44,8 @@ void RadioBoxDlg::CreateControls(const bool showHelpButton)
         mainSizer->Add(m_descriptionLabel, 0, wxALIGN_LEFT|wxALL|wxGROW, wxSizerFlags::GetDefaultBorder());
         }
     mainSizer->AddStretchSpacer(wxSizerFlags::GetDefaultBorder());
-    mainSizer->Add(CreateSeparatedButtonSizer(showHelpButton ? (wxOK|wxCANCEL|wxHELP) : (wxOK|wxCANCEL)), 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(showHelpButton ?
+        (wxOK|wxCANCEL|wxHELP) : (wxOK|wxCANCEL)), 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
     mainSizer->SetMinSize(FromDIP(wxSize(500, 250)));
     SetSizerAndFit(mainSizer);

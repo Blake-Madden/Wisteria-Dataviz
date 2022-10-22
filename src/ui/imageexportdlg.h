@@ -31,7 +31,7 @@ namespace Wisteria::UI
     {
     /// @brief Tiff compression methods.
     /// @details These match the \#defines in libtiff and are included
-    ///  as an enumeration here so that @c tiff.h doesn't need to be included.
+    ///     as an enumeration here so that @c tiff.h doesn't need to be included.
     enum class TiffCompression
         {
         CompressionNone = 1,       /*!< COMPRESSION_NONE*/
@@ -60,7 +60,8 @@ namespace Wisteria::UI
         };
 
     /// @brief Options dialog for saving an image. Includes options for color/B&W, tiff compression, etc.
-    /// @details Canvas save events use this dialog, so normally client code should not need to use this interface.
+    /// @details Canvas save events use this dialog, so normally client code should not
+    ///     need to use this interface.
     class ImageExportDlg final : public wxDialog
         {
     public:
@@ -126,7 +127,11 @@ namespace Wisteria::UI
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {
             if (m_helpTopic.length())
-                { wxLaunchDefaultBrowser(wxFileName::FileNameToURL(m_helpProjectFolder + wxFileName::GetPathSeparator() + m_helpTopic)); }
+                {
+                wxLaunchDefaultBrowser(
+                    wxFileName::FileNameToURL(m_helpProjectFolder +
+                                              wxFileName::GetPathSeparator() + m_helpTopic));
+                }
             }
         void OnContextHelp([[maybe_unused]] wxHelpEvent& event)
             {
@@ -134,9 +139,12 @@ namespace Wisteria::UI
             OnHelpClicked(cmd);
             }
 
-        static constexpr int COLOR_MODE_COMBO_ID = wxID_HIGHEST + 1;
-        static constexpr int IMAGE_WIDTH_ID = wxID_HIGHEST + 2;
-        static constexpr int IMAGE_HEIGHT_ID = wxID_HIGHEST + 3;
+        enum ControlIDs
+            {
+            COLOR_MODE_COMBO_ID = wxID_HIGHEST+1,
+            IMAGE_WIDTH_ID,
+            IMAGE_HEIGHT_ID
+            };
 
         ImageExportOptions m_options;
 

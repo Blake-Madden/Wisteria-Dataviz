@@ -19,7 +19,8 @@ void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
 
     wxImage img(m_originalBitmap.ConvertToImage());
 
-    if (m_options.m_mode == static_cast<decltype(m_options.m_mode)>(ImageExportOptions::ColorMode::Grayscale))
+    if (m_options.m_mode ==
+        static_cast<decltype(m_options.m_mode)>(ImageExportOptions::ColorMode::Grayscale))
         { img = img.ConvertToGreyscale(); }
 
     m_previewThumbnail->SetBitmap(wxBitmap(img));
@@ -30,7 +31,7 @@ void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
     std::pair<double,double> imgSize(m_options.m_imageSize.x, m_options.m_imageSize.y);
     TransferDataFromWindow();
 
-    if (event.GetId() == IMAGE_WIDTH_ID)
+    if (event.GetId() == ControlIDs::IMAGE_WIDTH_ID)
         {
         m_options.m_imageSize.y = geometry::calculate_rescale_height(
                                     std::make_pair(imgSize.first, imgSize.second),
@@ -63,7 +64,7 @@ bool ImageExportDlg::Create(wxWindow* parent,
     Bind(wxEVT_HELP, &ImageExportDlg::OnContextHelp, this);
     Bind(wxEVT_BUTTON, &ImageExportDlg::OnOK, this, wxID_OK);
     Bind(wxEVT_SPINCTRL, &ImageExportDlg::OnSizeChanged, this);
-    Bind(wxEVT_RADIOBOX, &ImageExportDlg::OnOptionsChanged, this, ImageExportDlg::COLOR_MODE_COMBO_ID);
+    Bind(wxEVT_RADIOBOX, &ImageExportDlg::OnOptionsChanged, this, ControlIDs::COLOR_MODE_COMBO_ID);
 
     Centre();
     return true;
@@ -84,20 +85,23 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     mainSizer->Add(controlsSizer, 0, wxEXPAND|wxALIGN_TOP|wxALL, wxSizerFlags::GetDefaultBorder());
 
     wxStaticBoxSizer* imageSizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Image Size"));
-    auto imageSizeInfoSizer = new wxGridSizer(2, 2, wxSize(wxSizerFlags::GetDefaultBorder(),wxSizerFlags::GetDefaultBorder()));
+    auto imageSizeInfoSizer = new wxGridSizer(2, 2, wxSize(wxSizerFlags::GetDefaultBorder(),
+        wxSizerFlags::GetDefaultBorder()));
     imageSizeSizer->Add(imageSizeInfoSizer,1,wxEXPAND);
 
-    wxStaticText* widthLabel = new wxStaticText(this, wxID_STATIC, _(L"Width:"), wxDefaultPosition, wxDefaultSize);
+    wxStaticText* widthLabel = new wxStaticText(this, wxID_STATIC, _(L"Width:"),
+        wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
-    wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, IMAGE_WIDTH_ID,
+    wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
         wxString::Format(L"%d", m_options.m_imageSize.GetWidth()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 10000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
     imageSizeInfoSizer->Add(widthCtrl, 0);
 
-    wxStaticText* heightLabel = new wxStaticText(this, wxID_STATIC, _(L"Height:"), wxDefaultPosition, wxDefaultSize);
+    wxStaticText* heightLabel = new wxStaticText(this, wxID_STATIC, _(L"Height:"),
+        wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(heightLabel, 0, wxALIGN_CENTER_VERTICAL);
-    wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, IMAGE_HEIGHT_ID,
+    wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_HEIGHT_ID,
         wxString::Format(L"%d", m_options.m_imageSize.GetHeight()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 10000);
     heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));
@@ -109,8 +113,9 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxArrayString colorModes;
         colorModes.Add(_(L"&RGB (Color)"));
         colorModes.Add(_(L"&Grayscale"));
-        wxRadioBox* colorModesRadioBox = new wxRadioBox(this, COLOR_MODE_COMBO_ID, _(L"Color Mode"),
-            wxDefaultPosition, wxDefaultSize, colorModes, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_options.m_mode) );
+        wxRadioBox* colorModesRadioBox = new wxRadioBox(this, ControlIDs::COLOR_MODE_COMBO_ID,
+            _(L"Color Mode"), wxDefaultPosition, wxDefaultSize, colorModes, 0,
+            wxRA_SPECIFY_ROWS, wxGenericValidator(&m_options.m_mode) );
         column1Sizer->Add(colorModesRadioBox, 0, wxEXPAND);
         column1Sizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
         }
@@ -123,8 +128,10 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
 
         wxBoxSizer* compressionSizer = new wxBoxSizer(wxHORIZONTAL);
         tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT|wxALL, wxSizerFlags::GetDefaultBorder());
-        wxStaticText* compressionLabel = new wxStaticText(this, wxID_STATIC, _(L"Compression:"), wxDefaultPosition, wxDefaultSize, 0);
-        compressionSizer->Add(compressionLabel, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, wxSizerFlags::GetDefaultBorder());
+        wxStaticText* compressionLabel = new wxStaticText(this, wxID_STATIC, _(L"Compression:"),
+                                                          wxDefaultPosition, wxDefaultSize, 0);
+        compressionSizer->Add(compressionLabel, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT,
+                              wxSizerFlags::GetDefaultBorder());
 
         wxArrayString compressionChoices;
         compressionChoices.Add(_(L"None"));
@@ -151,7 +158,8 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         column2Sizer->Add(previewSizer);
         }
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0, wxEXPAND|wxALL,
+                   wxSizerFlags::GetDefaultBorder());
 
     SetSizerAndFit(mainSizer);
     }

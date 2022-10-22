@@ -27,7 +27,7 @@ namespace Wisteria::UI
     {
     /** @brief Dialog for specifying headers and footers for printing.
         @details The headers and footers returned from this dialog may embed the following tags
-         that the client should convert in their printing code at runtime:
+            that the client should convert in their printing code at runtime:
 
          - `@TITLE@`: The title of the printed document.
          - `@DATE@`: The date when it was printed.
@@ -111,12 +111,15 @@ namespace Wisteria::UI
         wxString m_centerPrinterFooter;
         wxString m_rightPrinterFooter;
 
-        static constexpr int ID_LEFT_HEADER_COMBOBOX = wxID_HIGHEST + 1;
-        static constexpr int ID_CENTER_HEADER_COMBOBOX = wxID_HIGHEST + 2;
-        static constexpr int ID_RIGHT_HEADER_COMBOBOX = wxID_HIGHEST + 3;
-        static constexpr int ID_LEFT_FOOTER_COMBOBOX = wxID_HIGHEST + 4;
-        static constexpr int ID_CENTER_FOOTER_COMBOBOX = wxID_HIGHEST + 5;
-        static constexpr int ID_RIGHT_FOOTER_COMBOBOX = wxID_HIGHEST + 6;
+        enum ControlIDs
+            {
+            ID_LEFT_HEADER_COMBOBOX = wxID_HIGHEST+1,
+            ID_CENTER_HEADER_COMBOBOX,
+            ID_RIGHT_HEADER_COMBOBOX,
+            ID_LEFT_FOOTER_COMBOBOX,
+            ID_CENTER_FOOTER_COMBOBOX,
+            ID_RIGHT_FOOTER_COMBOBOX
+            };
 
         wxComboBox* leftHeaderPrinterCombo{ nullptr };
         wxComboBox* centerHeaderPrinterCombo{ nullptr };
