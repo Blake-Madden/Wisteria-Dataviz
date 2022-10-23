@@ -43,6 +43,7 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/ui/app.cpp
+    src/ui/controls/infobarex.cpp
     src/ui/controls/sidebar.cpp
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
