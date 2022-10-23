@@ -43,9 +43,10 @@
 #include "graphitems.h"
 #include "image.h"
 #include "label.h"
-#include "../ui/imageexportdlg.h"
-#include "../ui/radioboxdlg.h"
+#include "../ui/dialogs/imageexportdlg.h"
+#include "../ui/dialogs/radioboxdlg.h"
 
+/// @private
 wxDECLARE_EVENT(EVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 
 namespace Wisteria

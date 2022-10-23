@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WXPRINTERHEADERFOOTER_DLG_H__
-#define __WXPRINTERHEADERFOOTER_DLG_H__
+#ifndef __PRINTERHEADERFOOTER_DLG_H__
+#define __PRINTERHEADERFOOTER_DLG_H__
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -21,7 +21,7 @@
 #include <wx/regex.h>
 #include <set>
 #include "dialogwithhelp.h"
-#include "../util/donttranslate.h"
+#include "../../util/donttranslate.h"
 
 namespace Wisteria::UI
     {
@@ -132,4 +132,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif //__WXPRINTERHEADERFOOTER_DLG_H__
+#endif //__PRINTERHEADERFOOTER_DLG_H__

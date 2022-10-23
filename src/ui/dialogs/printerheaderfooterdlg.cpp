@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "printerheaderfooterdlg.h"
-#include "../data/dataset.h"
+#include "../../data/dataset.h"
 
 using namespace Wisteria::UI;
 

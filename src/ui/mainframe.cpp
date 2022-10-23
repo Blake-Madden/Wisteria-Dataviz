@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "mainframe.h"
-#include "radioboxdlg.h"
+#include "dialogs/radioboxdlg.h"
 
 using namespace Wisteria;
 

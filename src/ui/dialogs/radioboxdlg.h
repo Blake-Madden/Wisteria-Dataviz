@@ -20,7 +20,7 @@
 #include <wx/filename.h>
 #include <wx/bannerwindow.h>
 #include "dialogwithhelp.h"
-#include "../math/safe_math.h"
+#include "../../math/safe_math.h"
 
 namespace Wisteria::UI
     {

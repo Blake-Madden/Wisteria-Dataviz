@@ -19,7 +19,9 @@
 #include <wx/wupdlock.h>
 #include "sidebar.h"
 
+/// @private
 wxDECLARE_EXPORTED_EVENT(WXDLLIMPEXP_CORE, EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent);
+/// @private
 wxDECLARE_EXPORTED_EVENT(WXDLLIMPEXP_CORE, EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
 
 namespace Wisteria::UI

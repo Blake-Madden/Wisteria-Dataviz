@@ -17,7 +17,7 @@
 #include <wx/valgen.h>
 #include <wx/slider.h>
 #include <wx/dialog.h>
-#include "thumbnail.h"
+#include "../controls/thumbnail.h"
 
 namespace Wisteria::UI
     {

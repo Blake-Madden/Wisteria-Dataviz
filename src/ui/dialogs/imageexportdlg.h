@@ -23,9 +23,9 @@
 #include <wx/dialog.h>
 #include <wx/filename.h>
 #include <wx/mstream.h>
-#include "../math/mathematics.h"
-#include "../ui/thumbnail.h"
-#include "../util/donttranslate.h"
+#include "../../math/mathematics.h"
+#include "../controls/thumbnail.h"
+#include "../../util/donttranslate.h"
 
 namespace Wisteria::UI
     {

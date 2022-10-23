@@ -24,7 +24,9 @@
 #include <algorithm>
 #include <optional>
 
+/// @private
 wxDECLARE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
+/// @private
 wxDECLARE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 namespace Wisteria::UI
