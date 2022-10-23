@@ -78,7 +78,7 @@ namespace Wisteria::UI
             @param msg The message to display.
             @param flags The flags to use.*/
         void ShowMessage(const wxString& msg,
-                         int flags = wxICON_INFORMATION) final;
+                         int flags = wxICON_INFORMATION);
 
         /// @returns Whether the "Do not show this again" checkbox was checked at the
         ///     time of the window being closed.
@@ -98,7 +98,7 @@ namespace Wisteria::UI
             }
 
         /// @brief Dismisses the control.
-        void Dismiss() final;
+        void Dismiss();
 
         // methods specific to this version
         // --------------------------------
