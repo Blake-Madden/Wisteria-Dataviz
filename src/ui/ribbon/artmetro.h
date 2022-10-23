@@ -43,124 +43,127 @@ class WXDLLIMPEXP_FWD_CORE wxDC;
 /// @private
 class WXDLLIMPEXP_FWD_CORE wxWindow;
 
-/// @brief Ribbon art provider that emulates the Windows 8 "metro" look.
-class RibbonMetroArtProvider : public wxRibbonMSWArtProvider
-{
-public:
-    /** @brief Constructor.
-        @param set_colour_scheme @c true to set the color scheme.*/
-    RibbonMetroArtProvider(bool set_colour_scheme = true);
-    /** @brief Sets provided flags.
-        @param flags The flags to set.*/
-    void SetFlags(long flags) final;
+namespace Wisteria::UI
+    {
+    /// @brief Ribbon art provider that emulates the Windows 8 "metro" look.
+    class RibbonMetroArtProvider : public wxRibbonMSWArtProvider
+        {
+    public:
+        /** @brief Constructor.
+            @param set_colour_scheme @c true to set the color scheme.*/
+        RibbonMetroArtProvider(bool set_colour_scheme = true);
+        /** @brief Sets provided flags.
+            @param flags The flags to set.*/
+        void SetFlags(long flags) final;
 
-    /** @brief Gets the colour of the tabs.
-        @param primary The color of the active tab and its tool area.
-        @param secondary The color of the background (including inactive tabs).
-        @param tertiary The background color of hovered buttons and non-active tabs.*/
-    void GetColourScheme(wxColour* primary,
-                         wxColour* secondary,
-                         wxColour* tertiary) const final;
+        /** @brief Gets the colour of the tabs.
+            @param primary The color of the active tab and its tool area.
+            @param secondary The color of the background (including inactive tabs).
+            @param tertiary The background color of hovered buttons and non-active tabs.*/
+        void GetColourScheme(wxColour* primary,
+                             wxColour* secondary,
+                             wxColour* tertiary) const final;
 
-    /** @brief Sets the colour of the tabs.
-        @param primary The color of the active tab and its tool area.
-        @param secondary The color of the background (including inactive tabs).
-        @param tertiary The background color of hovered buttons and non-active tabs.*/
-    void SetColourScheme(const wxColour& primary,
-                         const wxColour& secondary,
-                         const wxColour& tertiary) final;
-private:
-    void DrawTabCtrlBackground(
-                        wxDC& dc,
-                        [[maybe_unused]] wxWindow* wnd,
-                        const wxRect& rect) final;
+        /** @brief Sets the colour of the tabs.
+            @param primary The color of the active tab and its tool area.
+            @param secondary The color of the background (including inactive tabs).
+            @param tertiary The background color of hovered buttons and non-active tabs.*/
+        void SetColourScheme(const wxColour& primary,
+                             const wxColour& secondary,
+                             const wxColour& tertiary) final;
+    private:
+        void DrawTabCtrlBackground(
+                            wxDC& dc,
+                            [[maybe_unused]] wxWindow* wnd,
+                            const wxRect& rect) final;
 
-    void DrawTab(wxDC& dc,
-                 [[maybe_unused]] wxWindow* wnd,
-                 const wxRibbonPageTabInfo& tab) final;
+        void DrawTab(wxDC& dc,
+                     [[maybe_unused]] wxWindow* wnd,
+                     const wxRibbonPageTabInfo& tab) final;
 
-    void DrawPageBackground(
-                        wxDC& dc,
-                        [[maybe_unused]] wxWindow* wnd,
-                        const wxRect& rect) final;
+        void DrawPageBackground(
+                            wxDC& dc,
+                            [[maybe_unused]] wxWindow* wnd,
+                            const wxRect& rect) final;
 
-    void DrawPanelBackground(
-                        wxDC& dc,
-                        wxRibbonPanel* wnd,
-                        const wxRect& rect) final;
+        void DrawPanelBackground(
+                            wxDC& dc,
+                            wxRibbonPanel* wnd,
+                            const wxRect& rect) final;
 
-    void DrawMinimisedPanel(
-                        wxDC& dc,
-                        wxRibbonPanel* wnd,
-                        const wxRect& rect,
-                        wxBitmap& bitmap) final;
+        void DrawMinimisedPanel(
+                            wxDC& dc,
+                            wxRibbonPanel* wnd,
+                            const wxRect& rect,
+                            wxBitmap& bitmap) final;
 
-    void DrawButtonBarBackground(
-                        wxDC& dc,
-                        wxWindow* wnd,
-                        const wxRect& rect) final;
+        void DrawButtonBarBackground(
+                            wxDC& dc,
+                            wxWindow* wnd,
+                            const wxRect& rect) final;
 
-    void DrawButtonBarButton(
-                        wxDC& dc,
-                        [[maybe_unused]] wxWindow* wnd,
-                        const wxRect& rect,
-                        wxRibbonButtonKind kind,
-                        long state,
-                        const wxString& label,
-                        const wxBitmap& bitmap_large,
-                        const wxBitmap& bitmap_small) final;
+        void DrawButtonBarButton(
+                            wxDC& dc,
+                            [[maybe_unused]] wxWindow* wnd,
+                            const wxRect& rect,
+                            wxRibbonButtonKind kind,
+                            long state,
+                            const wxString& label,
+                            const wxBitmap& bitmap_large,
+                            const wxBitmap& bitmap_small) final;
 
-    void DrawToolBarBackground(
-                        wxDC& dc,
-                        wxWindow* wnd,
-                        const wxRect& rect) final;
+        void DrawToolBarBackground(
+                            wxDC& dc,
+                            wxWindow* wnd,
+                            const wxRect& rect) final;
 
-    void DrawToolGroupBackground(
-                        wxDC& dc,
-                        [[maybe_unused]] wxWindow* wnd,
-                        const wxRect& rect) final;
+        void DrawToolGroupBackground(
+                            wxDC& dc,
+                            [[maybe_unused]] wxWindow* wnd,
+                            const wxRect& rect) final;
 
-    void DrawTool(
-                wxDC& dc,
-                [[maybe_unused]] wxWindow* wnd,
-                const wxRect& rect,
-                const wxBitmap& bitmap,
-                wxRibbonButtonKind kind,
-                long state) final;
+        void DrawTool(
+                    wxDC& dc,
+                    [[maybe_unused]] wxWindow* wnd,
+                    const wxRect& rect,
+                    const wxBitmap& bitmap,
+                    wxRibbonButtonKind kind,
+                    long state) final;
 
-    void DrawToggleButton(
-                        wxDC& dc,
-                        wxRibbonBar* wnd,
-                        const wxRect& rect,
-                        wxRibbonDisplayMode mode) final;
+        void DrawToggleButton(
+                            wxDC& dc,
+                            wxRibbonBar* wnd,
+                            const wxRect& rect,
+                            wxRibbonDisplayMode mode) final;
 
-    void DrawHelpButton(
-                wxDC& dc,
-                wxRibbonBar* wnd,
-                const wxRect& rect) final;
+        void DrawHelpButton(
+                    wxDC& dc,
+                    wxRibbonBar* wnd,
+                    const wxRect& rect) final;
 
-    void DrawPartialPageBackground(
-        wxDC& dc, wxWindow* wnd, const wxRect& rect,
-        bool allow_hovered = true);
-    void DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect,
-         wxRibbonPage* page, wxPoint offset, [[maybe_unused]] bool hovered = false);
-    void DrawPanelBorder(wxDC& dc, const wxRect& rect, [[maybe_unused]] wxPen& primary_colour,
-        [[maybe_unused]] wxPen& secondary_colour);
+        void DrawPartialPageBackground(
+            wxDC& dc, wxWindow* wnd, const wxRect& rect,
+            bool allow_hovered = true);
+        void DrawPartialPageBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect,
+             wxRibbonPage* page, wxPoint offset, [[maybe_unused]] bool hovered = false);
+        void DrawPanelBorder(wxDC& dc, const wxRect& rect, [[maybe_unused]] wxPen& primary_colour,
+            [[maybe_unused]] wxPen& secondary_colour);
 
-    void DrawButtonBarButtonForeground(
-                        wxDC& dc,
-                        const wxRect& rect,
-                        wxRibbonButtonKind kind,
-                        long state,
-                        const wxString& label,
-                        const wxBitmap& bitmap_large,
-                        const wxBitmap& bitmap_small);
-    void DrawMinimisedPanelCommon(
-                        wxDC& dc,
-                        wxRibbonPanel* wnd,
-                        const wxRect& rect,
-                        wxRect* preview_rect);
-};
+        void DrawButtonBarButtonForeground(
+                            wxDC& dc,
+                            const wxRect& rect,
+                            wxRibbonButtonKind kind,
+                            long state,
+                            const wxString& label,
+                            const wxBitmap& bitmap_large,
+                            const wxBitmap& bitmap_small);
+        void DrawMinimisedPanelCommon(
+                            wxDC& dc,
+                            wxRibbonPanel* wnd,
+                            const wxRect& rect,
+                            wxRect* preview_rect);
+        };
+    }
 
 /** @}*/
 

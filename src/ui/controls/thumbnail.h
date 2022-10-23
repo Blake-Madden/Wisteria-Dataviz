@@ -27,6 +27,7 @@
 namespace Wisteria::UI
     {
     // Helper class to show a thumbnail fullscreen.
+    /// @private
     class EnlargedImageWindow : public wxDialog
         {
     public:

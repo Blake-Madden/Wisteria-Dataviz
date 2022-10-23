@@ -31,6 +31,8 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
     #include <wx/msw/private.h>
 #endif
 
+using namespace Wisteria::UI;
+
 static constexpr char* const panel_toggle_down_xpm[] = {
   "7 9 2 1",
   "  c None",
