@@ -6,8 +6,8 @@ toolsFolder <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/..
 buildFile <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}/files.cmake')
 
 files <- str_glue("src/{list.files(path=toolsFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
-# remove easyexif's demo.cpp file
-files <- files[grepl("[^(demo.cpp)]", files)]
+# remove easyexif's demo.cpp file and CRC++'s test file
+files <- files[!grepl("(demo.cpp|main.cpp)", files)]
 write_file(str_glue("# Automatically generated from 'Build CMake Files List.R'
 # DO NOT MODIFY MANUALLY!
 

@@ -25,7 +25,6 @@ SET(WISTERIA_SRC
     src/data/subset.cpp
     src/data/textclassifier.cpp
     src/debug/debug_profile.cpp
-    src/easyexif/demo.cpp
     src/easyexif/exif.cpp
     src/graphs/barchart.cpp
     src/graphs/boxplot.cpp
@@ -44,16 +43,17 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/ui/app.cpp
-    src/ui/getdirdlg.cpp
-    src/ui/imageexportdlg.cpp
+    src/ui/controls/sidebar.cpp
+    src/ui/controls/sidebarbook.cpp
+    src/ui/controls/thumbnail.cpp
+    src/ui/dialogs/getdirdlg.cpp
+    src/ui/dialogs/imageexportdlg.cpp
+    src/ui/dialogs/opacitydlg.cpp
+    src/ui/dialogs/printerheaderfooterdlg.cpp
+    src/ui/dialogs/radioboxdlg.cpp
+    src/ui/dialogs/variableselectdlg.cpp
     src/ui/mainframe.cpp
-    src/ui/opacitydlg.cpp
-    src/ui/printerheaderfooterdlg.cpp
-    src/ui/radioboxdlg.cpp
-    src/ui/sidebar.cpp
-    src/ui/sidebarbook.cpp
-    src/ui/thumbnail.cpp
-    src/ui/variableselectdlg.cpp
+    src/ui/ribbon/artmetro.cpp
     src/util/formulaformat.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
