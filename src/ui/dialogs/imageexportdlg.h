@@ -141,7 +141,7 @@ namespace Wisteria::UI
 
         enum ControlIDs
             {
-            COLOR_MODE_COMBO_ID = wxID_HIGHEST+1,
+            COLOR_MODE_COMBO_ID = wxID_HIGHEST,
             IMAGE_WIDTH_ID,
             IMAGE_HEIGHT_ID
             };

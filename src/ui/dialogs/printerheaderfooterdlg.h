@@ -113,7 +113,7 @@ namespace Wisteria::UI
 
         enum ControlIDs
             {
-            ID_LEFT_HEADER_COMBOBOX = wxID_HIGHEST+1,
+            ID_LEFT_HEADER_COMBOBOX = wxID_HIGHEST,
             ID_CENTER_HEADER_COMBOBOX,
             ID_RIGHT_HEADER_COMBOBOX,
             ID_LEFT_FOOTER_COMBOBOX,

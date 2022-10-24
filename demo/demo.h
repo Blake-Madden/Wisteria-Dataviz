@@ -52,7 +52,7 @@ public:
     virtual bool OnInit() final;
     enum ControlIDs
         {
-        ID_NEW_BOXPLOT = wxID_HIGHEST+1,
+        ID_NEW_BOXPLOT = wxID_HIGHEST,
         ID_NEW_HISTOGRAM,
         ID_NEW_GANTT,
         ID_NEW_LINEPLOT,

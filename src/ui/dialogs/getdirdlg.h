@@ -89,7 +89,7 @@ namespace Wisteria::UI
         void OnFolderButtonClick([[maybe_unused]] wxCommandEvent& event);
         void OnOK([[maybe_unused]] wxCommandEvent& event);
 
-        static constexpr int ID_FOLDER_BROWSE_BUTTON = wxID_HIGHEST+1;
+        static constexpr int ID_FOLDER_BROWSE_BUTTON = wxID_HIGHEST;
         wxString m_filePath;
         wxString m_fullFileFilter;
         int m_selectedFileFilter{ 0 };
