@@ -51,8 +51,9 @@ namespace Wisteria::UI
     /// Formats for exporting a grid/list control.
     enum class GridExportFormat
         {
-        ExportText, /*!< Plain (tab-delimited) text.*/
-        ExportHtml  /*!< HTML report.*/
+        ExportText,  /*!< Plain (tab-delimited) text.*/
+        ExportHtml,  /*!< HTML table.*/
+        ExportRtf    /*!< Rich Text Format.*/
         };
 
     /// @brief Dialog for requesting export options for
