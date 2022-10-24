@@ -18,6 +18,7 @@ SET(WISTERIA_SRC
     src/base/reportbuildercolors.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
+    src/codeeditor/codeeditor.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/join.cpp
