@@ -82,14 +82,14 @@ namespace Wisteria::UI
         virtual void ClearFileHistoryMenu();
 
         /// @returns The mainframe.
-        [[nodiscard]] Wisteria::UI::BaseMainFrame* GetMainFrame() noexcept
+        [[nodiscard]] BaseMainFrame* GetMainFrame() noexcept
             { return m_mainFrame; }
         /// @private
-        [[nodiscard]] const Wisteria::UI::BaseMainFrame* GetMainFrame() const noexcept
+        [[nodiscard]] const BaseMainFrame* GetMainFrame() const noexcept
             { return m_mainFrame; }
         /// @brief Sets the mainframe.
         /// @param frame The mainframe to use.
-        void SetMainFrame(Wisteria::UI::BaseMainFrame* frame)
+        void SetMainFrame(BaseMainFrame* frame)
             {
             m_mainFrame = frame;
             SetTopWindow(m_mainFrame);
@@ -137,6 +137,29 @@ namespace Wisteria::UI
         /// @param email The email address.
         void SetSupportEmail(const wxString& email)
             { m_supportEmail = email; }
+
+        /// @returns The printer settings.
+        [[nodiscard]] wxPrintData* GetPrintData()
+            {
+            if (GetMainFrame())
+                { 
+                return &GetMainFrame()->GetDocumentManager()->
+                    GetPageSetupDialogData().GetPrintData();
+                }
+            else
+                { return nullptr; }
+            }
+
+        /** @brief Creates a program's splashscreen using a base image and various program information.
+            @param bitmap The base image.
+            @param appName The application's name.
+            @param appSubName The application's supplemental name (e.g., the version number).
+            @param vendorName The application's vendor.
+            @param includeCopyright Whether to show a copyright label at the bottom of the splashscreen.
+            @returns The decorated splashscreen.*/
+        [[nodiscard]] static wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
+            const wxString& appSubName, const wxString& vendorName,
+            const bool includeCopyright);
     private:
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };

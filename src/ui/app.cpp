@@ -148,6 +148,99 @@ int Wisteria::UI::BaseApp::OnExit()
     }
 
 //----------------------------------------------------------
+wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
+                                     const wxString& appSubName, const wxString& vendorName,
+                                     const bool includeCopyright)
+    {
+    const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
+    const wxCoord Padding = wxSizerFlags::GetDefaultBorder()*2;
+
+    wxBitmap canvasBmp(bitmap);
+    wxMemoryDC memDC(canvasBmp);
+    wxGCDC gcdc(memDC);
+
+    // prepare font for drawing the app name
+    gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
+                        wxFONTWEIGHT_BOLD, false, L"Georgia"));
+    gcdc.SetTextForeground(wxColour(L"#315184"));
+
+    wxCoord width{ 0 }, height{ 0 };
+    gcdc.GetTextExtent(appName, &width, &height);
+
+    const wxCoord BackscreenHeight = std::max(height+(Padding*2), bitmap.GetHeight()/5);
+
+    // draw translucent backscreens on image so that text written on it can be read
+        {
+        wxDCPenChanger pc(gcdc, wxPen(*wxBLACK_PEN));
+        wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
+        gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(),BackscreenHeight));
+        gcdc.DrawLine(0, BackscreenHeight, canvasBmp.GetWidth(), BackscreenHeight);
+        if (includeCopyright)
+            {
+            gcdc.DrawRectangle(wxRect(0,canvasBmp.GetHeight() -
+                               BackscreenHeight,canvasBmp.GetWidth(),BackscreenHeight));
+            gcdc.DrawLine(0, canvasBmp.GetHeight()-BackscreenHeight,
+                          canvasBmp.GetWidth(), canvasBmp.GetHeight()-BackscreenHeight);
+            }
+        }
+
+    const int spacePos = appName.Find(L' ');
+    if (spacePos == wxNOT_FOUND)
+        {
+        gcdc.DrawText(appName, Padding, Padding);
+        }
+    else
+        {
+        //write the app name with alternating font colors
+        wxCoord firstWidth(0), secondWidth(0);
+        wxString firstWord = appName.Mid(0, spacePos);
+        wxString secondWord = appName.Mid(spacePos);
+        gcdc.DrawText(firstWord, Padding, Padding);
+        gcdc.GetTextExtent(firstWord, &firstWidth, &height);
+        gcdc.SetTextForeground(wxColour(2,186,2));
+        gcdc.DrawText(secondWord, wxSizerFlags::GetDefaultBorder()+firstWidth, Padding);
+        gcdc.GetTextExtent(secondWord, &secondWidth, &height);
+        gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL,
+                            wxFONTWEIGHT_NORMAL, false, L"Georgia"));
+        gcdc.SetTextForeground(wxColour(*wxBLACK));
+        gcdc.DrawText(appSubName,
+            wxSizerFlags::GetDefaultBorder() + firstWidth+secondWidth, Padding);
+        }
+
+    if (includeCopyright)
+        {
+        // draw the copyright at the bottom
+        gcdc.SetFont(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
+                            wxFONTWEIGHT_NORMAL, false, L"Times New Roman"));
+        gcdc.SetTextForeground(*wxBLACK);
+
+        wxDateTime buildDate;
+        buildDate.ParseDate(__DATE__);
+        wxString label = wxString::Format(L"%c%d %s. %s",
+            0xA9, buildDate.GetYear(), vendorName,
+            _("All rights reserved."));
+
+        gcdc.GetTextExtent(label, &width, &height);
+        gcdc.DrawText(label, canvasBmp.GetWidth()-(width+Padding),
+                      canvasBmp.GetHeight()-(height+Padding));
+        }
+
+    // draw a border around the image
+    gcdc.SetPen(wxPen(*wxLIGHT_GREY));
+    const auto penWidth = gcdc.GetPen().GetWidth();
+    gcdc.DrawLine(0, 0, 0, canvasBmp.GetHeight()-penWidth);
+    gcdc.DrawLine(0, canvasBmp.GetHeight()-penWidth,
+                  canvasBmp.GetWidth()-penWidth, canvasBmp.GetHeight()-penWidth);
+    gcdc.DrawLine(canvasBmp.GetWidth()-penWidth, canvasBmp.GetHeight()-penWidth,
+                  canvasBmp.GetWidth()-penWidth, 0);
+    gcdc.DrawLine(canvasBmp.GetWidth()-penWidth, 0, 0, 0);
+
+    memDC.SelectObject(wxNullBitmap);
+
+    return canvasBmp;
+    }
+
+//----------------------------------------------------------
 void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
     {
     wxDebugReportCompress* report = new wxDebugReportCompress;
