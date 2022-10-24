@@ -18,7 +18,6 @@ SET(WISTERIA_SRC
     src/base/reportbuildercolors.cpp
     src/base/reportprintout.cpp
     src/base/shapes.cpp
-    src/codeeditor/codeeditor.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/join.cpp
@@ -44,7 +43,9 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/ui/app.cpp
+    src/ui/controls/codeeditor.cpp
     src/ui/controls/infobarex.cpp
+    src/ui/controls/searchpanel.cpp
     src/ui/controls/sidebar.cpp
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
