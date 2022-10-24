@@ -10,6 +10,71 @@
 
 using namespace Wisteria::UI;
 
+GridCtrlExportDlg::GridCtrlExportDlg(wxWindow* parent, int rowCount, int columnCount,
+                    const GridExportFormat& exportFormat,
+                    wxWindowID id /*= wxID_ANY*/,
+                    const wxString& caption /*= _(L"List Export Options")*/,
+                    const wxPoint& pos /*= wxDefaultPosition*/,
+                    const wxSize& size /*= wxDefaultSize*/,
+                    long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN*/) :
+                    m_exportFormat(exportFormat)
+    {
+    m_options.m_toRow = rowCount;
+    m_options.m_toColumn = columnCount;
+    SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
+    DialogWithHelp::Create(parent, id, caption, pos, size, style);
+
+    CreateControls();
+    Centre();
+
+    // setup the radio buttons' subcontrols' enablablements
+    Bind(wxEVT_RADIOBUTTON,
+        [this]([[maybe_unused]] wxCommandEvent&)
+            {
+            m_rangeBoxSizer->GetStaticBox()->Enable(false);
+            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
+                { child->Enable(false); }
+            m_paginateCheckBox->Enable();
+            },
+        ControlIDs::ID_EXPORT_ALL_OPTION);
+
+    Bind(wxEVT_RADIOBUTTON,
+        [this]([[maybe_unused]] wxCommandEvent&)
+            {
+            m_rangeBoxSizer->GetStaticBox()->Enable();
+            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
+                { child->Enable(); }
+            auto rangeWindow = FindWindowById(ControlIDs::ID_ROWS_FROM_SPIN,
+                                              m_rangeBoxSizer->GetStaticBox());
+            if (rangeWindow)
+                { rangeWindow->Enable(false); }
+            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_FROM_LABEL,
+                                         m_rangeBoxSizer->GetStaticBox());
+            if (rangeWindow)
+                { rangeWindow->Enable(false); }
+            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_TO_SPIN,
+                                         m_rangeBoxSizer->GetStaticBox());
+            if (rangeWindow)
+                { rangeWindow->Enable(false); }
+            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_TO_LABEL,
+                                         m_rangeBoxSizer->GetStaticBox());
+            if (rangeWindow)
+                { rangeWindow->Enable(false); }
+            m_paginateCheckBox->Enable(false);
+            },
+        ControlIDs::ID_EXPORT_SELECTED_OPTION);
+
+    Bind(wxEVT_RADIOBUTTON,
+        [this]([[maybe_unused]] wxCommandEvent&)
+            {
+            m_rangeBoxSizer->GetStaticBox()->Enable();
+            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
+                { child->Enable(); }
+            m_paginateCheckBox->Enable();
+            },
+        ControlIDs::ID_EXPORT_RANGE_OPTION);
+    }
+
 // Creates the controls and sizers
 //-------------------------------------------------------------
 void GridCtrlExportDlg::CreateControls()
@@ -98,53 +163,6 @@ void GridCtrlExportDlg::CreateControls()
     m_rangeBoxSizer->GetStaticBox()->Enable(false);
     for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
         { child->Enable(false); }
-
-    // setup the radio buttons' subcontrols' enablablements
-    Bind(wxEVT_RADIOBUTTON,
-        [this]([[maybe_unused]] wxCommandEvent&)
-            {
-            m_rangeBoxSizer->GetStaticBox()->Enable(false);
-            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
-                { child->Enable(false); }
-            m_paginateCheckBox->Enable();
-            },
-        ControlIDs::ID_EXPORT_ALL_OPTION);
-
-    Bind(wxEVT_RADIOBUTTON,
-        [this]([[maybe_unused]] wxCommandEvent&)
-            {
-            m_rangeBoxSizer->GetStaticBox()->Enable();
-            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
-                { child->Enable(); }
-            auto rangeWindow = FindWindowById(ControlIDs::ID_ROWS_FROM_SPIN,
-                                              m_rangeBoxSizer->GetStaticBox());
-            if (rangeWindow)
-                { rangeWindow->Enable(false); }
-            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_FROM_LABEL,
-                                         m_rangeBoxSizer->GetStaticBox());
-            if (rangeWindow)
-                { rangeWindow->Enable(false); }
-            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_TO_SPIN,
-                                         m_rangeBoxSizer->GetStaticBox());
-            if (rangeWindow)
-                { rangeWindow->Enable(false); }
-            rangeWindow = FindWindowById(ControlIDs::ID_ROWS_TO_LABEL,
-                                         m_rangeBoxSizer->GetStaticBox());
-            if (rangeWindow)
-                { rangeWindow->Enable(false); }
-            m_paginateCheckBox->Enable(false);
-            },
-        ControlIDs::ID_EXPORT_SELECTED_OPTION);
-
-    Bind(wxEVT_RADIOBUTTON,
-        [this]([[maybe_unused]] wxCommandEvent&)
-            {
-            m_rangeBoxSizer->GetStaticBox()->Enable();
-            for (auto& child : m_rangeBoxSizer->GetStaticBox()->GetChildren())
-                { child->Enable(); }
-            m_paginateCheckBox->Enable();
-            },
-        ControlIDs::ID_EXPORT_RANGE_OPTION);
 
     mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP),
         wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()));

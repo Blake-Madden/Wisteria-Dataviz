@@ -71,22 +71,12 @@ namespace Wisteria::UI
             @param size The dialog's size.
             @param style The dialog's window styling.*/
         GridCtrlExportDlg(wxWindow* parent, int rowCount, int columnCount,
-                          const GridExportFormat& exportFormat,
-                          wxWindowID id = wxID_ANY,
-                          const wxString& caption = _(L"List Export Options"),
-                          const wxPoint& pos = wxDefaultPosition,
-                          const wxSize& size = wxDefaultSize,
-                          long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN) :
-                          m_exportFormat(exportFormat)
-            {
-            m_options.m_toRow = rowCount;
-            m_options.m_toColumn = columnCount;
-            SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS | wxWS_EX_CONTEXTHELP);
-            DialogWithHelp::Create(parent, id, caption, pos, size, style);
-
-            CreateControls();
-            Centre();
-            }
+            const GridExportFormat& exportFormat,
+            wxWindowID id = wxID_ANY,
+            const wxString& caption = _(L"List Export Options"),
+            const wxPoint& pos = wxDefaultPosition,
+            const wxSize& size = wxDefaultSize,
+            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
         /// @private
         GridCtrlExportDlg(const GridCtrlExportDlg&) = delete;
         /// @private
@@ -171,4 +161,4 @@ namespace Wisteria::UI
 
 /** @}*/
 
-#endif // __GRIDEXPORT_DLG_H__
+#endif //__GRIDEXPORT_DLG_H__
