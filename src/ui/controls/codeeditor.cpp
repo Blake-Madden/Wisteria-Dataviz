@@ -11,9 +11,9 @@
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/wupdlock.h>
-#include "../base/colorbrewer.h"
+#include "../../base/colorbrewer.h"
 
-using namespace Wisteria::Code;
+using namespace Wisteria::UI;
 using namespace Wisteria::Colors;
 
 wxIMPLEMENT_CLASS(CodeEditor, wxStyledTextCtrl)

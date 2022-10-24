@@ -1,13 +1,13 @@
-/** @addtogroup Code
-    @brief Classes for parsing and editing code.
+/** @addtogroup UI
+    @brief User interface classes.
     @date 2005-2022
-    @copyright Blake Madden
+    @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
      it under the terms of the 3-Clause BSD License.
 
      SPDX-License-Identifier: BSD-3-Clause
-@{*/
+* @{*/
 
 #ifndef __CODE_EDITOR_H__
 #define __CODE_EDITOR_H__
@@ -21,7 +21,7 @@
 #include <vector>
 
 /// @brief Namespace for code/formula parsing and editing.
-namespace Wisteria::Code
+namespace Wisteria::UI
     {
     /** @brief A @c wxStyledTextCtrl-derived editor designed for code editing.
 

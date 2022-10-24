@@ -10,7 +10,7 @@
 
 using namespace Wisteria::UI;
 
-GridCtrlExportDlg::GridCtrlExportDlg(wxWindow* parent, int rowCount, int columnCount,
+GridExportDlg::GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
                     const GridExportFormat& exportFormat,
                     wxWindowID id /*= wxID_ANY*/,
                     const wxString& caption /*= _(L"List Export Options")*/,
@@ -77,7 +77,7 @@ GridCtrlExportDlg::GridCtrlExportDlg(wxWindow* parent, int rowCount, int columnC
 
 // Creates the controls and sizers
 //-------------------------------------------------------------
-void GridCtrlExportDlg::CreateControls()
+void GridExportDlg::CreateControls()
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 

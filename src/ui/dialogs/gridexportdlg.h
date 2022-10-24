@@ -23,7 +23,7 @@ namespace Wisteria::UI
         @note Column and row indices are stored as 1-indexed values here because that is the
             indexing that shown in the dialog for the user.
             Caller is responsible for converting these to 0-indexed values.*/
-    struct GridCtrlExportOptions
+    struct GridExportOptions
         {
         /// @brief The starting row.
         int m_fromRow{ 1 };
@@ -58,7 +58,7 @@ namespace Wisteria::UI
 
     /// @brief Dialog for requesting export options for
     ///     a grid or list control.
-    class GridCtrlExportDlg final : public DialogWithHelp
+    class GridExportDlg final : public DialogWithHelp
         {
     public:
         /** @brief Constructor.
@@ -71,7 +71,7 @@ namespace Wisteria::UI
             @param pos The window position for this dialog.
             @param size The dialog's size.
             @param style The dialog's window styling.*/
-        GridCtrlExportDlg(wxWindow* parent, int rowCount, int columnCount,
+        GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
             const GridExportFormat& exportFormat,
             wxWindowID id = wxID_ANY,
             const wxString& caption = _(L"List Export Options"),
@@ -79,13 +79,13 @@ namespace Wisteria::UI
             const wxSize& size = wxDefaultSize,
             long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
         /// @private
-        GridCtrlExportDlg(const GridCtrlExportDlg&) = delete;
+        GridExportDlg(const GridExportDlg&) = delete;
         /// @private
-        GridCtrlExportDlg(GridCtrlExportDlg&&) = delete;
+        GridExportDlg(GridExportDlg&&) = delete;
         /// @private
-        GridCtrlExportDlg& operator=(const GridCtrlExportDlg&) = delete;
+        GridExportDlg& operator=(const GridExportDlg&) = delete;
         /// @private
-        GridCtrlExportDlg& operator=(GridCtrlExportDlg&&) = delete;
+        GridExportDlg& operator=(GridExportDlg&&) = delete;
 
         /// @returns @c true if user requested pagination in the output.
         [[nodiscard]] bool IsPaginating() const noexcept
@@ -135,12 +135,12 @@ namespace Wisteria::UI
             { return m_options.m_toColumn; }
 
         /// @returns The user's specified options.
-        [[nodiscard]] const GridCtrlExportOptions& GetExportOptions() const noexcept
+        [[nodiscard]] const GridExportOptions& GetExportOptions() const noexcept
             { return m_options; }
     private:
         void CreateControls();
 
-        GridCtrlExportOptions m_options;
+        GridExportOptions m_options;
 
         GridExportFormat m_exportFormat{ GridExportFormat::ExportText };
 
