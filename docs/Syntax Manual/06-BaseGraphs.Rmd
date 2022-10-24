@@ -105,9 +105,9 @@ Properties common to all graphs:
   - `"right-curly-brace"`
   - `"bottom-curly-brace"`
   - `"left-curly-brace"`
-  - `"male"`
-  - `"female"`
-  - `"female-business"`
+  - `"man"`
+  - `"woman"`
+  - `"business-woman"`
 - `"line-scheme"` for graphs that support line schemes only.<br />
   This is an array of line specifications (which can be recycled)<br />
   Each specification contains the following:

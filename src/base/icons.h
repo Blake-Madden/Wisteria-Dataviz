@@ -71,9 +71,11 @@ namespace Wisteria::Icons
         RightCurlyBrace,               /*!< A right curly brace (enclosing content to its left).*/
         TopCurlyBrace,                 /*!< A top curly brace (enclosing content beneath it).*/
         BottomCurlyBrace,              /*!< A bottom curly brace (enclosing content above it).*/
-        Male,                          /*!< A basic male outline.*/
-        Female,                        /*!< A basic female outline.*/
-        FemaleBusiness                 /*!< A basic female outline (in a business skirt).*/
+        Man,                           /*!< A basic male outline.*/
+        Male = Man,                    /*!< A basic male outline.*/
+        Woman,                         /*!< A basic female outline.*/
+        Female = Woman,                /*!< A basic female outline.*/
+        BusinessWoman                  /*!< A basic female outline (in a business skirt).*/
         };
 
     /// @brief Item to draw on a legend.
