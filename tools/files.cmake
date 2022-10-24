@@ -48,6 +48,7 @@ SET(WISTERIA_SRC
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/getdirdlg.cpp
+    src/ui/dialogs/gridexportdlg.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
