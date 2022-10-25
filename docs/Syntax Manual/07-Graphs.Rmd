@@ -136,6 +136,47 @@ Properties for `"pie-chart"` nodes:
   - `"color"`: the color of the donut hole.
 - Some base properties available to [graphs](#graph-properties).
 
+## Linear Regression Roadmap {#linear-regression-roadmap-properties .unnumbered}
+
+Properties for `"linear-regression-roadmap"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"predictor"`: the column containing the independent variables' (i.e., predictors) names.
+  - `"coefficient"`: the column containing the predictors' correlation coefficients.
+  - `"p-value"`: the (optional) column containing the predictors' p-values.
+- `"p-value-threshold"`: if a p-value column is supplied, only predictors with p-values lower than
+  this will be included. (Predictors with missing p-values will be excluded.)<br />
+  The recommendations are usually @c 0.05 or @c 0.01 (most strict).
+- `"predictors-to-include"`: array of strings specifying which types of IVs (e.g., negative influencers) to include.<br />
+  Available options are:
+  - `"positive"`
+  - `"negative"`
+  - `"neutral"`
+  - `"all"` (the default)
+- `"dependent-variable-name"`: the name of the dependent variable from the original analysis.<br />
+  This will be used on the legend and default caption.
+- `"default-caption"`: @c true to add a caption explaining how to interpret the graph.
+- `"road-pen"`: a pen specification for the road.
+- `"lane-separator-pen"`: a pen specification for the road's lane sepatator.
+- `"lane-separator-style"`: a string specifying the lane separator style.
+  Available options are:
+  - `"single-line"` (the default)
+  - `"double-line"`
+  - `"no-display"`
+- `"road-stop-theme"`: a string specifying the road stops theme.
+  Available options are:
+  - `"location-markers"` (the default)
+  - `"road-signs"`
+- `"marker-label-display"`: a string specifying what to show for the markers' labels.
+  Available options are:
+  - `"name"`
+  - `"name-and-value"`
+  - `"name-and-absolute-value"`
+- `"label-placement"`: a string specifying where to align the outer labels.<br />
+  Available options are:
+  - `"flush"` (the default)
+  - `"next-to-parent"`
+
 ## Table {#table-properties .unnumbered}
 
 Properties for `"table"` nodes:

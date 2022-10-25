@@ -26,6 +26,7 @@
 #include "../graphs/histogram.h"
 #include "../graphs/boxplot.h"
 #include "../graphs/table.h"
+#include "../graphs/lrroadmap.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
@@ -123,6 +124,15 @@ namespace Wisteria
         /// @returns The graph that was added to the canvas, or null upon failure.
         /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadWCurvePlot(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a linear regression roadmap node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLRRoadmap(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a pie chart node into the canvas.
@@ -278,6 +288,15 @@ namespace Wisteria
         /// @brief Converts a string value to a BinLabelDisplay enum value.
         [[nodiscard]] static std::optional<BinLabelDisplay>
             ConvertBinLabelDisplay(const wxString& value);
+        /// @brief Converts a string value to a Roadmap::LaneSeparatorStyle enum value.
+        [[nodiscard]] static std::optional<Graphs::Roadmap::LaneSeparatorStyle>
+            ReportBuilder::ConvertLaneSeparatorStyle(const wxString& value);
+        /// @brief Converts a string value to a Roadmap::RoadStopTheme enum value.
+        [[nodiscard]] static std::optional<Graphs::Roadmap::RoadStopTheme>
+            ReportBuilder::ConvertRoadStopTheme(const wxString& value);
+        /// @brief Converts a string value to a Roadmap::MarkerLabelDisplay enum value.
+        [[nodiscard]] static std::optional<Graphs::Roadmap::MarkerLabelDisplay>
+            ReportBuilder::ConvertMarkerLabelDisplay(const wxString& value);
         /// @brief Converts a string value to a Histogram::BinningMethod enum value.
         [[nodiscard]] static std::optional<Graphs::Histogram::BinningMethod>
             ConvertBinningMethod(const wxString& value);

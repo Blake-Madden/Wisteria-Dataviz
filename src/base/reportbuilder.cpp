@@ -159,6 +159,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadWCurvePlot(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"linear-regression-roadmap") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadLRRoadmap(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -561,6 +566,56 @@ namespace Wisteria
         const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
         return ((foundValue != bDisplayValues.cend()) ?
             std::optional<BinLabelDisplay>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<Roadmap::LaneSeparatorStyle> ReportBuilder::ConvertLaneSeparatorStyle(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring, Roadmap::LaneSeparatorStyle> bDisplayValues =
+            {
+            { L"single-line", Roadmap::LaneSeparatorStyle::SingleLine },
+            { L"double-line", Roadmap::LaneSeparatorStyle::DoubleLine },
+            { L"no-display", Roadmap::LaneSeparatorStyle::NoDisplay }
+            };
+
+        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != bDisplayValues.cend()) ?
+            std::optional<Roadmap::LaneSeparatorStyle>(foundValue->second) :
+            std::nullopt);
+        }
+    
+    //---------------------------------------------------
+    std::optional<Roadmap::RoadStopTheme> ReportBuilder::ConvertRoadStopTheme(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring, Roadmap::RoadStopTheme> bDisplayValues =
+            {
+            { L"location-markers", Roadmap::RoadStopTheme::LocationMarkers },
+            { L"road-signs", Roadmap::RoadStopTheme::RoadSigns }
+            };
+
+        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != bDisplayValues.cend()) ?
+            std::optional<Roadmap::RoadStopTheme>(foundValue->second) :
+            std::nullopt);
+        }
+    
+    //---------------------------------------------------
+    std::optional<Roadmap::MarkerLabelDisplay> ReportBuilder::ConvertMarkerLabelDisplay(const wxString& value)
+        {
+        // use standard string, wxString should not be constructed globally
+        static const std::map<std::wstring, Roadmap::MarkerLabelDisplay> bDisplayValues =
+            {
+            { L"name", Roadmap::MarkerLabelDisplay::Name },
+            { L"name-and-absolute-value", Roadmap::MarkerLabelDisplay::NameAndAbsoluteValue },
+            { L"name-and-value", Roadmap::MarkerLabelDisplay::NameAndValue }
+            };
+
+        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != bDisplayValues.cend()) ?
+            std::optional<Roadmap::MarkerLabelDisplay>(foundValue->second) :
             std::nullopt);
         }
 
@@ -2056,6 +2111,92 @@ namespace Wisteria
                     LoadDatasetTransformations(datasetNode, dataset);
                     }
                 }
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadLRRoadmap(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Linear Regression Roadmap."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto pValueColumn = variablesNode->GetProperty(L"p-value")->GetValueString();
+            const auto dvName = graphNode->GetProperty(L"dependent-variable-name")->GetValueString();
+
+            int lrPredictors{ 0 };
+            if (graphNode->HasProperty(L"predictors-to-include"))
+                {
+                const auto preds = graphNode->GetProperty(L"predictors-to-include")->GetValueStringVector();
+                for (const auto& pred : preds)
+                    {
+                    if (pred.CmpNoCase("positive") == 0)
+                        { lrPredictors |= Influence::Positive; }
+                    else if (pred.CmpNoCase("negative") == 0)
+                        { lrPredictors |= Influence::Negative; }
+                    else if (pred.CmpNoCase("neutral") == 0)
+                        { lrPredictors |= Influence::Neutral; }
+                    else if (pred.CmpNoCase("all") == 0)
+                        { lrPredictors |= Influence::All; }
+                    }
+                }
+
+            auto lrRoadmap = std::make_shared<LRRoadmap>(canvas);
+            lrRoadmap->SetData(foundPos->second,
+                variablesNode->GetProperty(L"predictor")->GetValueString(),
+                variablesNode->GetProperty(L"coefficient")->GetValueString(),
+                (pValueColumn.length() ? std::optional<wxString>(pValueColumn) : std::nullopt),
+                (graphNode->GetProperty(L"p-value-threshold")->IsValueNumber() ?
+                    std::optional<double>(graphNode->GetProperty(L"p-value-threshold")->
+                                          GetValueNumber(0.05)) :
+                    std::nullopt),
+                (lrPredictors == 0 ?
+                    std::nullopt :
+                    std::optional<Influence>(static_cast<Influence>(lrPredictors)) ),
+                (dvName.length() ? std::optional<wxString>(dvName) : std::nullopt));
+
+            LoadPen(graphNode->GetProperty(L"road-pen"), lrRoadmap->GetRoadPen());
+            LoadPen(graphNode->GetProperty(L"lane-separator-pen"), lrRoadmap->GetLaneSeparatorPen());
+
+            const auto labelPlacement =
+                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+            if (labelPlacement.has_value())
+                { lrRoadmap->SetLabelPlacement(labelPlacement.value()); }
+            
+            const auto laneSepStyle =
+                ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+            if (laneSepStyle.has_value())
+                { lrRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
+            
+            const auto roadStopTheme =
+                ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+            if (roadStopTheme.has_value())
+                { lrRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
+            
+            const auto markerLabelDisplay =
+                ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+            if (markerLabelDisplay.has_value())
+                { lrRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
+
+            if (graphNode->GetProperty(L"default-caption")->GetValueBool())
+                { lrRoadmap->AddDefaultCaption(); }
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, lrRoadmap);
+            return lrRoadmap;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Linear Regression Roadmap.").ToUTF8());
             }
         }
 
