@@ -186,14 +186,14 @@ namespace Wisteria::GraphItems
             case IconShape::BottomCurlyBrace:
                 m_drawFunction = &ShapeRenderer::DrawBottomCurlyBrace;
                 break;
-            case IconShape::Male:
-                m_drawFunction = &ShapeRenderer::DrawMale;
+            case IconShape::Man:
+                m_drawFunction = &ShapeRenderer::DrawMan;
                 break;
-            case IconShape::Female:
-                m_drawFunction = &ShapeRenderer::DrawFemale;
+            case IconShape::Woman:
+                m_drawFunction = &ShapeRenderer::DrawWoman;
                 break;
-            case IconShape::FemaleBusiness:
-                m_drawFunction = &ShapeRenderer::DrawFemaleBusiness;
+            case IconShape::BusinessWoman:
+                m_drawFunction = &ShapeRenderer::DrawBusinessWoman;
                 break;
             default:
                 m_drawFunction = nullptr;
@@ -1025,7 +1025,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawMale(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawMan(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
         wxDCPenChanger pc(dc, wxPen());
@@ -1191,7 +1191,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFemale(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
         wxDCPenChanger pc(dc, wxPen());
@@ -1336,7 +1336,7 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawFemaleBusiness(const wxRect rect, wxDC& dc) const
+    void ShapeRenderer::DrawBusinessWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
         wxDCPenChanger pc(dc, wxPen());

@@ -179,15 +179,15 @@ namespace Wisteria::GraphItems
         /// @brief Draws a male outline.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawMale(wxRect rect, wxDC& dc) const;
+        void DrawMan(wxRect rect, wxDC& dc) const;
         /// @brief Draws a female outline.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawFemale(wxRect rect, wxDC& dc) const;
+        void DrawWoman(wxRect rect, wxDC& dc) const;
         /// @brief Draws a female outline (business skirt).
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
-        void DrawFemaleBusiness(wxRect rect, wxDC& dc) const;
+        void DrawBusinessWoman(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
