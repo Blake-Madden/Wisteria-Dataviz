@@ -36,7 +36,9 @@ namespace Wisteria::Graphs
             /// @brief Single line.
             SingleLine,
             /// @brief Double line.
-            DoubleLine
+            DoubleLine,
+            /// @brief Do not draw a lane separator.
+            NoDisplay
             };
 
         /// @brief How the labels next to the road stops are displayed.
@@ -64,6 +66,7 @@ namespace Wisteria::Graphs
             { return m_labelPlacement; }
 
         /// @brief Gets/sets the pen used for the road.
+        /// @details The default is a black pavement, 10 DIPs wide.
         /// @details This is useful for changing the width or color of the road.
         /// @returns The pen used to draw the road.
         [[nodiscard]] wxPen& GetRoadPen() noexcept
@@ -71,9 +74,11 @@ namespace Wisteria::Graphs
 
         /// @brief Gets/sets the pen used to draw the lane separator on the road.
         /// @details This is useful for changing the color, pen style, or even removing the
-        ///     line on the middle of the road.
+        ///     line on the middle of the road.\n
+        ///     The width of this pen will always be ignored, though, as the lane separator
+        ///     will always be a tenth the width of the road.
         /// @note Set this to @c wxNullPen to not draw a line down the middle of the road.
-        /// @returns The pen used to draw the road.
+        /// @returns The pen used to draw the lane separator.
         [[nodiscard]] wxPen& GetLaneSeparatorPen() noexcept
             { return m_laneSeparatorPen; }
 
@@ -94,13 +99,21 @@ namespace Wisteria::Graphs
         void SetMarkerLabelDisplay(const MarkerLabelDisplay mlDisplay) noexcept
             { m_markerLableDisplay = mlDisplay; }
 
+        /// @returns The lane separator style.
+        [[nodiscard]] LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
+            { return m_laneSepatatorStyle; }
+        /// @brief Sets the lane separator style.
+        /// @param lStyle The style to use.
+        void SetLaneSeparatorStyle(const LaneSeparatorStyle lStyle) noexcept
+            { m_laneSepatatorStyle = lStyle; }
+
         /// @brief Adds a caption explaining how to interpret the graph.
         virtual void AddDefaultCaption() = 0;
 
         /// @brief The maximum absolute value of the values (e.g., coefficients, counts, etc.).
         /// @details Essentially, this is the value of the most influential road stop
         ///     (either positive or negative).\n
-        ///     For example, the values { -7, 1, 3 } would have a magnitude 7.
+        ///     For example, the values `{ -7, 1, 3 }` would have a magnitude @c 7.
         /// @returns The magnitude of the values.
         [[nodiscard]] double GetMagnitude() const noexcept
             { return m_magnitude; }
@@ -174,7 +187,7 @@ namespace Wisteria::Graphs
         /// @returns The name of the goal.
         [[nodiscard]] const wxString& GetGoalLabel() const noexcept
             { return m_goalLabel; }
-        /// @brief  Sets the name of the goal.
+        /// @brief Sets the name of the goal.
         /// @param label The goal name.
         void SetGoalLabel(const wxString& label)
             { m_goalLabel = label; }

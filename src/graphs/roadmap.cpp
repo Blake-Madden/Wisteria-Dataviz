@@ -173,7 +173,8 @@ namespace Wisteria::Graphs
         AddObject(pavement);
 
         // the lane separator, which is a tenth as wide as the road
-        if (m_laneSeparatorPen.IsOk())
+        if (GetLaneSeparatorStyle() != LaneSeparatorStyle::NoDisplay &&
+            m_laneSeparatorPen.IsOk())
             {
             m_laneSeparatorPen.SetWidth(
                 pavement->GetPen().GetWidth() /
