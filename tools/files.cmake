@@ -57,11 +57,14 @@ SET(WISTERIA_SRC
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
     src/ui/dialogs/variableselectdlg.cpp
+    src/ui/dialogs/warningmessagesdlg.cpp
     src/ui/mainframe.cpp
     src/ui/ribbon/artmetro.cpp
     src/util/formulaformat.cpp
+    src/util/idhelpers.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/textreplace.cpp
+    src/util/warningmanager.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp)
