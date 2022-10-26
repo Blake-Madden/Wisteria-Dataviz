@@ -233,7 +233,7 @@ namespace Wisteria
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.
-        /// @param labelTemplate The template to copy defeault settings from
+        /// @param labelTemplate The template to copy default settings from
         ///     before loading properties.
         /// @returns A Label object, or null upon failure.
         /// @todo many features still needed!
@@ -266,7 +266,7 @@ namespace Wisteria
             const wxSimpleJSON::Ptr_t& lineStyleSchemeNode);
 
         /** @brief Loads additional transformation features and applies them to a dataset.
-            @param dsNode The datasouce node that the dataset was loaded from.
+            @param dsNode The datasource node that the dataset was loaded from.
             @param[in,out] dataset The dataset apply the transformations to.*/
         void LoadDatasetTransformations(
             const wxSimpleJSON::Ptr_t& dsNode,
@@ -290,13 +290,13 @@ namespace Wisteria
             ConvertBinLabelDisplay(const wxString& value);
         /// @brief Converts a string value to a Roadmap::LaneSeparatorStyle enum value.
         [[nodiscard]] static std::optional<Graphs::Roadmap::LaneSeparatorStyle>
-            ReportBuilder::ConvertLaneSeparatorStyle(const wxString& value);
+            ConvertLaneSeparatorStyle(const wxString& value);
         /// @brief Converts a string value to a Roadmap::RoadStopTheme enum value.
         [[nodiscard]] static std::optional<Graphs::Roadmap::RoadStopTheme>
-            ReportBuilder::ConvertRoadStopTheme(const wxString& value);
+            ConvertRoadStopTheme(const wxString& value);
         /// @brief Converts a string value to a Roadmap::MarkerLabelDisplay enum value.
         [[nodiscard]] static std::optional<Graphs::Roadmap::MarkerLabelDisplay>
-            ReportBuilder::ConvertMarkerLabelDisplay(const wxString& value);
+            ConvertMarkerLabelDisplay(const wxString& value);
         /// @brief Converts a string value to a Histogram::BinningMethod enum value.
         [[nodiscard]] static std::optional<Graphs::Histogram::BinningMethod>
             ConvertBinningMethod(const wxString& value);
