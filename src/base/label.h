@@ -225,7 +225,7 @@ namespace Wisteria::GraphItems
             @warning This will reset any legend that the label currently has.
             @param bmp The image to use.
             @param offset The offset (in DIPs) from the top to draw the image.\n
-                This can be useful for drawing the icon below the ascendor line of the text
+                This can be useful for drawing the icon below the ascender line of the text
                 (or even underneath the text).*/
         void SetTopImage(const wxBitmapBundle& bmp, const size_t offset = 0)
             {

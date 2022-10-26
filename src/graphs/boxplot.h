@@ -257,7 +257,7 @@ namespace Wisteria::Graphs
             @param canvas The canvas to draw the plot on.
             @param brushes The brushes to paint the boxes with.
             @param colors The base color scheme to paint under the boxes's brushes.\n
-                This will only have a noticable effect if the brush is non-solid (e.g., hatched).
+                This will only have a noticeable effect if the brush is non-solid (e.g., hatched).
             @param shapes The shape scheme to use for the points.\n
                 Leave as null to use the standard shapes.*/
         explicit BoxPlot(Canvas* canvas,
@@ -348,7 +348,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets the color scheme to apply to the boxes.
         /// @param colors The colors to use.
-        /// @note This will only have a noticable effect if the brush being used is non-solid.
+        /// @note This will only have a noticeable effect if the brush being used is non-solid.
         void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
             { m_colorScheme = colors; }
 

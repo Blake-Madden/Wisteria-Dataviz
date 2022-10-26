@@ -314,8 +314,8 @@ namespace Wisteria::Graphs
                 For the @c Image effect, the bars/boxes' position on the graph will be the
                 index in the image scheme. For example, the first bar will use the first image,
                 the second bar the second image, etc. Also, if a bar is using grouping, the same image
-                will be used for each block within the bar. This option is preferrable to @c Stipple
-                when you are wanting different images for different bars. It can also be preferrable
+                will be used for each block within the bar. This option is preferable to @c Stipple
+                when you are wanting different images for different bars. It can also be preferable
                 to @c Stipple when using photographs (instead of icons) as the @c Stipple will scale
                 the image to fit, whereas @c Image will crop and center the image.
             @sa SetCommonBoxImageOutlineColor(), BoxPlot::SetBoxEffect(), BarChart::SetBarEffect().*/

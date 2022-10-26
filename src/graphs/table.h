@@ -112,7 +112,7 @@ namespace Wisteria::Graphs
             canvas->GetDefaultCanvasWidthDIPs());
          canvas->SetCanvasMinWidthDIPs(
             canvas->GetDefaultCanvasHeightDIPs());
-         // also, fit it to the entire page when printing (preferrably in portrait)
+         // also, fit it to the entire page when printing (preferably in portrait)
          canvas->FitToPageWhenPrinting(true);
         @endcode
         
@@ -957,7 +957,7 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-        /** @brief Sets the specified column's cells' horizontal content alginment.
+        /** @brief Sets the specified column's cells' horizontal content alignment.
             @param column The column to have horizontally centered cell content.
             @param alignment How to align the content within the column's cells.
             @param rowStops An optional list of rows within the column to skip.*/

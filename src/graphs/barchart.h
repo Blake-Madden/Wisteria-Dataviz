@@ -816,7 +816,7 @@ namespace Wisteria::Graphs
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
-        /// @returns The opposide side scaling axis,
+        /// @returns The opposite side scaling axis,
         ///    which is the axis perpendicular to the axis with the bars on it.
         [[nodiscard]] Wisteria::GraphItems::Axis& GetOppositeScalingAxis() noexcept
             {

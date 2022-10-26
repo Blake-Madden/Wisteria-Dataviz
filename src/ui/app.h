@@ -38,7 +38,7 @@
 
 namespace Wisteria::UI
     {
-    /// @brief Applicaton class with file history, file logger, profiler, exception handling,
+    /// @brief Application class with file history, file logger, profiler, exception handling,
     ///     document manager, and ribbon-based main frame built-in
     class BaseApp : public wxApp
         {
