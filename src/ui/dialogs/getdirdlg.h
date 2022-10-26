@@ -67,8 +67,6 @@ namespace Wisteria::UI
         void SetSelectedFileFilter(const wxString& filter)
             {
             const auto pos = m_fileFilterCombo->FindString(filter);
-            wxASSERT_MSG(pos != wxNOT_FOUND,
-                wxString::Format(L"Unable to find '%s' in file filter!", filter));
             if (pos != wxNOT_FOUND)
                 {
                 m_selectedFileFilter = pos;
