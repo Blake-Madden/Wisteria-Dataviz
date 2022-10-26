@@ -53,7 +53,7 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     }
 
 //---------------------------------------------------
-bool SearchPanel::SetBackgroundColour(const wxColour& colour)
+bool SearchPanel::SetBackgroundColour(const wxColour& color)
     {
     auto controls = GetSizer()->GetChildren();
     for (size_t i = 0; i < controls.size(); ++i)
@@ -63,11 +63,11 @@ bool SearchPanel::SetBackgroundColour(const wxColour& colour)
             // otherwise, you may not be able to read the text
             !controls.Item(i)->GetData()->GetWindow()->IsKindOf(CLASSINFO(wxSearchCtrl)))
             {
-            controls.Item(i)->GetData()->GetWindow()->SetBackgroundColour(colour);
+            controls.Item(i)->GetData()->GetWindow()->SetBackgroundColour(color);
             }
         }
 
-    return wxWindow::SetBackgroundColour(colour);
+    return wxWindow::SetBackgroundColour(color);
     }
 
 //---------------------------------------------------

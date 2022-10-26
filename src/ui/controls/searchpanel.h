@@ -53,13 +53,13 @@ class SearchPanel final : public wxWindow
         void SetWholeWordSearch(const bool wholeWord)
             { m_wholeWordItem->Check(wholeWord); }
         /// @brief Sets whether case-sensitive searching should be used.
-        /// @param wholeWord @c true to enabl ecase-sensitive searching.
+        /// @param matchCase @c true to enable case-sensitive searching.
         void SetMatchCase(const bool matchCase)
             { m_matchCaseItem->Check(matchCase); }
         /// @brief Sets the control's background color.
         /// @param color The color to use.
         /// @returns @c true upon success.
-        bool SetBackgroundColour(const wxColour& colour) final;
+        bool SetBackgroundColour(const wxColour& color) final;
 
         /// @brief Gives the control the focus.
         void Activate();
