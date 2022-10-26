@@ -161,6 +161,18 @@ namespace Wisteria::GraphItems
             std::max<wxCoord>(CalcTopImageSize(measureHeight).GetHeight() - m_topImageOffset, 0) :
             0);
 
+        auto textAreaWidthNoSideImages = ((GetTextOrientation() == Orientation::Horizontal) ?
+            (rect.GetWidth() - CalcLeftImageSize(rect.GetHeight()).GetWidth()) : rect.GetWidth());
+        auto textAreaHeightNoSideImages = ((GetTextOrientation() == Orientation::Vertical) ?
+            (rect.GetHeight() - CalcLeftImageSize(rect.GetWidth()).GetWidth()) : rect.GetHeight());
+        // top image
+        textAreaHeightNoSideImages -= ((GetTextOrientation() == Orientation::Horizontal) ?
+            std::max<wxCoord>(CalcTopImageSize(rect.GetWidth()).GetHeight() - m_topImageOffset, 0) :
+            0);
+        textAreaWidthNoSideImages -= ((GetTextOrientation() == Orientation::Vertical) ?
+            std::max<wxCoord>(CalcTopImageSize(rect.GetHeight()).GetHeight() - m_topImageOffset, 0) :
+            0);
+
         if (// too small in both dimensions, so upscale
             (measuredWidth <= rect.GetWidth() &&
              measureHeight <= rect.GetHeight()) ||
@@ -170,8 +182,8 @@ namespace Wisteria::GraphItems
             {
             // scale the text to fit in the area where the text is going
             // (i.e., the rect with the images removed)
-            const wxRect textRect(wxSize(std::min(rect.GetWidth(), measureWidthNoSideImages),
-                                  std::min(rect.GetHeight(), measuredHeightNoSideImages)));
+            const wxRect textRect(wxSize(std::min(rect.GetWidth(), textAreaWidthNoSideImages),
+                                  std::min(rect.GetHeight(), textAreaHeightNoSideImages)));
             const auto widthFactor = safe_divide<double>(textRect.GetWidth(),
                                                          measureWidthNoSideImages);
             const auto heightFactor = safe_divide<double>(textRect.GetHeight(),

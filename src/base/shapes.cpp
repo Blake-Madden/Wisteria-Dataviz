@@ -238,7 +238,8 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc, const std::function<void(void)>& fn) const
+    void ShapeRenderer::DrawWithBaseColorAndBrush(wxDC& dc,
+                                                  const std::function<void(void)>& fn) const
         {
         if (GetGraphItemInfo().GetBaseColor())
             {
@@ -250,7 +251,8 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
-    void ShapeRenderer::DrawCircularSign(const wxRect rect, const wxBrush& brush, const wxString& text, wxDC& dc) const
+    void ShapeRenderer::DrawCircularSign(const wxRect rect, const wxBrush& brush,
+                                         const wxString& text, wxDC& dc) const
         {
         const auto signOutlineWidth = rect.GetWidth() <= ScaleToScreenAndCanvas(32) ? 1 : 2;
         wxDCPenChanger pc(dc, wxPen(*wxBLACK, ScaleToScreenAndCanvas(signOutlineWidth)));
