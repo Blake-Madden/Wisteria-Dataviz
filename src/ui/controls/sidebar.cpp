@@ -70,7 +70,7 @@ std::optional<size_t> SideBar::GetSelectedAnyItem() const
         selectedSubItem += m_items[i].GetSubItemCount();
         }
     selectedSubItem += m_items[GetSelectedFolder().value()].m_activeItem.has_value() ?
-        m_items[GetSelectedFolder().value()].m_activeItem.value() : 0;
+        m_items[GetSelectedFolder().value()].m_activeItem.value()+1 : 0;
     return selectedSubItem;
     }
 
