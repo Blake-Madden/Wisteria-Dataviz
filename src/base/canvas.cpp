@@ -370,6 +370,10 @@ namespace Wisteria
             // save image with contents of the DC to a file
             wxImage img(exportFile.ConvertToImage());
 
+            img.SetOption(wxIMAGE_OPTION_RESOLUTIONUNIT, wxIMAGE_RESOLUTION_INCHES);
+            img.SetOption(wxIMAGE_OPTION_RESOLUTIONX, 300);
+            img.SetOption(wxIMAGE_OPTION_RESOLUTIONY, 300);
+
             // color mode
             if (options.m_mode ==
                 static_cast<decltype(options.m_mode)>(ImageExportOptions::ColorMode::Grayscale) )
