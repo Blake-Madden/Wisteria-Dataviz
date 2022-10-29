@@ -571,7 +571,7 @@ namespace Wisteria::Data
             /// @details The numeric code assigned to missing data (i.e., empty string)
             ///  is non-deterministic. It will be whatever the next ID in the sequence is when
             ///  the first empty value is encountered in the column.
-            ///  @c ColumnWithStringTable::FindMissingDataCode() can be used to
+            ///  `ColumnWithStringTable::FindMissingDataCode()` can be used to
             ///  find this code after loading the data.
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             /// @brief The default missing data code.
