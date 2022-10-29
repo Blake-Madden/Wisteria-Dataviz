@@ -37,7 +37,7 @@ namespace Wisteria
             return reportPages;
             }
 
-        const auto reportNameNode = json->GetProperty(L"name");
+        const auto reportNameNode = json->GetProperty(_DT(L"name"));
         if (reportNameNode->IsOk())
             { m_name = reportNameNode->GetValueString(); }
 
@@ -90,7 +90,7 @@ namespace Wisteria
                     {
                     // create the canvas used for the page
                     auto canvas = new Canvas(parent);
-                    canvas->SetLabel(page->GetProperty(L"name")->GetValueString());
+                    canvas->SetLabel(page->GetProperty(_DT(L"name"))->GetValueString());
 
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
@@ -163,6 +163,11 @@ namespace Wisteria
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadLRRoadmap(item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"pro-con-roadmap") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadProConRoadmap(item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
                                                 {
@@ -995,7 +1000,7 @@ namespace Wisteria
                 {
                 if (value->IsOk())
                     {
-                    const wxString vName = value->GetProperty(L"name")->GetValueString();
+                    const wxString vName = value->GetProperty(_DT(L"name"))->GetValueString();
                     m_values.insert_or_assign(vName,
                         value->GetProperty(L"value")->IsValueString() ?
                         ValuesType(value->GetProperty(L"value")->GetValueString()) :
@@ -1094,7 +1099,7 @@ namespace Wisteria
                 {
                 if (formula->IsOk())
                     {
-                    const wxString vName = formula->GetProperty(L"name")->GetValueString();
+                    const wxString vName = formula->GetProperty(_DT(L"name"))->GetValueString();
                     if (formula->GetProperty(L"value")->IsValueString())
                         {
                         m_values.insert_or_assign(vName,
@@ -1661,7 +1666,7 @@ namespace Wisteria
                         if (mergedData)
                             {
                             m_datasets.insert_or_assign(
-                                merge->GetProperty(L"name")->GetValueString(), mergedData);
+                                merge->GetProperty(_DT(L"name"))->GetValueString(), mergedData);
                             LoadDatasetTransformations(merge, mergedData);
                             }
                         }
@@ -1702,7 +1707,7 @@ namespace Wisteria
                         if (pivotedData)
                             {
                             m_datasets.insert_or_assign(
-                                pivot->GetProperty(L"name")->GetValueString(), pivotedData);
+                                pivot->GetProperty(_DT(L"name"))->GetValueString(), pivotedData);
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
@@ -1718,7 +1723,7 @@ namespace Wisteria
                         if (pivotedData)
                             {
                             m_datasets.insert_or_assign(
-                                pivot->GetProperty(L"name")->GetValueString(), pivotedData);
+                                pivot->GetProperty(_DT(L"name"))->GetValueString(), pivotedData);
                             LoadDatasetTransformations(pivot, pivotedData);
                             }
                         }
@@ -1809,7 +1814,7 @@ namespace Wisteria
                         (filterNode->IsOk() ? 1 : 0) +
                         (filterAndNode->IsOk() ? 1 : 0) +
                         (filterOrNode->IsOk() ? 1 : 0);
-                    if (validFilterTypeNodes  > 1)
+                    if (validFilterTypeNodes > 1)
                         {
                         throw std::runtime_error(
                             _(L"Only one filter type allowed for a subset.").ToUTF8());
@@ -1862,7 +1867,7 @@ namespace Wisteria
                     if (subsettedDataset)
                         {
                         m_datasets.insert_or_assign(
-                            subset->GetProperty(L"name")->GetValueString(), subsettedDataset);
+                            subset->GetProperty(_DT(L"name"))->GetValueString(), subsettedDataset);
                         LoadDatasetTransformations(subset, subsettedDataset);
                         }
                     }
@@ -1881,7 +1886,7 @@ namespace Wisteria
             for (const auto& colRename : colRenames)
                 {
                 dataset->RenameColumn(
-                    colRename->GetProperty(L"name")->GetValueString(),
+                    colRename->GetProperty(_DT(L"name"))->GetValueString(),
                     colRename->GetProperty(L"new-name")->GetValueString());
                 }
             // label recoding
@@ -1967,7 +1972,7 @@ namespace Wisteria
                 {
                 if (datasetNode->IsOk())
                     {
-                    const wxString dsName = datasetNode->GetProperty(L"name")->GetValueString();
+                    const wxString dsName = datasetNode->GetProperty(_DT(L"name"))->GetValueString();
                     wxString path = datasetNode->GetProperty(L"path")->GetValueString();
                     const wxString importer = datasetNode->GetProperty(L"importer")->GetValueString();
                     // read the variables info
@@ -1986,7 +1991,7 @@ namespace Wisteria
                                 {
                                 // get the date column's name and how to load it
                                 const wxString dateName =
-                                    dateVar->GetProperty(L"name")->GetValueString();
+                                    dateVar->GetProperty(_DT(L"name"))->GetValueString();
                                 if (dateName.empty())
                                     {
                                     throw std::runtime_error(
@@ -2028,7 +2033,7 @@ namespace Wisteria
                             if (catVar->IsOk())
                                 {
                                 // get the cat column's name and how to load it
-                                const wxString catName = catVar->GetProperty(L"name")->GetValueString();
+                                const wxString catName = catVar->GetProperty(_DT(L"name"))->GetValueString();
                                 if (catName.empty())
                                     {
                                     throw std::runtime_error(
@@ -2113,13 +2118,91 @@ namespace Wisteria
                 }
             }
         }
+        
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadProConRoadmap(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Pro & Con Roadmap."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            auto pcRoadmap = std::make_shared<ProConRoadmap>(canvas);
+            pcRoadmap->SetData(foundPos->second,
+                variablesNode->GetProperty(L"positive")->GetValueString(),
+                (variablesNode->HasProperty(L"positive-aggregate") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"positive-aggregate")->GetValueString()) :
+                    std::nullopt),
+                variablesNode->GetProperty(L"negative")->GetValueString(),
+                (variablesNode->HasProperty(L"negative-aggregate") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"negative-aggregate")->GetValueString()) :
+                    std::nullopt),
+                (graphNode->GetProperty(L"minimum-count")->IsValueNumber() ?
+                    std::optional<double>(graphNode->GetProperty(L"minimum-count")->
+                                          GetValueNumber(1)) :
+                    std::nullopt));
+
+            if (graphNode->GetProperty(L"positive-legend-label")->IsValueString())
+                {
+                pcRoadmap->SetPositiveLegendLabel(
+                    graphNode->GetProperty(L"positive-legend-label")->GetValueString());
+                }
+            if (graphNode->GetProperty(L"negative-legend-label")->IsValueString())
+                {
+                pcRoadmap->SetNegativeLegendLabel(
+                    graphNode->GetProperty(L"negative-legend-label")->GetValueString());
+                }
+
+            LoadPen(graphNode->GetProperty(L"road-pen"), pcRoadmap->GetRoadPen());
+            LoadPen(graphNode->GetProperty(L"lane-separator-pen"), pcRoadmap->GetLaneSeparatorPen());
+
+            const auto labelPlacement =
+                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+            if (labelPlacement.has_value())
+                { pcRoadmap->SetLabelPlacement(labelPlacement.value()); }
+            
+            const auto laneSepStyle =
+                ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+            if (laneSepStyle.has_value())
+                { pcRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
+            
+            const auto roadStopTheme =
+                ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+            if (roadStopTheme.has_value())
+                { pcRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
+            
+            const auto markerLabelDisplay =
+                ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+            if (markerLabelDisplay.has_value())
+                { pcRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
+
+            if (graphNode->GetProperty(L"default-caption")->GetValueBool())
+                { pcRoadmap->AddDefaultCaption(); }
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, pcRoadmap);
+            return pcRoadmap;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Pro & Con Roadmap.").ToUTF8());
+            }
+        }
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadLRRoadmap(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
         size_t& currentRow, size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const wxString dsName = graphNode->GetProperty(_DT(L"dataset"))->GetValueString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() ||
             foundPos->second == nullptr)
@@ -2140,13 +2223,13 @@ namespace Wisteria
                 const auto preds = graphNode->GetProperty(L"predictors-to-include")->GetValueStringVector();
                 for (const auto& pred : preds)
                     {
-                    if (pred.CmpNoCase("positive") == 0)
+                    if (pred.CmpNoCase(_DT(L"positive")) == 0)
                         { lrPredictors |= Influence::Positive; }
-                    else if (pred.CmpNoCase("negative") == 0)
+                    else if (pred.CmpNoCase(_DT(L"negative")) == 0)
                         { lrPredictors |= Influence::Negative; }
-                    else if (pred.CmpNoCase("neutral") == 0)
+                    else if (pred.CmpNoCase(_DT(L"neutral")) == 0)
                         { lrPredictors |= Influence::Neutral; }
-                    else if (pred.CmpNoCase("all") == 0)
+                    else if (pred.CmpNoCase(_DT(L"all")) == 0)
                         { lrPredictors |= Influence::All; }
                     }
                 }
@@ -2292,7 +2375,7 @@ namespace Wisteria
         const auto sortNode = graphNode->GetProperty(L"bar-sort");
         if (sortNode->IsOk())
             {
-            const auto sortDirection = sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase("ascending") == 0 ?
+            const auto sortDirection = sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase(_DT(L"ascending")) == 0 ?
                 SortDirection::SortAscending : SortDirection::SortDescending;
             const auto byNode = sortNode->GetProperty(L"by");
             if (byNode->IsOk())
@@ -2458,6 +2541,35 @@ namespace Wisteria
             graphNode->GetProperty(L"bar-label-display")->GetValueString());
         if (binLabel.has_value())
             { barChart->SetBinLabelDisplay(binLabel.value()); }
+
+        // bar icons
+        const auto barIconsNode = graphNode->GetProperty(L"bar-icons");
+        if (barIconsNode->IsOk() && barIconsNode->IsValueArray())
+            {
+            const auto barIcons = barIconsNode->GetValueArrayObject();
+            for (const auto& barIcon : barIcons)
+                {
+                if (barIcon->IsOk())
+                    {
+                    auto path = barIcon->GetProperty(L"image")->GetValueString();
+                    if (path.length())
+                        {
+                        if (!wxFileName::FileExists(path))
+                            {
+                            path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                            if (!wxFileName::FileExists(path))
+                                {
+                                throw std::runtime_error(
+                                    wxString::Format(_(L"%s: image not found."), path).ToUTF8());
+                                }
+                            }
+                        }
+
+                    barChart->AddBarIcon(
+                        barIcon->GetProperty("label")->GetValueString(), Image::LoadFile(path));
+                    }
+                }
+            }
 
         barChart->IncludeSpacesBetweenBars(graphNode->GetProperty(L"include-spaces-between-bars")->GetValueBool(true));
 
@@ -3253,7 +3365,7 @@ namespace Wisteria
             {
             for (const auto& columnAggregate : columnAggregates)
                 {
-                const auto aggName = columnAggregate->GetProperty(L"name")->GetValueString();
+                const auto aggName = columnAggregate->GetProperty(_DT(L"name"))->GetValueString();
                 const auto whereType = columnAggregate->GetProperty(L"type")->GetValueString();
                 const auto aggType = columnAggregate->GetProperty(L"aggregate-type")->GetValueString();
 
@@ -3869,7 +3981,7 @@ namespace Wisteria
                 { return nullptr; }
             for (const auto& icon : iconValues)
                 {
-                const auto iconValue =  ConvertIcon(icon);
+                const auto iconValue = ConvertIcon(icon);
                 if (iconValue.has_value())
                     { icons.emplace_back(iconValue.value()); }
                 }

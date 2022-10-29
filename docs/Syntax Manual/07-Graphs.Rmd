@@ -177,6 +177,39 @@ Properties for `"linear-regression-roadmap"` nodes:
   - `"flush"` (the default)
   - `"next-to-parent"`
 
+## Pro & Con Roadmap {#pro-con-roadmap-properties .unnumbered}
+
+Properties for `"pro-con-roadmap"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"positive"`: the column containing the positive sentiment labels.
+  - `"positive-aggregate"`: the (optional) column containing the positive sentiment labels' counts.
+  - `"negative"`: the column containing the negative sentiment labels.
+  - `"negative-aggregate"`: the (optional) column containing the negative sentiment labels' counts.
+- `"positive-legend-label"`: a string specifying the name for the positive sentiment on the legend.
+- `"negative-legend-label"`: a string specifying the name for the negative sentiment on the legend.
+- `"default-caption"`: @c true to add a caption explaining how to interpret the graph.
+- `"road-pen"`: a pen specification for the road.
+- `"lane-separator-pen"`: a pen specification for the road's lane sepatator.
+- `"lane-separator-style"`: a string specifying the lane separator style.
+  Available options are:
+  - `"single-line"` (the default)
+  - `"double-line"`
+  - `"no-display"`
+- `"road-stop-theme"`: a string specifying the road stops theme.
+  Available options are:
+  - `"location-markers"` (the default)
+  - `"road-signs"`
+- `"marker-label-display"`: a string specifying what to show for the markers' labels.
+  Available options are:
+  - `"name"`
+  - `"name-and-value"`
+  - `"name-and-absolute-value"`
+- `"label-placement"`: a string specifying where to align the outer labels.<br />
+  Available options are:
+  - `"flush"` (the default)
+  - `"next-to-parent"`
+
 ## Table {#table-properties .unnumbered}
 
 Properties for `"table"` nodes:

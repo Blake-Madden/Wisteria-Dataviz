@@ -27,6 +27,7 @@
 #include "../graphs/boxplot.h"
 #include "../graphs/table.h"
 #include "../graphs/lrroadmap.h"
+#include "../graphs/proconroadmap.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
@@ -84,7 +85,7 @@ namespace Wisteria
         ///     used to actually create the common axis then.
         /// @param commonAxisNode The common axis node.
         /// @param currentRow The row in the canvas where the common axis will be placed.
-        /// @param currentColumn The column in the canvas where the common axis  will be placed.
+        /// @param currentColumn The column in the canvas where the common axis will be placed.
         void LoadCommonAxis(const wxSimpleJSON::Ptr_t& commonAxisNode,
                             const size_t currentRow, const size_t currentColumn);
         /// @brief Loads the base properties for a graph item
@@ -122,7 +123,6 @@ namespace Wisteria
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
-        /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadWCurvePlot(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
@@ -133,6 +133,15 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadLRRoadmap(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a pro and con roadmap node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadProConRoadmap(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a pie chart node into the canvas.
@@ -182,7 +191,6 @@ namespace Wisteria
         /// @param[in,out] currentRow The row in the canvas where the table will be placed.
         /// @param[in,out] currentColumn The column in the canvas where the table will be placed.
         /// @returns The table that was added to the canvas, or null upon failure.
-        /// @todo many features still needed!
         std::shared_ptr<Graphs::Graph2D> LoadTable(
                         const wxSimpleJSON::Ptr_t& graphNode,
                         Canvas* canvas, size_t& currentRow, size_t& currentColumn);

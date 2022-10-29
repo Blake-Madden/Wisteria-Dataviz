@@ -131,8 +131,6 @@ Properties common to all graphs:
     - `"outer"` only the outer (or only) ring is included. (This is the default.)
     - `"inner"`: the inner and outer rings are included in the legend.
 
-
-
 # Common Graph Features
 
 The following section details properties relevant to graphs and tables.
@@ -286,6 +284,9 @@ Properties common to all bar-chart derived graphs:
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
 - `"ghost-opacity"`: number specifying the opacity level of non-showcased bars.
 - `"showcase-bars"`: an array of strings specifying which bars to showcase.
+- `"bar-icons"`: an array of bar icon specifications. Each specification contains the following:
+  - `"label"`: the label of the bar to add an icon to.
+  - `"image"`: the path to the image to add to the bar label.
 - `"bar-sort"`: properties specifying how to sort the bars (after loading the data).
   Available options are:
   - `"direction"`
