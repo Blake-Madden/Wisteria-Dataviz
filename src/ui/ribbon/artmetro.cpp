@@ -158,10 +158,10 @@ void RibbonMetroArtProvider::SetColourScheme(
     if(primary_hsl.saturation <= gray_saturation_threshold)
         primary_is_gray = true;
     else
-    {
+        {
         primary_hsl.saturation = cos(primary_hsl.saturation * M_PI)
             * -0.25 + 0.5;
-    }
+        }
 
     // Map primary luminance from [0, 1] to [.23, .83]
     primary_hsl.luminance = cos(primary_hsl.luminance * M_PI) * -0.3 + 0.53;
@@ -171,27 +171,24 @@ void RibbonMetroArtProvider::SetColourScheme(
     if(secondary_hsl.saturation <= gray_saturation_threshold)
         secondary_is_gray = true;
     else
-    {
+        {
         secondary_hsl.saturation = cos(secondary_hsl.saturation * M_PI)
             * -0.34 + 0.5;
-    }
+        }
 
     // Map secondary luminance from [0, 1] to [0.1, 0.9]
     secondary_hsl.luminance = cos(secondary_hsl.luminance * M_PI) * -0.4 + 0.5;
 
-    const auto LikePrimary = [&primary_hsl, &primary_is_gray = std::as_const(primary_is_gray)](const double h, const double s, const double l)
+    const auto LikePrimary = [&primary_hsl, &primary_is_gray = std::as_const(primary_is_gray)]
+        (const double h, const double s, const double l)
         {
         return primary_hsl.ShiftHue(h).Saturated(primary_is_gray ? 0.0 : s).Lighter(l).ToRGB();
-        };
-    const auto LikeSecondary = [&secondary_hsl, &secondary_is_gray = std::as_const(secondary_is_gray)](const double h, const double s, const double l)
-        {
-        return secondary_hsl.ShiftHue(h).Saturated(secondary_is_gray ? 0.0 : s).Lighter(l).ToRGB();
         };
 
     m_page_border_pen = wxColour(218,219,220); // LikePrimary(1.4, 0.00, -0.2); // LikePrimary(1.4, 0.00, -0.08);
 
     // these are all needed for galleries (which are drawn using base class methods)
-    m_page_background_top_colour = wxColour(245,246,247); // wxColour(254,254,254); // 
+    m_page_background_top_colour = wxColour(245,246,247); // wxColour(254,254,254);
     m_page_background_top_gradient_colour = wxColour(245,246,247); // wxColour(242,244,246);
     m_page_background_colour = m_primary_scheme_colour;
     m_page_background_gradient_colour = wxColour(245,246,247); // wxColour(229,233,238);
@@ -206,7 +203,7 @@ void RibbonMetroArtProvider::SetColourScheme(
     m_tab_separator_gradient_colour = LikePrimary(1.7, -0.15, -0.18);
     m_tab_hover_background_top_gradient_colour =  *wxBLUE; // wxColour(254,254,254); // LikePrimary(1.8, 0.34, 0.13);
     m_tab_label_colour = LikePrimary(4.3, 0.13, -0.49);
-    m_tab_hover_background_gradient_colour =  *wxBLUE; // LikeSecondary(-1.5, -0.34, 0.01);
+    m_tab_hover_background_gradient_colour =  *wxBLUE;
 
     m_panel_minimised_border_gradient_pen = wxColour(232,239,247); // LikePrimary(-6.9, -0.17, -0.09);
     m_panel_minimised_border_pen = wxColour(164, 206, 249); // LikePrimary(-5.3, -0.24, -0.06);
@@ -217,22 +214,22 @@ void RibbonMetroArtProvider::SetColourScheme(
     m_panel_active_background_gradient_colour = LikePrimary(0.5, 0.34, 0.05);
     m_panel_label_colour = LikePrimary(2.8, -0.14, -0.45); // LikePrimary(2.8, -0.14, -0.35);
     m_panel_minimised_label_colour = m_tab_label_colour;
-    m_panel_hover_button_background_brush = wxColour(232,239,247); //LikeSecondary(-0.9, 0.16, -0.07);
-    m_panel_hover_button_border_pen = wxColour(164, 206, 249); // LikeSecondary(-3.9, -0.16, -0.14);
+    m_panel_hover_button_background_brush = wxColour(232,239,247);
+    m_panel_hover_button_border_pen = wxColour(164, 206, 249);
     SetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR, m_tertiary_scheme_colour);
     SetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR, m_tertiary_scheme_colour);
 
     m_button_bar_label_colour = LikePrimary(2.8, -0.14, -0.6); // m_tab_label_colour;
-    m_button_bar_hover_border_pen = wxColour(164, 206, 249); // LikeSecondary(-6.2, 0.47, -0.1); // LikeSecondary(-6.2, -0.47, -0.14);
-    m_button_bar_hover_background_gradient_colour = wxColour(232,239,247); // LikeSecondary(-0.6, 0.16, 0.2); // LikeSecondary(-0.6, 0.16, 0.04);
+    m_button_bar_hover_border_pen = wxColour(164, 206, 249);
+    m_button_bar_hover_background_gradient_colour = wxColour(232,239,247);
     m_button_bar_hover_background_colour = m_tertiary_scheme_colour;
-    m_button_bar_hover_background_top_gradient_colour = wxColour(232,239,247); // LikeSecondary(0.2, 0.16, 0.03); // LikeSecondary(0.2, 0.16, 0.03);
-    // m_button_bar_hover_background_top_colour = *wxRED; // LikeSecondary(8.8, 0.16, 0.17); // LikeSecondary(8.8, 0.16, 0.17);
-    m_button_bar_active_border_pen = wxColour(102,167,232); // LikeSecondary(-6.2, -0.47, -0.25);
-    m_button_bar_active_background_top_colour = *wxYELLOW; // LikeSecondary(-8.4, 0.08, 0.06);
-    m_button_bar_active_background_top_gradient_colour = *wxYELLOW; // LikeSecondary(-9.7, 0.13, -0.07);
-    m_button_bar_active_background_colour = wxColour(209,232,255); // LikeSecondary(-9.9, 0.14, -0.14);
-    m_button_bar_active_background_gradient_colour = *wxYELLOW; // LikeSecondary(-8.7, 0.17, -0.03);
+    m_button_bar_hover_background_top_gradient_colour = wxColour(232,239,247);
+
+    m_button_bar_active_border_pen = wxColour(102,167,232);
+    m_button_bar_active_background_top_colour = *wxYELLOW;
+    m_button_bar_active_background_top_gradient_colour = *wxYELLOW;
+    m_button_bar_active_background_colour = wxColour(209,232,255);
+    m_button_bar_active_background_gradient_colour = *wxYELLOW;
 
     m_gallery_button_disabled_background_colour = LikePrimary(-2.8, -0.46, 0.09);
     m_gallery_button_disabled_background_top_brush = LikePrimary(-2.8, -0.36, 0.15);
@@ -248,9 +245,9 @@ void RibbonMetroArtProvider::SetColourScheme(
     m_gallery_button_disabled_background_gradient_colour = LikePrimary(1.5, -0.43, 0.12);
     m_gallery_button_background_gradient_colour = LikePrimary(1.7, 0.11, 0.09);
     m_gallery_item_border_pen = m_tertiary_scheme_colour;
-    m_gallery_button_hover_background_colour = m_button_bar_hover_background_colour; // LikeSecondary(-0.9, 0.16, -0.07);
-    m_gallery_button_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour; // LikeSecondary(0.1, 0.12, 0.03);
-    m_gallery_button_hover_background_top_brush = m_button_bar_hover_background_top_gradient_colour; // LikeSecondary(4.3, 0.16, 0.17);
+    m_gallery_button_hover_background_colour = m_button_bar_hover_background_colour;
+    m_gallery_button_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour;
+    m_gallery_button_hover_background_top_brush = m_button_bar_hover_background_top_gradient_colour;
     m_gallery_button_active_background_colour = m_tertiary_scheme_colour;
     m_gallery_button_active_background_gradient_colour = m_tertiary_scheme_colour;
     m_gallery_button_active_background_top_brush = m_tertiary_scheme_colour;
@@ -261,10 +258,10 @@ void RibbonMetroArtProvider::SetColourScheme(
     m_tool_background_top_gradient_colour = m_tertiary_scheme_colour;
     m_tool_background_colour = m_tertiary_scheme_colour;
     m_tool_background_gradient_colour = m_tertiary_scheme_colour;
-    m_tool_hover_background_top_colour = m_button_bar_hover_background_top_colour; // LikeSecondary(3.4, 0.11, 0.16);
-    m_tool_hover_background_top_gradient_colour = m_button_bar_hover_background_top_gradient_colour; // LikeSecondary(-1.4, 0.04, 0.08);
-    m_tool_hover_background_colour = m_button_bar_hover_background_colour; // LikeSecondary(-1.8, 0.16, -0.12);
-    m_tool_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour; // LikeSecondary(-2.6, 0.16, 0.05);
+    m_tool_hover_background_top_colour = m_button_bar_hover_background_top_colour;
+    m_tool_hover_background_top_gradient_colour = m_button_bar_hover_background_top_gradient_colour;
+    m_tool_hover_background_colour = m_button_bar_hover_background_colour;
+    m_tool_hover_background_gradient_colour = m_button_bar_hover_background_gradient_colour;
     m_tool_active_background_top_colour = m_tertiary_scheme_colour;
     m_tool_active_background_top_gradient_colour = m_tertiary_scheme_colour;
     m_tool_active_background_colour = m_tertiary_scheme_colour;
@@ -312,7 +309,7 @@ void RibbonMetroArtProvider::DrawTabCtrlBackground(
     dc.SetBrush(m_tab_ctrl_background_brush);
     dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
 
-    dc.SetPen(m_page_border_pen); 
+    dc.SetPen(m_page_border_pen);
     if(rect.width > 6)
     {
         dc.DrawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
