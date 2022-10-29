@@ -747,13 +747,17 @@ namespace Wisteria::Graphs
         /// @returns The opacity level applied to "ghosted" slices.
         [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
             { return m_ghostOpacity; }
-        /** @brief Sets the opacity level for "ghosted" bars.\
+        /** @brief Sets the opacity level for "ghosted" bars.\n
                 This is only used if ShowcaseBars() is called; this is the
                 opacity applied to bars not being showcased.
             @param opacity The opacity level (should be between @c 0 to @c 255).
             @sa ShowcaseBars().*/
         void SetGhostOpacity(const uint8_t opacity) noexcept
             { m_ghostOpacity = opacity; }
+        /** @brief Adds an image next to the axis label of a bar.
+            @param bar The bar to add the icon to. This should be the axis label of the bar.
+            @param img The image to add to the bar's label.*/
+        void AddBarIcon(const wxString& bar, const wxBitmapBundle& img);
         /// @returns Direct access to the bars.
         /// @note If changing the length of the bar directly, then you will need
         ///    to adjust the scaling axis as well.\n

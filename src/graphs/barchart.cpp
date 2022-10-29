@@ -79,6 +79,18 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
+    void BarChart::AddBarIcon(const wxString& bar, const wxBitmapBundle& img)
+        {
+        const auto barPos = FindBar(bar);
+        if (barPos.has_value())
+            {
+            auto& theBar{ GetBars().at(barPos.value()) };
+            theBar.GetAxisLabel().SetLeftImage(img);
+            GetBarAxis().SetCustomLabel(theBar.GetAxisPosition(), theBar.GetAxisLabel());
+            }
+        }
+
+    //-----------------------------------
     std::optional<size_t> BarChart::FindBar(const wxString& axisLabel)
         {
         for (size_t i = 0; i < GetBars().size(); ++i)
