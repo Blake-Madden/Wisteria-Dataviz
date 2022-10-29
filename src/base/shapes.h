@@ -62,7 +62,6 @@ namespace Wisteria::GraphItems
         /// @brief Draws a circle filled with the shape's brush, draws a black
         ///     outline, and draws the shape's text value in the center of it.
         /// @param rect The area to draw the circle within.
-        /// 
         /// @param brush The brush for the sign's background.
         /// @param text The text to draw on the sign.
         /// @param dc The DC to draw to.

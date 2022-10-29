@@ -118,7 +118,7 @@ namespace Wisteria::Icons
         std::vector<wxColour> m_colors;
 
         /// @returns The minimum width that should be used for legend icons.
-        /// @note  This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
+        /// @note This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
         ///     which use DIPs.
         [[nodiscard]] static constexpr double GetIconWidthDIPs() noexcept
             { return 16; }

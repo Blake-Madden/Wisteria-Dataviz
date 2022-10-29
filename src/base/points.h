@@ -47,7 +47,7 @@ namespace Wisteria::GraphItems
             m_iconImage(img), m_radius(radius)
             {}
         /// @returns The radius of the point. The radius is the distance from the center point
-        ///  to outside of the circle.
+        ///     to outside of the circle.
         /// @warning This needs to be scaled when called for measuring and rendering.
         [[nodiscard]] size_t GetRadius() const noexcept
             { return m_radius; }

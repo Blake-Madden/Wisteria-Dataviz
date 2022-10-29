@@ -1858,9 +1858,9 @@ namespace Wisteria
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The scaled value.
             /// @warning This should be used to rescale pixel values used for line
-            ///  widths and point sizes. It should NOT be used with font point sizes
-            ///  because DPI scaling is handled by the OS for those.
-            ///  Instead, font sizes should only be scaled to the canvas's scaling.
+            ///     widths and point sizes. It should NOT be used with font point sizes
+            ///     because DPI scaling is handled by the OS for those.
+            ///     Instead, font sizes should only be scaled to the canvas's scaling.
             [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
                 { return value * GetScaling() * GetDPIScaleFactor(); }
             /// @brief Apply screen DPI and parent canvas scaling to a value.

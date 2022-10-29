@@ -58,7 +58,7 @@ class LogFile : public wxLog
 public:
     /// @brief Default constructor.
     /// @details Should be created on the heap and passed to
-    ///  @c wxLog::SetActiveTarget().
+    ///     @c wxLog::SetActiveTarget().
     LogFile();
     /// @private
     LogFile(const LogFile&) = delete;

@@ -99,7 +99,7 @@ namespace lily_of_the_valley
         size_t m_trimmed_string_length{ 0 };
         };
 
-    //  EOL determinant functors used by the row parser
+    // EOL determinant functors used by the row parser
     //-------------------------------------------------
 
     /// @brief EOL determinant.
@@ -114,7 +114,7 @@ namespace lily_of_the_valley
         };
 
     /// @brief Column delimiter determinant, where the first whitespace, comma,
-    ///  or semicolon is the end of the current column.
+    ///     or semicolon is the end of the current column.
     class is_standard_delimiters
         {
     public:

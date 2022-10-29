@@ -46,7 +46,7 @@ void ArchiveDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------------------------
-void ArchiveDlg::OnFileButtonClick([[maybe_unused]] wxCommandEvent& event)  
+void ArchiveDlg::OnFileButtonClick([[maybe_unused]] wxCommandEvent& event)
     {
     TransferDataFromWindow();
     wxFileDialog dialog

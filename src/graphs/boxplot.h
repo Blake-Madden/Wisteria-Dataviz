@@ -83,7 +83,7 @@ namespace Wisteria::Graphs
             BoxAndWhisker(const BoxEffect effect,
                           const BoxCorners boxCorners,
                           const uint8_t opacity = wxALPHA_OPAQUE)
-                    :  m_opacity(opacity),
+                    : m_opacity(opacity),
                       m_boxEffect(effect), m_boxCorners(boxCorners)
                 {}
 
@@ -101,11 +101,11 @@ namespace Wisteria::Graphs
             [[nodiscard]] double GetUpperControlLimit() const noexcept
                 { return m_upperControlLimit; }
             /// @returns The value of the lower whisker (non-outlier range).
-            //  Any value lower than this is an outlier.
+            ///     Any value lower than this is an outlier.
             [[nodiscard]] double GetLowerWhisker() const noexcept
                 { return m_lowerWhisker; }
             /// @returns The value of the upper whisker (non-outlier range).
-            ///  Any value larger than this is an outlier.
+            ///     Any value larger than this is an outlier.
             [[nodiscard]] double GetUpperWhisker() const noexcept
                 { return m_upperWhisker; }
             /// @}

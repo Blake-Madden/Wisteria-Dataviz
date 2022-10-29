@@ -282,7 +282,7 @@ namespace Wisteria::GraphItems
         void AdjustingBoundingBoxToContent(const bool adjust) noexcept
             { m_adjustBoundingBoxToContent = adjust; }
         /// @returns @c true if the bounding box passed to SetBoundingBox() is only
-        ///  treated as a suggestion.
+        ///     treated as a suggestion.
         [[nodiscard]] bool IsAdjustingBoundingBoxToContent() const noexcept
             { return m_adjustBoundingBoxToContent; }
         /// @}
@@ -300,9 +300,9 @@ namespace Wisteria::GraphItems
             @param angleInDegrees The angle that the string will be at.
             @param text The string being measured.
             @warning @c boundingBoxSize is assumed to be scaled from the parent already,
-             so the font size returned will fit this area as-is.\n
-             Because `Label`s adjust their font size based on scaling,
-             setting its point size to this should also set its scaling to 1 (not the parents').*/
+                so the font size returned will fit this area as-is.\n
+                Because `Label`s adjust their font size based on scaling,
+                setting its point size to this should also set its scaling to 1 (not the parent's).*/
         [[nodiscard]] static int CalcDiagonalFontSize(wxDC& dc,
                                                       const wxFont& ft, const wxRect& boundingBox,
                                                       const double angleInDegrees,
@@ -315,7 +315,7 @@ namespace Wisteria::GraphItems
             @warning `boundingBoxSize` is assumed to be scaled from the parent already,
              so the font size returned will fit this area as-is.\n
              Because `Label`s adjust their font size based on scaling,
-             setting its point size to this should also set its scaling to 1 (not the parents')*/
+             setting its point size to this should also set its scaling to 1 (not the parent's)*/
         [[nodiscard]] static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
             const wxRect& boundingBox, const wxString& text);
         /** @returns The first available font (face name) found from the given list,
@@ -381,7 +381,7 @@ namespace Wisteria::GraphItems
                 This coordinate refers to the top-left corner of the rectangle bounding the string.*/
         void DrawMultiLineText(wxDC& dc, wxPoint pt) const;
         /// @brief Figures out how many characters are in the longest line of text
-        ///  (takes multiline labels into account).
+        ///     (takes multiline labels into account).
         void CalcLongestLineLength();
         /** @brief Retrieves The physical size of label and its padding
                 (including outlined bounding box if the pen is valid).
@@ -393,7 +393,7 @@ namespace Wisteria::GraphItems
         ///  taller than the measured size.
         [[nodiscard]] wxCoord CalcPageVerticalOffset(wxDC& dc) const;
         /// @returns The offset from the left if user-defined minimum size is being used it is
-        ///  wider than the measured size.
+        ///     wider than the measured size.
         [[nodiscard]] wxCoord CalcPageHorizontalOffset(wxDC& dc) const;
 
         double m_tiltAngle{ 0 };

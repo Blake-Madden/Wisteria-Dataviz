@@ -23,7 +23,8 @@
 // DIVISION OPERATIONS
 //-------------------
 
-/// @brief Modulus operation that checks for modulus by zero or into zero (returns zero for those situations).
+/// @brief Modulus operation that checks for modulus by zero or into zero
+///     (returns zero for those situations).
 /// @param dividend The dividend (i.e., the value being divided).
 /// @param divisor The divisor (i.e., the value dividing by).
 /// @returns The remainder of the modulus operation, or zero if one of the values was invalid.
@@ -35,7 +36,8 @@ template<typename T>
     return dividend%divisor;
     }
 
-/// @brief Division operation that checks for division by zero or into zero (returns zero for those situations).
+/// @brief Division operation that checks for division by zero or into zero
+///     (returns zero for those situations).
 /// @param dividend The dividend (i.e., the value being divided).
 /// @param divisor The divisor (i.e., the value dividing by).
 /// @returns The quotient of the division operation, or zero if one of the values was invalid.
@@ -48,11 +50,12 @@ template<typename T>
     return dividend/static_cast<T>(divisor);
     }
 
-/// @brief Division (with remainder) operation that checks for division by zero or into zero (returns zero for those situations).
-///  Essentially, this is a safe wrapper around ldiv().
+/// @brief Division (with remainder) operation that checks for division by zero or into zero
+///     (returns zero for those situations).Essentially, this is a safe wrapper around ldiv().
 /// @param dividend The dividend (i.e., the value being divided).
 /// @param divisor The divisor (i.e., the value dividing by).
-/// @returns The quotient of the division operation and its remainder (as longs), or zeros if the input was invalid.
+/// @returns The quotient of the division operation and its remainder (as longs),
+///     or zeros if the input was invalid.
 template<typename T>
 [[nodiscard]] inline constexpr ldiv_t safe_ldiv(const T dividend, const T divisor) noexcept
     {
@@ -69,9 +72,10 @@ template<typename T>
     @param actual The value being reviewed.
     @param expected The expected value to compare against.
     @param delta The tolerance of how different the values can be. The larger the delta, the
-     higher precision used in the comparison.
+        higher precision used in the comparison.
     @returns @c true if the value matches the expected value.*/
-[[nodiscard]] inline bool compare_doubles(const double actual, const double expected, const double delta = 1e-6) noexcept
+[[nodiscard]] inline bool compare_doubles(const double actual, const double expected,
+                                          const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
     return (std::fabs(actual-expected) <= std::fabs(delta));
@@ -83,7 +87,8 @@ template<typename T>
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
     @returns @c true if the value is less than the other value.*/
-[[nodiscard]] inline bool compare_doubles_less(const double left, const double right, const double delta = 1e-6) noexcept
+[[nodiscard]] inline bool compare_doubles_less(const double left, const double right,
+                                               const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
     return std::fabs(left-right) > std::fabs(delta) && (left < right);
@@ -95,7 +100,8 @@ template<typename T>
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
     @returns @c true if the value is less than or equal to the other value.*/
-[[nodiscard]] inline bool compare_doubles_less_or_equal(const double left, const double right, const double delta = 1e-6) noexcept
+[[nodiscard]] inline bool compare_doubles_less_or_equal(const double left, const double right,
+                                                        const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
     return compare_doubles_less(left,right,delta) || compare_doubles(left,right,delta);
@@ -107,7 +113,8 @@ template<typename T>
     @param delta The tolerance of how different the values can be. The larger the delta, the
      higher precision used in the comparison.
     @returns @c true if the value is greater than the other value.*/
-[[nodiscard]] inline bool compare_doubles_greater(const double left, const double right, const double delta = 1e-6) noexcept
+[[nodiscard]] inline bool compare_doubles_greater(const double left, const double right,
+                                                  const double delta = 1e-6) noexcept
     {
     assert(delta >= 0 && "delta value should be positive when comparing doubles");
     return std::fabs(left-right) > std::fabs(delta) && (left > right);
@@ -142,7 +149,7 @@ public:
 //------------------
 
 /// @brief Converts an integral type to a boolean. Compilers complain about directly assigning
-///  an int to a bool (casting doesn't help either), so this works around that.
+///     an int to a bool (casting doesn't help either), so this works around that.
 /// @param intVal The integer value to convert to a boolean.
 /// @returns The boolean equivalent of the integer.
 template<typename T>
@@ -151,7 +158,7 @@ template<typename T>
 
 /// @brief Converts a boolean to integer (e.g., @c true = 1, @c false = 0).
 /// @param boolVal The boolean value to review.
-/// @returns 1 if @c boolVal is @c true, 0 if @c false.
+/// @returns @c 1 if @c boolVal is @c true, 0 if @c false.
 [[nodiscard]] constexpr int bool_to_int(const bool boolVal) noexcept
     { return (boolVal ? 1 : 0); }
 

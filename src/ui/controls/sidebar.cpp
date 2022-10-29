@@ -14,7 +14,7 @@ wxDEFINE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
 wxDEFINE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 //---------------------------------------------------
-SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/) 
+SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
         : wxScrolledCanvas(parent, id, wxDefaultPosition, wxDefaultSize,
                            wxWANTS_CHARS|wxVSCROLL|wxBORDER_THEME|wxFULL_REPAINT_ON_RESIZE),
           m_activeColor(wxT("#FDB759")),

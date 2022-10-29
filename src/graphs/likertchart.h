@@ -995,10 +995,10 @@ namespace Wisteria::Graphs
         ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
         void AddSurveyQuestion(const LikertSevenPointSurveyQuestion& response);
         /// @brief Add a seven-point (e.g., agree, disagree, or neutral)
-        ///  Likert response with categorical responses.
+        ///     Likert response with categorical responses.
         /// @param response The question and its breakdowns of the responses.
         /// @note These survey items will be stacked in the order that you call this function
-        ///  (i.e., the first response will be one at the bottom [at the axes' origin]).
+        ///     (i.e., the first response will be one at the bottom [at the axes' origin]).
         void AddSurveyQuestion(const LikertCategorizedSevenPointSurveyQuestion& response);
         void AddSurveyQuestionBar(const LikertThreePointSurveyQuestion& question);
         void AddSurveyQuestionBar(const LikertCategorizedThreePointSurveyQuestion& question);

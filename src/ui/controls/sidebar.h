@@ -341,7 +341,7 @@ namespace Wisteria::UI
 
         /** @brief Specifies whether a small toolbar which can show/hide the control should
                 be included at the top.
-            @param show Set to true to include the show/hide toolbar.*/
+            @param show Set to @c true to include the show/hide toolbar.*/
         void IncludeShowHideToolbar(const bool show) noexcept
             { m_includeShowHideToolbar = show; }
         /// @returns Whether or not a "show/hide" toolbar is being displayed at the top of the control.
@@ -353,7 +353,7 @@ namespace Wisteria::UI
         /// @brief Hides the control.
         void Minimize();
 
-        /// @returns True if this control is fully expanded for the user.
+        /// @returns @c true if this control is fully expanded for the user.
         /// @note This only applies if the show/hide toolbar is being displayed.
         [[nodiscard]] bool IsExpanded() const noexcept
             { return m_isExpanded; }

@@ -127,32 +127,32 @@ namespace Wisteria::Graphs
         /// @brief Constructor.
         /// @param canvas The canvas that the chart is plotted on.
         /// @param colors The color scheme to apply to the boxes.
-        ///  Leave as null to use the default theme.
+        ///     Leave as null to use the default theme.
         explicit GanttChart(Wisteria::Canvas* canvas,
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
         /** @brief Sets the data.
             @param data The data to use for the chart.
             @param interval The date interval to display across the axis.
-             Note that this may affect the calculated starting and ending dates for the
-             main axis. For example, using quarters will cause the dates to start and
-             end at the beginning and end of a fiscal year.
+                Note that this may affect the calculated starting and ending dates for the
+                main axis. For example, using quarters will cause the dates to start and
+                end at the beginning and end of a fiscal year.
             @param FYType The fiscal year type, which sets the fiscal year date range
-             based on pre-defined types.
-             This parameter is only relevant if @c interval is related to fiscal years.
+                based on pre-defined types.
+                This parameter is only relevant if @c interval is related to fiscal years.
             @param taskColumnName The column containing the task names.
             @param startDateColumnName The column containing the starting dates.
             @param endDateColumnName The column containing the ending date column.
             @param resourceColumnName The column containing whom the tasks are assigned to.
             @param descriptionColumnName The column containing descriptions of the tasks.
             @param completionColumnName The column containing the percentages of the
-             tasks' completions (NaN will be treated as 0%).
+                tasks' completions (NaN will be treated as 0%).
             @param groupColumnName The grouping column to use.
-             This will set the colors of the task's bars, based on their groups.
-             Note that this can be the same column as the resource or task name columns.
+                This will set the colors of the task's bars, based on their groups.
+                Note that this can be the same column as the resource or task name columns.
             @throws std::runtime_error If any columns can't be found by name,
-             throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded,
+                so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(const std::shared_ptr<const Data::Dataset>& data,
                      const DateInterval interval,
                      const FiscalYear FYType,
@@ -196,9 +196,9 @@ namespace Wisteria::Graphs
     private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
-        ///  inside of a call to GanttChart::AddTask().
+        ///     inside of a call to GanttChart::AddTask().
         /// @note A task's color is controlled via the parent GanttChart's color scheme,
-        ///  which is specified in its constructor.
+        ///     which is specified in its constructor.
         class TaskInfo
             {
             friend class GanttChart;
@@ -213,8 +213,8 @@ namespace Wisteria::Graphs
             /// @param resource The resources assigned to the task.
             /// @returns A self reference.
             /// @note Adding newlines around the resource name will make it taller 
-            ///  and hence will make the image next to it larger as well
-            ///  (if you are displaying an image).
+            ///     and hence will make the image next to it larger as well
+            ///     (if you are displaying an image).
             /// @sa Image().
             TaskInfo& Resource(const wxString& resource)
                 {
@@ -241,8 +241,8 @@ namespace Wisteria::Graphs
             /// @param img The image for the task.
             /// @returns A self reference.
             /// @note The image is scaled to the size of the resource name.
-            ///  Hence, adding newlines around the resource name to make it taller
-            ///  will also increase the size of the image.
+            ///     Hence, adding newlines around the resource name to make it taller
+            ///     will also increase the size of the image.
             /// @sa Resource().
             TaskInfo& Image(const wxImage& img)
                 {
@@ -251,8 +251,8 @@ namespace Wisteria::Graphs
                 }
             /// @brief The start date of the task.
             /// @param start The start date of the task.
-            ///  Leave as an invalid date to have the task start at the beginning of the timeline.
-            ///  An arrow will be drawn to indicate that the task did not have a hard start date.
+            ///     Leave as an invalid date to have the task start at the beginning of the timeline.
+            ///     An arrow will be drawn to indicate that the task did not have a hard start date.
             /// @returns A self reference.
             TaskInfo& StartDate(const wxDateTime& start)
                 {
@@ -261,8 +261,8 @@ namespace Wisteria::Graphs
                 }
             /// @brief The end date of the task.
             /// @param end The end date of the task.
-            ///  Leave as an invalid date have the task go to the end of the timeline.
-            ///  An arrow will be drawn to indicate that the task does not have a hard end date.
+            ///     Leave as an invalid date have the task go to the end of the timeline.
+            ///     An arrow will be drawn to indicate that the task does not have a hard end date.
             /// @returns A self reference.
             TaskInfo& EndDate(const wxDateTime& end)
                 {

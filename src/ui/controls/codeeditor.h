@@ -131,11 +131,11 @@ namespace Wisteria::UI
             { m_scriptFilePath = filePath; }
         /// @brief Saves the script.
         /// @note If the script's filepath has not been set, then will prompt for a path.
-        /// @returns True if file was saved.
+        /// @returns @c true if file was saved.
         /// @sa SetScriptFilePath().
         bool Save();
         /// @brief Prompts for a Lua script and opens it.
-        /// @returns True if a script was opened, false if opening was cancelled.
+        /// @returns @c true if a script was opened, false if opening was cancelled.
         bool Open();
         /// @brief Closes the currently open script file and creates a blank one.
         void New();
@@ -231,7 +231,7 @@ namespace Wisteria::UI
         wxColour m_commentColor{ 49, 250, 65 };
         wxColour m_keywordColor{ L"#0000FF" };
         wxColour m_operatorColor{ L"#B928C1" };
-        wxColour m_stringColor{ L"#A31515"  };
+        wxColour m_stringColor{ L"#A31515" };
 
         wxDECLARE_CLASS(CodeEditor);
         };

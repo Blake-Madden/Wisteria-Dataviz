@@ -46,10 +46,9 @@ namespace Wisteria::UI
     public:
         /// @brief Definition for a variable list for a user to select.
         /// @details Examples of this could be a list of categoricals,
-        ///  a single grouping variable, an X variable, etc.
-        /// 
-        ///  The fields in this class are chainable, so you can construct
-        ///  it in place in the VariableSelectDlg's constructor.
+        ///     a single grouping variable, an X variable, etc.\n
+        ///     The fields in this class are chainable, so you can construct
+        ///     it in place in the VariableSelectDlg's constructor.
         class VariableListInfo
             {
             friend class VariableSelectDlg;
@@ -65,7 +64,7 @@ namespace Wisteria::UI
             /// @brief Sets whether the list can hold multiple variables or just one.
             /// @details The default is for the list to allow multiple variables.
             /// @param singleSelection @c true to only allow one variable to be
-            ///  selected for this list.
+            ///     selected for this list.
             /// @returns A self reference.
             VariableListInfo& SingleSelection(const bool singleSelection)
                 {
@@ -90,7 +89,7 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param parent The dialog's parent.
             @param columnInfo The list of columns (and their respective data types) to choose from.\n
-             This will usually be the result from a call to `Data::Dataset::ReadColumnInfo()`.
+                This will usually be the result from a call to `Data::Dataset::ReadColumnInfo()`.
             @param varInfo Definitions for the variable lists that the user can specify.
             @param id The dialog's ID.
             @param caption The caption for the dialog.
@@ -113,9 +112,9 @@ namespace Wisteria::UI
 
         /// @brief Gets the variables that a user has moved into a given list.
         /// @details The list is accessed by index, in the order that the variable definitions
-        ///  were passed to the constructor. For example, if the VariableListInfo passed to the
-        ///  constructor included a continuous and grouping set of variable lists (in that order),
-        ///  then `1` will return the variables in the grouping list.
+        ///     were passed to the constructor. For example, if the VariableListInfo passed to the
+        ///     constructor included a continuous and grouping set of variable lists (in that order),
+        ///     then `1` will return the variables in the grouping list.
         /// @param listIndex The index of the client-defined variable list.
         /// @returns A list of the variable names that the user has selected for a given list.
         std::vector<wxString> GetSelectedVariables(const size_t listIndex) const;

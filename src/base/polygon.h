@@ -58,7 +58,7 @@ namespace Wisteria::GraphItems
             Rectangle,
             /// @brief A rectangle or square with a glassy sheen.
             /// @note If using this shape, call SetBackgroundFill() to set the color and direction
-            ///     of the glass effect. (The brush will be ignored.) 
+            ///     of the glass effect. (The brush will be ignored.)
             GlassyRectangle,
             /// @brief No real shape.
             Irregular

@@ -222,7 +222,7 @@ namespace Wisteria::Graphs
                     {
                     for (size_t i = 0; i < catCol->GetValues().size(); ++i)
                         {
-                        GetCell(currentRow, i+1).m_value  =
+                        GetCell(currentRow, i+1).m_value =
                             catCol->GetLabelFromID(catCol->GetValue(i));
                         }
                     }
@@ -1488,7 +1488,7 @@ namespace Wisteria::Graphs
 
                 // if label is too long to fit, then split it length-wise to fit in the gutter
                 const auto bBox = noteLabel->GetBoundingBox(dc);
-                auto leftGutterTextArea{ leftGutter  };
+                auto leftGutterTextArea{ leftGutter };
                 leftGutterTextArea.SetWidth(leftGutterTextArea.GetWidth() -
                                     (connectionOverhangWidth * 2) - labelSpacingFromLine);
                 if (!Polygon::IsRectInsideRect(bBox, leftGutterTextArea))

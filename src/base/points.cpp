@@ -192,7 +192,7 @@ namespace Wisteria::GraphItems
             wxDCPenChanger pc(dc, scaledPen);
 
             const auto okPointsCount = std::count_if(m_points.cbegin(), m_points.cend(),
-                [](const auto pt) noexcept { return pt.IsOk();  });
+                [](const auto pt) noexcept { return pt.IsOk(); });
             if (okPointsCount == 0)
                 { return wxRect(); }
             // just one point, so no line to draw

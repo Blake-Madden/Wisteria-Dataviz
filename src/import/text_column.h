@@ -22,7 +22,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_parser(const bool read_text) noexcept : m_read_text(read_text)
             {}
         /** @brief Reads the next column(s) from the current row of text.
@@ -76,7 +76,7 @@ namespace lily_of_the_valley
         /// @brief Constructor.
         /// @param width The number of characters in the fixed-width column.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_fixed_parser(const size_t width, const bool read_text = true)
             : text_column_parser(read_text), m_width(width)
             {}
@@ -109,7 +109,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_standard_delimiter_parser(const bool read_text = true) noexcept
             : text_column_parser(read_text)
             {}
@@ -129,7 +129,7 @@ namespace lily_of_the_valley
         /// @brief Constructor.
         /// @param delim The delimiter to determine where a column ends.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_delimited_character_parser(const wchar_t delim, const bool read_text = true) noexcept
             : text_column_parser(read_text), is_delim(delim)
             {}
@@ -149,7 +149,7 @@ namespace lily_of_the_valley
         /// @brief Constructor.
         /// @param delims The delimiters to determine where a column ends.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_delimited_multiple_character_parser(const wchar_t* delims, const bool read_text = true)
             : text_column_parser(read_text), is_delim(delims)
             {}
@@ -168,7 +168,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param read_text Set to @c true to feed the parsed text back to the parent parser,
-        ///  or @c false to simply skip to the end of line.
+        ///     or @c false to simply skip to the end of line.
         explicit text_column_to_eol_parser(const bool read_text = true) noexcept
             : text_column_parser(read_text)
             {}
@@ -197,7 +197,7 @@ namespace lily_of_the_valley
         /// @brief Constructor.
         /// @param parser The parser to use to determine how to read a column.
         /// @param repeatCount The number of times this column type should be read consecutively.
-        ///  Set to `std::nullopt` to repeat the column until the end of line is reached.
+        ///     Set to `std::nullopt` to repeat the column until the end of line is reached.
         explicit text_column(const Tparser& parser, std::optional<size_t> repeatCount = std::nullopt) noexcept :
             m_parser(parser), m_repeat_count(repeatCount)
             {}
@@ -217,7 +217,7 @@ namespace lily_of_the_valley
             }
         /// @returns The number of times this column should repeat in the current row.
         /// @note This is optional and if not specified then this column definition should be repeated
-        ///  by the parser until the end of line is reached.
+        ///     by the parser until the end of line is reached.
         inline std::optional<size_t> get_repeat_count() const noexcept
             { return m_repeat_count; }
         /// @returns The parser used by this column.

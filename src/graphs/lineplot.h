@@ -171,7 +171,7 @@ namespace Wisteria::Graphs
             /// @param groupColumnName The grouping column to use. This is used for
             ///     data validation later.
             /// @param groupId The group ID for this line. Data points from @c data will
-            ///  only be used for this line if their group ID is @c groupId.
+            ///     only be used for this line if their group ID is @c groupId.
             /// @param groupName The display name of the group.\m
             ///     This is useful for a client to find a line by name and then customize it.
             void SetGroupInfo(const std::optional<const wxString>& groupColumnName,
@@ -319,10 +319,10 @@ namespace Wisteria::Graphs
         [[nodiscard]] bool IsAutoSplining() const noexcept
             { return m_autoSpline; }
         /** @brief When lines zigzag (i.e., go back-and-forth along the X axis),
-                setting this to @c true  will change the line to be drawn as a spline.\n
+                setting this to @c true will change the line to be drawn as a spline.\n
                 This is useful when plotting a line that shows a downward spiral
                 (refer to WCurvePlot as an example).
-            @param autoSpline @c true  to enable auto splining.*/
+            @param autoSpline @c true to enable auto splining.*/
         void AutoSpline(const bool autoSpline) noexcept
             { m_autoSpline = autoSpline; }
         /// @}
@@ -370,7 +370,7 @@ namespace Wisteria::Graphs
         /// @returns The plot's dataset.
         [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
             { return m_data; }
-        /// @returns @c true  if data is being grouped.
+        /// @returns @c true if data is being grouped.
         [[nodiscard]] bool IsGrouping() const noexcept
             { return m_useGrouping; }
 

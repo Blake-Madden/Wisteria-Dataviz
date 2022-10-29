@@ -13,7 +13,7 @@ using namespace Wisteria::UI;
 wxIMPLEMENT_DYNAMIC_CLASS(SideBarBook, wxControl)
 
 wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGING, wxBookCtrlEvent);
-wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED,  wxBookCtrlEvent);
+wxDEFINE_EVENT(EVT_COMMAND_SIDEBARBOOK_PAGE_CHANGED, wxBookCtrlEvent);
 
 //---------------------------------------------------
 SideBarBook::SideBarBook(wxWindow *parent, wxWindowID id) :

@@ -155,7 +155,7 @@ private:
     };
 
 /// @brief Same as a std::set, but also keeps a frequency count of every unique value added,
-///  as well as an additional value to accumulate.
+///     as well as an additional value to accumulate.
 /// @todo needs unit test
 template <typename T, typename Compare = std::less<T>>
 class aggregate_frequency_set

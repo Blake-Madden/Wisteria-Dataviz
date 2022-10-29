@@ -388,7 +388,7 @@ namespace statistics
                 lo, uo, le, ue);
             }
         /// @returns A pointer/iterator to the next outlier,
-        ///  or end of the container if no more outliers.
+        ///     or end of the container if no more outliers.
         [[nodiscard]] std::vector<double>::const_iterator operator()() noexcept
             {
             m_current_position = std::find_if(

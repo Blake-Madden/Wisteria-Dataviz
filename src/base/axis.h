@@ -1400,30 +1400,36 @@ namespace Wisteria::GraphItems
             @param pt1 The first point.
             @param pt2 The second point.*/
         void SetPoints(const wxPoint pt1, const wxPoint pt2, wxDC& dc);
-        /// @returns The top physical (relative to the parent canvas) point of the axis line (for vertical axes).
+        /// @returns The top physical (relative to the parent canvas) point of the axis line
+        ///     (for vertical axes).
         /// @note This is always the top-most point vertically, regardless of whether the axis is reversed.
         [[nodiscard]] wxPoint GetTopPoint() const
             { return wxPoint(GetPoints().first.x, GetPoints().first.y); }
-        /// @returns The bottom physical (relative to the parent canvas) point of the axis line (for vertical axes).
+        /// @returns The bottom physical (relative to the parent canvas) point of the axis line
+        ///     (for vertical axes).
         /// @note This is always the bottom-most point vertically, regardless of whether the axis is reversed.
         [[nodiscard]] wxPoint GetBottomPoint() const
             { return wxPoint(GetPoints().second.x, GetPoints().second.y); }
-        /// @returns The left physical (relative to the parent canvas) point of the axis line (for horizontal axes).
+        /// @returns The left physical (relative to the parent canvas) point of the axis line
+        ///     (for horizontal axes).
         /// @note This is always the left-most point vertically, regardless of whether the axis is reversed.
         [[nodiscard]] wxPoint GetLeftPoint() const
             { return wxPoint(GetPoints().first.x, GetPoints().first.y); }
-        /// @returns The right physical (relative to the parent canvas) point of the axis line (for horizontal axes).
+        /// @returns The right physical (relative to the parent canvas) point of the axis line
+        ///     (for horizontal axes).
         /// @note This is always the right-most point vertically, regardless of whether the axis is reversed.
         [[nodiscard]] wxPoint GetRightPoint() const
             { return wxPoint(GetPoints().second.x, GetPoints().second.y); }
         /// @brief Get the first label (and its axis position) that is being displayed.
         /// @returns The first displayed (left or bottom) label along the axis. Also,
-        ///  returns the axis position of where the label is. If no label is found, then returns an empty label and NaN.
+        ///     returns the axis position of where the label is.
+        ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most left (or bottom) label, regardless of orientation.
         [[nodiscard]] std::pair<Label, double> GetFirstDisplayedLabel(wxDC& dc) const;
         /// @brief Get the last label (and its axis position) that is being displayed.
         /// @returns The last displayed (right or top) label along the axis. Also,
-        ///  returns the axis position of where the label is. If no label is found, then returns an empty label and NaN.
+        ///     returns the axis position of where the label is.
+        ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most right (or top) label, regardless of orientation.
         [[nodiscard]] std::pair<Label, double> GetLastDisplayedLabel(wxDC& dc) const;
         /// @returns The (const) custom tick marks.

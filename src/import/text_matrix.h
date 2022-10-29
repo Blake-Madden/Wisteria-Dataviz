@@ -17,7 +17,7 @@
 
 /// @brief Text importing library.
 /// @details This is low-level code. Prefer using Wisteria::Data::Dataset::ImportText()
-///  to import data.
+///     to import data.
 namespace lily_of_the_valley
     {
     // some useful typedefs
@@ -38,7 +38,7 @@ namespace lily_of_the_valley
             {}
         /** @brief Use this constructor if loading a single column file.
             @details This is optimal for situations where you want to simply load
-             the entire file into a single vector, instead of a 2D matrix.
+                the entire file into a single vector, instead of a 2D matrix.
             @param vector The string vector to write the parsed data to.*/
         explicit text_matrix(std::vector<string_typeT>* vector)
             : m_vector(vector)
@@ -54,14 +54,14 @@ namespace lily_of_the_valley
         void remove_rows() noexcept
             { m_rows.clear(); }
         /** @brief The main function which reads a block of text and divides it up into columns & rows
-             and returns the number of rows read.
+                and returns the number of rows read.
             @details The row count must be correct (it won't read any more than what you specify here). The
-             column count must be the widest row. Different rows may have a different number
-             of columns, but you should specify the widest possible amount of columns to avoid a jagged array.
+                column count must be the widest row. Different rows may have a different number
+                of columns, but you should specify the widest possible amount of columns to avoid a jagged array.
             @param text The text to parser and import tabular data from.
             @param row_count The number of rows to import (use the text_preview to determine this).
             @param column_count The number of columns to import. Note that this will be overridden
-             if any row definitions allow for dynamic column growth.
+                if any row definitions allow for dynamic column growth.
             @param ignore_blank_lines Whether blank lines should be skipped.
             @returns The number of rows read.*/
         size_t read(const wchar_t* text, const size_t row_count, const size_t column_count,
