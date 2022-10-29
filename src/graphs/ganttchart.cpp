@@ -273,17 +273,8 @@ namespace Wisteria::Graphs
                         std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
                                                        taskInfo.m_img.GetSize().GetHeight()),
                         labelHeight), labelHeight);
-                    wxImage img{ taskInfo.m_img };
-                    img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
 
-                    // Set the axis labels' padding to fit the widest image so far
-                    // (or at least the min legend size).
-                    // Labels that are taller than others (because they have new lines in them)
-                    // will have larger images next to them.
-                    GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
-                        std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
-                        Label::GetMinLegendWidthDIPs())) );
-                    br.GetAxisLabel().SetLeftImage(img);
+                    br.GetAxisLabel().SetLeftImage(taskInfo.m_img);
                     }
                 AddBar(br, false);
                 }
@@ -354,17 +345,8 @@ namespace Wisteria::Graphs
                         std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
                                                        taskInfo.m_img.GetSize().GetHeight()),
                         labelHeight), labelHeight);
-                    wxImage img{ taskInfo.m_img };
-                    img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
 
-                    // Set the axis labels' padding to fit the widest image so far
-                    // (or at least the min legend size).
-                    // Labels that are taller than others (because they have new lines in them)
-                    // will have larger images next to them.
-                    GetBarAxis().SetLeftPadding(std::max<double>(GetBarAxis().GetLeftPadding(),
-                        std::max<double>(DownscaleFromScreenAndCanvas(img.GetWidth())+5,
-                        Label::GetMinLegendWidthDIPs())) );
-                    arrowBar.GetAxisLabel().SetLeftImage(img);
+                    arrowBar.GetAxisLabel().SetLeftImage(taskInfo.m_img);
                     }
                 AddBar(arrowBar, false);
                 }
