@@ -56,3 +56,5 @@ cpp.hint
 *.Rhistory
 .Rproj.user
 /docs/Syntax Manual/_book
+/tests/.vs
+/tests/out
