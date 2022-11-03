@@ -1,5 +1,5 @@
 #############################################################################
-# Name:        CMakeListst.txt
+# Name:        CMakeLists.txt
 # Purpose:     Build script for Wisteria Dataviz library and demo project
 # Author:      Blake Madden
 # Created:     2022-01-17
