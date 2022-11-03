@@ -17,8 +17,10 @@ using namespace Wisteria;
 //----------------------------------------------------------
 Wisteria::UI::BaseApp::BaseApp()
     {
+#ifdef wxUSE_ON_FATAL_EXCEPTION
     // call this to tell the library to call our OnFatalException()
     wxHandleFatalExceptions();
+#endif
     }
 
 //----------------------------------------------------------
