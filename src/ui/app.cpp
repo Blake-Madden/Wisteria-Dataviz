@@ -276,7 +276,7 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
                 "Thank you for your patience."), newReportPath, m_supportEmail),
                 _(L"Error Report"), wxOK | wxICON_INFORMATION);
         #ifdef __WXMSW__
-            ShellExecute(NULL, _DT(L"open"), wxStandardPaths::Get().GetDocumentsDir(),
+            ShellExecute(NULL, _DT(L"open"), wxStandardPaths::Get().GetDocumentsDir().wc_str(),
                 NULL, NULL, SW_SHOWNORMAL);
         #endif
             }
