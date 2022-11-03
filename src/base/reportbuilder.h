@@ -317,6 +317,9 @@ namespace Wisteria
         /// @brief Converts a string value to a BoxEffect enum value.
         [[nodiscard]] static std::optional<BoxEffect>
             ConvertBoxEffect(const wxString& value);
+        /// @brief Converts a string value to a PieSliceEffect enum value.
+        [[nodiscard]] static std::optional<PieSliceEffect>
+            ConvertPieSliceEffect(const wxString& value);
         /// @brief Converts a string value to a @c wxBrushStyle enum value.
         [[nodiscard]] static std::optional<wxBrushStyle>
             ConvertBrushStyle(const wxString& value);

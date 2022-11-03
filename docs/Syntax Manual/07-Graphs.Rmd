@@ -88,6 +88,10 @@ Properties for `"pie-chart"` nodes:
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
   - `"group-1"`: the inner-ring grouping column (or only ring, if `"group-2"` isn't used).
   - `"group-2"`: the outer-ring grouping column (this is optional).
+- `"pie-label-effect"` string specifying the effects for the pie slices.
+  Available options are:
+  - `"image" `(This will require an `"image-scheme"` to be defined.)
+  - `"solid"` (the default)
 - `"label-placement"`: a string specifying where to align the outer labels.<br />
   Available options are:
   - `"flush"` (the default)

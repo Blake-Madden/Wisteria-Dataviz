@@ -508,6 +508,21 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<PieSliceEffect> ReportBuilder::ConvertPieSliceEffect(const wxString& value)
+        {
+        static const std::map<std::wstring_view, PieSliceEffect> sliceEffects =
+            {
+            { L"image", PieSliceEffect::Image },
+            { L"solid", PieSliceEffect::Solid }
+            };
+
+        const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
+        return ((foundValue != sliceEffects.cend()) ?
+            std::optional<PieSliceEffect>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<Histogram::BinningMethod> ReportBuilder::ConvertBinningMethod(const wxString& value)
         {
         static const std::map<std::wstring, Histogram::BinningMethod> binMethods =
@@ -2913,6 +2928,10 @@ namespace Wisteria
                 pieChart->SetGhostOpacity(
                     graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
                 }
+
+            if (const auto pieEffect = ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
+                pieEffect.has_value())
+                { pieChart->SetPieSliceEffect(pieEffect.value()); }
 
             // showcase the slices
             const auto showcaseGroupsNode = graphNode->GetProperty(L"showcase-slices-groups");

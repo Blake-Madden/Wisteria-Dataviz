@@ -93,6 +93,10 @@ namespace Wisteria::GraphItems
                                                                const wxRect pieArea) const noexcept;
         /// @returns The (approximate) polygon of the slice.
         std::vector<wxPoint> GetPolygon() const noexcept;
+        /// @returns The rectangle on the canvas where the point would fit in.
+        /// @param dc Measurement DC, which is not used in this implementation.
+        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+            { return Polygon::GetPolygonBoundingBox(GetPolygon()); }
     private:
         wxRect Draw(wxDC& dc) const final;
 
@@ -101,11 +105,6 @@ namespace Wisteria::GraphItems
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
             }
-
-        /// @returns The rectangle on the canvas where the point would fit in.
-        /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
-            { return Polygon::GetPolygonBoundingBox(GetPolygon()); }
 
         // obligatory virtual interfaces that aren't implemented
         [[deprecated("Not implemented")]]
@@ -409,6 +408,21 @@ namespace Wisteria::Graphs
         /// @param useColors @c true to use colors for the labels.
         void UseColorLabels(const bool useColors) noexcept
             { m_useColorLabels = useColors; }
+
+        /// @returns The effect used for drawing the slices.
+        [[nodiscard]] PieSliceEffect GetPieSliceEffect() const noexcept
+            { return m_sliceEffect; }
+        /** @brief Sets the effect for how slices are rendered.
+            @param effect The effect to use.
+            @note If using PieSliceEffect::Image, you will need to provide an image scheme.\n
+                Also, if showcasing inner-ring slices in conjunction with the
+                PieSliceEffect::Image style, the "ghosted" slices will appear as translucent images,
+                but the showcased inner slices will appear as solid colors. This is because trying
+                to have part of an image translucent and other parts of it opaque will not be obvious.\n
+                If showcasing outer-ring slices, then showcased slices will be the images at full opacity.
+            @sa SetImageScheme().*/
+        void SetPieSliceEffect(const PieSliceEffect effect) noexcept
+            { m_sliceEffect = effect; }
 
         /// @returns The opacity level applied to "ghosted" slices.
         [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
@@ -832,6 +846,8 @@ namespace Wisteria::Graphs
 
         std::shared_ptr<Brushes::Schemes::BrushScheme> m_pieBrushes;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_pieColors;
+
+        PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };
 
         bool m_useColorLabels{ false };
 

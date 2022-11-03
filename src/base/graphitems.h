@@ -374,6 +374,16 @@ namespace Wisteria
         EFFECTS_COUNT
         };
 
+    /// @brief Pie slice rendering options (used for pie charts.)
+    enum class PieSliceEffect
+        {
+        /// @brief Solid color.
+        Solid,
+        /// @brief An image scaled down to fit the slice
+        ///     (or repeated as a pattern if smaller than the slice area).
+        Image
+        };
+
     /// @brief How the corners of how various boxes are drawn.
     enum class BoxCorners
         {

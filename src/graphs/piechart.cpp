@@ -56,7 +56,9 @@ namespace Wisteria::GraphItems
             Selectable(true).
             Anchoring(Anchoring::Center).
             AnchorPoint(wxPoint(arcMiddle.first, arcMiddle.second)).
-            FontColor(ColorContrast::BlackOrWhiteContrast(GetBrush().GetColour()));
+            FontColor((GetBrush().IsOk() && GetBrush().GetColour().IsOk()) ?
+                ColorContrast::BlackOrWhiteContrast(GetBrush().GetColour()) :
+                *wxBLACK);
         pieLabel->GetFont().SetWeight(wxFONTWEIGHT_NORMAL);
         pieLabel->GetHeaderInfo().Enable(false);
 
@@ -268,7 +270,7 @@ namespace Wisteria::GraphItems
                                m_startAngle, m_endAngle);
                 }
 
-            wxDCBrushChanger bCh(dc, GetBrush());
+            wxDCBrushChanger bCh(dc, GetBrush().IsOk() ? GetBrush() : dc.GetBrush());
             dc.DrawEllipticArc(m_pieArea.GetTopLeft(), m_pieArea.GetSize(),
                                m_startAngle, m_endAngle);
             }
@@ -719,6 +721,22 @@ namespace Wisteria::Graphs
                     { pSlice->SetFontColor(GetBrushScheme()->GetBrush(i).GetColour()); }
                 pSlice->GetFont().MakeBold();
                 }
+            // if showing an image under the slice, then set its brush's stipple to that image
+            if (GetPieSliceEffect() == PieSliceEffect::Image &&
+                GetImageScheme())
+                {
+                const auto sliceBBox = pSlice->GetBoundingBox(dc);
+                const auto& bmp = GetImageScheme()->GetImage(i);
+                const auto bmpSize = geometry::calculate_downscaled_size(
+                    std::make_pair(bmp.GetDefaultSize().GetWidth(), bmp.GetDefaultSize().GetHeight()),
+                    std::make_pair(sliceBBox.GetWidth(), sliceBBox.GetHeight()));
+                auto sliceBmp = bmp.GetBitmap(wxSize(bmpSize.first, bmpSize.second));
+                if (GetOuterPie().at(i).IsGhosted())
+                    { Image::SetOpacity(sliceBmp, GetGhostOpacity()); }
+                wxASSERT_MSG(sliceBmp.IsOk(), L"Unable to create pie slice image!");
+                if (sliceBmp.IsOk())
+                    { pSlice->GetBrush() = wxBrush(sliceBmp); }
+                }
             AddObject(pSlice);
             if (GetOuterPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, false); }
@@ -856,6 +874,16 @@ namespace Wisteria::Graphs
                     }
                 pSlice->GetFont().MakeBold();
                 }
+            // Make inner slices transparent, so that its parent slice's image shows through.
+            // Note that if the parent is ghosted and this inner slice is NOT ghosted
+            // (i.e., it is being showcased), then keep as a solid color. Trying to have
+            // part of an image translucent and other parts of it opaque will not be obvious
+            // and would also be difficult to do technically.
+            const bool parentIsGhosted =
+                GetOuterPie().at(GetInnerPie().at(i).m_parentSliceIndex).IsGhosted();
+            if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
+                (!parentIsGhosted || (parentIsGhosted && GetInnerPie().at(i).IsGhosted())) )
+                { pSlice->GetBrush() = *wxTRANSPARENT_BRUSH; }
             AddObject(pSlice);
 
             if (GetInnerPie().at(i).m_showText)
