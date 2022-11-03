@@ -120,7 +120,8 @@ namespace statistics
         }
 
     /** @returns The means (average) value from the specified range.
-        @param data The data to analyze.*/
+        @param data The data to analyze.
+        @throws std::invalid_argument If no observations are provided, throws an exception.*/
     [[nodiscard]] inline double mean(const std::vector<double>& data)
         {
         const auto N = valid_n(data);
@@ -131,13 +132,14 @@ namespace statistics
             { throw std::invalid_argument("No observations in mean calculation."); }
         if (summation == 0.0f)
             { return 0.0f; }
-        return safe_divide<double>(summation, N);
+        return safe_divide<double>(summation, static_cast<double>(N));
         }
 
     /** @returns The median value from the specified range (assumes data is already sorted).
         @param begin The start of the data range.
         @param end The end of the data range.
-        @warning NaN values should be removed from the input prior to calling this.*/
+        @warning NaN values should be removed from the input prior to calling this.
+        @throws std::invalid_argument If no observations are provided, throws an exception.*/
     [[nodiscard]] inline double median_presorted(const std::vector<double>::const_iterator& begin,
                                                  const std::vector<double>::const_iterator& end)
         {
@@ -200,7 +202,8 @@ namespace statistics
 
     /** @returns The variance from the specified range.
         @param data The data to analyze.
-        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).
+        @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
     [[nodiscard]] inline double variance(const std::vector<double>& data, const bool is_sample)
         {
         // sum of squares/N-1
@@ -210,12 +213,13 @@ namespace statistics
             { throw std::invalid_argument("Not enough observations to calculate variance."); }
         if (sos == 0.0f)
             { return 0.0f; }
-        return safe_divide<double>(sos, is_sample ? (N-1) : N);
+        return safe_divide<double>(sos, static_cast<double>(is_sample ? (N-1) : N));
         }
 
     /** @returns The standard deviation from the specified range.
         @param data The data to analyze.
-        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).
+        @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
     [[nodiscard]] inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
         if (data.size() < 2)
@@ -240,7 +244,8 @@ namespace statistics
             the means will more than likely vary between samplings.
             The standard error will measure the standard deviation of these sample means.
         @param data The data to analyze.
-        @param is_sample Set to @c true to use sample variance (i.e., N-1).*/
+        @param is_sample Set to @c true to use sample variance (i.e., N-1).
+        @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
     [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data,
                                                        const bool is_sample)
         {
@@ -259,7 +264,8 @@ namespace statistics
             of the values are concentrated on the left.
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
-        @returns The skewness from the specified range.*/
+        @returns The skewness from the specified range.
+        @throws std::invalid_argument If less than three observations are provided, throws an exception.*/
     [[nodiscard]] inline double skewness(const std::vector<double>& data, const bool is_sample)
         {
         const auto N = valid_n(data);
@@ -275,7 +281,8 @@ namespace statistics
          a positive value represents a sharp curve, and a negative value represents a flat distribution.
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
-        @returns The Kurtosis from the specified range.*/
+        @returns The Kurtosis from the specified range.
+        @throws std::invalid_argument If less than four observations are provided, throws an exception.*/
     [[nodiscard]] inline double kurtosis(const std::vector<double>& data, const bool is_sample)
         {
         const auto N = valid_n(data);
@@ -293,7 +300,8 @@ namespace statistics
         @param data The data to analyze.
         @param[out] lower_quartile_value The calculated lower quartile.
         @param[out] upper_quartile_value The calculated upper quartile.
-        @note Data must be sorted beforehand.*/
+        @note Data must be sorted beforehand.
+        @throws std::invalid_argument If no observations are provided, throws an exception.*/
     inline void quartiles_presorted(const std::vector<double>& data,
                                     double& lower_quartile_value,
                                     double& upper_quartile_value)
@@ -302,7 +310,8 @@ namespace statistics
         if (N == 0)
             { throw std::invalid_argument("No observations in quartiles calculation."); }
 
-        const auto middlePosition = static_cast<size_t>(std::ceil(safe_divide<double>(N, 2)));
+        const auto middlePosition = static_cast<size_t>(std::ceil(
+            safe_divide<double>(static_cast<double>(N), 2.0)));
         // make sure we are splitting data into even halves
         assert(std::distance(data.cbegin(), data.cbegin()+middlePosition) ==
                std::distance(data.cbegin()+middlePosition-(is_even(N) ? 0 : 1), data.cend()));
@@ -421,12 +430,14 @@ namespace statistics
         double ue{ 0 };
         };
 
-    /** @returns The normalized (i.e., within the 0-1 range) value for a number compared to the specified range.
+    /** @returns The normalized (i.e., within the 0-1 range) value for a number compared
+            to the specified range.
         @param range_min The start of the range to normalize the value to.
         @param range_max The end of the range to normalize the value to.
         @param value The value to normalize.
         @note If the provided range is zero and the value is at that same value, then
-         zero will be returned (the high and low are the same here, so zero is used).*/
+            zero will be returned (the high and low are the same here, so zero is used).
+        @throws std::invalid_argument If max is higher than min, throws an exception.*/
     template<typename T>
     [[nodiscard]] inline double normalize(const T range_min, const T range_max, T value)
         {

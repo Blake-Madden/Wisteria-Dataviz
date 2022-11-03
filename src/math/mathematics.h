@@ -344,7 +344,7 @@ template<typename T>
         { return round_to_integer(x); }
     double ipart = 0;
     const double fpart = round_to_integer(modf(x, &ipart)*decimalPlace);
-    return safe_divide<double>(fpart, decimalPlace)+ipart;
+    return safe_divide<double>(fpart, static_cast<double>(decimalPlace))+ipart;
     }
 
 /** @brief Truncates a double value down to a specified precision (e.g., 5.16 -> 5.1).
@@ -359,7 +359,7 @@ template<typename T>
     const double fpart = (x < 0) ? ceil(modf(x, &ipart)*decimalPlace) : floor(modf(x, &ipart)*decimalPlace);
     if (decimalPlace == 0)
         { return ipart; }
-    return safe_divide<double>(fpart, decimalPlace)+ipart;
+    return safe_divide<double>(fpart, static_cast<double>(decimalPlace))+ipart;
     }
 
 /// @brief Floors a number.
