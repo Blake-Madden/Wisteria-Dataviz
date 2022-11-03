@@ -62,7 +62,6 @@ namespace Wisteria::GraphItems
         @sa The [image](../../Images.md) overview for more information.*/
     class Image final : public GraphItems::GraphItemBase
         {
-        friend class Wisteria::Graphs::Graph2D;
         friend class Wisteria::Canvas;
         friend class Wisteria::UI::Thumbnail;
         friend class Wisteria::GraphItems::ShapeRenderer;
@@ -271,7 +270,7 @@ namespace Wisteria::GraphItems
         void SetOpacity(const uint8_t opacity)
             { m_opacity = opacity; }
         /// @}
-    private:
+
         /** @brief Set the specified color in an image to transparent.
             @details Any pixel of this color will be set to transparent in the alpha channel.
             @param image The image to edit.
@@ -283,7 +282,7 @@ namespace Wisteria::GraphItems
             @param preserveTransparentPixels Set to @c true to not alter pixels
                 that are already transparent in the image.*/
         static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                               const bool preserveTransparentPixels = false);
+            const bool preserveTransparentPixels = false);
         /** @brief Sets the opacity of an image.
             @param image The image to edit.
             @param opacity The opacity to set the bitmap to.
@@ -305,6 +304,7 @@ namespace Wisteria::GraphItems
                 This is useful for preserving highlights in an image.*/
         static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
                                const wxColour colorToPreserve);
+private:
         /// @returns The size of the image as it is being drawn.
         [[nodiscard]] const wxSize& GetImageSize() const noexcept
             { return m_size; }
