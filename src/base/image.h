@@ -165,7 +165,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
                                                      const bool centerImage);
         /** @brief Combines a list of images together, going from left-to-right.
-            @param images The images (@c wxImage or @c wxBitmap) to stitch.
+            @param images The images (a @c vetor of `wxImage`s or `wxBitmap`s) to stitch.
             @returns The combined image.
             @sa StitchVertically().
             @code
@@ -209,7 +209,7 @@ namespace Wisteria::GraphItems
             return bmp.ConvertToImage();
             }
         /** @brief Combines a list of images together, going from top-to-bottom.
-            @param images The images (@c wxImage or @c wxBitmap) to stitch.
+            @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
             @returns The combined image.
             @sa StitchHorizontally().*/
         template<typename T>
@@ -261,6 +261,9 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static wxImage CreateSilhouette(const wxImage& image,
                                                       const bool opaque = true);
         /** @brief Creates a copy of an image with a color filter applied across it.
+            @details For example, applying a light blue will make the image look
+                "cooler," while applying an orange or red filter will make it
+                appear "warmer."
             @param image The image to create the color-filtered image from.
             @param color The color to fill the image with.
             @param opacity The opacity of the color to fill the image with.
@@ -310,8 +313,8 @@ namespace Wisteria::GraphItems
             @param image The image to edit.
             @param color The color to set to transparent.*/
         static void SetColorTransparent(wxImage& image, const wxColour color);
-        /** @brief Changes each pixel of a given color with another one in a given image,
-                and returns the corrected image.
+        /** @brief Changes each pixel of a given color with another one in a provided image,
+                and returns the altered image.
             @param image The original image.
             @param srcColor The color to replace.
             @param destColor The color to replace it with.
