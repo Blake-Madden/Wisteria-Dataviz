@@ -16,6 +16,7 @@
 #include <wx/stdpaths.h>
 #include <wx/print.h>
 #include <wx/printdlg.h>
+#include <wx/utils.h>
 #include <wx/mimetype.h>
 #include <wx/docview.h>
 #include <wx/fs_zip.h>
