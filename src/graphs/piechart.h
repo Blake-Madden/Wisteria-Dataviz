@@ -229,7 +229,7 @@ namespace Wisteria::Graphs
          auto pieData = std::make_shared<Data::Dataset>();
          try
             {
-            pieData->ImportCSV(L"datasets/Fall Enrollment.csv",
+            pieData->ImportCSV(L"/home/rdoyle/data/Fall Enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -550,17 +550,22 @@ namespace Wisteria::Graphs
         /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the outer pie's mid-point display will be used.
-                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+                Also, if @c show is @c true, then the default outer pie's mid-point
+                display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
+                then the label will not be shown.
+            @sa SetOuterPieMidPointLabelDisplay().*/
         void ShowOuterPieMidPointLabels(const bool show);
         /** @brief Shows or hides the mid-point labels of the outer (or main) pie.
             @param show @c true to show the labels, @c false to hide them.
             @param labelsToShow Which labels to either show or hide.\n
                 Slice labels not in this list will have the opposite of @c show applied to them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the outer pie's mid-point display will be used.
-                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
-        void ShowOuterPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow);
+                Also, if @c show is @c true, then the default outer pie's mid-point
+                display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
+                then the label will not be shown.
+            @sa SetOuterPieMidPointLabelDisplay().*/
+        void ShowOuterPieMidPointLabels(const bool show,
+                                        const std::vector<wxString>& labelsToShow);
         /// @}
 
         /// @name Inner Pie Functions
@@ -721,8 +726,10 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @param show @c true to show the labels, @c false to hide them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the inner pie's mid-point display will be used.
-                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+                Also, if @c show is @c true, then the default inner pie's mid-point
+                display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
+                then the label will not be shown.
+            @sa SetInnerPieMidPointLabelDisplay().*/
         void ShowInnerPieMidPointLabels(const bool show);
         /** @brief Shows or hides the mid-point labels of the inner pie
                 (if using a secondary grouping variable).
@@ -730,8 +737,10 @@ namespace Wisteria::Graphs
             @param labelsToShow Which labels to either show or hide.\n
                 Slice labels not in this list will have the opposite of @c show applied to them.
             @note This should be called after SetData().\n
-                Also, if @c show is @c true, then the inner pie's mid-point display will be used.
-                If that happens to be `BinLabelDisplay::NoDisplay`, then the label will not be shown.*/
+                Also, if @c show is @c true, then the default inner pie's mid-point
+                display will be used. If that happens to be `BinLabelDisplay::NoDisplay`,
+                then the label will not be shown.
+            @sa SetInnerPieMidPointLabelDisplay().*/
         void ShowInnerPieMidPointLabels(const bool show, const std::vector<wxString>& labelsToShow);
         /// @}
 

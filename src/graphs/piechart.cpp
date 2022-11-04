@@ -1594,32 +1594,42 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowOuterPieMidPointLabels([[maybe_unused]] const bool show)
+    void PieChart::ShowOuterPieMidPointLabels(const bool show)
         {
-        // 'show' actually is used, but GCC doesn't understand that
-        // and issues an unused variable warning
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-            [&](auto& slice) noexcept
-                { slice.SetMidPointLabelDisplay(show ?
-                    std::nullopt :
-                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay)); }
+            [&show, this](auto& slice) noexcept
+                {
+                slice.SetMidPointLabelDisplay(show ?
+                    std::optional<BinLabelDisplay>(GetOuterPieMidPointLabelDisplay()) :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                }
             );
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowOuterPieMidPointLabels([[maybe_unused]] const bool show,
+    void PieChart::ShowOuterPieMidPointLabels(const bool show,
                                               const std::vector<wxString>& labelsToShow)
         {
         std::for_each(GetOuterPie().begin(), GetOuterPie().end(),
-            [&](auto& slice) noexcept
+            [&show, &labelsToShow, this](auto& slice) noexcept
                 {
                 const bool inList = (std::find_if(
                     labelsToShow.cbegin(), labelsToShow.cend(),
                     [&slice](const auto& label)
                     { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
-                slice.SetMidPointLabelDisplay(inList ?
-                    std::nullopt :
-                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                if (inList)
+                    {
+                    slice.SetMidPointLabelDisplay(show ?
+                        std::optional<BinLabelDisplay>(GetOuterPieMidPointLabelDisplay()) :
+                        std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                    }
+                // do the opposite for labels not in the user-provided list
+                else
+                    {
+                    slice.SetMidPointLabelDisplay(show ?
+                        std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay) :
+                        std::optional<BinLabelDisplay>(GetOuterPieMidPointLabelDisplay()));
+                    }
                 }
             );
         }
@@ -1628,7 +1638,7 @@ namespace Wisteria::Graphs
     void PieChart::ShowInnerPieLabels(const bool show)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-            [&](auto& slice) noexcept
+            [&show](auto& slice) noexcept
                 { slice.ShowGroupLabel(show); }
             );
         }
@@ -1637,7 +1647,7 @@ namespace Wisteria::Graphs
     void PieChart::ShowInnerPieLabels(const bool show, const std::vector<wxString>& labelsToShow)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-            [&](auto& slice) noexcept
+            [&show, &labelsToShow](auto& slice) noexcept
                 {
                 const bool inList = (std::find_if(
                     labelsToShow.cbegin(), labelsToShow.cend(),
@@ -1652,27 +1662,39 @@ namespace Wisteria::Graphs
     void PieChart::ShowInnerPieMidPointLabels(const bool show)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-            [&](auto& slice) noexcept
-                { slice.SetMidPointLabelDisplay(show ?
-                    std::nullopt :
-                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay)); }
+            [&show, this](auto& slice) noexcept
+                {
+                slice.SetMidPointLabelDisplay(show ?
+                    std::optional<BinLabelDisplay>(GetInnerPieMidPointLabelDisplay()) :
+                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                }
             );
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowInnerPieMidPointLabels([[maybe_unused]] const bool show,
+    void PieChart::ShowInnerPieMidPointLabels(const bool show,
                                               const std::vector<wxString>& labelsToShow)
         {
         std::for_each(GetInnerPie().begin(), GetInnerPie().end(),
-            [&](auto& slice) noexcept
+            [&show, &labelsToShow, this](auto& slice) noexcept
                 {
                 const bool inList = (std::find_if(
                     labelsToShow.cbegin(), labelsToShow.cend(),
                     [&slice](const auto& label)
                     { return label.CmpNoCase(slice.GetGroupLabel()) == 0; }) != labelsToShow.cend());
-                slice.SetMidPointLabelDisplay(inList ?
-                    std::nullopt :
-                    std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                if (inList)
+                    {
+                    slice.SetMidPointLabelDisplay(show ?
+                        std::optional<BinLabelDisplay>(GetInnerPieMidPointLabelDisplay()) :
+                        std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay));
+                    }
+                // do the opposite for labels not in the user-provided list
+                else
+                    {
+                    slice.SetMidPointLabelDisplay(show ?
+                        std::optional<BinLabelDisplay>(BinLabelDisplay::NoDisplay) :
+                        std::optional<BinLabelDisplay>(GetInnerPieMidPointLabelDisplay()));
+                    }
                 }
             );
         }
