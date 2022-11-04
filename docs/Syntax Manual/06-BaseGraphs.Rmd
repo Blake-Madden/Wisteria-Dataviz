@@ -175,6 +175,9 @@ Properties for image import specifications:
 
 - `"paths"`: an array of file paths to import for the image.
 - `"color-filter"`: a string specifying a color to translucently apply across the image.
+- `"opacity"`: a number between `0-255` specifying how opaque the image is.<br />
+  Note that when loading an image for a page's background, this value will be overridden
+  by the page's background opacity setting.
 - `"stitch"` string specifying how to stitch multiple images together.<br />
   Available options are:
   - `"vertical"`

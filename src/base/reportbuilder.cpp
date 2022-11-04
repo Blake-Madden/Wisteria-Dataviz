@@ -4092,6 +4092,12 @@ namespace Wisteria
                 }
             }
 
+        if (bmpNode->GetProperty(L"opacity")->IsValueNumber())
+            {
+            Image::SetOpacity(bmp,
+                bmpNode->GetProperty(L"opacity")->GetValueNumber(wxALPHA_OPAQUE));
+            }
+
         return bmp;
         }
 
