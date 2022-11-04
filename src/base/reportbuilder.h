@@ -236,8 +236,12 @@ namespace Wisteria
         /// @brief Loads an image node.
         /// @param imageNode The image node to parse.
         /// @returns The image that was loaded, or null upon failure.
-        /// @todo many features still needed!
-        std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
+        [[nodiscard]] std::shared_ptr<GraphItems::Image> LoadImage(const wxSimpleJSON::Ptr_t& imageNode);
+
+        /// @brief Loads a bitmap node.
+        /// @param bmpNode The bitmap node to parse.
+        /// @returns The bitmap that was loaded (call `IsOk()` to validate it).
+        [[nodiscard]] wxBitmap LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode);
 
         /// @brief Loads a label node.
         /// @param labelNode The label node to parse.

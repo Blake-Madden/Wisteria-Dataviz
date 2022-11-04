@@ -104,10 +104,8 @@ namespace Wisteria
                     // background image
                     if (page->HasProperty(L"background-image"))
                         {
-                        const auto imgPath = ConvertFilePath(
-                            page->GetProperty(L"background-image")->GetValueString());
                         canvas->SetBackgroundImage(
-                            wxBitmapBundle(Image::LoadFile(imgPath)));
+                            wxBitmapBundle(LoadImageFile(page->GetProperty(L"background-image"))) );
                         }
 
                     // copy print settings from report
@@ -852,7 +850,7 @@ namespace Wisteria
                     else
                         {
                         throw std::runtime_error(
-                            _(L"Variables not defined for brackets").ToUTF8());
+                            _(L"Variables not defined for brackets.").ToUTF8());
                         }
                     }
                 else
@@ -915,40 +913,14 @@ namespace Wisteria
             if (const auto imgNode = labelNode->GetProperty(L"left-image");
                 imgNode->IsOk())
                 {
-                auto path = imgNode->GetProperty(L"path")->GetValueString();
-                if (path.length())
-                    {
-                    if (!wxFileName::FileExists(path))
-                        {
-                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
-                        if (!wxFileName::FileExists(path))
-                            {
-                            throw std::runtime_error(
-                                wxString::Format(_(L"%s: label image not found."), path).ToUTF8());
-                            }
-                        }
-                    label->SetLeftImage(Image::LoadFile(path));
-                    }
+                label->SetLeftImage(LoadImageFile(imgNode->GetProperty(L"image-import")));
                 }
             // top image
             if (const auto imgNode = labelNode->GetProperty(L"top-image");
                 imgNode->IsOk())
                 {
-                auto path = imgNode->GetProperty(L"path")->GetValueString();
-                if (path.length())
-                    {
-                    if (!wxFileName::FileExists(path))
-                        {
-                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
-                        if (!wxFileName::FileExists(path))
-                            {
-                            throw std::runtime_error(
-                                wxString::Format(_(L"%s: label image not found."), path).ToUTF8());
-                            }
-                        }
-                    label->SetTopImage(Image::LoadFile(path),
-                        imgNode->GetProperty(L"offset")->GetValueNumber(0));
-                    }
+                label->SetTopImage(LoadImageFile(imgNode->GetProperty(L"image-import")),
+                    imgNode->GetProperty(L"offset")->GetValueNumber(0));
                 }
 
             const auto orientation = labelNode->GetProperty(L"orientation")->GetValueString();
@@ -4053,8 +4025,8 @@ namespace Wisteria
             { L"no-resize", ResizeMethod::NoResize },
             };
 
-        const auto path = ConvertFilePath(imageNode->GetProperty(L"path")->GetValueString());
-        auto image = std::make_shared<GraphItems::Image>(path);
+        const auto bmp = LoadImageFile(imageNode->GetProperty(L"image-import"));
+        auto image = std::make_shared<GraphItems::Image>(bmp.ConvertToImage());
         if (image->IsOk())
             {
             // center by default, but allow LoadItems (below) to override that
@@ -4073,6 +4045,54 @@ namespace Wisteria
             }
         else
             { return nullptr; }
+        }
+
+    //---------------------------------------------------
+    wxBitmap ReportBuilder::LoadImageFile(const wxSimpleJSON::Ptr_t& bmpNode)
+        {
+        // if simply a file path, then load that and return
+        if (bmpNode->IsValueString())
+            {
+            const auto path = ConvertFilePath(bmpNode->GetValueString());
+            return Image::LoadFile(path);
+            }
+
+        // otherwise, load as all images and apply effects to them
+        std::vector<wxBitmap> bmps;
+        auto paths = bmpNode->GetProperty(L"paths")->GetValueStringVector();
+        for (auto& path : paths)
+            {
+            path = ConvertFilePath(path);
+            bmps.push_back(Image::LoadFile(path));
+            }
+        
+        if (bmps.empty())
+            {
+            throw std::runtime_error(
+                _(L"No paths provided for image.").ToUTF8());
+            }
+
+        wxBitmap bmp = bmps[0];
+
+        if (bmps.size() > 1)
+            {
+            const auto stitch = bmpNode->GetProperty(L"stitch")->GetValueString();
+            if (stitch.CmpNoCase(L"vertical") == 0)
+                { bmp = Image::StitchVertically(bmps); }
+            else
+                { bmp = Image::StitchHorizontally(bmps); }
+            }
+
+        if (bmpNode->HasProperty(L"color-filter"))
+            {
+            auto color = ConvertColor(bmpNode->GetProperty(L"color-filter"));
+            if (color.IsOk())
+                {
+                bmp = Image::CreateColorFilteredImage(bmp.ConvertToImage(), color);
+                }
+            }
+
+        return bmp;
         }
 
     //---------------------------------------------------
@@ -4256,9 +4276,9 @@ namespace Wisteria
         if (imageSchemeNode->IsOk() && imageSchemeNode->IsValueArray())
             {
             std::vector<wxBitmapBundle> images;
-            auto imageScheme = imageSchemeNode->GetValueStringVector();
-            for (auto& image : imageScheme)
-                { images.emplace_back(Image::LoadFile(ConvertFilePath(image))); }
+            const auto imgNodes = imageSchemeNode->GetValueArrayObject();
+            for (const auto& imgNode : imgNodes)
+                { images.emplace_back(LoadImageFile(imgNode)); }
             graph->SetImageScheme(
                 std::make_shared<Schemes::ImageScheme>(std::move(images)));
             }
@@ -4271,14 +4291,9 @@ namespace Wisteria
             }
 
         // stipple brush used for bar charts/box plots
-        const auto stippleImgNode = graphNode->GetProperty(L"stipple-image");
-        if (stippleImgNode->IsOk())
-            {
-            const auto imgPath = ConvertFilePath(
-                graphNode->GetProperty(L"stipple-image")->GetValueString());
-            graph->SetStippleBrush(
-                wxBitmapBundle(Image::LoadFile(imgPath)));
-            }
+        if (const auto stippleImgNode = graphNode->GetProperty(L"stipple-image"); 
+            stippleImgNode->IsOk())
+            { graph->SetStippleBrush(LoadImageFile(stippleImgNode)); }
 
         // axes
         const auto axesProperty = graphNode->GetProperty(L"axes");

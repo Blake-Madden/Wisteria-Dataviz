@@ -17,13 +17,13 @@ Properties common to all graphs:
 - `"caption"`: the caption of the graph, which contains [label](#label-properties) properties.
 - `"axes"`: an array of [axis](#axis-properties) objects.
 - `"background-color"`: a string specifying the plotting area's background color.
-- `"image-scheme"`: an array of image filepaths to use for the image scheme.
+- `"image-scheme"`: an array of image import specifications. (See [image file properties](#image-file-properties).)
 - `"common-box-image-outline"`: string specifying the color for the outline around the bars/boxes
      if using a common box image.
-- `"stiple-image"`: a string specifying the path to an image to use a stipple brush.
+- `"stipple-image"`: an image import specification. (See [image file properties](#image-file-properties).)
 - `"annotations"`: text messages that can be added on top of the graph, optionally pointing to positions
   on the graph. This is an array of annotation definitions, which contain the following properties:
-  - `"label"`: the label for the note, , which contains [label](#label-properties) properties.
+  - `"label"`: the label for the note, which contains [label](#label-properties) properties.
   - `"interest-points"`: The points that the note will point at.<br />
     This is an array of items which contain the following properties:
     - `"x"`: the X axis position of the point.
@@ -169,6 +169,19 @@ Properties for brushes:
 
 Note that brushes can be set to `null` to turn it off.
 
+## Image Files {#image-file-properties .unnumbered}
+
+Properties for image import specifications:
+
+- `"paths"`: an array of file paths to import for the image.
+- `"color-filter"`: a string specifying a color to translucently apply across the image.
+- `"stitch"` string specifying how to stitch multiple images together.<br />
+  Available options are:
+  - `"vertical"`
+  - `"horizontal"` (the default)
+
+Note that instead of properties, a single string can be specified indicating a file path to load.
+
 ## Axis {#axis-properties .unnumbered}
 
 `"axes"` nodes can either be part of a graph node definition or a [common-axis](#common-axis-properties) node.<br />
@@ -254,7 +267,6 @@ Properties for row or column table positions:
      result in the second-to-last row.
 
 A position can also be a number if not needing to use the `"origin"`/`"offset"` features.
-
 
 # Base-level Graphs
 

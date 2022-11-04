@@ -77,7 +77,7 @@ Properties for `"fillable-shape"` nodes:
 
 Properties for `"image"` nodes:
 
-- `"path"`: the file path of the image to load.
+- `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
 - `"resize-method"`: How the image's size is adjusted when its boudning box is changed.<br />
   Available options are:
   - `"downscale-only"`
@@ -109,10 +109,10 @@ Properties for `"label"` nodes:
   - `"justified-at-word"`
 - `"left-image"`: properties specifying an image to display on the left side of the label.<br />
   The available options are:
-  - `"path"`: string specifying the image path to load.
+  - `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
 - `"top-image"`: properties specifying an image to display above the label.
   The available options are:
-  - `"path"`: string specifying the image path to load.
+  - `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
   - `"offset"`: number specifying how far from the top of the label's box to draw the image. (Default is `0`.)
 - `"header"`: attributes to apply to the first row of the label.<br />
      The following sub-properties are available:
