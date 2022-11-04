@@ -111,66 +111,6 @@ namespace Wisteria::GraphItems
         return scaledCommonImg;
         }
 
-    //----------------------------------------------------------
-    wxImage Image::StitchHorizontally(const std::initializer_list<wxImage>& images)
-        {
-        if (images.size() == 0)
-            { return wxNullImage; }
-        const int imgWidth = std::accumulate(images.begin(), images.end(),
-            0.0f,
-            [](const auto initVal, const auto& img) noexcept
-              { return initVal + img.GetWidth(); });
-        const auto maxHeightImg = std::max_element(images.begin(), images.end(),
-            [](const auto& img1, const auto& img2) noexcept
-              { return img1.GetHeight() < img2.GetHeight(); });
-        wxBitmap bmp(imgWidth, maxHeightImg->GetHeight());
-
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxWHITE);
-        memDC.Clear();
-
-        int currentX{ 0 };
-        for (const auto& img : images)
-            {
-            memDC.DrawBitmap(wxBitmap(img),
-                wxPoint(currentX, (memDC.GetSize().GetHeight()-img.GetHeight())/2));
-            currentX += img.GetWidth();
-            }
-        memDC.SelectObject(wxNullBitmap);
-
-        return bmp.ConvertToImage();
-        }
-
-    //----------------------------------------------------------
-    wxImage Image::StitchVertically(const std::initializer_list<wxImage>& images)
-        {
-        if (images.size() == 0)
-            { return wxNullImage; }
-        const int imgHeight = std::accumulate(images.begin(), images.end(),
-            0.0f,
-            [](const auto initVal, const auto& img) noexcept
-              { return initVal + img.GetHeight(); });
-        const auto maxWidthImg = std::max_element(images.begin(), images.end(),
-            [](const auto& img1, const auto& img2) noexcept
-              { return img1.GetWidth() < img2.GetWidth(); });
-        wxBitmap bmp(maxWidthImg->GetWidth(), imgHeight);
-
-        wxMemoryDC memDC(bmp);
-        memDC.SetBrush(*wxWHITE);
-        memDC.Clear();
-
-        int currentY{ 0 };
-        for (const auto& img : images)
-            {
-            memDC.DrawBitmap(wxBitmap(img),
-                wxPoint((memDC.GetSize().GetWidth()-img.GetWidth())/2, currentY));
-            currentY += img.GetHeight();
-            }
-        memDC.SelectObject(wxNullBitmap);
-
-        return bmp.ConvertToImage();
-        }
-
     //-------------------------------------------
     void Image::SetOpacity(wxImage& image, const uint8_t opacity,
                            const wxColour colorToPreserve)
@@ -284,6 +224,25 @@ namespace Wisteria::GraphItems
                                      ColorBrewer::GetColor(Color::LightGray));
             }
         return Silhouette;
+        }
+
+    //-------------------------------------------
+    wxImage Image::CreateColorFilteredImage(const wxImage& image,
+                                            const wxColour color,
+                                            const uint8_t opacity /*= 100*/)
+        {
+        wxBitmap bmp(image);
+        wxMemoryDC memDC(bmp);
+        auto gc = wxGraphicsContext::Create(memDC);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for filtered image!");
+        if (gc)
+            {
+            gc->SetBrush(wxBrush(Colors::ColorContrast::ChangeOpacity(color, opacity)));
+            gc->DrawRectangle(0, 0, memDC.GetSize().GetWidth(), memDC.GetSize().GetHeight());
+            wxDELETE(gc);
+            }
+        memDC.SelectObject(wxNullBitmap);
+        return bmp.ConvertToImage();
         }
 
     //-------------------------------------------

@@ -39,11 +39,6 @@ namespace Wisteria::UI
     class Thumbnail;
     }
 
-namespace Wisteria::Graphs
-    {
-    class Graph2D;
-    }
-
 namespace Wisteria::GraphItems
     {
     class ShapeRenderer;
@@ -56,9 +51,9 @@ namespace Wisteria::GraphItems
         @details Also includes image loading and effect functions. For example,
             LoadFile() will load a JPEG and adjust its orientation (if necessary).
 
-            Other features include creating silhouettes, drawing a glassy effect,
-            filling an area with a stipple bitmap, stitching multiple images together,
-            changing pixel colors, changing the opacity, etc.
+            Other features include creating silhouettes, filling an area with a stipple bitmap,
+            stitching multiple images together, changing pixel colors,
+            changing the opacity, etc.
         @sa The [image](../../Images.md) overview for more information.*/
     class Image final : public GraphItems::GraphItemBase
         {
@@ -76,7 +71,7 @@ namespace Wisteria::GraphItems
         /** @brief Constructor.
             @param itemInfo Base information for the plot object.
             @param img The image to render.
-                LoaddFile() can be used as a quick way to load an image here.*/
+                LoadFile() can be used as a quick way to load an image here.*/
         Image(const GraphItems::GraphItemInfo& itemInfo,
               const wxImage& img) : GraphItemBase(itemInfo),
             m_originalImg(img), m_img(img),
@@ -127,15 +122,15 @@ namespace Wisteria::GraphItems
         /** @name Image Loading Functions
             @brief Functions related to querying, editing, and importing images.
             @details These are all static functions and the result of most of them
-                are `wxImage` objects that can be passed to an Image's constructor.*/
+                are `wxImage` objects that can be passed to an `Image`'s constructor.*/
         /// @{
 
         /** @brief Gets the default size of an SVG file.
             @details This is useful for determining the aspect ratio of an SVG file.
                 This can be passed to a @c wxBitmapBundle when it loads an SVG.
             @param filePath The file path to the SVG file.
-            @returns The default size of the SVG. Will be a 32x32 size if the
-                size can't be read.
+            @returns The default size of the SVG. (Will be a 32x32 size if the
+                size can't be read.)
             @note The units (e.g., mm or px) in the SVG are ignored, only the numeric
                 values of the sizes are read.*/
         [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
@@ -170,7 +165,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
                                                      const bool centerImage);
         /** @brief Combines a list of images together, going from left-to-right.
-            @param images The images to stitch.
+            @param images The images (@c wxImage or @c wxBitmap) to stitch.
             @returns The combined image.
             @sa StitchVertically().
             @code
@@ -184,12 +179,68 @@ namespace Wisteria::GraphItems
                          }))
                  );
             @endcode*/
-        [[nodiscard]] static wxImage StitchHorizontally(const std::initializer_list<wxImage>& images);
+        template<typename T>
+        [[nodiscard]] static wxImage StitchHorizontally(const std::vector<T>& images)
+            {
+            if (images.size() == 0)
+                { return wxNullImage; }
+            const int imgWidth = std::accumulate(images.cbegin(), images.cend(),
+                0.0f,
+                [](const auto initVal, const auto& img) noexcept
+                  { return initVal + img.GetWidth(); });
+            const auto maxHeightImg = std::max_element(images.cbegin(), images.cend(),
+                [](const auto& img1, const auto& img2) noexcept
+                  { return img1.GetHeight() < img2.GetHeight(); });
+            wxBitmap bmp(imgWidth, maxHeightImg->GetHeight());
+
+            wxMemoryDC memDC(bmp);
+            memDC.SetBrush(*wxWHITE);
+            memDC.Clear();
+
+            int currentX{ 0 };
+            for (const auto& img : images)
+                {
+                memDC.DrawBitmap(wxBitmap(img),
+                    wxPoint(currentX, (memDC.GetSize().GetHeight()-img.GetHeight())/2));
+                currentX += img.GetWidth();
+                }
+            memDC.SelectObject(wxNullBitmap);
+
+            return bmp.ConvertToImage();
+            }
         /** @brief Combines a list of images together, going from top-to-bottom.
-            @param images The images to stitch.
+            @param images The images (@c wxImage or @c wxBitmap) to stitch.
             @returns The combined image.
             @sa StitchHorizontally().*/
-        [[nodiscard]] static wxImage StitchVertically(const std::initializer_list<wxImage>& images);
+        template<typename T>
+        [[nodiscard]] static wxImage StitchVertically(const std::vector<T>& images)
+            {
+            if (images.size() == 0)
+                { return wxNullImage; }
+            const int imgHeight = std::accumulate(images.cbegin(), images.cend(),
+                0.0f,
+                [](const auto initVal, const auto& img) noexcept
+                  { return initVal + img.GetHeight(); });
+            const auto maxWidthImg = std::max_element(images.cbegin(), images.cend(),
+                [](const auto& img1, const auto& img2) noexcept
+                  { return img1.GetWidth() < img2.GetWidth(); });
+            wxBitmap bmp(maxWidthImg->GetWidth(), imgHeight);
+
+            wxMemoryDC memDC(bmp);
+            memDC.SetBrush(*wxWHITE);
+            memDC.Clear();
+
+            int currentY{ 0 };
+            for (const auto& img : images)
+                {
+                memDC.DrawBitmap(wxBitmap(img),
+                    wxPoint((memDC.GetSize().GetWidth()-img.GetWidth())/2, currentY));
+                currentY += img.GetHeight();
+                }
+            memDC.SelectObject(wxNullBitmap);
+
+            return bmp.ConvertToImage();
+            }
         /** @brief Renders a repeating bitmap across another bitmap's area.
             @param stipple The bitmap to draw repeatedly within the output image.
             @param fillSize The size of the output image to create.
@@ -199,15 +250,26 @@ namespace Wisteria::GraphItems
                 scaled for canvas scaling and DPI.
             @returns The image with the stipple drawn across it.*/
         [[nodiscard]] static wxImage CreateStippledImage(wxImage stipple, const wxSize fillSize,
-            const Orientation direction, const bool includeShadow,
-            const wxCoord shadowSize);
+                                                         const Orientation direction,
+                                                         const bool includeShadow,
+                                                         const wxCoord shadowSize);
         /** @brief Creates a silhouette (all black copy) of an image.
             @param image The image to create the silhouette from.
             @param opaque Whether the silhouette should be a fully opaque shadow.
                 If @c false, then it will be translucent.
             @returns The silhouette of the image.*/
-        [[nodiscard]] static wxImage CreateSilhouette(const wxImage& image, const bool opaque = true);
-        /** @brief Renders a glassy surface across a box.
+        [[nodiscard]] static wxImage CreateSilhouette(const wxImage& image,
+                                                      const bool opaque = true);
+        /** @brief Creates a copy of an image with a color filter applied across it.
+            @param image The image to create the color-filtered image from.
+            @param color The color to fill the image with.
+            @param opacity The opacity of the color to fill the image with.
+            @returns The color-filtered of the image.*/
+        [[nodiscard]] static wxImage CreateColorFilteredImage(const wxImage& image,
+                                                              const wxColour color,
+                                                              const uint8_t opacity = 100);
+        /** @private
+            @brief Renders a glassy surface across a box.
             @param fillSize The size of the output image to create.
             @param color The base color to fill the box with.
             @param direction The direction of the glassy shine.
@@ -215,6 +277,39 @@ namespace Wisteria::GraphItems
         [[deprecated("Use Polygon::SetShape() with GlassyRectangle instead.")]]
         [[nodiscard]] static wxImage CreateGlassEffect(const wxSize fillSize, const wxColour color,
                                                        const Orientation direction);
+        /** @brief Sets the opacity of a bitmap.
+            @param bmp The bitmap to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param preserveTransparentPixels Set to @c true to not alter pixels
+                that are already transparent in the image.*/
+        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
+            const bool preserveTransparentPixels = false);
+        /** @brief Sets the opacity of an image.
+            @param image The image to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param preserveTransparentPixels Set to @c true to not alter pixels that
+                are already transparent in the image.*/
+        static void SetOpacity(wxImage& image, const uint8_t opacity,
+                               const bool preserveTransparentPixels);
+        /** @brief Sets the opacity of a bitmap.
+            @param image The image to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param colorToPreserve Color which will not have its opacity altered.
+                This is useful for preserving highlights in an image.*/
+        static void SetOpacity(wxImage& image, const uint8_t opacity,
+                               const wxColour colorToPreserve);
+        /** @brief Sets the opacity of a bitmap.
+            @param bmp The bitmap to edit.
+            @param opacity The opacity to set the bitmap to.
+            @param colorToPreserve Color which will not have its opacity altered.
+                This is useful for preserving highlights in an image.*/
+        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
+                               const wxColour colorToPreserve);
+        /** @brief Set the specified color in an image to transparent.
+            @details Any pixel of this color will be set to transparent in the alpha channel.
+            @param image The image to edit.
+            @param color The color to set to transparent.*/
+        static void SetColorTransparent(wxImage& image, const wxColour color);
         /** @brief Changes each pixel of a given color with another one in a given image,
                 and returns the corrected image.
             @param image The original image.
@@ -261,49 +356,15 @@ namespace Wisteria::GraphItems
             { m_resizeMethod = resizeMethod; }
         /// @}
 
-        /** @name Image Effect Functions
-            @brief Functions related to applying effects to the image.*/
+        /** @name Image Editing Functions
+            @brief Functions related to editing the image.*/
         /// @{
 
         /** @brief Sets the opacity of the image.
             @param opacity The opacity to set the image to.*/
         void SetOpacity(const uint8_t opacity)
             { m_opacity = opacity; }
-        /// @}
-
-        /** @brief Set the specified color in an image to transparent.
-            @details Any pixel of this color will be set to transparent in the alpha channel.
-            @param image The image to edit.
-            @param color The color to set to transparent.*/
-        static void SetColorTransparent(wxImage& image, const wxColour color);
-        /** @brief Sets the opacity of a bitmap.
-            @param bmp The bitmap to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param preserveTransparentPixels Set to @c true to not alter pixels
-                that are already transparent in the image.*/
-        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-            const bool preserveTransparentPixels = false);
-        /** @brief Sets the opacity of an image.
-            @param image The image to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param preserveTransparentPixels Set to @c true to not alter pixels that
-                are already transparent in the image.*/
-        static void SetOpacity(wxImage& image, const uint8_t opacity,
-                               const bool preserveTransparentPixels);
-        /** @brief Sets the opacity of a bitmap.
-            @param image The image to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param colorToPreserve Color which will not have its opacity altered.
-                This is useful for preserving highlights in an image.*/
-        static void SetOpacity(wxImage& image, const uint8_t opacity,
-                               const wxColour colorToPreserve);
-        /** @brief Sets the opacity of a bitmap.
-            @param bmp The bitmap to edit.
-            @param opacity The opacity to set the bitmap to.
-            @param colorToPreserve Color which will not have its opacity altered.
-                This is useful for preserving highlights in an image.*/
-        static void SetOpacity(wxBitmap& bmp, const uint8_t opacity,
-                               const wxColour colorToPreserve);
+        /// @} 
 private:
         /// @returns The size of the image as it is being drawn.
         [[nodiscard]] const wxSize& GetImageSize() const noexcept
@@ -346,7 +407,7 @@ private:
             { return GetBoundingBox(dc).Contains(pt); }
         /// @brief Helper for calling calculate_downscaled_size().
         /// @param sz The size to convert.
-        /// @returns The wxSize object, wrapped into a std::pair.
+        /// @returns The @c wxSize object, wrapped into a `std::pair`.
         [[nodiscard]] inline static auto wxSizeToPair(const wxSize sz) noexcept
             { return std::make_pair(sz.GetWidth(), sz.GetHeight()); }
         wxImage m_originalImg;
