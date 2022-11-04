@@ -304,7 +304,7 @@ namespace Wisteria::Graphs
             const LegendOptions& options) = 0;
 
         /// @returns The image scheme used for various plots (e.g., bar charts and box plots).
-        [[nodiscard]] const std::shared_ptr<Wisteria::Schemes::ImageScheme>&
+        [[nodiscard]] const std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>&
             GetImageScheme() const noexcept
             { return m_imageScheme; }
         /** @brief Sets the list of images to connect to the plot.
@@ -319,7 +319,7 @@ namespace Wisteria::Graphs
                 to @c Stipple when using photographs (instead of icons) as the @c Stipple will scale
                 the image to fit, whereas @c Image will crop and center the image.
             @sa SetCommonBoxImageOutlineColor(), BoxPlot::SetBoxEffect(), BarChart::SetBarEffect().*/
-        void SetImageScheme(std::shared_ptr<Wisteria::Schemes::ImageScheme> imageScheme)
+        void SetImageScheme(std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> imageScheme)
             { m_imageScheme = imageScheme; }
 
         /// @private
@@ -609,7 +609,7 @@ namespace Wisteria::Graphs
         // transparent by default, so the underlying canvas color will show through
         wxColour m_bgColor{ wxTransparentColour };
 
-        std::shared_ptr<Wisteria::Schemes::ImageScheme>
+        std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>
             m_imageScheme{ nullptr };
         wxBitmapBundle m_emptyImage;
         wxColour m_imageOutlineColor{ *wxBLACK };

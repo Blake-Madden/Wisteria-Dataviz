@@ -422,7 +422,7 @@ private:
         };
     }
 
-namespace Wisteria::Schemes
+namespace Wisteria::Images::Schemes
     {
     /// @brief Class for a list of images.
     class ImageScheme

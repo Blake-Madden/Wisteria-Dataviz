@@ -4286,7 +4286,7 @@ namespace Wisteria
             for (const auto& imgNode : imgNodes)
                 { images.emplace_back(LoadImageFile(imgNode)); }
             graph->SetImageScheme(
-                std::make_shared<Schemes::ImageScheme>(std::move(images)));
+                std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
             }
 
         // common image outline used for bar charts/box plots

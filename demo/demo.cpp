@@ -892,7 +892,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->SetBarOrientation(Orientation::Vertical);
 
         plot->SetImageScheme(
-            std::make_shared<Wisteria::Schemes::ImageScheme>(
+            std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
                 std::vector<wxBitmapBundle>
                 {
                 wxBitmapBundle(
