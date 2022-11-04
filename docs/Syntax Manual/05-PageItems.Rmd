@@ -16,8 +16,8 @@ Properties common to all items:
 - `"pen"`: the item's pen, which includes [pen](#pen-properties) properties.
 - `"outline"`: a boolean array, specifying the item's border outlines to draw going clockwise,
      starting at 12 o'clock. Note that `"pen"` must be valid and that this is not supported by all objects.
-- `"scaling"` numeric value of how much to scale the object's size. For example, `2.0` will double the
-     its default size.
+- `"scaling"` numeric value of how much to scale the object's size. For example, `2.0` will be double the
+     default size.
 - `"show"` boolean value specifying whether to show the item.
 - `"anchoring"` controls the starting point of where the object is drawn.<br />
   This is usually only relative for objects being embedded on a plot (e.g., annotations).<br />
