@@ -167,10 +167,7 @@ void RibbonMetroArtProvider::SetColourScheme(
     primary_hsl.luminance = cos(primary_hsl.luminance * M_PI) * -0.3 + 0.53;
 
     // Map secondary saturation from [0, 1] to [0.16, 0.84]
-    bool secondary_is_gray = false;
-    if(secondary_hsl.saturation <= gray_saturation_threshold)
-        secondary_is_gray = true;
-    else
+    if(secondary_hsl.saturation > gray_saturation_threshold)
         {
         secondary_hsl.saturation = cos(secondary_hsl.saturation * M_PI)
             * -0.34 + 0.5;

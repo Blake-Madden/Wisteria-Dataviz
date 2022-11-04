@@ -267,13 +267,6 @@ namespace Wisteria::Graphs
                     {
                     // see how tall the name label is and scale the image to that size
                     br.GetAxisLabel().SetScaling(GetScaling());
-                    const auto labelHeight = br.GetAxisLabel().GetBoundingBox(dc).GetHeight();
-
-                    const auto scaledSize = wxSize(geometry::calculate_rescale_width(
-                        std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
-                                                       taskInfo.m_img.GetSize().GetHeight()),
-                        labelHeight), labelHeight);
-
                     br.GetAxisLabel().SetLeftImage(taskInfo.m_img);
                     }
                 AddBar(br, false);
@@ -339,13 +332,6 @@ namespace Wisteria::Graphs
                     {
                     // see how tall the name label is and scale the image to that size
                     arrowBar.GetAxisLabel().SetScaling(GetScaling());
-                    const auto labelHeight = arrowBar.GetAxisLabel().GetBoundingBox(dc).GetHeight();
-
-                    const auto scaledSize = wxSize(geometry::calculate_rescale_width(
-                        std::make_pair<double, double>(taskInfo.m_img.GetSize().GetWidth(),
-                                                       taskInfo.m_img.GetSize().GetHeight()),
-                        labelHeight), labelHeight);
-
                     arrowBar.GetAxisLabel().SetLeftImage(taskInfo.m_img);
                     }
                 AddBar(arrowBar, false);
