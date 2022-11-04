@@ -67,6 +67,11 @@ namespace Wisteria::Data
     class DatasetClone;
     class Pivot;
 
+    /// @brief Map of regular expressions and their replacement strings.
+    /// @details Technically this is a vector, so the order that this map is created
+    ///     is preserved.
+    /// @internal Needs to be shared pointers because @c wxRegEx has a private CTOR.
+    using RegExMap = std::vector<std::pair<std::shared_ptr<wxRegEx>, wxString>>;
     /// @brief The integral type used for looking up a label from a grouping column's string table.
     /// @details Grouping column string tables are maps that consist of a @c GroupIdType
     ///     as its lookup key and a string as its value.
@@ -261,8 +266,8 @@ namespace Wisteria::Data
         /// @warning If the column already contains data, then it is the caller's responsibility
         ///     to recode any of the existing data. This includes missing data in the column,
         ///     which by default will be mapped to @c 0.
-        ///     (The new string table may have a different code for MD, so the existing values in the column
-        ///     will need to be recoded in that case.)
+        ///     (The new string table may have a different code for MD,
+        ///     so the existing values in the column will need to be recoded in that case.)
         void SetStringTable(const StringTableType& sTable)
             { m_stringTable = sTable; }
 
@@ -582,10 +587,6 @@ namespace Wisteria::Data
             ///  connecting a string table to this column after import.
             GroupIdType m_mdCode{ 0 };
             };
-
-        /// @brief Map of regular expressions and their replacement strings.
-        /// @internal Needs to be shared pointers because @c wxRegEx has private CTOR.
-        using RegExMap = std::map<std::shared_ptr<wxRegEx>, wxString>;
 
         /** @brief Sets the names of the input columns to import for the date columns.
 
@@ -1170,6 +1171,21 @@ namespace Wisteria::Data
         void CollapseExcept(const wxString& colName,
                             const std::vector<wxString>& labelsToKeep,
                             const wxString& otherLabel = _("Other"));
+
+        /** @brief Fills an existing (or new, if not found) categorical column with values
+                based on the values in another categorical column.
+            @details This will use a map of regular expression patterns and corresponding
+                replacements, where each value in the source column is compared against
+                the regex patterns. When the first match is encounted, then the corresponding
+                replacement will then be applied to the target column.\n
+                This is somewhat simple version of `mutate()` from R.
+            @param srcColumnName The source column to compare against.
+            @param targetColumnName The target column to alter (or create).
+            @param replacementMap The map of regular expressions to match against the source column
+                and their respective values to apply to the target column upon a match.\n
+                If no matches are found, then the target value will be missing data.*/
+        void MutateCategoricalColumn(const wxString& srcColumnName, const wxString& targetColumnName,
+                                     const RegExMap& replacementMap);
 
         /** @brief Reads the column names from a file and deduces their data types.
             @param delimiter The delimiter to parse the columns with.

@@ -44,6 +44,17 @@ Properties for the `"datasets"` node:
   - `"columns-rename"`: an array of column rename commands, which contain the following:
     - `"name"`: the column to rename.
     - `"new-name"`: the new name for the column.
+  - `"mutate-categorical-columns"`: an array of categorical column mutation commands. This will either create or update
+       a categorical column and fill it with values based on another categorical column. This will use a map of
+       regular expression patterns and corresponding replacements, where each value in the source column is compared
+       against the regex patterns. When the first match is encounted, then the corresponding replacement will then
+       be applied to the target column.\n
+       Each set of commands contains the following properties:
+    - `"source-column"`: the source categorical column to review.
+    - `"target-column"`: the categorical column being mutated. (If it doesn't exist, then it will be added.)
+    - `"replacements"`: an array of pattern and replacement pairs. Each of these contain the following:
+      - `"pattern"`: the regular expression pattern to match against the source column.
+      - `"replacement"`: the replacement text.
   - `"recode-re"`: an array of categorical column recode commands. This will apply a regular expression
        text replace for each label in the provided column(s). Each set of commands contains the following properties:
     - `"column"`: the categorical column to recode.

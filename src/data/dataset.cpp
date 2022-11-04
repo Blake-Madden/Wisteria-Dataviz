@@ -42,6 +42,87 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::MutateCategoricalColumn(const wxString& srcColumnName, const wxString& targetColumnName,
+                                          const RegExMap& replacementMap)
+        {
+        if (replacementMap.empty())
+            {
+            throw std::runtime_error(
+                _(L"Replacement map empty for category mutation.").ToUTF8());
+            }
+       
+        // get target iterator first as this may need to add a new column and invalid
+        // other colum iterators
+        auto targetVar = GetCategoricalColumnWritable(targetColumnName);
+        if (targetVar == GetCategoricalColumns().end())
+            {
+            AddCategoricalColumn(targetColumnName);
+            targetVar = GetCategoricalColumnWritable(targetColumnName);
+            if (targetVar == GetCategoricalColumns().end())
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': column not found for category mutation."), srcColumnName).ToUTF8());
+                }
+            }
+
+        const auto srcVar = GetCategoricalColumn(srcColumnName);
+        if (srcVar == GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for category mutation."), srcColumnName).ToUTF8());
+            }
+
+        // prep target string table
+        GroupIdType mdCode{ 0 };
+        targetVar->GetStringTable().clear();
+        targetVar->GetStringTable().insert(std::make_pair(mdCode, wxEmptyString));
+        std::map<wxString, GroupIdType, StringCmpNoCase> idMap;
+        for (const auto& re : replacementMap)
+            {
+            const auto nextId{ targetVar->GetNextKey() };
+            targetVar->GetStringTable().insert(std::make_pair(nextId, re.second));
+            const auto [insertPos, inserted] = idMap.insert(std::make_pair(re.second, nextId));
+            if (!inserted)
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': duplicate string replacement encountered for category mutation."),
+                    re.second).ToUTF8());
+                }
+            }
+
+        // mutate the data
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            bool foundMatch{ false };
+            for (const auto& re : replacementMap)
+                {
+                const auto currentSrcLabel = srcVar->GetValueAsLabel(i);
+                if (re.first->Matches(currentSrcLabel))
+                    {
+                    const auto foundId = idMap.find(re.second);
+                    if (foundId != idMap.cend())
+                        {
+                        targetVar->SetValue(i, foundId->second);
+                        }
+                    else
+                        {
+                        // shouldn't happen
+                        wxFAIL_MSG(wxString::Format(
+                            _(L"'%s': internal error finding mapped value for category mutation."),
+                            re.second));
+                        throw std::runtime_error(wxString::Format(
+                            _(L"'%s': internal error finding mapped value for category mutation."),
+                            re.second).ToUTF8());
+                        }
+                    foundMatch = true;
+                    }
+                }
+            if (!foundMatch)
+                { targetVar->SetValue(i, mdCode); }
+            }
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::CollapseStringTable()
         {
         multi_value_aggregate_map<wxString, GroupIdType> dupMap;
@@ -230,7 +311,7 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    ImportInfo::RegExMap ImportInfo::DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
+    RegExMap ImportInfo::DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
         const wxString& regexColumnName,
         const wxString& replacementColumnName)
         {
@@ -247,7 +328,7 @@ namespace Wisteria::Data
                 _(L"'%s': regex column not found."), replacementColumnName).ToUTF8());
             }
 
-        ImportInfo::RegExMap reMap;
+        RegExMap reMap;
         wxString currentRegex;
         for (size_t i = 0; i < dataset->GetRowCount(); ++i)
             {
@@ -258,7 +339,7 @@ namespace Wisteria::Data
                 wxLogWarning(_(L"'%s': regular expression syntax error."), currentRegex);
                 continue;
                 }
-            reMap.insert(std::make_pair(
+            reMap.push_back(std::make_pair(
                 std::make_shared<wxRegEx>(currentRegex),
                 replaceColumn->GetLabelFromID(replaceColumn->GetValue(i))));
             }
