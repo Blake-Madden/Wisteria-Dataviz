@@ -18,8 +18,8 @@ Properties common to all items:
      starting at 12 o'clock. Note that `"pen"` must be valid and that this is not supported by all objects.
 - `"scaling"` numeric value of how much to scale the object's size. For example, `2.0` will be double the
      default size.
-- `"show"` boolean value specifying whether to show the item.
-- `"anchoring"` controls the starting point of where the object is drawn.<br />
+- `"show"`: boolean value specifying whether to show the item.
+- `"anchoring"`: controls the starting point of where the object is drawn.<br />
   This is usually only relative for objects being embedded on a plot (e.g., annotations).<br />
   Available options are:
   - `"bottom-left-corner"`
@@ -27,19 +27,19 @@ Properties common to all items:
   - `"center"` (the default)
   - `"top-left-corner"`
   - `"top-right-corner"`
-- `"relative-alignment"` how an object is aligned with its parent (e.g., an axis title relative to its axis).<br />
+- `"relative-alignment"`: how an object is aligned with its parent (e.g., an axis title relative to its axis).<br />
   Available options are:
   - `"flush-left"`
   - `"flush-right"`
   - `"flush-top"`
   - `"flush-bottom"`
   - `"centered"`
-- `"horizontal-page-alignment"` how to horizontally align the item within its area.<br />
+- `"horizontal-page-alignment"`: how to horizontally align the item within its area.<br />
   Available options are:
   - `"left-aligned"`
   - `"right-aligned"`
   - `"centered"`
-- `"vertical-page-alignment"` how to vertically align the item within its area.<br />
+- `"vertical-page-alignment"`: how to vertically align the item within its area.<br />
   Available options are:
   - `"top-aligned"`
   - `"bottom-aligned"`
@@ -92,7 +92,7 @@ Properties for `"label"` nodes:
 - `"text"`: the title's text.<br />
   Note that this property supports embedded formulas that can reference user-defined values loaded from the
   [constants](#constants-properties) section.
-- `"orientation"` string specifying the orientation of the text.<br />
+- `"orientation"`: string specifying the orientation of the text.<br />
   Available options are:
   - `"vertical"`
   - `"horizontal"`
@@ -118,7 +118,7 @@ Properties for `"label"` nodes:
      The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
   - `"color"`: the font color for the header. This can be either a color name or hex-encoded value.
-  - `"relative-scaling:"` numeric value of how much to scale the header's font size relative to the label's scaling.
+  - `"relative-scaling:"`: numeric value of how much to scale the header's font size relative to the label's scaling.
        For example, `2.0` will double the header's default font size compared to the rest of the label.<br />
        Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
        `"scaling"` property.

@@ -21,22 +21,22 @@ Properties for the `"datasets"` node:
     This property is optional.<br />
     Each specification consists of the following:
     - `"name"`: the name of the column.
-    - `"parser"` how to read the column.<br />
+    - `"parser"`: how to read the column.<br />
       Available options are:
-      - `"as-integers"` imports the column as discrete integers.
-      - `"as-strings"` imports the column as text. (If not specified, this will be the default).
+      - `"as-integers"`: imports the column as discrete integers.
+      - `"as-strings"`: imports the column as text. (If not specified, this will be the default).
   - `"date-columns"`: an array of date column specifications.<br />
     This property is optional.<br />
     Each specification consists of the following:
     - `"name"`: the name of the column.
-    - `"parser"` how to parse the column's date strings.<br />
+    - `"parser"`: how to parse the column's date strings.<br />
       Available options are:
       - `"iso-date"`
       - `"iso-combined"`
       - `"rfc822"`
       - `"strptime-format"`
       - `"automatic"` (if not specified, this will be the default).
-    - `"format"` if `"parser"` is set to `"strptime-format"`,
+    - `"format"`: if `"parser"` is set to `"strptime-format"`,
          then this is the user-defined format to parse with.
 
   Next, any transformation commands for a dataset node are executed. These are performed in the following order:
@@ -60,18 +60,18 @@ Properties for the `"datasets"` node:
     - `"column"`: the categorical column to recode.
     - `"pattern"`: the regular expression pattern to search for.
     - `"replacement"`: the replacement text. Note that capture groups are supported.
-  - `"collapse-min"` collapses strings which appear fewer than a minimum number of times. This is an array of
+  - `"collapse-min"`: collapses strings which appear fewer than a minimum number of times. This is an array of
     specifications which contain the following:
     - `"column"`: the categorical column to collapse.
     - `"min"`: the minimum number of times a string must appear in the column to remain in the string table.
     - `"other-label"`: the label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
-  - `"collapse-except"` collapses strings into an "Other" category, except for a list of provided labels.
+  - `"collapse-except"`: collapses strings into an "Other" category, except for a list of provided labels.
     This is an array of specifications which contain the following:
     - `"column"`: the categorical column to collapse.
     - `"labels-to-keep"`: an array of strings to preserve; all others will be lumped into a new `"Other"` category.
     - `"other-label"`: the label to use for the new category where other labels are lumped into. Default is `"Other"`.
 
-  Next, a `"formulas"` section can also be loaded from within the dataset's node.
+  Next, a `"formulas"`: section can also be loaded from within the dataset's node.
   In this context, this is a formula string which references the dataset.<br />
   This is an array of specifications which include the following properties:
 
@@ -144,7 +144,7 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"filter"`: the subset filtering definition, which will contain the following:
     - `"column"`: the column from the dataset to filter on.
-    - `"operator"` how to compare the values from the column with the filter's value.
+    - `"operator"`: how to compare the values from the column with the filter's value.
       Available options are:
       - `"="` or `"=="` equals (the default)
       - `"!="` or `"<>"` not equals
@@ -170,13 +170,13 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"type"`: a string specifying which type of merge to use.
     Available options are:
-    - "left-join-unique"` (unique) left join the dataset with another dataset (the default).
+    - "left-join-unique"`: (unique) left join the dataset with another dataset (the default).
   - `"other-dataset"`: the other dataset to merge the current dataset with. This should be a name referencing
     a previously loaded dataset.
   - `"by"`: an array of properties specifying which columns to join by. Each item should contain the following:
     - `"left-column"`: the column from the current dataset.
     - `"right-column"`: the column from the other dataset.
-  - `"suffix"` if columns in the right dataset already appear in the left dataset, then append this suffix to
+  - `"suffix"`: if columns in the right dataset already appear in the left dataset, then append this suffix to
     to column to make it unique.
 
   Finally, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
@@ -186,17 +186,17 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"type"`: a string specifying which type of pivot to use.
     Available options are:
-    - `"wider"` pivot wider (the default).
-    - `"longer"` pivot longer.
+    - `"wider"`: pivot wider (the default).
+    - `"longer"`: pivot longer.
 
   If pivoting wider, the following options are available:
   - `"id-columns"`: an array of strings representing the ID columns.
   - `"names-from-column"`: a strings representing the 'names from'.
   - `"values-from-columns"`: an array of strings representing the 'values from' columns.
-  - `"names-separator"` If multiple value columns are provided, then this separator will
+  - `"names-separator"`: if multiple value columns are provided, then this separator will
        join the label from `namesFromColumn` and the value column name.
-  - `"names-prefix"` string to prepend to newly created pivot columns.
-  - `"fill-value"` numeric value to assign to missing data. The default it so leave it as missing data.
+  - `"names-prefix"`: string to prepend to newly created pivot columns.
+  - `"fill-value"`: numeric value to assign to missing data. The default it so leave it as missing data.
 
   If pivoting longer, the following options are available:
   - `"columns-to-keep"`: an array of strings specifying the columns to not pivot. These will be copied to the new dataset

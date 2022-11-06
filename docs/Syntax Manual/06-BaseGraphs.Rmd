@@ -66,14 +66,14 @@ Properties common to all graphs:
     - `"fade-from-left-to-right"`
     - `"fade-from-right-to-left"`
     - `"solid"`
-- `"brush-scheme"` for graphs that support brush schemes only.<br />
+- `"brush-scheme"`: for graphs that support brush schemes only.<br />
      Contains the following properties:
      `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
      `"color-scheme"`: a color scheme that is mapped to the brush styles.
-- `"color-scheme"` for graphs that support color schemes only.<br />
+- `"color-scheme"`: for graphs that support color schemes only.<br />
      This can either be an array of color strings or the name of the color scheme.<br />
      Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
-- `"icon-scheme"` for graphs that support icon/marker schemes only.<br />
+- `"icon-scheme"`: for graphs that support icon/marker schemes only.<br />
   This an either be an icon scheme name or an array of icon strings (which can be recycled)<br />
   Refer to `Wisteria::Icons::Schemes` for a list of icon schemes.<br />
   The following individual icons are available:
@@ -108,7 +108,7 @@ Properties common to all graphs:
   - `"man"`
   - `"woman"`
   - `"business-woman"`
-- `"line-scheme"` for graphs that support line schemes only.<br />
+- `"line-scheme"`: for graphs that support line schemes only.<br />
   This is an array of line specifications (which can be recycled)<br />
   Each specification contains the following:
   - `"line-style"`: a string specifying the line style.<br />
@@ -118,17 +118,17 @@ Properties common to all graphs:
     - `"spline"`
   - `"pen-style"`: a [pen](#pen-properties) specificaiton (although only the pen style is used)
 - `"legend"`: an item containing the following properties:
-  - `"placement"` where to place the legend.<br />
+  - `"placement"`: where to place the legend.<br />
     Available options are:
     - `"left"`
     - `"right"` (the default)
     - `"top"`
     - `"bottom"`
-  - `"include-header"` `true` to include a header (the default), `false` to not.
-  - `"title"` if `"include-header"` is `true`, a string specifying the title of the legend.
-  - `"ring"` for pie charts, which ring to use for the legend.<br />
+  - `"include-header"`: `true` to include a header (the default), `false` to not.
+  - `"title"`: if `"include-header"` is `true`, a string specifying the title of the legend.
+  - `"ring"`: for pie charts, which ring to use for the legend.<br />
     Available options are:
-    - `"outer"` only the outer (or only) ring is included. (This is the default.)
+    - `"outer"`: only the outer (or only) ring is included. (This is the default.)
     - `"inner"`: the inner and outer rings are included in the legend.
 
 # Common Graph Features
@@ -178,7 +178,7 @@ Properties for image import specifications:
 - `"opacity"`: a number between `0-255` specifying how opaque the image is.<br />
   Note that when loading an image for a page's background, this value will be overridden
   by the page's background opacity setting.
-- `"stitch"` string specifying how to stitch multiple images together.<br />
+- `"stitch"`: string specifying how to stitch multiple images together.<br />
   Available options are:
   - `"vertical"`
   - `"horizontal"` (the default)
@@ -189,7 +189,7 @@ Note that instead of properties, a single string can be specified indicating a f
 
 `"axes"` nodes can either be part of a graph node definition or a [common-axis](#common-axis-properties) node.<br />
   For the former, this can define properties for the various axes in the graph.<br />
-  `"axes"` nodes contain an array of axis objects, each with the following properties:
+  `"axes"`: nodes contain an array of axis objects, each with the following properties:
 
 - `"axis-type"`: the type of axis.<br />
   Available options are:
@@ -216,7 +216,7 @@ Note that instead of properties, a single string can be specified indicating a f
   - `"no-display"`
 - `"show-outer-labels"`: `true` to show the outer labels on the axis.
 - `"label-length"`: a number specifying the suggested maximum length for the axis labels. (Default is 100.)
-- `"label-length-auto"` if `true`, an attempt will be made to split longer axis labels based on
+- `"label-length-auto"`: if `true`, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
 
 - `"brackets"`: adds brackets to the axis,which can be an array of bracket definitions or single set of properties
@@ -229,7 +229,7 @@ Note that instead of properties, a single string can be specified indicating a f
        Note that this dataset can be different from the dataset used for the first
        child graph if you are wanting to use different labels. For this situation, the
        `"value"` variable should have the same scale as the child graph.
-  - `"variables"` which include the following properties:
+  - `"variables"`: which include the following properties:
     - `"label"`: the labels column.
     - `"value"`: the values column. (This can be either a continous, categorical, or date column.)
   - `"pen"`: the bracket line, which includes [pen](#pen-properties) properties.
@@ -296,6 +296,8 @@ Properties common to all bar-chart derived graphs:
   - `"value-and-percentage"`
   - `"no-display"`
   - `"bin-name"`
+  - `"bin-name-and-value"`
+  - `"bin-name-and-percentage"`
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
 - `"ghost-opacity"`: number specifying the opacity level of non-showcased bars.
 - `"showcase-bars"`: an array of strings specifying which bars to showcase.
@@ -308,7 +310,7 @@ Properties common to all bar-chart derived graphs:
     Available options are:
     - `"ascending"`
     - `"descending"`
-  - `"by"` how to sort the bars, by label or length. This will override any `"labels"` option.
+  - `"by"`: how to sort the bars, by label or length. This will override any `"labels"` option.
     Available options are:
     - `"length"`
     - `"label"`
