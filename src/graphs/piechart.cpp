@@ -552,6 +552,13 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
+        std::vector<std::shared_ptr<GraphItemBase>> addedObjects;
+        const auto addObjectAndQueueForOffsetting = [&addedObjects, this](auto obj)
+            {
+            AddObject(obj);
+            addedObjects.push_back(obj);
+            };
+
         // get a square inside of the drawing area for the pie
         wxRect pieDrawArea = GetPlotAreaBoundingBox();
         // get 75% of the area width and height for the pie (adding space for any labels),
@@ -794,7 +801,7 @@ namespace Wisteria::Graphs
                 if (sliceBmp.IsOk())
                     { pSlice->GetBrush() = wxBrush(sliceBmp); }
                 }
-            AddObject(pSlice);
+            addObjectAndQueueForOffsetting(pSlice);
             if (GetOuterPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, false); }
 
@@ -828,7 +835,7 @@ namespace Wisteria::Graphs
             if (middleLabel != nullptr)
                 {
                 middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
-                AddObject(middleLabel);
+                addObjectAndQueueForOffsetting(middleLabel);
                 }
             }
 
@@ -941,7 +948,7 @@ namespace Wisteria::Graphs
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
                 (!parentIsGhosted || (parentIsGhosted && GetInnerPie().at(i).IsGhosted())) )
                 { pSlice->GetBrush() = *wxTRANSPARENT_BRUSH; }
-            AddObject(pSlice);
+            addObjectAndQueueForOffsetting(pSlice);
 
             if (GetInnerPie().at(i).m_showText)
                 { createLabelAndConnectionLine(pSlice, true); }
@@ -1037,7 +1044,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            AddObject(outerLabel);
+            addObjectAndQueueForOffsetting(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1061,7 +1068,7 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                AddObject(outerLine);
+                addObjectAndQueueForOffsetting(outerLine);
                 }
             }
         // left-side labels, bottom quadrant
@@ -1115,7 +1122,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            AddObject(outerLabel);
+            addObjectAndQueueForOffsetting(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1139,7 +1146,7 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                AddObject(outerLine);
+                addObjectAndQueueForOffsetting(outerLine);
                 }
             }
 
@@ -1211,7 +1218,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            AddObject(outerLabel);
+            addObjectAndQueueForOffsetting(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1234,7 +1241,7 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                AddObject(outerLine);
+                addObjectAndQueueForOffsetting(outerLine);
                 }
             }
         // right-side labels, bottom quadrant (drawn counter clockwise)
@@ -1290,7 +1297,7 @@ namespace Wisteria::Graphs
                     }
                 }
             previousLabelBoundingBox = outerLabel->GetBoundingBox(dc);
-            AddObject(outerLabel);
+            addObjectAndQueueForOffsetting(outerLabel);
             // If there is a connection line and label is flush, set the end point
             // to be next to the label; otherwise, just add it.
             if (outerLine != nullptr)
@@ -1313,7 +1320,7 @@ namespace Wisteria::Graphs
                     if (!pieDrawArea.Contains(calculatedMiddlePt))
                         { middlePt.SetAnchorPoint(calculatedMiddlePt); }
                     }
-                AddObject(outerLine);
+                addObjectAndQueueForOffsetting(outerLine);
                 }
             }
 
@@ -1323,7 +1330,7 @@ namespace Wisteria::Graphs
             if (middleLabel != nullptr)
                 {
                 middleLabel->GetFont().SetPointSize(smallestMiddleLabelFontSize);
-                AddObject(middleLabel);
+                addObjectAndQueueForOffsetting(middleLabel);
                 }
             }
 
@@ -1342,7 +1349,7 @@ namespace Wisteria::Graphs
                 0);
             const double holeRadius{ (pieDrawArea.GetWidth() * GetDonutHoleProportion()) / 2 };
             donutHole->SetRadius(donutHole->DownscaleFromScreenAndCanvas(holeRadius));
-            AddObject(donutHole);
+            addObjectAndQueueForOffsetting(donutHole);
 
             if (GetDonutHoleLabel().GetText().length())
                 {
@@ -1362,7 +1369,117 @@ namespace Wisteria::Graphs
                     wxRect(donutHoleLabelCorner,
                            wxSize(rectWithinCircleWidth, rectWithinCircleWidth)),
                     dc, GetScaling());
-                AddObject(donutHoleLabel);
+                addObjectAndQueueForOffsetting(donutHoleLabel);
+                }
+            }
+
+        // Resplits labels that may be been split. This is meant to take advantage
+        // of having more real estate available; newlines will be removed, and
+        // then will be resplit, hopefully having no (or at least less) newlines now.
+        const auto refitLabelAndLine = [&dc, this](auto& labelAndLine, const Wisteria::Side side)
+            {
+            if (labelAndLine.first->GetLineCount() < 2)
+                { return; }
+            wxString text = labelAndLine.first->GetText();
+            text.Replace(L"\n", " ");
+            labelAndLine.first->SetText(text);
+            auto labelBox = labelAndLine.first->GetBoundingBox(dc);
+            if (!Polygon::IsRectInsideRect(labelBox, GetPlotAreaBoundingBox()) )
+                {
+                if (!labelAndLine.first->SplitTextAuto())
+                    {
+                    labelAndLine.first->SplitTextToFitLength(
+                        labelAndLine.first->GetText().length() * math_constants::third);
+                    }
+                }
+            // reconnect to its line
+            labelBox = labelAndLine.first->GetBoundingBox(dc);
+            if (labelAndLine.second != nullptr &&
+                labelAndLine.second->GetPoints().size())
+                {
+                if (side == Side::Right)
+                    {
+                    auto connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
+                    connectionPt.y += labelBox.GetHeight() / 2;
+                    labelAndLine.first->SetAnchorPoint(connectionPt);
+                    labelAndLine.first->SetAnchoring(Anchoring::BottomLeftCorner);
+                    }
+                else
+                    {
+                    auto connectionPt = labelAndLine.second->GetPoints().back().GetAnchorPoint();
+                    connectionPt.y += labelBox.GetHeight() / 2;
+                    labelAndLine.first->SetAnchorPoint(connectionPt);
+                    labelAndLine.first->SetAnchoring(Anchoring::BottomRightCorner);
+                    }
+                }
+            };
+
+        // if we have an empty gutter, then shift everything over and give that real estate
+        // to the other gutter (if the client is requesting that behaviour).
+        if (HasDynamicMargins())
+            {
+            // if both gutters are empty, then no point in moving the chart around
+            // (just keep it centered)
+            if (outerTopLeftLabelAndLines.empty() &&
+                outerBottomLeftLabelAndLines.empty() &&
+                outerTopRightLabelAndLines.empty() &&
+                outerBottomRightLabelAndLines.empty())
+                { /*noop*/ }
+            // empty left gutter
+            if (outerTopLeftLabelAndLines.empty() &&
+                outerBottomLeftLabelAndLines.empty())
+                {
+                const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
+                // move everything over to the left
+                std::for_each(addedObjects.begin(), addedObjects.end(),
+                    [&](auto& obj)
+                    {
+                    if (obj != nullptr)
+                        { obj->Offset(-xDiff, 0); }
+                    });
+                // refit outer right labels now that there is more real estate for them
+                std::for_each(outerTopRightLabelAndLines.begin(),
+                              outerTopRightLabelAndLines.end(),
+                    [&](auto& labelAndLine)
+                    {
+                    if (labelAndLine.first != nullptr)
+                        { refitLabelAndLine(labelAndLine, Side::Right); }
+                    });
+                std::for_each(outerBottomRightLabelAndLines.begin(),
+                              outerBottomRightLabelAndLines.end(),
+                    [&](auto& labelAndLine)
+                    {
+                    if (labelAndLine.first != nullptr)
+                        { refitLabelAndLine(labelAndLine, Side::Right); }
+                    });
+                }
+            // empty right gutter
+            if (outerTopRightLabelAndLines.empty() &&
+                outerBottomRightLabelAndLines.empty())
+                {
+                const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
+                // move everything over to the right
+                std::for_each(addedObjects.begin(), addedObjects.end(),
+                    [&](auto& obj)
+                    {
+                    if (obj != nullptr)
+                        { obj->Offset(xDiff, 0); }
+                    });
+                // refit outer left labels now that there is more real estate for them
+                std::for_each(outerTopLeftLabelAndLines.begin(),
+                              outerTopLeftLabelAndLines.end(),
+                    [&](auto& labelAndLine)
+                    {
+                    if (labelAndLine.first != nullptr)
+                        { refitLabelAndLine(labelAndLine, Side::Left); }
+                    });
+                std::for_each(outerBottomLeftLabelAndLines.begin(),
+                              outerBottomLeftLabelAndLines.end(),
+                    [&](auto& labelAndLine)
+                    {
+                    if (labelAndLine.first != nullptr)
+                        { refitLabelAndLine(labelAndLine, Side::Left); }
+                    });
                 }
             }
         }

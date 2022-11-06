@@ -2951,6 +2951,8 @@ namespace Wisteria
                 pieEffect.has_value())
                 { pieChart->SetPieSliceEffect(pieEffect.value()); }
 
+            pieChart->SetDynamicMargins(graphNode->GetProperty(L"dynamic-margins")->GetValueBool());
+
             // showcase the slices
             const auto showcaseNode = graphNode->GetProperty(L"showcase-slices");
             if (showcaseNode->IsValueArray())
