@@ -176,6 +176,23 @@ namespace Wisteria::GraphItems
              thePlot->GetLeftYAxis().GetTitle().SplitTextByCharacter();
             @endcode*/
         void SplitTextByCharacter();
+
+        /// @returns Number of lines of text in the label.
+        [[nodiscard]] size_t GetLineCount() const noexcept
+            { return m_lineCount; }
+        /// @returns Number of lines of text in the label, ignoring the header (if enabled).
+        [[nodiscard]] size_t GetLineCountWithoutHeader() const noexcept
+            { return m_lineCount - (GetHeaderInfo().IsEnabled() ? 1 : 0); }
+        /// @returns The number of characters from the longest line of text in the label.
+        [[nodiscard]] size_t GetLongestLineLength() const noexcept
+            {
+            // make sure this was cached properly
+            wxASSERT_LEVEL_2_MSG(
+                (GetText().length() == 0 && m_longestLineLength == 0) ||
+                (GetText().length() > 0 && m_longestLineLength > 0),
+                L"Longest line length in label was not calculated!");
+            return m_longestLineLength;
+            }
         /// @}
 
         /// @name Style Functions
@@ -347,22 +364,6 @@ namespace Wisteria::GraphItems
         ///     may be smaller than @c textWidth.
         /// @param textWidth The current width of the label.
         [[nodiscard]] wxSize CalcTopImageSize(const wxCoord textWidth) const;
-        /// @returns Number of lines of text in the label.
-        [[nodiscard]] size_t GetLineCount() const noexcept
-            { return m_lineCount; }
-        /// @returns Number of lines of text in the label, ignoring the header (if enabled).
-        [[nodiscard]] size_t GetLineCountWithoutHeader() const noexcept
-            { return m_lineCount - (GetHeaderInfo().IsEnabled() ? 1 : 0); }
-        /// @returns The number of characters from the longest line of text in the label.
-        [[nodiscard]] size_t GetLongestLineLength() const noexcept
-            {
-            // make sure this was cached properly
-            wxASSERT_LEVEL_2_MSG(
-                (GetText().length() == 0 && m_longestLineLength == 0) ||
-                (GetText().length() > 0 && m_longestLineLength > 0),
-                L"Longest line length in label was not calculated!");
-            return m_longestLineLength;
-            }
         /** @returns @c true if the given point is inside of the label.
             @param pt The point to check.*/
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
