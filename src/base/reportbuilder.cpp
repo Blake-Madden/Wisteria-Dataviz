@@ -593,7 +593,9 @@ namespace Wisteria
             { L"value", BinLabelDisplay::BinValue },
             { L"value-and-percentage", BinLabelDisplay::BinValueAndPercentage },
             { L"no-display", BinLabelDisplay::NoDisplay },
-            { L"bin-name", BinLabelDisplay::BinName }
+            { L"bin-name", BinLabelDisplay::BinName },
+            { L"bin-name-and-value", BinLabelDisplay::BinNameAndValue },
+            { L"bin-name-and-percentage", BinLabelDisplay::BinNameAndPercentage },
             };
 
         const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
@@ -4042,7 +4044,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    wxString ReportBuilder::ConvertFilePath(const wxString& path)
+    wxString ReportBuilder::NormalizeFilePath(const wxString& path)
         {
         wxString expandedPath{ path };
         if (expandedPath.empty())
@@ -4102,7 +4104,7 @@ namespace Wisteria
         // if simply a file path, then load that and return
         if (bmpNode->IsValueString())
             {
-            const auto path = ConvertFilePath(bmpNode->GetValueString());
+            const auto path = NormalizeFilePath(bmpNode->GetValueString());
             return Image::LoadFile(path);
             }
 
@@ -4111,7 +4113,7 @@ namespace Wisteria
         auto paths = bmpNode->GetProperty(L"paths")->GetValueStringVector();
         for (auto& path : paths)
             {
-            path = ConvertFilePath(path);
+            path = NormalizeFilePath(path);
             bmps.push_back(Image::LoadFile(path));
             }
         

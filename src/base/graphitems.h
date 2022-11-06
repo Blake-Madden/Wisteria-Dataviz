@@ -407,6 +407,11 @@ namespace Wisteria
         NoDisplay,
         /** @brief The name of the bin (e.g., the group name).*/
         BinName,
+        /** @brief The name of the bin (e.g., the group name) and the value.*/
+        BinNameAndValue,
+        /** @brief The name of the bin (e.g., the group name) and the
+                percentage of items in (or aggregated value of) each bin.*/
+        BinNameAndPercentage,
         /// @private
         BIN_LABEL_DISPLAY_COUNT
         };

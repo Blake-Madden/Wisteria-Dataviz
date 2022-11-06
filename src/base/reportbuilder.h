@@ -286,7 +286,7 @@ namespace Wisteria
 
         /// @brief If @c path is fully specified, then returns @c path.
         ///     Otherwise, tries to return the path relative to the project file.
-        [[nodiscard]] wxString ConvertFilePath(const wxString& path);
+        [[nodiscard]] wxString NormalizeFilePath(const wxString& path);
 
         /// @brief Converts a string value to a @c wxPaperSize enum value.
         [[nodiscard]] static std::optional<wxPaperSize>
@@ -331,7 +331,7 @@ namespace Wisteria
         [[nodiscard]] static std::optional<wxBrushStyle>
             ConvertBrushStyle(const wxString& value);
         /// @brief Loads a color from a string.
-        /// @param colorStr The string to parse and converted into a color.
+        /// @param colorStr The string to parse and convert into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(wxString colorStr);

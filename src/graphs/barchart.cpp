@@ -34,6 +34,16 @@ namespace Wisteria::Graphs
                 wxString(wxEmptyString) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
                 bar.GetAxisLabel().GetText() :
+            (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
+                bar.GetAxisLabel().GetText() +
+                wxString::Format(L" (%s)",
+                    wxNumberFormatter::ToString(bar.GetLength(), 0,
+                        Settings::GetDefaultNumberFormat())) :
+            (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
+                bar.GetAxisLabel().GetText() +
+                wxString::Format(L" (%s%%)",
+                    wxNumberFormatter::ToString(percentage, (percentage < 1) ? 2 : 0,
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 wxNumberFormatter::ToString(bar.GetLength(), 0,
                                         Settings::GetDefaultNumberFormat()) :

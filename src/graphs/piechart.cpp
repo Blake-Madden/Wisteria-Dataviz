@@ -24,6 +24,10 @@ namespace Wisteria::GraphItems
         {
         const auto arcMiddle = GetMiddleOfArc(pieProportion);
         auto pieLabel = std::make_shared<Label>(GetGraphItemInfo());
+        // if less than 1%, then use higher precision so that it doesn't just show as "0%"
+        const auto percStr = wxNumberFormatter::ToString(m_percent * 100,
+            ((m_percent * 100) < 1) ? 2 : 0,
+            wxNumberFormatter::Style::Style_NoTrailingZeroes);
         switch (labelDisplay)
             {
         case BinLabelDisplay::BinValue:
@@ -33,15 +37,26 @@ namespace Wisteria::GraphItems
             break;
         case BinLabelDisplay::BinValueAndPercentage:
             pieLabel->SetText(wxString::Format(L"%s%%\n(%s)",
-                wxNumberFormatter::ToString((m_percent * 100), 0),
+                percStr,
                 wxNumberFormatter::ToString(m_value, 0,
                     Settings::GetDefaultNumberFormat())) );
             break;
         case BinLabelDisplay::BinPercentage:
-            pieLabel->SetText(wxNumberFormatter::ToString((m_percent * 100), 0) + L"%");
+            pieLabel->SetText(percStr + L"%");
             break;
         case BinLabelDisplay::NoDisplay:
             pieLabel->SetText(wxEmptyString);
+            break;
+        case BinLabelDisplay::BinNameAndValue:
+            pieLabel->SetText(wxString::Format(L"%s\n(%s)",
+                pieLabel->GetText(),
+                wxNumberFormatter::ToString(m_value, 0,
+                    Settings::GetDefaultNumberFormat())));
+            break;
+        case BinLabelDisplay::BinNameAndPercentage:
+            pieLabel->SetText(wxString::Format(L"%s\n(%s%%)",
+                pieLabel->GetText(),
+                percStr));
             break;
         case BinLabelDisplay::BinName:
             [[fallthrough]];
