@@ -328,7 +328,7 @@ namespace Wisteria::Graphs
         /// @}
 
         /// @name Layout Functions
-        /// @brief Functions relating to layout of the plot.
+        /// @brief Functions relating to the layout of the plot.
         /// @{
 
         /// @brief Gets the maximum number of points displayed before the parent canvas

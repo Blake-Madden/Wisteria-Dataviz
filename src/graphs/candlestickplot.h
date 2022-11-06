@@ -111,8 +111,8 @@ namespace Wisteria::Graphs
             @param highColumnName The column containing the highest price during the day.
             @param closeColumnName The column containing the closing price.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-             The exception's @c what() message is UTF-8 encoded, so pass it to @c wxString::FromUTF8()
-             when formatting it for an error message.*/
+                 The exception's @c what() message is UTF-8 encoded, so pass it to
+                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& dateColumnName,
                      const wxString& openColumnName, const wxString& highColumnName,
@@ -137,21 +137,21 @@ namespace Wisteria::Graphs
         /// @}
 
         /// @name Layout Functions
-        /// @brief Functions relating to layout of the plot.
+        /// @brief Functions relating to the layout of the plot.
         /// @{
 
         /// @brief Gets the maximum number of days displayed before the parent canvas
-        ///  is forced to be made wider. (Which will make this plot easier to read).
+        ///     is forced to be made wider. (Which will make this plot easier to read).
         /// @returns The most days that can be plotted before the parent canvas will be widened.
         [[nodiscard]] size_t GetPointsPerDefaultCanvasSize() const noexcept
             { return m_pointsPerDefaultCanvasSize; }
         /** @brief Sets the maximum number of days displayed before the parent canvas is
-             forced to be made wider.
+                forced to be made wider.
             @details Adjusting this is useful for when you have a large number of days and the
-             display looks too condensed. Increasing this value will widen the plot, allowing for
-             more space to spread the points out. The default is 100 days.
-            @param pointsPerDefaultCanvasSize The number points to display before requiring the canvas
-             to be made wider.*/
+                 display looks too condensed. Increasing this value will widen the plot, allowing
+                 for more space to spread the points out. The default is 100 days.
+            @param pointsPerDefaultCanvasSize The number points to display before requiring the
+                canvas to be made wider.*/
         void SetPointsPerDefaultCanvasSize(const size_t pointsPerDefaultCanvasSize)
             {
             m_pointsPerDefaultCanvasSize = pointsPerDefaultCanvasSize;
@@ -163,7 +163,10 @@ namespace Wisteria::Graphs
         [[deprecated("Candlestick plot does not support legends.")]]
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) final
-            { return nullptr; }
+            {
+            wxFAIL_MSG(L"Candlestick plot does not support legends.");
+            return nullptr;
+            }
     private:
         struct Ohlc
             {
