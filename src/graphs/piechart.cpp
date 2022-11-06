@@ -723,7 +723,7 @@ namespace Wisteria::Graphs
                 }
             // if showing an image under the slice, then set its brush's stipple to that image
             if (GetPieSliceEffect() == PieSliceEffect::Image &&
-                GetImageScheme())
+                GetImageScheme() && GetImageScheme()->GetImage(i).IsOk())
                 {
                 const auto sliceBBox = pSlice->GetBoundingBox(dc);
                 const auto& bmp = GetImageScheme()->GetImage(i);
@@ -795,7 +795,7 @@ namespace Wisteria::Graphs
         innerDrawArea.width *= sliceProportion;
         innerDrawArea.height *= sliceProportion;
         innerDrawArea.Offset(wxPoint((pieDrawArea.width-innerDrawArea.width)/2,
-                                        (pieDrawArea.height-innerDrawArea.height)/2));
+                                     (pieDrawArea.height-innerDrawArea.height)/2));
 
         // how much (percentage) of the inner ring area the donut hole consumes
         const double donutHoleInnerProportion = safe_divide<double>(

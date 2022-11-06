@@ -4116,10 +4116,7 @@ namespace Wisteria
             }
         
         if (bmps.empty())
-            {
-            throw std::runtime_error(
-                _(L"No paths provided for image.").ToUTF8());
-            }
+            { return wxNullBitmap; }
 
         wxBitmap bmp = bmps[0];
 
