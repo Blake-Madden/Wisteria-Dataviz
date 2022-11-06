@@ -1891,6 +1891,26 @@ namespace Wisteria
                     colRename->GetProperty(_DT(L"name"))->GetValueString(),
                     colRename->GetProperty(L"new-name")->GetValueString());
                 }
+
+            // column mutations
+            auto mutateCats = dsNode->GetProperty(L"mutate-categorical-columns")->GetValueArrayObject();
+            for (const auto& mutateCat : mutateCats)
+                {
+                RegExMap reMap;
+                const auto replacements = mutateCat->GetProperty(L"replacements")->GetValueArrayObject();
+                for (const auto& replacement : replacements)
+                    {
+                    reMap.push_back(std::make_pair(
+                        std::make_shared<wxRegEx>(replacement->GetProperty(L"pattern")->GetValueString()),
+                        replacement->GetProperty(L"replacement")->GetValueString()));
+                    }
+
+                dataset->MutateCategoricalColumn(
+                    mutateCat->GetProperty(L"source-column")->GetValueString(),
+                    mutateCat->GetProperty(L"target-column")->GetValueString(),
+                    reMap);
+                }
+
             // label recoding
             auto recodeREs = dsNode->GetProperty(L"recode-re")->GetValueArrayObject();
             for (const auto& recodeRE : recodeREs)
