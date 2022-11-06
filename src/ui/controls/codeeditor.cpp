@@ -244,7 +244,7 @@ void CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags 
         EnsureCaretVisible();
         }
     // not found going forward, so start from beginning and try from there
-    else if (foundPos == wxSTC_INVALID_POSITION)
+    else
         {
         wxMessageBox(_("No occurrences found."),
                 _("Item Not Found"), wxOK|wxICON_INFORMATION);
@@ -277,7 +277,7 @@ void CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
         EnsureCaretVisible();
         }
     // not found going forward, so start from beginning and try from there
-    else if (foundPos == wxSTC_INVALID_POSITION)
+    else
         {
         foundPos = FindText(0, GetLength(), textToFind, searchFlags);
         if (foundPos != wxSTC_INVALID_POSITION)

@@ -63,7 +63,7 @@ namespace Wisteria::UI
             @param parent The parent window.
             @param winid The window ID.
             @param includeDontShowAgain Whether to show a "don't show this again" checkbox.*/
-        InfoBarEx(wxWindow *parent, wxWindowID winid = wxID_ANY,
+        explicit InfoBarEx(wxWindow *parent, wxWindowID winid = wxID_ANY,
             const bool includeDontShowAgain = true) :
             m_includeDontShowAgain(includeDontShowAgain)
             { Create(parent, winid); }
