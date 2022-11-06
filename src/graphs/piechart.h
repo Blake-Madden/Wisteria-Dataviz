@@ -419,7 +419,14 @@ namespace Wisteria::Graphs
                 PieSliceEffect::Image style, the "ghosted" slices will appear as translucent images,
                 but the showcased inner slices will appear as solid colors. This is because trying
                 to have part of an image translucent and other parts of it opaque will not be obvious.\n
-                If showcasing outer-ring slices, then showcased slices will be the images at full opacity.
+                If showcasing outer-ring slices, then showcased slices will be the images at full opacity.\n
+                \n
+                Images will be stippled (repeated) for slices with angles larger than 90 degrees.
+                (The image will be repeated every 90 degrees.)\n
+                \n
+                Finally, images and solid colors can be mixed and matched by using an image scheme
+                with invalid images (i.e., @c wxNullBitmap). When an null bitmap is encountered in an
+                image scheme, then the respective slice will fall back to using the brush and color schemes.
             @sa SetImageScheme().*/
         void SetPieSliceEffect(const PieSliceEffect effect) noexcept
             { m_sliceEffect = effect; }
@@ -484,37 +491,21 @@ namespace Wisteria::Graphs
         /// @brief Brings to focus the specified slice(s) along the outer pie and their
         ///     children inner slices.
         /// @param pieSlices The outer slices to showcase.
-        /// @details This will make all other slices (including the non-children inner slices)
+        /// @param outerLabelRingToShow Which ring should have its outer labels shown.
+        /// @details This will make all other slices (including their inner slices)
         ///     translucent and hide their labels.
-        void ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices);
+        void ShowcaseOuterPieSlices(const std::vector<wxString>& pieSlices,
+            const Perimeter outerLabelRingToShow = Perimeter::Outer);
         /// @brief Brings to focus the largest slice(s) along the outer (or only) pie.
-        /// @details This will make all other slices (including the inner pie) translucent
-        ///     and hide their labels.
-        void ShowcaseLargestOuterPieSlices()
-            {
-            const std::vector<wxString> highlightSlices = GetLargestOuterPieSlices();
-            ShowOuterPieLabels(true, highlightSlices);
-            ShowOuterPieMidPointLabels(true, highlightSlices);
-            GhostOuterPieSlices(false, highlightSlices);
-
-            ShowInnerPieLabels(false);
-            ShowInnerPieMidPointLabels(false);
-            GhostInnerPieSlices(true);
-            }
+        /// @param outerLabelRingToShow Which ring should have its outer labels shown.
+        /// @details This will make all other slices (including their inner slices)
+        ///     translucent and hide their labels.
+        void ShowcaseLargestOuterPieSlices(const Perimeter outerLabelRingToShow = Perimeter::Outer);
         /// @brief Brings to focus the smallest slice(s) along the outer (or only) pie.
-        /// @details This will make all other slices (including the inner pie) translucent
-        ///     and hide their labels.
-        void ShowcaseSmallestOuterPieSlices()
-            {
-            const std::vector<wxString> highlightSlices = GetSmallestOuterPieSlices();
-            ShowOuterPieLabels(true, highlightSlices);
-            ShowOuterPieMidPointLabels(true, highlightSlices);
-            GhostOuterPieSlices(false, highlightSlices);
-
-            ShowInnerPieLabels(false);
-            ShowInnerPieMidPointLabels(false);
-            GhostInnerPieSlices(true);
-            }
+        /// @param outerLabelRingToShow Which ring should have its outer labels shown.
+        /// @details This will make all other slices (including their inner slices)
+        ///     translucent and hide their labels.
+        void ShowcaseSmallestOuterPieSlices(const Perimeter outerLabelRingToShow = Perimeter::Outer);
 
         /** @brief Gets the labels of the largest slice(s) along the outer (or only) pie.
             @note In the case of ties, multiple labels will be returned.
@@ -832,6 +823,8 @@ namespace Wisteria::Graphs
         [[nodiscard]] const Wisteria::GraphItems::Label& GetDonutHoleLabel() const noexcept
             { return m_donutHoleLabel; }
     private:
+        /// @returns The indices along the outer pie of the provided slices.
+        std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
         void RecalcSizes(wxDC& dc) final;
 
         const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept

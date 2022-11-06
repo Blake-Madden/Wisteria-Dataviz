@@ -90,7 +90,7 @@ Properties for `"pie-chart"` nodes:
   - `"group-2"`: the outer-ring grouping column (this is optional).
 - `"pie-label-effect"` string specifying the effects for the pie slices.
   Available options are:
-  - `"image" `(This will require an `"image-scheme"` to be defined.)
+  - `"image"` (This will require an `"image-scheme"` to be defined.)
   - `"solid"` (the default)
 - `"label-placement"`: a string specifying where to align the outer labels.<br />
   Available options are:
@@ -112,11 +112,9 @@ Properties for `"pie-chart"` nodes:
   - `"value-and-percentage"`
   - `"bin-name"`
   - `"no-display"`
-- `"showcase-slices-groups"`: an array of strings specifying which inners slices to showcase,
-  based on the parent group(s). All outer labelling will be turned off, and the showcased inner
-  slices' labels will be shown. The parent slices' colors will be solid, like their children inner slices.
-- `"showcase-slices"` draw attention to a slice (or series of slices).<br />
-  Available options are:
+- `"inner-pie-line-pen"`: a pen specification for the pen used to draw a line connecting inner slices with their outer labels.
+- `"showcase-slices"`: draws attention to a slice (or series of slices).<br />
+  This can either be an array of strings specifying which outer slices to showcase, or the following properties:
   - `"pie"` which pie to showcase.<br />
     Available options are:
     - `"inner"`
@@ -125,8 +123,13 @@ Properties for `"pie-chart"` nodes:
     Available options are:
     - `"smallest"`
     - `"largest"`
-  - `"by-group"`: if showcasing the inner pie, `true` will show the smallest/largest slice for within each group.
-  - `"show-outer-pie-labels"` if showcasing the inner pie, `true` keep the outer pie labels shown.
+  - `"by-group"`: if showcasing the inner pie, `true` will show the smallest/largest slice within each group.
+  - `"show-outer-pie-midpoint-labels"`: if showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
+  - `"outer-label-ring"`: if showcasing the outer pie, a string specifying which ring should have its group labels
+    show outside of the pie.\n
+    Available options are:
+    - `"inner"`
+    - `"outer"`
 - `"color-labels"`: `true` to apply the slice colors to their respective outer labels.
 - `"ghost-opacity"`: number specifying the opacity for ghosted labels.
 - `"include-outer-pie-labels"`: `true` to show the outer labels for the outer pie

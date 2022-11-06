@@ -1102,7 +1102,7 @@ namespace Wisteria::Graphs
             return rhv.first->GetAnchorPoint().y < lhv.first->GetAnchorPoint().y;
             });
 
-        // right-side labels, top quadrant
+        // right-side labels, top quadrant (drawn clockwise)
         for (size_t i = 0; i < outerTopRightLabelAndLines.size(); ++i)
             {
             auto& [outerLabel, outerLine] = outerTopRightLabelAndLines[i];
@@ -1180,7 +1180,7 @@ namespace Wisteria::Graphs
                 AddObject(outerLine);
                 }
             }
-        // right-side labels, bottom quadrant
+        // right-side labels, bottom quadrant (drawn counter clockwise)
         for (size_t i = 0; i < outerBottomRightLabelAndLines.size(); ++i)
             {
             auto& [outerLabel, outerLine] = outerBottomRightLabelAndLines[i];
@@ -1533,9 +1533,91 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void PieChart::ShowcaseOuterPieSlicesAndChildren(const std::vector<wxString>& pieSlices)
+    std::set<size_t> PieChart::GetOuterPieIndices(const std::vector<wxString>& labels)
         {
-        ShowOuterPieLabels(false);
+        std::set<size_t> indices;
+        for (const auto& label : labels)
+            {
+            for (size_t i = 0; i < GetOuterPie().size(); ++i)
+                {
+                if (GetOuterPie()[i].GetGroupLabel().CmpNoCase(label) == 0)
+                    {
+                    indices.insert(i);
+                    break;
+                    }
+                }
+            }
+        return indices;
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowcaseLargestOuterPieSlices(
+        const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
+        {
+        const std::vector<wxString> highlightSlices = GetLargestOuterPieSlices();
+        if (outerLabelRingToShow == Perimeter::Outer)
+            { ShowOuterPieLabels(true, highlightSlices); }
+        else
+            { ShowOuterPieLabels(false); }
+        ShowOuterPieMidPointLabels(true, highlightSlices);
+        GhostOuterPieSlices(false, highlightSlices);
+
+        // do the same for the inner slices
+        const auto showcasedOuterIndices = GetOuterPieIndices(highlightSlices);
+        std::vector<wxString> innerLabelsForGroups;
+        for (const auto& innerSlice : GetInnerPie())
+            {
+            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
+                showcasedOuterIndices.cend())
+                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+            }
+        
+        if (outerLabelRingToShow == Perimeter::Inner)
+            { ShowInnerPieLabels(true, innerLabelsForGroups); }
+        else
+            { ShowInnerPieLabels(false); }
+        ShowInnerPieMidPointLabels(true, innerLabelsForGroups);
+        GhostInnerPieSlices(false, innerLabelsForGroups);
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowcaseSmallestOuterPieSlices(
+        const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
+        {
+        const std::vector<wxString> highlightSlices = GetSmallestOuterPieSlices();
+        if (outerLabelRingToShow == Perimeter::Outer)
+            { ShowOuterPieLabels(true, highlightSlices); }
+        else
+            { ShowOuterPieLabels(false); }
+        ShowOuterPieMidPointLabels(true, highlightSlices);
+        GhostOuterPieSlices(false, highlightSlices);
+
+        // do the same for the inner slices
+        const auto showcasedOuterIndices = GetOuterPieIndices(highlightSlices);
+        std::vector<wxString> innerLabelsForGroups;
+        for (const auto& innerSlice : GetInnerPie())
+            {
+            if (showcasedOuterIndices.find(innerSlice.m_parentSliceIndex) !=
+                showcasedOuterIndices.cend())
+                { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
+            }
+
+        if (outerLabelRingToShow == Perimeter::Inner)
+            { ShowInnerPieLabels(true, innerLabelsForGroups); }
+        else
+            { ShowInnerPieLabels(false); }
+        ShowInnerPieMidPointLabels(true, innerLabelsForGroups);
+        GhostInnerPieSlices(false, innerLabelsForGroups);
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::ShowcaseOuterPieSlices(const std::vector<wxString>& pieSlices,
+        const Perimeter outerLabelRingToShow /*= Perimeter::Outer*/)
+        {
+        if (outerLabelRingToShow == Perimeter::Outer)
+            { ShowOuterPieLabels(true, pieSlices); }
+        else
+            { ShowOuterPieLabels(false); }
         ShowOuterPieMidPointLabels(true, pieSlices);
         GhostOuterPieSlices(false, pieSlices);
 
@@ -1543,7 +1625,7 @@ namespace Wisteria::Graphs
         std::set<size_t> showcasedOuterIndices;
         for (const auto& pieSliceLabel : pieSlices)
             {
-            auto foundSlice =
+            const auto foundSlice =
                 std::find_if(GetOuterPie().cbegin(), GetOuterPie().cend(),
                     [&pieSliceLabel](const auto& slice)
                     {
@@ -1564,7 +1646,10 @@ namespace Wisteria::Graphs
                 { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
             }
 
-        ShowInnerPieLabels(true, innerLabelsForGroups);
+        if (outerLabelRingToShow == Perimeter::Inner)
+            { ShowInnerPieLabels(true, innerLabelsForGroups); }
+        else
+            { ShowInnerPieLabels(false); }
         ShowInnerPieMidPointLabels(true, innerLabelsForGroups);
         GhostInnerPieSlices(false, innerLabelsForGroups);
         }

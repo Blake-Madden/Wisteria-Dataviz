@@ -521,6 +521,21 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<Perimeter> ReportBuilder::ConvertPerimeter(const wxString& value)
+        {
+        static const std::map<std::wstring_view, Perimeter> peris =
+            {
+            { L"inner", Perimeter::Inner },
+            { L"outer", Perimeter::Outer }
+            };
+
+        const auto foundValue = peris.find(value.Lower().ToStdWstring());
+        return ((foundValue != peris.cend()) ?
+            std::optional<Perimeter>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<Histogram::BinningMethod> ReportBuilder::ConvertBinningMethod(const wxString& value)
         {
         static const std::map<std::wstring, Histogram::BinningMethod> binMethods =
@@ -2860,7 +2875,7 @@ namespace Wisteria
             pieChart->SetData(foundPos->second,
                 (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt),
                 groupVar1Name,
-                (groupVar2Name.length() ?std::optional<wxString>(groupVar2Name) : std::nullopt));
+                (groupVar2Name.length() ? std::optional<wxString>(groupVar2Name) : std::nullopt));
 
             const auto labelPlacement =
                 ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
@@ -2901,43 +2916,54 @@ namespace Wisteria
                     graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
                 }
 
-            if (const auto pieEffect = ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
+            if (const auto pieEffect =
+                    ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
                 pieEffect.has_value())
                 { pieChart->SetPieSliceEffect(pieEffect.value()); }
 
             // showcase the slices
-            const auto showcaseGroupsNode = graphNode->GetProperty(L"showcase-slices-groups");
-            if (showcaseGroupsNode->IsOk())
-                {
-                pieChart->ShowcaseOuterPieSlicesAndChildren(
-                    showcaseGroupsNode->GetValueStringVector());
-                }
             const auto showcaseNode = graphNode->GetProperty(L"showcase-slices");
-            if (showcaseNode->IsOk())
+            if (showcaseNode->IsValueArray())
+                {
+                const auto peri =
+                    ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                pieChart->ShowcaseOuterPieSlices(
+                    showcaseNode->GetValueStringVector(),
+                    peri.has_value() ? peri.value() : Perimeter::Outer);
+                }
+            else if (showcaseNode->IsOk())
                 {
                 const auto pieType = showcaseNode->GetProperty(L"pie")->GetValueString();
                 const auto categoryType = showcaseNode->GetProperty(L"category")->GetValueString();
+                const auto peri =
+                    ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
                 if (pieType.CmpNoCase(L"inner") == 0)
                     {
                     if (categoryType.CmpNoCase(L"smallest") == 0)
                         {
                         pieChart->ShowcaseSmallestInnerPieSlices(
                             showcaseNode->GetProperty(L"by-group")->GetValueBool(),
-                            showcaseNode->GetProperty(L"show-outer-pie-labels")->GetValueBool() );
+                            showcaseNode->GetProperty(L"show-outer-pie-midpoint-labels")->GetValueBool() );
                         }
                     else if (categoryType.CmpNoCase(L"largest") == 0)
                         {
                         pieChart->ShowcaseLargestInnerPieSlices(
                             showcaseNode->GetProperty(L"by-group")->GetValueBool(),
-                            showcaseNode->GetProperty(L"show-outer-pie-labels")->GetValueBool() );
+                            showcaseNode->GetProperty(L"show-outer-pie-midpoint-labels")->GetValueBool() );
                         }
                     }
                 if (pieType.CmpNoCase(L"outer") == 0)
                     {
                     if (categoryType.CmpNoCase(L"smallest") == 0)
-                        { pieChart->ShowcaseSmallestOuterPieSlices(); }
+                        {
+                        pieChart->ShowcaseSmallestOuterPieSlices(
+                            peri.has_value() ? peri.value() : Perimeter::Outer);
+                        }
                     else if (categoryType.CmpNoCase(L"largest") == 0)
-                        { pieChart->ShowcaseLargestOuterPieSlices(); }
+                        {
+                        pieChart->ShowcaseLargestOuterPieSlices(
+                            peri.has_value() ? peri.value() : Perimeter::Outer);
+                        }
                     }
                 }
 
