@@ -2897,6 +2897,9 @@ namespace Wisteria
                 groupVar1Name,
                 (groupVar2Name.length() ? std::optional<wxString>(groupVar2Name) : std::nullopt));
 
+            LoadPen(graphNode->GetProperty(L"inner-pie-line-pen"),
+                    pieChart->GetInnerPieConnectionLinePen());
+
             const auto labelPlacement =
                 ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
