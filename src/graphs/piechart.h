@@ -58,18 +58,21 @@ namespace Wisteria::GraphItems
                           const std::shared_ptr<const TextReplace> abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
+            @param labelDisplay What to display on the label.
             @returns The label, which will already be anchored to the middle of the slices's
                 outer ring.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel();
+        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
+            const BinLabelDisplay labelDisplay);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
             @param pieArea A different pie area from what the slice is currently using.
                 This is useful for inner ring slices that need its outer labels to be outside
                 the parent ring.
+            @param labelDisplay What to display on the label.
             @returns The label, which will already be anchored to the middle of the slices's
                 outer ring.*/
         [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
-                          const wxRect& pieArea);
+                          const wxRect& pieArea, const BinLabelDisplay labelDisplay);
         /// @returns The custom midpoint display, specific to this slice.
         [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
             { return m_midPointLabelDisplay; }
@@ -105,14 +108,11 @@ namespace Wisteria::GraphItems
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
             }
-
-        // obligatory virtual interfaces that aren't implemented
-        [[deprecated("Not implemented")]]
-        void SetBoundingBox(const wxRect&, wxDC&, const double) final
-            { wxFAIL_MSG(L"Not implemented for PieSlice"); }
-        [[deprecated("Not implemented")]]
-        void Offset(const int, const int) final
-            { wxFAIL_MSG(L"Not implemented for PieSlice"); }
+        void Offset(const int x, const int y) final
+            { m_pieArea.Offset(x, y); }
+        void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
+                            [[maybe_unused]] const double scaling) final
+            { m_pieArea = rect; }
 
         wxRect m_pieArea;
         double m_startAngle{ 0 };
@@ -425,8 +425,9 @@ namespace Wisteria::Graphs
                 (The image will be repeated every 90 degrees.)\n
                 \n
                 Finally, images and solid colors can be mixed and matched by using an image scheme
-                with invalid images (i.e., @c wxNullBitmap). When an null bitmap is encountered in an
-                image scheme, then the respective slice will fall back to using the brush and color schemes.
+                with invalid images (i.e., @c wxNullBitmap). When an null bitmap is encountered in
+                an image scheme, then the respective slice will fall back to using the brush and
+                color schemes.
             @sa SetImageScheme().*/
         void SetPieSliceEffect(const PieSliceEffect effect) noexcept
             { m_sliceEffect = effect; }
@@ -445,7 +446,7 @@ namespace Wisteria::Graphs
         /** @brief Sets the text replacement object to abbreviate midpoint labels
                 to make them fit (if necessary).
             @details The default is to use the (aggressive) English abbreviation interface.
-            @param abbreviate The text replacement object to abbreviate with.
+            @param abbreviate The text replacement object to abbreviate with.\n
                 Set to null to never attempt abbreviating midpoint labels.
             @note This is only meant for midpoint labels, as this may be too aggressive
                 for outer labels. If outer labels are too long to fit, set label placement
@@ -453,6 +454,27 @@ namespace Wisteria::Graphs
             @sa SetLabelPlacement().*/
         void SetMidPointAbbreviation(const std::shared_ptr<const TextReplace> abbreviate)
             { m_abbreviate = abbreviate; }
+
+        /// @returns @c true if the pie chart is shifted to one side if either gutter
+        ///     has no outer labels.
+        [[nodiscard]] bool HasDynamicMargins() const noexcept
+            { return m_dynamicMargins; }
+        /// @brief Set to @c true to shift the pie chart to one side if either gutter
+        ///     has no outer labels.
+        /// @details This is useful when placing multiple showcased pie charts side-by-side,
+        ///     where the real estate is at a premium.\n
+        ///     This should be set to @c false, however, if you are aligning pie charts
+        ///     vertically and you need the pies to align with each other.
+        void SetDynamicMargins(const bool useDynamic) noexcept
+            { m_dynamicMargins = useDynamic; }
+
+        /// @returns What the labels along the margins (i.e., gutters) are displaying.
+        [[nodiscard]] BinLabelDisplay GetOuterLabelDisplay() const noexcept
+            { return m_outerLabelDisplay; }
+        /// @brief Sets what the labels along the margins (i.e., gutters) are displaying.
+        /// @param display What to display.
+        void SetOuterLabelDisplay(const BinLabelDisplay display) noexcept
+            { m_outerLabelDisplay = display; }
 
         /// @name Outer Pie Functions
         /// @brief Functions for customizing the outer ring of the pie chart.\n
@@ -837,8 +859,11 @@ namespace Wisteria::Graphs
         PieInfo m_innerPie;
         PieInfo m_outerPie;
 
+        bool m_dynamicMargins{ false };
+
         BinLabelDisplay m_innerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
         BinLabelDisplay m_outerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
+        BinLabelDisplay m_outerLabelDisplay{ BinLabelDisplay::BinName };
         LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
 
         wxPen m_connectionLinePen{ wxPen(

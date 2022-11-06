@@ -2917,6 +2917,11 @@ namespace Wisteria
             if (innerPieMidLabel.has_value())
                 { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
 
+            const auto outerLabelDisplay = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"outer-label-display")->GetValueString());
+            if (outerLabelDisplay.has_value())
+                { pieChart->SetOuterLabelDisplay(outerLabelDisplay.value()); }
+
             if (graphNode->HasProperty(L"include-inner-pie-labels"))
                 {
                 pieChart->ShowInnerPieLabels(

@@ -145,11 +145,12 @@ namespace Wisteria::GraphItems
         }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel()
-        { return CreateOuterLabel(m_pieArea); }
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const BinLabelDisplay labelDisplay)
+        { return CreateOuterLabel(m_pieArea, labelDisplay); }
 
     //----------------------------------------------------------------
-    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea)
+    std::shared_ptr<Label> PieSlice::CreateOuterLabel(const wxRect& pieArea,
+                                                      const BinLabelDisplay labelDisplay)
         {
         const auto angle = m_startAngle + ((m_endAngle - m_startAngle) / 2);
         const auto arcMiddle = GetMiddleOfArc(1.0, pieArea);
@@ -172,6 +173,46 @@ namespace Wisteria::GraphItems
                  is_within<double>(std::make_pair(270, 360), angle)) ?
                 TextAlignment::FlushLeft :
                 TextAlignment::FlushRight);
+        // if less than 1%, then use higher precision so that it doesn't just show as "0%"
+        const auto percStr = wxNumberFormatter::ToString(m_percent * 100,
+            ((m_percent * 100) < 1) ? 2 : 0,
+            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        switch (labelDisplay)
+            {
+        case BinLabelDisplay::BinValue:
+            pieLabel->SetText(
+                wxNumberFormatter::ToString(m_value, 0,
+                    Settings::GetDefaultNumberFormat()));
+            break;
+        case BinLabelDisplay::BinValueAndPercentage:
+            pieLabel->SetText(wxString::Format(L"%s%% (%s)",
+                percStr,
+                wxNumberFormatter::ToString(m_value, 0,
+                    Settings::GetDefaultNumberFormat())) );
+            break;
+        case BinLabelDisplay::BinPercentage:
+            pieLabel->SetText(percStr + L"%");
+            break;
+        case BinLabelDisplay::NoDisplay:
+            pieLabel->SetText(wxEmptyString);
+            break;
+        case BinLabelDisplay::BinNameAndValue:
+            pieLabel->SetText(wxString::Format(L"%s (%s)",
+                pieLabel->GetText(),
+                wxNumberFormatter::ToString(m_value, 0,
+                    Settings::GetDefaultNumberFormat())));
+            break;
+        case BinLabelDisplay::BinNameAndPercentage:
+            pieLabel->SetText(wxString::Format(L"%s (%s%%)",
+                pieLabel->GetText(),
+                percStr));
+            break;
+        case BinLabelDisplay::BinName:
+            [[fallthrough]];
+        default:
+            // leave as the name of the slice
+            break;
+            }
         // outer labels can have headers
         pieLabel->GetHeaderInfo().LabelAlignment(
             (is_within<double>(std::make_pair(0, 90), angle) ||
@@ -563,14 +604,15 @@ namespace Wisteria::Graphs
         // and also draws a connection line from the label to the pie slice
         using labelLinePair = std::vector<std::pair<
             std::shared_ptr<Label>,
-            std::shared_ptr<Wisteria::GraphItems::Points2D>>>;
+            std::shared_ptr<Points2D>>>;
         labelLinePair outerTopLeftLabelAndLines, outerBottomLeftLabelAndLines,
                       outerTopRightLabelAndLines, outerBottomRightLabelAndLines;
 
         const auto createLabelAndConnectionLine = [&](auto pSlice, bool isInnerSlice)
             {
             auto outerLabel = pSlice->CreateOuterLabel(
-                (isInnerSlice ? outerPieDrawArea : pieDrawArea));
+                (isInnerSlice ? outerPieDrawArea : pieDrawArea),
+                GetOuterLabelDisplay());
             outerLabel->SetDPIScaleFactor(GetDPIScaleFactor());
             if (outerLabel != nullptr)
                 {
@@ -721,10 +763,10 @@ namespace Wisteria::Graphs
                 startAngle, startAngle + (GetOuterPie().at(i).m_percent * 360),
                 GetOuterPie().at(i).m_value, GetOuterPie().at(i).m_percent);
             pSlice->SetMidPointLabelDisplay(GetOuterPie().at(i).GetMidPointLabelDisplay());
-            if (GetOuterPie().at(i).m_description.length())
+            if (GetOuterPie().at(i).GetDescription().length())
                 {
                 pSlice->SetText(GetOuterPie().at(i).GetGroupLabel() + L"\n" +
-                    GetOuterPie().at(i).m_description);
+                    GetOuterPie().at(i).GetDescription());
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 if (IsUsingColorLabels())
                     { pSlice->GetHeaderInfo().FontColor(GetBrushScheme()->GetBrush(i).GetColour()); }
@@ -865,10 +907,10 @@ namespace Wisteria::Graphs
                 GetInnerPie().at(i).m_value, GetInnerPie().at(i).m_percent);
             pSlice->SetMidPointLabelDisplay(GetInnerPie().at(i).GetMidPointLabelDisplay());
             pSlice->GetArcPen() = GetPen();
-            if (GetInnerPie().at(i).m_description.length())
+            if (GetInnerPie().at(i).GetDescription().length())
                 {
                 pSlice->SetText(GetInnerPie().at(i).GetGroupLabel() + L"\n" +
-                    GetInnerPie().at(i).m_description);
+                    GetInnerPie().at(i).GetDescription());
                 pSlice->GetHeaderInfo().Enable(true).Font(pSlice->GetFont());
                 // use the parent slice color for the header, font color for the body
                 if (IsUsingColorLabels())
