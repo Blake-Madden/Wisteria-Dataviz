@@ -17,8 +17,10 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
 */
 
 #include "artmetro.h"
+#include "../../base/shapes.h"
 
 #include <wx/wx.h>
+#include <wx/artprov.h>
 #include <wx/dcmemory.h>
 #include <wx/frame.h>
 #include <wx/ribbon/art.h>
@@ -32,69 +34,8 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
 #endif
 
 using namespace Wisteria::UI;
-
-static constexpr char* const panel_toggle_down_xpm[] = {
-  "7 9 2 1",
-  "  c None",
-  "x c #FF00FF",
-  "       ",
-  "x     x",
-  "xx   xx",
-  " xx xx ",
-  "x xxx x",
-  "xx x xx",
-  " xx xx ",
-  "  xxx  ",
-  "   x   ",};
-
-static constexpr char* const panel_toggle_up_xpm[] = {
-  "7 9 2 1",
-  "  c None",
-  "x c #FF00FF",
-  "   x   ",
-  "  xxx  ",
-  " xx xx ",
-  "xx x xx",
-  "x xxx x",
-  " xx xx ",
-  "xx   xx",
-  "x     x",
-  "       ",};
-
-static constexpr char* const ribbon_toggle_pin_xpm[] = {
-  "12 9 3 1",
-  "  c None",
-  "x c #FF00FF",
-  ". c #FF00FF",
-  "   xx       ",
-  "   x x   xxx",
-  "   x  xxx  x",
-  "xxxx       x",
-  "x          x",
-  "xxxx       x",
-  "   x  xxx  x",
-  "   x x   xxx",
-  "   xx       "
-};
-
-static constexpr char *const ribbon_help_button_xpm[] = {
-/* columns rows colors chars-per-pixel */
-"8 11 2 1",
-". c #FF00FF",
-"  c None",
-/* pixels */
-"   .... ",
-"  ......",
-"  ..  ..",
-"      ..",
-"     .. ",
-"    ..  ",
-"    ..  ",
-"    ..  ",
-"        ",
-"    ..  ",
-"    ..  "
-};
+using namespace Wisteria::GraphItems;
+using namespace Wisteria::Icons;
 
 RibbonMetroArtProvider::RibbonMetroArtProvider(bool set_colour_scheme) :
     wxRibbonMSWArtProvider (set_colour_scheme)
@@ -320,61 +261,60 @@ void RibbonMetroArtProvider::DrawTabCtrlBackground(
 void RibbonMetroArtProvider::DrawHelpButton(wxDC& dc,
                                        wxRibbonBar* wnd,
                                        const wxRect& rect)
-{
+    {
     DrawPartialPageBackground(dc, wnd, rect, false);
 
     dc.DestroyClippingRegion();
     dc.SetClippingRegion(rect);
 
-    m_ribbon_bar_help_button_bitmap[0] = wxRibbonLoadPixmap(ribbon_help_button_xpm, GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR));
-
     if (wnd->IsHelpButtonHovered() )
-    {
+        {
         dc.SetPen(m_tool_active_background_colour);
         dc.SetBrush(m_tool_active_background_colour);
-        dc.DrawRoundedRectangle(rect.GetX(), rect.GetY(), 20, 20, 1.0);
-        dc.DrawBitmap(m_ribbon_bar_help_button_bitmap[0], rect.GetX ()+4, rect.GetY()+5, true);
+        dc.DrawRoundedRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight(), 1.0);
+        }
+
+    wxRect iconRect(wxRect(rect).Deflate(wnd->FromDIP(4)));
+
+    Wisteria::GraphItems::Shape sh(
+        GraphItemInfo(_("?")).Pen(GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR)).
+            DPIScaling(wnd->GetDPIScaleFactor()),
+        IconShape::Text,
+        iconRect.GetSize());
+    sh.Draw(iconRect, dc);
     }
-    else
-    {
-        dc.DrawBitmap(m_ribbon_bar_help_button_bitmap[0], rect.GetX ()+4, rect.GetY()+5, true);
-    }
-}
 
 void RibbonMetroArtProvider::DrawToggleButton(wxDC& dc,
                                          wxRibbonBar* wnd,
                                          const wxRect& rect,
                                          wxRibbonDisplayMode mode)
-{
+    {
     DrawPartialPageBackground(dc, wnd, rect, false);
 
     dc.DestroyClippingRegion();
     dc.SetClippingRegion(rect);
 
-    m_page_toggle_face_colour = GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR);
-    m_ribbon_toggle_down_bitmap[0] = wxRibbonLoadPixmap(panel_toggle_down_xpm, m_page_toggle_face_colour);
-    m_ribbon_toggle_up_bitmap[0] = wxRibbonLoadPixmap(panel_toggle_up_xpm, m_page_toggle_face_colour);
-    m_ribbon_toggle_pin_bitmap[0] = wxRibbonLoadPixmap(ribbon_toggle_pin_xpm, m_page_toggle_face_colour);
-
     if (wnd->IsToggleButtonHovered())
-    {
+        {
         dc.SetPen(m_tool_active_background_colour);
         dc.SetBrush(m_tool_active_background_colour);
-        dc.DrawRoundedRectangle(rect.GetX(), rect.GetY(), 20, 20, 1.0);
+        dc.DrawRoundedRectangle(rect.GetX(), rect.GetY(), rect.GetWidth(), rect.GetHeight(), 1.0);
+        }
+
+    wxRect iconRect(wxRect(rect).Deflate(wnd->FromDIP(4)));
+
+    GraphItems::Shape sh(
+        GraphItemInfo().Pen(GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR)).
+            Brush(GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR)).
+            DPIScaling(wnd->GetDPIScaleFactor()),
+        mode == wxRIBBON_BAR_PINNED ?
+            IconShape::Tack :
+        mode == wxRIBBON_BAR_MINIMIZED ?
+            IconShape::ChevronDownward :
+            IconShape::ChevronUpward,
+        iconRect.GetSize());
+    sh.Draw(iconRect, dc);
     }
-    switch(mode)
-    {
-        case wxRIBBON_BAR_PINNED:
-            dc.DrawBitmap(m_ribbon_toggle_up_bitmap[0], rect.GetX()+7, rect.GetY()+6, true);
-            break;
-        case wxRIBBON_BAR_MINIMIZED:
-            dc.DrawBitmap(m_ribbon_toggle_down_bitmap[0], rect.GetX()+7, rect.GetY()+6, true);
-            break;
-        case wxRIBBON_BAR_EXPANDED:
-            dc.DrawBitmap(m_ribbon_toggle_pin_bitmap[0], rect.GetX ()+4, rect.GetY ()+5, true);
-            break;
-    }
-}
 
 void RibbonMetroArtProvider::DrawTab(
                  wxDC& dc,
