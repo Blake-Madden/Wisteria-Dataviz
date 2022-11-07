@@ -17,7 +17,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
         wxLogError(L"Attempted to map a file with an empty file path.");
         return false;
         }
-    //if another file is currently mapped this will fail
+    // if another file is currently mapped this will fail
     if (IsOk())
         {
         wxLogWarning(L"Failed to map a file with another file map: %s", filePath);
@@ -29,19 +29,23 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
     unsigned long dwDesiredFileAccess = GENERIC_READ;
     if (!IsReadOnly())
         { dwDesiredFileAccess |= GENERIC_WRITE; }
-    //get the handle to the file...
+    // get the handle to the file...
     m_hFile =
     #ifdef __WXWINCE__
         ::CreateFileForMapping
     #else
         ::CreateFile
     #endif
-            (filePath.c_str(), dwDesiredFileAccess, IsReadOnly() ? FILE_SHARE_READ : FILE_SHARE_READ|FILE_SHARE_WRITE,
-             0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN|SECURITY_SQOS_PRESENT|SECURITY_IDENTIFICATION, 0);
+            (filePath.c_str(), dwDesiredFileAccess, IsReadOnly() ?
+                FILE_SHARE_READ : FILE_SHARE_READ|FILE_SHARE_WRITE,
+             0, OPEN_EXISTING,
+             FILE_ATTRIBUTE_NORMAL|FILE_FLAG_SEQUENTIAL_SCAN|SECURITY_SQOS_PRESENT|SECURITY_IDENTIFICATION,
+             0);
     if (INVALID_HANDLE_VALUE == m_hFile)
         {
         wxLogWarning(L"Unable to map file (%s): %s",
-            (ERROR_SHARING_VIOLATION == ::GetLastError()) ? L"sharing violation" : L"unable to get file handle",
+            (ERROR_SHARING_VIOLATION == ::GetLastError()) ?
+                L"sharing violation" : L"unable to get file handle",
             GetFilePath());
         if (autoBufferOnException && Buffer())
             {
@@ -51,19 +55,25 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
         else if (ERROR_SHARING_VIOLATION == ::GetLastError() )
             {
             if (autoBufferOnException)
-                { wxLogError(L"Unable to map or buffer file (sharing violation): %s", GetFilePath()); }
+                {
+                wxLogError(L"Unable to map or buffer file (sharing violation): %s",
+                    GetFilePath());
+                }
             Reset();
             throw MemoryMappedFileShareViolationException();
             }
         else
             {
             if (autoBufferOnException)
-                { wxLogError(L"Unable to map or buffer file (%s): %s", wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath()); }
+                {
+                wxLogError(L"Unable to map or buffer file (%s): %s",
+                    wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath());
+                }
             Reset();
             throw MemoryMappedFileException();
             }
         }
-    //this will fail if the file path was really a drive or printer (don't want to map that!)
+    // this will fail if the file path was really a drive or printer (don't want to map that!)
     else if (FILE_TYPE_DISK != ::GetFileType(m_hFile))
         {
         wxLogWarning(L"Failed to map a disk or printer: %s", GetFilePath());
@@ -72,7 +82,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
         throw MemoryMappedInvalidFileType();
         }
 
-    //Get the length of the file
+    // get the length of the file
     try
         { m_mapSize = GetFileSize64(m_hFile).GetLo(); }
     catch (MemoryMappedInvalidFileSize)
@@ -94,28 +104,45 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
             }
         ::SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
         }
-    //now, we create a file mapping object for that file
-    m_hsection = ::CreateFileMapping(m_hFile, 0, IsReadOnly() ? PAGE_READONLY : PAGE_READWRITE, 0, 0, NULL);
+    // now, we create a file mapping object for that file
+    m_hsection = ::CreateFileMapping(m_hFile, 0, IsReadOnly() ?
+                                     PAGE_READONLY : PAGE_READWRITE, 0, 0, NULL);
     if (NULL == m_hsection)
         {
         if (m_mapSize > 0)
-            { wxLogWarning(L"Unable to create file map (%s): %s", wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath()); }
+            {
+            wxLogWarning(L"Unable to create file map (%s): %s",
+                wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath());
+            }
         ::CloseHandle(m_hFile);
-        if (wxSysErrorCode() == ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_METADATA_CORRUPT ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_METADATA_TOO_LARGE ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_PROPERTY_BLOB_TOO_LARGE ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_PROPERTY_BLOB_CHECKSUM_MISMATCH ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_TOO_MANY_PROPERTY_BLOBS ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_PROPERTY_VERSION_NOT_SUPPORTED ||
-            wxSysErrorCode() == ERROR_NOT_A_CLOUD_FILE ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_NOT_IN_SYNC ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_ALREADY_CONNECTED ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_NOT_SUPPORTED ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_INVALID_REQUEST ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_READ_ONLY_VOLUME ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_CONNECTED_PROVIDER_ONLY ||
-            wxSysErrorCode() == ERROR_CLOUD_FILE_VALIDATION_FAILED)
+
+        // see if the last error was related to cloud file errors
+        // (only available in WinSDK ~Windows 8.1)
+        const auto isCloudFileError = []([[maybe_unused]] const auto errorCode)
+            {
+            // only check if the full range of cloud file error codes are defined
+    #if defined (ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING) && defined (ERROR_CLOUD_FILE_VALIDATION_FAILED)
+            return (errorCode == ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING ||
+                    errorCode == ERROR_CLOUD_FILE_METADATA_CORRUPT ||
+                    errorCode == ERROR_CLOUD_FILE_METADATA_TOO_LARGE ||
+                    errorCode == ERROR_CLOUD_FILE_PROPERTY_BLOB_TOO_LARGE ||
+                    errorCode == ERROR_CLOUD_FILE_PROPERTY_BLOB_CHECKSUM_MISMATCH ||
+                    errorCode == ERROR_CLOUD_FILE_TOO_MANY_PROPERTY_BLOBS ||
+                    errorCode == ERROR_CLOUD_FILE_PROPERTY_VERSION_NOT_SUPPORTED ||
+                    errorCode == ERROR_NOT_A_CLOUD_FILE ||
+                    errorCode == ERROR_CLOUD_FILE_NOT_IN_SYNC ||
+                    errorCode == ERROR_CLOUD_FILE_ALREADY_CONNECTED ||
+                    errorCode == ERROR_CLOUD_FILE_NOT_SUPPORTED ||
+                    errorCode == ERROR_CLOUD_FILE_INVALID_REQUEST ||
+                    errorCode == ERROR_CLOUD_FILE_READ_ONLY_VOLUME ||
+                    errorCode == ERROR_CLOUD_FILE_CONNECTED_PROVIDER_ONLY ||
+                    errorCode == ERROR_CLOUD_FILE_VALIDATION_FAILED);
+    #else
+            return false;
+    #endif
+            };
+
+        if (isCloudFileError(wxSysErrorCode()))
             {
             Reset();
             throw MemoryMappedFileCloudFileError();
@@ -135,7 +162,10 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
     if (nullptr == m_data)
         {
         if (m_mapSize > 0)
-            { wxLogWarning(L"Unable to map view of file (%s): %s", wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath()); }
+            {
+            wxLogWarning(L"Unable to map view of file (%s): %s",
+                wxString(wxSysErrorMsg(wxSysErrorCode())), GetFilePath());
+            }
         if (autoBufferOnException && Buffer())
             {
             m_open = true;
@@ -163,7 +193,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
             throw MemoryMappedFileException();
             }
         }
-    //get the size of the file
+    // get the size of the file
     m_mapSize = GetFileSize64(m_hFile).GetLo();
     if (static_cast<size_t>(-1) == m_mapSize || 0 == m_mapSize)
         {
@@ -180,7 +210,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
             throw MemoryMappedFileEmptyException();
             }
         }
-    //now get a map of the file
+    // now get a map of the file
     m_data = mmap(NULL, m_mapSize, readOnly ? PROT_READ : (PROT_READ|PROT_WRITE),
                  (MAP_FILE|MAP_SHARED), m_hFile, 0);
     if (MAP_FAILED == m_data)
@@ -203,7 +233,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
     return true;
     }
 
-///closes the handles and mappings
+/// closes the handles and mappings
 //-----------------------------------------------
 void MemoryMappedFile::UnmapFile()
     {
@@ -291,7 +321,7 @@ wxULongLong MemoryMappedFile::GetFileSize64(const MemoryMappedFileHandleType hFi
 #ifdef __WXMSW__
     if (hFile == INVALID_HANDLE_VALUE)
         { throw MemoryMappedInvalidFileSize(); }
-    //this will fail if the file path was really a drive or printer
+    // this will fail if the file path was really a drive or printer
     if (FILE_TYPE_DISK != ::GetFileType(hFile))
         { throw MemoryMappedInvalidFileSize(); }
 
@@ -302,13 +332,13 @@ wxULongLong MemoryMappedFile::GetFileSize64(const MemoryMappedFileHandleType hFi
         { return size.QuadPart; }
 #elif defined(__WXOSX__)
     off_t size = lseek(hFile, 0, SEEK_END);
-    lseek(hFile, 0, SEEK_SET);//go back to the start of the file
+    lseek(hFile, 0, SEEK_SET); // go back to the start of the file
     if (-1 == size)
         { throw MemoryMappedInvalidFileSize(); }
     return wxULongLong(size);
 #else
     off64_t size = lseek64(hFile, 0, SEEK_END);
-    lseek64(hFile, 0, SEEK_SET);//go back to the start of the file
+    lseek64(hFile, 0, SEEK_SET); // go back to the start of the file
     if (-1 == size)
         { throw MemoryMappedInvalidFileSize(); }
     return wxULongLong(size);
