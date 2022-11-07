@@ -195,6 +195,18 @@ namespace Wisteria::GraphItems
             case IconShape::BusinessWoman:
                 m_drawFunction = &ShapeRenderer::DrawBusinessWoman;
                 break;
+            case IconShape::ChevronDownward:
+                m_drawFunction = &ShapeRenderer::DrawChevronDownward;
+                break;
+            case IconShape::ChevronUpward:
+                m_drawFunction = &ShapeRenderer::DrawChevronUpward;
+                break;
+            case IconShape::Text:
+                m_drawFunction = &ShapeRenderer::DrawText;
+                break;
+            case IconShape::Tack:
+                m_drawFunction = &ShapeRenderer::DrawTack;
+                break;
             default:
                 m_drawFunction = nullptr;
                 break;
@@ -435,6 +447,120 @@ namespace Wisteria::GraphItems
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         wxDCPenChanger pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawCircle(GetMidPoint(rect), GetRadius(rect)); });
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawText(const wxRect rect, wxDC& dc) const
+        {
+        Label theLabel(GraphItemInfo(GetGraphItemInfo().GetText()).Pen(wxNullPen).
+            AnchorPoint(GetMidPoint(rect)).Anchoring(Anchoring::Center).
+            LabelAlignment(TextAlignment::Centered).
+            DPIScaling(GetDPIScaleFactor()));
+        theLabel.SetFontColor(GetGraphItemInfo().GetPen().GetColour());
+        theLabel.GetFont().MakeBold();
+        theLabel.SetBoundingBox(rect, dc, GetScaling());
+        theLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+        theLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+        theLabel.Draw(dc);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawTack(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        const std::array<wxPoint, 11> points =
+            {
+            // the needle
+            wxPoint(GetXPosFromLeft(rect, 0),
+                    GetYPosFromTop(rect, math_constants::half)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+                    GetYPosFromTop(rect, math_constants::half)),
+            // top half of tack's handle
+            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+                    GetYPosFromTop(rect, 0)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::half), 
+                    GetYPosFromTop(rect, math_constants::third)),
+            wxPoint(GetXPosFromLeft(rect, 0.90), 
+                    GetYPosFromTop(rect, math_constants::third)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::full), 
+                    GetYPosFromTop(rect, safe_divide(math_constants::third, 2.0))),
+            // bottom half
+            wxPoint(GetXPosFromLeft(rect, math_constants::full), 
+                    GetYPosFromTop(rect, math_constants::half +
+                                         (safe_divide(math_constants::third, 2.0) * 2))),
+            wxPoint(GetXPosFromLeft(rect, 0.90), 
+                    GetYPosFromTop(rect, math_constants::two_thirds)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::half), 
+                    GetYPosFromTop(rect, math_constants::two_thirds)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+                    GetYPosFromTop(rect, math_constants::full)),
+            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+                    GetYPosFromTop(rect, math_constants::half)),
+            };
+        
+        DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawPolygon(points.size(), &points[0]); });
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawChevronDownward(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(-iconRadius, 0),
+            midPoint + wxPoint(0, iconRadius),
+            midPoint + wxPoint(iconRadius, 0)
+            };
+        
+        std::for_each(points.begin(), points.end(),
+            [&iconRadius, this](auto& pt)
+            { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius/2)); });
+        dc.DrawLines(points.size(), &points[0]);
+
+        std::for_each(points.begin(), points.end(),
+            [&iconRadius, this](auto& pt)
+            { pt.y += ScaleToScreenAndCanvas(4); });
+        dc.DrawLines(points.size(), &points[0]);
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawChevronUpward(const wxRect rect, wxDC& dc) const
+        {
+        wxPen scaledPen = GetGraphItemInfo().GetPen();
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2) ); }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        const auto iconRadius = GetRadius(rect);
+        const auto midPoint = GetMidPoint(rect);
+        
+        std::array<wxPoint, 3> points =
+            {
+            midPoint + wxPoint(-iconRadius, 0),
+            midPoint + wxPoint(0, -iconRadius),
+            midPoint + wxPoint(iconRadius, 0)
+            };
+        
+        std::for_each(points.begin(), points.end(),
+            [&iconRadius, this](auto& pt)
+            { pt.y += ScaleToScreenAndCanvas(-2 + (iconRadius/2)); });
+        dc.DrawLines(points.size(), &points[0]);
+
+        std::for_each(points.begin(), points.end(),
+            [&iconRadius, this](auto& pt)
+            { pt.y += ScaleToScreenAndCanvas(4); });
+        dc.DrawLines(points.size(), &points[0]);
         }
 
     //---------------------------------------------------

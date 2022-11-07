@@ -187,6 +187,23 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawBusinessWoman(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a downward-pointing chevron.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawChevronDownward(wxRect rect, wxDC& dc) const;
+        /// @brief Draws an upward-pointing chevron.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawChevronUpward(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a string.
+        /// @note The pen color of the shape controls the font's color.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawText(wxRect rect, wxDC& dc) const;
+        // @brief Draws a tack.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawTack(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,

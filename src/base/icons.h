@@ -75,7 +75,11 @@ namespace Wisteria::Icons
         Male = Man,                    /*!< A basic male outline.*/
         Woman,                         /*!< A basic female outline.*/
         Female = Woman,                /*!< A basic female outline.*/
-        BusinessWoman                  /*!< A basic female outline (in a business skirt).*/
+        BusinessWoman,                 /*!< A basic female outline (in a business skirt).*/
+        ChevronDownward,               /*!< A downward pointing chevron.*/
+        ChevronUpward,                 /*!< An upward pointing chevron.*/
+        Text,                          /*!< A provided string.*/
+        Tack,                          /*!< A tack (pen).*/
         };
 
     /// @brief Item to draw on a legend.
