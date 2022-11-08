@@ -78,7 +78,7 @@ namespace lily_of_the_valley
             m_delimited_character_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::delimited_character,
                                                       m_delimited_character_columns.size()-1));
-            //if at least one column is set to NOT skip its text then set this flag to true
+            // if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
@@ -89,7 +89,7 @@ namespace lily_of_the_valley
             m_delimited_multiple_character_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::delimited_multiple_character,
                                                       m_delimited_multiple_character_columns.size()-1));
-            //if at least one column is set to NOT skip its text then set this flag to true
+            // if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
@@ -99,7 +99,7 @@ namespace lily_of_the_valley
             {
             m_to_eol_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::to_eol, m_to_eol_columns.size()-1));
-            //if at least one column is set to NOT skip its text then set this flag to true
+            // if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
@@ -110,7 +110,7 @@ namespace lily_of_the_valley
             m_fixed_width_columns.push_back(column);
             m_column_indices.push_back(std::make_pair(column_type::fixed_width,
                                                       m_fixed_width_columns.size()-1));
-            //if at least one column is set to NOT skip its text then set this flag to true
+            // if at least one column is set to NOT skip its text then set this flag to true
             if (column.get_parser().is_reading_text())
                 { m_read_text = true; }
             }
@@ -407,7 +407,7 @@ namespace lily_of_the_valley
                 else if (pos->first == column_type::fixed_width)
                     {
                     auto currentColumnIter = m_fixed_width_columns.begin() + pos->second;
-                    //some column definitions may be used more than once for consecutive columns
+                    // some column definitions may be used more than once for consecutive columns
                     for (size_t i = 0;
                         (!currentColumnIter->get_repeat_count() ?
                             true :
@@ -434,10 +434,10 @@ namespace lily_of_the_valley
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
-                        //if the current row is blank then don't add anything to its columns
+                        // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
                             { return ++currentPosition; }
-                        //if this parser is NOT set to skip the column's text then read it in
+                        // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
                             if (currentPosition == nullptr)

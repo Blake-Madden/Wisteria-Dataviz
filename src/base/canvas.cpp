@@ -1516,12 +1516,12 @@ namespace Wisteria
                         { title->SetSelected(false); }
                     }
                 }
-            //see if a movable object is being selected.
+            // see if a movable object is being selected.
             if (auto movableObjectsPos = FindFreeFloatingObject(unscrolledPosition, gdc);
                 movableObjectsPos != GetFreeFloatingObjects().rend())
                 {
-                //We tentatively start dragging, but wait for
-                //mouse movement before dragging properly.
+                // We tentatively start dragging, but wait for
+                // mouse movement before dragging properly.
                 dragMode = DragMode::DragStart;
                 dragStartPos = unscrolledPosition;
                 (*movableObjectsPos)->SetSelected(!(*movableObjectsPos)->IsSelected());
@@ -1532,7 +1532,7 @@ namespace Wisteria
                 (*movableObjectsPos)->SetInDragState(true);
                 currentlyDraggedShape = (*movableObjectsPos);
                 event.Skip();
-                return;//we have our selection, so bail before hit testing everything else
+                return; // we have our selection, so bail before hit testing everything else
                 }
             else
                 {
@@ -1540,7 +1540,7 @@ namespace Wisteria
                                      L"Item being dragged should be null upon left mouse down!");
                 currentlyDraggedShape = nullptr;
                 }
-            //or the fixed items connected to the canvas's grid
+            // ...or the fixed items connected to the canvas's grid
             for (auto fixedObjectsRowPos = GetFixedObjects().begin();
                 fixedObjectsRowPos != GetFixedObjects().end();
                 ++fixedObjectsRowPos)

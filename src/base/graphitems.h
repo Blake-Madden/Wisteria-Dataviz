@@ -552,7 +552,7 @@ namespace Wisteria
                 {}
             /// @returns @c true if the primary color has been specified.
             [[nodiscard]] bool IsOk() const
-                { return m_color1.IsOk(); }//we use either the first color or both
+                { return m_color1.IsOk(); } // we use either the first color or both
             /// @returns @c true if a gradient is being used.
             [[nodiscard]] bool IsGradient() const
                 { return (m_color1.IsOk() && m_color2.IsOk()); }

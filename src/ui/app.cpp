@@ -110,13 +110,13 @@ bool Wisteria::UI::BaseApp::OnInit()
     wxFileSystem::AddHandler(new wxZipFSHandler);
     wxFileSystem::AddHandler(new wxMemoryFSHandler);
 
-    //load the XRC handlers
+    // load the XRC handlers
     wxXmlResource::Get()->AddHandler(new wxBitmapXmlHandler);
     wxXmlResource::Get()->AddHandler(new wxIconXmlHandler);
     wxXmlResource::Get()->AddHandler(new wxMenuXmlHandler);
     wxXmlResource::Get()->AddHandler(new wxMenuBarXmlHandler);
 
-    //Create the document manager
+    // create the document manager
     SetDocManager(new Wisteria::UI::DocManager);
 
     wxDialog::EnableLayoutAdaptation(true);
@@ -193,7 +193,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         }
     else
         {
-        //write the app name with alternating font colors
+        // write the app name with alternating font colors
         wxCoord firstWidth(0), secondWidth(0);
         wxString firstWord = appName.Mid(0, spacePos);
         wxString secondWord = appName.Mid(spacePos);
@@ -302,7 +302,7 @@ void Wisteria::UI::BaseApp::LoadFileHistoryMenu()
         {
         GetDocManager()->FileHistoryUseMenu(GetMainFrame()->GetMenuBar()->GetMenu(0));
         }
-    //Load the file history
+    // load the file history
     wxConfig config(GetAppName() + _DT(L"MRU"), GetVendorName());
     config.SetPath(_DT(L"Recent File List", DTExplanation::SystemEntry));
     GetDocManager()->FileHistoryLoad(config);

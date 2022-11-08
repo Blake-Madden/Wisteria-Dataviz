@@ -42,7 +42,7 @@ public:
         for (/*already defined*/; static_cast<size_t>(i) < m_rangeBegin+idCount; ++i)
             { wxRegisterId(i); }
         m_rangeEnd = i-1;
-        m_startingId = i;//where the next menu id range lock will begin
+        m_startingId = i; // where the next menu id range lock will begin
         }
     /// @returns The first available ID.
     [[nodiscard]] wxWindowID GetFirstId() const noexcept

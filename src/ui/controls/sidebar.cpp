@@ -596,7 +596,7 @@ void SideBar::ClearHighlightedItems() noexcept
 //---------------------------------------------------
 void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
     {
-    //if mouse is not inside of window, then turn off any item mouse highlighting
+    // if mouse is not inside of window, then turn off any item mouse highlighting
     if (!GetScreenRect().Contains(wxGetMousePosition()))
         { ClearHighlightedItems(); }
 
@@ -622,7 +622,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             }
         else
             { SetToolTip(wxEmptyString); }
-        //if not shown, then don't bother handling hover events for items that aren't being displayed
+        // if not shown, then don't bother handling hover events for items that aren't being displayed
         if (!IsExpanded())
             { return; }
         }
@@ -639,8 +639,8 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             m_items[i].m_highlightedItem = std::nullopt;
             break;
             }
-        //if a parent item isn't being moused over, then see if its expanded subitems are being moused over.
-        //otherwise, turn off the subitems' highlighting.
+        // if a parent item isn't being moused over, then see if its expanded subitems are being moused over.
+        // otherwise, turn off the subitems' highlighting.
         if (m_items[i].m_isExpanded)
             {
             for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)

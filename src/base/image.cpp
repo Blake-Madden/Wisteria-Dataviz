@@ -686,7 +686,7 @@ namespace Wisteria::GraphItems
                 shadowPts[4] = GetBoundingBox(dc).GetRightTop() +
                                wxPoint(0,scaledShadowOffset);
                 shadowPts[5] = GetBoundingBox(dc).GetRightBottom();
-                shadowPts[6] = shadowPts[0];//close polygon
+                shadowPts[6] = shadowPts[0]; // close polygon
                 dc.DrawPolygon(std::size(shadowPts), shadowPts);
                 }
             else if (GetShadowType() == ShadowType::RightSideShadow)

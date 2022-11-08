@@ -143,7 +143,7 @@ public:
             if (!inserted)
                 {
                 index_iter->second.first += iter->second.first;
-                index_iter->second.second += frequencyIncrement; //override other item's custom counter
+                index_iter->second.second += frequencyIncrement; // override other item's custom counter
                 }
             }
         }
@@ -216,7 +216,7 @@ class frequency_map
     {
 public:
     /// @private
-    using map_type = typename std::map<T1, std::pair<T2,size_t>, Compare>; //Key/(value & count)
+    using map_type = typename std::map<T1, std::pair<T2,size_t>, Compare>; // Key/(value & count)
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts a pair of items into the map.
