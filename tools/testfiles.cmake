@@ -9,7 +9,9 @@ SET(TEST_SRC_FILES
     evenoddtests.cpp
     geometrytests.cpp
     intsplittests.cpp
+    mapstests.cpp
     roundtest.cpp
     safemathtests.cpp
     statstests.cpp
+    textimporttests.cpp
     truncatetests.cpp)

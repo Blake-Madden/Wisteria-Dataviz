@@ -9,7 +9,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Zero")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(0, 0);
+        constexpr uint64_t res = join_int32s(0, 0);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(0) == lo);
         CHECK(static_cast<uint32_t>(0) == hi);
@@ -17,7 +17,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Normal Values")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(16, 19);
+        constexpr uint64_t res = join_int32s(16, 19);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(16) == lo);
         CHECK(static_cast<uint32_t>(19) == hi);
@@ -25,7 +25,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Normal Values2")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(2, 5);
+        constexpr uint64_t res = join_int32s(2, 5);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(2) == lo);
         CHECK(static_cast<uint32_t>(5) == hi);
@@ -33,7 +33,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Normal Values3")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(97, 52);
+        constexpr uint64_t res = join_int32s(97, 52);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(97) == lo);
         CHECK(static_cast<uint32_t>(52) == hi);
@@ -57,7 +57,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Same Values")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(10, 10);
+        constexpr uint64_t res = join_int32s(10, 10);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(10) == lo);
         CHECK(static_cast<uint32_t>(10) == hi);
@@ -65,7 +65,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Large Values")
         {
         uint32_t lo, hi;
-        uint64_t res = join_int32s(4581, 9842);
+        constexpr uint64_t res = join_int32s(4581, 9842);
         split_int64(res, lo, hi);
         CHECK(static_cast<uint32_t>(4581) == lo);
         CHECK(static_cast<uint32_t>(9842) == hi);
@@ -73,7 +73,7 @@ TEST_CASE("Split integers", "[intsplit]")
     SECTION("Join Split Double")
         {
         uint32_t lo, hi;
-        double res = static_cast<double>(join_int32s(4581, 9842));
+        constexpr double res = static_cast<double>(join_int32s(4581, 9842));
         split_int64(static_cast<uint64_t>(res), lo, hi);
         CHECK(static_cast<uint32_t>(4581) == lo);
         CHECK(static_cast<uint32_t>(9842) == hi);
