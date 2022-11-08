@@ -118,7 +118,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
 
         // see if the last error was related to cloud file errors
         // (only available in WinSDK ~Windows 8.1)
-        const auto isCloudFileError = []([[maybe_unused]] const auto errorCode)
+        const auto isCloudFileError = [](const auto errorCode) noexcept
             {
             // only check if the full range of cloud file error codes are defined
     #if defined (ERROR_CLOUD_FILE_PROVIDER_NOT_RUNNING) && defined (ERROR_CLOUD_FILE_VALIDATION_FAILED)
