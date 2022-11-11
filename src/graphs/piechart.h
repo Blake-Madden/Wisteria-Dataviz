@@ -471,6 +471,7 @@ namespace Wisteria::Graphs
         ///     where the real estate is at a premium.\n
         ///     This should be set to @c false, however, if you are aligning pie charts
         ///     vertically and you need the pies to align with each other.
+        /// @param useDynamic @c true to enable dynamically hiding margins.
         /// @sa GetLeftMarginNote(), GetRightMarginNote().
         void SetDynamicMargins(const bool useDynamic) noexcept
             { m_dynamicMargins = useDynamic; }
@@ -481,6 +482,7 @@ namespace Wisteria::Graphs
         /// @note If outer labels are being shown, then this note may overlay it. This is only
         ///     recommended if outer labels are hidden or if the caller is certain that no
         ///     labels will be on the left side of the pie.
+        /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetRightMarginNote().
         [[nodiscard]] GraphItems::Label& GetLeftMarginNote() noexcept
             { return m_leftMarginNote; }
@@ -490,6 +492,7 @@ namespace Wisteria::Graphs
         /// @note If outer labels are being shown, then this note may overlay it. This is only
         ///     recommended if outer labels are hidden or if the caller is certain that no
         ///     labels will be on the right side of the pie.
+        /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetLeftMarginNote().
         [[nodiscard]] GraphItems::Label& GetRightMarginNote() noexcept
             { return m_rightMarginNote; }
