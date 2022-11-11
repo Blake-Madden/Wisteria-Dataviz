@@ -487,7 +487,7 @@ namespace Wisteria
             std::optional<wxBrushStyle>(foundValue->second) :
             std::nullopt);
         }
-
+    
     //---------------------------------------------------
     std::optional<GanttChart::TaskLabelDisplay> ReportBuilder::ConvertTaskLabelDisplay(const wxString& value)
         {
@@ -3061,6 +3061,22 @@ namespace Wisteria
                 {
                 pieChart->SetGhostOpacity(
                     graphNode->GetProperty(L"ghost-opacity")->GetValueNumber(32));
+                }
+
+            // margin notes
+            if (graphNode->HasProperty(L"left-margin-note"))
+                {
+                auto marginLabel = LoadLabel(graphNode->GetProperty(L"left-margin-note"),
+                                             GraphItems::Label());
+                if (marginLabel != nullptr)
+                    { pieChart->GetLeftMarginNote() = *marginLabel; }
+                }
+            if (graphNode->HasProperty(L"right-margin-note"))
+                {
+                auto marginLabel = LoadLabel(graphNode->GetProperty(L"right-margin-note"),
+                                             GraphItems::Label());
+                if (marginLabel != nullptr)
+                    { pieChart->GetRightMarginNote() = *marginLabel; }
                 }
 
             if (const auto pieEffect =

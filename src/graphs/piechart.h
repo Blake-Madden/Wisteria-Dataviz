@@ -455,18 +455,44 @@ namespace Wisteria::Graphs
         void SetMidPointAbbreviation(const std::shared_ptr<const TextReplace> abbreviate)
             { m_abbreviate = abbreviate; }
 
+        /// @name Margin Functions
+        /// @brief Functions for customizing the margins/gutters around the pie.
+        /// @details This includes the pie's outer labels, margin note, and whether
+        ///     both margins are always shown.
+        /// @{
+
         /// @returns @c true if the pie chart is shifted to one side if either gutter
         ///     has no outer labels.
         [[nodiscard]] bool HasDynamicMargins() const noexcept
             { return m_dynamicMargins; }
         /// @brief Set to @c true to shift the pie chart to one side if either gutter
-        ///     has no outer labels.
+        ///     has no outer labels and there aren't any margin notes.
         /// @details This is useful when placing multiple showcased pie charts side-by-side,
         ///     where the real estate is at a premium.\n
         ///     This should be set to @c false, however, if you are aligning pie charts
         ///     vertically and you need the pies to align with each other.
+        /// @sa GetLeftMarginNote(), GetRightMarginNote().
         void SetDynamicMargins(const bool useDynamic) noexcept
             { m_dynamicMargins = useDynamic; }
+
+        /// @brief Gets/sets the label shown in the left margin/gutter.
+        /// @details This will override dynamically hiding the margins, forcing the left margin
+        ///     to always be included.
+        /// @note If outer labels are being shown, then this note may overlay it. This is only
+        ///     recommended if outer labels are hidden or if the caller is certain that no
+        ///     labels will be on the left side of the pie.
+        /// @sa SetDynamicMargins(), GetRightMarginNote().
+        [[nodiscard]] GraphItems::Label& GetLeftMarginNote() noexcept
+            { return m_leftMarginNote; }
+        /// @brief Gets/sets the label shown in the right margin/gutter.
+        /// @details This will override dynamically hiding the margins, forcing the right margin
+        ///     to always be included.
+        /// @note If outer labels are being shown, then this note may overlay it. This is only
+        ///     recommended if outer labels are hidden or if the caller is certain that no
+        ///     labels will be on the right side of the pie.
+        /// @sa SetDynamicMargins(), GetLeftMarginNote().
+        [[nodiscard]] GraphItems::Label& GetRightMarginNote() noexcept
+            { return m_rightMarginNote; }
 
         /// @returns What the labels along the margins (i.e., gutters) are displaying.
         [[nodiscard]] BinLabelDisplay GetOuterLabelDisplay() const noexcept
@@ -475,6 +501,8 @@ namespace Wisteria::Graphs
         /// @param display What to display.
         void SetOuterLabelDisplay(const BinLabelDisplay display) noexcept
             { m_outerLabelDisplay = display; }
+
+        /// @}
 
         /// @name Outer Pie Functions
         /// @brief Functions for customizing the outer ring of the pie chart.\n
@@ -860,6 +888,8 @@ namespace Wisteria::Graphs
         PieInfo m_outerPie;
 
         bool m_dynamicMargins{ false };
+        GraphItems::Label m_leftMarginNote;
+        GraphItems::Label m_rightMarginNote;
 
         BinLabelDisplay m_innerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };
         BinLabelDisplay m_outerPieMidPointLabelDisplay{ BinLabelDisplay::BinPercentage };

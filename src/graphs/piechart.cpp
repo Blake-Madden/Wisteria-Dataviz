@@ -1415,8 +1415,11 @@ namespace Wisteria::Graphs
             };
 
         // if we have an empty gutter, then shift everything over and give that real estate
-        // to the other gutter (if the client is requesting that behaviour).
-        if (HasDynamicMargins())
+        // to the other gutter (if the client is requesting that behaviour and there
+        // aren't any margin notes).
+        if (HasDynamicMargins() &&
+            (!GetLeftMarginNote().IsShown() || GetLeftMarginNote().GetText().empty()) &&
+            (!GetRightMarginNote().IsShown() || GetRightMarginNote().GetText().empty()))
             {
             // if both gutters are empty, then no point in moving the chart around
             // (just keep it centered)
@@ -1454,7 +1457,7 @@ namespace Wisteria::Graphs
                     });
                 }
             // empty right gutter
-            if (outerTopRightLabelAndLines.empty() &&
+            else if (outerTopRightLabelAndLines.empty() &&
                 outerBottomRightLabelAndLines.empty())
                 {
                 const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
@@ -1481,6 +1484,45 @@ namespace Wisteria::Graphs
                         { refitLabelAndLine(labelAndLine, Side::Left); }
                     });
                 }
+            }
+
+        // see if there is a note to show in an empty gutter (if there is one)
+        if (GetLeftMarginNote().GetText().length())
+            {
+            const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
+            const auto marginRect = wxRect(GetPlotAreaBoundingBox().GetTopLeft(),
+                wxSize(xDiff, GetPlotAreaBoundingBox().GetHeight()));
+
+            auto gutterLabel = std::make_shared<Label>(GetLeftMarginNote());
+            gutterLabel->GetGraphItemInfo().
+                Scaling(GetScaling()).
+                DPIScaling(this->GetDPIScaleFactor()).
+                Padding(4, 4, 4, 4).
+                Selectable(true).Anchoring(Anchoring::TopLeftCorner).
+                AnchorPoint(GetPlotAreaBoundingBox().GetTopLeft());
+            gutterLabel->SplitTextToFitBoundingBox(dc, marginRect.GetSize());
+            gutterLabel->SetBoundingBox(marginRect, dc, GetScaling());
+
+            AddObject(gutterLabel);
+            }
+        if (GetRightMarginNote().GetText().length())
+            {
+            const auto xDiff = pieDrawArea.GetX() - GetPlotAreaBoundingBox().GetX();
+            const auto marginRect = wxRect(
+                wxPoint(pieDrawArea.GetTopRight().x, GetPlotAreaBoundingBox().GetTop()),
+                wxSize(xDiff, GetPlotAreaBoundingBox().GetHeight()));
+
+            auto gutterLabel = std::make_shared<Label>(GetRightMarginNote());
+            gutterLabel->GetGraphItemInfo().
+                Scaling(GetScaling()).
+                DPIScaling(this->GetDPIScaleFactor()).
+                Padding(4, 4, 4, 4).
+                Selectable(true).Anchoring(Anchoring::TopRightCorner).
+                AnchorPoint(GetPlotAreaBoundingBox().GetTopRight());
+            gutterLabel->SplitTextToFitBoundingBox(dc, marginRect.GetSize());
+            gutterLabel->SetBoundingBox(marginRect, dc, GetScaling());
+
+            AddObject(gutterLabel);
             }
         }
 
