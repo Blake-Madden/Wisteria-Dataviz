@@ -59,12 +59,12 @@ ENDIF()
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
 INCLUDE(${CMAKE_SOURCE_DIR}/tools/files.cmake)
-ADD_LIBRARY(Wisteria STATIC ${WISTERIA_SRC})
-TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
+ADD_LIBRARY(WisteriaLib STATIC ${WISTERIA_SRC})
+TARGET_INCLUDE_DIRECTORIES(WisteriaLib PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 IF(MSVC)
-    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -80,18 +80,18 @@ IF(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 # Placeholder code for macOS (needs testing)
 #ELSEIF(APPLE)
-#    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXOSX__
+#    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
 #        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-#    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+#    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic
 #                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ELSEIF(UNIX)
-    TARGET_COMPILE_DEFINITIONS(Wisteria PUBLIC __WXGTK__
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-    TARGET_COMPILE_OPTIONS(Wisteria PUBLIC -Wall -Wextra -Wpedantic
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
 
@@ -100,7 +100,7 @@ ENDIF()
 SET(DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/demo.cpp)
 
 IF(WIN32)
-    # Include an RC file for windows
+    # Include an RC file and HiDPI manifest for Windows (provided by wxWidgets)
     SET(wxUSE_DPI_AWARE_MANIFEST 1)
     LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
     LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
@@ -112,16 +112,19 @@ ELSEIF(APPLE)
     LIST(APPEND DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/wxmac.icns)
 ENDIF()
 
-# Define the build target for the executable
+# Define the build target for the executable and copy it into the "demo" subfolder
 MESSAGE(STATUS "Building the demonstration program...")
 SET(DEMO_APP WisteriaDemo)
 ADD_EXECUTABLE(${DEMO_APP} WIN32 MACOSX_BUNDLE ${DEMO_SRC_FILES})
+SET_TARGET_PROPERTIES(${DEMO_APP} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/demo")
+
 # Link required libraries to the executable
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(${DEMO_APP} Wisteria ${wxWidgets_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES})
 ELSEIF(UNIX)
-    find_library(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${DEMO_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB})
+    FIND_LIBRARY(TBB_LIB tbb)
+    TARGET_LINK_LIBRARIES(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
 ENDIF()
 
 # Embed the manifest file
@@ -149,7 +152,7 @@ ADD_CUSTOM_COMMAND(TARGET ${DEMO_APP}
                    ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${DEMO_APP}>/datasets)
 
 IF(APPLE)
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+    SET_TARGET_PROPERTIES(${DEMO_APP} PROPERTIES
         RESOURCE "demo/wxmac.icns"
         MACOSX_BUNDLE_ICON_FILE wxmac.icns
         MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
