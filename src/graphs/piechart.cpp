@@ -157,7 +157,7 @@ namespace Wisteria::GraphItems
         auto pieLabel = std::make_shared<Label>(GetGraphItemInfo());
         pieLabel->GetGraphItemInfo().Pen(wxNullPen).
             Scaling(GetScaling()).
-            Padding(4, 4, 4, 4).
+            Padding(0, 4, 0, 4).
             Selectable(true).
             Anchoring(
                 is_within<double>(std::make_pair(0, 90), angle) ?
