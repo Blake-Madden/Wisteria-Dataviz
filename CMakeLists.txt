@@ -82,7 +82,12 @@ IF(MSVC)
     # about not wrapping all of this logic in try blocks.
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
-# Placeholder code for macOS (needs testing)
+ELSEIF(MINGW OR MSYS)
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__
+            $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic
+                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+# TODO: Placeholder code for macOS (needs testing)
 #ELSEIF(APPLE)
 #    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
 #        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
