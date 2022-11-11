@@ -142,7 +142,7 @@ int Wisteria::UI::BaseApp::OnExit()
             const wxString memMsg = wxString::Format(L"Peak Memory Usage: %.02fGbs.",
                 safe_divide<double>(memCounter.PeakWorkingSetSize, 1024*1024*1024));
             wxLogDebug(memMsg);
-            OutputDebugString(memMsg);
+            OutputDebugString(memMsg.wc_str());
             }
     #endif
 #endif
