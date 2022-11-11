@@ -152,6 +152,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadLinePlot(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"heatmap") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadHeatMap(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"w-curve-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -480,6 +485,69 @@ namespace Wisteria
         const auto foundValue = styleValues.find(value.Lower().ToStdWstring());
         return ((foundValue != styleValues.cend()) ?
             std::optional<wxBrushStyle>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<GanttChart::TaskLabelDisplay> ReportBuilder::ConvertTaskLabelDisplay(const wxString& value)
+        {
+        static const std::map<std::wstring, GanttChart::TaskLabelDisplay> taskLabelDisplays =
+            {
+            { L"days", GanttChart::TaskLabelDisplay::Days },
+            { L"description", GanttChart::TaskLabelDisplay::Description },
+            { L"description-and-days", GanttChart::TaskLabelDisplay::DescriptionAndDays },
+            { L"no-display", GanttChart::TaskLabelDisplay::NoDisplay },
+            { L"resource", GanttChart::TaskLabelDisplay::Resource },
+            { L"resource-and-days", GanttChart::TaskLabelDisplay::ResourceAndDays },
+            { L"resource-and-description", GanttChart::TaskLabelDisplay::ResourceAndDescription },
+            { L"resource-description-and-days", GanttChart::TaskLabelDisplay::ResourceDescriptionAndDays }
+            };
+
+        const auto foundValue = taskLabelDisplays.find(value.Lower().ToStdWstring());
+        return ((foundValue != taskLabelDisplays.cend()) ?
+            std::optional<GanttChart::TaskLabelDisplay>(foundValue->second) :
+            std::nullopt);
+        }
+    
+    //---------------------------------------------------
+    std::optional<CandlestickPlot::ChartType> ReportBuilder::ConvertCandlestickChartType(
+        const wxString& value)
+        {
+        static const std::map<std::wstring, CandlestickPlot::ChartType> candleTypes =
+            {
+            { L"candlestick", CandlestickPlot::ChartType::Candlestick },
+            { L"ohlc", CandlestickPlot::ChartType::Ohlc }
+            };
+
+        const auto foundValue = candleTypes.find(value.Lower().ToStdWstring());
+        return ((foundValue != candleTypes.cend()) ?
+            std::optional<CandlestickPlot::ChartType>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<LikertChart::LikertSurveyQuestionFormat>
+        ReportBuilder::ConvertLikertSurveyQuestionFormat(const wxString& value)
+        {
+        static const std::map<std::wstring, LikertChart::LikertSurveyQuestionFormat> surveyTypes =
+            {
+            { L"two-point", LikertChart::LikertSurveyQuestionFormat::TwoPoint },
+            { L"two-point-categorized", LikertChart::LikertSurveyQuestionFormat::TwoPointCategorized },
+            { L"three-point", LikertChart::LikertSurveyQuestionFormat::ThreePoint },
+            { L"threepoint-categorized", LikertChart::LikertSurveyQuestionFormat::ThreePointCategorized },
+            { L"four-point", LikertChart::LikertSurveyQuestionFormat::FourPoint },
+            { L"four-point-categorized", LikertChart::LikertSurveyQuestionFormat::FourPointCategorized },
+            { L"five-point", LikertChart::LikertSurveyQuestionFormat::FivePoint },
+            { L"five-point-categorized", LikertChart::LikertSurveyQuestionFormat::FivePointCategorized },
+            { L"six-point", LikertChart::LikertSurveyQuestionFormat::SixPoint },
+            { L"six-point-categorized", LikertChart::LikertSurveyQuestionFormat::SixPointCategorized },
+            { L"seven--point", LikertChart::LikertSurveyQuestionFormat::SevenPoint },
+            { L"seven-point-categorized", LikertChart::LikertSurveyQuestionFormat::SevenPointCategorized }
+            };
+
+        const auto foundValue = surveyTypes.find(value.Lower().ToStdWstring());
+        return ((foundValue != surveyTypes.cend()) ?
+            std::optional<LikertChart::LikertSurveyQuestionFormat>(foundValue->second) :
             std::nullopt);
         }
 
@@ -2383,6 +2451,45 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for line plot.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadHeatMap(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for heatmap."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            auto heatmap = std::make_shared<HeatMap>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+            heatmap->SetData(foundPos->second,
+                variablesNode->GetProperty(L"continuous")->GetValueString(),
+                (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt),
+                graphNode->GetProperty(L"group-column-count")->GetValueNumber(5));
+
+            heatmap->ShowGroupHeaders(graphNode->GetProperty(L"show-group-header")->GetValueBool(true));
+            heatmap->SetGroupHeaderPrefix(graphNode->GetProperty(L"group-header-prefix")->GetValueString());
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, heatmap);
+            return heatmap;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for heatmap.").ToUTF8());
             }
         }
 

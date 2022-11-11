@@ -28,6 +28,10 @@
 #include "../graphs/table.h"
 #include "../graphs/lrroadmap.h"
 #include "../graphs/proconroadmap.h"
+#include "../graphs/heatmap.h"
+#include "../graphs/ganttchart.h"
+#include "../graphs/candlestickplot.h"
+#include "../graphs/likertchart.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
@@ -185,6 +189,15 @@ namespace Wisteria
         /// @param graph The bar chart to load the base settings to.
         void LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
                           std::shared_ptr<Graphs::BarChart> barChart);
+        /// @brief Loads a heatmap node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadHeatMap(
+                        const wxSimpleJSON::Ptr_t& graphNode,
+                        Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a table node into the canvas.
         /// @param graphNode The table node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -330,6 +343,15 @@ namespace Wisteria
         /// @brief Converts a string value to a @c wxBrushStyle enum value.
         [[nodiscard]] static std::optional<wxBrushStyle>
             ConvertBrushStyle(const wxString& value);
+        /// @brief Converts a string value to a `GanttChart::TaskLabelDisplay` enum value.
+        [[nodiscard]] static std::optional<Wisteria::Graphs::GanttChart::TaskLabelDisplay>
+            ConvertTaskLabelDisplay(const wxString& value);
+        /// @brief Converts a string value to a `CandlestickPlot::ChartType` enum value.
+        [[nodiscard]] static std::optional<Wisteria::Graphs::CandlestickPlot::ChartType>
+            ConvertCandlestickChartType(const wxString& value);
+        /// @brief Converts a string value to a `LikertChart::LikertSurveyQuestionFormat` enum value.
+        [[nodiscard]] static std::optional<Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat>
+            ConvertLikertSurveyQuestionFormat(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and convert into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
