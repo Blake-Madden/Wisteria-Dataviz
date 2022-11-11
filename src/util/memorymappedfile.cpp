@@ -85,7 +85,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
     // get the length of the file
     try
         { m_mapSize = GetFileSize64(m_hFile).GetLo(); }
-    catch (MemoryMappedInvalidFileSize)
+    catch (MemoryMappedInvalidFileSize&)
         {
         m_mapSize = ::SetFilePointer(m_hFile, 0, NULL, FILE_END);
         if (0 == m_mapSize || INVALID_SET_FILE_POINTER == m_mapSize)
