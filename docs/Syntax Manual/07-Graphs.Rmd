@@ -40,6 +40,18 @@ Properties for `"categorical-bar-chart"` nodes:
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
+## Heat Map {#heatmap-properties .unnumbered}
+
+Properties for `"heatmap"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"continuous"`: the value column (each value will have its own cell).
+  - `"group"`: the grouping column (this is optional).
+- `"group-column-count"`: if a grouping column is provided, then this number will specify the number of columns
+  to split the groups (rows) into. (This should be between 1-5.)
+- `"show-group-header"`: if a grouping column is provided, then @c true will show a header above each column.
+- `"group-header-prefix"`: if group columns are being shown, this will be the string used as a prefix for each column.
+
 ## Histogram {#histogram-properties .unnumbered}
 
 Properties for `"histogram"` nodes:
