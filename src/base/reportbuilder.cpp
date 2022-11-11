@@ -979,7 +979,17 @@ namespace Wisteria
     std::shared_ptr<GraphItems::Label> ReportBuilder::LoadLabel(
         const wxSimpleJSON::Ptr_t& labelNode, const GraphItems::Label& labelTemplate)
         {
-        if (labelNode->IsOk())
+        // just a string
+        if (labelNode->IsValueString())
+            {
+            auto label = std::make_shared<GraphItems::Label>(labelTemplate);
+            label->SetText(ExpandConstants(labelNode->GetValueString()));
+            label->GetPen() = wxNullPen;
+
+            return label;
+            }
+        // a fully defined label
+        else if (labelNode->IsOk())
             {
             auto label = std::make_shared<GraphItems::Label>(labelTemplate);
             label->SetText(ExpandConstants(labelNode->GetProperty(L"text")->GetValueString()));
