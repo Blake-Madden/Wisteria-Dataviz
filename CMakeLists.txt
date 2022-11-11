@@ -104,9 +104,6 @@ IF(WIN32)
     SET(wxUSE_DPI_AWARE_MANIFEST 1)
     LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
     LIST(APPEND DEMO_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
-    CONFIGURE_FILE(${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest
-                   ${CMAKE_SOURCE_DIR}/demo/wx_dpi_aware.manifest
-                   COPYONLY)
 ELSEIF(APPLE)
     # Add an icon for the apple .app file
     LIST(APPEND DEMO_SRC_FILES ${CMAKE_SOURCE_DIR}/demo/wxmac.icns)
@@ -125,19 +122,6 @@ IF(WIN32)
 ELSEIF(UNIX)
     FIND_LIBRARY(TBB_LIB tbb)
     TARGET_LINK_LIBRARIES(${DEMO_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
-ENDIF()
-
-# Embed the manifest file
-IF(WIN32)
-    SET(CMAKE_SHARED_LINKER_FLAGS /MANIFEST:NO)
-    ADD_CUSTOM_COMMAND(
-        TARGET ${DEMO_APP}
-        POST_BUILD
-        # Note about mt.exe, #1 is for EXEs and #2 is for DLLs
-        COMMAND "mt.exe" -manifest \"${CMAKE_SOURCE_DIR}/demo/wx_dpi_aware.manifest\"
-                         -outputresource:\"$<TARGET_FILE:${DEMO_APP}>\"\;\#1
-        COMMENT "Adding manifest...")
-    MESSAGE(STATUS "Adding manifest...")
 ENDIF()
 
 # Copy resources and datasets into build folder
