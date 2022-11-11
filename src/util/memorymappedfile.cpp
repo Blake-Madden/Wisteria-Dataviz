@@ -138,6 +138,9 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
                     errorCode == ERROR_CLOUD_FILE_CONNECTED_PROVIDER_ONLY ||
                     errorCode == ERROR_CLOUD_FILE_VALIDATION_FAILED);
     #else
+            // MSVC has trouble with [[maybe_unused]] and lambdas,
+            // so suppress unused variable warning this way
+            wxUnusedVar(errorCode);
             return false;
     #endif
             };
