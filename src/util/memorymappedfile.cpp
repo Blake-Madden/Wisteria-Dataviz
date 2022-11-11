@@ -158,7 +158,9 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
             throw MemoryMappedFileException();
             }
         }
-    m_data = ::MapViewOfFile(m_hsection, IsReadOnly() ? FILE_MAP_READ : (FILE_MAP_READ|FILE_MAP_WRITE), 0, 0, 0);
+    m_data = ::MapViewOfFile(m_hsection,
+                             IsReadOnly() ? FILE_MAP_READ : (FILE_MAP_READ|FILE_MAP_WRITE),
+                             0, 0, 0);
     if (nullptr == m_data)
         {
         if (m_mapSize > 0)
@@ -274,7 +276,8 @@ bool MemoryMappedFile::Buffer()
     wxLogMessage(L"Unable to map file, switching to buffering mode: %s", GetFilePath());
     Reset(true);
     wxFile theFile;
-    if (!theFile.Open(GetFilePath(), wxFile::read) ) // best to fall back to read only mode if we had to buffer
+    // best to fall back to read only mode if we had to buffer
+    if (!theFile.Open(GetFilePath(), wxFile::read) )
         {
         wxLogError(L"Unable to open file for buffering: %s", GetFilePath());
         wxMessageBox(wxString::Format(_(L"Unable to open file for buffering:\n%s"), GetFilePath()),

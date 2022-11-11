@@ -52,18 +52,19 @@ class MemoryMappedFileCloudFileError : public std::exception {};
 #endif
 
 /**
-@brief Class for mapping a file into your address space (rather than having to buffer its contents).
+@brief Class for mapping a file into your address space
+    (rather than having to buffer its contents).
 @par Example
 @code
     try
         {
         MemoryMappedFile fileMap(L"/home/blake/file.txt", true);
-        const char* fileText = (const char*)fileMap.GetStream();
+        const char* fileText = static_cast<const char*>(fileMap.GetStream());
         // now map another file (note that fileText will not be valid after this)
         fileMap.UnmapFile();
         fileMap.MapFile(L"/home/bmadden/DifferentFile.txt", false);
-        char* writableFileText = (char*)fileMap.GetStream();
-        // now write back to the file by simply writing to the pointer
+        char* writableFileText = static_cast<char*>(fileMap.GetStream());
+        // now write back to the file by writing to the pointer
         std::strncpy(writableFileText, "Hello, world!", 13);
         }
     catch (...)
@@ -103,8 +104,12 @@ public:
 
         @param filePath Path to the file to map.
         @param readOnly Flag specifying whether to open the file as read only.
-        @param autoBufferOnException Flag specifying whether to attempt to buffer the file if the mapping fails. An exception may still be thrown if the buffering fails. Note that this is not recommended for large files as the buffer will be as large as the file.*/
-    explicit MemoryMappedFile(const wxString& filePath, bool readOnly = true, const bool autoBufferOnException = false) :
+        @param autoBufferOnException Flag specifying whether to attempt to buffer
+            the file if the mapping fails. An exception may still be thrown if the
+            buffering fails. Note that this is not recommended for large files
+            as the buffer will be as large as the file.*/
+    explicit MemoryMappedFile(const wxString& filePath, bool readOnly = true,
+                              const bool autoBufferOnException = false) :
     #ifdef __WXMSW__
         m_hFile(INVALID_HANDLE_VALUE),
         m_hsection(NULL),
@@ -149,10 +154,14 @@ public:
 
         @param filePath Path to the file to map.
         @param readOnly Flag specifying whether to open the file as read only.
-        @param autoBufferOnException Flag specifying whether to attempt to buffer the file if the mapping fails. An exception may still be thrown if the buffering fails. Note that this is not recommended for large files as the buffer will be as large as the file.
+        @param autoBufferOnException Flag specifying whether to attempt to buffer
+            the file if the mapping fails. An exception may still be thrown if
+            the buffering fails. Note that this is not recommended for large files
+            as the buffer will be as large as the file.
 
         @returns @c true if file mapping (or buffering) was successful.*/
-    bool MapFile(const wxString& filePath, const bool readOnly = true, const bool autoBufferOnException = false);
+    bool MapFile(const wxString& filePath, const bool readOnly = true,
+                 const bool autoBufferOnException = false);
     /// @brief Closes the handles and mappings.
     void UnmapFile();
     /** @returns The raw byte stream of the file.
