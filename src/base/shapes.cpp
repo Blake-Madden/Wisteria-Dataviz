@@ -16,6 +16,47 @@ using namespace Wisteria::Icons;
 namespace Wisteria::GraphItems
     {
     //---------------------------------------------------
+    wxGraphicsContext* GraphicsContextFallback::GetGraphicsContext(
+        wxDC* dc, const wxRect rect)
+        {
+        m_drawingToBitmap = false; // reset
+        wxASSERT_MSG(dc, L"Invalid DC for graphics context!");
+        if (dc == nullptr)
+            { return nullptr; }
+        m_rect = rect;
+        m_dc = dc;
+        m_gc = m_dc->GetGraphicsContext();
+        // DC doesn't support GetGraphicsContext(), so fallback to
+        // drawing to a bitmap that we will blit later
+        if (m_gc == nullptr)
+            {
+            m_drawingToBitmap = true;
+            m_bmp = wxBitmap(m_dc->GetSize());
+            Image::SetOpacity(m_bmp, wxALPHA_OPAQUE);
+            m_memDC.SelectObject(m_bmp);
+            m_memDC.Clear();
+
+            m_gc = wxGraphicsContext::Create(m_memDC);
+            }
+        wxASSERT_MSG(m_gc, L"Failed to get graphics context!");
+        return m_gc;
+        }
+
+    //---------------------------------------------------
+    GraphicsContextFallback::~GraphicsContextFallback()
+        {
+        // flush drawing commands to bitmap and then blit it
+        // onto the original DC
+        if (m_drawingToBitmap)
+            {
+            delete m_gc; m_gc = nullptr;
+            m_memDC.SelectObject(wxNullBitmap);
+            m_bmp = m_bmp.GetSubBitmap(m_rect);
+            m_dc->DrawBitmap(m_bmp, m_rect.GetTopLeft());
+            }
+        }
+
+    //---------------------------------------------------
     void Shape::SetBoundingBox(const wxRect& rect,
         [[maybe_unused]] wxDC& dc,
         [[maybe_unused]] const double parentScaling)
@@ -305,7 +346,8 @@ namespace Wisteria::GraphItems
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for sun icon!");
         if (gc)
             {
@@ -354,7 +396,8 @@ namespace Wisteria::GraphItems
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for flower icon!");
         if (gc)
             {
@@ -609,7 +652,8 @@ namespace Wisteria::GraphItems
 
         const wxRect dcRect(rect);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for geo marker!");
         if (gc)
             {
@@ -910,7 +954,8 @@ namespace Wisteria::GraphItems
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for asterisk icon!");
         if (gc)
             {
@@ -980,7 +1025,7 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, scaledPen);
         wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
-                            wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
+                    wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
         }
 
     //---------------------------------------------------
@@ -990,7 +1035,8 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
         if (gc)
             {
@@ -1041,8 +1087,9 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
 
         wxRect drawRect(rect);
-
-        auto gc = dc.GetGraphicsContext();
+        
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");
         if (gc && (side == Side::Left || side == Side::Right))
             {
@@ -1161,7 +1208,8 @@ namespace Wisteria::GraphItems
 
         const wxRect dcRect(rect);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for male outline!");
         if (gc)
             {
@@ -1331,7 +1379,8 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
                 0);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {
@@ -1476,7 +1525,8 @@ namespace Wisteria::GraphItems
             ScaleToScreenAndCanvas(GetGraphItemInfo().GetPen().GetWidth()) :
             0);
 
-        auto gc = dc.GetGraphicsContext();
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
         wxASSERT_MSG(gc, L"Failed to get graphics context for female outline!");
         if (gc)
             {

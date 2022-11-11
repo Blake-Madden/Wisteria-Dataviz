@@ -18,6 +18,33 @@
 
 namespace Wisteria::GraphItems
     {
+    /** @brief Gets a @c wxGraphicsContext to draw to.
+        @details If a provided @c wxDC supports @c GetGraphicsContext(),
+            that that will be returned. Otherwise, a @c wxGraphicsContext
+            pointing to an internal @c wxMemoryDC is returned, which
+            can be rendered to by the client the same way.\n
+            If using this fallback method, the rendering will be performed
+            to a bitmap, which will be blitted to the original @c wxDC
+            upon destruction of this object.*/
+    class GraphicsContextFallback
+        {
+    public:
+        /** @brief Gets the @c wxGraphicsContext to reneder to.
+            @param dc A pointer to the original @c wxDC that is being drawn to.
+            @param rect The rectangle on the @c wxDC that is being drawn to.
+            @returns The @c wxGraphicsContext to render to, or null upon failure.*/
+        wxGraphicsContext* GetGraphicsContext(wxDC* dc, const wxRect rect);
+        /// @private
+        ~GraphicsContextFallback();
+    private:
+        wxGraphicsContext* m_gc{ nullptr };
+        wxDC* m_dc{ nullptr };
+        wxMemoryDC m_memDC;
+        wxBitmap m_bmp;
+        wxRect m_rect;
+        bool m_drawingToBitmap{ false };
+        };
+
     /** @brief Helper class to draw shapes.
         @details This class accepts a GraphItemInfo object, which will be used
             by the @c DrawXX() functions.\n
