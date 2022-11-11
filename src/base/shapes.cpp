@@ -299,8 +299,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawSun(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -348,8 +348,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFlower(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -604,8 +604,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawGeoMarker(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const wxRect dcRect(rect);
 
@@ -904,8 +904,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawAsterisk(wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const auto centerPt = rect.GetTopLeft() +
             wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);
@@ -987,8 +987,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawFallLeaf(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         auto gc = dc.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for leaf icon!");
@@ -1038,7 +1038,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(GetGraphItemInfo().GetPen().IsOk(),
                      L"Pen should be set in Shape for curly braces!");
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
 
         wxRect drawRect(rect);
 
@@ -1156,8 +1156,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawMan(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         const wxRect dcRect(rect);
 
@@ -1322,8 +1322,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect dcRect(rect);
         dcRect.Deflate(
@@ -1467,8 +1467,8 @@ namespace Wisteria::GraphItems
     void ShapeRenderer::DrawBusinessWoman(const wxRect rect, wxDC& dc) const
         {
         // just to reset when we are done
-        wxDCPenChanger pc(dc, wxPen());
-        wxDCBrushChanger bc(dc, wxBrush());
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
 
         wxRect dcRect(rect);
         dcRect.Deflate(
