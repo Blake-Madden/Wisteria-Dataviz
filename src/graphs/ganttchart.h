@@ -132,12 +132,12 @@ namespace Wisteria::Graphs
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
         /** @brief Sets the data.
             @param data The data to use for the chart.
-            @param interval The date interval to display across the axis.
+            @param interval The date interval to display across the axis.\n
                 Note that this may affect the calculated starting and ending dates for the
                 main axis. For example, using quarters will cause the dates to start and
                 end at the beginning and end of a fiscal year.
             @param FYType The fiscal year type, which sets the fiscal year date range
-                based on pre-defined types.
+                based on pre-defined types.\n
                 This parameter is only relevant if @c interval is related to fiscal years.
             @param taskColumnName The column containing the task names.
             @param startDateColumnName The column containing the starting dates.
@@ -146,7 +146,7 @@ namespace Wisteria::Graphs
             @param descriptionColumnName The column containing descriptions of the tasks.
             @param completionColumnName The column containing the percentages of the
                 tasks' completions (NaN will be treated as 0%).
-            @param groupColumnName The grouping column to use.
+            @param groupColumnName The grouping column to use.\n
                 This will set the colors of the task's bars, based on their groups.
                 Note that this can be the same column as the resource or task name columns.
             @throws std::runtime_error If any columns can't be found by name,
