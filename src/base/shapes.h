@@ -47,7 +47,7 @@ namespace Wisteria::GraphItems
 
     /** @brief Helper class to draw shapes.
         @details This class accepts a GraphItemInfo object, which will be used
-            by the @c DrawXX() functions.\n
+            by the various @c Draw___() functions.\n
             This class is not an embeddable object placed on a canvas like
             `GraphItemBase`-derived classes; rather, it is used by these classes
             as a way to draw commonly used shapes.
@@ -92,7 +92,8 @@ namespace Wisteria::GraphItems
         /// @param brush The brush for the sign's background.
         /// @param text The text to draw on the sign.
         /// @param dc The DC to draw to.
-        void DrawCircularSign(const wxRect rect, const wxBrush& brush, const wxString& text, wxDC& dc) const;
+        void DrawCircularSign(const wxRect rect, const wxBrush& brush,
+                              const wxString& text, wxDC& dc) const;
         /// @brief Draws a yellow sun shape (circle with sunbeams).
         /// @param rect The area to draw the sun within.
         /// @param dc The DC to draw to.
@@ -258,7 +259,10 @@ namespace Wisteria::GraphItems
         /// @returns The radius of the largest circle that can fit in a rect.
         /// @note This is floored to be conservative.
         [[nodiscard]] double GetRadius(const wxRect rect) const
-            { return std::floor(safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2)); }
+            {
+            return std::floor(
+                safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2));
+            }
 
         [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
             { return value * GetScaling() * GetDPIScaleFactor(); }
