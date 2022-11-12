@@ -176,7 +176,11 @@ namespace Wisteria::Graphs
         /// @brief Sets which information to display across the tasks.
         /// @param labelDisplay The label display type.
         void SetLabelDisplay(const TaskLabelDisplay labelDisplay) noexcept
-            { m_labelDisplay = labelDisplay; }
+            {
+            m_labelDisplay = labelDisplay;
+            for (auto& task : m_tasks)
+                { task.m_labelDisplay = m_labelDisplay; }
+            }
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.

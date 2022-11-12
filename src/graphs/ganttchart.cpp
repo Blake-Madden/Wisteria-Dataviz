@@ -179,7 +179,6 @@ namespace Wisteria::Graphs
             {
             if (taskInfo.m_start.IsValid() && taskInfo.m_end.IsValid())
                 {
-
                 const GraphItems::Label axisLabel(taskInfo.m_name);
 
                 const auto startPt = GetScalingAxis().FindDatePosition(taskInfo.m_start);
