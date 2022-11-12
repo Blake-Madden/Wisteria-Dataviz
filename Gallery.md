@@ -42,7 +42,7 @@ Business
 
 | Gantt Chart (Wisteria::Graphs::GanttChart) |
 | :-------------------------------- |
-| ![](docs/doxygen/images/GanttChart.svg) |
+| ![](docs/doxygen/images/GanttChart.png) |
 
 | Candlestick Plot (Wisteria::Graphs::CandlestickPlot) |
 | :-------------------------------- |

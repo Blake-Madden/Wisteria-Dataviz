@@ -18,7 +18,7 @@ namespace Wisteria::Graphs
     {
     /** @brief A chart which shows the progress of events (e.g., tasks) along a timeline.
         @details These are useful for project management.
-        @image html GanttChart.svg width=90%
+        @image html GanttChart.png width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where one categorical column is the task name and two date columns
