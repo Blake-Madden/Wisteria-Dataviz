@@ -162,6 +162,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadGanttChart(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"candlestick-plot") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadCandlestickPlot(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"w-curve-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -2518,6 +2523,51 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for W-curve plot.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadCandlestickPlot(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for candlestick plot."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            auto candlestickPlot = std::make_shared<CandlestickPlot>(canvas);
+            candlestickPlot->SetData(foundPos->second,
+                variablesNode->GetProperty(L"date")->GetValueString(),
+                variablesNode->GetProperty(L"open")->GetValueString(),
+                variablesNode->GetProperty(L"high")->GetValueString(),
+                variablesNode->GetProperty(L"low")->GetValueString(),
+                variablesNode->GetProperty(L"close")->GetValueString());
+
+            const auto plotType =
+                ConvertCandlestickPlotType(graphNode->GetProperty(L"plot-type")->GetValueString());
+            if (plotType.has_value())
+                { candlestickPlot->SetPlotType(plotType.value()); }
+
+            LoadBrush(graphNode->GetProperty(L"gain-brush"), candlestickPlot->GetGainBrush());
+            LoadBrush(graphNode->GetProperty(L"loss-brush"), candlestickPlot->GetLossBrush());
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, candlestickPlot);
+            return candlestickPlot;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for candlestick plot.").ToUTF8());
             }
         }
 

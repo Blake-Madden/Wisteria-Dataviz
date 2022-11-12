@@ -23,6 +23,23 @@ Properties for `"box-plot"` nodes:
 - `"show-all-points"`: `true` to show all points. By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
 
+## Candlestick/OHLC plot {#candlestick-plot-properties .unnumbered}
+
+Properties for `"candlestick-plot"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"date"`: the date column (usually would be daily intervals).
+  - `"open"`: the opening-value column.
+  - `"high"`: the high-value column.
+  - `"low"`: the low-value column.
+  - `"close"`: the closing-value column.
+- `"plot-type"`: string specifying which type of plot it should be.
+  Available options are:
+  - `"candlestick"`
+  - `"ohlc"`
+- `"gain-brush"`: a [brush](#brush-properties) specification for candles that had a resulting gain for the day.
+- `"loss-brush"`: a [brush](#brush-properties) specification for candles that had a resulting loss for the day.
+
 ## Categorical Bar Chart {#categorical-bar-chart-properties .unnumbered}
 
 Properties for `"categorical-bar-chart"` nodes:
