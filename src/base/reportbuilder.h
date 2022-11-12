@@ -148,6 +148,15 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadProConRoadmap(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a gannt chart node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadGanttChart(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a pie chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -343,6 +352,12 @@ namespace Wisteria
         /// @brief Converts a string value to a @c wxBrushStyle enum value.
         [[nodiscard]] static std::optional<wxBrushStyle>
             ConvertBrushStyle(const wxString& value);
+        /// @brief Converts a string value to a @c DateInterval enum value.
+        [[nodiscard]] static std::optional<DateInterval>
+            ConvertDateInterval(const wxString& value);
+        /// @brief Converts a string value to a @c FiscalYear enum value.
+        [[nodiscard]] static std::optional<FiscalYear>
+            ConvertFiscalYear(const wxString& value);
         /// @brief Converts a string value to a `GanttChart::TaskLabelDisplay` enum value.
         [[nodiscard]] static std::optional<Wisteria::Graphs::GanttChart::TaskLabelDisplay>
             ConvertTaskLabelDisplay(const wxString& value);

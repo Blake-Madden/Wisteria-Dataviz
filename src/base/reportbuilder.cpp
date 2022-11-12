@@ -157,6 +157,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadHeatMap(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"gantt-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadGanttChart(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"w-curve-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -485,6 +490,38 @@ namespace Wisteria
         const auto foundValue = styleValues.find(value.Lower().ToStdWstring());
         return ((foundValue != styleValues.cend()) ?
             std::optional<wxBrushStyle>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<DateInterval> ReportBuilder::ConvertDateInterval(const wxString& value)
+        {
+        static const std::map<std::wstring, DateInterval> dateValues =
+            {
+            { L"daily", DateInterval::Daily },
+            { L"fiscal-quarterly", DateInterval::FiscalQuarterly },
+            { L"monthly", DateInterval::Monthly },
+            { L"weekly", DateInterval::Weekly }
+            };
+
+        const auto foundValue = dateValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != dateValues.cend()) ?
+            std::optional<DateInterval>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<FiscalYear> ReportBuilder::ConvertFiscalYear(const wxString& value)
+        {
+        static const std::map<std::wstring, FiscalYear> fyValues =
+            {
+            { L"education", FiscalYear::Education },
+            { L"us-business", FiscalYear::USBusiness }
+            };
+
+        const auto foundValue = fyValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != fyValues.cend()) ?
+            std::optional<FiscalYear>(foundValue->second) :
             std::nullopt);
         }
     
@@ -2220,7 +2257,7 @@ namespace Wisteria
                 }
             }
         }
-        
+
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadProConRoadmap(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
@@ -2296,6 +2333,63 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for Pro & Con Roadmap.").ToUTF8());
+            }
+        }
+        
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGanttChart(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for gannt chart."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto dateInterval =
+                ConvertDateInterval(graphNode->GetProperty(L"date-interval")->GetValueString());
+            const auto fyType =
+                ConvertFiscalYear(graphNode->GetProperty(L"fy-type")->GetValueString());
+
+            auto ganttChart = std::make_shared<GanttChart>(canvas);
+            ganttChart->SetData(foundPos->second,
+                dateInterval.has_value() ? dateInterval.value() : DateInterval::FiscalQuarterly,
+                fyType.has_value() ? fyType.value() : FiscalYear::USBusiness,
+                variablesNode->GetProperty(L"task")->GetValueString(),
+                variablesNode->GetProperty(L"start-date")->GetValueString(),
+                variablesNode->GetProperty(L"end-date")->GetValueString(),
+                (variablesNode->HasProperty(L"resource") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"resource")->GetValueString()) :
+                    std::nullopt),
+                (variablesNode->HasProperty(L"description") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"description")->GetValueString()) :
+                    std::nullopt),
+                (variablesNode->HasProperty(L"completion") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"completion")->GetValueString()) :
+                    std::nullopt),
+                (variablesNode->HasProperty(L"group") ?
+                    std::optional<wxString>(variablesNode->GetProperty(L"group")->GetValueString()) :
+                    std::nullopt));
+
+            const auto taskLabelDisplay =
+                ConvertTaskLabelDisplay(graphNode->GetProperty(L"task-label-display")->GetValueString());
+            if (taskLabelDisplay.has_value())
+                { ganttChart->SetLabelDisplay(taskLabelDisplay.value()); }            
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, ganttChart);
+            return ganttChart;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for gannt chart.").ToUTF8());
             }
         }
 

@@ -40,6 +40,29 @@ Properties for `"categorical-bar-chart"` nodes:
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
+## Gantt Chart {#gantt-chart-properties .unnumbered}
+
+Properties for `"gantt-chart"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"task"`: the task column.
+  - `"start-date"`: the starting date column.
+  - `"end-date"`: the end date column.
+  - `"resource"`: the resource column (this is optional).
+  - `"description"`: the description column (this is optional).
+  - `"completion"`: the completion column (this is optional).
+  - `"group"`: the grouping column (this is optional).
+- `"task-label-display"`: string specifying what to display on the tasks.
+  Available options are:
+  - `"days"`
+  - `"description"`
+  - `"description-and-days"`
+  - `"no-display"`
+  - `"resource"`
+  - `"resource-and-days"`
+  - `"resource-and-description"`
+  - `"resource-description-and-days"`
+
 ## Heat Map {#heatmap-properties .unnumbered}
 
 Properties for `"heatmap"` nodes:
