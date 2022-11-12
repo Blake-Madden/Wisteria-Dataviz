@@ -747,25 +747,25 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
-        auto candlestickChart = std::make_shared<CandlestickPlot>(subframe->m_canvas);
-        // Chart's left axis will start at zero by default so that the scale
+        auto candlestickPlot = std::make_shared<CandlestickPlot>(subframe->m_canvas);
+        // Plot's left axis will start at zero by default so that the scale
         // isn't misleading; you can, however, turn that off like this
         // to better see the daily activity.
         // This should be done before calling SetData() so that it bases
         // axis range on the data.
-        candlestickChart->GetLeftYAxis().StartAtZero(false);
+        candlestickPlot->GetLeftYAxis().StartAtZero(false);
 
         // Uncomment this to fit the entire year onto the canvas
         // so that there isn't a scrollbar.
-        // candlestickChart->SetPointsPerDefaultCanvasSize(365);
+        // candlestickPlot->SetPointsPerDefaultCanvasSize(365);
 
-        candlestickChart->SetData(silverFuturesData,
+        candlestickPlot->SetData(silverFuturesData,
             L"Date", L"Open", L"High", L"Low", L"Close/Last");
 
-        candlestickChart->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
+        candlestickPlot->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
 
-        candlestickChart->SetCanvasMargins(5, 5, 5, 5);
-        subframe->m_canvas->SetFixedObject(0, 0, candlestickChart);
+        candlestickPlot->SetCanvasMargins(5, 5, 5, 5);
+        subframe->m_canvas->SetFixedObject(0, 0, candlestickPlot);
         }
     // Bar Chart
     else if (event.GetId() == MyApp::ID_NEW_BARCHART)

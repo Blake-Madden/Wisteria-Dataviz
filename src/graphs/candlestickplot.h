@@ -62,25 +62,25 @@ namespace Wisteria::Graphs
             return;
             }
 
-          auto candlestickChart = std::make_shared<CandlestickPlot>(canvas);
-          // Chart's left axis will start at zero by default so that the scale
+          auto candlestickPlot = std::make_shared<CandlestickPlot>(canvas);
+          // Plot's left axis will start at zero by default so that the scale
           // isn't misleading; you can, however, turn that off like this
           // to better see the daily activity.
           // This should be done before calling SetData() so that it bases
           // axis range on the data.
-          candlestickChart->GetLeftYAxis().StartAtZero(false);
+          candlestickPlot->GetLeftYAxis().StartAtZero(false);
 
           // Uncomment this to fit the entire year onto the canvas
           // so that there isn't a scrollbar.
-          // candlestickChart->SetPointsPerDefaultCanvasSize(365);
+          // candlestickPlot->SetPointsPerDefaultCanvasSize(365);
 
-          candlestickChart->SetData(silverFuturesData,
+          candlestickPlot->SetData(silverFuturesData,
             L"Date", L"Open", L"High", L"Low", L"Close/Last");
 
-          candlestickChart->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
+          candlestickPlot->GetTitle().SetText(_(L"Silver COMEX 2021 Trend"));
 
-          candlestickChart->SetCanvasMargins(5, 5, 5, 5);
-          canvas->SetFixedObject(0, 0, candlestickChart);
+          candlestickPlot->SetCanvasMargins(5, 5, 5, 5);
+          canvas->SetFixedObject(0, 0, candlestickPlot);
           
          @endcode
     */
@@ -88,7 +88,7 @@ namespace Wisteria::Graphs
         {
     public:
         /// @brief How to display the gains and losses
-        enum class ChartType
+        enum class PlotType
             {
             Candlestick, /*!< Display gains and losses as candles.*/
             Ohlc         /*!< Display gains and losses as protruding lines.*/
@@ -122,9 +122,9 @@ namespace Wisteria::Graphs
         /// @brief Functions relating to the display of the plot.
         /// @{
 
-        /** @brief Sets whether this is an OHLC chart or candlestick chart.
-            @param type The chart type to set this to.*/
-        void SetChartType(const ChartType& type)
+        /** @brief Sets whether this is an OHLC plot or candlestick plot.
+            @param type The plot type to set this to.*/
+        void SetPlotType(const PlotType& type)
             { m_chartType = type; }
         /// @brief Gets/sets the brush used to paint days that saw a loss.
         /// @returns The brush used to paint days that saw a loss.
@@ -198,7 +198,7 @@ namespace Wisteria::Graphs
 
         std::vector<Ohlc> m_ohlcs;
         size_t m_pointsPerDefaultCanvasSize{ 100 };
-        ChartType m_chartType{ ChartType::Candlestick };
+        PlotType m_chartType{ PlotType::Candlestick };
         };
     }
 

@@ -190,7 +190,7 @@ namespace Wisteria::Graphs
 
             wick->SetText(ohlcInfo);
 
-            if (m_chartType == ChartType::Candlestick)
+            if (m_chartType == PlotType::Candlestick)
                 {
                 AddObject(wick);
 

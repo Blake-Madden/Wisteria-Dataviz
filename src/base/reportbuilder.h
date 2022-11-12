@@ -361,9 +361,9 @@ namespace Wisteria
         /// @brief Converts a string value to a `GanttChart::TaskLabelDisplay` enum value.
         [[nodiscard]] static std::optional<Wisteria::Graphs::GanttChart::TaskLabelDisplay>
             ConvertTaskLabelDisplay(const wxString& value);
-        /// @brief Converts a string value to a `CandlestickPlot::ChartType` enum value.
-        [[nodiscard]] static std::optional<Wisteria::Graphs::CandlestickPlot::ChartType>
-            ConvertCandlestickChartType(const wxString& value);
+        /// @brief Converts a string value to a `CandlestickPlot::PlotType` enum value.
+        [[nodiscard]] static std::optional<Wisteria::Graphs::CandlestickPlot::PlotType>
+            ConvertCandlestickPlotType(const wxString& value);
         /// @brief Converts a string value to a `LikertChart::LikertSurveyQuestionFormat` enum value.
         [[nodiscard]] static std::optional<Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat>
             ConvertLikertSurveyQuestionFormat(const wxString& value);

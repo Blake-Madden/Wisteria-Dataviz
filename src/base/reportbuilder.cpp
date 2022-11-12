@@ -547,18 +547,18 @@ namespace Wisteria
         }
     
     //---------------------------------------------------
-    std::optional<CandlestickPlot::ChartType> ReportBuilder::ConvertCandlestickChartType(
+    std::optional<CandlestickPlot::PlotType> ReportBuilder::ConvertCandlestickPlotType(
         const wxString& value)
         {
-        static const std::map<std::wstring, CandlestickPlot::ChartType> candleTypes =
+        static const std::map<std::wstring, CandlestickPlot::PlotType> candleTypes =
             {
-            { L"candlestick", CandlestickPlot::ChartType::Candlestick },
-            { L"ohlc", CandlestickPlot::ChartType::Ohlc }
+            { L"candlestick", CandlestickPlot::PlotType::Candlestick },
+            { L"ohlc", CandlestickPlot::PlotType::Ohlc }
             };
 
         const auto foundValue = candleTypes.find(value.Lower().ToStdWstring());
         return ((foundValue != candleTypes.cend()) ?
-            std::optional<CandlestickPlot::ChartType>(foundValue->second) :
+            std::optional<CandlestickPlot::PlotType>(foundValue->second) :
             std::nullopt);
         }
 
