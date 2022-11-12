@@ -340,7 +340,6 @@ namespace Wisteria
             exportFile.CreateWithDIPSize(
                 wxSize(width, height),
                 GetDPIScaleFactor());
-            Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
             wxMemoryDC memDc(exportFile);
             memDc.Clear();
     #ifdef __WXMSW__
