@@ -1052,7 +1052,7 @@ namespace Wisteria::Graphs
             { // the question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).
+                Brush(wxTransparentColor).OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
                     LabelFitting(LabelFit::SplitTextToFit).
@@ -1063,6 +1063,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Brush(wxTransparentColor).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1168,6 +1169,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(
                 Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
@@ -1176,7 +1178,7 @@ namespace Wisteria::Graphs
                     ChildAlignment(RelativeAlignment::FlushLeft))).
                 Tag(GetQuestionBlockLabel())),
               // overall response count
-                BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
+              BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(
                 Label(GraphItemInfo(wxString::Format(L"(%s)",
@@ -1206,8 +1208,9 @@ namespace Wisteria::Graphs
                   // the category
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                     m_categoryBlockSize-m_responseCountBlockSize : m_categoryBlockSize).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().
-                    Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(
                     Label(GraphItemInfo(category->m_question).
                         Font(GetBarAxis().GetFont()).
@@ -1217,8 +1220,9 @@ namespace Wisteria::Graphs
                         Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().
-                    Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(
                     Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(category->m_responses,0,
@@ -1318,6 +1322,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
                         LabelFitting(LabelFit::SplitTextToFit).
@@ -1327,6 +1332,7 @@ namespace Wisteria::Graphs
               // response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                     wxNumberFormatter::ToString(question.m_responses,0,
                         Settings::GetDefaultNumberFormat()))).
@@ -1441,6 +1447,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
                     LabelFitting(LabelFit::SplitTextToFit).
@@ -1478,6 +1485,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                     m_categoryBlockSize-m_responseCountBlockSize : m_categoryBlockSize).
                     Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(category->m_question).
                         Font(GetBarAxis().GetFont()).
                         LabelFitting(LabelFit::SplitTextToFit).
@@ -1486,6 +1494,7 @@ namespace Wisteria::Graphs
                   // response count (for current category)
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                     Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(category->m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1593,6 +1602,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
                     LabelFitting(LabelFit::SplitTextToFit).
@@ -1602,6 +1612,7 @@ namespace Wisteria::Graphs
               // response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1743,6 +1754,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
                 Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
                     LabelFitting(LabelFit::SplitTextToFit).
@@ -1780,6 +1792,7 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                     m_categoryBlockSize-m_responseCountBlockSize : m_categoryBlockSize).
                     Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(category->m_question).
                         Font(GetBarAxis().GetFont()).
                         LabelFitting(LabelFit::SplitTextToFit).
@@ -1789,6 +1802,7 @@ namespace Wisteria::Graphs
                   // response count (for current category)
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                     Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(category->m_responses,0,
                             Settings::GetDefaultNumberFormat()))).

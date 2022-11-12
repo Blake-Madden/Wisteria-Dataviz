@@ -909,9 +909,11 @@ namespace Wisteria::Graphs
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
                             else
-                                { box->GetPen().SetColour(
+                                {
+                                box->GetPen().SetColour(
                                     ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
-                                    *wxWHITE : *wxBLACK); }
+                                    *wxWHITE : *wxBLACK);
+                                }
                             if (bar.GetEffect() == BoxEffect::FadeFromBottomToTop)
                                 {
                                 box->GetBrush() = wxNullBrush;
@@ -947,7 +949,10 @@ namespace Wisteria::Graphs
                                 }
 
                             // if the bar is totally transparent, then draw a contrasting outline
-                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT)
+                            // (unless the client also made the outline explicitly transparent)
+                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT &&
+                                box->GetPen().IsOk() &&
+                                box->GetPen() != *wxTRANSPARENT_PEN)
                                 {
                                 box->GetPen().SetColour(
                                     ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
@@ -1304,7 +1309,10 @@ namespace Wisteria::Graphs
                                 }
 
                             // if the bar is totally transparent, then draw a contrasting outline
-                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT)
+                            // (unless the client also made the outline explicitly transparent)
+                            if (bar.GetOpacity() == wxALPHA_TRANSPARENT &&
+                                box->GetPen().IsOk() &&
+                                box->GetPen() != *wxTRANSPARENT_PEN)
                                 {
                                 box->GetPen().SetColour(
                                     ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
