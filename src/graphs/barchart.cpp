@@ -957,7 +957,9 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on its sides
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(true, false, true, false); }
-                            box->SetShape((bar.GetEffect() == BoxEffect::Glassy) ?
+                            box->SetShape((bar.GetShape() == BarShape::Arrow) ?
+                                GraphItems::Polygon::PolygonShape::Irregular :
+                                (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
                             // clip box to not be on top of axes
@@ -1312,7 +1314,9 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on the top/bottom
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(false, true, false, true); }
-                            box->SetShape((bar.GetEffect() == BoxEffect::Glassy) ?
+                            box->SetShape((bar.GetShape() == BarShape::Arrow) ?
+                                GraphItems::Polygon::PolygonShape::Irregular :
+                                (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
                             // clip box to not be on top of axes
