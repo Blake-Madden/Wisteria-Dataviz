@@ -87,7 +87,7 @@ namespace Wisteria::Graphs
                         CategoricalImportMethod::ReadAsIntegers }
                     }) );
 
-         // Although we know that the data is SevenPointCategorized (i.e., 7-point), we can
+         // Although we know that the data is @c SevenPointCategorized (i.e., 7-point), we can
          // also deduce the scale from the data this way:
          //
          // const auto likertScale = LikertChart::DeduceScale(surveyData
@@ -572,7 +572,7 @@ namespace Wisteria::Graphs
             @note This will look at the categorical columns in the dataset to deduce the
                 most appropriate scale.\n
                 Also, if the grouping column has more than one unique code in it,
-                then something like SevenPoint or SevenPointCategorized will be returned.
+                then something like @c SevenPoint or @c SevenPointCategorized will be returned.
             @returns The most likely Likert scale based on the values in the categorical columns.
             @warning This will look at the most extreme values in the responses to deduce the scale.
                  This means that if the data is really a seven-point scale but only has responses
@@ -657,13 +657,13 @@ namespace Wisteria::Graphs
         /// @name Section Header Functions
         /// @brief Functions relating to the section headers.
         /// @note The neutral and non-response headers are controlled via the string table
-        ///     of the last series of responses added (see AddSurveyQuestion()).
-        ///     The label associated with 0 will be the non-response label, and the label
+        ///     of the last series of responses added.\n
+        ///     The label associated with @c 0 will be the non-response label, and the label
         ///     connected to the value at the middle of the range
-        ///     (e.g., 3 if using a 5-point scale) will be the neutral label.
+        ///     (e.g., @c 3 if using a 5-point scale) will be the neutral label.
         /// @{
 
-        /// @brief Show section headers (e.g., "Positive" for positive responses).
+        /// @brief Show section headers (e.g., @c "Positive" for positive responses).
         /// @param show Whether to show the headers.
         void ShowSectionHeaders(const bool show) noexcept
             { m_showSectionHeaders = show; }
