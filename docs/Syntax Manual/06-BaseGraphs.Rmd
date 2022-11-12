@@ -108,6 +108,10 @@ Properties common to all graphs:
   - `"man"`
   - `"woman"`
   - `"business-woman"`
+  - `"chevron-downward"`
+  - `"chevron-upward"`
+  - `"text"`
+  - `"tack"`
 - `"line-scheme"`: for graphs that support line schemes only.<br />
   This is an array of line specifications (which can be recycled)<br />
   Each specification contains the following:

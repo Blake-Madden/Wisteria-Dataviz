@@ -4133,7 +4133,11 @@ namespace Wisteria
             { L"left-curly-brace", IconShape::LeftCurlyBrace },
             { L"man", IconShape::Man },
             { L"woman", IconShape::Woman },
-            { L"business-woman", IconShape::BusinessWoman }
+            { L"business-woman", IconShape::BusinessWoman },
+            { L"chevron-downward", IconShape::ChevronDownward },
+            { L"chevron-upward", IconShape::ChevronUpward },
+            { L"text", IconShape::Text },
+            { L"tack", IconShape::Tack },
             };
 
         const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
