@@ -348,17 +348,17 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    double Dataset::ConvertToDouble(const wxString& input)
+    double Dataset::ConvertToDouble(const wxString& input, double MDRecodeValue)
         {
         if (input.empty())
-            { return m_importContinousMDRecodeValue; }
+            { return MDRecodeValue; }
         else
             {
             double val{ 0 };
             if (input.ToCDouble(&val))
                 { return val; }
             else
-                { return m_importContinousMDRecodeValue; }
+                { return MDRecodeValue; }
             }
         }
 
@@ -896,6 +896,7 @@ namespace Wisteria::Data
         --rowCount;
 
         wxLogNull nl;
+        wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
             // assume column's data is integral unless something in the first
@@ -907,23 +908,28 @@ namespace Wisteria::Data
                 // can't deduce anything from MD
                 if (currentCell.empty())
                     { continue; }
-                if (ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
+                /* "23.06" can be converted to a date, so for that pattern mark it as a
+                    float before the date conversion check.*/
+                if (fpRegex.Matches(currentCell))
+                    {
+                    // switch from integer to fp, but keep going in case there
+                    // is a string or date further down this column
+                    currentColumnType = ColumnImportType::FloatingPoint;
+                    }
+                else if (ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
                     }
-                const auto parsedNumber = ConvertToDouble(currentCell);
+                const auto parsedNumber =
+                    ConvertToDouble(currentCell, std::numeric_limits<double>::quiet_NaN());
                 if (std::isnan(parsedNumber))
                     {
                     currentColumnType = ColumnImportType::String;
                     break;
                     }
                 else if (!compare_doubles(get_mantissa(parsedNumber), 0))
-                    {
-                    // switch from integer to fp, but keep going in case there
-                    // is a string or date further down this column
-                    currentColumnType = ColumnImportType::FloatingPoint;
-                    }
+                    { currentColumnType = ColumnImportType::FloatingPoint; }
                 }
             columnInfo.push_back(std::make_pair(
                 preview.get_header_names().at(colIndex).c_str(),
@@ -1253,7 +1259,9 @@ namespace Wisteria::Data
                 if (continuousColumnIndices.at(i))
                     {
                     continuousValues.emplace_back(
-                        ConvertToDouble(currentRow.at(continuousColumnIndices.at(i).value())));
+                        ConvertToDouble(
+                            currentRow.at(continuousColumnIndices.at(i).value()),
+                            m_importContinousMDRecodeValue));
                     }
                 }
             currentItem.Continuous(continuousValues);

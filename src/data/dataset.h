@@ -1199,7 +1199,7 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportInfoFromPreview().*/
-        [[nodiscard]] ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                        const wchar_t delimiter,
                                                        const size_t rowPreviewCount = 100);
         /** @brief Converts previewed column information into an ImportInfo object
@@ -1209,8 +1209,11 @@ namespace Wisteria::Data
             @throws std::runtime_error If the file can't be read, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
+            @note This method will not import any column as the ID column; all string columns
+                will be imported as categorical. If you require a string column to be used as the
+                ID column, then you will need to define your own column definitions.
             @sa ReadColumnInfo(), ImportCSV(), ImportTSV().*/
-        [[nodiscard]] ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
+        [[nodiscard]] static ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
         /** @brief Imports a text file into the dataset.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
@@ -1358,10 +1361,11 @@ namespace Wisteria::Data
         /// @param column The index into the list of date columns.
         [[nodiscard]] Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
             { return m_dateColumns.at(column); }
-        [[nodiscard]] double ConvertToDouble(const wxString& input);
-        [[nodiscard]] GroupIdType ConvertToGroupId(const wxString& input,
+        // conversion helpers
+        [[nodiscard]] static double ConvertToDouble(const wxString& input, double MDRecodeValue);
+        [[nodiscard]] static GroupIdType ConvertToGroupId(const wxString& input,
                                                    const GroupIdType mdCode);
-        [[nodiscard]] wxDateTime ConvertToDate(const wxString& input,
+        [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
                                                const DateImportMethod method,
                                                const wxString& formatStr);
 

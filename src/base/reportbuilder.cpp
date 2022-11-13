@@ -2258,8 +2258,8 @@ namespace Wisteria
                             (importer.CmpNoCase(L"csv") == 0 ||
                                 wxFileName(path).GetExt().CmpNoCase(L"csv") == 0) ?
                             L',' : L'\t';
-                        importDefines = dataset->ImportInfoFromPreview(
-                            dataset->ReadColumnInfo(path, delim));
+                        importDefines = Dataset::ImportInfoFromPreview(
+                            Dataset::ReadColumnInfo(path, delim));
                         }
                     else
                         {

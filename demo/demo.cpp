@@ -667,7 +667,13 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
         try
             {
-            companyAcquisitionData->ImportCSV(appDir + L"/datasets/Economics/Company Acquisition.csv",
+            const auto datasetPath{ appDir + L"/datasets/Economics/Company Acquisition.csv" };
+            companyAcquisitionData->ImportCSV(datasetPath,
+                // preview the data and deduce how to import it
+                Dataset::ImportInfoFromPreview(
+                    Dataset::ReadColumnInfo(datasetPath, L',')));
+            // we could also import the dataset by explicitly defining the columns, as such:
+            /*companyAcquisitionData->ImportCSV(datasetPath,
                 ImportInfo().
                 ContinuousColumns({ L"Completion" }).
                 DateColumns({
@@ -678,7 +684,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     { L"Task" },
                     { L"Description" },
                     { L"Resource" }
-                    }));
+                    }));*/
             }
         catch (const std::exception& err)
             {
@@ -735,10 +741,16 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto silverFuturesData = std::make_shared<Data::Dataset>();
         try
             {
-            silverFuturesData->ImportCSV(appDir + L"/datasets/Economics/Silver Futures.csv",
+            const auto datasetPath{ appDir + L"/datasets/Economics/Silver Futures.csv" };
+            silverFuturesData->ImportCSV(datasetPath,
+                // preview the data and deduce how to import it
+                Dataset::ImportInfoFromPreview(
+                    Dataset::ReadColumnInfo(datasetPath, L',')));
+            // we could also import the dataset by explicitly defining the columns, as such:
+            /* silverFuturesData->ImportCSV(datasetPath,
                 ImportInfo().
                 ContinuousColumns({ L"Open", L"High", L"Low", L"Close/Last" }).
-                DateColumns({ { L"Date", DateImportMethod::Automatic, wxEmptyString } }));
+                DateColumns({ { L"Date", DateImportMethod::Automatic, wxEmptyString } }));*/
             }
         catch (const std::exception& err)
             {
@@ -1425,26 +1437,32 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(appDir + L"/datasets/Graph Library Survey.csv",
+            const auto datasetPath{ appDir + L"/datasets/Graph Library Survey.csv" };
+            surveyData->ImportCSV(datasetPath,
+                // preview the data and deduce how to import it
+                Dataset::ImportInfoFromPreview(
+                    Dataset::ReadColumnInfo(datasetPath, L',')));
+            // we could also import the dataset by explicitly defining the columns, as such:
+            /* surveyData->ImportCSV(datasetPath,
                 Data::ImportInfo().
-                CategoricalColumns(
-                    {
-                    { L"Gender" },
-                    { L"I am happy with my current graphics library",
-                      CategoricalImportMethod::ReadAsIntegers },
-                    { L"Customization is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"A simple API is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Support for obscure graphs is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Extensibility is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { LR"(Standard, "out-of-the-box" graph support is important to me)",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Data importing features are important to me",
-                        CategoricalImportMethod::ReadAsIntegers }
-                    }));
+                    CategoricalColumns(
+                        {
+                        { L"Gender" },
+                        { L"I am happy with my current graphics library",
+                          CategoricalImportMethod::ReadAsIntegers },
+                        { L"Customization is important to me",
+                            CategoricalImportMethod::ReadAsIntegers },
+                        { L"A simple API is important to me",
+                            CategoricalImportMethod::ReadAsIntegers },
+                        { L"Support for obscure graphs is important to me",
+                            CategoricalImportMethod::ReadAsIntegers },
+                        { L"Extensibility is important to me",
+                            CategoricalImportMethod::ReadAsIntegers },
+                        { LR"(Standard, "out-of-the-box" graph support is important to me)",
+                            CategoricalImportMethod::ReadAsIntegers },
+                        { L"Data importing features are important to me",
+                            CategoricalImportMethod::ReadAsIntegers }
+                        }));*/
             }
         catch (const std::exception& err)
             {
