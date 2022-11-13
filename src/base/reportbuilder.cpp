@@ -2247,6 +2247,7 @@ namespace Wisteria
                     // create the dataset
                     auto dataset = std::make_shared<Data::Dataset>();
 
+                    ImportInfo importDefines;
                     // if no columns are defined, then deduce them ourselves
                     if (!datasetNode->HasProperty(L"id-column") &&
                         !datasetNode->HasProperty(L"date-columns") &&
@@ -2257,60 +2258,29 @@ namespace Wisteria
                             (importer.CmpNoCase(L"csv") == 0 ||
                                 wxFileName(path).GetExt().CmpNoCase(L"csv") == 0) ?
                             L',' : L'\t';
-                        const auto previewInfo = dataset->ReadColumnInfo(path, delim);
-                        for (const auto& colInfo : previewInfo)
-                            {
-                            if (colInfo.second == Data::Dataset::ColumnImportType::Integer)
-                                {
-                                catInfo.push_back(
-                                    { colInfo.first, CategoricalImportMethod::ReadAsIntegers });
-                                }
-                            else if (colInfo.second == Data::Dataset::ColumnImportType::String)
-                                {
-                                catInfo.push_back(
-                                    { colInfo.first, CategoricalImportMethod::ReadAsStrings });
-                                }
-                            else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
-                                {
-                                dateInfo.push_back(
-                                    { colInfo.first, DateImportMethod::Automatic, L"" });
-                                }
-                            else if (colInfo.second == Data::Dataset::ColumnImportType::FloatingPoint)
-                                {
-                                continuousVars.push_back(colInfo.first);
-                                }
-                            }
+                        importDefines = dataset->ImportInfoFromPreview(
+                            dataset->ReadColumnInfo(path, delim));
+                        }
+                    else
+                        {
+                        importDefines.ContinousMDRecodeValue(
+                                datasetNode->GetProperty(L"continuous-md-recode-value")->
+                                    GetValueNumber(std::numeric_limits<double>::quiet_NaN())).
+                            IdColumn(idColumn).
+                            DateColumns(dateInfo).
+                            ContinuousColumns(continuousVars).
+                            CategoricalColumns(catInfo);
                         }
 
                     // import using the user-provided parser or deduce from the file extension
                     const auto fileExt(wxFileName(path).GetExt());                        
                     if (importer.CmpNoCase(L"csv") == 0 ||
                         fileExt.CmpNoCase(L"csv") == 0)
-                        {
-                        dataset->ImportCSV(path,
-                            ImportInfo().
-                            IdColumn(idColumn).
-                            DateColumns(dateInfo).
-                            ContinuousColumns(continuousVars).
-                            CategoricalColumns(catInfo).
-                            ContinousMDRecodeValue(
-                                datasetNode->GetProperty(L"continuous-md-recode-value")->
-                                    GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
-                        }
+                        { dataset->ImportCSV(path, importDefines); }
                     else if (importer.CmpNoCase(L"tsv") == 0 ||
                         fileExt.CmpNoCase(L"tsv") == 0 ||
                         fileExt.CmpNoCase(L"txt") == 0)
-                        {
-                        dataset->ImportTSV(path,
-                            ImportInfo().
-                            IdColumn(idColumn).
-                            DateColumns(dateInfo).
-                            ContinuousColumns(continuousVars).
-                            CategoricalColumns(catInfo).
-                            ContinousMDRecodeValue(
-                                datasetNode->GetProperty(L"continuous-md-recode-value")->
-                                    GetValueNumber(std::numeric_limits<double>::quiet_NaN())));
-                        }
+                        { dataset->ImportTSV(path, importDefines); }
                     else
                         {
                         throw std::runtime_error(

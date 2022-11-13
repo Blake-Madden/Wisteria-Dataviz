@@ -820,6 +820,38 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    ImportInfo Dataset::ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo)
+        {
+        std::vector<wxString> continuousVars;
+        std::vector<Data::ImportInfo::CategoricalImportInfo> catInfo;
+        std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
+        for (const auto& colInfo : previewInfo)
+            {
+            if (colInfo.second == Data::Dataset::ColumnImportType::Integer)
+                {
+                catInfo.push_back(
+                    { colInfo.first, CategoricalImportMethod::ReadAsIntegers });
+                }
+            else if (colInfo.second == Data::Dataset::ColumnImportType::String)
+                {
+                catInfo.push_back(
+                    { colInfo.first, CategoricalImportMethod::ReadAsStrings });
+                }
+            else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
+                {
+                dateInfo.push_back(
+                    { colInfo.first, DateImportMethod::Automatic, L"" });
+                }
+            else if (colInfo.second == Data::Dataset::ColumnImportType::FloatingPoint)
+                {
+                continuousVars.push_back(colInfo.first);
+                }
+            }
+        return ImportInfo().DateColumns(dateInfo).ContinuousColumns(continuousVars).
+            CategoricalColumns(catInfo);
+        }
+
+    //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath, const wchar_t delimiter,
                                                        const size_t rowPreviewCount /*= 100*/)
         {

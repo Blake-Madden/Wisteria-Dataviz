@@ -1191,16 +1191,26 @@ namespace Wisteria::Data
         /** @brief Reads the column names from a file and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
             @param filePath The path to the data file.
-            @param rowPreviewCount The number of rows to read when deducing column types,
+            @param rowPreviewCount The number of rows to read when deducing column types.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
             @throws std::runtime_error If the file can't be read, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                @c wxString::FromUTF8() when formatting it for an error message.*/
+                @c wxString::FromUTF8() when formatting it for an error message.
+            @sa ImportInfoFromPreview().*/
         [[nodiscard]] ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                        const wchar_t delimiter,
                                                        const size_t rowPreviewCount = 100);
+        /** @brief Converts previewed column information into an ImportInfo object
+                that can be passed to an import function.
+            @param previewInfo A file's preview information (from a call to ReadColumnInfo()).
+            @returns An ImportInfo object that can be used for the various `Import___()` functions.
+            @throws std::runtime_error If the file can't be read, throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.
+            @sa ReadColumnInfo(), ImportCSV(), ImportTSV().*/
+        [[nodiscard]] ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
         /** @brief Imports a text file into the dataset.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
@@ -1209,7 +1219,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
-            @sa ImportCSV(), ImportTSV(), ReadColumnInfo().
+            @sa ImportCSV(), ImportTSV(), ReadColumnInfo(), ImportInfoFromPreview().
             @par Example:
             @code
             xyData->ImportText(L"Sense of Belonging.csv",
