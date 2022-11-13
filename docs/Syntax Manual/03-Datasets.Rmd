@@ -4,7 +4,8 @@ Properties for the `"datasets"` node:
 
 - `"datasets"`: contains an array of datasets, which are referenced by other items in the report.
   - `"name"`: the name of the dataset.<br />
-  This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
+    This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.<br />
+    Note that if this is not provided, then the file name from `"path"` will be used.
   - `"path"`: the full file path of the dataset.
   - `"importer"` how to import the dataset.<br />
     This is optional and the default is to import the file based on its file extension.<br />

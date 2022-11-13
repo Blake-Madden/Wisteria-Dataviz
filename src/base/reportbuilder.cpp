@@ -2116,8 +2116,26 @@ namespace Wisteria
                 {
                 if (datasetNode->IsOk())
                     {
-                    const wxString dsName = datasetNode->GetProperty(_DT(L"name"))->GetValueString();
                     wxString path = datasetNode->GetProperty(L"path")->GetValueString();
+                    if (path.empty())
+                        {
+                        throw std::runtime_error(
+                            wxString(_(L"Dataset must have a filepath.")).ToUTF8());
+                        }
+                    if (!wxFileName::FileExists(path))
+                        {
+                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
+                        if (!wxFileName::FileExists(path))
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
+                            }
+                        }
+                    // supplied name, or if name is blank then use the file name
+                    wxString dsName = datasetNode->GetProperty(_DT(L"name"))->GetValueString();
+                    if (dsName.empty())
+                        { dsName = wxFileName(path).GetName(); }
+
                     const wxString importer = datasetNode->GetProperty(L"importer")->GetValueString();
                     // read the variables info
                     //------------------------
@@ -2199,26 +2217,6 @@ namespace Wisteria
 
                     // create the dataset
                     auto dataset = std::make_shared<Data::Dataset>();
-                    // validate settings
-                    if (dsName.empty())
-                        {
-                        throw std::runtime_error(
-                            wxString(_(L"Dataset must have a name.")).ToUTF8());
-                        }
-                    if (path.empty())
-                        {
-                        throw std::runtime_error(
-                            wxString(_(L"Dataset must have a filepath.")).ToUTF8());
-                        }
-                    if (!wxFileName::FileExists(path))
-                        {
-                        path = wxFileName(m_configFilePath).GetPathWithSep() + path;
-                        if (!wxFileName::FileExists(path))
-                            {
-                            throw std::runtime_error(
-                                wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
-                            }
-                        }
 
                     // if no columns are defined, then deduce them ourselves
                     if (!datasetNode->HasProperty(L"id-column") &&
