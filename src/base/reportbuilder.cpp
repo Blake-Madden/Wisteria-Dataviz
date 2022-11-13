@@ -1143,7 +1143,7 @@ namespace Wisteria
         else
             { return std::nullopt; }
         const wxRegEx re(FunctionStartRegEx() +
-                         L"(everything|matches)" +
+                         L"(everything|everythingexcept|matches)" +
                          OpeningParenthesisRegEx() +
                          ColumnNameOrFormulaRegEx() +
                          ClosingParenthesisRegEx());
@@ -1195,6 +1195,35 @@ namespace Wisteria
                         for (const auto& col : dataset->GetDateColumns())
                             {
                             if (columnRE.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        return columns;
+                        }
+                    else
+                        { return std::nullopt; }
+                    }
+                else if (funcName.CmpNoCase(L"everythingexcept") == 0)
+                    {
+                    const wxRegEx columnRE(columnPattern);
+                    if (columnRE.IsValid())
+                        {
+                        // get columns that DON'T contain the string
+                        if (dataset->GetIdColumn().GetName().length() &&
+                            !columnRE.Matches(dataset->GetIdColumn().GetName()) )
+                            { columns.emplace_back(dataset->GetIdColumn().GetName()); }
+                        for (const auto& col : dataset->GetCategoricalColumns())
+                            {
+                            if (!columnRE.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        for (const auto& col : dataset->GetContinuousColumns())
+                            {
+                            if (!columnRE.Matches(col.GetName()))
+                                { columns.emplace_back(col.GetName()); }
+                            }
+                        for (const auto& col : dataset->GetDateColumns())
+                            {
+                            if (!columnRE.Matches(col.GetName()))
                                 { columns.emplace_back(col.GetName()); }
                             }
                         return columns;

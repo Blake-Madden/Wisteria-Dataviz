@@ -295,6 +295,9 @@ Properties for `"table"` nodes:
       in the dataset that contains this text will be included.
   - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
+  - ``{{EverythingExcept(`value`)}}``: will return all columns from the dataset that do not match the
+      regular expression pattern `value`. The column order will be the ID column (if in use),
+      the categoricals, the continuous columns, and finally the date columns.
 - `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
      the rows and vice versa.<br />
 - `"min-width-proportion"`: the minimum percent of the drawing area's width that the table should consume
