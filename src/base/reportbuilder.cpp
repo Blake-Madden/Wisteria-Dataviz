@@ -2164,7 +2164,7 @@ namespace Wisteria
                             }
                         }
                     // continuous columns
-                    const std::vector<wxString> continuousVars =
+                    std::vector<wxString> continuousVars =
                         datasetNode->GetProperty(L"continuous-columns")->GetValueStringVector();
                     // categorical columns
                     std::vector<Data::ImportInfo::CategoricalImportInfo> catInfo;
@@ -2219,6 +2219,42 @@ namespace Wisteria
                                 wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
                             }
                         }
+
+                    // if no columns are defined, then deduce them ourselves
+                    if (!datasetNode->HasProperty(L"id-column") &&
+                        !datasetNode->HasProperty(L"date-columns") &&
+                        !datasetNode->HasProperty(L"continuous-columns") &&
+                        !datasetNode->HasProperty(L"categorical-columns"))
+                        {
+                        const auto delim =
+                            (importer.CmpNoCase(L"csv") == 0 ||
+                                wxFileName(path).GetExt().CmpNoCase(L"csv") == 0) ?
+                            L',' : L'\t';
+                        const auto previewInfo = dataset->ReadColumnInfo(path, delim);
+                        for (const auto& colInfo : previewInfo)
+                            {
+                            if (colInfo.second == Data::Dataset::ColumnImportType::Integer)
+                                {
+                                catInfo.push_back(
+                                    { colInfo.first, CategoricalImportMethod::ReadAsIntegers });
+                                }
+                            else if (colInfo.second == Data::Dataset::ColumnImportType::String)
+                                {
+                                catInfo.push_back(
+                                    { colInfo.first, CategoricalImportMethod::ReadAsStrings });
+                                }
+                            else if (colInfo.second == Data::Dataset::ColumnImportType::Date)
+                                {
+                                dateInfo.push_back(
+                                    { colInfo.first, DateImportMethod::Automatic, L"" });
+                                }
+                            else if (colInfo.second == Data::Dataset::ColumnImportType::FloatingPoint)
+                                {
+                                continuousVars.push_back(colInfo.first);
+                                }
+                            }
+                        }
+
                     // import using the user-provided parser or deduce from the file extension
                     const auto fileExt(wxFileName(path).GetExt());                        
                     if (importer.CmpNoCase(L"csv") == 0 ||

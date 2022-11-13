@@ -39,6 +39,8 @@ Properties for the `"datasets"` node:
     - `"format"`: if `"parser"` is set to `"strptime-format"`,
          then this is the user-defined format to parse with.
 
+  If no columns are defined, then the importer will import all columns and deduce their types.
+
   Next, any transformation commands for a dataset node are executed. These are performed in the following order:
 
   - `"columns-rename"`: an array of column rename commands, which contain the following:
@@ -170,7 +172,7 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"type"`: a string specifying which type of merge to use.
     Available options are:
-    - "left-join-unique"`: (unique) left join the dataset with another dataset (the default).
+    - `"left-join-unique"`: (unique) left join the dataset with another dataset (the default).
   - `"other-dataset"`: the other dataset to merge the current dataset with. This should be a name referencing
     a previously loaded dataset.
   - `"by"`: an array of properties specifying which columns to join by. Each item should contain the following:
