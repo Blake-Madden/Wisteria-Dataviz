@@ -844,7 +844,7 @@ namespace Wisteria::Data
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
-        lily_of_the_valley::text_row<wxString> row;
+        lily_of_the_valley::text_row<wxString> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
 
@@ -863,25 +863,34 @@ namespace Wisteria::Data
         // ignore the first line (header) now
         --rowCount;
 
+        wxLogNull nl;
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
-            // assume column's data is numeric unless something in the first
-            // few rows look like a string
-            ColumnImportType currentColumnType{ ColumnImportType::Numeric };
+            // assume column's data is integral unless something in the first
+            // few rows looks like a string
+            ColumnImportType currentColumnType{ ColumnImportType::Integer };
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
-                wxLogNull nl;
-                if (currentCell.length() &&
-                    ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
+                // can't deduce anything from MD
+                if (currentCell.empty())
+                    { continue; }
+                if (ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
                     }
-                if (currentCell.length() && std::isnan(ConvertToDouble(currentCell)))
+                const auto parsedNumber = ConvertToDouble(currentCell);
+                if (std::isnan(parsedNumber))
                     {
                     currentColumnType = ColumnImportType::String;
                     break;
+                    }
+                else if (!compare_doubles(get_mantissa(parsedNumber), 0))
+                    {
+                    // switch from integer to fp, but keep going in case there
+                    // is a string or date further down this column
+                    currentColumnType = ColumnImportType::FloatingPoint;
                     }
                 }
             columnInfo.push_back(std::make_pair(
@@ -1014,7 +1023,7 @@ namespace Wisteria::Data
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
-        lily_of_the_valley::text_row<wxString> row;
+        lily_of_the_valley::text_row<wxString> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
 
