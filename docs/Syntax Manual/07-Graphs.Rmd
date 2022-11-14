@@ -120,6 +120,52 @@ Properties for `"histogram"` nodes:
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 
+## Likert Chart {#likert-chart-properties .unnumbered}
+
+Properties for `"likert-chart"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"questions"`: an array of column names to use from the dataset.<br />
+  These values can also be variable selection formulas, including the following:
+  - ``{{Matches(`value`)}}``: where `value` will be the regular expression search pattern, and any column
+      in the dataset that contains this text will be included.
+  - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
+      the categoricals, the continuous columns, and finally the date columns.
+  - ``{{EverythingExcept(`value`)}}``: will return all columns from the dataset that do not match the
+      regular expression pattern `value`. The column order will be the ID column (if in use),
+      the categoricals, the continuous columns, and finally the date columns.
+  - `"group"`: the grouping column (this is optional).
+- `"survey-format"`: string specifying the scale used for all questions.<br />
+  Available options are:
+  - `"two-point"`
+  - `"two-point-categorized"`
+  - `"three-point"`
+  - `"three-point-categorized"`
+  - `"four-point"`
+  - `"four-point-categorized"`
+  - `"five-point"`
+  - `"five-point-categorized"`
+  - `"six-point"`
+  - `"six-point-categorized"`
+  - `"seven-point"`
+  - `"seven-point-categorized"`
+  Note that if this is not supplied, then the program will deduce the scale for you.
+- `"simplify"`: if @c true, the responses in the dataset will be collapsed.
+- `"apply-default-labels"`: if @c true, the string tables in the dataset's question columns
+  will be reset to stock Likert scale labels.
+- `"show-response-counts"`: if @c true, shows the number of respondents for the questions
+  (default is to not show these).
+- `"show-percentages"`:if @c true, shows the percentages on the bars (the default).
+- `"show-section-headers"`:if @c true, shows the headers above the chart (the default).
+- `"adjust-bar-widths-to-respondent-size"`:if @c true, 
+- `"positive-label"`: the label to show as the positive header label.
+- `"negative-label"`: the label to show as the negative header label.
+- `"no-response-label"`: the label to show as the no response header label.
+- `"question-brackets"`: an array of question brackets, each of which contain the following properties:
+  - `"start"`: the first question of the bracket range.
+  - `"end"`: the last question of the bracket range.
+  - `"title"`: the title of the bracket. 
+
 ## Line Plot {#line-plot-properties .unnumbered}
 
 Properties for `"line-plot"` nodes:

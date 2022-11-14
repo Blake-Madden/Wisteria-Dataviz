@@ -172,6 +172,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadWCurvePlot(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"likert-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadLikertChart(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"linear-regression-roadmap") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -583,7 +588,7 @@ namespace Wisteria
             { L"five-point-categorized", LikertChart::LikertSurveyQuestionFormat::FivePointCategorized },
             { L"six-point", LikertChart::LikertSurveyQuestionFormat::SixPoint },
             { L"six-point-categorized", LikertChart::LikertSurveyQuestionFormat::SixPointCategorized },
-            { L"seven--point", LikertChart::LikertSurveyQuestionFormat::SevenPoint },
+            { L"seven-point", LikertChart::LikertSurveyQuestionFormat::SevenPoint },
             { L"seven-point-categorized", LikertChart::LikertSurveyQuestionFormat::SevenPointCategorized }
             };
 
@@ -2514,6 +2519,118 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for Linear Regression Roadmap.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadLikertChart(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Likert chart."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            std::vector<wxString> questions;
+            const auto questionVars = variablesNode->GetProperty(L"questions")->GetValueStringVector();
+            for (const auto& questionVar : questionVars)
+                {
+                auto convertedVars = ExpandColumnSelections(questionVar, foundPos->second);
+                if (convertedVars)
+                    {
+                    questions.insert(questions.cend(),
+                        convertedVars.value().cbegin(), convertedVars.value().cend());
+                    }
+                else
+                    { questions.push_back(questionVar); }
+                }
+            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+
+            // get the survey format
+            auto surveyFormat =
+                ConvertLikertSurveyQuestionFormat(
+                    graphNode->GetProperty(L"survey-format")->GetValueString());
+            if (!surveyFormat.has_value())
+                {
+                surveyFormat = LikertChart::DeduceScale(foundPos->second, questions, groupVarName);
+                }
+
+            if (graphNode->GetProperty(L"simplify")->GetValueBool())
+                {
+                surveyFormat =
+                    LikertChart::Simplify(foundPos->second, questions, surveyFormat.value());
+                }
+
+            if (graphNode->GetProperty(L"apply-default-labels")->GetValueBool())
+                {
+                LikertChart::SetLabels(foundPos->second, questions,
+                    LikertChart::CreateLabels(surveyFormat.value()));
+                }
+
+            auto likertChart = std::make_shared<LikertChart>(canvas,
+                surveyFormat.value(),
+                ConvertColor(graphNode->GetProperty(L"negative-color")),
+                ConvertColor(graphNode->GetProperty(L"positive-color")),
+                ConvertColor(graphNode->GetProperty(L"neutral-color")),
+                ConvertColor(graphNode->GetProperty(L"no-response-color")));
+
+            likertChart->SetData(foundPos->second,
+                questions,
+                (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
+
+            likertChart->ShowResponseCounts(
+                graphNode->GetProperty(L"show-response-counts")->GetValueBool(false));
+            likertChart->ShowPercentages(
+                graphNode->GetProperty(L"show-percentages")->GetValueBool(true));
+            likertChart->ShowSectionHeaders(
+                graphNode->GetProperty(L"show-section-headers")->GetValueBool(true));
+            likertChart->SetBarSizesToRespondentSize(
+                graphNode->GetProperty(L"adjust-bar-widths-to-respondent-size")->GetValueBool(false));
+
+            if (graphNode->HasProperty(L"positive-label"))
+                {
+                likertChart->SetPositiveHeader(
+                    graphNode->GetProperty(L"positive-label")->GetValueString());
+                }
+            if (graphNode->HasProperty(L"negative-label"))
+                {
+                likertChart->SetNegativeHeader(
+                    graphNode->GetProperty(L"negative-label")->GetValueString());
+                }
+            if (graphNode->HasProperty(L"no-response-label"))
+                {
+                likertChart->SetNoResponseHeader(
+                    graphNode->GetProperty(L"no-response-label")->GetValueString());
+                }
+
+            const auto questionBracketNodes =
+                graphNode->GetProperty(L"question-brackets")->GetValueArrayObject();
+            for (const auto& questionBracketNode : questionBracketNodes)
+                {
+                likertChart->AddQuestionsBracket(
+                    {
+                    questionBracketNode->GetProperty(L"start")->GetValueString(),
+                    questionBracketNode->GetProperty(L"end")->GetValueString(),
+                    questionBracketNode->GetProperty(L"title")->GetValueString()
+                    }
+                    );
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, likertChart);
+            return likertChart;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Likert chart.").ToUTF8());
             }
         }
 
