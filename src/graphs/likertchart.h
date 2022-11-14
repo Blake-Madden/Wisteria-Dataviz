@@ -484,22 +484,22 @@ namespace Wisteria::Graphs
         /// @param canvas The canvas that the chart is plotted on.
         /// @param type The survey format.
         /// @param negativeColor The negative color
-        ///     (set to @c wxNullColour to use the default color).
+        ///     (set to @c std::nullopt to use the default color).
         /// @param positiveColor The positive color
-        ///     (set to @c wxNullColour to use the default color).
+        ///     (set to @c std::nullopt to use the default color).
         /// @param neutralColor The neutral color
-        ///     (set to @c wxNullColour to use the default color).
+        ///     (set to @c std::nullopt to use the default color).
         /// @param noResponseColor The non-responses color
-        ///     (set to @c wxNullColour to use the default color).
+        ///     (set to @c std::nullopt to use the default color).
         /// @note If the Likert scale has more than three levels, the extended levels of positive
         ///     and negative responses (e.g., "strongly agree") will be shades or tints of the
         ///     base color. For example, if negative is set to red, then other levels of negative
         ///     will be tinted versions of red.
         LikertChart(Wisteria::Canvas* canvas, const LikertSurveyQuestionFormat type,
-                    const wxColour negativeColor = wxNullColour,
-                    const wxColour positiveColor = wxNullColour,
-                    const wxColour neutralColor = wxNullColour,
-                    const wxColour noResponseColor = wxNullColour);
+                    std::optional<wxColour> negativeColor = std::nullopt,
+                    std::optional<wxColour> positiveColor = std::nullopt,
+                    std::optional<wxColour> neutralColor = std::nullopt,
+                    std::optional<wxColour> noResponseColor = std::nullopt);
 
         /** @brief Adds questions (and their responses) to the chart.
             @details The data is analyzed as such:
@@ -572,7 +572,7 @@ namespace Wisteria::Graphs
             @note This will look at the categorical columns in the dataset to deduce the
                 most appropriate scale.\n
                 Also, if the grouping column has more than one unique code in it,
-                then something like @c SevenPoint or @c SevenPointCategorized will be returned.
+                then something like @c SevenPointCategorized will be returned.
             @returns The most likely Likert scale based on the values in the categorical columns.
             @warning This will look at the most extreme values in the responses to deduce the scale.
                  This means that if the data is really a seven-point scale but only has responses
@@ -1129,7 +1129,7 @@ namespace Wisteria::Graphs
         wxColour m_noResponseColor{ Colors::ColorBrewer::GetColor(Colors::Color::White) };
 
         // labels displayed on the legend
-        wxString m_neutralLabel;
+        wxString m_neutralLabel{ _(L"Neutral") };
         wxString m_positive1Label;
         wxString m_positive2Label;
         wxString m_positive3Label;

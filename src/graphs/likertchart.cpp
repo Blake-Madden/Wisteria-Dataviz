@@ -92,7 +92,8 @@ namespace Wisteria::Graphs
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             categoricalColumn->GetStringTable() = codes;
             }
@@ -173,7 +174,8 @@ namespace Wisteria::Graphs
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             wxASSERT_LEVEL_2_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
                 categoricalColumn->GetValues().cend()) <= 4,
@@ -206,7 +208,8 @@ namespace Wisteria::Graphs
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             wxASSERT_LEVEL_2_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
                 categoricalColumn->GetValues().cend()) <= 6,
@@ -241,7 +244,8 @@ namespace Wisteria::Graphs
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             wxASSERT_LEVEL_2_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
                 categoricalColumn->GetValues().cend()) <= 5,
@@ -276,7 +280,8 @@ namespace Wisteria::Graphs
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             wxASSERT_LEVEL_2_MSG(*std::max_element(categoricalColumn->GetValues().cbegin(),
                 categoricalColumn->GetValues().cend()) <= 7,
@@ -570,16 +575,16 @@ namespace Wisteria::Graphs
 
     //----------------------------------------------------------------
     LikertChart::LikertChart(Canvas* canvas, const LikertSurveyQuestionFormat type,
-        const wxColour negativeColor /*= wxNullColour*/,
-        const wxColour positiveColor /*= wxNullColour*/,
-        const wxColour neutralColor /*= wxNullColour*/,
-        const wxColour noResponseColor /*= wxNullColour*/) :
+        std::optional<wxColour> negativeColor /*= std::nullopt*/,
+        std::optional<wxColour> positiveColor /*= std::nullopt*/,
+        std::optional<wxColour> neutralColor /*= std::nullopt*/,
+        std::optional<wxColour> noResponseColor /*= std::nullopt*/) :
         BarChart(canvas), m_surveyType(type)
         {
-        SetNegativeColor(negativeColor);
-        SetPositiveColor(positiveColor);
-        SetNeutralColor(neutralColor);
-        SetNoResponseColor(noResponseColor);
+        SetNegativeColor(negativeColor.value_or(wxNullColour));
+        SetPositiveColor(positiveColor.value_or(wxNullColour));
+        SetNeutralColor(neutralColor.value_or(wxNullColour));
+        SetNoResponseColor(noResponseColor.value_or(wxNullColour));
 
         SetBarOrientation(Orientation::Horizontal);
         GetScalingAxis().GetGridlinePen() = wxNullPen;
@@ -615,14 +620,17 @@ namespace Wisteria::Graphs
         m_negative1Label.clear();
         m_negative2Label.clear();
         m_negative3Label.clear();
-        m_neutralLabel.clear();
+        // if no string tables in the data, then this will be used for the section header
+        m_neutralLabel = _(L"Neutral");
 
-        const auto groupColumn = (groupColumnName ? data->GetCategoricalColumn(groupColumnName.value()) :
+        const auto groupColumn = (groupColumnName ?
+            data->GetCategoricalColumn(groupColumnName.value()) :
             data->GetCategoricalColumns().cend());
         if (groupColumnName && groupColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for Likert chart."), groupColumnName.value()).ToUTF8());
+                _(L"'%s': group column not found for Likert chart."),
+                groupColumnName.value()).ToUTF8());
             }
         // if a grouping column is used, then make the format categorized
         if (groupColumnName)
@@ -650,68 +658,74 @@ namespace Wisteria::Graphs
                 AddSurveyQuestion(*questionIter, *categoricalColumn);
                 }
 
-            // set the level labels from the data's string table.
-            // these will be used for the legend.
-            if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
+            // set the level labels from the data's string table,
+            // these will be used for the legend
+            if (categoricalColumn->GetStringTable().size())
                 {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(2), 1);
-                }
-            else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
-                {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetNeutralLabel(categoricalColumn->GetLabelFromID(2));
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
-                }
-            else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
-                {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 2);
-                }
-            else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
-                {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                SetNeutralLabel(categoricalColumn->GetLabelFromID(3));
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
-                }
-            else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
-                {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 3);
-                }
-            else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
-                GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
-                {
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
-                SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
-                SetNeutralLabel(categoricalColumn->GetLabelFromID(4));
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 1);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 2);
-                SetPositiveLabel(categoricalColumn->GetLabelFromID(7), 3);
+                if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(2), 1);
+                    }
+                else if (GetSurveyType() == LikertSurveyQuestionFormat::ThreePoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetNeutralLabel(categoricalColumn->GetLabelFromID(2));
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
+                    }
+                else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(3), 1);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 2);
+                    }
+                else if (GetSurveyType() == LikertSurveyQuestionFormat::FivePoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                    SetNeutralLabel(categoricalColumn->GetLabelFromID(3));
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
+                    }
+                else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(4), 1);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 2);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 3);
+                    }
+                else if (GetSurveyType() == LikertSurveyQuestionFormat::SevenPoint ||
+                    GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
+                    {
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(1), 1);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(2), 2);
+                    SetNegativeLabel(categoricalColumn->GetLabelFromID(3), 3);
+                    SetNeutralLabel(categoricalColumn->GetLabelFromID(4));
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(5), 1);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(6), 2);
+                    SetPositiveLabel(categoricalColumn->GetLabelFromID(7), 3);
+                    }
                 }
             }
         }
 
     //----------------------------------------------------------------
-    void LikertChart::AddSurveyQuestion(const wxString& question, const Data::ColumnWithStringTable& groups, const Data::ColumnWithStringTable& responses)
+    void LikertChart::AddSurveyQuestion(const wxString& question,
+                                        const Data::ColumnWithStringTable& groups,
+                                        const Data::ColumnWithStringTable& responses)
         {
         if (responses.GetRowCount() == 0)
             { return; }
-        wxASSERT_LEVEL_2_MSG(IsCategorized(), L"Categorized data being passed into non-categorized Likert chart!");
+        wxASSERT_LEVEL_2_MSG(IsCategorized(),
+            L"Categorized data being passed into non-categorized Likert chart!");
 
         m_maxResondants = std::max(m_maxResondants, responses.GetRowCount());
 
@@ -854,11 +868,13 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    void LikertChart::AddSurveyQuestion(const wxString& question, const Data::ColumnWithStringTable& responses)
+    void LikertChart::AddSurveyQuestion(const wxString& question,
+                                        const Data::ColumnWithStringTable& responses)
         {
         if (responses.GetRowCount() == 0)
             { return; }
-        wxASSERT_LEVEL_2_MSG(!IsCategorized(), L"Non-categorized data being loaded into categorized Likert chart!");
+        wxASSERT_LEVEL_2_MSG(!IsCategorized(),
+            L"Non-categorized data being loaded into categorized Likert chart!");
 
         m_maxResondants = std::max(m_maxResondants, responses.GetRowCount());
 
@@ -1075,7 +1091,8 @@ namespace Wisteria::Graphs
               // negative block
               BarBlock(BarBlockInfo(question.m_negativeRate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetNegativeColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negativeRate > 0) ?
                       wxNumberFormatter::ToString(question.m_negativeRate, 0,
                           wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1092,7 +1109,8 @@ namespace Wisteria::Graphs
               // positive block
               BarBlock(BarBlockInfo(question.m_positiveRate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetPositiveColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positiveRate > 0) ?
                       wxNumberFormatter::ToString(question.m_positiveRate, 0,
                           wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1109,7 +1127,8 @@ namespace Wisteria::Graphs
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNeutralColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ?
                     wxNumberFormatter::ToString(question.m_neutralRate, 0,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1128,7 +1147,8 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(question.m_naRate).
                 OutlinePen(ColorContrast::ShadeOrTint(
                            ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNoResponseColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                       wxNumberFormatter::ToString(question.m_naRate, 0,
                         wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1168,7 +1188,8 @@ namespace Wisteria::Graphs
             { // main question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(
                 Label(GraphItemInfo(question.m_question).
@@ -1179,7 +1200,8 @@ namespace Wisteria::Graphs
                 Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(
                 Label(GraphItemInfo(wxString::Format(L"(%s)",
                     wxNumberFormatter::ToString(question.m_responses,0,
@@ -1192,7 +1214,7 @@ namespace Wisteria::Graphs
         questionBar.SetCustomWidth(question.m_threePointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{0};
+        size_t maxCategoryResponese{ 0 };
         for (const auto& category : question.m_threePointCategories)
             { maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses); }
 
@@ -1236,7 +1258,8 @@ namespace Wisteria::Graphs
                   // negative block
                   BarBlock(BarBlockInfo(category->m_negativeRate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                    Brush(GetNegativeColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negativeRate > 0) ?
                             wxNumberFormatter::ToString(category->m_negativeRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1268,7 +1291,8 @@ namespace Wisteria::Graphs
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().
+                    Brush(GetNeutralColor()).
+                    SelectionLabel(Label(GraphItemInfo().
                     Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ?
                             wxNumberFormatter::ToString(category->m_neutralRate, 0,
@@ -1288,7 +1312,8 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(category->m_naRate).
                     OutlinePen(ColorContrast::ShadeOrTint(
                         ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                    Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(GetNoResponseColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1321,7 +1346,8 @@ namespace Wisteria::Graphs
             { // the question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
@@ -1331,7 +1357,8 @@ namespace Wisteria::Graphs
                     Tag(GetQuestionBlockLabel())),
               // response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                     wxNumberFormatter::ToString(question.m_responses,0,
@@ -1359,7 +1386,8 @@ namespace Wisteria::Graphs
               // negative block
               BarBlock(BarBlockInfo(question.m_negative2Rate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetNegativeColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative2Rate > 0) ?
                         wxNumberFormatter::ToString(question.m_negative2Rate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1382,7 +1410,8 @@ namespace Wisteria::Graphs
               // strong positive block
               BarBlock(BarBlockInfo(question.m_positive2Rate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetPositiveColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive2Rate > 0) ?
                         wxNumberFormatter::ToString(question.m_positive2Rate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1397,7 +1426,8 @@ namespace Wisteria::Graphs
                   Show(false)),
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
-                Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNeutralColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ?
                         wxNumberFormatter::ToString(question.m_neutralRate, 0,
@@ -1407,12 +1437,14 @@ namespace Wisteria::Graphs
                       FontColor(ColorContrast::BlackOrWhiteContrast(GetNeutralColor())).
                       ChildAlignment(RelativeAlignment::FlushLeft))).Tag(GetNeutralBlockLabel())),
               // block after neutral
-              BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).Show(false).Tag(GetNeutralBlockLabel())),
+              BarBlock(BarBlockInfo(m_neutralBlockSize-question.m_neutralRate).
+                  Show(false).Tag(GetNeutralBlockLabel())),
               // no response block
               BarBlock(BarBlockInfo(question.m_naRate).
                 OutlinePen(ColorContrast::ShadeOrTint(
                     ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNoResponseColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                         wxNumberFormatter::ToString(question.m_naRate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1446,7 +1478,8 @@ namespace Wisteria::Graphs
             { // main question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
@@ -1456,7 +1489,8 @@ namespace Wisteria::Graphs
                     Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1468,7 +1502,7 @@ namespace Wisteria::Graphs
         questionBar.SetCustomWidth(question.m_fivePointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{0};
+        size_t maxCategoryResponese{ 0 };
         for (const auto& category : question.m_fivePointCategories)
             { maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses); }
 
@@ -1484,7 +1518,8 @@ namespace Wisteria::Graphs
                   // the category
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                     m_categoryBlockSize-m_responseCountBlockSize : m_categoryBlockSize).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(category->m_question).
                         Font(GetBarAxis().GetFont()).
@@ -1493,7 +1528,8 @@ namespace Wisteria::Graphs
                         Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(category->m_responses,0,
@@ -1521,7 +1557,8 @@ namespace Wisteria::Graphs
                   // negative block
                   BarBlock(BarBlockInfo(category->m_negative2Rate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                    Brush(GetNegativeColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative2Rate > 0) ?
                             wxNumberFormatter::ToString(category->m_negative2Rate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1544,7 +1581,8 @@ namespace Wisteria::Graphs
                   // strong positive block
                   BarBlock(BarBlockInfo(category->m_positive2Rate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                    Brush(GetPositiveColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive2Rate > 0) ?
                             wxNumberFormatter::ToString(category->m_positive2Rate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1560,7 +1598,8 @@ namespace Wisteria::Graphs
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(GetNeutralColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ?
                             wxNumberFormatter::ToString(category->m_neutralRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1575,7 +1614,8 @@ namespace Wisteria::Graphs
                   BarBlock(BarBlockInfo(category->m_naRate).
                     OutlinePen(ColorContrast::ShadeOrTint(
                            ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                    Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(GetNoResponseColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1601,7 +1641,8 @@ namespace Wisteria::Graphs
               { // the question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
@@ -1611,7 +1652,8 @@ namespace Wisteria::Graphs
                     Tag(GetQuestionBlockLabel())),
               // response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
@@ -1652,7 +1694,8 @@ namespace Wisteria::Graphs
               // somewhat negative block
               BarBlock(BarBlockInfo(question.m_negative3Rate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetNegativeColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_negative3Rate > 0) ?
                         wxNumberFormatter::ToString(question.m_negative3Rate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1663,7 +1706,8 @@ namespace Wisteria::Graphs
               // somewhat positive block
               BarBlock(BarBlockInfo(question.m_positive1Rate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                Brush(GetPositiveColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_positive1Rate > 0) ?
                         wxNumberFormatter::ToString(question.m_positive1Rate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1704,7 +1748,8 @@ namespace Wisteria::Graphs
               // neutral block
               BarBlock(BarBlockInfo(question.m_neutralRate).
                 OutlinePen(*wxTRANSPARENT_PEN).
-                Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNeutralColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_neutralRate > 0) ?
                         wxNumberFormatter::ToString(question.m_neutralRate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1719,7 +1764,8 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(question.m_naRate).
                 OutlinePen(ColorContrast::ShadeOrTint(
                       ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(GetNoResponseColor()).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo((IsShowingPercentages() && question.m_naRate > 0) ?
                         wxNumberFormatter::ToString(question.m_naRate, 0,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1749,11 +1795,13 @@ namespace Wisteria::Graphs
                 { m_categoryBlockSize = std::max(m_categoryBlockSize, m_questionBlockSize/4); }
             }
 
-        Bar questionBar(safe_divide<double>(question.m_sevenPointCategories.size(),2)+GetBarSlotCount()+0.5f,
+        Bar questionBar(
+            safe_divide<double>(question.m_sevenPointCategories.size(),2) + GetBarSlotCount()+0.5f,
             { // main question
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                 m_questionBlockSize-m_responseCountBlockSize : m_questionBlockSize).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(question.m_question).
                     Font(GetBarAxis().GetFont()).
@@ -1763,7 +1811,8 @@ namespace Wisteria::Graphs
                     Tag(GetQuestionBlockLabel())),
               // overall response count
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                Brush(wxTransparentColor).
+                SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1775,7 +1824,7 @@ namespace Wisteria::Graphs
         questionBar.SetCustomWidth(question.m_sevenPointCategories.size());
         AddBar(questionBar);
 
-        size_t maxCategoryResponese{0};
+        size_t maxCategoryResponese{ 0 };
         for (const auto& category : question.m_sevenPointCategories)
             { maxCategoryResponese = std::max(maxCategoryResponese, category.m_responses); }
 
@@ -1791,7 +1840,8 @@ namespace Wisteria::Graphs
                   // the category
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ?
                     m_categoryBlockSize-m_responseCountBlockSize : m_categoryBlockSize).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(category->m_question).
                         Font(GetBarAxis().GetFont()).
@@ -1801,7 +1851,8 @@ namespace Wisteria::Graphs
                         Tag(GetCategoryBlockLabel())),
                   // response count (for current category)
                   BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
-                    Brush(wxTransparentColor).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(wxTransparentColor).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     OutlinePen(*wxTRANSPARENT_PEN).
                     Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(category->m_responses,0,
@@ -1842,7 +1893,8 @@ namespace Wisteria::Graphs
                   // somewhat negative block
                   BarBlock(BarBlockInfo(category->m_negative3Rate).
                       OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNegativeColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                    Brush(GetNegativeColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_negative3Rate > 0) ?
                             wxNumberFormatter::ToString(category->m_negative3Rate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1853,7 +1905,8 @@ namespace Wisteria::Graphs
                   // somewhat positive block
                   BarBlock(BarBlockInfo(category->m_positive1Rate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetPositiveColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
+                    Brush(GetPositiveColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive1Rate > 0) ?
                             wxNumberFormatter::ToString(category->m_positive1Rate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1876,7 +1929,7 @@ namespace Wisteria::Graphs
                   // strong positive block
                   BarBlock(BarBlockInfo(category->m_positive3Rate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), .40f)).
+                    Brush(ColorContrast::ShadeOrTint(GetPositiveColor(), 0.40f)).
                     SelectionLabel(Label(GraphItemInfo().Pen(*wxBLACK_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_positive3Rate > 0) ?
                             wxNumberFormatter::ToString(category->m_positive3Rate, 0,
@@ -1894,7 +1947,8 @@ namespace Wisteria::Graphs
                   // neutral block
                   BarBlock(BarBlockInfo(category->m_neutralRate).
                     OutlinePen(*wxTRANSPARENT_PEN).
-                    Brush(GetNeutralColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                    Brush(GetNeutralColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_neutralRate > 0) ?
                             wxNumberFormatter::ToString(category->m_neutralRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -1908,8 +1962,9 @@ namespace Wisteria::Graphs
                   // no response block
                   BarBlock(BarBlockInfo(category->m_naRate).
                     OutlinePen(ColorContrast::ShadeOrTint(
-                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), .8)).
-                    Brush(GetNoResponseColor()).SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                          ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), 0.8)).
+                    Brush(GetNoResponseColor()).
+                    SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
                     Decal(Label(GraphItemInfo((IsShowingPercentages() && category->m_naRate > 0) ?
                             wxNumberFormatter::ToString(category->m_naRate, 0,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes) + L"%" :
@@ -2047,7 +2102,8 @@ namespace Wisteria::Graphs
                 {
                 for (;;)
                     {
-                    const auto foundPos = std::find_if(bar.GetBlocks().cbegin(), bar.GetBlocks().cend(),
+                    const auto foundPos = std::find_if(bar.GetBlocks().cbegin(),
+                                                       bar.GetBlocks().cend(),
                         [this](const auto& block) noexcept
                         { return block.GetTag() == GetNeutralBlockLabel(); });
                     if (foundPos != bar.GetBlocks().cend())
@@ -2062,7 +2118,8 @@ namespace Wisteria::Graphs
             {
             Axis naDividerLine(AxisType::RightYAxis);
             naDividerLine.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize +
-                                             m_negativeBlockSize + m_positiveBlockSize + m_neutralBlockSize);
+                                             m_negativeBlockSize + m_positiveBlockSize +
+                                             m_neutralBlockSize);
             naDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
             naDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             naDividerLine.GetAxisLinePen() = wxNullPen;
@@ -2096,7 +2153,8 @@ namespace Wisteria::Graphs
             }
 
         Axis agreeDividerLine(AxisType::RightYAxis);
-        agreeDividerLine.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize+m_negativeBlockSize);
+        agreeDividerLine.SetCustomXPosition(
+            m_questionBlockSize + m_categoryBlockSize + m_negativeBlockSize);
         agreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
         agreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
         agreeDividerLine.GetAxisLinePen() = wxNullPen;
@@ -2112,7 +2170,8 @@ namespace Wisteria::Graphs
         AddCustomAxis(agreeDividerLine);
 
         Axis disagreeDividerLine(AxisType::LeftYAxis);
-        disagreeDividerLine.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize+m_negativeBlockSize);
+        disagreeDividerLine.SetCustomXPosition(
+            m_questionBlockSize + m_categoryBlockSize + m_negativeBlockSize);
         disagreeDividerLine.SetCustomYPosition(GetBarAxis().GetRange().second);
         disagreeDividerLine.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
         disagreeDividerLine.GetAxisLinePen() = wxNullPen;
@@ -2136,18 +2195,19 @@ namespace Wisteria::Graphs
         if (m_categoryBlockSize > 0)
             {
             Axis categoryDividerBar(AxisType::LeftYAxis);
-            categoryDividerBar.SetCustomXPosition(m_questionBlockSize+m_categoryBlockSize);
+            categoryDividerBar.SetCustomXPosition(m_questionBlockSize + m_categoryBlockSize);
             categoryDividerBar.SetCustomYPosition(GetBarAxis().GetRange().second);
             categoryDividerBar.GetAxisLinePen().SetColour(ColorBrewer::GetColor(Color::AshGrey));
             AddCustomAxis(categoryDividerBar);
             }
 
-        // if showing categorized data, then only draw full horizontal divider lines between main questions
+        // if showing categorized data, then only draw full horizontal divider lines
+        // between main questions
         std::vector<size_t> fullDividerLines;
         if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized ||
             GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
             {
-            size_t accumulated{0};
+            size_t accumulated{ 0 };
             for (const auto& question : m_threePointCategorizedQuestions)
                 {
                 accumulated += question.m_threePointCategories.size();
@@ -2157,7 +2217,7 @@ namespace Wisteria::Graphs
         else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized ||
             GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
             {
-            size_t accumulated{0};
+            size_t accumulated{ 0 };
             for (const auto& question : m_fivePointCategorizedQuestions)
                 {
                 accumulated += question.m_fivePointCategories.size();
@@ -2167,7 +2227,7 @@ namespace Wisteria::Graphs
         else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized ||
             GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
             {
-            size_t accumulated{0};
+            size_t accumulated{ 0 };
             for (const auto& question : m_sevenPointCategorizedQuestions)
                 {
                 accumulated += question.m_sevenPointCategories.size();
@@ -2193,7 +2253,7 @@ namespace Wisteria::Graphs
         // overlay dashed dividing lines between sections
         auto sectionDividerLines = std::make_shared<GraphItems::Lines>(
                                                     wxPen(*wxBLACK, 1, wxPENSTYLE_LONG_DASH), GetScaling());
-        wxCoord bottomPosAndNegX{0}, bottomNeutralX{0}, bottomNAX{0};
+        wxCoord bottomPosAndNegX{ 0 }, bottomNeutralX{ 0 }, bottomNAX{ 0 };
         if (GetBottomXAxis().GetPhysicalCoordinate(m_questionBlockSize + m_categoryBlockSize +
                                                    m_negativeBlockSize, bottomPosAndNegX))
             {
