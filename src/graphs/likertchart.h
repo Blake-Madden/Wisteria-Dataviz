@@ -545,10 +545,10 @@ namespace Wisteria::Graphs
         /** @brief Sets a common string table to the specified categorical columns
                 (i.e., questions) in a dataset.
             @details This should be called after calling SetData().
-            @param data The dataset to edit.
+            @param data[in,out] The dataset to edit.
             @param questionColumns The vector of categorical columns to edit.
             @param codes The string table to use. This should at least start at 0 (no response)
-                and then go from 1 to the highest level of the point scale of the chart.
+                and then go from 1 to the highest level of the Likert scale.
             @sa CreateLabels().*/
         static void SetLabels(std::shared_ptr<Data::Dataset>& data,
                               const std::vector<wxString>& questionColumns,
@@ -606,7 +606,7 @@ namespace Wisteria::Graphs
              This assumes that all categorical columns (i.e., questions) are coded 0-7
              (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
 
-            @param data The dataset to simplify/collapse.
+            @param data[in,out] The dataset to simplify/collapse.
             @param questionColumns The vector of categorical columns to use as questions.
             @param currentFormat The questions' Likert scale.
             @returns The questions' new Likert scale (should be passed to the chart's constructor).

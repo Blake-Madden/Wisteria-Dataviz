@@ -1202,6 +1202,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).
                 SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(
                 Label(GraphItemInfo(wxString::Format(L"(%s)",
                     wxNumberFormatter::ToString(question.m_responses,0,
@@ -1491,6 +1492,7 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).
                 SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
@@ -1813,12 +1815,13 @@ namespace Wisteria::Graphs
               BarBlock(BarBlockInfo(IsShowingResponseCounts() ? m_responseCountBlockSize : 0.0f).
                 Brush(wxTransparentColor).
                 SelectionLabel(Label(GraphItemInfo().Pen(*wxTRANSPARENT_PEN))).
+                OutlinePen(*wxTRANSPARENT_PEN).
                 Decal(Label(GraphItemInfo(wxString::Format(L"(%s)",
                         wxNumberFormatter::ToString(question.m_responses,0,
                             Settings::GetDefaultNumberFormat()))).
-                        Font(GetBarAxis().GetFont()).
-                        FontColor(*wxBLACK).
-                        ChildAlignment(RelativeAlignment::FlushRight))).Show(IsShowingResponseCounts()) ) },
+                    Font(GetBarAxis().GetFont()).
+                    FontColor(*wxBLACK).
+                    ChildAlignment(RelativeAlignment::FlushRight))).Show(IsShowingResponseCounts()) ) },
             wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
         // tall as all its categorical bars combined
         questionBar.SetCustomWidth(question.m_sevenPointCategories.size());
