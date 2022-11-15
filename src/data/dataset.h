@@ -702,6 +702,14 @@ namespace Wisteria::Data
             m_continousMDRecodeValue = recodeVal;
             return *this;
             }
+        /** @brief Set the number of rows to skip before reading the text.
+            @param startRow The starting row in the text to begin the parse.
+            @returns A self reference.*/
+        ImportInfo& SkipRows(const size_t startRow)
+            {
+            m_skipRows = startRow;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
@@ -730,6 +738,9 @@ namespace Wisteria::Data
             m_textImportReplacements = replaceStrings;
             return *this;
             }
+        /// @returns The row to start reading text from.
+        [[nodiscard]] size_t GetRowsToSkip() const noexcept
+            { return m_skipRows; }
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
                 and their replacement values from a file and passing that to ReplacementStrings().
@@ -758,6 +769,7 @@ namespace Wisteria::Data
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
         double m_continousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
+        size_t m_skipRows{ 0 };
         };
 
     /** @brief %Dataset interface for graphs.
@@ -1192,6 +1204,7 @@ namespace Wisteria::Data
             @param delimiter The delimiter to parse the columns with.
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types.
+            @param skipRows The number of rows to skip before reading the text.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
@@ -1201,7 +1214,8 @@ namespace Wisteria::Data
             @sa ImportInfoFromPreview().*/
         [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
                                                        const wchar_t delimiter,
-                                                       const size_t rowPreviewCount = 100);
+                                                       std::optional<size_t> rowPreviewCount = std::nullopt,
+                                                       size_t skipRows = 0);
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
             @param previewInfo A file's preview information (from a call to ReadColumnInfo()).
@@ -1244,7 +1258,7 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportText(), ImportCSV(), ImportTSV(), ReadColumnInfo(), ImportInfoFromPreview().*/
         void ImportTextRaw(const wxString& fileText, const ImportInfo& info,
-                        const wchar_t delimiter);
+                           const wchar_t delimiter);
         /** @brief Imports a comma-separated file into the dataset.
             @details This is a shortcut for ImportText(), using commas as the column separator.
             @param filePath The path to the data file.

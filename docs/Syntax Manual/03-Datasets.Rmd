@@ -7,12 +7,13 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.<br />
     Note that if this is not provided, then the file name from `"path"` will be used.
   - `"path"`: the full file path of the dataset.
-  - `"importer"` how to import the dataset.<br />
+  - `"importer"`: how to import the dataset.<br />
     This is optional and the default is to import the file based on its file extension.<br />
     Available options are:
     - `"tsv"`: a tab-delimited text file.
     - `"csv"`: a comma-delimited text file.
-  - `"continuous-md-recode-value"` numeric value used to substitute missing data in continuous columns.<br />
+  - `"skip-rows"`: number of rows to skip in the file before parsing the text.
+  - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns.<br />
     This property is optional.
   - `"id-column"`: the ID column.<br />
     This property is optional.

@@ -2253,6 +2253,8 @@ namespace Wisteria
                     auto dataset = std::make_shared<Data::Dataset>();
 
                     ImportInfo importDefines;
+                    if (datasetNode->HasProperty(L"skip-rows"))
+                        { importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0)); }
                     // if no columns are defined, then deduce them ourselves
                     if (!datasetNode->HasProperty(L"id-column") &&
                         !datasetNode->HasProperty(L"date-columns") &&
@@ -2264,7 +2266,8 @@ namespace Wisteria
                                 wxFileName(path).GetExt().CmpNoCase(L"csv") == 0) ?
                             L',' : L'\t';
                         importDefines = Dataset::ImportInfoFromPreview(
-                            Dataset::ReadColumnInfo(path, delim));
+                            Dataset::ReadColumnInfo(path, delim, std::nullopt, importDefines.GetRowsToSkip()));
+                        importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
                         }
                     else
                         {

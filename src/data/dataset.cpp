@@ -8,6 +8,8 @@
 
 #include "dataset.h"
 
+using namespace lily_of_the_valley;
+
 namespace Wisteria::Data
     {
     //----------------------------------------------
@@ -853,7 +855,8 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath, const wchar_t delimiter,
-                                                       const size_t rowPreviewCount /*= 100*/)
+                                                       std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
+                                                       size_t headerRowLine /*= 0*/)
         {
         wxString fileText;
         wxFile fl(filePath);
@@ -867,9 +870,17 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
 
+        lily_of_the_valley::text_column<text_column_to_eol_parser>
+            noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
+        if (headerRowLine > 0)
+            {
+            // skip initial lines of text that the caller asked to skip
+            lily_of_the_valley::text_row<wxString> noReadRowsStart{ headerRowLine };
+            noReadRowsStart.add_column(noReadColumn);
+            importer.add_row_definition(noReadRowsStart);
+            }
+
         // skip the header
-        lily_of_the_valley::standard_delimited_character_column
-            noReadColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter, false });
         lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
@@ -883,8 +894,9 @@ namespace Wisteria::Data
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
-        size_t rowCount = std::min<size_t>(preview(fileText.wc_str(), delimiter, false, false),
-                                           rowPreviewCount+1/*header*/);
+        size_t rowCount = std::min<size_t>(preview(fileText.wc_str(), delimiter, false, false, headerRowLine),
+                                           rowPreviewCount.has_value() ?
+                                               (rowPreviewCount.value() + 1/*header*/) : 100);
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
@@ -1025,7 +1037,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
-                             const wchar_t delimiter)
+                                const wchar_t delimiter)
         {
         // reset
         Clear();
@@ -1040,9 +1052,17 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
 
+        lily_of_the_valley::text_column<text_column_to_eol_parser>
+            noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
+        if (info.GetRowsToSkip() > 0)
+            {
+            // skip initial lines of text that the caller asked to skip
+            lily_of_the_valley::text_row<wxString> noReadRowsStart{ info.GetRowsToSkip() };
+            noReadRowsStart.add_column(noReadColumn);
+            importer.add_row_definition(noReadRowsStart);
+            }
+
         // skip the header
-        lily_of_the_valley::standard_delimited_character_column
-            noReadColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter, false });
         lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
@@ -1055,7 +1075,7 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_preview preview;
         // see how many lines are in the file and resize the container
-        const size_t rowCount = preview(fileText.wc_str(), delimiter, false, false);
+        const size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.GetRowsToSkip());
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
