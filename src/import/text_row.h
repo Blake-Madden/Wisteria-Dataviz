@@ -173,7 +173,15 @@ namespace lily_of_the_valley
                         currentPosition = currentColumnIter->read(currentPosition);
                         // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
@@ -216,7 +224,15 @@ namespace lily_of_the_valley
                         if (currentPosition == nullptr)
                             { return nullptr; }
                         if (is_eol(currentPosition[0]))
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
                         // skip the delimiter(s)
@@ -261,7 +277,15 @@ namespace lily_of_the_valley
                         currentPosition = currentColumnIter->read(currentPosition);
                         // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
@@ -304,7 +328,15 @@ namespace lily_of_the_valley
                         if (currentPosition == nullptr)
                             { return nullptr; }
                         if (is_eol(currentPosition[0]))
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
                         // skip the delimiter(s)
@@ -349,7 +381,15 @@ namespace lily_of_the_valley
                         currentPosition = currentColumnIter->read(currentPosition);
                         // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         // if this parser is NOT set to skip the column's text, then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
@@ -391,7 +431,15 @@ namespace lily_of_the_valley
                         if (currentPosition == nullptr)
                             { return nullptr; }
                         if (is_eol(currentPosition[0]))
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
                         // skip the delimiter(s)
@@ -436,7 +484,15 @@ namespace lily_of_the_valley
                         currentPosition = currentColumnIter->read(currentPosition);
                         // if the current row is blank then don't add anything to its columns
                         if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
                             {
@@ -482,7 +538,15 @@ namespace lily_of_the_valley
                         if (currentPosition == nullptr)
                             { return nullptr; }
                         if (is_eol(currentPosition[0]))
-                            { return ++currentPosition; }
+                            {
+                            if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                                {
+                                currentPosition += 2;
+                                return currentPosition;
+                                }
+                            else
+                                { ++currentPosition; }
+                            }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
                         }
@@ -512,7 +576,15 @@ namespace lily_of_the_valley
                     currentPosition = currentColumnIter->read(currentPosition);
                     // if the current row is blank then don't add anything to its columns
                     if (previousPosition == currentPosition && is_eol(currentPosition[0]) )
-                        { return ++currentPosition; }
+                        {
+                        if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                            {
+                            currentPosition += 2;
+                            return currentPosition;
+                            }
+                        else
+                            { ++currentPosition; }
+                        }
                     // if this parser is NOT set to skip the column's text then read it in
                     if (currentColumnIter->get_parser().is_reading_text())
                         {
@@ -552,9 +624,17 @@ namespace lily_of_the_valley
                             }
                         }
                     if (currentPosition == nullptr)
-                            { return nullptr; }
+                        { return nullptr; }
                     if (is_eol(currentPosition[0]))
-                        { return ++currentPosition; }
+                        {
+                        if (currentPosition[0] == L'\r' && currentPosition[1] == L'\n')
+                            {
+                            currentPosition += 2;
+                            return currentPosition;
+                            }
+                        else
+                            { ++currentPosition; }
+                        }
                     else if (currentPosition[0] == 0)
                         { return nullptr; }
                     }
