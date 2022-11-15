@@ -1222,7 +1222,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
-            @sa ImportCSV(), ImportTSV(), ReadColumnInfo(), ImportInfoFromPreview().
+            @sa ImportTextRaw(), ImportCSV(), ImportTSV(), ReadColumnInfo(), ImportInfoFromPreview().
             @par Example:
             @code
             xyData->ImportText(L"Sense of Belonging.csv",
@@ -1232,7 +1232,18 @@ namespace Wisteria::Data
                 GroupColumns({ L"Name" }),
                 L',');
             @endcode*/
-        void ImportText(const wxString& filePath, const ImportInfo& info,
+        void ImportText(const wxFileName& filePath, const ImportInfo& info,
+                        const wchar_t delimiter);
+        /** @brief Imports raw text into the dataset.
+            @param fileText The text buffer to parse and load into the dataset.
+            @param info The definition for which columns to import and how to map them.
+            @param delimiter The delimiter to parse the columns with.
+            @throws std::runtime_error If any named columns aren't found,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.
+            @sa ImportText(), ImportCSV(), ImportTSV(), ReadColumnInfo(), ImportInfoFromPreview().*/
+        void ImportTextRaw(const wxString& fileText, const ImportInfo& info,
                         const wchar_t delimiter);
         /** @brief Imports a comma-separated file into the dataset.
             @details This is a shortcut for ImportText(), using commas as the column separator.
@@ -1242,7 +1253,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void ImportCSV(const wxString& filePath, const ImportInfo& info)
+        void ImportCSV(const wxFileName& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L','); }
         /** @brief Imports a tab-separated file into the dataset.
             @details This is a shortcut for ImportText(), using tabs as the column separator.
@@ -1252,7 +1263,7 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        void ImportTSV(const wxString& filePath, const ImportInfo& info)
+        void ImportTSV(const wxFileName& filePath, const ImportInfo& info)
             { ImportText(filePath, info, L'\t'); }
         /** @brief Exports the dataset to a text file.
             @details Columns are exported in the following order:

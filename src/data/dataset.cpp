@@ -1026,7 +1026,7 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    void Dataset::ImportText(const wxString& filePath, const ImportInfo& info,
+    void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
                              const wchar_t delimiter)
         {
         // reset
@@ -1034,17 +1034,7 @@ namespace Wisteria::Data
         m_dateColumns.clear();
         m_categoricalColumns.clear();
         m_continuousColumns.clear();
-
-        wxString fileText;
-        wxFile fl(filePath);
-        if (!fl.IsOpened() || !fl.ReadAll(&fileText))
-            {
-            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
-                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
-            }
-        fileText.Trim(true).Trim(false);
-
-        m_name = wxFileName(filePath).GetName();
+        m_name.clear();
 
         SetImportContinuousMDRecodeValue(info.m_continousMDRecodeValue);
 
@@ -1285,6 +1275,24 @@ namespace Wisteria::Data
 
         // set the names for the columns
         SetColumnNames(info);
+        }
+
+    //----------------------------------------------
+    void Dataset::ImportText(const wxFileName& filePath, const ImportInfo& info,
+                             const wchar_t delimiter)
+        {
+        wxString fileText;
+        wxFile fl(filePath.GetFullPath());
+        if (!fl.IsOpened() || !fl.ReadAll(&fileText))
+            {
+            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath.GetFullPath(),
+                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
+            }
+        fileText.Trim(true).Trim(false);
+
+        ImportTextRaw(fileText, info, delimiter);
+
+        m_name = filePath.GetName();
         }
 
     //----------------------------------------------
