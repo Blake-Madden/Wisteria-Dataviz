@@ -36,10 +36,12 @@ namespace lily_of_the_valley
             @param storeRowInfo Specifies whether to store the beginning and end of each line
                 (as an index into the text block) into a map.
                 This is useful if the caller needs to further review a preview line-by-line.
+            @param skipRows The number of rows to skip before reading the text.
             @warning Setting @c storeRowInfo to @c true will impact the preview's performance.*/
         [[nodiscard]] size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
                           const bool ignoreBlankLines,
-                          const bool storeRowInfo)
+                          const bool storeRowInfo,
+                          size_t skipRows = 0)
             {
             assert(text);
             m_header_names.clear();
@@ -49,6 +51,17 @@ namespace lily_of_the_valley
             if (text == nullptr || text[0] == 0)
                 { return 0; }
 
+            lily_of_the_valley::text_column<text_column_to_eol_parser>
+                noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
+            lily_of_the_valley::text_row<wxString> noReadRowsStart;
+            noReadRowsStart.add_column(noReadColumn);
+            while (skipRows > 0)
+                {
+                // skip initial lines of text that the caller asked to skip
+                text = noReadRowsStart.read(text);
+                --skipRows;
+                }
+            
             standard_delimited_character_column deliminatedColumn(
                 text_column_delimited_character_parser{ headerRowDelimiter });
             text_row<std::wstring> headerRow(1);
