@@ -888,12 +888,10 @@ namespace Wisteria::Data
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
+            rowCount = importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
             }
         else
             { return columnInfo; }
-        // ignore the first line (header) now
-        --rowCount;
 
         wxLogNull nl;
         wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
