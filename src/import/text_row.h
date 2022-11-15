@@ -167,7 +167,7 @@ namespace lily_of_the_valley
                                 }
                             }
                         // for optimized single-column reading return once a column is read
-                        else if (currentColumnIndex >= 1)
+                        else if (is_reading_single_column() && currentColumnIndex >= 1)
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
@@ -185,7 +185,7 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     { m_values->at(currentColumnIndex++).assign(previousPosition); }
-                                else
+                                else if (is_reading_single_column())
                                     { m_single_value->assign(previousPosition); }
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
@@ -203,7 +203,7 @@ namespace lily_of_the_valley
                                     cellQuoteCollapse(m_values->at(currentColumnIndex));
                                     ++currentColumnIndex;
                                     }
-                                else
+                                else if (is_reading_single_column())
                                     {
                                     m_single_value->assign(previousPosition,
                                         trim.get_trimmed_string_length());
@@ -255,7 +255,7 @@ namespace lily_of_the_valley
                                 }
                             }
                         // for optimized single-column reading return once a column is read
-                        else if (currentColumnIndex >= 1)
+                        else if (is_reading_single_column() && currentColumnIndex >= 1)
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
@@ -273,7 +273,7 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     { m_values->at(currentColumnIndex++).assign(previousPosition); }
-                                else
+                                else if (is_reading_single_column())
                                     { m_single_value->assign(previousPosition); }
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
@@ -291,7 +291,7 @@ namespace lily_of_the_valley
                                     cellQuoteCollapse(m_values->at(currentColumnIndex));
                                     ++currentColumnIndex;
                                     }
-                                else
+                                else if (is_reading_single_column())
                                     {
                                     m_single_value->assign(previousPosition,
                                         trim.get_trimmed_string_length());
@@ -343,7 +343,7 @@ namespace lily_of_the_valley
                                 }
                             }
                         // for optimized single-column reading return once a column is read
-                        else if (currentColumnIndex >= 1)
+                        else if (is_reading_single_column() && currentColumnIndex >= 1)
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
@@ -360,7 +360,7 @@ namespace lily_of_the_valley
                                     { return nullptr; }
                                 if (m_values)
                                     { m_values->at(currentColumnIndex++).assign(previousPosition); }
-                                else
+                                else if (is_reading_single_column())
                                     { m_single_value->assign(previousPosition); }
                                 ++m_number_of_columns_last_read;
                                 return nullptr;
@@ -378,7 +378,7 @@ namespace lily_of_the_valley
                                     cellQuoteCollapse(m_values->at(currentColumnIndex));
                                     ++currentColumnIndex;
                                     }
-                                else
+                                else if (is_reading_single_column())
                                     {
                                     m_single_value->assign(previousPosition,
                                         trim.get_trimmed_string_length());
@@ -430,7 +430,7 @@ namespace lily_of_the_valley
                                 }
                             }
                         // for optimized single-column reading return once a column is read
-                        else if (currentColumnIndex >= 1)
+                        else if (is_reading_single_column() && currentColumnIndex >= 1)
                             { return currentPosition; }
                         previousPosition = currentPosition;
                         currentPosition = currentColumnIter->read(currentPosition);
@@ -449,7 +449,7 @@ namespace lily_of_the_valley
                                     {
                                     m_values->at(currentColumnIndex++).assign(previousPosition);
                                     }
-                                else
+                                else if (is_reading_single_column())
                                     {
                                     m_single_value->assign(previousPosition);
                                     }
@@ -469,7 +469,7 @@ namespace lily_of_the_valley
                                     cellQuoteCollapse(m_values->at(currentColumnIndex));
                                     ++currentColumnIndex;
                                     }
-                                else
+                                else if (is_reading_single_column())
                                     {
                                     m_single_value->assign(previousPosition,
                                         trim.get_trimmed_string_length());
@@ -506,7 +506,7 @@ namespace lily_of_the_valley
                             }
                         }
                     // for optimized single-column reading, return once a column is read
-                    else if (currentColumnIndex >= 1)
+                    else if (is_reading_single_column() && currentColumnIndex >= 1)
                         { return currentPosition; }
                     previousPosition = currentPosition;
                     currentPosition = currentColumnIter->read(currentPosition);
@@ -523,7 +523,7 @@ namespace lily_of_the_valley
                                 { return nullptr; }
                             if (m_values)
                                 { m_values->at(currentColumnIndex++).assign(previousPosition); }
-                            else
+                            else if (is_reading_single_column())
                                 { m_single_value->assign(previousPosition); }
                             ++m_number_of_columns_last_read;
                             return nullptr;
@@ -541,7 +541,7 @@ namespace lily_of_the_valley
                                 cellQuoteCollapse(m_values->at(currentColumnIndex));
                                 ++currentColumnIndex;
                                 }
-                            else
+                            else if (is_reading_single_column())
                                 {
                                 m_single_value->assign(previousPosition,
                                     trim.get_trimmed_string_length());
@@ -589,6 +589,9 @@ namespace lily_of_the_valley
             fixed_width,
             to_eol
             };
+
+        [[nodiscard]] inline bool is_reading_single_column() const noexcept
+            { return (m_single_value != nullptr); }
 
         std::vector<string_typeT>* m_values{ nullptr };
         string_typeT* m_single_value{ nullptr };
