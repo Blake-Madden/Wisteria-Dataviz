@@ -22,7 +22,7 @@ namespace Wisteria::Graphs
 
          | 3-Point Scale   | 7-Point Scale |
          | :-------------- | :-------------------------------- |
-         | @image html Likert3Point.svg width=90% | @image html Likert7Point.svg width=90% |
+         | @image html Likert3Point.png width=90% | @image html Likert7Point.png width=90% |
 
         @par %Data:
          This plot accepts a Data::Dataset where the specified categorical columns represent questions
@@ -66,26 +66,11 @@ namespace Wisteria::Graphs
 
          // import the dataset (this is available in the "datasets" folder)
          auto surveyData = std::make_shared<Data::Dataset>();
-         surveyData->ImportCSV(L"/home/rdoyle/data/Graph Library Survey.csv",
-             Data::ImportInfo().
-             CategoricalColumns(
-                    {
-                    { L"Gender" },
-                    { L"I am happy with my current graphics library",
-                      CategoricalImportMethod::ReadAsIntegers },
-                    { L"Customization is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"A simple API is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Support for obscure graphs is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Extensibility is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Standard, \"out-of-the-box\" graph support is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Data importing features are important to me",
-                        CategoricalImportMethod::ReadAsIntegers }
-                    }) );
+         const auto datasetPath{ L"/home/rdoyle/data/Graph Library Survey.csv" };
+         surveyData->ImportCSV(datasetPath,
+             // preview the data and deduce how to import it
+             Dataset::ImportInfoFromPreview(
+                 Dataset::ReadColumnInfo(datasetPath, L',')));
 
          // Although we know that the data is @c SevenPointCategorized (i.e., 7-point), we can
          // also deduce the scale from the data this way:
@@ -545,7 +530,7 @@ namespace Wisteria::Graphs
         /** @brief Sets a common string table to the specified categorical columns
                 (i.e., questions) in a dataset.
             @details This should be called after calling SetData().
-            @param data[in,out] The dataset to edit.
+            @param[in,out] data The dataset to edit.
             @param questionColumns The vector of categorical columns to edit.
             @param codes The string table to use. This should at least start at 0 (no response)
                 and then go from 1 to the highest level of the Likert scale.
@@ -606,7 +591,7 @@ namespace Wisteria::Graphs
              This assumes that all categorical columns (i.e., questions) are coded 0-7
              (0 = no response, 1-3 = negative levels, 4 = neutral, and 5-7 = positive levels).
 
-            @param data[in,out] The dataset to simplify/collapse.
+            @param[in,out] data The dataset to simplify/collapse.
             @param questionColumns The vector of categorical columns to use as questions.
             @param currentFormat The questions' Likert scale.
             @returns The questions' new Likert scale (should be passed to the chart's constructor).

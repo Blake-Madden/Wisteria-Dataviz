@@ -68,11 +68,11 @@ Survey Data
 
 | 3-Point Likert Chart (Wisteria::Graphs::LikertChart) |
 | :-------------- |
-| ![](docs/doxygen/images/Likert3Point.svg) |
+| ![](docs/doxygen/images/Likert3Point.png) |
 
 | 7-Point Likert Chart (Wisteria::Graphs::LikertChart) |
 | :-------------- |
-| ![](docs/doxygen/images/Likert7Point.svg) |
+| ![](docs/doxygen/images/Likert7Point.png) |
 
 | Pro & Con Roadmap (Wisteria::Graphs::ProConRoadmap) |
 | :-------------- |

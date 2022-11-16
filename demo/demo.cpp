@@ -1451,17 +1451,17 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                         { L"I am happy with my current graphics library",
                           CategoricalImportMethod::ReadAsIntegers },
                         { L"Customization is important to me",
-                            CategoricalImportMethod::ReadAsIntegers },
+                          CategoricalImportMethod::ReadAsIntegers },
                         { L"A simple API is important to me",
-                            CategoricalImportMethod::ReadAsIntegers },
+                          CategoricalImportMethod::ReadAsIntegers },
                         { L"Support for obscure graphs is important to me",
-                            CategoricalImportMethod::ReadAsIntegers },
+                          CategoricalImportMethod::ReadAsIntegers },
                         { L"Extensibility is important to me",
-                            CategoricalImportMethod::ReadAsIntegers },
+                          CategoricalImportMethod::ReadAsIntegers },
                         { LR"(Standard, "out-of-the-box" graph support is important to me)",
-                            CategoricalImportMethod::ReadAsIntegers },
+                          CategoricalImportMethod::ReadAsIntegers },
                         { L"Data importing features are important to me",
-                            CategoricalImportMethod::ReadAsIntegers }
+                          CategoricalImportMethod::ReadAsIntegers }
                         }));*/
             }
         catch (const std::exception& err)
@@ -1502,6 +1502,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // groups with lower responses will have narrower bars
         likertChart->SetBarSizesToRespondentSize(true);
 
+        likertChart->SetCanvasMargins(5, 5, 5, 5);
+
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         }
     // Likert (7-Point)
@@ -1514,25 +1516,10 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto surveyData = std::make_shared<Data::Dataset>();
         try
             {
-            surveyData->ImportCSV(appDir + L"/datasets/Graph Library Survey.csv",
-                Data::ImportInfo().
-                CategoricalColumns(
-                    {
-                    { L"I am happy with my current graphics library",
-                      CategoricalImportMethod::ReadAsIntegers },
-                    { L"Customization is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"A simple API is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Support for obscure graphs is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Extensibility is important to me",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { LR"(Standard, "out-of-the-box" graph support is important to me)",
-                        CategoricalImportMethod::ReadAsIntegers },
-                    { L"Data importing features are important to me",
-                        CategoricalImportMethod::ReadAsIntegers }
-                    }));
+            const auto datasetPath = appDir + L"/datasets/Graph Library Survey.csv";
+            surveyData->ImportCSV(datasetPath,
+                Dataset::ImportInfoFromPreview(
+                    Dataset::ReadColumnInfo(datasetPath, L',')));
             }
         catch (const std::exception& err)
             {
@@ -1541,16 +1528,35 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             return;
             }
 
+        auto categoricalNames{ surveyData->GetCategoricalColumnNames() };
+        Dataset::RemoveColumnNamesFromList(categoricalNames, { L"Gender" });
+
         // Because the responses in the dataset were coded 1-7, we will need to
         // add meaningful labels to the dataset. The following will add stock
         // labels to represent the responses.
         LikertChart::SetLabels(surveyData,
-            surveyData->GetCategoricalColumnNames(),
+            categoricalNames,
             LikertChart::CreateLabels(LikertChart::LikertSurveyQuestionFormat::SevenPoint));
 
         auto likertChart = std::make_shared<LikertChart>(subframe->m_canvas,
             LikertChart::LikertSurveyQuestionFormat::SevenPoint);
-        likertChart->SetData(surveyData, surveyData->GetCategoricalColumnNames());
+        likertChart->SetData(surveyData, categoricalNames);
+
+        // add brackets around some of the questions to group them
+        likertChart->AddQuestionsBracket(
+            LikertChart::QuestionsBracket{
+            L"Customization is important to me",
+            L"Extensibility is important to me",
+            _(L"Advanced Features")
+            });
+        likertChart->AddQuestionsBracket(
+            LikertChart::QuestionsBracket{
+            LR"(Standard, "out-of-the-box" graph support is important to me)",
+            L"Data importing features are important to me",
+            _(L"Standard Features")
+            });
+
+        likertChart->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, likertChart);
         subframe->m_canvas->SetFixedObject(0, 1,
