@@ -898,9 +898,10 @@ namespace Wisteria::Data
         lily_of_the_valley::text_preview preview;
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
-        size_t rowCount = std::min<size_t>(preview(fileText.wc_str(), delimiter, false, false, headerRowLine),
-                                           rowPreviewCount.has_value() ?
-                                               (rowPreviewCount.value() + 1/*header*/) : 100);
+        size_t rowCount = std::min<size_t>(
+            preview(fileText.wc_str(), delimiter, false, false, headerRowLine),
+                    rowPreviewCount.has_value() ?
+                        (rowPreviewCount.value() + 1/*header*/) : 100);
 
         // see if there are any duplicate column names
         std::set<wxString, StringCmpNoCase> colNames;
@@ -918,7 +919,8 @@ namespace Wisteria::Data
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            rowCount = importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
+            rowCount = importer.read(fileText.wc_str(), rowCount,
+                                     preview.get_header_names().size(), false);
             }
         else
             { return columnInfo; }
@@ -995,10 +997,10 @@ namespace Wisteria::Data
             colNames.RemoveLast();
             return colNames;
             };
-        wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString();
-        wxString catColumnNames = concatColNames(GetCategoricalColumns());
-        wxString dateColumnNames = concatColNames(GetDateColumns());
-        wxString continuousColumnNames = concatColNames(GetContinuousColumns());
+        const wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString();
+        const wxString catColumnNames = concatColNames(GetCategoricalColumns());
+        const wxString dateColumnNames = concatColNames(GetDateColumns());
+        const wxString continuousColumnNames = concatColNames(GetContinuousColumns());
 
         wxString colNames = (idName.length() ? idName + delimiter : wxString()) +
             (catColumnNames.length() ? catColumnNames + delimiter : wxString()) +
