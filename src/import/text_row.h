@@ -180,7 +180,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -231,7 +231,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
@@ -284,7 +284,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -335,7 +335,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
@@ -388,7 +388,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         // if this parser is NOT set to skip the column's text, then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -438,7 +438,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
@@ -491,7 +491,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         // if this parser is NOT set to skip the column's text then read it in
                         if (currentColumnIter->get_parser().is_reading_text())
@@ -545,7 +545,7 @@ namespace lily_of_the_valley
                                 return currentPosition;
                                 }
                             else
-                                { ++currentPosition; }
+                                { return ++currentPosition; }
                             }
                         else if (currentPosition[0] == 0)
                             { return nullptr; }
@@ -583,7 +583,7 @@ namespace lily_of_the_valley
                             return currentPosition;
                             }
                         else
-                            { ++currentPosition; }
+                            { return ++currentPosition; }
                         }
                     // if this parser is NOT set to skip the column's text then read it in
                     if (currentColumnIter->get_parser().is_reading_text())
@@ -633,7 +633,7 @@ namespace lily_of_the_valley
                             return currentPosition;
                             }
                         else
-                            { ++currentPosition; }
+                            { return ++currentPosition; }
                         }
                     else if (currentPosition[0] == 0)
                         { return nullptr; }
