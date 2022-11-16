@@ -1208,7 +1208,8 @@ namespace Wisteria::Data
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
-            @throws std::runtime_error If the file can't be read, throws an exception.\n
+            @throws std::runtime_error If the file can't be read or contains duplicate
+                column names, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportInfoFromPreview().*/

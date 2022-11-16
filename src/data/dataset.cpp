@@ -44,7 +44,8 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    void Dataset::MutateCategoricalColumn(const wxString& srcColumnName, const wxString& targetColumnName,
+    void Dataset::MutateCategoricalColumn(const wxString& srcColumnName,
+                                          const wxString& targetColumnName,
                                           const RegExMap& replacementMap)
         {
         if (replacementMap.empty())
@@ -203,7 +204,8 @@ namespace Wisteria::Data
             if (count < minVal)
                 {
                 auto foundPos = GetStringTable().find(id);
-                wxASSERT_MSG(foundPos != GetStringTable().cend(), L"Unable to find key in string table!");
+                wxASSERT_MSG(foundPos != GetStringTable().cend(),
+                             L"Unable to find key in string table!");
                 if (foundPos != GetStringTable().cend())
                     { foundPos->second = otherLabel; }
                 recodingNeeded = true;
@@ -566,7 +568,8 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    std::pair<double, double> Dataset::GetContinuousMinMax(const std::variant<wxString, size_t>& column,
+    std::pair<double, double> Dataset::GetContinuousMinMax(const std::variant<wxString,
+        size_t>& column,
         const std::optional<wxString>& groupColumn,
         const std::optional<GroupIdType> groupId) const
         {
@@ -854,9 +857,10 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath, const wchar_t delimiter,
-                                                       std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-                                                       size_t headerRowLine /*= 0*/)
+    Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
+        const wchar_t delimiter,
+        std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
+        size_t headerRowLine /*= 0*/)
         {
         wxString fileText;
         wxFile fl(filePath);
@@ -897,6 +901,20 @@ namespace Wisteria::Data
         size_t rowCount = std::min<size_t>(preview(fileText.wc_str(), delimiter, false, false, headerRowLine),
                                            rowPreviewCount.has_value() ?
                                                (rowPreviewCount.value() + 1/*header*/) : 100);
+
+        // see if there are any duplicate column names
+        std::set<wxString, StringCmpNoCase> colNames;
+        for (const auto& headerName : preview.get_header_names())
+            {
+            const auto [iter, inserted] = colNames.insert(headerName);
+            if (!inserted)
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': column name appears more than once in dataset."),
+                    *iter).ToUTF8());
+                }
+            }
+
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
@@ -1122,7 +1140,7 @@ namespace Wisteria::Data
         // from the client and map them as they requested
         const auto idColumnIter = std::find_if(preview.get_header_names().cbegin(),
             preview.get_header_names().cend(),
-            [&info](const auto& item) noexcept
+            [&info](const auto& item)
                 { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
         throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
         const std::optional<size_t> idColumnIndex =
@@ -1136,7 +1154,7 @@ namespace Wisteria::Data
             {
             const auto dateColumnIter = std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
-                [&dateColumn](const auto& item) noexcept
+                [&dateColumn](const auto& item)
                     { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
@@ -1153,7 +1171,7 @@ namespace Wisteria::Data
             {
             const auto catColumnIter = std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
-                [&catColumn](const auto& item) noexcept
+                [&catColumn](const auto& item)
                     { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
@@ -1170,7 +1188,7 @@ namespace Wisteria::Data
             {
             const auto continuousColumnIter = std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
-                [&continuousColumn](const auto& item) noexcept
+                [&continuousColumn](const auto& item)
                     { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(continuousColumn, continuousColumnIter, false);
             continuousColumnIndices.push_back(
