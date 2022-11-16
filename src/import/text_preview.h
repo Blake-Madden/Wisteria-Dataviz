@@ -53,7 +53,7 @@ namespace lily_of_the_valley
 
             lily_of_the_valley::text_column<text_column_to_eol_parser>
                 noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
-            lily_of_the_valley::text_row<wxString> noReadRowsStart;
+            lily_of_the_valley::text_row<std::wstring> noReadRowsStart;
             noReadRowsStart.add_column(noReadColumn);
             while (skipRows > 0)
                 {
