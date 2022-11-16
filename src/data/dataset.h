@@ -1189,7 +1189,7 @@ namespace Wisteria::Data
                 based on the values in another categorical column.
             @details This will use a map of regular expression patterns and corresponding
                 replacements, where each value in the source column is compared against
-                the regex patterns. When the first match is encounted, then the corresponding
+                the regex patterns. When the first match is encountered, then the corresponding
                 replacement will then be applied to the target column.\n
                 This is somewhat simple version of `mutate()` from R.
             @param srcColumnName The source column to compare against.

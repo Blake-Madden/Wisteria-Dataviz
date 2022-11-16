@@ -29,7 +29,7 @@ namespace Wisteria::GraphItems
     class GraphicsContextFallback
         {
     public:
-        /** @brief Gets the @c wxGraphicsContext to reneder to.
+        /** @brief Gets the @c wxGraphicsContext to render to.
             @param dc A pointer to the original @c wxDC that is being drawn to.
             @param rect The rectangle on the @c wxDC that is being drawn to.
             @returns The @c wxGraphicsContext to render to, or null upon failure.*/

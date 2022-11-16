@@ -165,7 +165,7 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
                                                      const bool centerImage);
         /** @brief Combines a list of images together, going from left-to-right.
-            @param images The images (a @c vetor of `wxImage`s or `wxBitmap`s) to stitch.
+            @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
             @returns The combined image.
             @sa StitchVertically().
             @code

@@ -294,25 +294,25 @@ namespace Wisteria
             const GraphItems::Label& labelTemplate);
 
         /// @brief Loads a color scheme from a node.
-        /// @param colorSchemeNode Tne node to parse.
+        /// @param colorSchemeNode The node to parse.
         /// @returns The loaded color scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Colors::Schemes::ColorScheme> LoadColorScheme(
             const wxSimpleJSON::Ptr_t& colorSchemeNode);
 
         /// @brief Loads a brush scheme from a node.
-        /// @param brushSchemeNode Tne node to parse.
+        /// @param brushSchemeNode The node to parse.
         /// @returns The loaded brush scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Brushes::Schemes::BrushScheme> LoadBrushScheme(
             const wxSimpleJSON::Ptr_t& brushSchemeNode);
 
         /// @brief Loads an icon scheme from a node.
-        /// @param iconSchemeNode Tne node to parse.
+        /// @param iconSchemeNode The node to parse.
         /// @returns The loaded icon scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> LoadIconScheme(
             const wxSimpleJSON::Ptr_t& iconSchemeNode);
 
         /// @brief Loads a line style scheme from a node.
-        /// @param lineStyleSchemeNode Tne node to parse.
+        /// @param lineStyleSchemeNode The node to parse.
         /// @returns The loaded line style scheme, or null upon failure.
         [[nodiscard]] std::shared_ptr<Wisteria::LineStyleScheme> LoadLineStyleScheme(
             const wxSimpleJSON::Ptr_t& lineStyleSchemeNode);
