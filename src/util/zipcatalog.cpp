@@ -105,7 +105,8 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
         { mappedTempFile.MapFile(tempFilePath, true, true); }
     catch (...)
         {
-        wxMessageBox(wxString::Format(_("Error reading extracted file from temp folder: %s"), path), 
+        wxMessageBox(wxString::Format(
+            _("Error reading extracted file from temp folder: %s"), path), 
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         return wxEmptyString;
         }
@@ -119,7 +120,8 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
         }
     else
         {
-        wxMessageBox(wxString::Format(_("Error reading extracted file from temp folder: %s"), path), 
+        wxMessageBox(wxString::Format(
+            _("Error reading extracted file from temp folder: %s"), path), 
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         wxRemoveFile(tempFilePath);
         return wxEmptyString;
@@ -147,7 +149,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
         { mappedTempFile.MapFile(charStreamTempFilePath, true, true); }
     catch (...)
         {
-        wxMessageBox(wxString::Format(_("Error reading extracted file from temp folder: %s"), path), 
+        wxMessageBox(wxString::Format(
+            _("Error reading extracted file from temp folder: %s"), path), 
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         return wxEmptyString;
         }
@@ -156,14 +159,18 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
         // temp file for the converted text into
         const wxString UnicodeTempFilePath = wxFileName::CreateTempFileName(
             wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() + L"RS");
-        // Dump the char* buffer a few times into it to make it big enough to hold the converted data.
+        // Dump the char* buffer a few times into it to make it big enough to
+        // hold the converted data.
             {
             wxFileOutputStream UnicodeTempFile(UnicodeTempFilePath);
             UnicodeTempFile.Write(
-                static_cast<const char*>(mappedTempFile.GetStream()), mappedTempFile.GetMapSize()).
-                Write(static_cast<const char*>(mappedTempFile.GetStream()), mappedTempFile.GetMapSize()).
-                Write(static_cast<const wchar_t*>(mappedTempFile.GetStream()), mappedTempFile.GetMapSize()).
-                Write(L"\0\0",sizeof(wchar_t)); // space for a null terminator
+                static_cast<const char*>(mappedTempFile.GetStream()),
+                                         mappedTempFile.GetMapSize()).
+                Write(static_cast<const char*>(mappedTempFile.GetStream()),
+                                               mappedTempFile.GetMapSize()).
+                Write(static_cast<const wchar_t*>(mappedTempFile.GetStream()),
+                                                  mappedTempFile.GetMapSize()).
+                Write(L"\0\0", sizeof(wchar_t)); // space for a null terminator
             }
         // convert the text directly into the unicode temp file
             {
@@ -172,7 +179,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
                 { mappedUnicodeFile.MapFile(UnicodeTempFilePath, false, true); }
             catch (...)
                 {
-                wxMessageBox(wxString::Format(_("Error reading extracted file from temp folder: %s"), path), 
+                wxMessageBox(wxString::Format(
+                    _("Error reading extracted file from temp folder: %s"), path), 
                     _("Read Error"), wxOK|wxICON_EXCLAMATION);
                 return wxEmptyString;
                 }
@@ -202,7 +210,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
         }
     else
         {
-        wxMessageBox(wxString::Format(_("Error reading extracted file from temp folder: %s"), path), 
+        wxMessageBox(wxString::Format(
+            _("Error reading extracted file from temp folder: %s"), path), 
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         wxRemoveFile(charStreamTempFilePath);
         return wxEmptyString;
@@ -266,7 +275,8 @@ void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, con
     wxCharBuffer fileTextConvertedBuffer = text.mb_str(wxConvUTF8);
     zip.Write(lily_of_the_valley::unicode_extract_text::get_bom_utf8(),
               std::strlen(lily_of_the_valley::unicode_extract_text::get_bom_utf8()));
-    wxASSERT_LEVEL_2(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()));
+    wxASSERT_MSG(fileTextConvertedBuffer.length() == std::strlen(fileTextConvertedBuffer.data()),
+        L"Invalid buffer size when writing from ZipCatalog!");
     zip.Write(fileTextConvertedBuffer.data(), fileTextConvertedBuffer.length());
     txt.Close();
     }
