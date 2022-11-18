@@ -200,12 +200,11 @@ namespace Wisteria
             { return wxEmptyString; }
 
         // length plus null terminator would be enough, but doesn't hurt have a little extra room
-        const size_t destLength = (length*1.5)+1;
-        wchar_t* dest = new wchar_t[destLength];
-        std::unique_ptr<wchar_t> bufferDeleter(dest);
+        const size_t destLength = (length*1.5) + 1;
+        auto dest = std::make_unique<wchar_t[]>(destLength);
 
-        return (CharStreamToUnicode(dest, destLength, text, length, srcCharSet)) ? 
-            wxString(dest) :
+        return (CharStreamToUnicode(dest.get(), destLength, text, length, srcCharSet)) ? 
+            wxString(dest.get()) :
             wxString(wxEmptyString);
         }
 

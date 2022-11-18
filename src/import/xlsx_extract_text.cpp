@@ -368,7 +368,7 @@ namespace lily_of_the_valley
         if (cell_name == nullptr)
             { return std::pair<column_info,size_t>(column_info(), column_info::invalid_position); }
         std::pair<size_t,size_t> cellInfo = split_column_info(cell_name);
-        if (cellInfo.first == -1)
+        if (cellInfo.first == text_cell::invalid_index)
             { return std::pair<column_info,size_t>(column_info(), column_info::invalid_position); }
 
         column_info cinfo(0);
@@ -457,7 +457,7 @@ namespace lily_of_the_valley
         {
         assert(cell_name);
         size_t numStart = string_util::find_last_not_of(cell_name, L"0123456789");
-        if (numStart == -1 || cell_name[numStart] == 0 || cell_name[numStart+1] == 0)
+        if (numStart == std::wstring::npos || cell_name[numStart] == 0 || cell_name[numStart+1] == 0)
             { return std::make_pair(-1, 0); }
         const size_t row = string_util::atol(cell_name+(++numStart));
         if (row == 0)

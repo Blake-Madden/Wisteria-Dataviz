@@ -100,7 +100,7 @@ namespace lily_of_the_valley
                 m_owns_buffer = true;
                 try
                     { m_text_buffer = new wchar_t[text_length+1]; }
-                catch (std::bad_alloc)
+                catch (const std::bad_alloc&)
                     {
                     log_message(L"Unable to allocate memory for extracting text from file.");
                     m_text_buffer_size = m_filtered_text_length = 0;

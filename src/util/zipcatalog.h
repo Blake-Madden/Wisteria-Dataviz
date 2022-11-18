@@ -52,7 +52,7 @@ namespace Wisteria
         ZipCatalog(const void* data, size_t len);
         /** @brief Constructor.
             @param zipFilePath The path to the ZIP file to open.*/
-        ZipCatalog(const wxString& zipFilePath);
+        explicit ZipCatalog(const wxString& zipFilePath);
         /// @private
         ZipCatalog(const ZipCatalog&) = delete;
         /// @private

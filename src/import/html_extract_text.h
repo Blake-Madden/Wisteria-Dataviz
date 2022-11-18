@@ -254,7 +254,7 @@ namespace html_utilities
     public:
         /** @brief Constructor, which accepts the base URL to format any relative links with.
             @param root_url The base directory to format the URLs to.*/
-        html_url_format(const wchar_t* root_url);
+        explicit html_url_format(const wchar_t* root_url);
         /** @brief Main interface.
             @param path The filepath to format.
             @param text_length The length of the filepath.

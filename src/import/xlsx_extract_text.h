@@ -12,6 +12,7 @@
 #ifndef __XLSX_TEXT_EXTRACT_H__
 #define __XLSX_TEXT_EXTRACT_H__
 
+#include <cmath>
 #include <vector>
 #include <sstream>
 #include "html_extract_text.h"

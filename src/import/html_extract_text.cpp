@@ -41,7 +41,7 @@ namespace lily_of_the_valley
             const bool allowQuotedTags,
             const bool allowSpacesInValue /*= false*/)
         {
-        if (!text || !attribute || attribute == 0)
+        if (!text || !attribute || *attribute == 0)
             { return L""; }
         assert((std::wcslen(attribute) == attributeSize) &&
                "Invalid length passed to read_tag_as_string().");
@@ -122,12 +122,12 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     void html_extract_text::parse_raw_text(const wchar_t* text, size_t textSize)
         {
-        size_t currentStartPosition = 0;
         if (textSize > 0)
             {
+            size_t currentStartPosition{ 0 };
             while (textSize > 0)
                 {
-                size_t index = 0;
+                size_t index{ 0 };
                 // if preformatted then just look for ampersands or template placeholders
                 if (m_is_in_preformatted_text_block_stack > 0)
                     { index = string_util::strncspn<wchar_t>(text+currentStartPosition, textSize, L"&$", 2); }
@@ -421,7 +421,7 @@ namespace lily_of_the_valley
             if (!contentType || !nextAngleSymbol)
                 { return charset; }
             const char* contentStart = string_util::strnistr(start, " content=", (end-start));
-            if (!contentStart || !nextAngleSymbol)
+            if (!contentStart)
                 { return charset; }
             // if the content-type and content= are inside of this meta tag then
             // it's legit, so move to it and stop looking
@@ -1047,7 +1047,7 @@ namespace lily_of_the_valley
                         const auto attrib = read_attribute_as_string(start+1, L"class", 5, false, false);
                         if (attrib.length())
                             {
-                            if (attrib.find(L"BookBanner") != -1 ||
+                            if (attrib.find(L"BookBanner") != std::wstring::npos ||
                                 attrib == L"os-caption")
                                 {
                                 add_character(L'\n');
@@ -1055,7 +1055,7 @@ namespace lily_of_the_valley
                                 }
                             else if (attrib == L"os-term-section")
                                 { add_character(L'\t'); }
-                            else if (attrib.find(L"hidden") != -1)
+                            else if (attrib.find(L"hidden") != std::wstring::npos)
                                 {
                                 auto spanEnd = find_closing_element(start, endSentinel, L"span", 4);
                                 if (spanEnd)
@@ -2008,8 +2008,6 @@ namespace html_utilities
                 m_current_hyperlink_length = m_javascript_hyperlink_parse.get_current_hyperlink_length();
                 return currentLink;
                 }
-            else
-                { m_inside_of_script_section = false; }
             }
         // reset everything
         m_current_hyperlink_length = 0;

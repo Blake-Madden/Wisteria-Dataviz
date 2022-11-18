@@ -88,8 +88,8 @@ bool ZipCatalog::ReadFile(const wxString& path, wxOutputStream& memstream) const
 wxString ZipCatalog::ReadTextFile(const wxString& path) const
     {
     // unzip the file into a temp file...
-    const wxString tempFilePath = wxFileName::CreateTempFileName(wxStandardPaths::Get().GetTempDir() +
-        wxFileName::GetPathSeparator() + L"RS");
+    const wxString tempFilePath = wxFileName::CreateTempFileName(
+        wxStandardPaths::Get().GetTempDir() + wxFileName::GetPathSeparator() + L"RS");
     wxFileOutputStream tempFile(tempFilePath);
     if (!ReadFile(path, tempFile))
         {
@@ -121,7 +121,7 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
     else
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path), 
+            _("Error reading extracted file from temp folder: %s"), path),
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         wxRemoveFile(tempFilePath);
         return wxEmptyString;
@@ -150,7 +150,7 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     catch (...)
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path), 
+            _("Error reading extracted file from temp folder: %s"), path),
             _("Read Error"), wxOK|wxICON_EXCLAMATION);
         return wxEmptyString;
         }
@@ -180,7 +180,7 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
             catch (...)
                 {
                 wxMessageBox(wxString::Format(
-                    _("Error reading extracted file from temp folder: %s"), path), 
+                    _("Error reading extracted file from temp folder: %s"), path),
                     _("Read Error"), wxOK|wxICON_EXCLAMATION);
                 return wxEmptyString;
                 }
@@ -248,10 +248,10 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
     for (;;)
         {
         const size_t bytes_read = stream_in->Read(buf.get(), bufferSize).LastRead();
-        if ( !bytes_read )
+        if (!bytes_read)
             break;
 
-        if ( stream_out.Write(buf.get(), bytes_read).LastWrite() != bytes_read )
+        if (stream_out.Write(buf.get(), bytes_read).LastWrite() != bytes_read)
             break;
         }
     if (stream_out.GetLength() == 0 && !m_readErrorShown)

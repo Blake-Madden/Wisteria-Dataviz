@@ -660,10 +660,11 @@ namespace string_util
         else if (first && !second)
             { return 1; }
 
-        int f(0), l(0), result(0);
+        int result{ 0 };
 
         if (charCount > 0)
             {
+            int f{ 0 }, l{ 0 };
             do
                 {
                 f = string_util::tolower(*(first++) );
@@ -979,17 +980,17 @@ namespace string_util
         @param searchSeqLength The length of the search sequence.
         @returns A pointer to where the character was found, or null if not found.*/
     template<typename T>
-    [[nodiscard]] const T* strcspn_pointer(const T* stringToSearch, const T* searchSequence, const size_t searchSeqLength) noexcept
+    [[nodiscard]] const T* strcspn_pointer(const T* stringToSearch, const T* searchSequence,
+                                           const size_t searchSeqLength) noexcept
         {
         if (!stringToSearch || !searchSequence || searchSeqLength == 0)
             { return nullptr; }
         assert((string_util::strlen(searchSequence) == searchSeqLength) && "Invalid length passed to strcspn_pointer().");
-        size_t i = 0;
         while (stringToSearch)
             {
             if (stringToSearch[0] == 0)
                 { return nullptr; }
-            for (i = 0; i < searchSeqLength; ++i)
+            for (size_t i = 0; i < searchSeqLength; ++i)
                 {
                 if (stringToSearch[0] == searchSequence[i])
                     { return stringToSearch; }
@@ -1012,7 +1013,7 @@ namespace string_util
         if (!stringToSearch || !searchString || stringToSearchLength == 0 || searchStringLength == 0)
             { return stringToSearchLength; }
         assert((string_util::strlen(searchString) == searchStringLength) && "Invalid length passed to strncspn().");
-        size_t i = 0, j = 0;
+        size_t i{ 0 };
         for (i = 0; i < stringToSearchLength; ++i)
             {
             /* If string being searched is shorter than the size argument then fail.
@@ -1021,7 +1022,7 @@ namespace string_util
                be a null terminator.*/
             if (stringToSearch[i] == 0)
                 { return stringToSearchLength; }
-            for (j = 0; j < searchStringLength; ++j)
+            for (size_t j = 0; j < searchStringLength; ++j)
                 {
                 if (stringToSearch[i] == searchString[j])
                     { return i; }
@@ -1033,11 +1034,13 @@ namespace string_util
     /** @brief Searches for a single character not from a sequence in a string in reverse.
         @param string The string to search in.
         @param search The sequence of characters to skip.
-        @param offset Where to begin the search. If -1, then the reverse search will begin at the end of the string.
-        @returns The position of where the last non-matching character is at, or -1 if it can't be found.*/
+        @param offset Where to begin the search. If @c -1, then the reverse search will
+            begin at the end of the string.
+        @returns The position of where the last non-matching character is at,
+            or @c -1 if it can't be found.*/
     template<typename T>
     [[nodiscard]] size_t find_last_not_of(const T* string, const T* search,
-                    size_t offset = std::basic_string<T>::npos) noexcept
+                                          size_t offset = std::basic_string<T>::npos) noexcept
         {
         if (!string || !search)
             { return std::basic_string<T>::npos; }
@@ -1076,7 +1079,7 @@ namespace string_util
         @param ch The character to search for.
         @param offset The offset in the string to begin the search from.
             The default (@c -1) will begin the search at the end of the string.
-        @returns The offset of the found character, or -1 if not found.*/
+        @returns The offset of the found character, or @c -1 if not found.*/
     template<typename T>
     [[nodiscard]] size_t find_last_of(const T* string,
                     const T ch,
@@ -1124,7 +1127,7 @@ namespace string_util
             }
         assert(offset < string_util::strlen(string));
 
-        size_t i=0;
+        size_t i{ 0 };
         while (offset != std::basic_string<T>::npos)
             {
             for (i = 0; search[i] != 0; ++i)
@@ -1276,8 +1279,9 @@ namespace string_util
     public:
         /// @brief Constructor.
         /// @param key The value to compare against.
-        equal_basic_string_i_compare_map(const TKey& key) noexcept
-            { m_key = key; }
+        explicit equal_basic_string_i_compare_map(const TKey& key) noexcept :
+            m_key(key)
+            {}
         /// @returns @c true if initial value is the same the pair's key.
         /// @param val The pair to compare against.
         [[nodiscard]] bool operator()(const std::pair<TKey,TVal>& val) const noexcept
@@ -1299,7 +1303,8 @@ namespace string_util
     class less_string_n_compare
         {
     public:
-        less_string_n_compare(size_t comparison_size) : m_comparison_size(comparison_size) {}
+        explicit less_string_n_compare(size_t comparison_size) :
+            m_comparison_size(comparison_size) {}
         [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::strncmp(a_, b_, m_comparison_size) < 0); }
     private:
@@ -1310,7 +1315,8 @@ namespace string_util
     class less_string_ni_compare
         {
     public:
-        less_string_ni_compare(size_t comparison_size) : m_comparison_size(comparison_size) {}
+        explicit less_string_ni_compare(size_t comparison_size) :
+            m_comparison_size(comparison_size) {}
         [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::strnicmp(a_, b_, m_comparison_size) < 0); }
     private:
@@ -1369,7 +1375,7 @@ namespace string_util
         if (!buffer || buffSize == 0)
             { return false; }
 
-        size_t spaceCount{0};
+        size_t spaceCount{ 0 };
 
         // go up to last 2 characters to determine what we are looking at
         for (size_t i = 0; i < buffSize-1; ++i)
@@ -1450,8 +1456,26 @@ namespace string_util
     void trim_punct(string_typeT& str)
         { ltrim_punct(str); rtrim_punct(str); }
 
-    /** @brief Tokenizes a string using a set of delimiters.
-        @date 2010.*/
+    /** @brief Determines if a character is one of a list of characters.
+        @param character The character to review.
+        @param char_string The list of characters to compare against.
+        @returns @c true if the character of one of the list of characters.*/
+    template<typename Tchar_type>
+    [[nodiscard]] constexpr bool is_one_of(const Tchar_type character,
+                                           const Tchar_type* char_string) noexcept
+        {
+        if (char_string == nullptr)
+            { return false; }
+        while (*char_string)
+            {
+            if (character == char_string[0])
+                { return true; }
+            ++char_string;
+            }
+        return false;
+        }
+
+    /** @brief Tokenizes a string using a set of delimiters.*/
     template<typename T>
     class string_tokenize
         {
@@ -1460,7 +1484,7 @@ namespace string_util
         /// @param val The string to parse.
         /// @param delims The set of delimiters to separate the string.
         /// @param skipEmptyTokens @c true to skip empty tokens (i.e., ignoring consecutive delimiters).
-        string_tokenize(const T& val, const std::wstring delims, const bool skipEmptyTokens) noexcept :
+        string_tokenize(const T& val, const std::wstring& delims, const bool skipEmptyTokens) noexcept :
             m_value(val), m_delims(delims), m_skip_empty_tokens(skipEmptyTokens)
             {
             m_start = m_value.c_str();
@@ -1753,25 +1777,6 @@ namespace string_util
             const double d2 = std::wcstod(++separator, endptr);
             return (d1+d2) / static_cast<double>(2);
             }
-        }
-
-    /** @brief Determines if a character is one of a list of characters.
-        @param character The character to review.
-        @param char_string The list of characters to compare against.
-        @returns @c true if the character of one of the list of characters.*/
-    template<typename Tchar_type>
-    [[nodiscard]] constexpr bool is_one_of(const Tchar_type character,
-                                           const Tchar_type* char_string) noexcept
-        {
-        if (char_string == nullptr)
-            { return false; }
-        while (*char_string)
-            {
-            if (character == char_string[0])
-                { return true; }
-            ++char_string;
-            }
-        return false;
         }
 
     /** @brief Converts a full-width number/English letter/various symbols into its "narrow" counterpart.
