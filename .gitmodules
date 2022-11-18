@@ -10,3 +10,6 @@
 [submodule "src/CRCpp"]
 	path = src/CRCpp
 	url = https://github.com/d-bahr/CRCpp.git
+[submodule "src/utfcpp"]
+	path = src/utfcpp
+	url = https://github.com/nemtrif/utfcpp.git
