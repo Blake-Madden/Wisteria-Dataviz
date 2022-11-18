@@ -425,7 +425,7 @@ namespace Wisteria::Graphs
                 (The image will be repeated every 90 degrees.)\n
                 \n
                 Finally, images and solid colors can be mixed and matched by using an image scheme
-                with invalid images (i.e., @c wxNullBitmap). When an null bitmap is encountered in
+                with invalid images (i.e., @c wxNullBitmap). When a null bitmap is encountered in
                 an image scheme, then the respective slice will fall back to using the brush and
                 color schemes.
             @sa SetImageScheme().*/

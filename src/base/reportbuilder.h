@@ -166,7 +166,7 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadProConRoadmap(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
-        /// @brief Loads a gannt chart node into the canvas.
+        /// @brief Loads a gantt chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
