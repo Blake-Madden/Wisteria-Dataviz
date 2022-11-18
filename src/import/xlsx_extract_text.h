@@ -65,7 +65,7 @@ namespace lily_of_the_valley
             text_cell() noexcept : m_column_position(invalid_index), m_row_position(invalid_index), m_string_table_index(invalid_index) {}
             /// @brief Constructor that accepts the @c of the cell. @sa set_name().
             /// @param name The name for the cell (e.g., "D7").
-            text_cell(const std::wstring& name) :
+            explicit text_cell(const std::wstring& name) :
                 m_column_position(invalid_index), m_row_position(invalid_index), m_string_table_index(invalid_index)
                 { set_name(name); }
             /** @brief Constructor.
@@ -135,8 +135,10 @@ namespace lily_of_the_valley
         struct column_info
             {
             static constexpr size_t invalid_position = static_cast<size_t>(-1);
-            column_info() noexcept : m_position(invalid_position) {}
-            column_info(size_t position) noexcept : m_position(position) {}
+            column_info() = default;
+            explicit column_info(size_t position) noexcept :
+                m_position(position)
+                {}
             size_t m_position{ invalid_position };
             };
 

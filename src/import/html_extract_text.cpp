@@ -530,7 +530,7 @@ namespace lily_of_the_valley
                     { break; }
                 }
             // if the substring loop completed then the substring was found.            
-            if (i == strSearchSize && string+strSearchSize <= endSentinel)
+            if (i == strSearchSize)
                 {
                 // make sure we aren't inside of quotes--if so, we need to skip it.
                 if (!is_inside_of_quotes)
@@ -1024,7 +1024,7 @@ namespace lily_of_the_valley
                     // links that would usually be its own line
                         {
                         const auto attrib = read_attribute_as_string(start+1, L"class", 5, false, false);
-                        if (attrib.find(L"FooterLink") != -1)
+                        if (attrib.find(L"FooterLink") != std::wstring::npos)
                             {
                             add_character(L'\n');
                             add_character(L'\n');

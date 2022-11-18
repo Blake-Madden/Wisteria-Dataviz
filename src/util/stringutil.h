@@ -1053,7 +1053,7 @@ namespace string_util
             }
         assert(offset < string_util::strlen(string));
 
-        size_t i=0;
+        size_t i{ 0 }; // cppcheck-suppress unreadVariable
         while (offset != std::basic_string<T>::npos)
             {
             for (i = 0; search[i] != 0; ++i)
@@ -1127,7 +1127,7 @@ namespace string_util
             }
         assert(offset < string_util::strlen(string));
 
-        size_t i{ 0 };
+        size_t i{ 0 }; // cppcheck-suppress unreadVariable
         while (offset != std::basic_string<T>::npos)
             {
             for (i = 0; search[i] != 0; ++i)
@@ -1162,7 +1162,8 @@ namespace string_util
         {
         if (!stringToSearch || !searchString || stringToSearchLength == 0 || searchStringLength == 0)
             { return stringToSearchLength; }
-        size_t i = 0, j = 0;
+
+        size_t i{ 0 }, j{ 0 }; // cppcheck-suppress unreadVariable
         for (i = 0; i < stringToSearchLength; ++i)
             {
             /* If string being searched is shorter than the size argument then return string
