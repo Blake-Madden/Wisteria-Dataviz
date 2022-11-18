@@ -21,8 +21,8 @@ namespace Wisteria
         // skip BOM before reading text
         if (std::memcmp(text, utf8::bom, sizeof(utf8::bom)) == 0)
             {
-            text += WXSIZEOF(utf8::bom);
-            length -= WXSIZEOF(utf8::bom);
+            text += sizeof(utf8::bom);
+            length -= sizeof(utf8::bom);
             }
         const char* startOfCurrentSequence = text;
         const char* invalidSequence = text;
@@ -96,7 +96,7 @@ namespace Wisteria
             {
             convertUnicodeText.set_writable_buffer(dest,destLength);
             convertUnicodeText(text, length, wxIsPlatformLittleEndian());
-            return true;//already null terminated, so we're done, return from here.
+            return true; // already null terminated, so we're done, return from here.
             }
         // if UTF-8 (or simply 7-bit ANSI)
         else if (utf8::is_valid(text, text + length))
@@ -104,7 +104,7 @@ namespace Wisteria
             if (length >= 3 && utf8::starts_with_bom(text, text + length))
                 {
                 conversionResult = wxConvUTF8.ToWChar(dest, destLength,
-                    text + WXSIZEOF(utf8::bom)/*skip BOM*/, length - WXSIZEOF(utf8::bom));
+                    text + sizeof(utf8::bom)/*skip BOM*/, length - sizeof(utf8::bom));
                 }
             else
                 { conversionResult = wxConvUTF8.ToWChar(dest, destLength, text, length); }
@@ -127,8 +127,8 @@ namespace Wisteria
                     std::memcmp(text, utf8::bom, sizeof(utf8::bom)) == 0)
                     {
                     conversionResult = wxConvUTF8.ToWChar(dest, destLength,
-                                        text + WXSIZEOF(utf8::bom)/*skip BOM*/,
-                                        length - WXSIZEOF(utf8::bom));
+                                        text + sizeof(utf8::bom)/*skip BOM*/,
+                                        length - sizeof(utf8::bom));
                     if (conversionResult == wxCONV_FAILED)
                         { return FixBrokenUtf8Stream(dest, destLength, text, length); }
                     }
@@ -169,7 +169,8 @@ namespace Wisteria
                         if (conversionResult == wxCONV_FAILED)
                             {
                             conversionResult =
-                                wxCSConv(wxFONTENCODING_CP1252).ToWChar(dest, destLength, text, length);
+                                wxCSConv(wxFONTENCODING_CP1252).
+                                    ToWChar(dest, destLength, text, length);
                             }
                         }
                     }
@@ -203,7 +204,8 @@ namespace Wisteria
         wchar_t* dest = new wchar_t[destLength];
         std::unique_ptr<wchar_t> bufferDeleter(dest);
 
-        return (CharStreamToUnicode(dest, destLength, text, length, srcCharSet)) ? wxString(dest) :
+        return (CharStreamToUnicode(dest, destLength, text, length, srcCharSet)) ? 
+            wxString(dest) :
             wxString(wxEmptyString);
         }
 
@@ -241,7 +243,8 @@ namespace Wisteria
         try
             {
             file.MapFile(filePath);
-            textBuffer = TextStream::CharStreamToUnicode(static_cast<const char*>(file.GetStream()),
+            textBuffer = TextStream::CharStreamToUnicode(
+                                static_cast<const char*>(file.GetStream()),
                                 file.GetMapSize(), srcCharSet);
             if (textBuffer.IsEmpty())
                 {
