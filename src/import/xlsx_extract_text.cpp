@@ -330,7 +330,7 @@ namespace lily_of_the_valley
             {
             for (size_t columnCounter = 0; columnCounter < data[rowCounter].size(); ++columnCounter)
                 {
-                if (string_util::itoa(rowCounter+1, cellNumber, 24) == -1)
+                if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
                     { return std::make_pair(false,L"unable to format row number."); }
                 const text_cell currentCell(column_index_to_column_name(columnCounter+1) + cellNumber);
                 const cell_row::const_iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
@@ -409,7 +409,7 @@ namespace lily_of_the_valley
         // If we have jagged data, then try to fill in the blanks.
         if (isJagged)
             {
-            wchar_t cellNumber[24] {};
+            wchar_t cellNumber[24]{ 0 };
             for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
                 {
                 // Missing some cells in the row?
@@ -418,7 +418,7 @@ namespace lily_of_the_valley
                     {
                     for (size_t columnCounter = 0; columnCounter < largestRow; ++columnCounter)
                         {
-                        if (string_util::itoa(rowCounter+1, cellNumber, 24) == -1)
+                        if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
                             { continue; }
                         const text_cell currentCell(column_index_to_column_name(columnCounter+1)+cellNumber);
                         const cell_row::iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);

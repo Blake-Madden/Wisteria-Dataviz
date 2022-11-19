@@ -111,8 +111,8 @@ namespace lily_of_the_valley
             /// @returns The name of the cell (e.g., "D7").
             [[nodiscard]] std::wstring get_name() const
                 {
-                wchar_t cellNumber[24];
-                if (string_util::itoa(m_row_position, cellNumber, 24) == -1)
+                wchar_t cellNumber[24]{ 0 };
+                if (string_util::itoa(static_cast<long>(m_row_position), cellNumber, 24) == -1)
                     { return L""; }
                 return column_index_to_column_name(m_column_position)+cellNumber;
                 }
