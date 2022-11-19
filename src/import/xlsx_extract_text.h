@@ -53,11 +53,11 @@ namespace lily_of_the_valley
         {
     public:
         /// The maximum number of rows an Excel file can have
-        /// (Excel 2013 specs, http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HA103980614.aspx).
-        static constexpr size_t ExcelMaxRows = 1024 * 1024;
+        /// (Excel 2021 specs, https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3).
+        static constexpr size_t ExcelMaxRows = 1'048'576; // 1024 * 1024;
         /// The maximum number of columns an Excel file can have
-        /// (Excel 2013 specs, http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HA103980614.aspx).
-        static constexpr size_t ExcelMaxColumns = 1024 * 16;
+        /// (Excel 2021 specs, https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3).
+        static constexpr size_t ExcelMaxColumns = 16'384; // 1024 * 16;
         /// A cell in an Excel file, which stores the position of the cell and
         ///     if a string then index into the Excel file's string table
         ///     (which would be invalid_index [-1] if a numeric value).
