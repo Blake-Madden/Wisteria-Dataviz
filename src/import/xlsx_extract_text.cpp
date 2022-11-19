@@ -237,7 +237,7 @@ namespace lily_of_the_valley
 
         worksheet_row cRow;
         worksheet_cell currentCell;
-        std::wstring valueIndex;
+        std::wstring valueStr;
         std::pair<const wchar_t*, size_t> typeTag;
         while ((html_text =
                 html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
@@ -262,27 +262,38 @@ namespace lily_of_the_valley
                     html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
                 if (cellEnd)
                     {
-                    typeTag = html_extract_text::read_attribute(html_text, L"t", 1, false, false);
-                    if (typeTag.second == 1 && *typeTag.first == L's')
+                    const wchar_t* valueTag =
+                        html_extract_text::find_element(html_text, cellEnd, L"v", 1);
+                    if (valueTag &&
+                        (valueTag = html_extract_text::find_close_tag(valueTag)) != nullptr)
                         {
-                        const wchar_t* value =
-                            html_extract_text::find_element(html_text, cellEnd, L"v", 1);
-                        if (value &&
-                            (value = html_extract_text::find_close_tag(value)) != nullptr)
+                        const wchar_t* const valueEnd =
+                            html_extract_text::find_closing_element(++valueTag, cellEnd, L"v", 1);
+                        if (valueEnd)
                             {
-                            const wchar_t* const valueEnd =
-                                html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
-                            if (valueEnd)
+                            valueStr.assign(valueTag, valueEnd-valueTag);
+                            // read a value
+                            if (valueStr.length())
                                 {
-                                valueIndex.assign(value, valueEnd-value);
-                                if (valueIndex.length())
+                                typeTag =
+                                    html_extract_text::read_attribute(html_text, L"t", 1,
+                                                                      false, false);
+                                // if a string, convert the value
+                                // (which is an index into the string table)
+                                if (typeTag.second == 1 && *typeTag.first == L's')
                                     {
                                     const int stringTableIndex =
-                                        string_util::atoi(valueIndex.c_str());
+                                        string_util::atoi(valueStr.c_str());
                                     if (stringTableIndex >= 0 &&
-                                        static_cast<size_t>(stringTableIndex) < get_shared_strings().size())
-                                        { currentCell.set_value(get_shared_string(stringTableIndex)); }
+                                        static_cast<size_t>(stringTableIndex) <
+                                            get_shared_strings().size())
+                                        {
+                                        currentCell.set_value(get_shared_string(stringTableIndex));
+                                        }
                                     }
+                                // just a value, so read that as-is
+                                else
+                                    { currentCell.set_value(valueStr); }
                                 }
                             }
                         }
