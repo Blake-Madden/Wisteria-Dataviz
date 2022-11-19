@@ -11,6 +11,67 @@
 namespace lily_of_the_valley
     {
     //------------------------------------------------------------------
+    int xlsx_extract_text::dmy_to_excel_serial_date(int nDay, int nMonth, int nYear)
+        {
+        // Excel/Lotus 123 have a bug with 29-02-1900. 1900 is not a
+        // leap year, but Excel/Lotus 123 think it is...
+        if (nDay == 29 && nMonth == 02 && nYear == 1900)
+            { return 60; }
+
+        // DMY to Modified Julian calculated with an extra subtraction of 2,415,019.
+        auto nSerialDate = 
+                int(( 1'461 * ( nYear + 4'800 + int(( nMonth - 14 ) / 12) ) ) / 4) +
+                int(( 367 * ( nMonth - 2 - 12 * ( ( nMonth - 14 ) / 12 ) ) ) / 12) -
+                int(( 3 * ( int(( nYear + 4'900 + int(( nMonth - 14 ) / 12) ) / 100) ) ) / 4) +
+                nDay - 2'415'019 - 32'075;
+
+        if (nSerialDate < 60)
+            {
+            // Because of the 29-02-1900 bug, any serial date 
+            // under 60 is one off... Compensate.
+            --nSerialDate;
+            }
+
+        return nSerialDate;
+        }
+
+    //------------------------------------------------------------------
+    void xlsx_extract_text::excel_serial_date_to_dmy(int nSerialDate, int &nDay,
+                                                     int &nMonth, int &nYear)
+        {
+        nDay = nMonth = nYear = 0;
+
+        // Excel/Lotus 123 have a bug with 29-02-1900. 1900 is not a
+        // leap year, but Excel/Lotus 123 think it is...
+        if (nSerialDate == 60)
+            {
+            nDay = 29;
+            nMonth = 2;
+            nYear = 1900;
+
+            return;
+            }
+        else if (nSerialDate < 60)
+            {
+            // Because of the 29-02-1900 bug, any serial date 
+            // under 60 is one off... Compensate.
+            ++nSerialDate;
+            }
+
+        // Modified Julian to DMY calculation with an addition of 2,415,019
+        auto l = nSerialDate + 68'569 + 2'415'019;
+        auto n = int(( 4 * l ) / 146'097);
+                l = l - int(( 146'097 * n + 3 ) / 4);
+        auto i = int(( 4'000 * ( l + 1 ) ) / 1'461'001);
+            l = l - int(( 1'461 * i ) / 4) + 31;
+        auto j = int(( 80 * l ) / 2'447);
+            nDay = l - int(( 2'447 * j ) / 80);
+            l = int(j / 11);
+            nMonth = j + 2 - ( 12 * l );
+        nYear = 100 * ( n - 49 ) + i + l;
+        }
+
+    //------------------------------------------------------------------
     const std::pair<bool,std::wstring> xlsx_string_table_parse::operator()()
         {
         if (!m_html_text || m_html_text[0] == 0)
@@ -239,6 +300,7 @@ namespace lily_of_the_valley
         worksheet_cell currentCell;
         std::wstring valueStr;
         std::pair<const wchar_t*, size_t> typeTag;
+        std::pair<const wchar_t*, size_t> formatTag;
         while ((html_text =
                 html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
             {
@@ -278,6 +340,9 @@ namespace lily_of_the_valley
                                 typeTag =
                                     html_extract_text::read_attribute(html_text, L"t", 1,
                                                                       false, false);
+                                formatTag =
+                                    html_extract_text::read_attribute(html_text, L"s", 1,
+                                                                      false, false);
                                 // if a string, convert the value
                                 // (which is an index into the string table)
                                 if (typeTag.second == 1 && *typeTag.first == L's')
@@ -290,6 +355,17 @@ namespace lily_of_the_valley
                                         {
                                         currentCell.set_value(get_shared_string(stringTableIndex));
                                         }
+                                    }
+                                // a date (convert to YYYY-MM-DD)
+                                else if (formatTag.second == 1 && *formatTag.first == L'1')
+                                    {
+                                    const auto serialDate = string_util::atol(valueStr.c_str());
+                                    int day, month, year;
+                                    excel_serial_date_to_dmy(serialDate, day, month, year);
+                                    currentCell.set_value(
+                                        std::to_wstring(year) + L"-" +
+                                        std::to_wstring(month) + L"-" +
+                                        std::to_wstring(day));
                                     }
                                 // just a value, so read that as-is
                                 else

@@ -238,6 +238,27 @@ namespace lily_of_the_valley
         [[nodiscard]] const std::vector<std::wstring>& get_worksheet_names() const noexcept
             { return m_worksheet_names; }
 
+        /** @brief Converts an Excel serial date to day, month, and year values.
+            @param nSerialDate The serial date to split into DMY components.
+            @param[out] nDay The day from the serial value.
+            @param[out] nMonth The month from the serial value.
+            @param[out] nYear The year from the serial value.
+            @details Source:
+            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa
+            @todo Add unit test.*/
+        static void excel_serial_date_to_dmy(int nSerialDate, int &nDay, 
+                                             int &nMonth, int &nYear);
+
+        /** @brief Converts day, month, and year values into an Excel serial date.
+            @returns The date converted into an Excel serial date.
+            @param nDay The day.
+            @param nMonth The month.
+            @param nYear The year.
+            @details Source:
+            https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa
+            @todo Add unit test.*/
+        [[nodiscard]] static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
+
         /** @returns The string from the specified index.
                 This assumes that the string table has already been
                 loaded via read_shared_strings().
