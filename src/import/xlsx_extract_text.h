@@ -157,9 +157,9 @@ namespace lily_of_the_valley
             };
 
         /// A row of cells.
-        using cell_row = std::vector<worksheet_cell>;
+        using worksheet_row = std::vector<worksheet_cell>;
         /// A matrix of cells (i.e., a table or worksheet).
-        using worksheet = std::vector<cell_row>;
+        using worksheet = std::vector<worksheet_row>;
         /// The table which stores the unique strings throughout the Excel file.
         using string_table = std::vector<std::wstring> ;
 
@@ -191,13 +191,32 @@ namespace lily_of_the_valley
             @param cells Where to save the list of cells (by name) that have textual content.*/
         static void get_text_cell_names(const worksheet& wrk, std::vector<std::wstring>& cells);
 
+        /** @brief Gets the number of cells in a worksheet.
+            @param wrk The worksheet to review.
+            @returns The number of cells in the worksheet.*/
+        [[nodiscard]] static size_t get_cell_count(const worksheet& wrk)
+            {
+            return (wrk.size() > 0) ?
+                wrk.size() /* row count*/ * wrk[0].size() /* column count of first row*/ :
+                0;
+            }
+
+        /** @brief Gets the worksheet as delimited text.
+            @param wrk The worksheet to format.
+            @param delim The delimiter to separate the columns with.
+            @returns The worksheet as delimited text.*/
+        [[nodiscard]] static std::wstring get_worksheet_text(
+            const worksheet& wrk,
+            const wchar_t delim = L'\t');
+
         /** @brief Main interface for extracting plain text from an Excel worksheet.
             @note Call read_shared_strings() beforehand so that the string table for the
                 worksheet is loaded.
             @param html_text The sheet[PAGE].xml text to strip. sheet[PAGE].xml is extracted from
                 an XLSX file, which is a zip file.
             @param text_length The length of the text.
-            @param data The data matrix to copy the sheet text into.*/
+            @param[out] data The data matrix (worksheet) to copy the sheet text into.
+            @sa get_worksheet_text().*/
         void operator()(const wchar_t* html_text,
                         const size_t text_length,
                         worksheet& data);

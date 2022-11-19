@@ -62,11 +62,11 @@ namespace lily_of_the_valley
         const std::pair<column_info,size_t> cinfo = get_column_and_row_info(cellNname);
         if (cinfo.second < 1 || cinfo.second > workSheet.size())
             { return L""; }
-        const cell_row& currentRow = workSheet[cinfo.second-1];
+        const worksheet_row& currentRow = workSheet[cinfo.second-1];
         // out-of-range column index? Do a search for the cell by name.
         if (cinfo.first.m_position < 1 || cinfo.first.m_position > currentRow.size())
             {
-            const cell_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
+            const worksheet_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
                 cellPos->get_value() : L"";
             }
@@ -76,7 +76,7 @@ namespace lily_of_the_valley
         // file (and no dimension info), so our matrix is sparse. So brute force search for the cell by name.
         else
             {
-            const cell_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
+            const worksheet_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
                 cellPos->get_value() : L"";
             }
@@ -134,11 +134,11 @@ namespace lily_of_the_valley
         if (wrk.size() == 0)
             { return; }
         cells.reserve(wrk.size()*(wrk[0].size()/4)); // assume that a fourth the worksheet is text
-        for (std::vector<cell_row>::const_iterator rowPos = wrk.begin();
+        for (std::vector<worksheet_row>::const_iterator rowPos = wrk.begin();
             rowPos != wrk.end();
             ++rowPos)
             {
-            for (cell_row::const_iterator cellPos = rowPos->begin();
+            for (worksheet_row::const_iterator cellPos = rowPos->begin();
                 cellPos != rowPos->end();
                 ++cellPos)
                 {
@@ -146,6 +146,29 @@ namespace lily_of_the_valley
                     { cells.push_back(cellPos->get_name()); }
                 }
             }
+        }
+
+    //------------------------------------------------------------------
+    std::wstring xlsx_extract_text::get_worksheet_text(
+        const worksheet& wrk,
+        const wchar_t delim = L'\t')
+        {
+        std::wstring dataText;
+        const auto cellCount{ xlsx_extract_text::get_cell_count(wrk) };
+        if (cellCount == 0)
+            { return std::wstring(); }
+
+        dataText.reserve(cellCount * 5);
+        for (const auto& row : wrk)
+            {
+            for (const auto& cell : row)
+                { dataText.append(cell.get_value()).append(1, delim); }
+            // make extra tab at the end a new line for the next row
+            dataText.back() = L'\n';
+            }
+        string_util::rtrim(dataText);
+
+        return dataText;
         }
 
     //------------------------------------------------------------------
@@ -190,7 +213,7 @@ namespace lily_of_the_valley
                 }
             }
 
-        cell_row cRow;
+        worksheet_row cRow;
         worksheet_cell currentCell;
         std::wstring valueIndex;
         std::pair<const wchar_t*, size_t> typeTag;
@@ -201,8 +224,8 @@ namespace lily_of_the_valley
             if (!rowEnd)
                 { break; }
             const size_t rowNum = string_util::atol(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str());
-            cell_row& currentRow = (rowNum != 0 && rowNum <= data.size()) ? data[rowNum-1] : cRow;
-            cell_row::iterator cellPos = currentRow.begin();
+            worksheet_row& currentRow = (rowNum != 0 && rowNum <= data.size()) ? data[rowNum-1] : cRow;
+            worksheet_row::iterator cellPos = currentRow.begin();
 
             while ((html_text = html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
                 {
@@ -333,7 +356,7 @@ namespace lily_of_the_valley
                 if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
                     { return std::make_pair(false,L"unable to format row number."); }
                 const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1) + cellNumber);
-                const cell_row::const_iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
+                const worksheet_row::const_iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
                 // if cell was already in the row, then move on
                 if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                     { continue; }
@@ -421,7 +444,7 @@ namespace lily_of_the_valley
                         if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
                             { continue; }
                         const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1)+cellNumber);
-                        const cell_row::iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
+                        const worksheet_row::iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
                         // if cell was already in the row, then move on
                         if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                             { continue; }
