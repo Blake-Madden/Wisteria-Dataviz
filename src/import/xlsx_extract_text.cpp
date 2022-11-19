@@ -23,7 +23,7 @@ namespace lily_of_the_valley
             if (!siElement)
                 {
                 m_html_text += 3; // step over bad "<si" element
-                return std::pair<bool,std::wstring>(true,L"");
+                return std::make_pair(true, L"");
                 }
             m_html_text = siElement+1;
             const wchar_t* const endTag = html_extract_text::find_closing_element(m_html_text, m_html_text_end, L"si", 2);
@@ -40,33 +40,39 @@ namespace lily_of_the_valley
                 stringTag = html_extract_text::find_close_tag(stringTag);
                 if (!stringTag)
                     { break; }
-                const wchar_t* const endStringTag = html_extract_text::find_closing_element(++stringTag, endTag, L"t", 1);
+                const wchar_t* const endStringTag =
+                    html_extract_text::find_closing_element(++stringTag, endTag, L"t", 1);
                 if (!endStringTag)
                     { break; }
                 // read in the string
                 if (endStringTag-stringTag > 0)
                     {
-                    if (m_html_extract(stringTag, endStringTag-stringTag, true, true) && m_html_extract.get_filtered_text_length())
-                        { currentString.append(m_html_extract.get_filtered_text(), m_html_extract.get_filtered_text_length()); }
+                    if (m_html_extract(stringTag, endStringTag-stringTag, true, true) &&
+                        m_html_extract.get_filtered_text_length())
+                        {
+                        currentString.append(m_html_extract.get_filtered_text(),
+                                             m_html_extract.get_filtered_text_length());
+                        }
                     }
                 }
             m_html_text = endTag;
-            return std::pair<bool, std::wstring>(true,currentString);
+            return std::make_pair(true, currentString);
             }
         return return_finished();
         }
 
     //------------------------------------------------------------------
-    std::wstring xlsx_extract_text::get_cell_text(const wchar_t* cellNname, const worksheet& workSheet)
+    std::wstring xlsx_extract_text::get_cell_text(const wchar_t* cellNname,
+                                                  const worksheet& workSheet)
         {
-        const std::pair<column_info,size_t> cinfo = get_column_and_row_info(cellNname);
+        const auto cinfo = get_column_and_row_info(cellNname);
         if (cinfo.second < 1 || cinfo.second > workSheet.size())
             { return L""; }
         const worksheet_row& currentRow = workSheet[cinfo.second-1];
         // out-of-range column index? Do a search for the cell by name.
         if (cinfo.first.m_position < 1 || cinfo.first.m_position > currentRow.size())
             {
-            const worksheet_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
+            const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
                 cellPos->get_value() : L"";
             }
@@ -76,7 +82,7 @@ namespace lily_of_the_valley
         // file (and no dimension info), so our matrix is sparse. So brute force search for the cell by name.
         else
             {
-            const worksheet_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
+            const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
                 cellPos->get_value() : L"";
             }
@@ -91,21 +97,25 @@ namespace lily_of_the_valley
         assert(worksheet_length == std::wcslen(worksheet_text) );
         const wchar_t* const worksheetEnd = worksheet_text+worksheet_length;
         std::pair<const wchar_t*, size_t> typeTag;
-        while ((worksheet_text = html_extract_text::find_element(worksheet_text, worksheetEnd, L"c", 1)) != nullptr)
+        while ((worksheet_text =
+                html_extract_text::find_element(worksheet_text, worksheetEnd, L"c", 1)) != nullptr)
             {
             if (html_extract_text::read_attribute_as_string(worksheet_text, L"r", 1, false, false) == cell_name)
                 {
                 typeTag = html_extract_text::read_attribute(worksheet_text, L"t", 1, false, false);
                 if (typeTag.second == 1 && *typeTag.first == L's')
                     {
-                    const wchar_t* const cellEnd = html_extract_text::find_closing_element(worksheet_text, worksheetEnd, L"c", 1);
+                    const wchar_t* const cellEnd =
+                        html_extract_text::find_closing_element(worksheet_text, worksheetEnd, L"c", 1);
                     // found the cell, but its cell ending tag is missing? return empty.
                     if (!cellEnd)
                         { return L""; }
-                    const wchar_t* value = html_extract_text::find_element(worksheet_text, cellEnd, L"v", 1);
+                    const wchar_t* value =
+                        html_extract_text::find_element(worksheet_text, cellEnd, L"v", 1);
                     if (value && (value = html_extract_text::find_close_tag(value)) != nullptr)
                         {
-                        const wchar_t* const valueEnd = html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
+                        const wchar_t* const valueEnd =
+                            html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
                         if (valueEnd)
                             {
                             std::wstring valueIndex(value, valueEnd-value);
@@ -115,12 +125,15 @@ namespace lily_of_the_valley
                                 return get_shared_string(stringTableIndex, shared_strings, shared_strings_length);
                                 }
                             }
-                        return L""; // found the cell, but value section is messed up or empty, so return empty.
+                        // found the cell, but value section is messed up or empty, so return empty
+                        return L"";
                         }
-                    return L""; // found the cell, but value section is messed up or missing, so return empty.
+                    // found the cell, but value section is messed up or missing, so return empty
+                    return L"";
                     }
+                // found the cell, but its type isn't text? return empty
                 else
-                    { return L""; } // found the cell, but its type isn't text? return empty.
+                    { return L""; }
                 }
             ++worksheet_text;
             }
@@ -128,12 +141,14 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    void xlsx_extract_text::get_text_cell_names(const worksheet& wrk, std::vector<std::wstring>& cells)
+    void xlsx_extract_text::get_text_cell_names(const worksheet& wrk,
+                                                std::vector<std::wstring>& cells)
         {
         cells.clear();
         if (wrk.size() == 0)
             { return; }
-        cells.reserve(wrk.size()*(wrk[0].size()/4)); // assume that a fourth the worksheet is text
+        // assume that a fourth the worksheet is text
+        cells.reserve(wrk.size()*(wrk[0].size()/4));
         for (std::vector<worksheet_row>::const_iterator rowPos = wrk.begin();
             rowPos != wrk.end();
             ++rowPos)
@@ -151,7 +166,7 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     std::wstring xlsx_extract_text::get_worksheet_text(
         const worksheet& wrk,
-        const wchar_t delim = L'\t')
+        const wchar_t delim /*= L'\t'*/)
         {
         std::wstring dataText;
         const auto cellCount{ xlsx_extract_text::get_cell_count(wrk) };
@@ -173,8 +188,8 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     void xlsx_extract_text::operator()(const wchar_t* html_text,
-                        const size_t text_length,
-                        worksheet& data)
+                                       const size_t text_length,
+                                       worksheet& data)
         {
         data.clear();
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
@@ -186,20 +201,27 @@ namespace lily_of_the_valley
         // If the size of the table is already specified, then size our table before reading in the values.
         // Sometimes, sparse data will cause the empty cells to not be listed in the file explicitly, so we
         // need to fill those in with blank cells here.
-        const wchar_t* const dimension = html_extract_text::find_element(html_text, endSentinel, L"dimension", 9);
+        const wchar_t* const dimension =
+            html_extract_text::find_element(html_text, endSentinel, L"dimension", 9);
         if (dimension)
             {
-            std::wstring dimensionRef = html_extract_text::read_attribute_as_string(dimension, L"ref", 3, false);
+            std::wstring dimensionRef =
+                html_extract_text::read_attribute_as_string(dimension, L"ref", 3, false);
             const size_t colonIndex = dimensionRef.find(L':');
             if (colonIndex != std::wstring::npos)
                 {
-                const std::pair<column_info,size_t> dataStart = get_column_and_row_info(dimensionRef.substr(0, colonIndex).c_str());
-                const std::pair<column_info,size_t> dataEnd = get_column_and_row_info(dimensionRef.substr(colonIndex+1).c_str());
+                const auto dataStart =
+                    get_column_and_row_info(dimensionRef.substr(0, colonIndex).c_str());
+                const auto dataEnd =
+                    get_column_and_row_info(dimensionRef.substr(colonIndex+1).c_str());
                 if (dataStart.second < dataEnd.second)
                     {
                     data.resize(std::min((dataEnd.second-dataStart.second)+1, ExcelMaxRows));
-                    const size_t columnCount = std::min((dataEnd.first.m_position-dataStart.first.m_position)+1, ExcelMaxColumns);
-                    // fill the rows with empty data cells (that will have the column names already set)
+                    const size_t columnCount =
+                        std::min((dataEnd.first.m_position-dataStart.first.m_position)+1,
+                                 ExcelMaxColumns);
+                    // fill the rows with empty data cells
+                    // (that will have the column names already set)
                     if (dataStart.first.m_position <= dataEnd.first.m_position)
                         {
                         for (worksheet::iterator rowPos = data.begin(); rowPos != data.end(); ++rowPos)
@@ -217,37 +239,48 @@ namespace lily_of_the_valley
         worksheet_cell currentCell;
         std::wstring valueIndex;
         std::pair<const wchar_t*, size_t> typeTag;
-        while ((html_text = html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
+        while ((html_text =
+                html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
             {
             cRow.clear();
-            const wchar_t* const rowEnd = html_extract_text::find_closing_element(html_text, endSentinel, L"row", 3);
+            const wchar_t* const rowEnd =
+                html_extract_text::find_closing_element(html_text, endSentinel, L"row", 3);
             if (!rowEnd)
                 { break; }
-            const size_t rowNum = string_util::atol(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str());
+            const size_t rowNum =
+                string_util::atol(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str());
             worksheet_row& currentRow = (rowNum != 0 && rowNum <= data.size()) ? data[rowNum-1] : cRow;
             worksheet_row::iterator cellPos = currentRow.begin();
 
-            while ((html_text = html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
+            while ((html_text =
+                    html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
                 {
-                currentCell.set_name(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
+                currentCell.set_name(
+                    html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
                 currentCell.set_value(L"");
-                const wchar_t* const cellEnd = html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
+                const wchar_t* const cellEnd =
+                    html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
                 if (cellEnd)
                     {
                     typeTag = html_extract_text::read_attribute(html_text, L"t", 1, false, false);
                     if (typeTag.second == 1 && *typeTag.first == L's')
                         {
-                        const wchar_t* value = html_extract_text::find_element(html_text, cellEnd, L"v", 1);
-                        if (value && (value = html_extract_text::find_close_tag(value)) != nullptr)
+                        const wchar_t* value =
+                            html_extract_text::find_element(html_text, cellEnd, L"v", 1);
+                        if (value &&
+                            (value = html_extract_text::find_close_tag(value)) != nullptr)
                             {
-                            const wchar_t* const valueEnd = html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
+                            const wchar_t* const valueEnd =
+                                html_extract_text::find_closing_element(++value, cellEnd, L"v", 1);
                             if (valueEnd)
                                 {
                                 valueIndex.assign(value, valueEnd-value);
                                 if (valueIndex.length())
                                     {
-                                    const int stringTableIndex = string_util::atoi(valueIndex.c_str());
-                                    if (stringTableIndex >= 0 && static_cast<size_t>(stringTableIndex) < get_shared_strings().size())
+                                    const int stringTableIndex =
+                                        string_util::atoi(valueIndex.c_str());
+                                    if (stringTableIndex >= 0 &&
+                                        static_cast<size_t>(stringTableIndex) < get_shared_strings().size())
                                         { currentCell.set_value(get_shared_string(stringTableIndex)); }
                                     }
                                 }
@@ -299,13 +332,17 @@ namespace lily_of_the_valley
             { return; }
         assert(text_length == std::wcslen(text) );
         // see how many strings are in here and allocate space for them
-        const wchar_t* countInfo = html_extract_text::find_element(text, (text+text_length), L"sst", 3);
+        const wchar_t* countInfo =
+            html_extract_text::find_element(text, (text+text_length), L"sst", 3);
         if (countInfo)
             {
-            const size_t stringCount = string_util::atol(html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", 11, false).c_str());
+            const size_t stringCount =
+                string_util::atol(
+                    html_extract_text::read_attribute_as_string(countInfo, L"uniqueCount", 11, false).c_str());
             if (stringCount == 0)
                 { m_shared_strings.reserve(1'000); }
-            // in case file has nonsense in it, don't allocate more than max number of rows for the strings table
+            // in case file has nonsense in it, don't allocate more than
+            // max number of rows for the strings table
             else
                 { m_shared_strings.reserve(std::min<size_t>(stringCount,ExcelMaxRows)); }
             }
@@ -314,7 +351,10 @@ namespace lily_of_the_valley
         while ((nextString = tableParse()).first)
             {
             if (truncate && nextString.second.length() > 256)
-                { nextString.second.replace(nextString.second.begin()+253, nextString.second.end(), L"..."); }
+                {
+                nextString.second.replace(nextString.second.begin() + 253,
+                    nextString.second.end(), L"...");
+                }
             m_shared_strings.push_back(nextString.second);
             }
         }
@@ -330,14 +370,17 @@ namespace lily_of_the_valley
         text = html_extract_text::find_element(text, textEnd, L"sheets", 6);
         if (!text)
             { return; }
-        const wchar_t* const sheetsEnd = html_extract_text::find_closing_element(text+6, textEnd, L"sheets", 6);
+        const wchar_t* const sheetsEnd =
+            html_extract_text::find_closing_element(text+6, textEnd, L"sheets", 6);
         if (sheetsEnd)
             {
             // go through all of the worksheet names
-            while ((text = html_extract_text::find_element(text, textEnd, L"sheet", 5)) != nullptr)
+            while ((text =
+                   html_extract_text::find_element(text, textEnd, L"sheet", 5)) != nullptr)
                 {
                 // read in the name of the current worksheet
-                std::wstring worksheetName = html_extract_text::read_attribute_as_string(text, L"name", 4, false, true);
+                std::wstring worksheetName =
+                    html_extract_text::read_attribute_as_string(text, L"name", 4, false, true);
                 if (!worksheetName.empty())
                     { m_worksheet_names.push_back(worksheetName); }
                 text += 5;
@@ -351,22 +394,24 @@ namespace lily_of_the_valley
         wchar_t cellNumber[24] {};
         for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
             {
-            for (size_t columnCounter = 0; columnCounter < data[rowCounter].size(); ++columnCounter)
+            for (size_t columnCounter = 0;
+                 columnCounter < data[rowCounter].size();
+                 ++columnCounter)
                 {
-                if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
-                    { return std::make_pair(false,L"unable to format row number."); }
-                const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1) + cellNumber);
-                const worksheet_row::const_iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
+                const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1) +
+                                                 std::to_wstring(rowCounter+1));
+                const auto cellPos = std::lower_bound(data[rowCounter].begin(),
+                                                      data[rowCounter].end(), currentCell);
                 // if cell was already in the row, then move on
                 if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                     { continue; }
                 else if (cellPos != data[rowCounter].end())
-                    { return std::make_pair(false,currentCell.get_name()); }
+                    { return std::make_pair(false, currentCell.get_name()); }
                 else
-                    { return std::make_pair(false,currentCell.get_name()); }
+                    { return std::make_pair(false, currentCell.get_name()); }
                 }
             }
-        return std::make_pair(true,L"");
+        return std::make_pair(true, L"");
         }
 
     //------------------------------------------------------------------
@@ -375,40 +420,46 @@ namespace lily_of_the_valley
         if (column_info::invalid_position == col)
             { return L""; }
         std::wstring columnName;
+        constexpr auto alphabetSize{ 26 };
         while (col > 0)
             {
-            const wchar_t modulo = (col-1)%26;
-            columnName.insert(columnName.begin(),1,L'A'+modulo);
-            col = ((col-modulo)/26);
+            const wchar_t modulo = (col-1) % alphabetSize;
+            columnName.insert(columnName.begin(), 1, L'A' + modulo);
+            col = ((col-modulo)/alphabetSize);
             }
         return columnName;
         }
 
     //------------------------------------------------------------------
-    std::pair<xlsx_extract_text::column_info,size_t> xlsx_extract_text::get_column_and_row_info(const wchar_t* cell_name)
+    std::pair<xlsx_extract_text::column_info,size_t> xlsx_extract_text::get_column_and_row_info(
+        const wchar_t* cell_name)
         {
         assert(cell_name);
         if (cell_name == nullptr)
-            { return std::pair<column_info,size_t>(column_info(), column_info::invalid_position); }
+            { return std::make_pair(column_info(), column_info::invalid_position); }
         std::pair<size_t,size_t> cellInfo = split_column_info(cell_name);
         if (cellInfo.first == worksheet_cell::invalid_index)
-            { return std::pair<column_info,size_t>(column_info(), column_info::invalid_position); }
+            { return std::make_pair(column_info(), column_info::invalid_position); }
 
         column_info cinfo(0);
         for (size_t i = 0; i < cellInfo.first; ++i)
             {
             const wchar_t currentLetter = std::towupper(cell_name[i]);
-            // if non letter in column name, then something is wrong, set the column to bogus and quit
+            // if non letter in column name, then something is wrong;
+            // set the column to bogus and quit
             if (!(currentLetter >= L'A' && currentLetter <= L'Z'))
                 {
                 cinfo.m_position = column_info::invalid_position;
                 break;
                 }
-            const wchar_t letterVal = currentLetter-64; // change 'A' (value 65) to 1, 'B' to 2, etc.
-            cinfo.m_position += letterVal*static_cast<size_t>(std::pow(26,static_cast<double>(cellInfo.first-1-i)));
+            // change 'A' (value 65) to 1, 'B' to 2, etc.
+            const wchar_t letterVal = currentLetter - 64;
+            cinfo.m_position +=
+                letterVal *
+                static_cast<size_t>(std::pow(26,static_cast<double>(cellInfo.first-1-i)));
             }
 
-        return std::pair<column_info,size_t>(cinfo, cellInfo.second);
+        return std::make_pair(cinfo, cellInfo.second);
         }
 
     //------------------------------------------------------------------
@@ -432,7 +483,6 @@ namespace lily_of_the_valley
         // If we have jagged data, then try to fill in the blanks.
         if (isJagged)
             {
-            wchar_t cellNumber[24]{ 0 };
             for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
                 {
                 // Missing some cells in the row?
@@ -441,10 +491,10 @@ namespace lily_of_the_valley
                     {
                     for (size_t columnCounter = 0; columnCounter < largestRow; ++columnCounter)
                         {
-                        if (string_util::itoa(static_cast<long>(rowCounter+1), cellNumber, 24) == -1)
-                            { continue; }
-                        const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1)+cellNumber);
-                        const worksheet_row::iterator cellPos = std::lower_bound(data[rowCounter].begin(), data[rowCounter].end(), currentCell);
+                        const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1) +
+                                                         std::to_wstring(rowCounter+1));
+                        const auto cellPos = std::lower_bound(data[rowCounter].begin(),
+                                                              data[rowCounter].end(), currentCell);
                         // if cell was already in the row, then move on
                         if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
                             { continue; }
@@ -480,7 +530,8 @@ namespace lily_of_the_valley
         {
         assert(cell_name);
         size_t numStart = string_util::find_last_not_of(cell_name, L"0123456789");
-        if (numStart == std::wstring::npos || cell_name[numStart] == 0 || cell_name[numStart+1] == 0)
+        if (numStart == std::wstring::npos ||
+            cell_name[numStart] == 0 || cell_name[numStart+1] == 0)
             { return std::make_pair(-1, 0); }
         const size_t row = string_util::atol(cell_name+(++numStart));
         if (row == 0)
