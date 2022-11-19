@@ -68,17 +68,17 @@ namespace lily_of_the_valley
             {
             const cell_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
-                get_shared_string(cellPos->get_string_table_index()) : L"";
+                cellPos->get_value() : L"";
             }
         if (currentRow.operator[](cinfo.first.m_position-1).get_name() == cellNname)
-            { return get_shared_string(currentRow.operator[](cinfo.first.m_position-1).get_string_table_index()); }
+            { return currentRow.operator[](cinfo.first.m_position-1).get_value(); }
         // If item at given index doesn't match by name, then there must have been missing cells in the
         // file (and no dimension info), so our matrix is sparse. So brute force search for the cell by name.
         else
             {
             const cell_row::const_iterator cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
-                get_shared_string(cellPos->get_string_table_index()) : L"";
+                cellPos->get_value() : L"";
             }
         }
 
@@ -142,7 +142,7 @@ namespace lily_of_the_valley
                 cellPos != rowPos->end();
                 ++cellPos)
                 {
-                if (cellPos->get_string_table_index() != worksheet_cell::invalid_index)
+                if (cellPos->get_value().length())
                     { cells.push_back(cellPos->get_name()); }
                 }
             }
@@ -207,7 +207,7 @@ namespace lily_of_the_valley
             while ((html_text = html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
                 {
                 currentCell.set_name(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
-                currentCell.set_string_table_index(worksheet_cell::invalid_index);
+                currentCell.set_value(L"");
                 const wchar_t* const cellEnd = html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
                 if (cellEnd)
                     {
@@ -225,7 +225,7 @@ namespace lily_of_the_valley
                                     {
                                     const int stringTableIndex = string_util::atoi(valueIndex.c_str());
                                     if (stringTableIndex >= 0 && static_cast<size_t>(stringTableIndex) < get_shared_strings().size())
-                                        { currentCell.set_string_table_index(stringTableIndex); }
+                                        { currentCell.set_value(get_shared_string(stringTableIndex)); }
                                     }
                                 }
                             }
@@ -237,7 +237,7 @@ namespace lily_of_the_valley
                 // if cell was already in the row, then just update its value with what we just read
                 if (cellPos != currentRow.end() && *cellPos == currentCell)
                     {
-                    cellPos->set_string_table_index(currentCell.get_string_table_index());
+                    cellPos->set_value(currentCell.get_value());
                     ++cellPos;
                     }
                 // or if cell is out of order, insert it where it should be

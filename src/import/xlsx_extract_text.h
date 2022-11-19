@@ -66,25 +66,19 @@ namespace lily_of_the_valley
         public:
             /// @private
             static constexpr size_t invalid_index = static_cast<size_t>(-1);
-            /// @brief Default constructor.
-            worksheet_cell() noexcept : m_column_position(invalid_index),
-                m_row_position(invalid_index), m_string_table_index(invalid_index)
-                {}
-            /// @brief Constructor that accepts the @c of the cell. @sa set_name().
+            /// @private
+            worksheet_cell() = default;
+            /// @brief Constructor that accepts the name of the cell. @sa set_name().
             /// @param name The name for the cell (e.g., "D7").
-            explicit worksheet_cell(const std::wstring& name) :
-                m_column_position(invalid_index), m_row_position(invalid_index),
-                m_string_table_index(invalid_index)
+            explicit worksheet_cell(const std::wstring& name)
                 { set_name(name); }
             /** @brief Constructor.
                 @param column The (1-based) column index of the cell.
                 @param row The (1-based) row index of the cell.
-                @param string_table_index The cell's (0-based) index into the master
-                    string table (not used is not a text cell).*/
+                @param value The cell's value.*/
             worksheet_cell(const size_t column, const size_t row,
-                           const size_t string_table_index = invalid_index) noexcept :
-                m_column_position(column), m_row_position(row),
-                m_string_table_index(string_table_index)
+                           const std::wstring& value = L"") noexcept :
+                m_column_position(column), m_row_position(row), m_value(value)
                 {}
             /// @returns @c true if @c that cell's column comes before this cell's column.
             /// @param that The other cell to compare against.\n
@@ -134,23 +128,20 @@ namespace lily_of_the_valley
                     { return L""; }
                 return column_index_to_column_name(m_column_position)+cellNumber;
                 }
-            /// @brief Sets the (0-based) index into the string table that
-            ///     represents the value of this cell.
-            /// @param index The index into the string table for this cell.
-            void set_string_table_index(const size_t index) noexcept
-                { m_string_table_index = index; }
-            /// @returns The (0-based) index into the string table that represents this
-            ///     cell's string value. If this cell is numeric,
-            ///     then will return invalid_index;
-            [[nodiscard]] size_t get_string_table_index() const noexcept
-                { return m_string_table_index; }
+            /// @brief Sets the string value of the cell.
+            /// @param value The value for the cell.
+            void set_value(const std::wstring& value) noexcept
+                { m_value = value; }
+            /// @returns The cell's value.
+            [[nodiscard]] const std::wstring& get_value() const noexcept
+                { return m_value; }
         private:
             // 1-indexed, 'A' is column 1
-            size_t m_column_position{ 0 };
+            size_t m_column_position{ invalid_index };
             // 1-indexed, rows are referenced this way in the Excel file
-            size_t m_row_position{ 0 };
-            // 0-indexed, that's how it's used internally in the Excel file
-            size_t m_string_table_index{ 0 };
+            size_t m_row_position{ invalid_index };
+            // the string value in the cell
+            std::wstring m_value;
             };
 
         /// @brief Information about a column, including its (1-based) position in the worksheet.
