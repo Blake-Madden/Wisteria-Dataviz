@@ -20,6 +20,7 @@ SET(WISTERIA_SRC
     src/base/shapes.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
+    src/data/excelreader.cpp
     src/data/join.cpp
     src/data/pivot.cpp
     src/data/subset.cpp
@@ -42,6 +43,8 @@ SET(WISTERIA_SRC
     src/graphs/roadmap.cpp
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
+    src/import/html_extract_text.cpp
+    src/import/xlsx_extract_text.cpp
     src/ui/app.cpp
     src/ui/controls/codeeditor.cpp
     src/ui/controls/infobarex.cpp
@@ -65,6 +68,8 @@ SET(WISTERIA_SRC
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/textreplace.cpp
+    src/util/textstream.cpp
     src/util/warningmanager.cpp
+    src/util/zipcatalog.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp)

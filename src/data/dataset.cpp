@@ -1056,6 +1056,14 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::ImportExcel(const wxString& filePath, const wxString& worksheet,
+        const ImportInfo& info)
+        {
+        Data::ExcelReader xlReader(filePath);
+        ImportTextRaw(xlReader.ReadWorksheet(worksheet), info, L'\t');
+        }
+
+    //----------------------------------------------
     void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
                                 const wchar_t delimiter)
         {
@@ -1316,21 +1324,21 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    void Dataset::ImportText(const wxFileName& filePath, const ImportInfo& info,
+    void Dataset::ImportText(const wxString& filePath, const ImportInfo& info,
                              const wchar_t delimiter)
         {
         wxString fileText;
-        wxFile fl(filePath.GetFullPath());
+        wxFile fl(filePath);
         if (!fl.IsOpened() || !fl.ReadAll(&fileText))
             {
-            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath.GetFullPath(),
+            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
                                      wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         fileText.Trim(true).Trim(false);
 
         ImportTextRaw(fileText, info, delimiter);
 
-        m_name = filePath.GetName();
+        m_name = wxFileName(filePath).GetName();
         }
 
     //----------------------------------------------
