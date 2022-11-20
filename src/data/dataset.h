@@ -288,7 +288,9 @@ namespace Wisteria::Data
             @note If recoding causes duplicate entries in the string table, then those duplicates
                 will be removed and the data will be recoded accordingly. In other words, the
                 string table may be collapsed in the case of duplicates.
-            @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
+            @throws std::runtime_error If the regex pattern is invalid, throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void RecodeRE(const wxString& pattern, const wxString& replace);
 
         /** @brief Collapses strings which appear fewer than a minimum number of times.
