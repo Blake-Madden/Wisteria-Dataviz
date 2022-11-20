@@ -81,13 +81,13 @@ namespace Wisteria::GraphItems
         const auto orginalText{ pieLabel->GetText() };
 
         // make it fit in the slice and return it (or null if too small)
-        const auto fitLabelToSlice = [this, &dc](auto pieLabel)
+        const auto fitLabelToSlice = [this, &dc](auto pieSliceLabel)
             {
             auto points = GetPolygon();
             bool middleLabelIsTooSmall{ false };
             for (;;)
                 {
-                auto labelBox = pieLabel->GetBoundingBox(dc);
+                auto labelBox = pieSliceLabel->GetBoundingBox(dc);
                 if (Polygon::IsInsidePolygon(
                         labelBox.GetTopLeft(), &points[0], points.size()) &&
                     Polygon::IsInsidePolygon(
@@ -99,11 +99,11 @@ namespace Wisteria::GraphItems
                     { break; }
                 else
                     {
-                    const auto currentFontSize = pieLabel->GetFont().GetFractionalPointSize();
-                    pieLabel->GetFont().Scale(.95f);
+                    const auto currentFontSize = pieSliceLabel->GetFont().GetFractionalPointSize();
+                    pieSliceLabel->GetFont().Scale(.95f);
                     // either too small for our taste or couldn't be scaled down anymore
-                    if ((pieLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
-                        compare_doubles(pieLabel->GetFont().GetFractionalPointSize(),
+                    if ((pieSliceLabel->GetFont().GetFractionalPointSize() * GetScaling()) <= 6 ||
+                        compare_doubles(pieSliceLabel->GetFont().GetFractionalPointSize(),
                             currentFontSize))
                         {
                         middleLabelIsTooSmall = true;
@@ -111,7 +111,7 @@ namespace Wisteria::GraphItems
                         }
                     }
                 }
-            return middleLabelIsTooSmall ? nullptr : pieLabel;
+            return middleLabelIsTooSmall ? nullptr : pieSliceLabel;
             };
 
         auto scaledPieLabel = fitLabelToSlice(pieLabel);

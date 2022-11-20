@@ -1346,15 +1346,15 @@ namespace Wisteria::Data
         {
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
             { return &GetIdColumn(); }
-        else if (auto foundVar = GetCategoricalColumnWritable(colName);
-            foundVar != GetCategoricalColumns().end())
-            { return foundVar; }
-        else if (auto foundVar = GetContinuousColumnWritable(colName);
-            foundVar != GetContinuousColumns().end())
-            { return foundVar; }
-        else if (auto foundVar = GetDateColumnWritable(colName);
-            foundVar != GetDateColumns().end())
-            { return foundVar; }
+        else if (auto foundCatVar = GetCategoricalColumnWritable(colName);
+            foundCatVar != GetCategoricalColumns().end())
+            { return foundCatVar; }
+        else if (auto foundContinuousVar = GetContinuousColumnWritable(colName);
+            foundContinuousVar != GetContinuousColumns().end())
+            { return foundContinuousVar; }
+        else if (auto foundDateVar = GetDateColumnWritable(colName);
+            foundDateVar != GetDateColumns().end())
+            { return foundDateVar; }
         else
             { return std::nullopt; }
         }

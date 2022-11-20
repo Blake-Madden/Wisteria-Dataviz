@@ -321,25 +321,27 @@ namespace Wisteria::Data
             if (dataset->GetIdColumn().GetName().CmpNoCase(columnToKeep) == 0)
                 {
                 pivottedData->GetIdColumn().SetName(columnToKeep);
-                columnsToKeepMap.push_back(std::make_pair(&dataset->GetIdColumn(), &pivottedData->GetIdColumn()));
+                columnsToKeepMap.push_back(std::make_pair(&dataset->GetIdColumn(),
+                                                          &pivottedData->GetIdColumn()));
                 }
-            else if (const auto foundVar = dataset->GetCategoricalColumn(columnToKeep);
-                foundVar != dataset->GetCategoricalColumns().cend())
+            else if (const auto foundCatVar = dataset->GetCategoricalColumn(columnToKeep);
+                foundCatVar != dataset->GetCategoricalColumns().cend())
                 {
-                pivottedData->AddCategoricalColumn(columnToKeep).SetStringTable(foundVar->GetStringTable());
-                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                pivottedData->AddCategoricalColumn(columnToKeep).
+                    SetStringTable(foundCatVar->GetStringTable());
+                columnsToKeepMap.push_back(std::make_pair(foundCatVar, nullptr));
                 }
-            else if (const auto foundVar = dataset->GetContinuousColumn(columnToKeep);
-                foundVar != dataset->GetContinuousColumns().cend())
+            else if (const auto foundContinousVar = dataset->GetContinuousColumn(columnToKeep);
+                foundContinousVar != dataset->GetContinuousColumns().cend())
                 {
                 pivottedData->AddContinuousColumn(columnToKeep);
-                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                columnsToKeepMap.push_back(std::make_pair(foundContinousVar, nullptr));
                 }
-            else if (const auto foundVar = dataset->GetDateColumn(columnToKeep);
-                foundVar != dataset->GetDateColumns().cend())
+            else if (const auto foundDateVar = dataset->GetDateColumn(columnToKeep);
+                foundDateVar != dataset->GetDateColumns().cend())
                 {
                 pivottedData->AddDateColumn(columnToKeep);
-                columnsToKeepMap.push_back(std::make_pair(foundVar, nullptr));
+                columnsToKeepMap.push_back(std::make_pair(foundDateVar, nullptr));
                 }
             else
                 {

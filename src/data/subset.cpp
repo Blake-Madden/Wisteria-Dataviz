@@ -57,11 +57,11 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto val{ std::get_if<GroupIdType>(&value) };
-                    val != nullptr)
+                if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
+                    IdVal != nullptr)
                     {
-                    m_groupIdValues.push_back(*val);
-                    if (m_categoricalColumn->GetStringTable().find(*val) ==
+                    m_groupIdValues.push_back(*IdVal);
+                    if (m_categoricalColumn->GetStringTable().find(*IdVal) ==
                         m_categoricalColumn->GetStringTable().cend())
                         {
                         throw std::runtime_error(
@@ -69,17 +69,17 @@ namespace Wisteria::Data
                                              m_categoricalColumn->GetName()) );
                         }
                     }
-                else if (const auto val{ std::get_if<wxString>(&value) };
-                    val != nullptr)
+                else if (const auto strVal{ std::get_if<wxString>(&value) };
+                    strVal != nullptr)
                     {
-                    const auto code = m_categoricalColumn->GetIDFromLabel(*val);
+                    const auto code = m_categoricalColumn->GetIDFromLabel(*strVal);
                     if (code.has_value())
                         { m_groupIdValues.push_back(code.value()); }
                     else
                         {
                         throw std::runtime_error(
                             wxString::Format(_(L"'%s': string value not found for "
-                                                "'%s' column filter."), *val,
+                                                "'%s' column filter."), *strVal,
                                              m_categoricalColumn->GetName()));
                         }
                     }
@@ -104,9 +104,9 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto val{ std::get_if<double>(&value) };
-                    val != nullptr)
-                    { m_doubleValues.push_back(*val); }
+                if (const auto doubleVal{ std::get_if<double>(&value) };
+                    doubleVal != nullptr)
+                    { m_doubleValues.push_back(*doubleVal); }
                 else
                     {
                     throw std::runtime_error(_(L"Continuous column filter requires "

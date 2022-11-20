@@ -537,8 +537,8 @@ namespace Wisteria::Graphs
                 m_blocks.emplace_back(block);
                 m_length = std::accumulate(m_blocks.cbegin(), m_blocks.cend(),
                     0.0f,
-                    [](const auto initVal, const auto& block)
-                    { return initVal+block.GetLength(); });
+                    [](const auto initVal, const auto& bBlock)
+                    { return initVal + bBlock.GetLength(); });
                 }
             /// @brief Removes the blocks constituting the bar.
             void ClearBlocks() noexcept
