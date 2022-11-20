@@ -416,7 +416,9 @@ namespace string_util
             is_either<T>(hexStr[1], 0x78/*x*/, 0x58/*X*/))
             {
             hexStr += 2;
-            // if they specified a length to read then take into account the 0x that we just skipped over
+            // if they specified a length to read then take into account
+            // for the 0x that we just skipped over
+            // cppcheck-suppress knownConditionTrueFalse
             if (length != static_cast<size_t>(-1) && length >= 2)
                 {
                 length -= 2;

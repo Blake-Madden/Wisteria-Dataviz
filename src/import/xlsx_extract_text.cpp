@@ -622,7 +622,6 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     std::pair<bool,std::wstring> xlsx_extract_text::verify_sheet(const worksheet& data)
         {
-        wchar_t cellNumber[24] {};
         for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
             {
             for (size_t columnCounter = 0;
