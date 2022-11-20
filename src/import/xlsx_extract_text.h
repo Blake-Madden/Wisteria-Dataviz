@@ -49,14 +49,17 @@ namespace lily_of_the_valley
 
     /// @brief Class to extract text from an Excel stream
     ///     (specifically, the sheet[PAGE].xml files).
+    /// @details References:\n
+    ///     \n
+    ///     https://www.brendanlong.com/the-minimum-viable-xlsx-reader.html\n
+    ///     https://github.com/brendanlong/ocaml-ooxml\n
+    ///     https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3
     class xlsx_extract_text
         {
     public:
         /// The maximum number of rows an Excel file can have
-        /// (Excel 2021 specs, https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3).
         static constexpr size_t ExcelMaxRows = 1'048'576; // 1024 * 1024;
         /// The maximum number of columns an Excel file can have
-        /// (Excel 2021 specs, https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3).
         static constexpr size_t ExcelMaxColumns = 16'384; // 1024 * 16;
         /// A cell in an Excel file, which stores the position of the cell and
         ///     if a string then index into the Excel file's string table
@@ -208,8 +211,8 @@ namespace lily_of_the_valley
             const wchar_t delim = L'\t');
 
         /** @brief Main interface for extracting plain text from an Excel worksheet.
-            @note Call read_shared_strings() beforehand so that the string table for the
-                worksheet is loaded.
+            @note Call read_shared_strings() and read_styles() beforehand so that the
+                string table and number formats for the worksheet are loaded.
             @param html_text The sheet[PAGE].xml text to strip. sheet[PAGE].xml is extracted from
                 an XLSX file, which is a zip file.
             @param text_length The length of the text.
@@ -227,6 +230,11 @@ namespace lily_of_the_valley
                 full text of each cell loaded into memory.*/
         void read_shared_strings(const wchar_t* text, const size_t text_length,
                                  const bool truncate = false);
+
+        /** @brief Retrieves the number formatting styles from the `xl/styles.xml` file.
+            @param text The content of `xl/styles.xml`.
+            @param text_length The length of the text.*/
+        void read_styles(const wchar_t* text, const size_t text_length);
 
         /** @brief Retrieves the worksheet names from the `xl/workbook.xml` file.
             @param text The content of `xl/workbook.xml`.
@@ -322,6 +330,8 @@ namespace lily_of_the_valley
             { return m_shared_strings; }
 
         std::vector<std::wstring> m_worksheet_names;
+        // sytle indices that use a date format
+        std::set<size_t> m_date_format_indices;
         string_table m_shared_strings;
         };
     }

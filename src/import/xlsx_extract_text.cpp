@@ -242,7 +242,9 @@ namespace lily_of_the_valley
             // make extra tab at the end a new line for the next row
             dataText.back() = L'\n';
             }
-        string_util::rtrim(dataText);
+        // chop off extra newline at the end
+        if (dataText.length() && dataText.back() == L'\n')
+            { dataText.erase(dataText.end() - 1); }
 
         return dataText;
         }
@@ -300,7 +302,7 @@ namespace lily_of_the_valley
         worksheet_cell currentCell;
         std::wstring valueStr;
         std::pair<const wchar_t*, size_t> typeTag;
-        std::pair<const wchar_t*, size_t> formatTag;
+        std::pair<const wchar_t*, size_t> styleTag;
         while ((html_text =
                 html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
             {
@@ -337,13 +339,18 @@ namespace lily_of_the_valley
                             // read a value
                             if (valueStr.length())
                                 {
+                                // read the type ('t') attribute
                                 typeTag =
                                     html_extract_text::read_attribute(html_text, L"t", 1,
                                                                       false, false);
-                                formatTag =
+                                // read the style ('s') attribute
+                                styleTag =
                                     html_extract_text::read_attribute(html_text, L"s", 1,
                                                                       false, false);
-                                // if a string, convert the value
+
+                                // First, convert based on types...
+                                // -----------------------------
+                                // if a shared string (type == 's'), convert the value
                                 // (which is an index into the string table)
                                 if (typeTag.second == 1 && *typeTag.first == L's')
                                     {
@@ -356,16 +363,49 @@ namespace lily_of_the_valley
                                         currentCell.set_value(get_shared_string(stringTableIndex));
                                         }
                                     }
-                                // a date (convert to YYYY-MM-DD)
-                                else if (formatTag.second == 1 && *formatTag.first == L'1')
+                                // - 'b' (boolean): will be 0 or 1, so convert to 'FALSE' or 'TRUE'
+                                else if (typeTag.second == 1 && *typeTag.first == L'b')
                                     {
-                                    const auto serialDate = string_util::atol(valueStr.c_str());
-                                    int day, month, year;
-                                    excel_serial_date_to_dmy(serialDate, day, month, year);
-                                    currentCell.set_value(
-                                        std::to_wstring(year) + L"-" +
-                                        std::to_wstring(month) + L"-" +
-                                        std::to_wstring(day));
+                                    const bool bVal =
+                                        static_cast<bool>(string_util::atoi(valueStr.c_str()));
+                                    if (bVal)
+                                        {
+                                        currentCell.set_value(bVal ? _DT(L"TRUE") : _DT(L"FALSE"));
+                                        }
+                                    }
+                                // - 'e' (error): an error message (e.g., "#DIV/0!");
+                                //                treat this as missing data.
+                                else if (typeTag.second == 1 && *typeTag.first == L'e')
+                                    { currentCell.set_value(L""); }
+                                // These other types will just have their values read:
+                                // - 'n' (number): read its value (and maybe convert to date
+                                //                 based on its style [see below])
+                                // - 'str' (string formula): read its (calculated value)
+                                // - 'inlineStr' (inline string): I have been uable to reproduce
+                                //               this element in a real-world file, it's only
+                                //               mentioned in the reverse-engineering docs.
+                                //               Just read its value, as I'm not sure how to handle
+                                //               this and if it is ever used.
+
+                                // ...then on style
+                                else if (styleTag.first != nullptr)
+                                    {
+                                    const auto styleIndex = string_util::atol(styleTag.first);
+                                    // a date?
+                                    if (m_date_format_indices.find(styleIndex) !=
+                                        m_date_format_indices.cend())
+                                        {
+                                        const auto serialDate = string_util::atol(valueStr.c_str());
+                                        int day, month, year;
+                                        excel_serial_date_to_dmy(serialDate, day, month, year);
+                                        // convert to YYYY-MM-DD
+                                        currentCell.set_value(
+                                            std::to_wstring(year) + L"-" +
+                                            std::to_wstring(month) + L"-" +
+                                            std::to_wstring(day));
+                                        }
+                                    else
+                                        { currentCell.set_value(valueStr); }
                                     }
                                 // just a value, so read that as-is
                                 else
@@ -443,6 +483,110 @@ namespace lily_of_the_valley
                     nextString.second.end(), L"...");
                 }
             m_shared_strings.push_back(nextString.second);
+            }
+        }
+
+    //------------------------------------------------------------------
+    void xlsx_extract_text::read_styles(const wchar_t* text, const size_t text_length)
+        {
+        m_date_format_indices.clear();
+        if (!text || text_length == 0)
+            { return; }
+        assert(text_length == std::wcslen(text) );
+        // load the custom number formats
+        std::set<size_t> dateFormatIds;
+        const wchar_t* customNumberFormats =
+            html_extract_text::find_element(text, (text+text_length), L"numFmts", 7);
+        if (customNumberFormats)
+            {
+            const wchar_t* const endTag =
+                html_extract_text::find_closing_element(customNumberFormats,
+                                                        (text + text_length), L"numFmts", 7);
+            if (endTag)
+                {
+                const wchar_t* stringTag = customNumberFormats;
+                std::wstring formatStr;
+
+                // strip [] and "" sections from the format string
+                // ("these are literal strings and color formatting codes")
+                const auto stripFormatString = [](std::wstring& str)
+                    {
+                    //[]
+                        {
+                        const auto bracePos = str.find(L'[');
+                        if (bracePos != std::wstring::npos)
+                            {
+                            const auto closeBrace = str.find(L']', bracePos+1);
+                            if (closeBrace != std::wstring::npos)
+                                { str.erase(bracePos, (closeBrace - bracePos)+1); }
+                            }
+                        }
+                    //""
+                        {
+                        const auto bracePos = str.find(L'"');
+                        if (bracePos != std::wstring::npos)
+                            {
+                            const auto closeBrace = str.find(L'"', bracePos+1);
+                            if (closeBrace != std::wstring::npos)
+                                { str.erase(bracePos, (closeBrace - bracePos)+1); }
+                            }
+                        }
+                    };
+
+                while (stringTag && stringTag < endTag)
+                    {
+                    stringTag = html_extract_text::find_element(stringTag, endTag, L"numFmt", 6);
+                    if (!stringTag)
+                        { break; }
+
+                    const auto fmtId =
+                        string_util::atol(
+                            html_extract_text::read_attribute_as_string(stringTag, L"numFmtId",
+                                                                        8, false).c_str());
+                    formatStr = html_extract_text::read_attribute_as_string(
+                        stringTag, L"formatCode", 10, false);
+                    stripFormatString(formatStr);
+                    // Custom format is some sort of date if it contains
+                    // year, day, week, or quarter markers OR
+                    // "mmm" which means month usually when day isn't included.
+                    // (You can't simply look for 'm' as that can be minute when
+                    //  the format is just a time.)
+                    if (formatStr.find_first_of(L"ydwq") != std::wstring::npos ||
+                        formatStr.find(L"mmm") != std::wstring::npos)
+                        { dateFormatIds.insert(fmtId); }
+                    stringTag = html_extract_text::find_close_tag(stringTag);
+                    }
+                }
+            }
+        // read the cell styles
+        const wchar_t* cellStyles =
+            html_extract_text::find_element(text, (text+text_length), L"cellXfs", 7);
+        if (cellStyles)
+            {
+            const wchar_t* const endTag =
+                html_extract_text::find_closing_element(cellStyles, (text+text_length), L"cellXfs", 7);
+            if (endTag)
+                {
+                const wchar_t* stringTag = cellStyles;
+                size_t currentIndex{ 0 };
+                while (stringTag && stringTag < endTag)
+                    {
+                    stringTag = html_extract_text::find_element(stringTag, endTag, L"xf", 2);
+                    if (!stringTag)
+                        { break; }
+
+                    const auto fmtId =
+                        string_util::atol(
+                            html_extract_text::read_attribute_as_string(stringTag, L"numFmtId",
+                                                                        8, false).c_str());
+                    // built-in formats known to be date formats, or a custom date format
+                    if ((fmtId >= 14 && fmtId <= 17) || fmtId == 22 ||
+                        dateFormatIds.find(fmtId) != dateFormatIds.cend())
+                        { m_date_format_indices.insert(currentIndex); }
+                    stringTag = html_extract_text::find_close_tag(stringTag);
+                    ++currentIndex;
+                    }
+                }
             }
         }
 

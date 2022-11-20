@@ -14,7 +14,8 @@
 
 #include <exception>
 #include "../util/stringutil.h"
-#include "../util//chartraits.h"
+#include "../util/chartraits.h"
+#include "../util/donttranslate.h"
 
 namespace lily_of_the_valley
     {
