@@ -17,7 +17,7 @@
 #include <set>
 #include <unordered_set>
 
-/// @brief Same as a std::set, but also keeps a frequency count of every unique value added.
+/// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added.
 template <typename T, typename Compare = std::less<T>>
 class frequency_set
     {
@@ -61,7 +61,7 @@ private:
     };
 
 /// @brief Same as a frequency_set, expect it also enables the caller to
-/// increment a second frequency count based on a criterion.
+///     increment a second frequency count based on a criterion.
 template <typename T, typename TCompare = std::less<T>>
 class double_frequency_set
     {
@@ -79,7 +79,8 @@ public:
         {
         const size_t secondFrequency = incrementSecondFrequency ? 1 : 0;
         auto [index_iter, inserted] =
-            m_table.try_emplace(value, std::make_pair(1/*raw frequency count*/,secondFrequency/*custom frequency count*/) );
+            m_table.try_emplace(value, std::make_pair(1/*raw frequency count*/,
+                                secondFrequency/*custom frequency count*/) );
         // if it was already there, so just update it.
         if (!inserted)
             {
@@ -97,7 +98,8 @@ public:
         {
         const size_t secondFrequency = incrementSecondFrequency ? 1 : 0;
         auto [index_iter, inserted] =
-            m_table.try_emplace(value, std::make_pair(1/*raw frequency count*/,secondFrequency/*custom frequency count*/) );
+            m_table.try_emplace(value, std::make_pair(1/*raw frequency count*/,
+                                secondFrequency/*custom frequency count*/) );
         // if it was already there, so just update it.
         if (!inserted)
             {
@@ -116,7 +118,9 @@ public:
             ++iter)
             {
             auto [index_iter, inserted] =
-                m_table.try_emplace(iter->first, std::make_pair(iter->second.first/*raw frequency count*/,iter->second.second/*custom frequency count*/) );
+                m_table.try_emplace(iter->first,
+                    std::make_pair(iter->second.first/*raw frequency count*/,
+                                   iter->second.second/*custom frequency count*/) );
             // if it was already there, so just update it.
             if (!inserted)
                 {
@@ -138,12 +142,15 @@ public:
             ++iter)
             {
             auto [index_iter, inserted] =
-                m_table.try_emplace(iter->first, std::make_pair(iter->second.first/*raw frequency count*/,frequencyIncrement/*custom frequency count is overridden*/) );
+                m_table.try_emplace(iter->first,
+                    std::make_pair(iter->second.first/*raw frequency count*/,
+                                   frequencyIncrement/*custom frequency count is overridden*/) );
             // if it was already there, so just update it.
             if (!inserted)
                 {
                 index_iter->second.first += iter->second.first;
-                index_iter->second.second += frequencyIncrement; // override other item's custom counter
+                // override other item's custom counter
+                index_iter->second.second += frequencyIncrement;
                 }
             }
         }
@@ -154,7 +161,7 @@ private:
     map_type m_table;
     };
 
-/// @brief Same as a std::set, but also keeps a frequency count of every unique value added,
+/// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added,
 ///     as well as an additional value to accumulate.
 /// @todo needs unit test
 template <typename T, typename Compare = std::less<T>>
@@ -188,7 +195,8 @@ public:
         @note If a value is already in the set, then that value's count is incremented.*/
     const_iterator insert(T&& value, double aggregateValue)
         {
-        auto [index_iter, inserted] = m_table.try_emplace(value, std::make_pair(1, aggregateValue));
+        auto [index_iter, inserted] =
+            m_table.try_emplace(value, std::make_pair(1, aggregateValue));
         // if it was already there, then just update its counter
         if (!inserted)
             {
@@ -210,13 +218,14 @@ private:
     map_type m_table;
     };
 
-/// @brief Same as a map, but also keeps a frequency count of every unique value added.
+/// @brief Same as a @c std::map, but also keeps a frequency count of every unique value added.
 template <typename T1, typename T2, typename Compare = std::less<T1>>
 class frequency_map
     {
 public:
+    /// Key/(value & count)
     /// @private
-    using map_type = typename std::map<T1, std::pair<T2,size_t>, Compare>; // Key/(value & count)
+    using map_type = typename std::map<T1, std::pair<T2,size_t>, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts a pair of items into the map.
@@ -224,7 +233,7 @@ public:
         @param value2 The value associated with the key.
         @returns An iterator to the inserted or updated item.
         @note If the key is already in the map, then that key's count is incremented;
-         however, @c value2 will be ignored.*/
+            however, @c value2 will be ignored.*/
     const_iterator insert(const T1& value1, const T2& value2)
         {
         auto [index_iter, inserted] = m_table.try_emplace(value1, std::make_pair(value2, 1) );
@@ -254,7 +263,7 @@ private:
     map_type m_table;
     };
 
-/** @brief Same as a std::map (where the key is a single value), but also
+/** @brief Same as a @c std::map (where the key is a single value), but also
      supports multiple (unique) values connected to each key and includes
      an aggregator for each key.*/
 template <typename T1, typename T2,
@@ -274,13 +283,13 @@ public:
     using iterator = typename map_type::iterator;
     /// @private
     using value_type = typename std::pair<T1, values_and_aggregate_pair_type>;
-    /// @brief Constructor.
-    multi_value_aggregate_map() {}
+    /// @private
+    multi_value_aggregate_map() = default;
     /** @brief Inserts a pair of items into the map.
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
         @param aggregateValue the amount to increase the aggregated value for the item.
-         Would normally be 1.
+            Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
          If a key is already in the map, then that key's count is incremented.
@@ -306,7 +315,7 @@ public:
         @param value1 The first value of the pair.
         @param value2 The second value of the pair.
         @param aggregateValue the amount to increase the aggregated value for the item.
-         Would normally be 1.
+            Would normally be 1.
         @returns An iterator to the inserted or updated item.
         @note The first value is what makes the item unique.
          If a key is already in the map, then that key's count is incremented.
@@ -350,14 +359,14 @@ public:
     void clear() noexcept
         { m_table.clear(); }
     /** @brief Erases the specified iterator.
-        @returns The next iterator after this iterator, or end() if that was the last item.
+        @returns The next iterator after this iterator, or @c end() if that was the last item.
         @param position The iterator to erase.*/
     iterator erase(const_iterator position)
         { return m_table.erase(position); }
     /** @brief Sets the maximum number of values that each key can have.
         @details By default, there is no size limitation.
         @param size The maximum number of values that each key can have.
-         The value -1 will allow keys to contain any number of values (the default).
+         The value @c -1 will allow keys to contain any number of values (the default).
         @note It is more optimal to call this prior to any calls to insert().
          Otherwise, any existing items in the map will need to have their respective
          value lists resized.*/
