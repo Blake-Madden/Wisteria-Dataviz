@@ -966,12 +966,13 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = ../../src/easyexif \
-                         ../../src/debug_assert.h \
+                         ../../src/debug/debug_assert.h \
                          doxygen-awesome-css \
                          ../../CMakeLists.txt \
                          ../../build \
                          ../../src/wxSimpleJSON \
-                         ../../src/CRCpp
+                         ../../src/CRCpp \
+                         ../../src/utfcpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
