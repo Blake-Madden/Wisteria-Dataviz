@@ -119,20 +119,20 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto val{ std::get_if<wxDateTime>(&value) };
-                    val != nullptr)
-                    { m_dateTimeValues.push_back(*val); }
-                else if (const auto val{ std::get_if<wxString>(&value) };
-                    val != nullptr)
+                if (const auto dateVal{ std::get_if<wxDateTime>(&value) };
+                    dateVal != nullptr)
+                    { m_dateTimeValues.push_back(*dateVal); }
+                else if (const auto strVal{ std::get_if<wxString>(&value) };
+                    strVal != nullptr)
                     {
                     wxDateTime dt;
-                    if (dt.ParseDateTime(*val) || dt.ParseDate(*val))
+                    if (dt.ParseDateTime(*strVal) || dt.ParseDate(*strVal))
                         { m_dateTimeValues.push_back(dt); }
                     else
                         {
                         throw std::runtime_error(
                             wxString::Format(_(L"%s: string unable to be parsed for date filter."),
-                                             *val));
+                                             *strVal));
                         }
                     }
                 else
