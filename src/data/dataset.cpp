@@ -961,9 +961,13 @@ namespace Wisteria::Data
                 else if (!compare_doubles(get_mantissa(parsedNumber), 0))
                     { currentColumnType = ColumnImportType::FloatingPoint; }
                 }
-            columnInfo.push_back(std::make_pair(
-                preview.get_header_names().at(colIndex).c_str(),
-                currentColumnType));
+            // silently ignore columns with no name (missing header)
+            if (preview.get_header_names().at(colIndex).length())
+                {
+                columnInfo.push_back(std::make_pair(
+                    preview.get_header_names().at(colIndex).c_str(),
+                    currentColumnType));
+                }
             }
         return columnInfo;
         }
