@@ -85,7 +85,7 @@ IF(MSVC)
 ELSEIF(MINGW OR MSYS)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__
             $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -wshadow
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 # TODO: Placeholder code for macOS (needs testing)
 #ELSEIF(APPLE)
@@ -96,7 +96,7 @@ ELSEIF(MINGW OR MSYS)
 ELSEIF(UNIX)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -wshadow
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ENDIF()
 
