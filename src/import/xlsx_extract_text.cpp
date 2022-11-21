@@ -322,94 +322,154 @@ namespace lily_of_the_valley
                 currentCell.set_name(
                     html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
                 currentCell.set_value(L"");
+                // read the type ('t') attribute
+                typeTag =
+                    html_extract_text::read_attribute(html_text, L"t", 1, false, false);
+                // read the style ('s') attribute
+                styleTag =
+                    html_extract_text::read_attribute(html_text, L"s", 1, false, false);
                 const wchar_t* const cellEnd =
                     html_extract_text::find_closing_element(html_text, rowEnd, L"c", 1);
                 if (cellEnd)
                     {
-                    const wchar_t* valueTag =
-                        html_extract_text::find_element(html_text, cellEnd, L"v", 1);
-                    if (valueTag &&
-                        (valueTag = html_extract_text::find_close_tag(valueTag)) != nullptr)
+                    // - 'inlineStr' (inline string)
+                    if (typeTag.first != nullptr &&
+                        std::wcsncmp(typeTag.first, L"inlineStr", 9) == 0)
                         {
-                        const wchar_t* const valueEnd =
-                            html_extract_text::find_closing_element(++valueTag, cellEnd, L"v", 1);
-                        if (valueEnd)
+                        const wchar_t* isTag =
+                            html_extract_text::find_element(html_text, cellEnd, L"is", 2);
+                        if (isTag &&
+                            (isTag = html_extract_text::find_close_tag(isTag)) != nullptr)
                             {
-                            valueStr.assign(valueTag, valueEnd-valueTag);
-                            // read a value
-                            if (valueStr.length())
+                            const wchar_t* const isEnd =
+                                html_extract_text::find_closing_element(++isTag, cellEnd, L"is", 2);
+                            if (isEnd)
                                 {
-                                // read the type ('t') attribute
-                                typeTag =
-                                    html_extract_text::read_attribute(html_text, L"t", 1,
-                                                                      false, false);
-                                // read the style ('s') attribute
-                                styleTag =
-                                    html_extract_text::read_attribute(html_text, L"s", 1,
-                                                                      false, false);
-
-                                // First, convert based on types...
-                                // -----------------------------
-                                // if a shared string (type == 's'), convert the value
-                                // (which is an index into the string table)
-                                if (typeTag.second == 1 && *typeTag.first == L's')
+                                const wchar_t* tTag =
+                                    html_extract_text::find_element(isTag, isEnd, L"t", 1);
+                                if (tTag &&
+                                    (tTag = html_extract_text::find_close_tag(tTag)) != nullptr)
                                     {
-                                    const int stringTableIndex =
-                                        string_util::atoi(valueStr.c_str());
-                                    if (stringTableIndex >= 0 &&
-                                        static_cast<size_t>(stringTableIndex) <
-                                            get_shared_strings().size())
+                                    const wchar_t* const tEnd =
+                                        html_extract_text::find_closing_element(++tTag, cellEnd, L"t", 1);
+                                    if (tEnd)
                                         {
-                                        currentCell.set_value(get_shared_string(stringTableIndex));
+                                        valueStr.assign(tTag, tEnd-tTag);
+                                        // read a value
+                                        if (valueStr.length())
+                                            { currentCell.set_value(valueStr);  }
                                         }
                                     }
-                                // - 'b' (boolean): will be 0 or 1, so convert to 'FALSE' or 'TRUE'
-                                else if (typeTag.second == 1 && *typeTag.first == L'b')
+                                }
+                            }
+                        }
+                    else
+                        {
+                        const wchar_t* valueTag =
+                            html_extract_text::find_element(html_text, cellEnd, L"v", 1);
+                        if (valueTag &&
+                            (valueTag = html_extract_text::find_close_tag(valueTag)) != nullptr)
+                            {
+                            const wchar_t* const valueEnd =
+                                html_extract_text::find_closing_element(++valueTag, cellEnd, L"v", 1);
+                            if (valueEnd)
+                                {
+                                valueStr.assign(valueTag, valueEnd-valueTag);
+                                // read a value
+                                if (valueStr.length())
                                     {
-                                    const bool bVal =
-                                        static_cast<bool>(string_util::atoi(valueStr.c_str()));
-                                    if (bVal)
+                                    // First, convert based on types...
+                                    // -----------------------------
+                                    // if a shared string (type == 's'), convert the value
+                                    // (which is an index into the string table)
+                                    if (typeTag.second == 1 && *typeTag.first == L's')
                                         {
-                                        currentCell.set_value(bVal ? _DT(L"TRUE") : _DT(L"FALSE"));
+                                        const int stringTableIndex =
+                                            string_util::atoi(valueStr.c_str());
+                                        if (stringTableIndex >= 0 &&
+                                            static_cast<size_t>(stringTableIndex) <
+                                                get_shared_strings().size())
+                                            {
+                                            currentCell.set_value(get_shared_string(stringTableIndex));
+                                            }
                                         }
-                                    }
-                                // - 'e' (error): an error message (e.g., "#DIV/0!");
-                                //                treat this as missing data.
-                                else if (typeTag.second == 1 && *typeTag.first == L'e')
-                                    { currentCell.set_value(L""); }
-                                // These other types will just have their values read:
-                                // - 'n' (number): read its value (and maybe convert to date
-                                //                 based on its style [see below])
-                                // - 'str' (string formula): read its (calculated value)
-                                // - 'inlineStr' (inline string): I have been uable to reproduce
-                                //               this element in a real-world file, it's only
-                                //               mentioned in the reverse-engineering docs.
-                                //               Just read its value, as I'm not sure how to handle
-                                //               this and if it is ever used.
+                                    // - 'b' (boolean): will be 0 or 1, so convert to 'FALSE' or 'TRUE'
+                                    else if (typeTag.second == 1 && *typeTag.first == L'b')
+                                        {
+                                        const bool bVal =
+                                            static_cast<bool>(string_util::atoi(valueStr.c_str()));
+                                        if (bVal)
+                                            {
+                                            currentCell.set_value(bVal ? _DT(L"TRUE") : _DT(L"FALSE"));
+                                            }
+                                        }
+                                    // - 'e' (error): an error message (e.g., "#DIV/0!");
+                                    //                treat this as missing data.
+                                    else if (typeTag.second == 1 && *typeTag.first == L'e')
+                                        { currentCell.set_value(L""); }
+                                    // These other types will just have their values read:
+                                    // - 'n' (number): read its value (and maybe convert to date
+                                    //                 based on its style [see below])
+                                    // - 'str' (string formula): read its (calculated value)
+                                    // - 'inlineStr' (inline string): this was handled up to.
 
-                                // ...then on style
-                                else if (styleTag.first != nullptr)
-                                    {
-                                    const auto styleIndex = string_util::atol(styleTag.first);
-                                    // a date?
-                                    if (m_date_format_indices.find(styleIndex) !=
-                                        m_date_format_indices.cend())
+                                    // ...then on style
+                                    else if (styleTag.first != nullptr)
                                         {
-                                        const auto serialDate = string_util::atol(valueStr.c_str());
-                                        int day, month, year;
-                                        excel_serial_date_to_dmy(serialDate, day, month, year);
-                                        // convert to YYYY-MM-DD
-                                        currentCell.set_value(
-                                            std::to_wstring(year) + L"-" +
-                                            std::to_wstring(month) + L"-" +
-                                            std::to_wstring(day));
+                                        const auto styleIndex = string_util::atol(styleTag.first);
+                                        // a date?
+                                        if (m_date_format_indices.find(styleIndex) !=
+                                            m_date_format_indices.cend())
+                                            {
+                                            const auto serialDate = string_util::atol(valueStr.c_str());
+                                            int day{ 0 }, month{ 0 }, year{ 0 };
+                                            excel_serial_date_to_dmy(serialDate, day, month, year);
+
+                                            // read the time component (if present)
+                                            const auto dateTimeSepPos = valueStr.find(L'.');
+                                            if (dateTimeSepPos == std::wstring::npos)
+                                                {
+                                                // convert to YYYY-MM-DD
+                                                currentCell.set_value(
+                                                    std::to_wstring(year) + L"-" +
+                                                    std::to_wstring(month) + L"-" +
+                                                    std::to_wstring(day));
+                                                }
+                                            else
+                                                {
+                                                const auto percentStrLength =
+                                                    (valueStr.length() - dateTimeSepPos - 1);
+                                                wchar_t* dummy{ nullptr };
+                                                auto timeOfDay =
+                                                    std::wcstoll(valueStr.c_str() + dateTimeSepPos + 1, &dummy, 10);
+                                                long double timeOfDayPercent =
+                                                    timeOfDay / std::pow(10, percentStrLength);
+                                                constexpr auto secondsInDay = 24 * 60 * 60;
+                                                auto secondsFromTime = secondsInDay * timeOfDayPercent;
+                                                const int hourOfDay =
+                                                    static_cast<int>(std::floor(secondsFromTime / (60 * 60)));
+                                                secondsFromTime -= (hourOfDay * 60 * 60);
+                                                const int minutesOfHour =
+                                                    static_cast<int>(std::floor(secondsFromTime / 60));
+                                                secondsFromTime -= static_cast<int>(std::floor(minutesOfHour * 60));
+
+                                                // convert to YYYY-MM-DD HH:MM:SS
+                                                currentCell.set_value(
+                                                    std::to_wstring(year) + L"-" +
+                                                    std::to_wstring(month) + L"-" +
+                                                    std::to_wstring(day) + L" " +
+                                                    std::to_wstring(hourOfDay) + L":" +
+                                                    std::to_wstring(minutesOfHour) + L":" +
+                                                    std::to_wstring(static_cast<int>(secondsFromTime)));
+                                                }
+                                            }
+                                        else
+                                            { currentCell.set_value(valueStr); }
                                         }
+                                    // just a value, so read that as-is
                                     else
                                         { currentCell.set_value(valueStr); }
                                     }
-                                // just a value, so read that as-is
-                                else
-                                    { currentCell.set_value(valueStr); }
                                 }
                             }
                         }

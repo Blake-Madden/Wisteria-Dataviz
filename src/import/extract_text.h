@@ -16,6 +16,7 @@
 #include "../util/stringutil.h"
 #include "../util/chartraits.h"
 #include "../util/donttranslate.h"
+#include "../math/safe_math.h"
 
 namespace lily_of_the_valley
     {
