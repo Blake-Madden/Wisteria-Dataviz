@@ -858,28 +858,49 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
+        std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
+        size_t skipRows /*= 0*/,
+        wxString worksheet /*= L""*/)
+        {
+        const auto fileExt{ wxFileName(filePath).GetExt() };
+        const auto delim = (fileExt.CmpNoCase(L"csv") == 0) ?
+                            L',' : L'\t';
+
+        wxString fileText;
+        if (fileExt.CmpNoCase(L"xlsx") == 0)
+            {
+            Data::ExcelReader xlReader(filePath);
+            fileText = xlReader.ReadWorksheet(worksheet);
+            }
+        else
+            {
+            wxFile fl(filePath);
+            if (!fl.IsOpened() || !fl.ReadAll(&fileText))
+                {
+                throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
+                                         wxSysErrorMsg(fl.GetLastError())).ToUTF8());
+                }
+            }
+        
+        return ReadColumnInfoRaw(fileText, delim, rowPreviewCount, skipRows);
+        }
+
+    //----------------------------------------------
+    Dataset::ColumnPreviewInfo Dataset::ReadColumnInfoRaw(const wxString& fileText,
         const wchar_t delimiter,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        size_t headerRowLine /*= 0*/)
+        size_t skipRows /*= 0*/)
         {
-        wxString fileText;
-        wxFile fl(filePath);
-        if (!fl.IsOpened() || !fl.ReadAll(&fileText))
-            {
-            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
-                                     wxSysErrorMsg(fl.GetLastError())).ToUTF8());
-            }
-        fileText.Trim(true).Trim(false);
         std::vector<std::vector<wxString>> dataStrings;
 
         lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
-        if (headerRowLine > 0)
+        if (skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
-            lily_of_the_valley::text_row<wxString> noReadRowsStart{ headerRowLine };
+            lily_of_the_valley::text_row<wxString> noReadRowsStart{ skipRows };
             noReadRowsStart.add_column(noReadColumn);
             importer.add_row_definition(noReadRowsStart);
             }
@@ -899,7 +920,7 @@ namespace Wisteria::Data
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
         size_t rowCount = std::min<size_t>(
-            preview(fileText.wc_str(), delimiter, false, false, headerRowLine),
+            preview(fileText.wc_str(), delimiter, false, false, skipRows),
                     rowPreviewCount.has_value() ?
                         (rowPreviewCount.value() + 1/*header*/) : 100);
 
@@ -1158,9 +1179,9 @@ namespace Wisteria::Data
         const auto idColumnIter = info.m_idColumn.empty() ?
             preview.get_header_names().cend() :
             std::find_if(preview.get_header_names().cbegin(),
-            preview.get_header_names().cend(),
-            [&info](const auto& item)
-                { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
+                preview.get_header_names().cend(),
+                [&info](const auto& item)
+                    { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
         throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
         const std::optional<size_t> idColumnIndex =
             (idColumnIter != preview.get_header_names().cend()) ?
@@ -1174,9 +1195,9 @@ namespace Wisteria::Data
             const auto dateColumnIter = dateColumn.m_columnName.empty() ?
             preview.get_header_names().cend() :
                 std::find_if(preview.get_header_names().cbegin(),
-                preview.get_header_names().cend(),
-                [&dateColumn](const auto& item)
-                    { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
+                    preview.get_header_names().cend(),
+                    [&dateColumn](const auto& item)
+                        { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
                 (dateColumnIter != preview.get_header_names().cend()) ?
@@ -1193,9 +1214,9 @@ namespace Wisteria::Data
             const auto catColumnIter = catColumn.m_columnName.empty() ?
             preview.get_header_names().cend() :
                 std::find_if(preview.get_header_names().cbegin(),
-                preview.get_header_names().cend(),
-                [&catColumn](const auto& item)
-                    { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
+                    preview.get_header_names().cend(),
+                    [&catColumn](const auto& item)
+                        { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
                 (catColumnIter != preview.get_header_names().cend()) ?
@@ -1212,9 +1233,9 @@ namespace Wisteria::Data
             const auto continuousColumnIter = continuousColumn.empty() ?
             preview.get_header_names().cend() :
                 std::find_if(preview.get_header_names().cbegin(),
-                preview.get_header_names().cend(),
-                [&continuousColumn](const auto& item)
-                    { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
+                    preview.get_header_names().cend(),
+                    [&continuousColumn](const auto& item)
+                        { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(continuousColumn, continuousColumnIter, false);
             continuousColumnIndices.push_back(
                 (continuousColumnIter != preview.get_header_names().cend()) ?

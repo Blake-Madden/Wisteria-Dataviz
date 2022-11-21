@@ -1204,8 +1204,25 @@ namespace Wisteria::Data
                                      const RegExMap& replacementMap);
 
         /** @brief Reads the column names from a file and deduces their data types.
-            @param delimiter The delimiter to parse the columns with.
             @param filePath The path to the data file.
+            @param rowPreviewCount The number of rows to read when deducing column types.
+            @param skipRows The number of rows to skip before reading the text.
+            @param worksheet If loading an Excel workbook, the name of the worksheet.
+            @returns A vector of column names and their respective data types.\n
+                This can be especially useful for determining whether a categorical column
+                should be imported as strings or codes (i.e., discrete numbers).
+            @throws std::runtime_error If the file can't be read or contains duplicate
+                column names, then throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.
+            @sa ImportInfoFromPreview().*/
+        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+                                                       std::optional<size_t> rowPreviewCount = std::nullopt,
+                                                       size_t skipRows = 0,
+                                                       wxString worksheet = L"");
+        /** @brief Reads the column names from a text buffer and deduces their data types.
+            @param delimiter The delimiter to parse the columns with.
+            @param fileText The text to analyze.
             @param rowPreviewCount The number of rows to read when deducing column types.
             @param skipRows The number of rows to skip before reading the text.
             @returns A vector of column names and their respective data types.\n
@@ -1216,7 +1233,7 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportInfoFromPreview().*/
-        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfoRaw(const wxString& fileText,
                                                        const wchar_t delimiter,
                                                        std::optional<size_t> rowPreviewCount = std::nullopt,
                                                        size_t skipRows = 0);
