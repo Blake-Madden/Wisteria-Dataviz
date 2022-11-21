@@ -1132,11 +1132,14 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_preview preview;
         // see how many lines are in the file and resize the container
-        const size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.GetRowsToSkip());
+        size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.GetRowsToSkip());
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);
-            importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(), false);
+            rowCount = importer.read(fileText.wc_str(), rowCount,
+                                     preview.get_header_names().size(), false);
+            if (rowCount == 0)
+                { return; }
             Reserve(rowCount);
             }
         else
@@ -1151,8 +1154,8 @@ namespace Wisteria::Data
                 { return; }
             if (foundIterator == preview.get_header_names().cend())
                 {
-                const wxString errorMsg = wxString::Format(L"'%s': column not found!", columnName.c_str());
-                throw std::runtime_error(errorMsg.ToUTF8());
+                throw std::runtime_error(
+                    wxString::Format(L"'%s': column not found!", columnName.c_str()).ToUTF8());
                 }
             };
 
