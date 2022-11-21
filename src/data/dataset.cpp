@@ -951,6 +951,7 @@ namespace Wisteria::Data
 
         wxLogNull nl;
         wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
+        wxRegEx mdRegex(L"(?i)^(NA|N/A)$");
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
             // assume column's data is integral unless something in the first
@@ -960,7 +961,7 @@ namespace Wisteria::Data
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
                 // can't deduce anything from MD
-                if (currentCell.empty())
+                if (currentCell.empty() || mdRegex.Matches(currentCell))
                     { continue; }
                 /* "23.06" can be converted to a date, so for that pattern mark it as a
                     float before the date conversion check.*/

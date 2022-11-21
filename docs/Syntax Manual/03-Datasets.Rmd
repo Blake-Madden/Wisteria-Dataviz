@@ -12,9 +12,11 @@ Properties for the `"datasets"` node:
     Available options are:
     - `"tsv"`: a tab-delimited text file.
     - `"csv"`: a comma-delimited text file.
+    - `"xlsx"`: an Excel worksheet.
   - `"skip-rows"`: number of rows to skip in the file before parsing the text.
   - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns.<br />
     This property is optional.
+  - `"worksheet"`: if importing an Excel worksheet, the name of the worksheet.
   - `"id-column"`: the ID column.<br />
     This property is optional.
   - `"continuous-columns"`: an array of continuous column names to import.<br />

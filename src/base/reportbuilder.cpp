@@ -2261,12 +2261,10 @@ namespace Wisteria
                         !datasetNode->HasProperty(L"continuous-columns") &&
                         !datasetNode->HasProperty(L"categorical-columns"))
                         {
-                        const auto delim =
-                            (importer.CmpNoCase(L"csv") == 0 ||
-                                wxFileName(path).GetExt().CmpNoCase(L"csv") == 0) ?
-                            L',' : L'\t';
                         importDefines = Dataset::ImportInfoFromPreview(
-                            Dataset::ReadColumnInfo(path, delim, std::nullopt, importDefines.GetRowsToSkip()));
+                            Dataset::ReadColumnInfo(path, std::nullopt,
+                                importDefines.GetRowsToSkip(),
+                                datasetNode->GetProperty(L"worksheet")->GetValueString()));
                         importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
                         }
                     else
@@ -2289,6 +2287,13 @@ namespace Wisteria
                         fileExt.CmpNoCase(L"tsv") == 0 ||
                         fileExt.CmpNoCase(L"txt") == 0)
                         { dataset->ImportTSV(path, importDefines); }
+                    else if (importer.CmpNoCase(L"xlsx") == 0 ||
+                        fileExt.CmpNoCase(L"xlsx") == 0)
+                        {
+                        dataset->ImportExcel(path,
+                            datasetNode->GetProperty(L"worksheet")->GetValueString(),
+                            importDefines);
+                        }
                     else
                         {
                         throw std::runtime_error(
