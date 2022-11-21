@@ -2255,6 +2255,14 @@ namespace Wisteria
                     ImportInfo importDefines;
                     if (datasetNode->HasProperty(L"skip-rows"))
                         { importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0)); }
+
+                    const std::variant<wxString, size_t> worksheet =
+                    datasetNode->GetProperty(L"worksheet")->IsValueNumber() ?
+                        std::variant<wxString, size_t>(
+                            static_cast<size_t>(
+                                datasetNode->GetProperty(L"worksheet")->GetValueNumber())) :
+                        std::variant<wxString, size_t>(
+                            datasetNode->GetProperty(L"worksheet")->GetValueString());
                     // if no columns are defined, then deduce them ourselves
                     if (!datasetNode->HasProperty(L"id-column") &&
                         !datasetNode->HasProperty(L"date-columns") &&
@@ -2264,7 +2272,7 @@ namespace Wisteria
                         importDefines = Dataset::ImportInfoFromPreview(
                             Dataset::ReadColumnInfo(path, std::nullopt,
                                 importDefines.GetRowsToSkip(),
-                                datasetNode->GetProperty(L"worksheet")->GetValueString()));
+                                worksheet));
                         importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
                         }
                     else
@@ -2290,9 +2298,7 @@ namespace Wisteria
                     else if (importer.CmpNoCase(L"xlsx") == 0 ||
                         fileExt.CmpNoCase(L"xlsx") == 0)
                         {
-                        dataset->ImportExcel(path,
-                            datasetNode->GetProperty(L"worksheet")->GetValueString(),
-                            importDefines);
+                        dataset->ImportExcel(path, worksheet, importDefines);
                         }
                     else
                         {

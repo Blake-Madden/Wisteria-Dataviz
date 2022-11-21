@@ -860,7 +860,7 @@ namespace Wisteria::Data
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
         size_t skipRows /*= 0*/,
-        wxString worksheet /*= L""*/)
+        const std::variant<wxString, size_t>& worksheet /*= L""*/)
         {
         const auto fileExt{ wxFileName(filePath).GetExt() };
         const auto delim = (fileExt.CmpNoCase(L"csv") == 0) ?
@@ -1085,7 +1085,8 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    void Dataset::ImportExcel(const wxString& filePath, const wxString& worksheet,
+    void Dataset::ImportExcel(const wxString& filePath,
+        const std::variant<wxString, size_t>& worksheet,
         const ImportInfo& info)
         {
         Data::ExcelReader xlReader(filePath);
