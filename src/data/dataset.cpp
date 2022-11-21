@@ -907,6 +907,9 @@ namespace Wisteria::Data
         std::set<wxString, StringCmpNoCase> colNames;
         for (const auto& headerName : preview.get_header_names())
             {
+            // skip blank names, we will throw those out later
+            if (headerName.empty())
+                { continue; }
             const auto [iter, inserted] = colNames.insert(headerName);
             if (!inserted)
                 {
@@ -1152,7 +1155,9 @@ namespace Wisteria::Data
 
         // find the column indices into the data that match the column names
         // from the client and map them as they requested
-        const auto idColumnIter = std::find_if(preview.get_header_names().cbegin(),
+        const auto idColumnIter = info.m_idColumn.empty() ?
+            preview.get_header_names().cend() :
+            std::find_if(preview.get_header_names().cbegin(),
             preview.get_header_names().cend(),
             [&info](const auto& item)
                 { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
@@ -1166,7 +1171,9 @@ namespace Wisteria::Data
         std::vector<std::optional<dateIndexInfo>> dateColumnIndices;
         for (const auto& dateColumn : info.m_dateColumns)
             {
-            const auto dateColumnIter = std::find_if(preview.get_header_names().cbegin(),
+            const auto dateColumnIter = dateColumn.m_columnName.empty() ?
+            preview.get_header_names().cend() :
+                std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
                 [&dateColumn](const auto& item)
                     { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
@@ -1183,7 +1190,9 @@ namespace Wisteria::Data
         std::vector<std::optional<catIndexInfo>> catColumnIndices;
         for (const auto& catColumn : info.m_categoricalColumns)
             {
-            const auto catColumnIter = std::find_if(preview.get_header_names().cbegin(),
+            const auto catColumnIter = catColumn.m_columnName.empty() ?
+            preview.get_header_names().cend() :
+                std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
                 [&catColumn](const auto& item)
                     { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
@@ -1200,7 +1209,9 @@ namespace Wisteria::Data
         std::vector<std::optional<size_t>> continuousColumnIndices;
         for (const auto& continuousColumn : info.m_continuousColumns)
             {
-            const auto continuousColumnIter = std::find_if(preview.get_header_names().cbegin(),
+            const auto continuousColumnIter = continuousColumn.empty() ?
+            preview.get_header_names().cend() :
+                std::find_if(preview.get_header_names().cbegin(),
                 preview.get_header_names().cend(),
                 [&continuousColumn](const auto& item)
                     { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
