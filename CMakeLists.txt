@@ -147,3 +147,56 @@ IF(APPLE)
         MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.demo")
 ENDIF()
+
+# Build the app (not currently available)
+########################
+IF(EXISTS "${CMAKE_SOURCE_DIR}/app" AND EXISTS "${CMAKE_SOURCE_DIR}/app/wisteriaapp.cpp")
+    SET(APP_SRC_FILES ${CMAKE_SOURCE_DIR}/app/wisteriaapp.cpp
+        ${CMAKE_SOURCE_DIR}/app/wisteriaview.cpp
+        ${CMAKE_SOURCE_DIR}/app/wisteriadoc.cpp)
+
+    IF(WIN32)
+        # Include an RC file and HiDPI manifest for Windows (provided by wxWidgets)
+        SET(wxUSE_DPI_AWARE_MANIFEST 1)
+        LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx.rc)
+        LIST(APPEND APP_SRC_FILES ${wxWidgets_ROOT_DIR}/include/wx/msw/wx_dpi_aware.manifest)
+    ELSEIF(APPLE)
+        # Add an icon for the apple .app file
+        LIST(APPEND APP_SRC_FILES ${CMAKE_SOURCE_DIR}/app/wxmac.icns)
+    ENDIF()
+
+    # Define the build target for the executable and copy it into the "app" subfolder
+    MESSAGE(STATUS "Building the program...")
+    SET(WISTERIA_APP WisteriaDV)
+    ADD_EXECUTABLE(${WISTERIA_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
+    SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
+
+    # Link required libraries to the executable
+    IF(WIN32)
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES})
+    ELSEIF(UNIX)
+        FIND_LIBRARY(TBB_LIB tbb)
+        TARGET_LINK_LIBRARIES(${WISTERIA_APP} WisteriaLib ${wxWidgets_LIBRARIES} ${TBB_LIB})
+    ENDIF()
+
+    # Copy resources and datasets into build folder
+    MESSAGE(STATUS "Copying application resources...")
+    ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/app/res $<TARGET_FILE_DIR:${WISTERIA_APP}>/res)
+    ADD_CUSTOM_COMMAND(TARGET ${WISTERIA_APP}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/datasets $<TARGET_FILE_DIR:${WISTERIA_APP}>/datasets)
+
+    IF(APPLE)
+        SET_TARGET_PROPERTIES(${WISTERIA_APP} PROPERTIES
+            RESOURCE "app/wxmac.icns"
+            MACOSX_BUNDLE_ICON_FILE wxmac.icns
+            MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
+            MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
+    ENDIF()
+
+ENDIF()
