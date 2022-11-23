@@ -288,7 +288,6 @@ namespace Wisteria
         /// @param labelTemplate The template to copy default settings from
         ///     before loading properties.
         /// @returns A Label object, or null upon failure.
-        /// @todo many features still needed!
         [[nodiscard]] std::shared_ptr<GraphItems::Label> LoadLabel(
             const wxSimpleJSON::Ptr_t& labelNode,
             const GraphItems::Label& labelTemplate);
@@ -447,8 +446,6 @@ namespace Wisteria
         // double curly braces (a subformula), or empty string (no parameter)
         [[nodiscard]] static wxString ColumnNameOrFormulaRegEx()
             { return L"(`[^`]+`|{{[^}]*}}|[[:space:]]*)"; }
-        [[nodiscard]] static wxString NumberRegEx()
-            { return L"([[:digit:]]+)"; }
         [[nodiscard]] static wxString NumberOrStringRegEx()
             { return L"(`[^`]+`|[[:digit:]]+)"; }
         [[nodiscard]] static wxString ParamSepatatorRegEx()

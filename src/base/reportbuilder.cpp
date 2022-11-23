@@ -2707,8 +2707,6 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
-
             auto candlestickPlot = std::make_shared<CandlestickPlot>(canvas);
             candlestickPlot->SetData(foundPos->second,
                 variablesNode->GetProperty(L"date")->GetValueString(),
