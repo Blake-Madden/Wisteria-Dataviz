@@ -20,6 +20,7 @@ namespace Wisteria::Graphs
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatCategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
+        // cppcheck-suppress duplicateValueTernary
         return
             (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -38,7 +39,6 @@ namespace Wisteria::Graphs
              LikertSurveyQuestionFormat::SixPointCategorized :
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
-            // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPointCategorized :
              LikertSurveyQuestionFormat::SevenPointCategorized;
         }
@@ -47,6 +47,7 @@ namespace Wisteria::Graphs
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatUncategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
+        // cppcheck-suppress duplicateValueTernary
         return
             (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -65,7 +66,6 @@ namespace Wisteria::Graphs
              LikertSurveyQuestionFormat::SixPoint :
             (format == LikertSurveyQuestionFormat::SevenPoint ||
                 format == LikertSurveyQuestionFormat::SevenPointCategorized) ?
-            // cppcheck-suppress duplicateValueTernary
              LikertSurveyQuestionFormat::SevenPoint :
              LikertSurveyQuestionFormat::SevenPoint;
         }
@@ -408,13 +408,13 @@ namespace Wisteria::Graphs
                 { uniqueGroups.insert(val); }
             }
 
+        // cppcheck-suppress duplicateValueTernary
         const LikertSurveyQuestionFormat format =
             (maxVal == 7) ? LikertSurveyQuestionFormat::SevenPoint :
             (maxVal == 6) ? LikertSurveyQuestionFormat::SixPoint :
             (maxVal == 5) ? LikertSurveyQuestionFormat::FivePoint :
             (maxVal == 4) ? LikertSurveyQuestionFormat::FourPoint :
             (maxVal == 3) ? LikertSurveyQuestionFormat::ThreePoint :
-            // cppcheck-suppress duplicateValueTernary
             (maxVal == 2) ? LikertSurveyQuestionFormat::TwoPoint :
             LikertSurveyQuestionFormat::TwoPoint;
 
