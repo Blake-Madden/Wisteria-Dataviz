@@ -946,7 +946,7 @@ namespace Wisteria::Graphs
             const bool parentIsGhosted =
                 GetOuterPie().at(GetInnerPie().at(i).m_parentSliceIndex).IsGhosted();
             if (GetPieSliceEffect() == PieSliceEffect::Image && GetImageScheme() &&
-                (!parentIsGhosted || (parentIsGhosted && GetInnerPie().at(i).IsGhosted())) )
+                (!parentIsGhosted || GetInnerPie().at(i).IsGhosted()) )
                 { pSlice->GetBrush() = *wxTRANSPARENT_BRUSH; }
             addObjectAndQueueForOffsetting(pSlice);
 
