@@ -29,6 +29,21 @@ In the above example, a file named "Sense of Belonging.csv" will be imported. Th
 "Year" and "Belong" (case insensitively) and will load them as continuous data. Next, the column "Name" will be
 imported as the categorical (i.e., grouping) column.
 
+Simplified Importing
+=============================
+Along with explicitly specifying which columns to import and how to import them, you can also
+auto-detect how to import the data instead. For example:
+
+```cpp
+const auto datasetPath{ L"/home/rdoyle/data/Sense of Belonging.csv" };
+
+auto BelongingData = std::make_shared<Data::Dataset>();
+BelongingData->ImportCSV(datasetPath,
+    // preview the data and deduce how to import it
+    Dataset::ImportInfoFromPreview(
+        Dataset::ReadColumnInfo(datasetPath, L',')));
+```
+
 Continuous Data
 =============================
 
