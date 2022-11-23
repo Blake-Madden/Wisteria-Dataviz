@@ -832,7 +832,7 @@ namespace Wisteria::Data
         std::vector<Data::ImportInfo::DateImportInfo> dateInfo;
         for (const auto& colInfo : previewInfo)
             {
-            if (colInfo.second == Data::Dataset::ColumnImportType::Integer)
+            if (colInfo.second == Data::Dataset::ColumnImportType::Discrete)
                 {
                 catInfo.push_back(
                     { colInfo.first, CategoricalImportMethod::ReadAsIntegers });
@@ -847,7 +847,7 @@ namespace Wisteria::Data
                 dateInfo.push_back(
                     { colInfo.first, DateImportMethod::Automatic, L"" });
                 }
-            else if (colInfo.second == Data::Dataset::ColumnImportType::FloatingPoint)
+            else if (colInfo.second == Data::Dataset::ColumnImportType::Numeric)
                 {
                 continuousVars.push_back(colInfo.first);
                 }
@@ -956,7 +956,7 @@ namespace Wisteria::Data
             {
             // assume column's data is integral unless something in the first
             // few rows looks like a string
-            ColumnImportType currentColumnType{ ColumnImportType::Integer };
+            ColumnImportType currentColumnType{ ColumnImportType::Discrete };
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
@@ -969,22 +969,28 @@ namespace Wisteria::Data
                     {
                     // switch from integer to fp, but keep going in case there
                     // is a string or date further down this column
-                    currentColumnType = ColumnImportType::FloatingPoint;
+                    currentColumnType = ColumnImportType::Numeric;
                     }
                 else if (ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
                     }
+
                 const auto parsedNumber =
                     ConvertToDouble(currentCell, std::numeric_limits<double>::quiet_NaN());
+                // we know there is content in this cell, so if numeric conversion fails then
+                // it must be some sort of text
+                // (other than "NA" or "N/A" that we already checked for)
                 if (std::isnan(parsedNumber))
                     {
                     currentColumnType = ColumnImportType::String;
                     break;
                     }
-                else if (!compare_doubles(get_mantissa(parsedNumber), 0))
-                    { currentColumnType = ColumnImportType::FloatingPoint; }
+                else if (!compare_doubles(get_mantissa(parsedNumber), 0) ||
+                    // numbers outside of 0-10 probably aren't a discrete code
+                    !is_within(std::make_pair(0.0, 10.0), parsedNumber))
+                    { currentColumnType = ColumnImportType::Numeric; }
                 }
             // silently ignore columns with no name (missing header)
             if (preview.get_header_names().at(colIndex).length())

@@ -792,8 +792,8 @@ namespace Wisteria::Data
         enum class ColumnImportType
             {
             String,        /*!< %Column is text.*/
-            Integer,       /*!< %Column is integral.*/
-            FloatingPoint, /*!< %Column is floating point.*/
+            Discrete,      /*!< %Column is integral (small range, representing codes).*/
+            Numeric,       /*!< %Column is floating point or wide range of integers.*/
             Date           /*!< %Column is a date.*/
             };
 
@@ -1309,8 +1309,7 @@ namespace Wisteria::Data
             @throws std::runtime_error If the worksheet can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                @c wxString::FromUTF8() when formatting it for an error message.
-            @todo Needs further testing.*/
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportExcel(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
                         const ImportInfo& info);
         /** @brief Exports the dataset to a text file.
