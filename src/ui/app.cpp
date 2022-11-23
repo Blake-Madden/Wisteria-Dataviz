@@ -65,8 +65,6 @@ bool Wisteria::UI::BaseApp::OnInit()
 #ifdef __WXMSW__
     if (wxGraphicsRenderer::GetDirect2DRenderer())
         { wxLogMessage(L"Direct2D Rendering Available: will attempt to use Direct2D"); }
-    wxLogMessage(L"Available Physical Memory: %.02fGbs.",
-        safe_divide<double>(wxGetFreeMemory().ToLong(), 1024*1024*1024));
 #endif
     wxLogMessage(L"Default System Font: %s, %d pt.",
         wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
