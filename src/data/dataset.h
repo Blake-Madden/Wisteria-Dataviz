@@ -851,6 +851,34 @@ namespace Wisteria::Data
             for (auto& column : m_continuousColumns)
                 { column.Reserve(rowCount); }
             }
+        /// @brief Resizes the dataset.
+        /// @param rowCount The number of rows to set the dataset to. If increasing the
+        ///     number or rows, new rows will be filled with missing data. If decreasing the
+        ///     number of rows, then the data will be truncated.
+        /// @warning Prefer using Reserve() and AddRow() to allocate memory and to write
+        ///     data to the dataset. This should only be used if using Fill() for
+        ///     each column to load data directly into them. (The various Add___Column()
+        ///     functions should be called first to create the structure of the dataset.)
+        void Resize(const size_t rowCount)
+            {
+            m_idColumn.Resize(rowCount, wxEmptyString);
+            for (auto& column : m_dateColumns)
+                { column.Resize(rowCount, wxInvalidDateTime); }
+            for (auto& column : m_categoricalColumns)
+                {
+                auto MDCode = column.FindMissingDataCode();
+                if (!MDCode.has_value())
+                    {
+                    column.GetStringTable().insert(
+                        std::make_pair(column.GetNextKey(), wxEmptyString));
+                    MDCode = column.FindMissingDataCode();
+                    wxASSERT_MSG(MDCode, L"Error creating MD label when resizing column!");
+                    }
+                column.Resize(rowCount, MDCode.value_or(0) );
+                }
+            for (auto& column : m_continuousColumns)
+                { column.Resize(rowCount, std::numeric_limits<double>::quiet_NaN()); }
+            }
         /** @brief Adds a new continuous column.
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
@@ -1377,33 +1405,6 @@ namespace Wisteria::Data
         void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
             { m_importContinousMDRecodeValue = recodeVal; }
     private:
-        /// @brief Resizes the data.
-        /// @param rowCount The number of rows to set the dataset to. If increasing the
-        ///     number or rows, new rows will be filled with missing data. If decreasing the
-        ///     number of rows, then the data will be truncated.
-        /// @warning Prefer using Reserve() and AddRow() to allocate memory and to write
-        ///     data to the dataset. This should only be used if directly editing the data
-        ///     in a friend class.
-        void Resize(const size_t rowCount)
-            {
-            m_idColumn.Resize(rowCount, wxEmptyString);
-            for (auto& column : m_dateColumns)
-                { column.Resize(rowCount, wxInvalidDateTime); }
-            for (auto& column : m_categoricalColumns)
-                {
-                auto MDCode = column.FindMissingDataCode();
-                if (!MDCode.has_value())
-                    {
-                    column.GetStringTable().insert(
-                        std::make_pair(column.GetNextKey(), wxEmptyString));
-                    MDCode = column.FindMissingDataCode();
-                    wxASSERT_MSG(MDCode, L"Error creating MD label when resizing column!");
-                    }
-                column.Resize(rowCount, MDCode.value_or(0) );
-                }
-            for (auto& column : m_continuousColumns)
-                { column.Resize(rowCount, std::numeric_limits<double>::quiet_NaN()); }
-            }
         /// @returns The specified continuous column by name or index.
         [[nodiscard]] ContinuousColumnConstIterator
             GetContinuousColumn(const std::variant<wxString, size_t>& column) const noexcept

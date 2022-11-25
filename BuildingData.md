@@ -37,4 +37,23 @@ yData->GetCategoricalColumn(L"Group")->GetStringTable() =
     { { 0, L"MALE" }, { 1, L"FEMALE" } };
 ```
 
+More direct access to the dataset is also available, where you can copy raw
+data into it. The following demonstrates this:
+
+```cpp
+auto yData = std::make_shared<Data::Dataset>();
+
+// specify the columns
+yData->AddContinuousColumn(L"Score");
+yData->AddCategoricalColumn(L"Group");
+// resize the new columns to 10 rows
+yData->Resize(10);
+// set the categorical codes
+yData->GetCategoricalColumn(L"Group")->GetStringTable() =
+    { { 0, L"MALE" }, { 1, L"FEMALE" } };
+// fill the columns with data
+yData->GetCategoricalColumn(L"Group")->Fill({ 1, 1, 1, 2, 1, 2, 2, 1, 2, 1 });
+yData->GetContinuousColumn(L"Score")->Fill({ 81, 82, 93, 77, 92, 89, 97, 82, 68, 92 });
+```
+
 After the dataset is built, you can pass it to most graph types to plot it.
