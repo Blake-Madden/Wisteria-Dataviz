@@ -126,7 +126,7 @@ namespace Wisteria::Data
         virtual ~Column() = default;
 
         /// @name Data Management Functions
-        /// @brief Functions relating to transforming data in the column.
+        /// @brief Functions relating to accessing and transforming data in the column.
         /// @{
 
         /// @returns The raw data.
@@ -935,7 +935,7 @@ namespace Wisteria::Data
             @note Check the return against `GetCategoricalColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetCategoricalColumn() unless you need to edit the column.*/
-        [[nodiscard]] auto GetCategoricalColumnWritable(const wxString& columnName) noexcept
+        [[nodiscard]] auto GetCategoricalColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetCategoricalColumns().begin(),
                 GetCategoricalColumns().end(),
@@ -978,7 +978,7 @@ namespace Wisteria::Data
             @note Check the return against `GetDateColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetDateColumn() unless you need to edit the column.*/
-        [[nodiscard]] auto GetDateColumnWritable(const wxString& columnName) noexcept
+        [[nodiscard]] auto GetDateColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetDateColumns().begin(),
                 GetDateColumns().end(),
@@ -1007,7 +1007,8 @@ namespace Wisteria::Data
                 `GetContinuousColumns().end()` otherwise.
             @note Check the return against `GetContinuousColumns().cend()`
                 to confirm that the column was found prior to using it.*/
-        [[nodiscard]] ContinuousColumnConstIterator GetContinuousColumn(const wxString& columnName) const noexcept
+        [[nodiscard]] ContinuousColumnConstIterator
+            GetContinuousColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetContinuousColumns().cbegin(),
                 GetContinuousColumns().cend(),
@@ -1021,7 +1022,7 @@ namespace Wisteria::Data
             @note Check the return against `GetContinuousColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetContinuousColumns() unless you need to edit the column.*/
-        [[nodiscard]] ContinuousColumnIterator GetContinuousColumnWritable(const wxString& columnName) noexcept
+        [[nodiscard]] ContinuousColumnIterator GetContinuousColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetContinuousColumns().begin(),
                 GetContinuousColumns().end(),

@@ -388,7 +388,7 @@ namespace Wisteria::Data
                     _(L"'Values to' column name cannot be empty.").ToUTF8());
                 }
         pivottedData->AddContinuousColumn(valuesTo);
-        auto valueToTarget = pivottedData->GetContinuousColumnWritable(valuesTo);
+        auto valueToTarget = pivottedData->GetContinuousColumn(valuesTo);
 
         pivottedData->Resize(fromColumns.size() * dataset->GetRowCount());
 
@@ -406,7 +406,7 @@ namespace Wisteria::Data
         // map the target name column(s)
         for (size_t i = 0; i < namesTo.size(); ++i)
             {
-            auto foundCol = pivottedData->GetCategoricalColumnWritable(namesTo[i]);
+            auto foundCol = pivottedData->GetCategoricalColumn(namesTo[i]);
             if (foundCol == pivottedData->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(

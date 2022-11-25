@@ -206,7 +206,7 @@ namespace Wisteria::Data
                         _(L"'%s': internal error finding right dataset column when left joining."),
                         srcCol).ToUTF8());
                 }
-            const auto mCol = mergedData->GetCategoricalColumnWritable(outCol);
+            const auto mCol = mergedData->GetCategoricalColumn(outCol);
             wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetCategoricalColumns().cend())
@@ -230,7 +230,7 @@ namespace Wisteria::Data
                         _(L"'%s': internal error finding right dataset column when left joining."),
                         srcCol).ToUTF8());
                 }
-            const auto mCol = mergedData->GetContinuousColumnWritable(outCol);
+            const auto mCol = mergedData->GetContinuousColumn(outCol);
             wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetContinuousColumns().cend())
@@ -254,7 +254,7 @@ namespace Wisteria::Data
                         _(L"'%s': internal error finding right dataset column when left joining."),
                         srcCol).ToUTF8());
                 }
-            const auto mCol = mergedData->GetDateColumnWritable(outCol);
+            const auto mCol = mergedData->GetDateColumn(outCol);
             wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetDateColumns().cend())

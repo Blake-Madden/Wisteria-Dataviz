@@ -56,11 +56,11 @@ namespace Wisteria::Data
        
         // get target iterator first as this may need to add a new column and invalid
         // other colum iterators
-        auto targetVar = GetCategoricalColumnWritable(targetColumnName);
+        auto targetVar = GetCategoricalColumn(targetColumnName);
         if (targetVar == GetCategoricalColumns().end())
             {
             AddCategoricalColumn(targetColumnName);
-            targetVar = GetCategoricalColumnWritable(targetColumnName);
+            targetVar = GetCategoricalColumn(targetColumnName);
             if (targetVar == GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -181,7 +181,7 @@ namespace Wisteria::Data
                                  const std::vector<wxString>& labelsToKeep,
                                  const wxString& otherLabel /*= _("Other")*/)
         {
-        auto catColumn = GetCategoricalColumnWritable(colName);
+        auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
             throw std::runtime_error(wxString::Format(
@@ -219,7 +219,7 @@ namespace Wisteria::Data
     void Dataset::CollapseMin(const wxString& colName, const size_t minVal,
                               const wxString& otherLabel /*= _("Other")*/)
         {
-        auto catColumn = GetCategoricalColumnWritable(colName);
+        auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
             throw std::runtime_error(wxString::Format(
@@ -250,7 +250,7 @@ namespace Wisteria::Data
     void Dataset::RecodeRE(const wxString& colName, const wxString& pattern,
                            const wxString& replace)
         {
-        auto catColumn = GetCategoricalColumnWritable(colName);
+        auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
             {
             throw std::runtime_error(wxString::Format(
@@ -277,9 +277,9 @@ namespace Wisteria::Data
                 _(L"New column name already exists in the dataset.").ToUTF8());
             }
 
-        auto continuousCol = GetContinuousColumnWritable(colName);
-        auto catCol = GetCategoricalColumnWritable(colName);
-        auto dateCol = GetDateColumnWritable(colName);
+        auto continuousCol = GetContinuousColumn(colName);
+        auto catCol = GetCategoricalColumn(colName);
+        auto dateCol = GetDateColumn(colName);
 
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
             { GetIdColumn().SetName(newColName); }
@@ -1393,13 +1393,13 @@ namespace Wisteria::Data
         {
         if (GetIdColumn().GetName().CmpNoCase(colName) == 0)
             { return &GetIdColumn(); }
-        else if (auto foundCatVar = GetCategoricalColumnWritable(colName);
+        else if (auto foundCatVar = GetCategoricalColumn(colName);
             foundCatVar != GetCategoricalColumns().end())
             { return foundCatVar; }
-        else if (auto foundContinuousVar = GetContinuousColumnWritable(colName);
+        else if (auto foundContinuousVar = GetContinuousColumn(colName);
             foundContinuousVar != GetContinuousColumns().end())
             { return foundContinuousVar; }
-        else if (auto foundDateVar = GetDateColumnWritable(colName);
+        else if (auto foundDateVar = GetDateColumn(colName);
             foundDateVar != GetDateColumns().end())
             { return foundDateVar; }
         else

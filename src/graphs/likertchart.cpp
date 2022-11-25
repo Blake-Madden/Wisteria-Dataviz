@@ -88,7 +88,7 @@ namespace Wisteria::Graphs
         {
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -170,7 +170,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -204,7 +204,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 2!");
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -240,7 +240,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -276,7 +276,7 @@ namespace Wisteria::Graphs
                                               L"String table should end at 3!");
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(wxString::Format(
@@ -377,11 +377,12 @@ namespace Wisteria::Graphs
         Data::GroupIdType maxVal{ 0 };
         for (const auto& catColumnName : questionColumns)
             {
-            const auto categoricalColumn = data->GetCategoricalColumnWritable(catColumnName);
+            const auto categoricalColumn = data->GetCategoricalColumn(catColumnName);
             if (categoricalColumn == data->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': categorical column not found for Likert chart."), catColumnName).ToUTF8());
+                    _(L"'%s': categorical column not found for Likert chart."),
+                    catColumnName).ToUTF8());
                 }
             if (categoricalColumn->GetValues().size())
                 {
