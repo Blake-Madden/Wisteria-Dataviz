@@ -174,6 +174,26 @@ namespace Wisteria::Data
             @param val The value to fill the data with.*/
         void Fill(const T& val)
             { std::fill(m_data.begin(), m_data.end(), val); }
+        /** @brief Fills the data with a vector of values.
+            @param values A @c std::vector of values to fill the data with.
+            @note If @c values is smaller than the number of rows, then it will
+                be copied into the column and the trailing values in the column
+                will remain unchanged. If @c values is larger than the column, then throws.
+            @throws std::runtime_error If the vector is larger than the column,
+                throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        void Fill(const std::vector<T>& values)
+            {
+            if (values.size() <= m_data.size())
+                { std::copy(values.cbegin(), values.cend(), m_data.begin()); }
+            else
+                {
+                throw std::runtime_error(
+                    _(L"Data being copied into dataset is larger than the column's row count.").
+                    ToUTF8());
+                }
+            }
         /// @brief Fills the column with missing data.
         ///     Missing data will be dependent on the columns data type. For example,
         ///     a date column will be filled with @c wxInvalidDateTime.
