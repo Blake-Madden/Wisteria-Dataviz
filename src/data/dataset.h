@@ -826,19 +826,41 @@ namespace Wisteria::Data
         [[nodiscard]] const wxString& GetName() const noexcept
             { return m_name; }
 
-        /// @brief Removes all data from the dataset.
-        /// @details All continuous, categorical, and date columns will be removed,
-        ///     and the ID column will be cleared.
-        void Clear() noexcept
+        /** @brief Removes a column name(s) from a list of columns.
+            @details As an example, this is useful for removing a grouping column from a list
+                of other categoricals returned from GetCategoricalColumnNames().
+            @param[in,out] colNames The list of column names.
+            @param colsToRemove The column name(s) to remove.
+            @sa GetContinuousColumnNames(), GetCategoricalColumnNames(), GetDateColumnNames().*/
+        static void RemoveColumnNamesFromList(std::vector<wxString>& colNames,
+                                              const std::initializer_list<wxString>& colsToRemove)
             {
-            m_idColumn.Clear();
-            for (auto& column : m_dateColumns)
-                { column.Clear(); }
-            for (auto& column : m_categoricalColumns)
-                { column.Clear(); }
-            for (auto& column : m_continuousColumns)
-                { column.Clear(); }
+            auto endOfColumns = std::remove_if(colNames.begin(), colNames.end(),
+                [&](const auto& colName)
+                {
+                for (const auto& removeName : colsToRemove)
+                    {
+                    if (colName.CmpNoCase(removeName) == 0)
+                        { return true; }
+                    }
+                return false; }
+                );
+            colNames.erase(endOfColumns, colNames.end());
             }
+
+        /** @brief Determines if there are any valid IDs in the ID column.
+            @returns @c true if there are any ID values in the ID column.*/
+        [[nodiscard]] bool HasValidIdData() const;
+
+        /// @returns The number of rows (observations) in the data.
+        [[nodiscard]] size_t GetRowCount() const noexcept
+            { return m_idColumn.GetRowCount(); }
+
+        /** @name Data Management Functions
+            @brief Functions related to accessing and editing
+                the dataset's data.*/
+        /// @{
+
         /// @brief Reserves memory for the data.
         /// @param rowCount The number of rows to allocate memory for.
         void Reserve(const size_t rowCount)
@@ -879,6 +901,38 @@ namespace Wisteria::Data
             for (auto& column : m_continuousColumns)
                 { column.Resize(rowCount, std::numeric_limits<double>::quiet_NaN()); }
             }
+        /// @brief Removes all data from the dataset.
+        /// @details All continuous, categorical, and date columns will be removed,
+        ///     and the ID column will be cleared.
+        void Clear() noexcept
+            {
+            m_idColumn.Clear();
+            for (auto& column : m_dateColumns)
+                { column.Clear(); }
+            for (auto& column : m_categoricalColumns)
+                { column.Clear(); }
+            for (auto& column : m_continuousColumns)
+                { column.Clear(); }
+            }
+        /** @brief Adds a single data point.
+            @details This is a lower-level method for manually filling a dataset;
+             prefer the `ImportXXX()` family of functions for a simpler interface.
+            @param dataInfo The data to fill the row with.
+            @warning All calls to this function should use a RowInfo with
+             the same columns throughout it, in the same order; otherwise, the columns will
+             have different lengths or data will be out of order.
+             Generally, this should be called in a loop,
+             where the RowInfo is constructed with the same set of columns each time.
+             Also, it is recommended to add columns prior to calling this
+             (e.g., call AddDateColumn()); otherwise, this function will create any
+             necessary columns with generically generated names.*/
+        void AddRow(const RowInfo& dataInfo);
+        /// @}
+
+        /** @name Column Access Functions
+            @brief Functions related to adding and accessing columns.*/
+        /// @{
+
         /** @brief Adds a new continuous column.
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
@@ -927,38 +981,18 @@ namespace Wisteria::Data
             m_dateColumns.back().Resize(GetRowCount(), wxInvalidDateTime);
             return m_dateColumns.back();
             }
-        /** @brief Adds a single data point.
-            @details This is a lower-level method for manually filling a dataset;
-             prefer the `ImportXXX()` family of functions for a simpler interface.
-            @param dataInfo The data to fill the row with.
-            @warning All calls to this function should use a RowInfo with
-             the same columns throughout it, in the same order; otherwise, the columns will
-             have different lengths or data will be out of order.
-             Generally, this should be called in a loop,
-             where the RowInfo is constructed with the same set of columns each time.
-             Also, it is recommended to add columns prior to calling this
-             (e.g., call AddDateColumn()); otherwise, this function will create any
-             necessary columns with generically generated names.*/
-        void AddRow(const RowInfo& dataInfo);
+
         /** @brief During import, sets the column names to the names
                 that the client specified.
             @param info The import specification used when importing the
                 data. The column names are extracted from this.*/
         void SetColumnNames(const ImportInfo& info);
-
-        /// @returns The number of rows (observations) in the data.
-        [[nodiscard]] size_t GetRowCount() const noexcept
-            { return m_idColumn.GetRowCount(); }
-
         /// @brief Finds a column by name, regardless of type.
         /// @param colName The name of the column.
         /// @returns A column iterator if found, @c std::nullopt otherwise.
         ///     Note that the returned iterator is a @c std::variant that needs to be unwrapped.
         [[nodiscard]] std::optional<ColumnIterator> FindColumn(const wxString& colName);
 
-        /// @private
-        [[nodiscard]] const Column<wxString>& GetIdColumn() const noexcept
-            { return m_idColumn; }
         /// @returns The ID column.
         [[nodiscard]] Column<wxString>& GetIdColumn() noexcept
             { return m_idColumn; }
@@ -990,22 +1024,6 @@ namespace Wisteria::Data
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
-        /// @private
-        [[nodiscard]] const std::vector<ColumnWithStringTable>& GetCategoricalColumns() const noexcept
-            { return m_categoricalColumns; }
-        /// @returns The categorical columns.
-        [[nodiscard]] std::vector<ColumnWithStringTable>& GetCategoricalColumns() noexcept
-            { return m_categoricalColumns; }
-        /// @returns A vector of all categorical column names.
-        /// @sa RemoveColumnNamesFromList().
-        [[nodiscard]] std::vector<wxString> GetCategoricalColumnNames() const noexcept
-            {
-            std::vector<wxString> colNames;
-            for (const auto& col : GetCategoricalColumns())
-                { colNames.push_back(col.GetName()); }
-            return colNames;
-            }
-
         /** @brief Gets an iterator to a date column by name.
             @param columnName The name of the date column to look for.
             @returns An iterator to the group column if found,
@@ -1033,22 +1051,6 @@ namespace Wisteria::Data
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
-        /// @private
-        [[nodiscard]] const std::vector<Column<wxDateTime>>& GetDateColumns() const noexcept
-            { return m_dateColumns; }
-        /// @returns The date columns.
-        [[nodiscard]] std::vector<Column<wxDateTime>>& GetDateColumns() noexcept
-            { return m_dateColumns; }
-        /// @returns A vector of all date column names.
-        /// @sa RemoveColumnNamesFromList().
-        [[nodiscard]] std::vector<wxString> GetDateColumnNames() const noexcept
-            {
-            std::vector<wxString> colNames;
-            for (const auto& col : GetDateColumns())
-                { colNames.push_back(col.GetName()); }
-            return colNames;
-            }
-
         /** @brief Gets an iterator to a continuous column by name.
             @param columnName The name of the continuous column to look for.
             @returns An iterator to the group column if found,
@@ -1077,9 +1079,7 @@ namespace Wisteria::Data
                 [&columnName](const auto& item) noexcept
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
-        /// @private
-        [[nodiscard]] const std::vector<Column<double>>& GetContinuousColumns() const noexcept
-            { return m_continuousColumns; }
+
         /// @returns The continuous columns.
         [[nodiscard]] std::vector<Column<double>>& GetContinuousColumns() noexcept
             { return m_continuousColumns; }
@@ -1092,27 +1092,41 @@ namespace Wisteria::Data
                 { colNames.push_back(col.GetName()); }
             return colNames;
             }
-        /** @brief Removes a column name(s) from a list of columns.
-            @details As an example, this is useful for removing a grouping column from a list
-                of other categoricals returned from GetCategoricalColumnNames().
-            @param[in,out] colNames The list of column names.
-            @param colsToRemove The column name(s) to remove.
-            @sa GetContinuousColumnNames(), GetCategoricalColumnNames(), GetDateColumnNames().*/
-        static void RemoveColumnNamesFromList(std::vector<wxString>& colNames,
-                                              const std::initializer_list<wxString>& colsToRemove)
+        /// @returns The categorical columns.
+        [[nodiscard]] std::vector<ColumnWithStringTable>& GetCategoricalColumns() noexcept
+            { return m_categoricalColumns; }
+        /// @returns A vector of all categorical column names.
+        /// @sa RemoveColumnNamesFromList().
+        [[nodiscard]] std::vector<wxString> GetCategoricalColumnNames() const noexcept
             {
-            auto endOfColumns = std::remove_if(colNames.begin(), colNames.end(),
-                [&](const auto& colName)
-                {
-                for (const auto& removeName : colsToRemove)
-                    {
-                    if (colName.CmpNoCase(removeName) == 0)
-                        { return true; }
-                    }
-                return false; }
-                );
-            colNames.erase(endOfColumns, colNames.end());
+            std::vector<wxString> colNames;
+            for (const auto& col : GetCategoricalColumns())
+                { colNames.push_back(col.GetName()); }
+            return colNames;
             }
+        /// @returns The date columns.
+        [[nodiscard]] std::vector<Column<wxDateTime>>& GetDateColumns() noexcept
+            { return m_dateColumns; }
+        /// @returns A vector of all date column names.
+        /// @sa RemoveColumnNamesFromList().
+        [[nodiscard]] std::vector<wxString> GetDateColumnNames() const noexcept
+            {
+            std::vector<wxString> colNames;
+            for (const auto& col : GetDateColumns())
+                { colNames.push_back(col.GetName()); }
+            return colNames;
+            }
+
+        /** @brief Determines if a column name already exists in the dataset.
+            @param colName The column name to look for.
+            @returns @c true if the column name is in the dataset.*/
+        [[nodiscard]] bool ContainsColumn(const wxString& colName) const noexcept;
+        /// @}
+
+        /** @name Column Manipulation Functions
+            @brief Functions related to calculating values from columns,
+                as well as column data manipulation.*/
+        /// @{
 
         /** @brief Gets the min and max string values from the specified categorical column,
                 (optionally) where the group ID is @c groupId.
@@ -1194,15 +1208,6 @@ namespace Wisteria::Data
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
-        /** @brief Determines if there are any valid IDs in the ID column.
-            @returns @c true if there are any ID values in the ID column.*/
-        [[nodiscard]] bool HasValidIdData() const;
-
-        /** @brief Determines if a column name already exists in the dataset.
-            @param colName The column name to look for.
-            @returns @c true if the column name is in the dataset.*/
-        [[nodiscard]] bool ContainsColumn(const wxString& colName) const noexcept;
-
         /** @brief Renames a column.
             @param colName The column to rename.
             @param newColName The new name for the column.
@@ -1252,6 +1257,12 @@ namespace Wisteria::Data
         void MutateCategoricalColumn(const wxString& srcColumnName, const wxString& targetColumnName,
                                      const RegExMap& replacementMap);
 
+        /// @}
+
+        /** @name Import Functions
+            @brief Functions related to importing data into a dataset.*/
+        /// @{
+
         /** @brief Reads the column names from a file and deduces their data types.
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types.
@@ -1287,6 +1298,15 @@ namespace Wisteria::Data
             const wchar_t delimiter,
             std::optional<size_t> rowPreviewCount = std::nullopt,
             size_t skipRows = 0);
+
+        /** @brief Set the value to replace missing data in continuous cells
+                during import. (The default value is NaN.)
+            @details Missing data can be either empty cells or text values in a
+                numeric column that can't be converted to a number.
+            @param recodeVal The value to replace missing data with.*/
+        void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
+            { m_importContinousMDRecodeValue = recodeVal; }
+
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
             @param previewInfo A file's preview information (from a call to ReadColumnInfo()).
@@ -1397,13 +1417,20 @@ namespace Wisteria::Data
         void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
 
-        /** @brief Set the value to replace missing data in continuous cells
-                during import. (The default value is NaN.)
-            @details Missing data can be either empty cells or text values in a
-                numeric column that can't be converted to a number.
-            @param recodeVal The value to replace missing data with.*/
-        void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
-            { m_importContinousMDRecodeValue = recodeVal; }
+        /// @}
+
+        /// @private
+        [[nodiscard]] const Column<wxString>& GetIdColumn() const noexcept
+            { return m_idColumn; }
+        /// @private
+        [[nodiscard]] const std::vector<ColumnWithStringTable>& GetCategoricalColumns() const noexcept
+            { return m_categoricalColumns; }
+        /// @private
+        [[nodiscard]] const std::vector<Column<wxDateTime>>& GetDateColumns() const noexcept
+            { return m_dateColumns; }
+        /// @private
+        [[nodiscard]] const std::vector<Column<double>>& GetContinuousColumns() const noexcept
+            { return m_continuousColumns; }
     private:
         /// @returns The specified continuous column by name or index.
         [[nodiscard]] ContinuousColumnConstIterator
