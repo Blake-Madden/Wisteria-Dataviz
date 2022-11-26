@@ -20,7 +20,6 @@ namespace Wisteria::Graphs
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatCategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
-        // cppcheck-suppress duplicateValueTernary
         return
             (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -47,7 +46,6 @@ namespace Wisteria::Graphs
     LikertChart::LikertSurveyQuestionFormat LikertChart::MakeFormatUncategorized(
         const LikertSurveyQuestionFormat format) noexcept
         {
-        // cppcheck-suppress duplicateValueTernary
         return
             (format == LikertSurveyQuestionFormat::TwoPoint ||
                 format == LikertSurveyQuestionFormat::TwoPointCategorized) ?
@@ -409,7 +407,6 @@ namespace Wisteria::Graphs
                 { uniqueGroups.insert(val); }
             }
 
-        // cppcheck-suppress duplicateValueTernary
         const LikertSurveyQuestionFormat format =
             (maxVal == 7) ? LikertSurveyQuestionFormat::SevenPoint :
             (maxVal == 6) ? LikertSurveyQuestionFormat::SixPoint :
