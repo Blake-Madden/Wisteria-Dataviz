@@ -37,6 +37,9 @@ namespace math_constants
     /// @brief Empty (i.e., 0%).
     constexpr double empty = 0.0;
 
+    /// @brief Twentieth (i.e., 5%).
+    constexpr double twentieth = 0.05;
+
     /// @brief Tenth (i.e., 10%).
     constexpr double tenth = 0.1;
 

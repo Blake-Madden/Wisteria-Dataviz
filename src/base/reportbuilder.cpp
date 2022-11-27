@@ -3111,7 +3111,8 @@ namespace Wisteria
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         auto sh = std::make_shared<Shape>(
-            GraphItemInfo().Anchoring(Anchoring::TopLeftCorner).
+            GraphItemInfo(shapeNode->GetProperty(L"text")->GetValueString()).
+            Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush),
             loadedShape.value(), sz);
         // center by default, but allow LoadItems (below) to override that
@@ -4446,6 +4447,7 @@ namespace Wisteria
             { L"chevron-upward", IconShape::ChevronUpward },
             { L"text", IconShape::Text },
             { L"tack", IconShape::Tack },
+            { L"banner", IconShape::Banner }
             };
 
         const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));

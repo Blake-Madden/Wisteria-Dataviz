@@ -248,6 +248,9 @@ namespace Wisteria::GraphItems
             case IconShape::Tack:
                 m_drawFunction = &ShapeRenderer::DrawTack;
                 break;
+            case IconShape::Banner:
+                m_drawFunction = &ShapeRenderer::DrawBanner;
+                break;
             default:
                 m_drawFunction = nullptr;
                 break;
@@ -740,6 +743,67 @@ namespace Wisteria::GraphItems
                                          wxSize(rect.GetWidth(),
                                                 rect.GetHeight() * math_constants::two_thirds));
             DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen), _(L"GO"), dc);
+            }
+        }
+    
+    //---------------------------------------------------
+    void ShapeRenderer::DrawBanner(const wxRect rect, wxDC& dc) const
+        {
+        // sign posts
+            {
+            wxPoint pt[2] =
+                {
+                rect.GetTopLeft(),
+                rect.GetBottomLeft()
+                };
+            const auto signPostWidth = std::min<int>(ScaleToScreenAndCanvas(8),
+                                                     (rect.GetWidth() / 5));
+            pt[0].x += signPostWidth/2;
+            pt[1].x += signPostWidth/2;
+
+            const auto drawPost = [&]()
+                {
+                // white outline of sign post used to contrast black sign post
+                // against a possibly dark background
+                    {
+                    wxDCPenChanger pc(dc,
+                        wxPen(wxPenInfo(*wxWHITE, signPostWidth + ScaleToScreenAndCanvas(1)).
+                                Cap(wxPenCap::wxCAP_BUTT)));
+                    dc.DrawLine(pt[0], pt[1]);
+                    }
+                // actual sign post
+                    {
+                    wxDCPenChanger pc(dc,
+                        wxPen(wxPenInfo(ColorBrewer::GetColor(Color::SlateGray),
+                            signPostWidth).Cap(wxPenCap::wxCAP_BUTT)));
+                    dc.DrawLine(pt[0], pt[1]);
+                    }
+                };
+
+            drawPost();
+            pt[0].x = rect.GetRight() - signPostWidth/2;
+            pt[1].x = rect.GetRight() - signPostWidth/2;
+            drawPost();
+            }
+        // sign
+            {
+            auto anchorPt = rect.GetTopLeft();
+            anchorPt.y += rect.GetHeight() * math_constants::twentieth;
+            Label bannerLabel(GraphItemInfo(GetGraphItemInfo().GetText()).
+                Pen(wxPen(wxPenInfo(*wxBLACK, 1))).
+                FontBackgroundColor(GetGraphItemInfo().GetBrush().GetColour()).
+                FontColor(GetGraphItemInfo().GetPen().GetColour()).
+                Anchoring(Anchoring::TopLeftCorner).
+                LabelAlignment(TextAlignment::Centered).
+                DPIScaling(GetDPIScaleFactor()));
+            bannerLabel.GetFont().MakeBold();
+            bannerLabel.SetBoundingBox(
+                wxRect(anchorPt,
+                    wxSize(rect.GetWidth(), rect.GetHeight() * math_constants::third)),
+                dc, GetScaling());
+            bannerLabel.SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            bannerLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+            bannerLabel.Draw(dc);
             }
         }
 

@@ -187,6 +187,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the arrow within.
         /// @param dc The DC to draw to.
         void DrawRightArrow(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a banner sign.
+        /// @param rect The area to draw the sign within.
+        /// @param dc The DC to draw to.
+        void DrawBanner(wxRect rect, wxDC& dc) const;
         /// @brief Draws a warning road sign.
         /// @param rect The area to draw the sign within.
         /// @param dc The DC to draw to.

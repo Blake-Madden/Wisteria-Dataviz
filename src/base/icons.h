@@ -80,6 +80,7 @@ namespace Wisteria::Icons
         ChevronUpward,                 /*!< An upward pointing chevron.*/
         Text,                          /*!< A provided string.*/
         Tack,                          /*!< A tack (pen).*/
+        Banner                         /*!< A banner sign.*/
         };
 
     /// @brief Item to draw on a legend.
