@@ -363,6 +363,7 @@ namespace lily_of_the_valley
                                     if (tEnd)
                                         {
                                         valueStr.assign(tTag, tEnd-tTag);
+                                        string_util::replace_all(valueStr, L'\n', L' ');
                                         // read a value
                                         if (valueStr.length())
                                             { currentCell.set_value(valueStr);  }
@@ -551,6 +552,7 @@ namespace lily_of_the_valley
                     nextString.second.end(), L"...");
                 }
             m_shared_strings.push_back(nextString.second);
+            string_util::replace_all(m_shared_strings.back(), L'\n', L' ');
             }
         }
 
