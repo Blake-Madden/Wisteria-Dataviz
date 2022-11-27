@@ -307,14 +307,22 @@ namespace lily_of_the_valley
                 html_extract_text::find_element(html_text, endSentinel, L"row", 3)) != nullptr)
             {
             cRow.clear();
-            const wchar_t* const rowEnd =
-                html_extract_text::find_closing_element(html_text, endSentinel, L"row", 3);
-            if (!rowEnd)
-                { break; }
             const size_t rowNum =
                 string_util::atol(html_extract_text::read_attribute_as_string(html_text, L"r", 1, false).c_str());
             worksheet_row& currentRow = (rowNum != 0 && rowNum <= data.size()) ? data[rowNum-1] : cRow;
             worksheet_row::iterator cellPos = currentRow.begin();
+
+            const wchar_t* const rowEnd =
+                html_extract_text::find_closing_element(html_text, endSentinel, L"row", 3);
+            // if <row> is self terminating, then it's a blank row; move to the end tag and
+            // go to next row
+            if (!rowEnd)
+                {
+                html_text = html_extract_text::find_close_tag(html_text);
+                if (html_text == nullptr || html_text >= endSentinel)
+                    { break; }
+                continue;
+                }
 
             while ((html_text =
                     html_extract_text::find_element(html_text, rowEnd, L"c", 1)) != nullptr)
