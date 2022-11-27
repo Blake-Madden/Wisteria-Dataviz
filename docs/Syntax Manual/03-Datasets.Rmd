@@ -40,8 +40,11 @@ Properties for the `"datasets"` node:
       - `"rfc822"`
       - `"strptime-format"`
       - `"automatic"` (if not specified, this will be the default).
+      - `"time"`
     - `"format"`: if `"parser"` is set to `"strptime-format"`,
-         then this is the user-defined format to parse with.
+      then this is the user-defined format to parse with.
+    Note that the `"parser"` and `"format"` options are ignored if importing an Excel file.
+    Excel stores dates and times as serial dates, and these will be converted to accordingly.
 
   If no columns are defined, then the importer will import all columns and deduce their types.
 

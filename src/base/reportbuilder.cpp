@@ -2202,6 +2202,8 @@ namespace Wisteria
                                     dateName,
                                     (dateParser.CmpNoCase(L"iso-date") == 0 ?
                                         DateImportMethod::IsoDate :
+                                     dateParser.CmpNoCase(L"time") == 0 ?
+                                        DateImportMethod::Time :
                                      dateParser.CmpNoCase(L"iso-combined") == 0 ?
                                         DateImportMethod::IsoCombined :
                                      dateParser.CmpNoCase(L"strptime-format") == 0 ?

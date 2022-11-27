@@ -392,9 +392,13 @@ namespace Wisteria::Data
         switch (method)
             {
         case DateImportMethod::Automatic:
-            // try reading as date & time, and fall back to just date if that fails
+            // try reading as date & time, fall back to just date if that fails,
+            // then try it as just a time (which use be set to today's date)
             if (!dt.ParseDateTime(input, &end))
-                { dt.ParseDate(input, &end); }
+                {
+                if (!dt.ParseDate(input, &end))
+                    { dt.ParseTime(input, &end); }
+                }
             break;
         case DateImportMethod::IsoDate:
             dt.ParseISODate(input);
@@ -407,6 +411,9 @@ namespace Wisteria::Data
             break;
         case DateImportMethod::StrptimeFormatString:
             dt.ParseFormat(input, formatStr, &end);
+            break;
+        case DateImportMethod::Time:
+            dt.ParseTime(input, &end);
             break;
             }
         if (!dt.IsValid())

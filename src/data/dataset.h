@@ -547,18 +547,22 @@ namespace Wisteria::Data
     /// @sa ImportInfo.
     enum class DateImportMethod
         {
-        IsoDate,             /*!< Parse using the "YYYY-MM-DD" format.*/
-        IsoCombined,         /*!< Parse using the "YYYY-MM-DDTHH:MM:SS" format.*/
-        Rfc822,              /*!< Uses @c wxDateTime::ParseRfc822Date(), which will be
-                                  "looking for a date formatted according to the RFC 822 in it."*/
-        Automatic,           /*!< Uses @c wxDateTime::ParseDateTime(), which "Parses the string
-                                  containing the date and time in free format. This function tries
-                                  as hard as it can to interpret the given string as date and time."
-                                  If @c ParseDateTime() fails (because a time component isn't found),
-                                  then @c ParseDateTime() will be attempted.*/
-        StrptimeFormatString /*!< Parse using a strptime()-like format string (e.g., "%Y-%m-%d").
-                                  Please see the description of the ANSI C function @c strftime(3)
-                                  for the syntax of the format string.*/
+        IsoDate,              /*!< Parse using the "YYYY-MM-DD" format.*/
+        IsoCombined,          /*!< Parse using the "YYYY-MM-DDTHH:MM:SS" format.*/
+        Rfc822,               /*!< Uses @c wxDateTime::ParseRfc822Date(), which will be
+                                   "looking for a date formatted according to the RFC 822 in it."*/
+        Automatic,            /*!< Uses @c wxDateTime::ParseDateTime(), which "Parses the string
+                                   containing the date and time in free format. This function tries
+                                   as hard as it can to interpret the given string as date and time."
+                                   If @c ParseDateTime() fails (because a time component isn't found),
+                                   then @c ParseDate() will be attempted. If that fails, then
+                                   @c ParseTime() will be called to load the value as a time
+                                   (setting the date to today).*/
+        StrptimeFormatString, /*!< Parse using a strptime()-like format string (e.g., "%Y-%m-%d").
+                                   Please see the description of the ANSI C function @c strftime(3)
+                                   for the syntax of the format string.*/
+        Time                  /*!< Parse as a time, using the "HH:MM:SS" format.
+                                   (The date will be set to today.)*/
         };
 
     /// @brief How categorical column data should be read while importing.
