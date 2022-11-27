@@ -749,7 +749,8 @@ namespace Wisteria::Graphs
                 // make empty cells at least a space so that an empty
                 // row or column will at least have some width or height
                 const auto cellText = cell.GetDisplayValue();
-                measuringLabel.SetText((cellText.length() ? cellText : L" ") + cell.GetPrefix());
+                measuringLabel.SetText((cellText.length() ? cellText : wxString(L" ")) +
+                    cell.GetPrefix());
                 if (cell.m_suggestedLineLength.has_value())
                     { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
                 measuringLabel.SetFont(cell.m_font);
@@ -1073,7 +1074,7 @@ namespace Wisteria::Graphs
                 auto cellLabel = std::make_shared<Label>(
                     GraphItemInfo(
                         (isPrefixSeparateLabel ? wxString(wxEmptyString) : cell.GetPrefix()) +
-                        (cellText.length() ? cellText : L" ")).
+                        (cellText.length() ? cellText : wxString(L" "))).
                     Pen(wxNullPen).Padding(5, 5, 5, 5).
                     Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                     Font(cell.m_font).
@@ -1125,7 +1126,7 @@ namespace Wisteria::Graphs
                     {
                     const wxString prefix = (cell.m_valueFormat == CellFormat::Percent) ?
                         // down and up arrow emojis
-                        (cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
+                        wxString(cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
                         cell.GetPrefix();
                     auto cellPrefixLabel = std::make_shared<Label>(
                     GraphItemInfo(prefix).

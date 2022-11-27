@@ -73,7 +73,7 @@ bool Wisteria::UI::BaseApp::OnInit()
         wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
         wxSystemSettings::GetMetric(wxSYS_SCREEN_Y));
     wxLogMessage(L"System Theme: %s", wxSystemSettings::GetAppearance().GetName().empty() ?
-        L"[unnamed]" : wxSystemSettings::GetAppearance().GetName());
+        wxString(L"[unnamed]") : wxSystemSettings::GetAppearance().GetName());
     // subroutine to log the system colors
     const auto logSystemColor = [](const wxSystemColour color, const wxString& description)
         {

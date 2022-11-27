@@ -1708,7 +1708,7 @@ namespace Wisteria::GraphItems
         // fall back to system default if nothing in the provided list is found
         const wxString systemFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName();
         // if system font is weird mapping (or empty) that fails (happens on macOS), then fall back to Arial
-        return wxFontEnumerator::IsValidFacename(systemFont) ? systemFont : L"Arial";
+        return wxFontEnumerator::IsValidFacename(systemFont) ? systemFont : wxString(L"Arial");
         }
 
     //------------------------------------------------------

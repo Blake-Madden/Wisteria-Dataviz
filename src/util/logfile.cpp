@@ -113,7 +113,7 @@ void LogFile::DoLogRecord(wxLogLevel level, const wxString &msg,
     m_buffer += wxString::Format(L"%s%s\t%s\t%s\t%s: line %d\n",
         prefix, msg,
         wxDateTime(static_cast<wxLongLong>(info.timestampMS)).FormatISOCombined(' '),
-        (info.func ? wxString(info.func) : L"N/A"),
-        (info.filename ? wxFileName(info.filename).GetFullName() : L"N/A"),
+        (info.func ? wxString(info.func) : wxString(L"N/A")),
+        (info.filename ? wxFileName(info.filename).GetFullName() : wxString(L"N/A")),
         info.line);
     }
