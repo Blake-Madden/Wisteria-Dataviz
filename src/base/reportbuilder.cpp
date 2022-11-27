@@ -3070,7 +3070,8 @@ namespace Wisteria
             }
 
         auto sh = std::make_shared<FillableShape>(
-            GraphItemInfo().Anchoring(Anchoring::TopLeftCorner).
+            GraphItemInfo(ExpandConstants(shapeNode->GetProperty(L"text")->GetValueString())).
+            Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush),
             loadedShape.value(), sz, fillPercent);
         // center by default, but allow LoadItems (below) to override that
@@ -3111,7 +3112,7 @@ namespace Wisteria
         LoadBrush(shapeNode->GetProperty(L"brush"), brush);
 
         auto sh = std::make_shared<Shape>(
-            GraphItemInfo(shapeNode->GetProperty(L"text")->GetValueString()).
+            GraphItemInfo(ExpandConstants(shapeNode->GetProperty(L"text")->GetValueString())).
             Anchoring(Anchoring::TopLeftCorner).
             Pen(pen).Brush(brush),
             loadedShape.value(), sz);
