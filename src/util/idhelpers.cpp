@@ -34,7 +34,7 @@ void MenuBarEnableAll(wxMenuBar* menuBar, const wxWindowID id, const bool enable
     if (menuBar == nullptr)
         { return; }
     const auto menuCount = menuBar->GetMenuCount();
-    for (size_t i = 0 ; i < menuCount; ++i)
+    for (size_t i = 0; i < menuCount; ++i)
         {
         wxMenu* menu = menuBar->GetMenu(i);
         if (menu)

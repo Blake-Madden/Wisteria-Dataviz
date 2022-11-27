@@ -155,7 +155,7 @@ namespace Wisteria::GraphItems
         // EVEN
         if (__count % 2 == 0) return false;
         // ODD
-        else return true ;
+        else return true;
         }
 
     //-------------------------------------------

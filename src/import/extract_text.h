@@ -142,7 +142,7 @@ namespace lily_of_the_valley
         void add_characters(const wchar_t* characters, const size_t length) noexcept
             {
             if (length == 0 || !characters)
-                { return ; }
+                { return; }
             std::wcsncpy(m_text_buffer+m_filtered_text_length, characters, length);
             m_filtered_text_length += length;
             }

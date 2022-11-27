@@ -162,7 +162,7 @@ namespace lily_of_the_valley
         /// A matrix of cells (i.e., a table or worksheet).
         using worksheet = std::vector<worksheet_row>;
         /// The table which stores the unique strings throughout the Excel file.
-        using string_table = std::vector<std::wstring> ;
+        using string_table = std::vector<std::wstring>;
 
         /** @brief Retrieves the text from a given cell.
             @param cellNname The cell to retrieve the text from (e.g., "A13").
@@ -268,13 +268,13 @@ namespace lily_of_the_valley
         [[nodiscard]] static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
 
         /** @returns The string from the specified index.
-                This assumes that the string table has already been
+            @warning This assumes that the string table has already been
                 loaded via read_shared_strings().
             @param index The (zero-based) index into the string table.*/
-        [[nodiscard]] std::wstring get_shared_string(const size_t index) const
+        [[nodiscard]] std::wstring get_shared_string(const size_t index) const noexcept
             {
             return (index < get_shared_strings().size()) ?
-                get_shared_strings().at(index) : L"";
+                get_shared_strings()[index] : std::wstring();
             }
 
         /** @brief Verifies that a worksheet isn't jagged and the cells are in the proper order.
@@ -303,7 +303,7 @@ namespace lily_of_the_valley
             dimension specifications and has missing cells in its data section. This should
             never happen, but just in case we are working with a very ill-formed file we
             will try to fix it as best we can.
-            @param data the Worksheet to review.*/
+            @param[in,out] data the Worksheet to correct.*/
         static void fix_jagged_sheet(worksheet& data);
 
         /** @brief Retrieves a string from the `xl/sharedStrings.xml` file.
@@ -320,9 +320,9 @@ namespace lily_of_the_valley
 
         /** @brief Splits a cell name into the column name and row number.
             @param cell_name The cell name (e.g., "A2").
-            @returns a pair representing where the row number begins in the string (parsing from the
-             start of the cell name up to this index yields the column name) and the row number.
-             The first index will be set to @c -1 upon failure.*/
+            @returns a pair representing where the row number begins in the string
+                (parsing from the start of the cell name up to this index yields the column name)
+                and the row number. The first index will be set to @c -1 upon failure.*/
         [[nodiscard]] static std::pair<size_t,size_t> split_column_info(const wchar_t* cell_name);
 
         /// @returns The string table.
