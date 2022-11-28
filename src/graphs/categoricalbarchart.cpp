@@ -27,9 +27,9 @@ namespace Wisteria::Graphs
             { return; }
 
         m_data = data;
-        m_useGrouping = groupColumnName.has_value();
+        ResetGrouping();
+        UseGrouping(groupColumnName.has_value());
         m_useValueColumn = valueColumnName.has_value();
-        m_groupIds.clear();
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
         SetBinLabelDisplay(blDisplay);
@@ -49,9 +49,9 @@ namespace Wisteria::Graphs
                     categoricalColumnName).ToUTF8());
                 }
             }
-        m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
+        SetGroupColumn(groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
+        if (groupColumnName && GetGroupColum() == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for categorical bar chart."),
@@ -66,33 +66,9 @@ namespace Wisteria::Graphs
                 valueColumnName.value()).ToUTF8());
             }
 
-        // see if we should use grouping from the data
-        if (m_useGrouping)
-            {
-            // make reverse string table, sorted by label
-            std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-            if (m_groupColumn->GetStringTable().size())
-                {
-                for (const auto& [id, str] : m_groupColumn->GetStringTable())
-                    { groups.insert(std::make_pair(str, id)); }
-                }
-            // if no string table, then it's just discrete values;
-            // make a reverse "string table" from that
-            else
-                {
-                for (size_t i = 0; i < m_groupColumn->GetRowCount(); ++i)
-                    {
-                    groups.insert(std::make_pair(m_groupColumn->GetValueAsLabel(i),
-                                                 m_groupColumn->GetValue(i)));
-                    }
-                }
-            // build a list of group IDs and their respective strings' alphabetical order
-            size_t currentIndex{ 0 };
-            for (auto& group : groups)
-                {
-                m_groupIds.insert(std::make_pair(group.second, currentIndex++));
-                }
-            }
+        // if grouping, build the list of group IDs, sorted by their respective labels
+        if (IsUsingGrouping())
+            { BuildGroupIdMap(); }
 
         // reset everything first
         ClearBars();
@@ -142,17 +118,13 @@ namespace Wisteria::Graphs
                 { continue; }
             const double groupTotal = (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1);
             grandTotal += groupTotal;
-            // convert group ID into color scheme index
-            // (index is ordered by labels alphabetically)
-            size_t colorIndex{ 0 };
-            if (m_useGrouping)
-                {
-                const auto pos = m_groupIds.find(m_groupColumn->GetValue(i));
-                wxASSERT_MSG((pos != m_groupIds.end()),
-                             L"Error finding color scheme index for group!");
-                if (pos != m_groupIds.end())
-                    { colorIndex = pos->second; }
-                }
+            // Convert group ID into color scheme index
+            // (index is ordered by labels alphabetically).
+            // Note that this will be zero if grouping is not in use.
+            const size_t colorIndex = IsUsingGrouping() ?
+                GetSchemeIndexFromGroupId(GetGroupColum()->GetValue(i)) :
+                0;
+
             if (m_useIDColumnForBars)
                 {
                 const auto ID = m_IDsMap.find(m_idColumn->GetValue(i));
@@ -165,10 +137,10 @@ namespace Wisteria::Graphs
                         CatBarBlock{
                             ID->second,
                             m_idColumn->GetValue(i),
-                            (m_useGrouping ? colorIndex : 0),
-                            (m_useGrouping ?
-                                m_groupColumn->GetLabelFromID(m_groupColumn->GetValue(i)) :
-                                wxString(L"")) },
+                            colorIndex,
+                            (IsUsingGrouping() ?
+                                GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                                wxString()) },
                         groupTotal);
                     }
                 }
@@ -179,10 +151,10 @@ namespace Wisteria::Graphs
                     CatBarBlock{
                         m_categoricalColumn->GetValue(i),
                         m_categoricalColumn->GetLabelFromID(m_categoricalColumn->GetValue(i)),
-                        (m_useGrouping ? colorIndex : 0),
-                        (m_useGrouping ?
-                            m_groupColumn->GetLabelFromID(m_groupColumn->GetValue(i)) :
-                            wxString(L"")) },
+                        colorIndex,
+                        (IsUsingGrouping() ?
+                            GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                            wxString()) },
                     groupTotal);
                 }
             }
@@ -191,11 +163,13 @@ namespace Wisteria::Graphs
         for (const auto& blockTable : groups.get_data())
             {
             const wxColour blockColor = GetColorScheme() ?
-                (m_useGrouping ?
-                 GetColorScheme()->GetColor(blockTable.first.m_schemeIndex) : GetColorScheme()->GetColor(0)) :
+                (IsUsingGrouping() ?
+                 GetColorScheme()->GetColor(blockTable.first.m_schemeIndex) :
+                 GetColorScheme()->GetColor(0)) :
                 wxTransparentColour;
-            const wxBrush blockBrush = (m_useGrouping ?
-                GetBrushScheme()->GetBrush(blockTable.first.m_schemeIndex) : GetBrushScheme()->GetBrush(0));
+            const wxBrush blockBrush = (IsUsingGrouping() ?
+                GetBrushScheme()->GetBrush(blockTable.first.m_schemeIndex) :
+                GetBrushScheme()->GetBrush(0));
 
             wxString blockLabelText = (m_useValueColumn ?
                 wxString::Format(_(L"%s item(s), totalling %s"),
@@ -207,7 +181,7 @@ namespace Wisteria::Graphs
                     wxNumberFormatter::ToString(blockTable.second.first, 0,
                         Settings::GetDefaultNumberFormat())) );
 
-            if (m_useGrouping)
+            if (IsUsingGrouping())
                 {
                 blockLabelText.Prepend(blockTable.first.m_groupName + L": ");
                 }
@@ -249,7 +223,7 @@ namespace Wisteria::Graphs
             { UpdateBarLabel(bar); }
 
         // if grouping, then sort by the labels alphabetically
-        if (m_useGrouping)
+        if (IsUsingGrouping())
             {
             SortBars(BarChart::BarSortComparison::SortByAxisLabel,
                      SortDirection::SortAscending);
@@ -263,63 +237,5 @@ namespace Wisteria::Graphs
                         SortDirection::SortDescending :
                         SortDirection::SortAscending));
             }
-        }
-
-    //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> CategoricalBarChart::CreateLegend(
-        const LegendOptions& options)
-        {
-        if (m_data == nullptr || GetGroupCount() == 0)
-            { return nullptr; }
-
-        auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
-            DPIScaling(GetDPIScaleFactor()));
-
-        wxString legendText;
-        size_t lineCount{ 0 };
-        // color index and then group ID
-        // (do this so that the items are in alphabetically order)
-        std::map<size_t, Data::GroupIdType> reverseGroupIds;
-        for (const auto& groupId : m_groupIds)
-            { reverseGroupIds.insert(std::make_pair(groupId.second, groupId.first)); }
-        for (const auto& groupId : reverseGroupIds)
-            {
-            if (Settings::GetMaxLegendItemCount() == lineCount)
-                {
-                legendText.append(L"\u2026");
-                break;
-                }
-            wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetLabelFromID(groupId.second) :
-                wxString(L"");
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
-            if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
-                Settings::GetMaxLegendTextLength() >= 1)
-                {
-                currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
-                currentLabel.append(L"\u2026");
-                }
-            legendText.append(currentLabel.c_str()).append(L"\n");
-            legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::Square, *wxBLACK,
-                        GetBrushScheme()->GetBrush(groupId.first),
-                        GetColorScheme() ?
-                            std::optional<wxColour>(GetColorScheme()->GetColor(groupId.first)) :
-                            std::nullopt));
-            ++lineCount;
-            }
-
-        if (options.IsIncludingHeader())
-            {
-            legendText.Prepend(
-                wxString::Format(L"%s\n", m_groupColumn->GetName()));
-            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
-            }
-        legend->SetText(legendText.Trim());
-
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
-        return legend;
         }
     }

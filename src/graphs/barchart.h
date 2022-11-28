@@ -14,7 +14,7 @@
 
 #include <numeric>
 #include <optional>
-#include "graph2d.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -154,7 +154,7 @@ namespace Wisteria::Graphs
         @endcode
         @sa The [bar chart](../../BarChart.md) overview for more information.
     */
-    class BarChart : public Graph2D
+    class BarChart : public GroupGraph2D
         {
     public:
         /// @brief Ways to compare bars.
@@ -984,25 +984,6 @@ namespace Wisteria::Graphs
             }
         /// @}
 
-        /// @brief Get the brush scheme used for the bars.
-        /// @returns The brush scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
-            { return m_brushScheme; }
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.
-            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
-        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
-            { m_brushScheme = colors; }
-        /// @brief Get the color scheme used for the bars.
-        /// @returns The color scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.
-            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
-        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
-            { m_colorScheme = colors; }
-
         /// @returns The maximum number of bars displayed before the parent canvas is forced
         ///    to be made taller (which will make this chart easier to read).
         [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
@@ -1013,11 +994,6 @@ namespace Wisteria::Graphs
                 the canvas to be made taller.*/
         void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
 
-        /// @private
-        /// @brief Base barcharts do not support legend building.
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            [[maybe_unused]] const LegendOptions& options) override
-            { return nullptr; }
         /// @private
         [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
             { return m_bars; }
@@ -1088,8 +1064,6 @@ namespace Wisteria::Graphs
         uint8_t m_ghostOpacity{ 32 }; // used for showcasing
         BoxEffect m_barEffect{ BoxEffect::Solid };
         BinLabelDisplay m_binLabelDisplay{ BinLabelDisplay::BinValue };
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
-        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
 
         double m_longestBarLength{ 0 };
         double m_lowestBarAxisPosition{ std::numeric_limits<double>::max() };

@@ -33,6 +33,7 @@ SET(WISTERIA_SRC
     src/graphs/categoricalbarchart.cpp
     src/graphs/ganttchart.cpp
     src/graphs/graph2d.cpp
+    src/graphs/groupgraph2d.cpp
     src/graphs/heatmap.cpp
     src/graphs/histogram.cpp
     src/graphs/likertchart.cpp

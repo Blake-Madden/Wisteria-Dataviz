@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #include "barchart.h"
 
 using namespace Wisteria::Colors;
@@ -16,7 +15,7 @@ namespace Wisteria::Graphs
     {
     //-----------------------------------
     BarChart::BarChart(Wisteria::Canvas* canvas) :
-        Graph2D(canvas)
+        GroupGraph2D(canvas)
         { SetBarOrientation(m_barOrientation); }
 
     //-----------------------------------

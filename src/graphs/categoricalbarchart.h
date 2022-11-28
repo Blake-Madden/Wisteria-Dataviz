@@ -126,28 +126,6 @@ namespace Wisteria::Graphs
                      const std::optional<const wxString> valueColumnName = std::nullopt,
                      const std::optional<const wxString> groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
-
-        /// @returns The number of subgroups found during the last call to SetData().\n
-        ///     This is only relevant if using the secondary grouping variable.
-        [[nodiscard]] size_t GetGroupCount() const noexcept
-            { return m_groupIds.size(); }
-
-        /** @brief Builds and returns a legend.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param options The options for how to build the legend.
-            @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
-
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader)
-            {
-            return CreateLegend(
-                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
     private:
         struct CatBarBlock
             {
@@ -181,13 +159,9 @@ namespace Wisteria::Graphs
         const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
 
         bool m_useIDColumnForBars{ false };
-        bool m_useGrouping{ false };
         bool m_useValueColumn{ false };
-        // cat ID and string order
-        std::map<Data::GroupIdType, size_t> m_groupIds;
         };
     }
 

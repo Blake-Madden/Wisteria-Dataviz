@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_PLOT2D_H__
-#define __WISTERIA_PLOT2D_H__
+#ifndef __WISTERIA_GRAPH2D_H__
+#define __WISTERIA_GRAPH2D_H__
 
 #include "../base/points.h"
 #include "../base/polygon.h"
@@ -483,6 +483,7 @@ namespace Wisteria::Graphs
                 so that the axis and gridlines are drawn.*/
         void RecalcSizes(wxDC& dc) override;
 
+        /// @private
         void UpdateSelectedItems() final;
 
         /// @brief Additional info to show when selecting a plot in debug mode.
@@ -638,5 +639,5 @@ namespace Wisteria::Graphs
 
 /** @}*/
 
-#endif //__WISTERIA_PLOT2D_H__
+#endif //__WISTERIA_GRAPH2D_H__
 

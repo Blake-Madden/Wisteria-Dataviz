@@ -48,6 +48,7 @@ namespace Wisteria::Graphs
             { return; }
 
         ClearBars();
+        ResetGrouping();
         GetSelectedIds().clear();
         m_legendLines.clear();
         m_legendTitle.clear();
@@ -77,10 +78,12 @@ namespace Wisteria::Graphs
                 endDateColumnName).ToUTF8());
             }
         // these columns are optional
-        auto resourceColumn = data->GetCategoricalColumn(resourceColumnName.value_or(wxString(L"")));
-        auto completionColumn = data->GetContinuousColumn(completionColumnName.value_or(wxString(L"")));
-        auto groupColumn = data->GetCategoricalColumn(groupColumnName.value_or(wxString(L"")));
-        auto descriptionColumn = data->GetCategoricalColumn(descriptionColumnName.value_or(wxString(L"")));
+        auto resourceColumn = data->GetCategoricalColumn(resourceColumnName.value_or(wxString()));
+        auto completionColumn = data->GetContinuousColumn(completionColumnName.value_or(wxString()));
+        SetGroupColumn(data->GetCategoricalColumn(groupColumnName.value_or(wxString())));
+        auto descriptionColumn = data->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
+
+        UseGrouping(GetGroupColum() != data->GetCategoricalColumns().cend());
 
         std::set<Data::GroupIdType> groupIds;
 
@@ -91,33 +94,33 @@ namespace Wisteria::Graphs
                 Resource(
                     (resourceColumn != data->GetCategoricalColumns().cend()) ?
                      resourceColumn->GetLabelFromID(resourceColumn->GetValue(i)) :
-                     wxString(L"")).
+                     wxString()).
                 Description(
                     (descriptionColumn != data->GetCategoricalColumns().cend()) ?
                      descriptionColumn->GetLabelFromID(descriptionColumn->GetValue(i)) :
-                     wxString(L"")).
+                     wxString()).
                 StartDate(startColumn->GetValue(i)).
                 EndDate(endColumn->GetValue(i)).
                 Color(
-                    (groupColumn != data->GetCategoricalColumns().cend() ?
-                     GetColorScheme()->GetColor(groupColumn->GetValue(i)) :
+                    (IsUsingGrouping() ?
+                     GetColorScheme()->GetColor(GetGroupColum()->GetValue(i)) :
                      GetColorScheme()->GetColor(0))).
                 PercentFinished(
                     (completionColumn != data->GetContinuousColumns().cend() ?
                      zero_if_nan(completionColumn->GetValue(i)) : 0)).
                 LabelDisplay(GetLabelDisplay()));
             // build a list of used group IDs (used for the legend later)
-            if (groupColumn != data->GetCategoricalColumns().cend())
-                { groupIds.insert(groupColumn->GetValue(i)); }
+            if (IsUsingGrouping())
+                { groupIds.insert(GetGroupColum()->GetValue(i)); }
             }
 
-        if (groupColumn != data->GetCategoricalColumns().cend())
+        if (IsUsingGrouping())
             {
-            m_legendTitle = groupColumn->GetName();
+            m_legendTitle = GetGroupColum()->GetName();
             for (const auto& groupId : groupIds)
                 {
                 m_legendLines.emplace(
-                    std::make_pair(groupColumn->GetLabelFromID(groupId),
+                    std::make_pair(GetGroupColum()->GetLabelFromID(groupId),
                                    GetColorScheme()->GetColor(groupId)));
                 }
             }

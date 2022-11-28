@@ -283,28 +283,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t GetBinsWithValuesCount() const noexcept
             { return m_binCount; }
 
-        /// @returns The number of groups found during the last call to SetData().
-        ///     This is only relevant if using a grouping variable.
-        [[nodiscard]] size_t GetGroupCount() const noexcept
-            { return m_groupIds.size(); }
-
-        /** @brief Builds and returns a legend.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param options The options for how to build the legend.
-            @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
-
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader)
-            {
-            return CreateLegend(
-                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
-
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
         /// @note Columns can only be sorted if your are showing unique values for the categories
         ///     (i.e., not ranges)and you are just showing bars that actually have values
@@ -315,7 +293,8 @@ namespace Wisteria::Graphs
             {
             return BarChart::IsSortable() &&
                    GetBinningMethod() == BinningMethod::BinUniqueValues &&
-                   !IsShowingFullRangeOfValues(); }
+                   !IsShowingFullRangeOfValues();
+            }
     private:
         /// @returns The maximum number of bins that the histogram will create when binning the data.
         [[nodiscard]] size_t GetMaxNumberOfBins() const noexcept
@@ -386,7 +365,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t CalcNumberOfBins() const;
 
         std::shared_ptr<const Data::Dataset> m_data{ nullptr };
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         size_t m_validN{ 0 };
 
@@ -397,8 +375,6 @@ namespace Wisteria::Graphs
         size_t m_binCount{ 0 };
         bool m_displayFullRangeOfValues{ true };
         std::optional<double> m_startBinsValue{ std::nullopt };
-        bool m_useGrouping{ false };
-        std::map<Data::GroupIdType, size_t> m_groupIds;
         };
     }
 
