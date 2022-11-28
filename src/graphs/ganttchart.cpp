@@ -83,7 +83,7 @@ namespace Wisteria::Graphs
         SetGroupColumn(data->GetCategoricalColumn(groupColumnName.value_or(wxString())));
         auto descriptionColumn = data->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
 
-        UseGrouping(GetGroupColum() != data->GetCategoricalColumns().cend());
+        UseGrouping(m_groupColumn != data->GetCategoricalColumns().cend());
 
         std::set<Data::GroupIdType> groupIds;
 

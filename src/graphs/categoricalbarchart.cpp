@@ -51,7 +51,7 @@ namespace Wisteria::Graphs
             }
         SetGroupColumn(groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
             m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && GetGroupColum() == m_data->GetCategoricalColumns().cend())
+        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for categorical bar chart."),

@@ -75,6 +75,10 @@ namespace Wisteria::Graphs
             @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
         void SetShapeScheme(std::shared_ptr<Icons::Schemes::IconScheme> shapes)
             { m_shapeScheme = shapes; }
+        /// @returns The number of subgroups found during the last call to SetData().\n
+        ///     This is only relevant if using the secondary grouping variable.
+        [[nodiscard]] size_t GetGroupCount() const noexcept
+            { return m_groupIds.size(); }
     protected:
         /** @private
             @brief Builds a list of group IDs, sorted their respective strings' alphabetical order.
@@ -87,11 +91,6 @@ namespace Wisteria::Graphs
                 and call `UseGrouping(true)` This should normally be done in a call to
                 `SetData()` in derived classes..*/
         void BuildGroupIdMap();
-
-        /// @returns The number of subgroups found during the last call to SetData().\n
-        ///     This is only relevant if using the secondary grouping variable.
-        [[nodiscard]] size_t GetGroupCount() const noexcept
-            { return m_groupIds.size(); }
 
         /** @private
             @returns The ordered position of a group ID, or @c 0 if grouping is not in use.
@@ -154,9 +153,13 @@ namespace Wisteria::Graphs
         ///     assume that the provided iterator is valid.
         void SetGroupColumn(Wisteria::Data::CategoricalColumnConstIterator iter)
             { m_groupColumn = iter; }
+
+        /// @private
+        /// @note Only access this when needing to validate
+        Wisteria::Data::CategoricalColumnConstIterator m_groupColumn;
     private:
         bool m_useGrouping{ false };
-        Wisteria::Data::CategoricalColumnConstIterator m_groupColumn;
+
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
