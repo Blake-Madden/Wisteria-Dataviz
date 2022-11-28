@@ -363,10 +363,6 @@ namespace lily_of_the_valley
                                     if (tEnd)
                                         {
                                         valueStr.assign(tTag, tEnd-tTag);
-                                        std::transform(valueStr.begin(), valueStr.end(),
-                                            valueStr.begin(),
-                                            [](auto& ch) noexcept
-                                            { return (ch == L'\n' || ch == L'\r') ? L' ' : ch; });
                                         // read a value
                                         if (valueStr.length())
                                             { currentCell.set_value(valueStr);  }
@@ -554,10 +550,6 @@ namespace lily_of_the_valley
                 nextString.second.replace(nextString.second.begin() + 253,
                     nextString.second.end(), L"...");
                 }
-            std::transform(nextString.second.begin(), nextString.second.end(),
-                nextString.second.begin(),
-                [](auto& ch) noexcept
-                { return (ch == L'\n' || ch == L'\r') ? L' ' : ch; });
             m_shared_strings.push_back(nextString.second);
             }
         }

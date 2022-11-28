@@ -1016,16 +1016,20 @@ namespace Wisteria::Data
         {
         const auto wrapText = [&](const wxString& val)
             {
+            wxString escapedText = val;
+            // strip tabs and newlines
+            escapedText.Replace(L'\n', L' ', true);
+            escapedText.Replace(L'\r', L' ', true);
+            // quote (if requested)
             if (quoteColumns)
                 {
                 // convert double quotes in val to two double quotes,
                 // then wrap text with double quotes
-                wxString escapedText = val;
+                
                 escapedText.Replace(L"\"", L"\"\"", true);
                 return wxString(L"\"" + escapedText + L"\"");
                 }
-            else
-                { return val; }
+            return escapedText;
             };
         // combines column names as a delimited string
         const auto concatColNames = [&](const auto& cols)

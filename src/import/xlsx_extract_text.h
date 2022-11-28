@@ -267,16 +267,6 @@ namespace lily_of_the_valley
             @todo Add unit test.*/
         [[nodiscard]] static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
 
-        /** @returns The string from the specified index.
-            @warning This assumes that the string table has already been
-                loaded via read_shared_strings().
-            @param index The (zero-based) index into the string table.*/
-        [[nodiscard]] std::wstring get_shared_string(const size_t index) const noexcept
-            {
-            return (index < get_shared_strings().size()) ?
-                get_shared_strings()[index] : std::wstring();
-            }
-
         /** @brief Verifies that a worksheet isn't jagged and the cells are in the proper order.
             @note This is expensive and should only be used for debugging purposes.
             @param data The worksheet to verify.
@@ -286,6 +276,15 @@ namespace lily_of_the_valley
 #ifndef __UNITTEST
     private:
 #endif
+        /** @returns The string from the specified index.
+            @warning This assumes that the string table has already been
+                loaded via read_shared_strings().
+            @param index The (zero-based) index into the string table.*/
+        [[nodiscard]] std::wstring get_shared_string(const size_t index) const noexcept
+            {
+            return (index < get_shared_strings().size()) ?
+                get_shared_strings()[index] : std::wstring();
+            }
         /** @returns The column name from a column index (1-indexed).
             @param col The column number.
             @returns The name of the column. For example, @c 30 will return "AD").*/
