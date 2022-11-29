@@ -181,22 +181,6 @@ namespace Wisteria::Graphs
             for (auto& task : m_tasks)
                 { task.m_labelDisplay = m_labelDisplay; }
             }
-        /** @brief Builds and returns a legend.
-            @details This can be then be managed by the parent canvas and placed next to the plot.
-            @param options The options for how to build the legend.
-            @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendOptions& options) final;
-
-        /// @private
-        [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
-            const LegendCanvasPlacementHint hint,
-            const bool includeHeader)
-            {
-            return CreateLegend(
-                LegendOptions().IncludeHeader(includeHeader).PlacementHint(hint));
-            }
     private:
         /// @brief Class to construct a task.
         /// @details This class has chainable calls which allow you to build it
@@ -331,7 +315,6 @@ namespace Wisteria::Graphs
 
         size_t m_maxDescriptionLength{ 75 };
 
-        std::map<wxString, wxColour, Data::StringCmpNoCase> m_legendLines;
         wxString m_legendTitle;
         };
     }

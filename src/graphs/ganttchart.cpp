@@ -50,7 +50,6 @@ namespace Wisteria::Graphs
         ClearBars();
         ResetGrouping();
         GetSelectedIds().clear();
-        m_legendLines.clear();
         m_legendTitle.clear();
 
         m_dateDisplayInterval = interval;
@@ -85,10 +84,16 @@ namespace Wisteria::Graphs
 
         UseGrouping(m_groupColumn != data->GetCategoricalColumns().cend());
 
-        std::set<Data::GroupIdType> groupIds;
+        // if grouping, build the list of group IDs, sorted by their respective labels
+        if (IsUsingGrouping())
+            { BuildGroupIdMap(); }
 
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
+            const size_t colorIndex = IsUsingGrouping() ?
+                GetSchemeIndexFromGroupId(GetGroupColum()->GetValue(i)) :
+                0;
+
             AddTask(
                 GanttChart::TaskInfo(taskColumn->GetLabelFromID(taskColumn->GetValue(i))).
                 Resource(
@@ -101,28 +106,11 @@ namespace Wisteria::Graphs
                      wxString()).
                 StartDate(startColumn->GetValue(i)).
                 EndDate(endColumn->GetValue(i)).
-                Color(
-                    (IsUsingGrouping() ?
-                     GetColorScheme()->GetColor(GetGroupColum()->GetValue(i)) :
-                     GetColorScheme()->GetColor(0))).
+                Color(GetColorScheme()->GetColor(colorIndex)).
                 PercentFinished(
                     (completionColumn != data->GetContinuousColumns().cend() ?
                      zero_if_nan(completionColumn->GetValue(i)) : 0)).
                 LabelDisplay(GetLabelDisplay()));
-            // build a list of used group IDs (used for the legend later)
-            if (IsUsingGrouping())
-                { groupIds.insert(GetGroupColum()->GetValue(i)); }
-            }
-
-        if (IsUsingGrouping())
-            {
-            m_legendTitle = GetGroupColum()->GetName();
-            for (const auto& groupId : groupIds)
-                {
-                m_legendLines.emplace(
-                    std::make_pair(GetGroupColum()->GetLabelFromID(groupId),
-                                   GetColorScheme()->GetColor(groupId)));
-                }
             }
         }
 
@@ -329,7 +317,8 @@ namespace Wisteria::Graphs
                 arrowBar.GetBlocks().front().SetDecal(GraphItems::Label(GraphItemInfo(decalStr).
                     FontColor(ColorContrast::BlackOrWhiteContrast(
                         taskInfo.m_color))) );
-                arrowBar.GetBlocks().front().GetSelectionLabel().SplitTextToFitLength(m_maxDescriptionLength);
+                arrowBar.GetBlocks().front().GetSelectionLabel().
+                    SplitTextToFitLength(m_maxDescriptionLength);
                 if (taskInfo.m_img.IsOk() && taskInfo.m_name.length())
                     {
                     // see how tall the name label is and scale the image to that size
@@ -341,51 +330,5 @@ namespace Wisteria::Graphs
             }
 
         BarChart::RecalcSizes(dc);
-        }
-
-    //----------------------------------------------------------------
-    std::shared_ptr<GraphItems::Label> GanttChart::CreateLegend(const LegendOptions& options)
-        {
-        if (m_legendLines.empty())
-            { return nullptr; }
-
-        auto legend = std::make_shared<GraphItems::Label>(
-            GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
-            DPIScaling(GetDPIScaleFactor()));
-
-        wxString legendText;
-        size_t lineCount{ 0 };
-        for (const auto& legendLine : m_legendLines)
-            {
-            if (Settings::GetMaxLegendItemCount() == lineCount)
-                {
-                legendText.append(L"\u2026");
-                break;
-                }
-            wxString currentLabel = legendLine.first;
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
-            if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
-                Settings::GetMaxLegendTextLength() >= 1)
-                {
-                currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
-                currentLabel.append(L"\u2026");
-                }
-            legendText.append(currentLabel.c_str()).append(L"\n");
-                legend->GetLegendIcons().emplace_back(
-                    LegendIcon(IconShape::Square,
-                        legendLine.second,
-                        legendLine.second));
-            ++lineCount;
-            }
-        if (options.IsIncludingHeader())
-            {
-            legendText.Prepend(wxString::Format(L"%s\n", m_legendTitle));
-            legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
-            }
-        legend->SetText(legendText.Trim());
-
-        AddReferenceLinesAndAreasToLegend(legend);
-        AdjustLegendSettings(legend, options.GetPlacementHint());
-        return legend;
         }
     }

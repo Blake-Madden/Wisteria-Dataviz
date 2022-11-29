@@ -72,12 +72,23 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             currentLabel.append(L"\u2026");
             }
         legendText.append(currentLabel.c_str()).append(L"\n");
+
+        wxASSERT_MSG(GetBrushScheme() || GetColorScheme(),
+            L"Legend needs either a brush scheme or color scheme!");
+        // Graphs usually use the brush as the primary, but some may
+        // only use the color scheme; fallback to that if necessary.
+        const wxBrush br = (GetBrushScheme() ?
+            GetBrushScheme()->GetBrush(groupId.first) :
+            GetColorScheme() ?
+            wxBrush(GetColorScheme()->GetColor(groupId.first)) :
+            *wxTRANSPARENT_BRUSH);
         legend->GetLegendIcons().emplace_back(
                 LegendIcon(IconShape::Square, *wxBLACK,
-                    GetBrushScheme()->GetBrush(groupId.first),
-                    GetColorScheme() ?
-                        std::optional<wxColour>(GetColorScheme()->GetColor(groupId.first)) :
-                        std::nullopt));
+                br,
+                GetColorScheme() ?
+                    std::optional<wxColour>(GetColorScheme()->GetColor(groupId.first)) :
+                    std::nullopt));
+
         ++lineCount;
         }
 
