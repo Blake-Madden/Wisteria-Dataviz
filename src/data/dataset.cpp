@@ -959,6 +959,8 @@ namespace Wisteria::Data
         wxLogNull nl;
         wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
         wxRegEx mdRegex(L"(?i)^(NA|N/A)$");
+        wxDateTime dt;
+        wxString::const_iterator end;
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
             {
             // assume column's data is integral unless something in the first
@@ -978,7 +980,10 @@ namespace Wisteria::Data
                     // is a string or date further down this column
                     currentColumnType = ColumnImportType::Numeric;
                     }
-                else if (ConvertToDate(currentCell, DateImportMethod::Automatic, L"").IsValid())
+                // ConvertToDate() will also attempt to parse as time, so use
+                // strictly review as dates
+                else if (dt.ParseDateTime(currentCell, &end) ||
+                    dt.ParseDate(currentCell, &end))
                     {
                     currentColumnType = ColumnImportType::Date;
                     break;
