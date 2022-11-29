@@ -154,10 +154,10 @@ namespace Wisteria::Graphs
                 ConvertToSortableValue(m_continuousColumn->GetValue(i)),
                 (IsUsingGrouping() ?
                     GetGroupColum()->GetValue(i) : static_cast<Data::GroupIdType>(0)),
-                (IsUsingGrouping() ? colorIndex : 0),
+                colorIndex,
                 (IsUsingGrouping() ?
-                        GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
-                        wxString()) },
+                    GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                    wxString()) },
                 m_data->GetIdColumn().GetValue(i).wc_str() );
             if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
                 has_fractional_part(m_continuousColumn->GetValue(i)))
