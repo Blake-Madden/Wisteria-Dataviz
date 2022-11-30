@@ -32,11 +32,25 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    bool ColumnWithStringTable::ContainsMissingData() const
+        {
+        auto mdCode = FindMissingDataCode();
+        if (!mdCode.has_value())
+            { return false; }
+        for (size_t i = 0; i < GetRowCount(); ++i)
+            {
+            if (GetValue(i) == mdCode.value())
+                { return true; }
+            }
+        return false;
+        }
+
+    //----------------------------------------------
     bool ColumnWithStringTable::IsMissingData(const size_t index) const
         {
         wxASSERT_MSG(index < GetRowCount(), L"Invalid index in call to Column::IsMissingData()");
         if (index >= GetRowCount())
-                { return false; }
+            { return false; }
         auto mdCode = FindMissingDataCode();
         if (!mdCode.has_value())
             { return false; }

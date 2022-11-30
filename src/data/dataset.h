@@ -302,6 +302,9 @@ namespace Wisteria::Data
         ///     and is only meant for convenience.
         [[nodiscard]] bool IsMissingData(const size_t index) const final;
 
+        /// @returns @c true if the column contains any missing data.
+        [[nodiscard]] bool ContainsMissingData() const;
+
         /** @brief Applies a regular expression string replacement for all values in
                 the string table.
             @param pattern The regex pattern to replace.
