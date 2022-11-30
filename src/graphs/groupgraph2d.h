@@ -87,9 +87,9 @@ namespace Wisteria::Graphs
                 (e.g., color scheme).\n
                 The ordering of this map can also be used to build a legend, where the
                 group IDs are sorted in their respective label's alphabetical order.
-            @warning Ensure that `m_groupColumn` has been set to a valid colum before calling this
+            @warning Ensure that SetGroupColumn() has been passed a valid colum before calling this
                 and call `UseGrouping(true)` This should normally be done in a call to
-                `SetData()` in derived classes..*/
+                `SetData()` in derived classes.*/
         void BuildGroupIdMap();
 
         /** @private
@@ -135,8 +135,7 @@ namespace Wisteria::Graphs
             { return m_useGrouping; }
 
         /// @private
-        [[nodiscard]] Wisteria::Data::CategoricalColumnConstIterator
-            GetGroupColum()
+        [[nodiscard]] Wisteria::Data::CategoricalColumnConstIterator GetGroupColum()
             {
             wxASSERT_MSG(IsUsingGrouping(),
                 L"Grouping must be enabled to access grouping column!");
@@ -159,6 +158,8 @@ namespace Wisteria::Graphs
         Wisteria::Data::CategoricalColumnConstIterator m_groupColumn;
     private:
         bool m_useGrouping{ false };
+        [[nodiscard]] const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
+            { return m_groupIds; }
 
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;

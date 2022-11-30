@@ -47,29 +47,41 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
         GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
         DPIScaling(GetDPIScaleFactor()));
 
+    constexpr std::wstring_view ellipsis{ L"\u2026" };
+
     wxString legendText;
     size_t lineCount{ 0 };
-    // color index and then group ID
+
+    const auto mdCode = GetGroupColum()->FindMissingDataCode();
+    size_t mdSchemeIndex{ 0 };
+    // scheme index and then group ID
     // (do this so that the items are in alphabetically order)
     std::map<size_t, Data::GroupIdType> reverseGroupIds;
-    for (const auto& groupId : m_groupIds)
+    for (const auto& groupId : GetGroupIds())
         { reverseGroupIds.insert(std::make_pair(groupId.second, groupId.first)); }
-    for (const auto& groupId : reverseGroupIds)
+    for (const auto& [schemeIndex, groupId] : reverseGroupIds)
         {
+        // we'll put the missing data group at the bottom of the labels
+        if (mdCode.has_value() && groupId == mdCode.value())
+            {
+            mdSchemeIndex = schemeIndex;
+            continue;
+            }
         if (Settings::GetMaxLegendItemCount() == lineCount)
             {
-            legendText.append(L"\u2026");
+            legendText.append(ellipsis.data());
             break;
             }
         wxString currentLabel = m_useGrouping ?
-            m_groupColumn->GetLabelFromID(groupId.second) :
+            m_groupColumn->GetLabelFromID(groupId) :
             wxString();
-        wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+        wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+            L"Max legend text length is zero?!");
         if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
             Settings::GetMaxLegendTextLength() >= 1)
             {
             currentLabel.erase(Settings::GetMaxLegendTextLength()-1);
-            currentLabel.append(L"\u2026");
+            currentLabel.append(ellipsis.data());
             }
         legendText.append(currentLabel.c_str()).append(L"\n");
 
@@ -78,18 +90,43 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
         // Graphs usually use the brush as the primary, but some may
         // only use the color scheme; fallback to that if necessary.
         const wxBrush br = (GetBrushScheme() ?
-            GetBrushScheme()->GetBrush(groupId.first) :
+            GetBrushScheme()->GetBrush(schemeIndex) :
             GetColorScheme() ?
-            wxBrush(GetColorScheme()->GetColor(groupId.first)) :
+            wxBrush(GetColorScheme()->GetColor(schemeIndex)) :
             *wxTRANSPARENT_BRUSH);
         legend->GetLegendIcons().emplace_back(
                 LegendIcon(IconShape::Square, *wxBLACK,
                 br,
                 GetColorScheme() ?
-                    std::optional<wxColour>(GetColorScheme()->GetColor(groupId.first)) :
+                    std::optional<wxColour>(GetColorScheme()->GetColor(schemeIndex)) :
                     std::nullopt));
 
         ++lineCount;
+        }
+
+    // add MD label at the bottom if there are missing data
+    if (GetGroupColum()->ContainsMissingData())
+        {
+        wxASSERT_MSG(mdCode.has_value(),
+            L"Cat. column has MD, but string table has no MD code?!");
+        if (mdCode.has_value())
+            {
+            legendText.append(_(L"[[NO GROUP]]")).append(L"\n");
+
+            // Graphs usually use the brush as the primary, but some may
+            // only use the color scheme; fallback to that if necessary.
+            const wxBrush br = (GetBrushScheme() ?
+                GetBrushScheme()->GetBrush(mdSchemeIndex) :
+                GetColorScheme() ?
+                wxBrush(GetColorScheme()->GetColor(mdSchemeIndex)) :
+                *wxTRANSPARENT_BRUSH);
+            legend->GetLegendIcons().emplace_back(
+                    LegendIcon(IconShape::Square, *wxBLACK,
+                    br,
+                    GetColorScheme() ?
+                        std::optional<wxColour>(GetColorScheme()->GetColor(mdSchemeIndex)) :
+                        std::nullopt));
+            }
         }
 
     if (options.IsIncludingHeader())
