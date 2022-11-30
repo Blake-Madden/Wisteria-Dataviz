@@ -45,6 +45,8 @@ enum class DTExplanation
     SystemEntry,     /*!< A system entry, such as an entry in the Windows registry.*/
     FormatString,    /*!< A printf format string.*/
     Syntax,          /*!< Any sort of code or formula.*/
+    Constant,        /*!< A constant being displayed that should never change.
+                          For example, a number or math constant (e.g., "PI").*/
     NoExplanation    /*!< No explanation.*/
     };
 
