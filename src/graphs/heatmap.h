@@ -12,7 +12,7 @@
 #ifndef __WISTERIA_HEATMAP_H__
 #define __WISTERIA_HEATMAP_H__
 
-#include "graph2d.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -119,7 +119,7 @@ namespace Wisteria::Graphs
           canvas->SetFixedObject(0, 1, legend);
          @endcode
     */
-    class HeatMap final : public Graph2D
+    class HeatMap final : public GroupGraph2D
         {
     public:
         /** @brief Constructor.
@@ -209,13 +209,10 @@ namespace Wisteria::Graphs
             Data::GroupIdType m_groupId{ 0 };
             };
         std::vector<std::vector<HeatCell>> m_matrix;
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorSpectrum;
         std::vector<wxColour> m_reversedColorSpectrum; // used for the legend
         std::pair<double, double> m_range{ 0,0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
-        std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
-        bool m_useGrouping{ false };
         bool m_showGroupHeaders{ true };
         size_t m_groupColumnCount{ 1 };
         };

@@ -19,10 +19,11 @@ namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
     HeatMap::HeatMap(Wisteria::Canvas* canvas, std::shared_ptr<ColorScheme> colors /*= nullptr*/) :
-        Graph2D(canvas),
-        m_colorSpectrum(colors != nullptr ? colors :
-            std::make_shared<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }))
+        GroupGraph2D(canvas)
         {
+        SetColorScheme(colors != nullptr ? colors :
+            std::make_shared<ColorScheme>(ColorScheme{ *wxWHITE, *wxBLACK }));
+
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetLeftYAxis().SetRange(0, 10, 0, 1, 1);
         GetBottomXAxis().Show(false);
@@ -39,19 +40,13 @@ namespace Wisteria::Graphs
         std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
         SetDataset(data);
+        ResetGrouping();
         GetSelectedIds().clear();
 
-        if (data == nullptr)
+        if (GetData() == nullptr)
             { return; }
         
-        m_useGrouping = groupColumnName.has_value();
-        m_groupColumn = (groupColumnName ? GetData()->GetCategoricalColumn(groupColumnName.value()) :
-            GetData()->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == GetData()->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for heatmap."), groupColumnName.value()).ToUTF8());
-            }
+        SetGroupColumn(groupColumnName);
         m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
             {
@@ -70,21 +65,21 @@ namespace Wisteria::Graphs
             }
 
         // prepare the colors
-        m_reversedColorSpectrum = m_colorSpectrum->GetColors();
+        m_reversedColorSpectrum = GetColorScheme()->GetColors();
         std::reverse(m_reversedColorSpectrum.begin(), m_reversedColorSpectrum.end());
 
         ColorBrewer cb;
-        cb.SetColorScale(m_colorSpectrum->GetColors().cbegin(), m_colorSpectrum->GetColors().cend());
+        cb.SetColorScale(GetColorScheme()->GetColors().cbegin(), GetColorScheme()->GetColors().cend());
         const auto cellColors = cb.BrewColors(m_continuousColumn->GetValues().cbegin(),
                                               m_continuousColumn->GetValues().cend());
         m_range = cb.GetRange();
 
         const wxString crossedOutSymbolForNaN{ L"\x274C" };
-        if (m_useGrouping)
+        if (IsUsingGrouping())
             {
             // see how many groups there are
             frequency_set<Data::GroupIdType> groups;
-            for (const auto& groupId : m_groupColumn->GetValues())
+            for (const auto& groupId : GetGroupColumn()->GetValues())
                 { groups.insert(groupId); }
             // if more columns than groups, then fix the column count
             m_groupColumnCount = std::min(m_groupColumnCount, groups.get_data().size());
@@ -97,15 +92,15 @@ namespace Wisteria::Graphs
                 { row.resize(maxItemByColumnCount->second); }
 
             size_t currentRow{ 0 }, currentColumn{ 0 };
-            auto currentGroupId = m_groupColumn->GetValue(0);
+            auto currentGroupId = GetGroupColumn()->GetValue(0);
             for (size_t i = 0; i < cellColors.size(); ++i)
                 {
                 // move to next row if on another group ID
-                if (m_groupColumn->GetValue(i) != currentGroupId)
+                if (GetGroupColumn()->GetValue(i) != currentGroupId)
                     {
                     ++currentRow;
                     currentColumn = 0;
-                    currentGroupId = m_groupColumn->GetValue(i);
+                    currentGroupId = GetGroupColumn()->GetValue(i);
                     }
                 wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(),
                     L"Invalid row when filling heatmap matrix! Data should be sorted by group before calling SetData().!");
@@ -131,7 +126,7 @@ namespace Wisteria::Graphs
                             Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
                     GetData()->GetIdColumn().GetValue(i);
-                m_matrix[currentRow][currentColumn].m_groupId = m_groupColumn->GetValue(i);
+                m_matrix[currentRow][currentColumn].m_groupId = GetGroupColumn()->GetValue(i);
                 ++currentColumn;
                 }
             }
@@ -207,9 +202,9 @@ namespace Wisteria::Graphs
             Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()));
         wxCoord widestLabelWidth{ 0 };
         wxString widestStr;
-        if (m_useGrouping)
+        if (IsUsingGrouping())
             {
-            for (const auto& [id, strVal] : m_groupColumn->GetStringTable())
+            for (const auto& [id, strVal] : GetGroupColumn()->GetStringTable())
                 {
                 measuringLabel.SetText(strVal);
                 if (widestLabelWidth < measuringLabel.GetBoundingBox(dc).GetWidth())
@@ -217,9 +212,9 @@ namespace Wisteria::Graphs
                 widestLabelWidth = std::max(measuringLabel.GetBoundingBox(dc).GetWidth(), widestLabelWidth);
                 }
             }
-        const bool hasGroupLabels{ m_useGrouping && m_groupColumn->GetStringTable().size() };
+        const bool hasGroupLabels{ IsUsingGrouping() && GetGroupColumn()->GetStringTable().size() };
         const auto groupLabelWidth{ hasGroupLabels ? widestLabelWidth : 0 };
-        if (m_useGrouping && m_matrix.size() > 1)
+        if (IsUsingGrouping() && m_matrix.size() > 1)
             {
             // if multiple columns, set the size of the drawing area to a column (minus padding around it)
             if (m_groupColumnCount > 1)
@@ -276,7 +271,7 @@ namespace Wisteria::Graphs
             drawArea.Offset(wxPoint(groupLabelWidth, groupHeaderLabelHeight));
             }
 
-        const auto boxWidth = m_useGrouping ?
+        const auto boxWidth = IsUsingGrouping() ?
                                 std::min(safe_divide<wxCoord>(drawArea.GetHeight(), maxRowsWhenGrouping),
                                          safe_divide<wxCoord>(drawArea.GetWidth(),
                                                               ((m_groupColumnCount > 1) ?
@@ -314,7 +309,7 @@ namespace Wisteria::Graphs
         const wxString singleGroupHeaderFormatString = (groupHeaderLabelMultiline ? L"%s\n%zu" : L"%s %zu");
         for (const auto& row : m_matrix)
             {
-            if (currentRow == 0 && IsShowingGroupHeaders() && m_useGrouping && m_matrix.size() > 1)
+            if (currentRow == 0 && IsShowingGroupHeaders() && IsUsingGrouping() && m_matrix.size() > 1)
                 {
                 // If only one group in column, then don't show that as a range;
                 // otherwise, show as a range.
@@ -385,7 +380,7 @@ namespace Wisteria::Graphs
                 {
                 // add a group label
                 auto groupRowLabel = std::make_shared<GraphItems::Label>(
-                    GraphItemInfo(m_groupColumn->GetLabelFromID(currentGroupdStart)).
+                    GraphItemInfo(GetGroupColumn()->GetLabelFromID(currentGroupdStart)).
                     Anchoring(Anchoring::TopLeftCorner).
                     // font is already scaled, so leave the label's scaling at 1.0
                     Font(groupLabelFont).
@@ -403,7 +398,7 @@ namespace Wisteria::Graphs
             ++currentGroupdStart;
             ++currentRow;
             currentColumn = 0;
-            if (m_useGrouping && m_groupColumnCount > 1 &&
+            if (IsUsingGrouping() && m_groupColumnCount > 1 &&
                 currentRow+1 > maxRowsWhenGrouping &&
                 // don't add another column if this is the last row
                 currentGroupdStart != m_matrix.size())

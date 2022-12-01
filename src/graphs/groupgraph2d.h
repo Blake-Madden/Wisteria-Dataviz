@@ -46,35 +46,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) override;
 
-        /// @brief Get the brush scheme used for the bars.
-        /// @returns The brush scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
-            { return m_brushScheme; }
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.
-            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
-        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
-            { m_brushScheme = colors; }
-        /// @brief Get the color scheme used for the bars.
-        /// @returns The color scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_colorScheme; }
-        /** @brief Sets the color scheme.
-            @param colors The color scheme to use.
-            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
-        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
-            { m_colorScheme = colors; }
-
-        /// @brief Get the shape scheme used for the points.
-        /// @returns The shape scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<Icons::Schemes::IconScheme>&
-            GetShapeScheme() const noexcept
-            { return m_shapeScheme; }
-        /** @brief Sets the shape/icon scheme.
-            @param shapes The shape scheme to use.
-            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
-        void SetShapeScheme(std::shared_ptr<Icons::Schemes::IconScheme> shapes)
-            { m_shapeScheme = shapes; }
         /// @returns The number of subgroups found during the last call to SetData().\n
         ///     This is only relevant if using the secondary grouping variable.
         [[nodiscard]] size_t GetGroupCount() const noexcept
@@ -132,16 +103,16 @@ namespace Wisteria::Graphs
             { return (m_groupColumn != nullptr); }
 
         /// @private
-        [[nodiscard]] const Wisteria::Data::ColumnWithStringTable* GetGroupColum() const
+        [[nodiscard]] const Wisteria::Data::ColumnWithStringTable* GetGroupColumn() const
             { return m_groupColumn;  }
         /// @private
         void SetGroupColumn(const Wisteria::Data::ColumnWithStringTable* groupColumn)
             { m_groupColumn = groupColumn; }
 
         /// @private
-        /// Set the grouping column (or keep it as null if not in use)
-        void SetGroupColumn(std::shared_ptr<const Data::Dataset> data,
-                            const std::optional<const wxString> groupColumnName = std::nullopt);
+        /// @ Set the grouping column (or keep it as null if not in use).
+        /// @warning Call SetDataset() first before calling this.
+        void SetGroupColumn(const std::optional<const wxString> groupColumnName = std::nullopt);
     private:
         [[nodiscard]] const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
             { return m_groupIds; }
@@ -149,9 +120,6 @@ namespace Wisteria::Graphs
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;
         const Wisteria::Data::ColumnWithStringTable* m_groupColumn{ nullptr };
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
-        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
-        std::shared_ptr<Icons::Schemes::IconScheme> m_shapeScheme{ nullptr };
         };
     }
 

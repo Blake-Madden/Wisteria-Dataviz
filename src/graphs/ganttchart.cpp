@@ -46,17 +46,16 @@ namespace Wisteria::Graphs
         {
         // point to (new) data and reset
         SetDataset(data);
-        
-        ClearBars();
         ResetGrouping();
+        ClearBars();
         GetSelectedIds().clear();
         m_legendTitle.clear();
 
-        m_dateDisplayInterval = interval;
-        m_fyType = FYType;
-
         if (GetData() == nullptr)
             { return; }
+
+        m_dateDisplayInterval = interval;
+        m_fyType = FYType;
 
         auto taskColumn = GetData()->GetCategoricalColumn(taskColumnName);
         if (taskColumn == GetData()->GetCategoricalColumns().cend())
@@ -85,7 +84,7 @@ namespace Wisteria::Graphs
         auto completionColumn =
             GetData()->GetContinuousColumn(completionColumnName.value_or(wxString()));
         // set the grouping column (or keep it as null if not in use)
-        SetGroupColumn(GetData(), groupColumnName);
+        SetGroupColumn(groupColumnName);
         auto descriptionColumn =
             GetData()->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
 
@@ -96,7 +95,7 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
             {
             const size_t colorIndex = IsUsingGrouping() ?
-                GetSchemeIndexFromGroupId(GetGroupColum()->GetValue(i)) :
+                GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
                 0;
 
             AddTask(

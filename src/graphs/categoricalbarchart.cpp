@@ -52,7 +52,7 @@ namespace Wisteria::Graphs
             }
 
         // set the grouping column (or keep it as null if not in use)
-        SetGroupColumn(GetData(), groupColumnName);
+        SetGroupColumn(groupColumnName);
 
         m_continuousColumn = (valueColumnName ? GetData()->GetContinuousColumn(valueColumnName.value()) :
             GetData()->GetContinuousColumns().cend());
@@ -119,7 +119,7 @@ namespace Wisteria::Graphs
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex = IsUsingGrouping() ?
-                GetSchemeIndexFromGroupId(GetGroupColum()->GetValue(i)) :
+                GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
                 0;
 
             if (m_useIDColumnForBars)
@@ -136,7 +136,7 @@ namespace Wisteria::Graphs
                             m_idColumn->GetValue(i),
                             colorIndex,
                             (IsUsingGrouping() ?
-                                GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                                GetGroupColumn()->GetLabelFromID(GetGroupColumn()->GetValue(i)) :
                                 wxString()) },
                         groupTotal);
                     }
@@ -150,7 +150,7 @@ namespace Wisteria::Graphs
                         m_categoricalColumn->GetLabelFromID(m_categoricalColumn->GetValue(i)),
                         colorIndex,
                         (IsUsingGrouping() ?
-                            GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                            GetGroupColumn()->GetLabelFromID(GetGroupColumn()->GetValue(i)) :
                             wxString()) },
                     groupTotal);
                 }

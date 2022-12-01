@@ -6,13 +6,14 @@ using namespace Wisteria::Graphs;
 using namespace Wisteria::Icons;
 
 //----------------------------------------------------------------
-void GroupGraph2D::SetGroupColumn(std::shared_ptr<const Data::Dataset> data,
+void GroupGraph2D::SetGroupColumn(
     const std::optional<const wxString> groupColumnName /*= std::nullopt*/)
     {
+    wxASSERT_MSG(GetData(), L"You must call SetDataset before calling SetGroupColumn()!");
     const auto groupColIter = groupColumnName ?
-        data->GetCategoricalColumn(groupColumnName.value()) :
-        data->GetCategoricalColumns().cend();
-    if (groupColumnName && groupColIter == data->GetCategoricalColumns().cend())
+        GetData()->GetCategoricalColumn(groupColumnName.value()) :
+        GetData()->GetCategoricalColumns().cend();
+    if (groupColumnName && groupColIter == GetData()->GetCategoricalColumns().cend())
         {
         throw std::runtime_error(wxString::Format(
             _(L"'%s': group column not found for graph."),
@@ -29,19 +30,19 @@ void GroupGraph2D::BuildGroupIdMap()
         { return; }
     // make reverse string table, sorted by label
     std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-    if (GetGroupColum()->GetStringTable().size())
+    if (GetGroupColumn()->GetStringTable().size())
         {
-        for (const auto& [id, str] : GetGroupColum()->GetStringTable())
+        for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
             { groups.insert(std::make_pair(str, id)); }
         }
     // if no string table, then it's just discrete values;
     // make a reverse "string table" from that
     else
         {
-        for (size_t i = 0; i < GetGroupColum()->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetGroupColumn()->GetRowCount(); ++i)
             {
-            groups.insert(std::make_pair(GetGroupColum()->GetValueAsLabel(i),
-                                         GetGroupColum()->GetValue(i)));
+            groups.insert(std::make_pair(GetGroupColumn()->GetValueAsLabel(i),
+                                         GetGroupColumn()->GetValue(i)));
             }
         }
     // build a list of group IDs and their respective strings' alphabetical order
@@ -68,7 +69,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     wxString legendText;
     size_t lineCount{ 0 };
 
-    const auto mdCode = GetGroupColum()->FindMissingDataCode();
+    const auto mdCode = GetGroupColumn()->FindMissingDataCode();
     size_t mdSchemeIndex{ 0 };
     // scheme index and then group ID
     // (do this so that the items are in alphabetically order)
@@ -88,7 +89,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             legendText.append(ellipsis.data());
             break;
             }
-        wxString currentLabel = GetGroupColum()->GetLabelFromID(groupId);
+        wxString currentLabel = GetGroupColumn()->GetLabelFromID(groupId);
         wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
             L"Max legend text length is zero?!");
         if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
@@ -119,7 +120,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
         }
 
     // add MD label at the bottom if there are missing data
-    if (GetGroupColum()->ContainsMissingData())
+    if (GetGroupColumn()->ContainsMissingData())
         {
         wxASSERT_MSG(mdCode.has_value(),
             L"Cat. column has MD, but string table has no MD code?!");
@@ -146,7 +147,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     if (options.IsIncludingHeader())
         {
         legendText.Prepend(
-            wxString::Format(L"%s\n", GetGroupColum()->GetName()));
+            wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
         legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
         }
     legend->SetText(legendText.Trim());

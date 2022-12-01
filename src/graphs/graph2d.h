@@ -322,6 +322,37 @@ namespace Wisteria::Graphs
         void SetImageScheme(std::shared_ptr<Wisteria::Images::Schemes::ImageScheme> imageScheme)
             { m_imageScheme = imageScheme; }
 
+        /// @brief Get the brush scheme used for the bars.
+        /// @returns The brush scheme used for the bars.
+        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
+            { return m_brushScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.
+            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
+        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> colors)
+            { m_brushScheme = colors; }
+
+        /// @brief Get the shape scheme used for the points.
+        /// @returns The shape scheme used for the points.
+        [[nodiscard]] const std::shared_ptr<Icons::Schemes::IconScheme>&
+            GetShapeScheme() const noexcept
+            { return m_shapeScheme; }
+        /** @brief Sets the shape/icon scheme.
+            @param shapes The shape scheme to use.
+            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
+        void SetShapeScheme(std::shared_ptr<Icons::Schemes::IconScheme> shapes)
+            { m_shapeScheme = shapes; }
+
+        /// @brief Get the color scheme used for the bars.
+        /// @returns The color scheme used for the bars.
+        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
+            { return m_colorScheme; }
+        /** @brief Sets the color scheme.
+            @param colors The color scheme to use.
+            @warning For most derived graphs, this will have no effect until `SetData()` is called.*/
+        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
+            { m_colorScheme = colors; }
+
         /// @private
         void SetStippleBrush(wxBitmapBundle&& image) noexcept
             { m_stipple = std::move(image); }
@@ -644,6 +675,10 @@ namespace Wisteria::Graphs
 
         long m_currentAssignedId{ 0 };
         std::map<long, std::set<long>> m_selectedItemsWithSubitems;
+
+        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
+        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
+        std::shared_ptr<Icons::Schemes::IconScheme> m_shapeScheme{ nullptr };
         };
     }
 

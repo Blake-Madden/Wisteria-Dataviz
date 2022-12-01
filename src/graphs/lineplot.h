@@ -12,7 +12,7 @@
 #ifndef __WISTERIA_LINE_PLOT_H__
 #define __WISTERIA_LINE_PLOT_H__
 
-#include "graph2d.h"
+#include "groupgraph2d.h"
 
 namespace Wisteria::Graphs
     {
@@ -129,7 +129,7 @@ namespace Wisteria::Graphs
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         @endcode
     */
-    class LinePlot : public Graph2D
+    class LinePlot : public GroupGraph2D
         {
     public:
         /// @brief A data series drawn on a line plot.
@@ -225,17 +225,17 @@ namespace Wisteria::Graphs
             std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr,
             std::shared_ptr<LineStyleScheme> linePenStyles = nullptr) :
-            Graph2D(canvas),
-            m_colorScheme(colors != nullptr ? colors :
-                Settings::GetDefaultColorScheme()),
-            m_shapeScheme(shapes != nullptr ? shapes :
-                std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
-                    Wisteria::Icons::Schemes::StandardShapes())),
+            GroupGraph2D(canvas),
             m_linePenStyles(linePenStyles != nullptr ?
                 linePenStyles :
                 std::make_shared<LineStyleScheme>(
                     LineStyleScheme{ { wxPenStyle::wxPENSTYLE_SOLID, LineStyle::Lines } }))
             {
+            SetColorScheme(colors != nullptr ? colors :
+                Settings::GetDefaultColorScheme());
+            SetShapeScheme(shapes != nullptr ? shapes :
+                std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
+                    Wisteria::Icons::Schemes::StandardShapes()));
             GetBottomXAxis().GetGridlinePen() = wxNullPen;
             GetLeftYAxis().StartAtZero(true);
             }
@@ -367,10 +367,6 @@ namespace Wisteria::Graphs
                 IncludeHeader(includeHeader).PlacementHint(hint));
             }
     protected:
-        /// @returns @c true if data is being grouped.
-        [[nodiscard]] bool IsGrouping() const noexcept
-            { return m_useGrouping; }
-
         /// @brief Returns true if the value at @c index in the X column is valid (i.e., not NaN).
         /// @param index The row in the X column to review.
         /// @returns @c true if the given row in the X column is valid.
@@ -477,17 +473,6 @@ namespace Wisteria::Graphs
         void AddLine(const Line& line);
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
-        /// @brief Get the shape scheme used for the points.
-        /// @returns The shape scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<Wisteria::Icons::Schemes::IconScheme>&
-            GetShapeScheme() const noexcept
-            { return m_shapeScheme; }
-
-        /// @brief Get the color scheme used for the points.
-        /// @returns The color scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>&
-            GetColorScheme() const noexcept
-            { return m_colorScheme; }
 
         [[nodiscard]] const std::shared_ptr<LineStyleScheme>& GetPenStyleScheme() const noexcept
             { return m_linePenStyles; }
@@ -507,7 +492,6 @@ namespace Wisteria::Graphs
                 }
             }
 
-        Data::CategoricalColumnConstIterator m_groupColumn;
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
         Data::DateColumnConstIterator m_xColumnDate;
@@ -516,11 +500,8 @@ namespace Wisteria::Graphs
 
         std::vector<Line> m_lines;
         size_t m_pointsPerDefaultCanvasSize{ 100 };
-        bool m_useGrouping{ false };
         bool m_autoSpline{ true };
 
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_shapeScheme{ nullptr };
         std::shared_ptr<LineStyleScheme> m_linePenStyles{ nullptr };
 
         PointColorCriteria m_colorIf;

@@ -21,19 +21,13 @@ namespace Wisteria::Graphs
                            std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
         SetDataset(data);
+        ResetGrouping();
         GetSelectedIds().clear();
 
-        if (data == nullptr)
+        if (GetData() == nullptr)
             { return; }
 
-        m_useGrouping = groupColumnName.has_value();
-        m_groupColumn = (groupColumnName ? GetData()->GetCategoricalColumn(groupColumnName.value()) :
-            GetData()->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == GetData()->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for line plot."), groupColumnName.value()).ToUTF8());
-            }
+        SetGroupColumn(groupColumnName);
         m_yColumnName = yColumnName;
         m_yColumn = GetData()->GetContinuousColumn(yColumnName);
         if (m_yColumn == GetData()->GetContinuousColumns().cend())
@@ -73,18 +67,18 @@ namespace Wisteria::Graphs
         GetBottomXAxis().GetTitle().SetText(xColumnName);
         GetLeftYAxis().GetTitle().SetText(yColumnName);
 
-        if (m_useGrouping)
+        if (IsUsingGrouping())
             {
             // create a reverse string table, with it sorted by label
             std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-            for (const auto& [id, str] : m_groupColumn->GetStringTable())
+            for (const auto& [id, str] : GetGroupColumn()->GetStringTable())
                 { groups.insert(std::make_pair(str, id)); }
             size_t currentIndex{ 0 };
             for (const auto& group : groups)
                 {
                 Line ln;
                 ln.SetGroupInfo(groupColumnName, group.second,
-                                m_groupColumn->GetLabelFromID(group.second));
+                                GetGroupColumn()->GetLabelFromID(group.second));
                 ln.GetPen().SetColour(GetColorScheme()->GetColor(currentIndex));
                 ln.m_shape = GetShapeScheme()->GetShape(currentIndex);
                 ln.m_shapeImg = GetShapeScheme()->GetImage(currentIndex);
@@ -139,7 +133,7 @@ namespace Wisteria::Graphs
         double currentX{ std::numeric_limits<double>::lowest() };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (!m_useGrouping || group == m_groupColumn->GetValue(i))
+            if (!IsUsingGrouping() || group == GetGroupColumn()->GetValue(i))
                 {
                 if (IsXValid(i))
                     {
@@ -167,7 +161,7 @@ namespace Wisteria::Graphs
         const auto [fullYDataMin, fullYDataMax] = std::minmax_element(
             m_yColumn->GetValues().cbegin(),
             m_yColumn->GetValues().cend());
-        const auto [minYValue, maxYValue] = m_useGrouping ?
+        const auto [minYValue, maxYValue] = IsUsingGrouping() ?
             GetData()->GetContinuousMinMax(m_yColumnName,
                                            line.m_groupColumnName,
                                            line.m_groupId) :
@@ -239,7 +233,7 @@ namespace Wisteria::Graphs
             for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
                 {
                 // skip value if from a different group
-                if (m_useGrouping && m_groupColumn->GetValue(i) != line.m_groupId)
+                if (IsUsingGrouping() && GetGroupColumn()->GetValue(i) != line.m_groupId)
                     { continue; }
                 // if explicitly missing data (i.e., NaN),
                 // then add a bogus point to show a gap in the line
@@ -273,6 +267,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> LinePlot::CreateLegend(const LegendOptions& options)
         {
+        if (!IsUsingGrouping())
+            { return nullptr; }
+
         auto legend = std::make_shared<GraphItems::Label>(
             GraphItemInfo().Padding(0, 0, 0, Label::GetMinLegendWidthDIPs()).
             DPIScaling(GetDPIScaleFactor()));
@@ -290,10 +287,10 @@ namespace Wisteria::Graphs
                 legendText.append(L"\u2026");
                 break;
                 }
-            wxString currentLabel = m_useGrouping ?
-                m_groupColumn->GetLabelFromID(line.m_groupId) :
-                wxString(L"");
-            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1, L"Max legend text length is zero?!");
+            wxString currentLabel =
+                GetGroupColumn()->GetLabelFromID(line.m_groupId);
+            wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
+                L"Max legend text length is zero?!");
             if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
                 Settings::GetMaxLegendTextLength() >= 1)
                 {
@@ -318,7 +315,7 @@ namespace Wisteria::Graphs
             }
         if (options.IsIncludingHeader())
             {
-            legendText.Prepend(wxString::Format(L"%s\n", m_groupColumn->GetName()));
+            legendText.Prepend(wxString::Format(L"%s\n", GetGroupColumn()->GetName()));
             legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
             }
         legend->SetText(legendText.Trim());

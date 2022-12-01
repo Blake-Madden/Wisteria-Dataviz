@@ -138,13 +138,14 @@ namespace Wisteria::Graphs
                      std::shared_ptr<Brushes::Schemes::BrushScheme> brushes /*= nullptr*/,
                      std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/,
                      std::shared_ptr<IconScheme> shapes /*= nullptr*/) :
-        Graph2D(canvas),
-        m_brushScheme((brushes != nullptr ? brushes :
-            std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme())) ),
-        m_colorScheme(colors),
-        m_iconScheme((shapes != nullptr ? shapes :
-            std::make_shared<Icons::Schemes::StandardShapes>()) )
+        Graph2D(canvas)
         {
+        SetColorScheme(colors);
+        SetBrushScheme((brushes != nullptr ? brushes :
+            std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme())));
+        SetShapeScheme((shapes != nullptr ? shapes :
+            std::make_shared<Icons::Schemes::StandardShapes>()));
+
         GetRightYAxis().Show(false);
         if (GetTopXAxis().GetAxisLinePen().IsOk())
             {
@@ -177,7 +178,7 @@ namespace Wisteria::Graphs
         GetBottomXAxis().Reset();
         GetTopXAxis().Reset();
 
-        if (data == nullptr)
+        if (GetData() == nullptr)
             { return; }
 
         // sets titles from variables
@@ -476,12 +477,12 @@ namespace Wisteria::Graphs
                             Brush(GraphItemBase::GetShadowColour()),
                             shadowPts, std::size(shadowPts)));
                         }
-                    wxColour boxColor = (m_colorScheme ?
-                                         m_colorScheme->GetColor(box.GetSchemeIndex()) :
+                    wxColour boxColor = (GetColorScheme() ?
+                                         GetColorScheme()->GetColor(box.GetSchemeIndex()) :
                                          wxNullColour);
                     if (boxColor.IsOk())
                         { boxColor = ColorContrast::ChangeOpacity(boxColor, box.GetOpacity()); }
-                    wxBrush brush{ m_brushScheme->GetBrush(box.GetSchemeIndex()) };
+                    wxBrush brush{ GetBrushScheme()->GetBrush(box.GetSchemeIndex())};
                     brush.SetColour(ColorContrast::ChangeOpacity(brush.GetColour(), box.GetOpacity()));
                     auto boxPoly = std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo(boxLabel).
@@ -496,10 +497,10 @@ namespace Wisteria::Graphs
                         boxPoly->GetBrush() = wxNullBrush;
                         boxPoly->SetBackgroundFill(Colors::GradientFill(
                             ColorContrast::ChangeOpacity(
-                                m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour(),
+                                GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour(),
                                                         box.GetOpacity()),
                             ColorContrast::ChangeOpacity(
-                                m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour().
+                                GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour().
                                     ChangeLightness(boxLightenFactor),
                                 box.GetOpacity()),
                             FillDirection::East));
@@ -509,10 +510,10 @@ namespace Wisteria::Graphs
                         boxPoly->GetBrush() = wxNullBrush;
                         boxPoly->SetBackgroundFill(Colors::GradientFill(
                             ColorContrast::ChangeOpacity(
-                                m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour(),
+                                GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour(),
                                                         box.GetOpacity()),
                             ColorContrast::ChangeOpacity(
-                                m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour().
+                                GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour().
                                     ChangeLightness(boxLightenFactor),
                                 box.GetOpacity()),
                             FillDirection::West));
@@ -520,7 +521,7 @@ namespace Wisteria::Graphs
                     else if (box.GetBoxEffect() == BoxEffect::Glassy)
                         {
                         auto blockColor = ColorContrast::ChangeOpacity(
-                            m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour(),
+                            GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour(),
                             box.GetOpacity());
                         boxPoly->GetBrush() = wxNullBrush;
                         boxPoly->SetBackgroundFill(Colors::GradientFill(
@@ -545,7 +546,7 @@ namespace Wisteria::Graphs
                                               box.m_middleCoordinate.y) };
             AddObject(std::make_shared<GraphItems::Polygon>(
                 GraphItemInfo().Pen(wxPenInfo(ColorContrast::BlackOrWhiteContrast(
-                        m_brushScheme->GetBrush(box.GetSchemeIndex()).GetColour()) ).
+                        GetBrushScheme()->GetBrush(box.GetSchemeIndex()).GetColour()) ).
                     Cap(wxPenCap::wxCAP_BUTT)).
                     Scaling(GetScaling()),
                 boxLinePts, 2));
@@ -588,7 +589,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            m_iconScheme->GetShape(box.GetSchemeIndex())), dc);
+                            GetShapeScheme()->GetShape(box.GetSchemeIndex())), dc);
                         }
                     else
                         {
@@ -597,7 +598,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
-                            m_iconScheme->GetShape(box.GetSchemeIndex())), dc);
+                            GetShapeScheme()->GetShape(box.GetSchemeIndex())), dc);
                         }
                     }
                 }

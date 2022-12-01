@@ -49,7 +49,7 @@ namespace Wisteria::Graphs
             { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
         // set the grouping column (or keep it as null if not in use)
-        SetGroupColumn(GetData(), groupColumnName);
+        SetGroupColumn(groupColumnName);
 
         m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
@@ -143,16 +143,16 @@ namespace Wisteria::Graphs
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
             const size_t colorIndex = IsUsingGrouping() ?
-                GetSchemeIndexFromGroupId(GetGroupColum()->GetValue(i)) :
+                GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
                 0;
 
             groups.insert(BinBlock{
                 ConvertToSortableValue(m_continuousColumn->GetValue(i)),
                 (IsUsingGrouping() ?
-                    GetGroupColum()->GetValue(i) : static_cast<Data::GroupIdType>(0)),
+                    GetGroupColumn()->GetValue(i) : static_cast<Data::GroupIdType>(0)),
                 colorIndex,
                 (IsUsingGrouping() ?
-                    GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
+                    GetGroupColumn()->GetLabelFromID(GetGroupColumn()->GetValue(i)) :
                     wxString()) },
                 GetData()->GetIdColumn().GetValue(i).wc_str() );
             if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
@@ -358,7 +358,7 @@ namespace Wisteria::Graphs
                 if (compare_doubles(currentVal, minVal))
                     {
                     auto foundGroup = std::find(bins[0].begin(), bins[0].end(),
-                        comparable_first_pair((IsUsingGrouping() ? GetGroupColum()->GetValue(i) : 0),
+                        comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
                     if (foundGroup != bins[0].end())
                         {
@@ -371,7 +371,7 @@ namespace Wisteria::Graphs
                         std::set<wxString, Data::StringCmpNoCase> theSet;
                         theSet.emplace(GetData()->GetIdColumn().GetValue(i).c_str());
                         bins[0].emplace_back(
-                            comparable_first_pair((IsUsingGrouping() ? GetGroupColum()->GetValue(i) : 0),
+                            comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                                 valuesCounter(1.0, theSet)));
                         }
                     break;
@@ -380,7 +380,7 @@ namespace Wisteria::Graphs
                     compare_doubles_less_or_equal(currentVal, (minVal+(j*BinSize)+BinSize)))
                     {
                     auto foundGroup = std::find(bins[j].begin(), bins[j].end(),
-                        comparable_first_pair((IsUsingGrouping() ? GetGroupColum()->GetValue(i) : 0),
+                        comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
                             valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
                     if (foundGroup != bins[j].end())
                         {
@@ -394,7 +394,7 @@ namespace Wisteria::Graphs
                         theSet.emplace(GetData()->GetIdColumn().GetValue(i).c_str());
                         bins[j].emplace_back(
                             comparable_first_pair((IsUsingGrouping() ?
-                                GetGroupColum()->GetValue(i) :
+                                GetGroupColumn()->GetValue(i) :
                                 static_cast<Data::GroupIdType>(0)), valuesCounter(1, theSet)));
                         }
                     break;
@@ -471,7 +471,7 @@ namespace Wisteria::Graphs
                     { blockLabel += L"..."; }
 
                 const wxString blockTag = (IsUsingGrouping() ?
-                    GetGroupColum()->GetLabelFromID(block.first) :
+                    GetGroupColumn()->GetLabelFromID(block.first) :
                     wxString());
 
                 BarBlock theBlock

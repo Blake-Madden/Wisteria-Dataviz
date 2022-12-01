@@ -340,22 +340,6 @@ namespace Wisteria::Graphs
         /// @note GetBox() can also be used after a call to SetData() to
         ///     customize the effect of a specific box.
         /// @{
-        
-        /// @brief Sets the brush scheme to apply to the boxes.
-        /// @param brushes The brushes to use.
-        void SetBrushScheme(std::shared_ptr<Brushes::Schemes::BrushScheme> brushes)
-            { m_brushScheme = brushes; }
-
-        /// @brief Sets the color scheme to apply to the boxes.
-        /// @param colors The colors to use.
-        /// @note This will only have a noticeable effect if the brush being used is non-solid.
-        void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
-            { m_colorScheme = colors; }
-
-        /// @brief Sets the icon scheme to apply to the points.
-        /// @param icons The icons to use.
-        void SetIconScheme(std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> icons)
-            { m_iconScheme = icons; }
 
         /// @returns The opacity (how opaque or translucent) the box is.
         [[nodiscard]] uint8_t GetOpacity() const noexcept
@@ -455,9 +439,7 @@ namespace Wisteria::Graphs
 
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         BoxEffect m_boxEffect{ BoxEffect::Solid };
-        std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
-        std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> m_iconScheme{ nullptr };
+
         wxColour m_pointColour{ Colors::ColorBrewer::GetColor(Colors::Color::CelestialBlue) };
         BoxCorners m_boxCorners{ BoxCorners::Straight };
         bool m_displayLabels{ false };

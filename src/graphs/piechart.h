@@ -880,13 +880,6 @@ namespace Wisteria::Graphs
         std::set<size_t> GetOuterPieIndices(const std::vector<wxString>& labels);
         void RecalcSizes(wxDC& dc) final;
 
-        const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
-            { return m_pieBrushes; }
-        /// @brief Get the color scheme used for the slices.
-        /// @returns The color scheme used for the slices.
-        const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
-            { return m_pieColors; }
-
         PieInfo m_innerPie;
         PieInfo m_outerPie;
 
@@ -903,9 +896,6 @@ namespace Wisteria::Graphs
             wxPenInfo(Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AshGrey),
                       ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SHORT_DASH)) };
         LineStyle m_connectionLineStyle{ LineStyle::Arrows };
-
-        std::shared_ptr<Brushes::Schemes::BrushScheme> m_pieBrushes;
-        std::shared_ptr<Colors::Schemes::ColorScheme> m_pieColors;
 
         PieSliceEffect m_sliceEffect{ PieSliceEffect::Solid };
 

@@ -375,12 +375,13 @@ namespace Wisteria::Graphs
     PieChart::PieChart(Canvas* canvas,
                        std::shared_ptr<Brushes::Schemes::BrushScheme> brushes /*= nullptr*/,
                        std::shared_ptr<Colors::Schemes::ColorScheme> colors /*= nullptr*/) :
-        Graph2D(canvas),
-        m_pieBrushes(brushes != nullptr ? brushes :
-                     std::make_shared<Brushes::Schemes::BrushScheme>
-                        (*Settings::GetDefaultColorScheme()) ),
-        m_pieColors(colors)
+        Graph2D(canvas)
         {
+        SetBrushScheme(brushes != nullptr ? brushes :
+            std::make_shared<Brushes::Schemes::BrushScheme>
+            (*Settings::GetDefaultColorScheme()));
+        SetColorScheme(colors);
+
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
         GetLeftYAxis().Show(false);
