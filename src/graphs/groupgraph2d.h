@@ -101,7 +101,7 @@ namespace Wisteria::Graphs
                 respective positions.*/
         [[nodiscard]] size_t GetSchemeIndexFromGroupId(const Wisteria::Data::GroupIdType Id)
             {
-            if (m_useGrouping)
+            if (IsUsingGrouping())
                 {
                 const auto pos = m_groupIds.find(Id);
                 wxASSERT_MSG((pos != m_groupIds.cend()),
@@ -120,49 +120,35 @@ namespace Wisteria::Graphs
             }
 
         /// @private
-        /// @brief Turns off the grouping flag and clears the ordered IDs.
+        /// @brief Invalidates the group column pointer and clears the ordered IDs.
         void ResetGrouping() noexcept
             {
             m_groupIds.clear();
-            m_useGrouping = false;
+            m_groupColumn = nullptr;
             }
 
-        /// @private
-        void UseGrouping(const bool useGrouping) noexcept
-            { m_useGrouping = useGrouping; }
-        /// @private
+        /// @returns @c true if the grouping column is set.
         [[nodiscard]] bool IsUsingGrouping() const noexcept
-            { return m_useGrouping; }
+            { return (m_groupColumn != nullptr); }
 
         /// @private
-        [[nodiscard]] Wisteria::Data::CategoricalColumnConstIterator GetGroupColum()
-            {
-            wxASSERT_MSG(IsUsingGrouping(),
-                L"Grouping must be enabled to access grouping column!");
-            if (!IsUsingGrouping())
-                {
-                throw std::runtime_error(
-                    _(L"Grouping must be enabled to access grouping column.")
-                    .ToUTF8());
-                }
-            return m_groupColumn;
-            }
+        [[nodiscard]] const Wisteria::Data::ColumnWithStringTable* GetGroupColum() const
+            { return m_groupColumn;  }
         /// @private
-        /// @warning Call `UseGrouping(true)` to enable grouping, as this will not
-        ///     assume that the provided iterator is valid.
-        void SetGroupColumn(Wisteria::Data::CategoricalColumnConstIterator iter)
-            { m_groupColumn = iter; }
+        void SetGroupColumn(const Wisteria::Data::ColumnWithStringTable* groupColumn)
+            { m_groupColumn = groupColumn; }
 
         /// @private
-        /// @note Only access this when needing to validate
-        Wisteria::Data::CategoricalColumnConstIterator m_groupColumn;
+        /// Set the grouping column (or keep it as null if not in use)
+        void SetGroupColumn(std::shared_ptr<const Data::Dataset> data,
+                            const std::optional<const wxString> groupColumnName = std::nullopt);
     private:
-        bool m_useGrouping{ false };
         [[nodiscard]] const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
             { return m_groupIds; }
 
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;
+        const Wisteria::Data::ColumnWithStringTable* m_groupColumn{ nullptr };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
         std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };
         std::shared_ptr<Icons::Schemes::IconScheme> m_shapeScheme{ nullptr };

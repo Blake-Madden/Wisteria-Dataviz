@@ -20,11 +20,11 @@ namespace Wisteria::Graphs
                            const wxString& xColumnName,
                            std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
+        SetDataset(data);
+        GetSelectedIds().clear();
+
         if (data == nullptr)
             { return; }
-
-        m_data = data;
-        GetSelectedIds().clear();
 
         m_useGrouping = groupColumnName.has_value();
         m_groupColumn = (groupColumnName ? GetData()->GetCategoricalColumn(groupColumnName.value()) :

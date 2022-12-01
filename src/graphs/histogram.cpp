@@ -29,13 +29,15 @@ namespace Wisteria::Graphs
                             const std::pair<std::optional<size_t>, std::optional<size_t>> binCountRanges
                                 /*= std::make_pair(std::nullopt, std::nullopt)*/)
         {
-        if (data == nullptr)
+        // point to (new) data and reset
+        SetDataset(data);
+
+        ResetGrouping();
+        GetSelectedIds().clear();
+
+        if (GetData() == nullptr)
             { return; }
 
-        m_data = data;
-        ResetGrouping();
-        UseGrouping(groupColumnName.has_value());
-        GetSelectedIds().clear();
         m_binningMethod = bMethod;
         m_roundingMethod = rounding;
         m_intervalDisplay = iDisplay;
@@ -46,17 +48,11 @@ namespace Wisteria::Graphs
         if (binCountRanges.second)
             { m_maxBinCount = std::min(binCountRanges.second.value(), m_maxBinCount); }
 
-        SetGroupColumn(groupColumnName ?
-            m_data->GetCategoricalColumn(groupColumnName.value()) :
-            m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': group column not found for histogram."),
-                groupColumnName.value()).ToUTF8());
-            }
-        m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == m_data->GetContinuousColumns().cend())
+        // set the grouping column (or keep it as null if not in use)
+        SetGroupColumn(GetData(), groupColumnName);
+
+        m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
+        if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for histogram."),
@@ -113,11 +109,11 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     size_t Histogram::CalcUniqueValuesCount() const
         {
-        if (m_data == nullptr)
+        if (GetData() == nullptr)
             { return 0; }
 
         frequency_set<double> groups;
-        for (size_t i = 0; i < m_data->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
             {
             if (!std::isnan(m_continuousColumn->GetValue(i)))
                 {
@@ -130,7 +126,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Histogram::SortIntoUniqueValues(const std::optional<size_t> binCount)
         {
-        if (m_data == nullptr)
+        if (GetData() == nullptr)
             { return; }
 
         // calculate how many observations are in each group
@@ -138,7 +134,7 @@ namespace Wisteria::Graphs
         groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
         bool hasFloatingPointValue{ false };
 
-        for (size_t i = 0; i < m_data->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
             {
             if (std::isnan(m_continuousColumn->GetValue(i)))
                 { continue; }
@@ -158,7 +154,7 @@ namespace Wisteria::Graphs
                 (IsUsingGrouping() ?
                     GetGroupColum()->GetLabelFromID(GetGroupColum()->GetValue(i)) :
                     wxString()) },
-                m_data->GetIdColumn().GetValue(i).wc_str() );
+                GetData()->GetIdColumn().GetValue(i).wc_str() );
             if ((GetRoundingMethod() == RoundingMethod::NoRounding) &&
                 has_fractional_part(m_continuousColumn->GetValue(i)))
                 {
@@ -281,7 +277,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Histogram::SortIntoRanges(const std::optional<size_t> binCount)
         {
-        if (m_data == nullptr || m_validN == 0)
+        if (GetData() == nullptr || m_validN == 0)
             { return; }
         double minVal = *std::min_element(
             m_continuousColumn->GetValues().cbegin(),
@@ -348,7 +344,7 @@ namespace Wisteria::Graphs
         // calculate how many observations are in each group
         using valuesCounter = std::pair<double, std::set<wxString, Data::StringCmpNoCase>>;
         std::vector<std::vector<comparable_first_pair<Data::GroupIdType, valuesCounter>>> bins(numOfBins);
-        for (size_t i = 0; i < m_data->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
             {
             if (std::isnan(m_continuousColumn->GetValue(i)))
                 { continue; }
@@ -368,12 +364,12 @@ namespace Wisteria::Graphs
                         {
                         ++foundGroup->second.first;
                         if (foundGroup->second.second.size() < Settings::GetMaxObservationInBin())
-                            { foundGroup->second.second.emplace(m_data->GetIdColumn().GetValue(i)); }
+                            { foundGroup->second.second.emplace(GetData()->GetIdColumn().GetValue(i)); }
                         }
                     else
                         {
                         std::set<wxString, Data::StringCmpNoCase> theSet;
-                        theSet.emplace(m_data->GetIdColumn().GetValue(i).c_str());
+                        theSet.emplace(GetData()->GetIdColumn().GetValue(i).c_str());
                         bins[0].emplace_back(
                             comparable_first_pair((IsUsingGrouping() ? GetGroupColum()->GetValue(i) : 0),
                                 valuesCounter(1.0, theSet)));
@@ -390,12 +386,12 @@ namespace Wisteria::Graphs
                         {
                         ++foundGroup->second.first;
                         if (foundGroup->second.second.size() < Settings::GetMaxObservationInBin())
-                            { foundGroup->second.second.emplace(m_data->GetIdColumn().GetValue(i)); }
+                            { foundGroup->second.second.emplace(GetData()->GetIdColumn().GetValue(i)); }
                         }
                     else
                         {
                         std::set<wxString, Data::StringCmpNoCase> theSet;
-                        theSet.emplace(m_data->GetIdColumn().GetValue(i).c_str());
+                        theSet.emplace(GetData()->GetIdColumn().GetValue(i).c_str());
                         bins[j].emplace_back(
                             comparable_first_pair((IsUsingGrouping() ?
                                 GetGroupColum()->GetValue(i) :
@@ -579,7 +575,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     size_t Histogram::CalcNumberOfBins() const
         {
-        if (m_data == nullptr)
+        if (GetData() == nullptr)
             { return 0; }
 
         if (m_validN <= 1)

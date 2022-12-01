@@ -6,6 +6,22 @@ using namespace Wisteria::Graphs;
 using namespace Wisteria::Icons;
 
 //----------------------------------------------------------------
+void GroupGraph2D::SetGroupColumn(std::shared_ptr<const Data::Dataset> data,
+    const std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+    {
+    const auto groupColIter = groupColumnName ?
+        data->GetCategoricalColumn(groupColumnName.value()) :
+        data->GetCategoricalColumns().cend();
+    if (groupColumnName && groupColIter == data->GetCategoricalColumns().cend())
+        {
+        throw std::runtime_error(wxString::Format(
+            _(L"'%s': group column not found for graph."),
+            groupColumnName.value()).ToUTF8());
+        }
+    SetGroupColumn(groupColumnName ? &(*groupColIter) : nullptr);
+    }
+
+//----------------------------------------------------------------
 void GroupGraph2D::BuildGroupIdMap()
     {
     m_groupIds.clear();
@@ -13,19 +29,19 @@ void GroupGraph2D::BuildGroupIdMap()
         { return; }
     // make reverse string table, sorted by label
     std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
-    if (m_groupColumn->GetStringTable().size())
+    if (GetGroupColum()->GetStringTable().size())
         {
-        for (const auto& [id, str] : m_groupColumn->GetStringTable())
+        for (const auto& [id, str] : GetGroupColum()->GetStringTable())
             { groups.insert(std::make_pair(str, id)); }
         }
     // if no string table, then it's just discrete values;
     // make a reverse "string table" from that
     else
         {
-        for (size_t i = 0; i < m_groupColumn->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetGroupColum()->GetRowCount(); ++i)
             {
-            groups.insert(std::make_pair(m_groupColumn->GetValueAsLabel(i),
-                                         m_groupColumn->GetValue(i)));
+            groups.insert(std::make_pair(GetGroupColum()->GetValueAsLabel(i),
+                                         GetGroupColum()->GetValue(i)));
             }
         }
     // build a list of group IDs and their respective strings' alphabetical order
@@ -72,9 +88,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             legendText.append(ellipsis.data());
             break;
             }
-        wxString currentLabel = m_useGrouping ?
-            m_groupColumn->GetLabelFromID(groupId) :
-            wxString();
+        wxString currentLabel = GetGroupColum()->GetLabelFromID(groupId);
         wxASSERT_MSG(Settings::GetMaxLegendTextLength() >= 1,
             L"Max legend text length is zero?!");
         if (currentLabel.length() > Settings::GetMaxLegendTextLength() &&
@@ -111,7 +125,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             L"Cat. column has MD, but string table has no MD code?!");
         if (mdCode.has_value())
             {
-            legendText.append(_(L"[[NO GROUP]]")).append(L"\n");
+            legendText.append(_(L"[NO GROUP]")).append(L"\n");
 
             // Graphs usually use the brush as the primary, but some may
             // only use the color scheme; fallback to that if necessary.
@@ -132,7 +146,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     if (options.IsIncludingHeader())
         {
         legendText.Prepend(
-            wxString::Format(L"%s\n", m_groupColumn->GetName()));
+            wxString::Format(L"%s\n", GetGroupColum()->GetName()));
         legend->GetHeaderInfo().Enable(true).LabelAlignment(TextAlignment::FlushLeft);
         }
     legend->SetText(legendText.Trim());

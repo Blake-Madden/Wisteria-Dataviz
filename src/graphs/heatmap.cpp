@@ -38,21 +38,22 @@ namespace Wisteria::Graphs
         std::optional<const wxString> groupColumnName /*= std::nullopt*/,
         std::optional<size_t> groupColumnCount /*= std::nullopt*/)
         {
+        SetDataset(data);
+        GetSelectedIds().clear();
+
         if (data == nullptr)
             { return; }
-
-        m_data = data;
-        GetSelectedIds().clear();
+        
         m_useGrouping = groupColumnName.has_value();
-        m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
-            m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
+        m_groupColumn = (groupColumnName ? GetData()->GetCategoricalColumn(groupColumnName.value()) :
+            GetData()->GetCategoricalColumns().cend());
+        if (groupColumnName && m_groupColumn == GetData()->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for heatmap."), groupColumnName.value()).ToUTF8());
             }
-        m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == m_data->GetContinuousColumns().cend())
+        m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
+        if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for heatmap."), continuousColumnName).ToUTF8());
@@ -61,10 +62,10 @@ namespace Wisteria::Graphs
         m_matrix.clear();
         m_range = { 0, 0 };
 
-        if (m_data->GetContinuousColumns().size() == 0)
+        if (GetData()->GetContinuousColumns().size() == 0)
             {
             wxFAIL_MSG(L"Heatmap requires a continuous column to analyze!");
-            m_data = nullptr;
+            SetDataset(nullptr);
             return;
             }
 
@@ -128,7 +129,8 @@ namespace Wisteria::Graphs
                         crossedOutSymbolForNaN :
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
-                m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
+                m_matrix[currentRow][currentColumn].m_selectionLabel =
+                    GetData()->GetIdColumn().GetValue(i);
                 m_matrix[currentRow][currentColumn].m_groupId = m_groupColumn->GetValue(i);
                 ++currentColumn;
                 }
@@ -169,7 +171,8 @@ namespace Wisteria::Graphs
                         crossedOutSymbolForNaN :
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
-                m_matrix[currentRow][currentColumn].m_selectionLabel = m_data->GetIdColumn().GetValue(i);
+                m_matrix[currentRow][currentColumn].m_selectionLabel =
+                    GetData()->GetIdColumn().GetValue(i);
                 // ignored, just default to zero
                 m_matrix[currentRow][currentColumn].m_groupId = 0;
                 ++currentColumn;
@@ -181,7 +184,8 @@ namespace Wisteria::Graphs
     void HeatMap::RecalcSizes(wxDC& dc)
         {
         // if no data then bail
-        if (m_data == nullptr || m_data->GetRowCount() == 0 || m_matrix.size() == 0)
+        if (GetData() == nullptr || GetData()->GetRowCount() == 0 ||
+            m_matrix.size() == 0)
             { return; }
 
         Graph2D::RecalcSizes(dc);
@@ -232,7 +236,7 @@ namespace Wisteria::Graphs
                 GraphItemInfo(
                 wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
                                  // largest possible range
-                                 m_data->GetRowCount(), m_data->GetRowCount())).
+                                 GetData()->GetRowCount(), GetData()->GetRowCount())).
                 Scaling(GetScaling()).Pen(wxNullPen).
                 DPIScaling(GetDPIScaleFactor()).
                 Padding(0, 0, labelRightPadding, 0).
@@ -255,7 +259,7 @@ namespace Wisteria::Graphs
                     {
                     groupHeaderLabelTemplate.SetText(
                         wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(),
-                                         m_data->GetRowCount(), m_data->GetRowCount()));
+                                         GetData()->GetRowCount(), GetData()->GetRowCount()));
                     groupHeaderLabelHeight = groupHeaderLabelTemplate.GetBoundingBox(dc).GetHeight();
                     groupHeaderLabelMultiline = true;
                     // readjust font size now that it is multiline and can be larger now
@@ -413,7 +417,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
-        if (m_data == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (GetData() == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return nullptr; }
 
         const auto minValue = *std::min_element(

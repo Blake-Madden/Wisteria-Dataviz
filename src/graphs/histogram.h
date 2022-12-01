@@ -205,8 +205,7 @@ namespace Wisteria::Graphs
         explicit Histogram(Wisteria::Canvas* canvas,
                            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
-            Wisteria::Graphs::BarChart(canvas),
-            m_data(nullptr)
+            Wisteria::Graphs::BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
                 std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
@@ -364,7 +363,6 @@ namespace Wisteria::Graphs
         /// @brief Calculates the number of bins to use based on the data.
         [[nodiscard]] size_t CalcNumberOfBins() const;
 
-        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         size_t m_validN{ 0 };
 

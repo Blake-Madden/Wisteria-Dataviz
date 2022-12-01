@@ -486,6 +486,14 @@ namespace Wisteria::Graphs
         /// @private
         void UpdateSelectedItems() final;
 
+        /// @private
+        [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
+            { return m_data; }
+
+        /// @private
+        void SetDataset(const std::shared_ptr<const Data::Dataset> data) noexcept
+            { m_data = data; }
+
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
     private:
@@ -593,6 +601,8 @@ namespace Wisteria::Graphs
         ///     (e.g., axes outer content, captions, etc.), resizes the plot area, and finally
         ///     recalculates the axes' points' positions.
         void AdjustPlotArea(wxDC& dc);
+
+        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
 
         wxRect m_rect;
         wxRect m_plotRect;

@@ -168,32 +168,35 @@ namespace Wisteria::Graphs
                          const wxString& continuousColumnName,
                          std::optional<const wxString> groupColumnName /*= std::nullopt*/)
         {
-        if (data == nullptr)
-            { return; }
+        SetDataset(data);
 
-        m_data = data;
         m_boxes.clear();
         GetSelectedIds().clear();
         GetLeftYAxis().Reset();
         GetRightYAxis().Reset();
         GetBottomXAxis().Reset();
         GetTopXAxis().Reset();
+
+        if (data == nullptr)
+            { return; }
+
         // sets titles from variables
         if (groupColumnName)
             { GetBottomXAxis().GetTitle().SetText(groupColumnName.value()); }
         // AddBox() will turn on label display again if we have more than one box
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
-        m_groupColumn = (groupColumnName ? m_data->GetCategoricalColumn(groupColumnName.value()) :
-            m_data->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == m_data->GetCategoricalColumns().cend())
+        m_groupColumn = (groupColumnName ?
+            GetData()->GetCategoricalColumn(groupColumnName.value()) :
+            GetData()->GetCategoricalColumns().cend());
+        if (groupColumnName && m_groupColumn == GetData()->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for box plot."),
                 groupColumnName.value()).ToUTF8());
             }
-        m_continuousColumn = m_data->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == m_data->GetContinuousColumns().cend())
+        m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
+        if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for box plot."),
@@ -201,7 +204,7 @@ namespace Wisteria::Graphs
             }
 
         std::vector<BoxAndWhisker> boxes;
-        if (m_groupColumn != m_data->GetCategoricalColumns().cend())
+        if (m_groupColumn != GetData()->GetCategoricalColumns().cend())
             {
             std::set<Data::GroupIdType> groups;
             for (const auto& groupId : m_groupColumn->GetValues())
@@ -230,7 +233,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::AddBox(const BoxAndWhisker& box)
         {
-        if (m_data == nullptr)
+        if (GetData() == nullptr)
             { return; }
 
         m_boxes.push_back(box);
@@ -281,7 +284,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::RecalcSizes(wxDC& dc)
         {
-        if (m_data == nullptr)
+        if (GetData() == nullptr)
             { return; }
 
         Graph2D::RecalcSizes(dc);
@@ -743,7 +746,7 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
             const LegendOptions& options)
         {
-        if (m_data == nullptr || GetBoxCount() != 1)
+        if (GetData() == nullptr || GetBoxCount() != 1)
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(

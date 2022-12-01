@@ -450,7 +450,6 @@ namespace Wisteria::Graphs
         bool m_overlayLegend{ true };
         uint8_t m_labelPrecision{ 1 };
 
-        std::shared_ptr<const Data::Dataset> m_data;
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
 

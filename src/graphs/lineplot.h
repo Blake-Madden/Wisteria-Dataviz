@@ -367,9 +367,6 @@ namespace Wisteria::Graphs
                 IncludeHeader(includeHeader).PlacementHint(hint));
             }
     protected:
-        /// @returns The plot's dataset.
-        [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
-            { return m_data; }
         /// @returns @c true if data is being grouped.
         [[nodiscard]] bool IsGrouping() const noexcept
             { return m_useGrouping; }
@@ -510,7 +507,6 @@ namespace Wisteria::Graphs
                 }
             }
 
-        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         Data::CategoricalColumnConstIterator m_groupColumn;
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;

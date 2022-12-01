@@ -211,7 +211,6 @@ namespace Wisteria::Graphs
         std::vector<std::vector<HeatCell>> m_matrix;
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorSpectrum;
         std::vector<wxColour> m_reversedColorSpectrum; // used for the legend
-        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         std::pair<double, double> m_range{ 0,0 };
         wxString m_groupHeaderPrefix{ _(L"Groups") };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_groupColumn;

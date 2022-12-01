@@ -86,8 +86,7 @@ namespace Wisteria::Graphs
         explicit CategoricalBarChart(Wisteria::Canvas* canvas,
                            std::shared_ptr<Brushes::Schemes::BrushScheme> brushes = nullptr,
                            std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr) :
-            Wisteria::Graphs::BarChart(canvas),
-            m_data(nullptr)
+            Wisteria::Graphs::BarChart(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
                 std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()) );
@@ -155,7 +154,6 @@ namespace Wisteria::Graphs
         [[nodiscard]] size_t GetBarSlotCount() const noexcept final
             { return GetBars().size(); }
 
-        std::shared_ptr<const Data::Dataset> m_data{ nullptr };
         const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
