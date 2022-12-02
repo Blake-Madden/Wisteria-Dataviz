@@ -96,9 +96,9 @@ Social Sciences
 Readability Formulas
 -----------------------------
 
-| Lix Gauge (Wisteria::Graphs::LixGauge) |
-| :-------------- |
-| ![](docs/doxygen/images/LixGauge.svg) |
+| Lix Gauge (Wisteria::Graphs::LixGauge) | German Lix Gauge (Wisteria::Graphs::LixGaugeGerman) |
+| :-------------- | :-------------- |
+| ![](docs/doxygen/images/LixGauge.svg) | ![](docs/doxygen/images/LixGaugeGerman.svg) |
 
 Multi-plot Layouts
 -----------------------------

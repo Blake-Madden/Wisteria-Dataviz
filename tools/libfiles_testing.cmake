@@ -39,6 +39,8 @@ SET(WISTERIA_SRC
     ../src/graphs/histogram.cpp
     ../src/graphs/likertchart.cpp
     ../src/graphs/lineplot.cpp
+    ../src/graphs/lixgauge.cpp
+    ../src/graphs/lixgaugegerman.cpp
     ../src/graphs/lrroadmap.cpp
     ../src/graphs/piechart.cpp
     ../src/graphs/proconroadmap.cpp
