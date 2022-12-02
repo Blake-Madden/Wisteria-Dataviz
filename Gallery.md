@@ -93,6 +93,13 @@ Social Sciences
 | :-------------- |
 | ![](docs/doxygen/images/LRRoadmapFirstYearNegative.svg) |
 
+Readability Formulas
+-----------------------------
+
+| Lix Gauge (Wisteria::Graphs::LixGauge) |
+| :-------------- |
+| ![](docs/doxygen/images/LixGauge.svg) |
+
 Multi-plot Layouts
 -----------------------------
 
