@@ -100,6 +100,10 @@ Readability Formulas
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/LixGauge.svg) | ![](docs/doxygen/images/LixGaugeGerman.svg) |
 
+| Danielson-Bryan 2 Plot (Wisteria::Graphs::DanielsonBryan2Plot) |
+| :-------------- |
+| ![](docs/doxygen/images/DanielsonBryan2Plot.svg) |
+
 Multi-plot Layouts
 -----------------------------
 
