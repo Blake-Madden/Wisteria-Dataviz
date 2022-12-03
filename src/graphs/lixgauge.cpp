@@ -57,7 +57,7 @@ void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
     if (IsUsingGrouping())
         { BuildGroupIdMap(); }
 
-    // get the score date
+    // get the score data
     m_scoresColumn = GetData()->GetContinuousColumn(scoreColumnName);
     if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
         {

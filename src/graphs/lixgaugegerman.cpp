@@ -56,7 +56,7 @@ namespace Wisteria::Graphs
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        // get the score date
+        // get the score data
         m_scoresColumn = GetData()->GetContinuousColumn(scoreColumnName);
         if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
             {

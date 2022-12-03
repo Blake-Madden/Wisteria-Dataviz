@@ -31,6 +31,7 @@ SET(WISTERIA_SRC
     src/graphs/boxplot.cpp
     src/graphs/candlestickplot.cpp
     src/graphs/categoricalbarchart.cpp
+    src/graphs/crawfordgraph.cpp
     src/graphs/danielsonbryan2plot.cpp
     src/graphs/ganttchart.cpp
     src/graphs/graph2d.cpp
