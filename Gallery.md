@@ -104,6 +104,10 @@ Readability Formulas
 | :-------------- | :-------------- |
 | ![](docs/doxygen/images/DanielsonBryan2Plot.svg) | ![](docs/doxygen/images/CrawfordGraph.svg) |
 
+| Flesch Reading Ease Chart (Wisteria::Graphs::FleschChart) |
+| :-------------- |
+| ![](docs/doxygen/images/FleschChart.png) |
+
 Multi-plot Layouts
 -----------------------------
 

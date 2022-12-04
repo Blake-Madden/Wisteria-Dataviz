@@ -34,6 +34,7 @@ SET(WISTERIA_SRC
     ../src/graphs/categoricalbarchart.cpp
     ../src/graphs/crawfordgraph.cpp
     ../src/graphs/danielsonbryan2plot.cpp
+    ../src/graphs/fleschchart.cpp
     ../src/graphs/ganttchart.cpp
     ../src/graphs/graph2d.cpp
     ../src/graphs/groupgraph2d.cpp
