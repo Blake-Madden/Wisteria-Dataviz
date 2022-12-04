@@ -80,17 +80,28 @@ void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
 //----------------------------------------------------------------
 void LixGauge::AdjustAxes()
     {
-    const auto [minVal, maxVal] = std::minmax_element
-        (m_scoresColumn->GetValues().cbegin(), m_scoresColumn->GetValues().cend());
-    // for the lines up top
-    constexpr auto axisOffset{ 10 };
-    const auto minYAxis = m_scoresColumn->GetValues().size() ?
-                            std::min(20.0, previous_interval(*minVal, 2)) - axisOffset :
-                            10;
-    const auto maxYAxis = m_scoresColumn->GetValues().size() ?
-                            std::max(60.0, next_interval(*maxVal, 2)) + axisOffset :
-                            70;
+    const auto getMinMaxForRange = [this]()
+        {
+        if (GetData() != nullptr)
+            {
+            const auto [minVal, maxVal] = std::minmax_element
+                (m_scoresColumn->GetValues().cbegin(),
+                 m_scoresColumn->GetValues().cend());
+            // for the lines up top
+            constexpr auto axisOffset{ 10 };
+            const auto minYAxis = m_scoresColumn->GetValues().size() ?
+                                    std::min(20.0, previous_interval(*minVal, 2)) - axisOffset :
+                                    10.0;
+            const auto maxYAxis = m_scoresColumn->GetValues().size() ?
+                                    std::max(60.0, next_interval(*maxVal, 2)) + axisOffset :
+                                    70.0;
+            return std::make_pair(minYAxis, maxYAxis);
+            }
+        else
+            { return std::make_pair(10.0, 70.0); }
+        };
 
+    const auto [minYAxis, maxYAxis] = getMinMaxForRange();
     GetLeftYAxis().SetRange(minYAxis, maxYAxis, 0, 5, 1);
 
     // these are managed by the plot (not parent canvas), so clear them here
@@ -99,9 +110,9 @@ void LixGauge::AdjustAxes()
         {
         Axis leftRuler(Wisteria::AxisType::LeftYAxis);
         leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-        leftRuler.SetCustomXPosition(.9f);
+        leftRuler.SetCustomXPosition(0.9f);
         leftRuler.SetCustomYPosition(minYAxis);
-        leftRuler.SetRange(minYAxis,maxYAxis,0,10,1);
+        leftRuler.SetRange(minYAxis,maxYAxis, 0, 10, 1);
         leftRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         leftRuler.SetCustomLabel(20, GraphItems::Label(_DT(L"20", DTExplanation::Constant)) );
         leftRuler.SetCustomLabel(30, GraphItems::Label(L"30"));
@@ -139,7 +150,7 @@ void LixGauge::AdjustAxes()
         middleRuler.SetDPIScaleFactor(GetDPIScaleFactor());
         middleRuler.SetCustomXPosition(1);
         middleRuler.SetCustomYPosition(minYAxis);
-        middleRuler.SetRange(minYAxis,maxYAxis,0,10,1);
+        middleRuler.SetRange(minYAxis,maxYAxis, 0, 10, 1);
         middleRuler.ReverseScale(true);
         middleRuler.SetId(101);
         middleRuler.Show(false);
@@ -151,7 +162,7 @@ void LixGauge::AdjustAxes()
         rightRuler.SetDPIScaleFactor(GetDPIScaleFactor());
         rightRuler.SetCustomXPosition(1.1f);
         rightRuler.SetCustomYPosition(minYAxis);
-        rightRuler.SetRange(minYAxis,maxYAxis,0,5,1);
+        rightRuler.SetRange(minYAxis,maxYAxis, 0, 5, 1);
         rightRuler.SetLabelDisplay(AxisLabelDisplay::DisplayOnlyCustomLabels);
         rightRuler.SetCustomLabel(25, GraphItems::Label(L"25"));
         rightRuler.SetCustomLabel(35, GraphItems::Label(L"35"));

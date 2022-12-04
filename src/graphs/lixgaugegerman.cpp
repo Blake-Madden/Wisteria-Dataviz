@@ -80,16 +80,26 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LixGaugeGerman::AdjustAxes()
         {
-        const auto [minVal, maxVal] = std::minmax_element(
-            m_scoresColumn->GetValues().cbegin(),
-            m_scoresColumn->GetValues().cend());
-        const auto minYAxis = m_scoresColumn->GetValues().size() ?
-                                std::min(20.0, previous_interval(*minVal, 2)) :
-                                20;
-        const auto maxYAxis = m_scoresColumn->GetValues().size() ?
-                                std::max(70.0, next_interval(*maxVal, 2)) :
-                                70;
+        const auto getMinMaxForRange = [this]()
+            {
+            if (GetData() != nullptr)
+                {
+                const auto [minVal, maxVal] = std::minmax_element(
+                    m_scoresColumn->GetValues().cbegin(),
+                    m_scoresColumn->GetValues().cend());
+                const auto minYAxis = m_scoresColumn->GetValues().size() ?
+                                        std::min(20.0, previous_interval(*minVal, 2)) :
+                                        20.0;
+                const auto maxYAxis = m_scoresColumn->GetValues().size() ?
+                                        std::max(70.0, next_interval(*maxVal, 2)) :
+                                        70.0;
+                return std::make_pair(minYAxis, maxYAxis);
+                }
+            else
+                { return std::make_pair(20.0, 70.0); }
+            };
 
+        const auto [minYAxis, maxYAxis] = getMinMaxForRange();
         GetLeftYAxis().SetRange(minYAxis, maxYAxis, 0, 5, 1);
 
         // these are managed by the plot (not canvas), so clear them here
@@ -98,28 +108,28 @@ namespace Wisteria::Graphs
             {
             Axis leftRuler(AxisType::LeftYAxis);
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
-            leftRuler.SetCustomXPosition(.9f);
+            leftRuler.SetCustomXPosition(0.9f);
             leftRuler.SetCustomYPosition(minYAxis);
-            leftRuler.SetRange(minYAxis,maxYAxis,0,5,1);
+            leftRuler.SetRange(minYAxis,maxYAxis, 0, 5, 1);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.ReverseScale(true);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
             leftRuler.AddBracket(Axis::AxisBracket(25, 25, 25,
                 IsUsingEnglishLabels() ? _("very easy text") :
-                wxString(_DT("Sehr leichter Text")), wxColour(66,51,251)));
+                wxString(_DT("Sehr leichter Text")), wxColour(66, 51, 251)));
             leftRuler.AddBracket(Axis::AxisBracket(35, 35, 35,
                 IsUsingEnglishLabels() ? _("easy text") : wxString(_DT("Leichter Text")),
                 wxColour(163,182,250)));
             leftRuler.AddBracket(Axis::AxisBracket(45, 45, 45,
                 IsUsingEnglishLabels() ? _("average text") :
-                wxString(_DT("Durchschnittlicher Text")), wxColour(239,173,186)));
+                wxString(_DT("Durchschnittlicher Text")), wxColour(239, 173, 186)));
             leftRuler.AddBracket(Axis::AxisBracket(55, 55, 55,
                 IsUsingEnglishLabels() ? _("difficult text") :
-                wxString(_DT("Schwieriger Text")), wxColour(237,27,37)));
+                wxString(_DT("Schwieriger Text")), wxColour(237, 27, 37)));
             leftRuler.AddBracket(Axis::AxisBracket(65, 65, 65,
                 IsUsingEnglishLabels() ? _("very difficult text") :
-                wxString(_DT("Sehr schwieriger Text")), wxColour(250,0,0)));
+                wxString(_DT("Sehr schwieriger Text")), wxColour(250, 0, 0)));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
@@ -165,15 +175,15 @@ namespace Wisteria::Graphs
             rightRuler.AddBracket(Axis::AxisBracket(40, 40, 40,
                 IsUsingEnglishLabels() ?
                 _("bellestristic texts (prose\nfiction for adults)") :
-                wxString(DONTTRANSLATE(L"Belletristik")), wxColour(207,217,252)));
+                wxString(DONTTRANSLATE(L"Belletristik")), wxColour(207, 217, 252)));
             rightRuler.AddBracket(Axis::AxisBracket(50, 50, 50,
                 IsUsingEnglishLabels() ?
                 _("informational (non fiction)\ntexts (Sachliteratur)") :
-                wxString(DONTTRANSLATE(L"Sachliteratur")), wxColour(245,126,133)));
+                wxString(DONTTRANSLATE(L"Sachliteratur")), wxColour(245, 126, 133)));
             rightRuler.AddBracket(Axis::AxisBracket(60, 60, 60,
                 IsUsingEnglishLabels() ?
                 _("technical texts\n(Fachliteratur)") :
-                wxString(DONTTRANSLATE(L"Fachliteratur")), wxColour(237,10,10)));
+                wxString(DONTTRANSLATE(L"Fachliteratur")), wxColour(237, 10, 10)));
             for (auto& bracket : rightRuler.GetBrackets())
                 {
                 bracket.GetLinePen().SetWidth(2);
