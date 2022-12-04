@@ -45,6 +45,7 @@ namespace Wisteria::Graphs
         {
         SetDataset(data);
         ResetGrouping();
+        m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
         if (GetData() == nullptr)
@@ -241,8 +242,7 @@ namespace Wisteria::Graphs
                     Settings::GetPointRadius(),
                     GetShapeScheme()->GetShape(colorIndex)), dc);
                 }
-
-            AddObject(points);
             }
+        AddObject(points);
         }
     }

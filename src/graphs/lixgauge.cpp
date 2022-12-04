@@ -46,6 +46,7 @@ void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
     {
     SetDataset(data);
     ResetGrouping();
+    m_jitter.ResetJitterData();
     GetSelectedIds().clear();
 
     if (GetData() == nullptr)
