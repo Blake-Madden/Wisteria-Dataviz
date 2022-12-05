@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "DanielsonBryan2Plot.h"
+#include "danielsonbryan2plot.h"
 
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
