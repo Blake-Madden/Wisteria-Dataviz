@@ -32,6 +32,29 @@ ENDIF()
 
 PROJECT(Wisteria)
 
+# Build the documentation
+########################
+# https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
+FIND_PACKAGE(Doxygen)
+IF(DOXYGEN_FOUND)
+    # set input and output files
+    SET(DOXYGEN_IN "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile")
+    IF(EXISTS ${DOXYGEN_IN})
+        MESSAGE("Doxygen build started")
+
+        # note the option ALL which allows to build the docs together with the application
+        ADD_CUSTOM_TARGET( doc_doxygen ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM )
+    ELSE()
+        MESSAGE("Doxygen project file missing (${DOXYGEN_IN}).")
+    ENDIF()
+ELSE(DOXYGEN_FOUND)
+    MESSAGE("Doxygen not found. API documentation will not be generated.")
+ENDIF()
+
 # Setup wxWidgets
 ########################
 
