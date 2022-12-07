@@ -1024,6 +1024,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     IncludeHeader(true).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)) );
         }
+    // Bar Chart using a stippled brush
     else if (event.GetId() == MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED)
         {
         subframe->SetTitle(_(L"Bar Chart (Stipple Brush)"));
@@ -1648,7 +1649,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // set the canvas's print orientation to landscape
         subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
         }
-    // multiple plots with a common axis
+    // Multiple plots with a common axis
     else if (event.GetId() == MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS)
         {
         subframe->SetTitle(_(L"Multiple Plots (Common Axis)"));

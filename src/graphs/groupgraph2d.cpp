@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////
+// Name:        groupgraph2d.cpp
+// Author:      Blake Madden
+// Copyright:   (c) 2005-2022 Blake Madden
+// Licence:     3-Clause BSD licence
+// SPDX-License-Identifier: BSD-3-Clause
+///////////////////////////////////////////////////////////////////////////////
+
 #include "groupgraph2d.h"
 
 using namespace Wisteria;
