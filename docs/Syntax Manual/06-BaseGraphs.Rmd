@@ -70,6 +70,7 @@ Properties common to all graphs:
      Contains the following properties:
      `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
      `"color-scheme"`: a color scheme that is mapped to the brush styles.
+     This can also be a string specifying a named color scheme (e.g., `"icecream"`).
 - `"color-scheme"`: for graphs that support color schemes only.<br />
      This can either be an array of color strings or the name of the color scheme.<br />
      Refer to `Wisteria::Colors::Schemes` for a list of color schemes.

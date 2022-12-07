@@ -4304,6 +4304,15 @@ namespace Wisteria
                 return std::make_shared<Brushes::Schemes::BrushScheme>(brushStyles, *colorScheme);
                 }
             }
+        // just a named color scheme
+        else if (brushSchemeNode->IsValueString())
+            {
+            const auto colorScheme = LoadColorScheme(brushSchemeNode);
+            if (colorScheme)
+                {
+                return std::make_shared<Brushes::Schemes::BrushScheme>(*colorScheme);
+                }
+            }
         return nullptr;
         }
 
