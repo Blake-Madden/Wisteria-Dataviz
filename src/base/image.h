@@ -319,8 +319,27 @@ namespace Wisteria::GraphItems
             @param srcColor The color to replace.
             @param destColor The color to replace it with.
             @returns The altered image.*/
-        [[nodiscard]] static wxImage ChangeColor(const wxImage& image, const wxColour srcColor,
-                                                 const wxColour destColor);
+        [[nodiscard]]
+        static wxImage ChangeColor(const wxImage& image, const wxColour srcColor,
+                                   const wxColour destColor);
+        /** @brief Applies an oil painting effect to an image.
+            @param image The original image.
+            @param radius "For each pixel, a number of pixels around that pixel are taken into account.\n
+                The radius simply defines how many pixels in each direction to look for. A radius of 5,
+                for example, should be good for rough oil painting pictures."
+            @param intensity "For this algorithm, each pixel will be put into an intensity "bin".
+                The true intensity of a pixel is defined as (r+b+g)/3, and can range anywhere from 0 to 256.
+                However, oil paintings have a much more blocky effect, so each pixel will have its
+                intensity binned. For a fairly blocky oil painting, 20 is a good reference number."\n
+                Note that default here is 40, to apply a more pronounced effect.
+            @returns The oil-painted image.
+            @note Adapted from https://www.codeproject.com/articles/471994/oilpainteffect,
+                by author Santhosh G_. Santhosh G_'s code was adapted from
+                http://supercomputingblog.com/graphics/oil-painting-algorithm/, and is the source
+                for the explanations for @c radius and @c intensity.*/
+        [[nodiscard]]
+        static wxImage OilPainting(const wxImage& image, const uint8_t radius = 10,
+                                   const float intensity = 40);
         /// @}
 
         /** @name Size Functions
