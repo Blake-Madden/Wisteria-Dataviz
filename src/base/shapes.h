@@ -14,7 +14,7 @@
 
 #include "graphitems.h"
 #include "colorbrewer.h"
-#include "polygon.h"
+#include <random>
 
 namespace Wisteria::GraphItems
     {
@@ -71,7 +71,9 @@ namespace Wisteria::GraphItems
                                const wxBitmapBundle* img = nullptr) :
             m_graphInfo(itemInfo),
             m_iconImage(img)
-            {}
+            { m_mt.seed(m_dev()); }
+        /// @private
+        ShapeRenderer() = delete;
         /// @brief Gets/sets the shape's underlying information (e.g., brush color, pen, etc.).
         /// @details This is useful for changing the shape's settings when preparing to
         ///     draw different shapes.
@@ -232,10 +234,18 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawText(wxRect rect, wxDC& dc) const;
-        // @brief Draws a tack.
+        /// @brief Draws a tack.
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawTack(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a rectangle that looks like it was painted with watercolor.
+        /// @param rect The area to draw within.
+        /// @param dc The DC to draw to.
+        /// @note The color will more than likely go outside of the provided rectangle,
+        ///     as that is the asthetic that we are going for.\n
+        ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
+        ///     object using this renderer.
+        void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
         /// @}
     private:
         /// @brief Sets the base color (if in use), performs the provided rendering lambda,
@@ -286,6 +296,8 @@ namespace Wisteria::GraphItems
 
         GraphItemInfo m_graphInfo;
         const wxBitmapBundle* m_iconImage{ nullptr };
+        mutable std::random_device m_dev;
+        mutable std::mt19937 m_mt;
         };
 
     /** @brief Draws a shape onto a canvas.*/

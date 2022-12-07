@@ -9,6 +9,7 @@
 #include "shapes.h"
 #include "label.h"
 #include "image.h"
+#include "polygon.h"
 
 using namespace Wisteria::Colors;
 using namespace Wisteria::Icons;
@@ -250,6 +251,9 @@ namespace Wisteria::GraphItems
                 break;
             case IconShape::Banner:
                 m_drawFunction = &ShapeRenderer::DrawBanner;
+                break;
+            case IconShape::WaterColorRectangle:
+                m_drawFunction = &ShapeRenderer::DrawWaterColorRectangle;
                 break;
             default:
                 m_drawFunction = nullptr;
@@ -1139,6 +1143,144 @@ namespace Wisteria::GraphItems
             stemPath.AddLineToPoint(GetXPosFromLeft(rect, math_constants::half),
                                                     rect.GetTop());
             gc->StrokePath(stemPath);
+            }
+        }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawWaterColorRectangle(const wxRect rect, wxDC& dc) const
+        {
+        // just to reset when we are done
+        wxDCPenChanger pc(dc, *wxBLACK_PEN);
+        wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
+        
+        GraphicsContextFallback gcf;
+        auto gc = gcf.GetGraphicsContext(&dc, rect);
+        wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");
+        if (gc)
+            {
+            const auto strayLinesAlongTopBottom =
+                std::max<size_t>(safe_divide<size_t>(rect.GetWidth(),
+                    ScaleToScreenAndCanvas(100)), 1);
+            const auto strayLinesAlongLeftRight =
+                std::max<size_t>(safe_divide<size_t>(rect.GetHeight(),
+                    ScaleToScreenAndCanvas(100)), 1);
+
+            const auto wiggleTopBottom = std::min(safe_divide<double>(ScaleToScreenAndCanvas(10),
+                                                                      rect.GetHeight()), math_constants::twentieth);
+            std::uniform_real_distribution<> wiggleDistroTopBottom(-wiggleTopBottom, wiggleTopBottom);
+            const auto wiggleLeftRight = std::min(safe_divide<double>(ScaleToScreenAndCanvas(10),
+                                                                      rect.GetWidth()), math_constants::twentieth);
+            std::uniform_real_distribution<> wiggleDistroLeftRight(-wiggleLeftRight, wiggleLeftRight);
+
+            // "watercolor" fill of rectangle
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            wxBrush br{ GetGraphItemInfo().GetBrush() };
+            // make the brush translucent (it not already so) to make it a watercolor brush
+            if (br.GetColour().Alpha() == wxALPHA_OPAQUE)
+                {
+                br.SetColour(ColorContrast::ChangeOpacity(br.GetColour(),
+                                                          Settings::GetTranslucencyValue()));
+                }
+            gc->SetBrush(br);
+            auto fillPath = gc->CreatePath();
+
+            // top
+            //----
+            fillPath.MoveToPoint(GetXPosFromLeft(rect, 0), GetYPosFromTop(rect, 0)); // top left
+            // "outside of the lines" points along the top
+            double previousXPos{ 0.0 };
+            for (size_t i = 1; i <= strayLinesAlongTopBottom; ++i)
+                {
+                auto xPos = safe_divide<double>(math_constants::full, strayLinesAlongTopBottom + 1) * i;
+                fillPath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(rect, previousXPos +
+                                          safe_divide<double>(xPos - previousXPos, 2)),
+                    GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)),
+                    GetXPosFromLeft(rect, xPos),
+                    GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)));
+                previousXPos = xPos;
+                }
+            fillPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt)),
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, wiggleDistroTopBottom(m_mt))); // top right
+
+            // right
+            //------
+            double previousYPos{ 0.0 };
+            for (size_t i = 1; i <= strayLinesAlongLeftRight; ++i)
+                {
+                auto yPos = safe_divide<double>(math_constants::full, strayLinesAlongLeftRight + 1) * i;
+                fillPath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                    GetYPosFromTop(rect, previousYPos +
+                                         safe_divide<double>(yPos - previousYPos, 2)),
+                    GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                    GetYPosFromTop(rect, yPos));
+                previousYPos = yPos;
+                }
+            fillPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt)),
+                GetXPosFromLeft(rect, math_constants::full + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt))); // bottom right
+
+            // bottom
+            //-------
+            // "outside of the lines" points along the bottom
+            previousXPos = math_constants::full;
+            for (long i = static_cast<long>(strayLinesAlongTopBottom); i > 0; --i)
+                {
+                auto xPos = safe_divide<double>(math_constants::full, strayLinesAlongTopBottom + 1) * i;
+                fillPath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(rect, xPos + safe_divide<double>(previousXPos - xPos, 2)),
+                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(m_mt)),
+                    GetXPosFromLeft(rect, xPos),
+                    GetYPosFromTop(rect, math_constants::full - wiggleDistroTopBottom(m_mt)));
+                previousXPos = xPos;
+                }
+            fillPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt)),
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, math_constants::full + wiggleDistroTopBottom(m_mt))); // bottom left
+
+            // left
+            //-----
+            previousYPos = math_constants::full;
+            for (long i = static_cast<long>(strayLinesAlongLeftRight); i > 0; --i)
+                {
+                auto yPos = safe_divide<double>(math_constants::full, strayLinesAlongLeftRight + 1) * i;
+                fillPath.AddQuadCurveToPoint(
+                    GetXPosFromLeft(rect, wiggleDistroLeftRight(m_mt)),
+                    GetYPosFromTop(rect, yPos +
+                                         safe_divide<double>(previousYPos - yPos, 2)),
+                    GetXPosFromLeft(rect, wiggleDistroLeftRight(m_mt)),
+                    GetYPosFromTop(rect, yPos));
+                previousYPos = yPos;
+                }
+            fillPath.AddQuadCurveToPoint(
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(m_mt)),
+                GetXPosFromLeft(rect, 0 + wiggleDistroLeftRight(m_mt)),
+                GetYPosFromTop(rect, 0 + wiggleDistroTopBottom(m_mt)));
+
+            fillPath.CloseSubpath();
+            gc->FillPath(fillPath);
+            gc->StrokePath(fillPath);
+
+            // draw the hard outline on top
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                wxPen scaledPen(GetGraphItemInfo().GetPen());
+                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                gc->SetPen(scaledPen);
+                gc->SetBrush(*wxTRANSPARENT_BRUSH);
+
+                gc->DrawRectangle(rect.GetX(), rect.GetY(),
+                    rect.GetWidth(), rect.GetHeight());
+                }
             }
         }
 

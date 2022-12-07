@@ -52,6 +52,9 @@ namespace math_constants
     /// @brief Fourth (i.e., 25%).
     constexpr double fourth = quarter;
 
+    /// @brief Eighth (i.e., 12.5%).
+    constexpr double eighth = quarter / static_cast<double>(2);
+
     /// @brief Half (i.e., 50%).
     constexpr double half = 0.5;
 

@@ -113,6 +113,8 @@ Properties common to all graphs:
   - `"chevron-upward"`
   - `"text"`
   - `"tack"`
+  - `"banner"`
+  - `"watercolor-rectangle"`
 - `"line-scheme"`: for graphs that support line schemes only.<br />
   This is an array of line specifications (which can be recycled)<br />
   Each specification contains the following:
@@ -294,6 +296,7 @@ Properties common to all bar-chart derived graphs:
   - `"glassy"`
   - `"solid"` (the default)
   - `"stipple"`
+  - `"watercolor"`
 - `"bar-label-display"`: string specifying how to display labels on the bars.
   Available options are:
   - `"percentage"`

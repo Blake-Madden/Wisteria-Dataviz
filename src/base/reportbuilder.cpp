@@ -611,7 +611,8 @@ namespace Wisteria
             { L"fade-from-top-to-bottom", BoxEffect::FadeFromTopToBottom },
             { L"glassy", BoxEffect::Glassy },
             { L"solid", BoxEffect::Solid },
-            { L"stipple", BoxEffect::Stipple }
+            { L"stipple", BoxEffect::Stipple },
+            { L"watercolor", BoxEffect::WaterColor }
             };
 
         const auto foundValue = boxEffects.find(value.Lower().ToStdWstring());
@@ -4457,7 +4458,8 @@ namespace Wisteria
             { L"chevron-upward", IconShape::ChevronUpward },
             { L"text", IconShape::Text },
             { L"tack", IconShape::Tack },
-            { L"banner", IconShape::Banner }
+            { L"banner", IconShape::Banner },
+            { L"watercolor-rectangle", IconShape::WaterColorRectangle }
             };
 
         const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));

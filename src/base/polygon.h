@@ -60,6 +60,9 @@ namespace Wisteria::GraphItems
             /// @note If using this shape, call SetBackgroundFill() to set the color and direction
             ///     of the glass effect. (The brush will be ignored.)
             GlassyRectangle,
+            /// @brief A watercolor-like filled rectangle, where fill color is warped and the
+            ///     rectangle looks like it was filled in with watercolor paint (or a marker).
+            WaterColorRectangle,
             /// @brief No real shape.
             Irregular
             };

@@ -459,19 +459,22 @@ namespace Wisteria::Graphs
                         {
                         const wxCoord scaledShadowOffset =
                             ScaleToScreenAndCanvas(GetShadowOffset());
-                        wxPoint shadowPts[7];
-                        shadowPts[0] = box.m_boxRect.GetLeftBottom() +
-                                        wxPoint(scaledShadowOffset,0);
-                        shadowPts[1] = box.m_boxRect.GetLeftBottom() +
-                                        wxPoint(scaledShadowOffset,scaledShadowOffset);
-                        shadowPts[2] = box.m_boxRect.GetRightBottom() +
-                                        wxPoint(scaledShadowOffset,scaledShadowOffset);
-                        shadowPts[3] = box.m_boxRect.GetRightTop() +
-                                        wxPoint(scaledShadowOffset,scaledShadowOffset);
-                        shadowPts[4] = box.m_boxRect.GetRightTop() +
-                                        wxPoint(0,scaledShadowOffset);
-                        shadowPts[5] = box.m_boxRect.GetRightBottom();
-                        shadowPts[6] = shadowPts[0]; // close polygon
+                        wxPoint shadowPts[7] =
+                            {
+                            box.m_boxRect.GetLeftBottom() +
+                                        wxPoint(scaledShadowOffset,0),
+                            box.m_boxRect.GetLeftBottom() +
+                                        wxPoint(scaledShadowOffset,scaledShadowOffset),
+                            box.m_boxRect.GetRightBottom() +
+                                        wxPoint(scaledShadowOffset,scaledShadowOffset),
+                            box.m_boxRect.GetRightTop() +
+                                        wxPoint(scaledShadowOffset,scaledShadowOffset),
+                            box.m_boxRect.GetRightTop() +
+                                        wxPoint(0,scaledShadowOffset),
+                            box.m_boxRect.GetRightBottom(),
+                            box.m_boxRect.GetLeftBottom() +
+                                        wxPoint(scaledShadowOffset,0)
+                            };
                         AddObject(std::make_shared<GraphItems::Polygon>(
                             GraphItemInfo().Pen(wxNullPen).
                             Brush(GraphItemBase::GetShadowColour()),
@@ -528,7 +531,9 @@ namespace Wisteria::Graphs
                             blockColor, blockColor,
                             FillDirection::East));
                         }
-                    boxPoly->SetShape((box.GetBoxEffect() == BoxEffect::Glassy) ?
+                    boxPoly->SetShape((box.GetBoxEffect() == BoxEffect::WaterColor) ?
+                        GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                        (box.GetBoxEffect() == BoxEffect::Glassy) ?
                         GraphItems::Polygon::PolygonShape::GlassyRectangle :
                         GraphItems::Polygon::PolygonShape::Rectangle);
                     boxPoly->SetBoxCorners(GetBoxCorners());

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "polygon.h"
+#include "shapes.h"
 
 namespace Wisteria::GraphItems
     {
@@ -260,8 +261,14 @@ namespace Wisteria::GraphItems
             !GetGraphItemInfo().IsShowingBottomOutline() ||
             !GetGraphItemInfo().IsShowingLeftOutline());
 
+        wxASSERT_MSG(
+            !(GetShape() == PolygonShape::WaterColorRectangle && !GetBrush().IsOk()),
+            L"Brush must be set when using watercolor-filled rectangle!");
+
         // using a color fill (possibly a gradient)
-        if (GetBackgroundFill().IsOk())
+        if (GetBackgroundFill().IsOk() &&
+            // use solid color for this
+            (GetShape() != PolygonShape::WaterColorRectangle))
             {
             wxDCBrushChanger bc(dc, GetBackgroundFill().GetColor1());
             if (GetBackgroundFill().IsGradient())
@@ -397,6 +404,12 @@ namespace Wisteria::GraphItems
                     if (GetGraphItemInfo().IsShowingLeftOutline())
                         { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetTopLeft()); }
                     }
+                }
+            else if (GetShape() == PolygonShape::WaterColorRectangle)
+                {
+                GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::WaterColorRectangle,
+                                     boundingBox.GetSize());
+                sh.Draw(boundingBox, dc);
                 }
             else
                 { dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]); }

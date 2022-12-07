@@ -877,7 +877,7 @@ namespace Wisteria::Graphs
                                     }
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
                                     ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
@@ -897,7 +897,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[6] = barNeckRect.GetBottomLeft();
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
                                     ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
@@ -961,13 +961,28 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on its sides
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(true, false, true, false); }
-                            box->SetShape((bar.GetShape() == BarShape::Arrow) ?
+                            box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
+                                GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                                (bar.GetShape() == BarShape::Arrow) ?
                                 GraphItems::Polygon::PolygonShape::Irregular :
                                 (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
+                            // flip outline logic so that we have a hard outline since we are
+                            // not "drawing within the lines" (also, don't clip)
+                            if (bar.GetEffect() == BoxEffect::WaterColor)
+                                {
+                                // ...but only use hard outline if there isn't a user-defined outline
+                                if (!barBlock.GetOutlinePen().IsOk())
+                                    {
+                                    box->GetPen().SetColour(
+                                        ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                        *wxBLACK : *wxWHITE);
+                                    }
+                                }
                             // clip box to not be on top of axes
-                            box->SetClippingRect(drawArea);
+                            else
+                                { box->SetClippingRect(drawArea); }
                             // add the box to the plot item collection
                             AddObject(box);
                             }
@@ -1235,7 +1250,7 @@ namespace Wisteria::Graphs
 
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).Scaling(GetScaling()).
+                                    Pen(*wxBLACK_PEN).Brush(blockBrush).Scaling(GetScaling()).
                                     Outline(true, true, true, true).
                                     ShowLabelWhenSelected(true),
                                     boxPoints, std::size(boxPoints));
@@ -1258,7 +1273,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[6] = barNeckRect.GetBottomRight();
                                 box = std::make_shared<GraphItems::Polygon>(
                                     GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                    Pen(wxPen(*wxBLACK)).Brush(blockBrush).
+                                    Pen(*wxBLACK_PEN).Brush(blockBrush).
                                     Outline(true, true, true, true).
                                     Scaling(GetScaling()).ShowLabelWhenSelected(true),
                                     arrowPoints, std::size(arrowPoints));
@@ -1321,13 +1336,28 @@ namespace Wisteria::Graphs
                             // if the box is really thin, then don't use the outline pen on the top/bottom
                             if (DownscaleFromScreenAndCanvas(barRect.GetWidth()) < 5)
                                 { box->GetGraphItemInfo().Outline(false, true, false, true); }
-                            box->SetShape((bar.GetShape() == BarShape::Arrow) ?
+                            box->SetShape((bar.GetEffect() == BoxEffect::WaterColor) ?
+                                GraphItems::Polygon::PolygonShape::WaterColorRectangle :
+                                (bar.GetShape() == BarShape::Arrow) ?
                                 GraphItems::Polygon::PolygonShape::Irregular :
                                 (bar.GetEffect() == BoxEffect::Glassy) ?
                                 GraphItems::Polygon::PolygonShape::GlassyRectangle :
                                 GraphItems::Polygon::PolygonShape::Rectangle);
+                            // flip outline logic so that we have a hard outline since we are
+                            // not "drawing within the lines" (also, don't clip)
+                            if (bar.GetEffect() == BoxEffect::WaterColor)
+                                {
+                                // ...but only use hard outline if there isn't a user-defined outline
+                                if (!barBlock.GetOutlinePen().IsOk())
+                                    {
+                                    box->GetPen().SetColour(
+                                        ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
+                                        *wxBLACK : *wxWHITE);
+                                    }
+                                }
                             // clip box to not be on top of axes
-                            box->SetClippingRect(drawArea);
+                            else
+                                { box->SetClippingRect(drawArea); }
                             // add the box to the plot item collection
                             AddObject(box);
                             }

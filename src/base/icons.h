@@ -79,8 +79,9 @@ namespace Wisteria::Icons
         ChevronDownward,               /*!< A downward pointing chevron.*/
         ChevronUpward,                 /*!< An upward pointing chevron.*/
         Text,                          /*!< A provided string.*/
-        Tack,                          /*!< A tack (pen).*/
-        Banner                         /*!< A banner sign.*/
+        Tack,                          /*!< A tack (i.e., pen that holds paper to a corkboard).*/
+        Banner,                        /*!< A banner sign.*/
+        WaterColorRectangle            /*!< A warped rectangle that looks like a watercolor-filled box.*/
         };
 
     /// @brief Item to draw on a legend.
