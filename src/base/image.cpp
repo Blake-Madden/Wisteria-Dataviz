@@ -196,14 +196,9 @@ namespace Wisteria::GraphItems
         auto const imgInData = image.GetData();
         auto const imgOutData = outImg.GetData();
 
-        // Border pixels (depends on nRadius) will become black.
+        // Border pixels (depends on radius) will become black.
         // On increasing radius boundary pixels should set as black.
-        std::memset(imgOutData, 0, image.GetWidth() * image.GetHeight() * 3);
-        
-        std::array<int, 256> nIntensityCount{ 0 };
-        std::array<int, 256> nSumR{ 0 };
-        std::array<int, 256> nSumG{ 0 };
-        std::array<int, 256> nSumB{ 0 };
+        std::memset(imgOutData, 0, static_cast<size_t>(image.GetWidth() * image.GetHeight() * 3));
 
         // If total bytes in a row of image is not divisible by four, 
         // blank bytes will be padded to the end of the row.
@@ -211,46 +206,46 @@ namespace Wisteria::GraphItems
         // If width is 9, then actual bytes in a row will will be 28, and not 27.
         const int nBytesInARow = std::ceil(image.GetWidth() * 3 / 4.0) * 4.0;
 
-        // nRadius pixels are avoided from left, right top, and bottom edges.
+        constexpr auto rgbBufferSize{ 256 };
+
+        // Note that radius pixels are avoided from left, right, top, and bottom edges.
+        // Go to the next row of pixels...
         for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
             {
+            // ...and go across, pixel-by-pixel
+            #pragma omp parallel for
             for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
                 {
                 // Reset calculations of last pixel.
-                std::fill(nIntensityCount.begin(), nIntensityCount.end(), 0);
-                std::fill(nSumR.begin(), nSumR.end(), 0);
-                std::fill(nSumG.begin(), nSumG.end(), 0);
-                std::fill(nSumB.begin(), nSumB.end(), 0);
+                std::array<int, rgbBufferSize> nIntensityCount{ 0 };
+                std::array<int, rgbBufferSize> nSumR{ 0 };
+                std::array<int, rgbBufferSize> nSumG{ 0 };
+                std::array<int, rgbBufferSize> nSumB{ 0 };
 
-                // Find intensities of nearest nRadius pixels in four direction.
+                // Find intensities of nearest radius pixels in four direction.
                 for (int nY_O = -radius; nY_O <= radius; ++nY_O)
                     {
                     for (int nX_O = -radius; nX_O <= radius; ++nX_O)
                         {
-                        int nR = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow];
-                        int nG = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 1];
-                        int nB = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 2];
+                        const int nR = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow];
+                        const int nG = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 1];
+                        const int nB = imgInData[(nX + nX_O) * 3 + (nY + nY_O) * nBytesInARow + 2];
 
                         // Find intensity of RGB value and apply intensity level.
-                        int nCurIntensity = (((nR + nG + nB) / 3.0) * intensity) / 255;
-                        if (nCurIntensity > 255)
-                            nCurIntensity = 255;
-                        int i = nCurIntensity;
-                        nIntensityCount[i]++;
+                        const int nCurIntensity =
+                            std::clamp<int>((((nR + nG + nB) / 3.0) * intensity) / 255,
+                                            0, (rgbBufferSize-1));
+                        ++nIntensityCount[nCurIntensity];
 
-                        nSumR[i] = nSumR[i] + nR;
-                        nSumG[i] = nSumG[i] + nG;
-                        nSumB[i] = nSumB[i] + nB;
+                        nSumR[nCurIntensity] += nR;
+                        nSumG[nCurIntensity] += nG;
+                        nSumB[nCurIntensity] += nB;
                         }
                     }
 
-                int nOutR{ 0 };
-                int nOutG{ 0 };
-                int nOutB{ 0 };
-
                 int nCurMax{ 0 };
                 int nMaxIndex{ 0 };
-                for (int nI = 0; nI < 256; ++nI)
+                for (int nI = 0; nI < rgbBufferSize; ++nI)
                     {
                     if (nIntensityCount[nI] > nCurMax)
                         {
@@ -259,13 +254,15 @@ namespace Wisteria::GraphItems
                         }
                     }
 
-                nOutR = nSumR[nMaxIndex] / nCurMax;
-                nOutG = nSumG[nMaxIndex] / nCurMax;
-                nOutB = nSumB[nMaxIndex] / nCurMax;
+                wxASSERT_MSG(nMaxIndex >= 0 && nMaxIndex < rgbBufferSize,
+                    L"Invalid buffer index in oil painting effect!");
+                wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
+                    (image.GetWidth() * image.GetHeight() * 3),
+                    L"Invalid image data inde in oil painting effect!");
 
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nOutR;
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nOutG;
-                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 2] = nOutB;
+                imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nSumR[nMaxIndex] / nCurMax;
+                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nSumG[nMaxIndex] / nCurMax;
+                imgOutData[(nX) * 3 + (nY)*nBytesInARow + 2] = nSumB[nMaxIndex] / nCurMax;
                 }
             }
 

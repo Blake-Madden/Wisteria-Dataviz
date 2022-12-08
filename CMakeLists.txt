@@ -32,27 +32,29 @@ ENDIF()
 
 PROJECT(Wisteria)
 
-# Build the documentation
+# Build the documentation (not available on Windows)
 ########################
-# https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
-FIND_PACKAGE(Doxygen)
-IF(DOXYGEN_FOUND)
-    # set input and output files
-    SET(DOXYGEN_IN "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile")
-    IF(EXISTS ${DOXYGEN_IN})
-        MESSAGE("Doxygen build started")
+IF(NOT WIN32)
+    # https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
+    FIND_PACKAGE(Doxygen)
+    IF(DOXYGEN_FOUND)
+        # set input and output files
+        SET(DOXYGEN_IN "${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile")
+        IF(EXISTS ${DOXYGEN_IN})
+            MESSAGE("Doxygen build started")
 
-        # note the option ALL which allows to build the docs together with the application
-        ADD_CUSTOM_TARGET( doc_doxygen ALL
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
-            COMMENT "Generating API documentation with Doxygen"
-            VERBATIM )
-    ELSE()
-        MESSAGE("Doxygen project file missing (${DOXYGEN_IN}).")
+            # note the option ALL which allows to build the docs together with the application
+            ADD_CUSTOM_TARGET( doc_doxygen ALL
+                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_IN}
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/doxygen"
+                COMMENT "Generating API documentation with Doxygen"
+                VERBATIM )
+        ELSE()
+            MESSAGE("Doxygen project file missing (${DOXYGEN_IN}).")
+        ENDIF()
+    ELSE(DOXYGEN_FOUND)
+        MESSAGE("Doxygen not found. API documentation will not be generated.")
     ENDIF()
-ELSE(DOXYGEN_FOUND)
-    MESSAGE("Doxygen not found. API documentation will not be generated.")
 ENDIF()
 
 # Setup wxWidgets
@@ -83,6 +85,12 @@ ENDIF()
 # (run "tools/Build CMake Files List.R" to update this)
 INCLUDE(${CMAKE_SOURCE_DIR}/tools/files.cmake)
 ADD_LIBRARY(WisteriaLib STATIC ${WISTERIA_SRC})
+# Add OpenMP for mutlithreading
+FIND_PACKAGE(OpenMP)
+IF(OpenMP_CXX_FOUND)
+    MESSAGE(STATUS "OpenMP available; will be included.")
+    TARGET_LINK_LIBRARIES(WisteriaLib PUBLIC OpenMP::OpenMP_CXX)
+ENDIF()
 TARGET_INCLUDE_DIRECTORIES(WisteriaLib PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)

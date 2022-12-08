@@ -116,7 +116,8 @@ namespace Wisteria::GraphItems
         /// @returns The original image that was loaded into this object.
         /// @note Because this is the original image, any size or opacity
         ///     changes being used for this object will not be applied to this image.
-        [[nodiscard]] const wxImage& GetOriginalImage() const noexcept
+        [[nodiscard]]
+        const wxImage& GetOriginalImage() const noexcept
             { return m_originalImg; }
 
         /** @name Image Loading Functions
@@ -133,27 +134,31 @@ namespace Wisteria::GraphItems
                 size can't be read.)
             @note The units (e.g., mm or px) in the SVG are ignored, only the numeric
                 values of the sizes are read.*/
-        [[nodiscard]] static wxSize GetSVGSize(const wxString& filePath);
+        [[nodiscard]]
+        static wxSize GetSVGSize(const wxString& filePath);
         /** @brief Either downscales or upscales a size to another, maintaining the
                 original's aspect ratio.
             @param originalSz The original size.
             @param suggestedSz The new size.
             @returns The original size, either upscaled or downscaled to fit within
                 the suggested size, with the original's aspect ratio maintained.*/
-        [[nodiscard]] static wxSize ToBestSize(const wxSize originalSz, const wxSize suggestedSz);
+        [[nodiscard]]
+        static wxSize ToBestSize(const wxSize originalSz, const wxSize suggestedSz);
         /** @returns A bitmap type from a file extension.
             @param[in,out] ext The file extension to review
                 (can be either the extension or full file path).
                 If a full filepath is used, then this will be returned as just the extension.
             @note SVG files will return @c wxBITMAP_TYPE_ANY, so check @c ext to further
                 review the file type.*/
-        [[nodiscard]] static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
+        [[nodiscard]]
+        static wxBitmapType GetImageFileTypeFromExtension(wxString& ext);
         /** @brief Loads image and adjusts its JPEG orientation (if necessary).
             @param filePath The filepath of the image to load.
             @note Memory mapping is used when loading, which can help memory usage when
                 large files.
             @returns The image loaded from @c filePath.*/
-        [[nodiscard]] static wxImage LoadFile(const wxString& filePath);
+        [[nodiscard]]
+        static wxImage LoadFile(const wxString& filePath);
         /** @brief Fits an image to a rect, cropping it evenly if necessary.
             @details For example, if the height of the image is closer to the rect's than
                 the width is, then its height will be scaled to the rect's height
@@ -162,8 +167,9 @@ namespace Wisteria::GraphItems
             @param rect The rect to crop the image to.
             @param centerImage @c true to center the image if it needs cropping.
             @returns The cropped image.*/
-        [[nodiscard]] static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
-                                                     const bool centerImage);
+        [[nodiscard]]
+        static wxImage CropImageToRect(const wxImage& img, const wxRect rect,
+                                       const bool centerImage);
         /** @brief Combines a list of images together, going from left-to-right.
             @param images The images (a @c vector of `wxImage`s or `wxBitmap`s) to stitch.
             @returns The combined image.
@@ -180,7 +186,8 @@ namespace Wisteria::GraphItems
                  );
             @endcode*/
         template<typename T>
-        [[nodiscard]] static wxImage StitchHorizontally(const std::vector<T>& images)
+        [[nodiscard]]
+        static wxImage StitchHorizontally(const std::vector<T>& images)
             {
             if (images.size() == 0)
                 { return wxNullImage; }
@@ -213,7 +220,8 @@ namespace Wisteria::GraphItems
             @returns The combined image.
             @sa StitchHorizontally().*/
         template<typename T>
-        [[nodiscard]] static wxImage StitchVertically(const std::vector<T>& images)
+        [[nodiscard]]
+        static wxImage StitchVertically(const std::vector<T>& images)
             {
             if (images.size() == 0)
                 { return wxNullImage; }
@@ -249,17 +257,19 @@ namespace Wisteria::GraphItems
             @param shadowSize The width/height of the shadow from the image. Value should be
                 scaled for canvas scaling and DPI.
             @returns The image with the stipple drawn across it.*/
-        [[nodiscard]] static wxImage CreateStippledImage(wxImage stipple, const wxSize fillSize,
-                                                         const Orientation direction,
-                                                         const bool includeShadow,
-                                                         const wxCoord shadowSize);
+        [[nodiscard]]
+        static wxImage CreateStippledImage(wxImage stipple, const wxSize fillSize,
+                                           const Orientation direction,
+                                           const bool includeShadow,
+                                           const wxCoord shadowSize);
         /** @brief Creates a silhouette (all black copy) of an image.
             @param image The image to create the silhouette from.
             @param opaque Whether the silhouette should be a fully opaque shadow.
                 If @c false, then it will be translucent.
             @returns The silhouette of the image.*/
-        [[nodiscard]] static wxImage CreateSilhouette(const wxImage& image,
-                                                      const bool opaque = true);
+        [[nodiscard]]
+        static wxImage CreateSilhouette(const wxImage& image,
+                                        const bool opaque = true);
         /** @brief Creates a copy of an image with a color filter applied across it.
             @details For example, applying a light blue will make the image look
                 "cooler," while applying an orange or red filter will make it
@@ -268,9 +278,10 @@ namespace Wisteria::GraphItems
             @param color The color to fill the image with.
             @param opacity The opacity of the color to fill the image with.
             @returns The color-filtered of the image.*/
-        [[nodiscard]] static wxImage CreateColorFilteredImage(const wxImage& image,
-                                                              const wxColour color,
-                                                              const uint8_t opacity = 100);
+        [[nodiscard]]
+        static wxImage CreateColorFilteredImage(const wxImage& image,
+                                                const wxColour color,
+                                                const uint8_t opacity = 100);
         /** @private
             @brief Renders a glassy surface across a box.
             @param fillSize The size of the output image to create.
@@ -278,8 +289,9 @@ namespace Wisteria::GraphItems
             @param direction The direction of the glassy shine.
             @returns The glassy image.*/
         [[deprecated("Use Polygon::SetShape() with GlassyRectangle instead.")]]
-        [[nodiscard]] static wxImage CreateGlassEffect(const wxSize fillSize, const wxColour color,
-                                                       const Orientation direction);
+        [[nodiscard]]
+        static wxImage CreateGlassEffect(const wxSize fillSize, const wxColour color,
+                                         const Orientation direction);
         /** @brief Sets the opacity of a bitmap.
             @param bmp The bitmap to edit.
             @param opacity The opacity to set the bitmap to.
@@ -327,16 +339,16 @@ namespace Wisteria::GraphItems
             @param radius "For each pixel, a number of pixels around that pixel are taken into account.\n
                 The radius simply defines how many pixels in each direction to look for. A radius of 5,
                 for example, should be good for rough oil painting pictures."
-            @param intensity "For this algorithm, each pixel will be put into an intensity "bin".
+            @param intensity "For this algorithm, each pixel will be put into an intensity 'bin'.
                 The true intensity of a pixel is defined as (r+b+g)/3, and can range anywhere from 0 to 256.
                 However, oil paintings have a much more blocky effect, so each pixel will have its
                 intensity binned. For a fairly blocky oil painting, 20 is a good reference number."\n
-                Note that default here is 40, to apply a more pronounced effect.
+                Note that the default here is 40 to produce a more pronounced effect.
             @returns The oil-painted image.
             @note Adapted from https://www.codeproject.com/articles/471994/oilpainteffect,
-                by author Santhosh G_. Santhosh G_'s code was adapted from
-                http://supercomputingblog.com/graphics/oil-painting-algorithm/, and is the source
-                for the explanations for @c radius and @c intensity.*/
+                by author Santhosh G_. Santhosh G_'s code was based on
+                http://supercomputingblog.com/graphics/oil-painting-algorithm/, which is also the
+                source for the explanations for @c radius and @c intensity.*/
         [[nodiscard]]
         static wxImage OilPainting(const wxImage& image, const uint8_t radius = 10,
                                    const float intensity = 40);
@@ -368,7 +380,8 @@ namespace Wisteria::GraphItems
                 maintain the image's aspect ratio.*/
         wxSize SetBestSize(const wxSize suggestedSz);
         /// @returns How the image's size is adjusted when its bounding box is changed.
-        [[nodiscard]] ResizeMethod GetResizeMethod() const noexcept
+        [[nodiscard]]
+        ResizeMethod GetResizeMethod() const noexcept
             { return m_resizeMethod; }
         /** @brief Sets how the image's size is adjusted when its bounding box is changed.
             @details The default it to either upscale or downscale the image as necessary,
@@ -389,7 +402,8 @@ namespace Wisteria::GraphItems
         /// @} 
 private:
         /// @returns The size of the image as it is being drawn.
-        [[nodiscard]] const wxSize& GetImageSize() const noexcept
+        [[nodiscard]]
+        const wxSize& GetImageSize() const noexcept
             { return m_size; }
         /** @returns The frame that the image may be getting centered in.
             @note This only applies with a call to SetBoundingBox(), which would force
@@ -398,7 +412,8 @@ private:
                 then the image will be positioned into this box.
             @sa SetPageVerticalAlignment() and SetPageHorizontalAlignment() for controlling
                 this positioning.*/
-        [[nodiscard]] const wxSize& GetFrameSize() const noexcept
+        [[nodiscard]]
+        const wxSize& GetFrameSize() const noexcept
             { return m_frameSize; }
         /** @brief Draws the image onto the given DC.
             @param dc The DC to render onto.
@@ -406,7 +421,8 @@ private:
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the image would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Bounds the image to the given rectangle.
             @param rect The rectangle to bound the image to.
             @param parentScaling This parameter is ignored.
@@ -425,12 +441,14 @@ private:
             { SetAnchorPoint(GetAnchorPoint() + wxPoint(xToMove,yToMove)); }
         /** @returns @c true if the given point is inside of the image.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }
         /// @brief Helper for calling calculate_downscaled_size().
         /// @param sz The size to convert.
         /// @returns The @c wxSize object, wrapped into a `std::pair`.
-        [[nodiscard]] inline static auto wxSizeToPair(const wxSize sz) noexcept
+        [[nodiscard]]
+        inline static auto wxSizeToPair(const wxSize sz) noexcept
             { return std::make_pair(sz.GetWidth(), sz.GetHeight()); }
         wxImage m_originalImg;
         mutable wxImage m_img;
@@ -462,7 +480,8 @@ namespace Wisteria::Images::Schemes
             m_images(images)
             {}
         /// @returns The list of images from the scheme.
-        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImages() const noexcept
+        [[nodiscard]]
+        const std::vector<wxBitmapBundle>& GetImages() const noexcept
             { return m_images; }
         /** @returns The image at the given index.
             @param index The index into the image list to return. If index is outside
@@ -470,7 +489,8 @@ namespace Wisteria::Images::Schemes
                 For example, if there are 2 images, index 1 will return 1;
                 however, index 2 will wrap around and return image 0 and
                 index 3 will return image 1.*/
-        [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
+        [[nodiscard]]
+        const wxBitmapBundle& GetImage(const size_t index) const noexcept
             {
             return (m_images.size() == 0) ?
                 m_emptyImage :
