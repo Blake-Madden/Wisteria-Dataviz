@@ -17,26 +17,6 @@ using namespace Wisteria::Icons;
 namespace Wisteria::GraphItems
     {
     //-------------------------------------------
-    void Point2D::SetBoundingBox(const wxRect& rect,
-                                 wxDC& dc,
-                                 [[maybe_unused]] const double parentScaling)
-        {
-        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
-                             L"SetBoundingBox() should only be called on fixed objects!");
-        if (IsFreeFloating())
-            { return; }
-        SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
-                               rect.GetTop()+(rect.GetHeight()/2)));
-        const double upscaleSizeWidth = safe_divide<double>(rect.GetWidth(),
-                                                            GetBoundingBox(dc).GetWidth());
-        const double upscaleSizeHeight = safe_divide<double>(rect.GetHeight(),
-                                                             GetBoundingBox(dc).GetHeight());
-        const double upscaleBestFix = std::min(upscaleSizeWidth, upscaleSizeHeight);
-        if (upscaleBestFix > 1)
-            { SetScaling(GetScaling()*upscaleBestFix); }
-        }
-
-    //-------------------------------------------
     void Points2D::SetSelected(const bool selected)
         {
         GraphItemBase::SetSelected(selected);
@@ -127,7 +107,8 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Points2D::DrawSelectionLabel(wxDC& dc, const double scaling, const wxRect boundingBox) const
+    void Points2D::DrawSelectionLabel(wxDC& dc, const double scaling,
+                                      const wxRect boundingBox) const
         {
         for (const auto& point : m_points)
             {
@@ -176,7 +157,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxRect Points2D::Draw(wxDC& dc) const
         {
-        if (!IsShown())
+        if (!IsShown() || GetPoints().empty())
             { return wxRect(); }
         if (IsInDragState())
             { return GetBoundingBox(dc); }
@@ -270,9 +251,16 @@ namespace Wisteria::GraphItems
                 }
             }
         const bool areAllPointsSelected = (!m_singlePointSelection && IsSelected());
-        for (const auto& point : m_points)
+
+        wxDCBrushChanger bc(dc, GetPoints().front().GetBrush());
+        wxPen scaledPen{ GetPoints().front().GetPen() };
+        if (scaledPen.IsOk())
+            { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
+        wxDCPenChanger pc(dc, scaledPen);
+
+        for (const auto& point : GetPoints())
             {
-            /*if all points selected, then the current pen is the selected one already*/
+            // if all points selected, then the current pen is the selected one already
             if (!areAllPointsSelected &&
                 point.IsSelected())
                 {
@@ -302,11 +290,6 @@ namespace Wisteria::GraphItems
 
         if (GetAnchorPoint().IsFullySpecified())
             {
-            wxDCBrushChanger bc(dc, GetBrush());
-            wxPen scaledPen{ GetPen() };
-            if (scaledPen.IsOk())
-                { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth())); }
-            wxDCPenChanger pc(dc, scaledPen);
             const auto boundingBox = GetBoundingBox(dc);
 
             // object that can handle drawing various shapes for the icons
@@ -324,10 +307,11 @@ namespace Wisteria::GraphItems
             {
             if (IsSelected())
                 {
-                wxPoint debugOutline[5];
+                wxPoint debugOutline[5]{ { 0, 0 } };
                 GraphItems::Polygon::GetRectPoints(GetBoundingBox(dc), debugOutline);
                 debugOutline[4] = debugOutline[0];
-                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2), wxPENSTYLE_SHORT_DASH));
+                wxDCPenChanger pcDebug(dc, wxPen(*wxRED, ScaleToScreenAndCanvas(2),
+                                       wxPENSTYLE_SHORT_DASH));
                 dc.DrawLines(std::size(debugOutline), debugOutline);
                 }
             }
@@ -335,6 +319,26 @@ namespace Wisteria::GraphItems
         if (GetClippingRect())
             { dc.DestroyClippingRegion(); }
         return GetBoundingBox(dc);
+        }
+
+    //-------------------------------------------
+    void Point2D::SetBoundingBox(const wxRect& rect,
+                                 wxDC& dc,
+                                 [[maybe_unused]] const double parentScaling)
+        {
+        wxASSERT_LEVEL_2_MSG(!IsFreeFloating(),
+                             L"SetBoundingBox() should only be called on fixed objects!");
+        if (IsFreeFloating())
+            { return; }
+        SetAnchorPoint(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
+                               rect.GetTop()+(rect.GetHeight()/2)));
+        const double upscaleSizeWidth = safe_divide<double>(rect.GetWidth(),
+                                                            GetBoundingBox(dc).GetWidth());
+        const double upscaleSizeHeight = safe_divide<double>(rect.GetHeight(),
+                                                             GetBoundingBox(dc).GetHeight());
+        const double upscaleBestFix = std::min(upscaleSizeWidth, upscaleSizeHeight);
+        if (upscaleBestFix > 1)
+            { SetScaling(GetScaling()*upscaleBestFix); }
         }
 
     //-------------------------------------------
@@ -350,10 +354,10 @@ namespace Wisteria::GraphItems
             }
         // convert center point to top left corner of area
         cp -= wxSize(ScaleToScreenAndCanvas(GetRadius()),
-                        ScaleToScreenAndCanvas(GetRadius()));
+                     ScaleToScreenAndCanvas(GetRadius()));
         wxRect boundingBox(cp,
-                            wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
-                                   (ScaleToScreenAndCanvas(GetRadius())) * 2));
+                           wxSize((ScaleToScreenAndCanvas(GetRadius())) * 2,
+                                  (ScaleToScreenAndCanvas(GetRadius())) * 2));
         if (m_shape == IconShape::LocationMarker ||
             m_shape == IconShape::GoRoadSign ||
             m_shape == IconShape::WarningRoadSign)

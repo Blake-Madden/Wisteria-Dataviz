@@ -303,10 +303,10 @@ namespace Wisteria::GraphItems
         {
         if (GetGraphItemInfo().GetBaseColor())
             {
-            wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBaseColor().value());
+            DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBaseColor().value());
             fn();
             }
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         fn();
         }
 
@@ -450,7 +450,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
         
         // whisker
         dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
@@ -485,7 +485,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawRectangle(rect); });
         }
 
@@ -495,7 +495,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawCircle(GetMidPoint(rect), GetRadius(rect)); });
         }
 
@@ -520,7 +520,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const std::array<wxPoint, 11> points =
             {
@@ -561,7 +561,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -590,7 +590,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -619,7 +619,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -887,7 +887,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
         DrawWithBaseColorAndBrush(dc,
             [&]()
             {
@@ -907,7 +907,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -931,7 +931,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -952,8 +952,8 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -974,8 +974,8 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -996,8 +996,8 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
-        wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -1069,7 +1069,7 @@ namespace Wisteria::GraphItems
             {
             scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
             }
-        wxDCPenChanger pc(dc, scaledPen);
+        DCPenChangerIfDifferent pc(dc, scaledPen);
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
@@ -1090,8 +1090,8 @@ namespace Wisteria::GraphItems
             scaledPen.SetWidth(
                 ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)) );
             }
-        wxDCPenChanger pc(dc, scaledPen);
-        wxDCBrushChanger bc(dc, GetGraphItemInfo().GetBrush());
+        DCPenChangerIfDifferent pc(dc, scaledPen);
+        DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
         dc.DrawLine(wxPoint(rect.GetLeft(), rect.GetTop() + (rect.GetHeight()/2)),
                     wxPoint(rect.GetRight(), rect.GetTop() + (rect.GetHeight()/2)) );
         }

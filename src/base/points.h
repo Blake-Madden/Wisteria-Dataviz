@@ -174,7 +174,7 @@ namespace Wisteria::GraphItems
         /** @brief Sets whether the points are selected.
             @param selected Whether the last hit point
                 (or all points if there was no previous hit) should be selected.*/
-        void SetSelected(const bool selected) override;
+        void SetSelected(const bool selected) final;
         /** @brief Draws the selected points' labels.
             @param dc The DC to render with.
             @param scaling The scaling to draw the text with. This may be different from

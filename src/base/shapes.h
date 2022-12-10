@@ -14,6 +14,7 @@
 
 #include "graphitems.h"
 #include "colorbrewer.h"
+#include "changers.h"
 #include <random>
 
 namespace Wisteria::GraphItems
