@@ -436,8 +436,9 @@ namespace Wisteria::Graphs
     
         // plot the data
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
-            points->SetScaling(GetScaling());
-            points->SetDPIScaleFactor(GetDPIScaleFactor());
+        points->SetScaling(GetScaling());
+        points->SetDPIScaleFactor(GetDPIScaleFactor());
+        points->Reserve(GetData()->GetRowCount());
         for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)) ||
