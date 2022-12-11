@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "imageexportdlg.h"
+#include "../../base/canvas.h"
 
 using namespace Wisteria::UI;
 
@@ -94,7 +95,8 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
     wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
         wxString::Format(L"%d", m_options.m_imageSize.GetWidth()),
-        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 10000);
+        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 
+        Wisteria::Canvas::GetDefaultCanvasWidthDIPs(), 10'000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
     imageSizeInfoSizer->Add(widthCtrl, 0);
 
@@ -103,12 +105,14 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     imageSizeInfoSizer->Add(heightLabel, 0, wxALIGN_CENTER_VERTICAL);
     wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_HEIGHT_ID,
         wxString::Format(L"%d", m_options.m_imageSize.GetHeight()),
-        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 10000);
+        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+        Wisteria::Canvas::GetDefaultCanvasHeightDIPs(), 10'000);
     heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));
     imageSizeInfoSizer->Add(heightCtrl);
     column1Sizer->Add(imageSizeSizer, 0, wxEXPAND);
 
-    if (bitmapType != wxBITMAP_TYPE_ANY) // unknown/non-image formats (e.g., SVG) won't use these options
+    // unknown/non-image formats (e.g., SVG) won't use these options
+    if (bitmapType != wxBITMAP_TYPE_ANY)
         {
         wxArrayString colorModes;
         colorModes.Add(_(L"&RGB (Color)"));
@@ -127,7 +131,8 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         column1Sizer->Add(tiffOptionsBoxSizer, 0, wxEXPAND);
 
         wxBoxSizer* compressionSizer = new wxBoxSizer(wxHORIZONTAL);
-        tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT|wxALL, wxSizerFlags::GetDefaultBorder());
+        tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT|wxALL,
+                                 wxSizerFlags::GetDefaultBorder());
         wxStaticText* compressionLabel = new wxStaticText(this, wxID_STATIC, _(L"Compression:"),
                                                           wxDefaultPosition, wxDefaultSize, 0);
         compressionSizer->Add(compressionLabel, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT,

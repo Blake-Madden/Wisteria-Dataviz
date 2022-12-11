@@ -50,17 +50,20 @@ namespace Wisteria::UI
             Grayscale, /*!< Shades of gray (i.e., B & W).*/
             Greyscale = Grayscale
             };
-        /// @brief Default Constructor.
-        ImageExportOptions() noexcept : m_mode(static_cast<decltype(m_mode)>(ColorMode::RGB)),
-                                m_tiffCompression(TiffCompression::CompressionNone),
-                                m_imageSize(700, 500) {};
-        int m_mode{ static_cast<decltype(m_mode)>(ColorMode::RGB) }; /*!< The color mode. Really a ColorMode, but must be int to be compatible with a validator.*/
-        TiffCompression m_tiffCompression{ TiffCompression::CompressionNone }; /*!< The Tiff compression method (if saving as Tiff).*/
-        wxSize m_imageSize{ wxSize(700, 500) }; /*!< The dimensions of the exported image.*/
+        /// @private
+        ImageExportOptions() = default;
+        /// @brief The color mode. Really a ColorMode,
+        ///     but must be int to be compatible with a validator.
+        int m_mode{ static_cast<decltype(m_mode)>(ColorMode::RGB) };
+        /// @brief The Tiff compression method (if saving as Tiff).
+        TiffCompression m_tiffCompression{ TiffCompression::CompressionNone };
+        /// @brief The dimensions of the exported image (in DIPs).
+        wxSize m_imageSize{ wxSize(700, 500) };
         };
 
-    /// @brief Options dialog for saving an image. Includes options for color/B&W, tiff compression, etc.
-    /// @details Canvas save events use this dialog, so normally client code should not
+    /// @brief Options dialog for saving an image.
+    /// @details Includes options for color/B&W, tiff compression, etc.\n
+    ///     Canvas save events use this dialog, so normally client code should not
     ///     need to use this interface.
     class ImageExportDlg final : public wxDialog
         {
@@ -78,8 +81,10 @@ namespace Wisteria::UI
         ImageExportDlg(wxWindow* parent, const wxBitmapType bitmapType,
                        const wxBitmap& previewImg,
                        const ImageExportOptions& options,
-                       wxWindowID id = wxID_ANY, const wxString& caption = _(L"Image Export Options"),
-                       const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                       wxWindowID id = wxID_ANY,
+                       const wxString& caption = _(L"Image Export Options"),
+                       const wxPoint& pos = wxDefaultPosition,
+                       const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN) :
                        m_options(options),
                        m_originalBitmap(previewImg)
@@ -93,7 +98,8 @@ namespace Wisteria::UI
         /// @private
         ImageExportDlg& operator=(const ImageExportDlg&) = delete;
         /** @brief Constructs the dialog.
-            @details This is part of a 2-step construction and should be called after the empty constructor.
+            @details This is part of a 2-step construction and should be
+                called after the empty constructor.
             @param parent The parent window.
             @param bitmapType The image format to export as.
             @param id The window ID.
