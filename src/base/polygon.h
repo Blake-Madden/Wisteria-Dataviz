@@ -76,6 +76,13 @@ namespace Wisteria::GraphItems
         Polygon(const GraphItemInfo& itemInfo,
                 const wxPoint* points, const int N) : GraphItemBase(itemInfo)
             { SetPoints(points, N); }
+        /** @brief Constructor.
+            @param itemInfo Base information for the plot object.
+            @param polygon An array of points (e.g., `std::array<wxPoint, 5>`).*/
+        template<typename polygonT>
+        Polygon(const GraphItemInfo& itemInfo,
+                const polygonT& polygon) : GraphItemBase(itemInfo)
+            { SetPoints(polygon); }
 
         /** @name Point & Shape Functions
             @brief Functions related to setting the points and shape of the polygon.*/
@@ -96,6 +103,24 @@ namespace Wisteria::GraphItems
             @param polygon The points in the polygon.
             @param N The number of points in the polygon.*/
         void SetPoints(const wxPoint* polygon, const size_t N);
+        /** @brief Sets the points of the polygon.
+            @param polygon An array of points (e.g., `std::array<wxPoint, 5>`).*/
+        template<typename polygonT>
+        void SetPoints(const polygonT& polygon)
+            {
+            if (polygon.size() > 0)
+                {
+                m_points.clear();
+                std::copy(polygon.cbegin(), polygon.cend(),
+                          std::back_inserter(m_points));
+                UpdatePointPositions();
+                }
+            else
+                {
+                m_points.clear();
+                m_scaledPoints.clear();
+                }
+            }
         /// @returns The points in the polygon.
         [[nodiscard]] const std::vector<wxPoint>& GetPoints() const noexcept
             { return m_points; }
