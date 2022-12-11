@@ -1235,11 +1235,58 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
+    std::wstring html_extract_text::get_body(const std::wstring_view& text)
+        {
+        size_t bodyStart = text.find(L"<body");
+        if (bodyStart != std::wstring_view::npos)
+            {
+            bodyStart = text.find(L'>', bodyStart);
+            if (bodyStart == std::wstring_view::npos)
+                { return std::wstring(text); } // ill-formed file
+            ++bodyStart;
+            const size_t bodyEnd = text.find(L"</body>", bodyStart);
+            if (bodyEnd != std::wstring_view::npos)
+                { return std::wstring(text.substr(bodyStart, bodyEnd-bodyStart)); }
+            }
+        // no body tags found, so assume the whole thing is the body
+        return std::wstring(text);
+        }
+
+    //------------------------------------------------------------------
+    std::wstring html_extract_text::get_style_section(const std::wstring_view& text)
+        {
+        size_t styleStart = text.find(L"<style");
+        if (styleStart != std::wstring_view::npos)
+            {
+            styleStart = text.find(L'>',styleStart);
+            if (styleStart == std::wstring_view::npos)
+                { return std::wstring{}; } // ill-formed file
+            const size_t styleEnd = text.find(L"</style>", styleStart);
+            if (styleEnd != std::wstring_view::npos)
+                {
+                ++styleStart;
+                std::wstring styleSection(text.substr(styleStart, styleEnd-(styleStart)));
+                string_util::trim(styleSection);
+                if (styleSection.length() > 4 &&
+                    styleSection.compare(0, 4, L"<!--") == 0)
+                    { styleSection.erase(0, 4); }
+                if (styleSection.length() > 3 &&
+                    styleSection.compare(styleSection.length()-3, 3, L"-->") == 0)
+                    { styleSection.erase(styleSection.length()-3); }
+                string_util::trim(styleSection);
+                return styleSection;
+                }
+            }
+        // no style tags found, so not much to work with here
+        return std::wstring{};
+        }
+
+    //------------------------------------------------------------------
     std::wstring html_extract_text::get_element_name(const wchar_t* text,
                                                      const bool accept_self_terminating_elements /*= true*/)
         {
         if (text == nullptr)
-            { return std::wstring(L""); }
+            { return std::wstring{}; }
         const wchar_t* start = text;
         for (;;)
             {
@@ -1308,18 +1355,21 @@ namespace lily_of_the_valley
                                            const size_t elementTagLength,
                                            const bool accept_self_terminating_elements /*= true*/)
         {
-        if (sectionStart == nullptr || sectionEnd == nullptr || elementTag == nullptr || elementTagLength == 0)
+        if (sectionStart == nullptr || sectionEnd == nullptr ||
+            elementTag == nullptr || elementTagLength == 0)
             { return nullptr; }
-        assert((std::wcslen(elementTag) == elementTagLength) && "Invalid length passed to find_element().");
+        assert((std::wcslen(elementTag) == elementTagLength) &&
+               "Invalid length passed to find_element().");
         while (sectionStart && sectionStart+elementTagLength < sectionEnd)
             {
             sectionStart = std::wcschr(sectionStart, L'<');
             if (sectionStart == nullptr || sectionStart+elementTagLength > sectionEnd)
                 { return nullptr; }
-            else if (compare_element(sectionStart+1, elementTag, elementTagLength, accept_self_terminating_elements))
+            else if (compare_element(sectionStart+1, elementTag, elementTagLength,
+                                     accept_self_terminating_elements))
                 { return sectionStart; }
             else
-                { sectionStart += 1/*skip the '<' and search for the next one*/; }
+                { sectionStart += 1 /* skip the '<' and search for the next one*/; }
             }
         return nullptr;
         }
@@ -1330,9 +1380,11 @@ namespace lily_of_the_valley
                                            const wchar_t* elementTag,
                                            const size_t elementTagLength)
         {
-        if (sectionStart == nullptr || sectionEnd == nullptr || elementTag == nullptr || elementTagLength == 0)
+        if (sectionStart == nullptr || sectionEnd == nullptr ||
+            elementTag == nullptr || elementTagLength == 0)
             { return nullptr; }
-        assert((std::wcslen(elementTag) == elementTagLength) && "Invalid length passed to find_closing_element().");
+        assert((std::wcslen(elementTag) == elementTagLength) &&
+               "Invalid length passed to find_closing_element().");
         const wchar_t* start = std::wcschr(sectionStart, L'<');
         if (start == nullptr || start+elementTagLength > sectionEnd)
             { return nullptr; }

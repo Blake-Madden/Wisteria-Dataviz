@@ -508,7 +508,7 @@ namespace lily_of_the_valley
             @param element The element that we are comparing against the current position.
             @param element_size The length of the element that we are comparing against.
             @param accept_self_terminating_elements Whether we should match elements that
-                close themselves (i.e., don't have a matching </[element]>,
+                close themselves (i.e., don't have a matching "</[element]>",
                 but rather end where it is declared).\n
                 For example, "<br />" is a self-terminating element.\n
                 You would set this to @c false if you only want to read text in between
@@ -526,7 +526,7 @@ namespace lily_of_the_valley
             @param element The element that we are comparing against the current position.
             @param element_size The length of the element that we are comparing against.
             @param accept_self_terminating_elements Whether we should match elements that
-                close themselves (i.e., don't have a matching </[element]>,
+                close themselves (i.e., don't have a matching "</[element]>",
                 but rather end where it is declared).\n
                 For example, "<br />" is a self-terminating element.\n
                 You would set this to @c false if you only want to read
@@ -538,19 +538,27 @@ namespace lily_of_the_valley
         static bool compare_element_case_sensitive(const wchar_t* text, const wchar_t* element,
             const size_t element_size,
             const bool accept_self_terminating_elements = false);
-        /** @returns The current element that the stream is on. This assumes that you have
+        /** @returns The current element that a stream is on. This assumes that you have
                 already skipped the leading < symbol.
             @param text The HTML stream to analyze.
             @param accept_self_terminating_elements Whether to analyze element such as "<br />".*/
         [[nodiscard]]
         static std::wstring get_element_name(const wchar_t* text,
                                              const bool accept_self_terminating_elements = true);
+        /** @returns The body of an HTML buffer.
+            @param text The HTML stream to parse.*/
+        [[nodiscard]]
+        static std::wstring get_body(const std::wstring_view& text);
+        /** @returns The the CSS style section from an HTML buffer.
+            @param text The HTML stream to parse.*/
+        [[nodiscard]]
+        static std::wstring get_style_section(const std::wstring_view& text);
         /** @returns The matching > to a <, or null if not found.
             @param text The HTML stream to analyze.*/
         [[nodiscard]]
         static const wchar_t* find_close_tag(const wchar_t* text) noexcept;
         /** @brief Reads the value inside of an element as a string.
-                For example, this would read "My title" from "<H1>My title</H1>".
+            @details For example, this would read "My title" from "<H1>My title</H1>".
             @param html_text The start of the element.
             @param html_end How far into the HTML buffer we should read.
             @param element The element that we are looking at.
@@ -580,7 +588,7 @@ namespace lily_of_the_valley
             const wchar_t* tag, const size_t tagSize,
             const bool allowQuotedTags,
             const bool allowSpacesInValue = false);
-        /** @brief Same as read_attribute(), except it returns a `std::string`
+        /** @brief Same as read_attribute(), except it returns a `std::wstring`
                 instead of a raw pointer.
             @param text The start of the element section.
             @param attribute The inner tag to search for (e.g., "bgcolor").
@@ -617,7 +625,7 @@ namespace lily_of_the_valley
             @param sectionEnd The end of the HTML buffer.
             @param elementTag The name of the element (e.g., "table") to find.
             @param elementTagLength The length of elementTag.
-            @param accept_self_terminating_elements @c true to accept tags such as "<br />".
+            @param accept_self_terminating_elements @c true to accept tags such as "<br />".\n
                 Usually should be @c true, use @c false here if searching for
                 opening and closing elements with content in them.*/
         [[nodiscard]]
@@ -647,9 +655,9 @@ namespace lily_of_the_valley
             @param tag The inner tag to search for (e.g., "bgcolor").
             @param tagSize The length of the attribute to search for.
             @param allowQuotedTags Set this parameter to true for tags that are inside of quotes
-                   (e.g., style values like "font-weight", as in "<span style="font-weight: bold;">").
-                   To find "font-weight" inside of the style tag, this parameter should be @c true.\n
-                   Usually this would be @c false.
+                (e.g., style values like "font-weight", as in "<span style="font-weight: bold;">").
+                To find "font-weight" inside of the style tag, this parameter should be @c true.\n
+                Usually this would be @c false.
             @note If the position is currently on a '<' and you are searching for its matching '>',
                 then you should set @c sectionStart to one character after the '<'.*/
         [[nodiscard]]
