@@ -304,7 +304,8 @@ namespace Wisteria
 
         wxFileName(filePath.GetFullPath()).SetPermissions(wxS_DEFAULT);
 
-        wxCoord width = GetCanvasRectDIPs().GetWidth(), height = GetCanvasRectDIPs().GetHeight();
+        wxCoord width = GetCanvasRectDIPs().GetWidth(),
+                height = GetCanvasRectDIPs().GetHeight();
 
         // use custom size for image if supplied by caller; otherwise, just use the client size
         if (options.m_imageSize.GetWidth() > 0)
@@ -312,11 +313,16 @@ namespace Wisteria
         if (options.m_imageSize.GetHeight() > 0)
             { height = options.m_imageSize.GetHeight(); }
 
+        wxWindowUpdateLocker wl(this);
+        FitToSaveOptionsChanger fpc(this, wxSize(width, height));
+
         if (filePath.GetExt().CmpNoCase(L"svg") == 0)
             {
             wxSize CanvasMinSize = GetCanvasRectDIPs().GetSize();
-            CanvasMinSize.SetWidth(std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
-            CanvasMinSize.SetHeight(std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
+            CanvasMinSize.SetWidth(
+                std::max(GetCanvasMinWidthDIPs(), CanvasMinSize.GetWidth()));
+            CanvasMinSize.SetHeight(
+                std::max(GetCanvasMinHeightDIPs(), CanvasMinSize.GetHeight()));
 
             wxSVGFileDC svg(filePath.GetFullPath(),
                 CanvasMinSize.GetWidth(), CanvasMinSize.GetHeight(), 72.0, GetLabel());

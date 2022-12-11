@@ -78,6 +78,7 @@ namespace Wisteria
         {
     public:
         friend class ReportPrintout;
+        friend class FitToSaveOptionsChanger;
 
         /// @brief Class describing a row of items on the canvas.
         class CanvasRowInfo

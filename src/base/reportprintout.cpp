@@ -1,7 +1,9 @@
 #include "reportprintout.h"
 
+using namespace Wisteria;
+
 //------------------------------------------------------
-bool Wisteria::ReportPrintout::OnPrintPage(int page)
+bool ReportPrintout::OnPrintPage(int page)
     {
     wxDC* dc = GetDC();
     auto canvas = GetCanvasFromPageNumber(page);
@@ -192,7 +194,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(int page)
     }
 
 //------------------------------------------------------
-wxString Wisteria::ReportPrintout::ExpandPrintString(
+wxString ReportPrintout::ExpandPrintString(
     const wxString& printString, const int pageNumber) const
     {
     // page out of range, so don't do anything
@@ -218,7 +220,8 @@ wxString Wisteria::ReportPrintout::ExpandPrintString(
     }
 
 //------------------------------------------------------
-Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut) :
+PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
+                                             const ReportPrintout* printOut) :
     m_canvas(canvas),
     m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
     m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
@@ -226,7 +229,9 @@ Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const Rep
     {
     wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
     wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
-    if (m_canvas && printOut && m_canvas->IsFittingToPageWhenPrinting())
+    if (m_canvas != nullptr && 
+        printOut != nullptr &&
+        m_canvas->IsFittingToPageWhenPrinting())
         {
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
@@ -249,9 +254,41 @@ Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas, const Rep
     }
 
 //------------------------------------------------------
-Wisteria::PrintFitToPageChanger::~PrintFitToPageChanger()
+PrintFitToPageChanger::~PrintFitToPageChanger()
     {
-    if (m_canvas->IsFittingToPageWhenPrinting())
+    if (m_canvas != nullptr && m_canvas->IsFittingToPageWhenPrinting())
+        {
+        m_canvas->SetCanvasMinWidthDIPs(m_originalMinWidth);
+        m_canvas->SetCanvasMinHeightDIPs(m_originalMinHeight);
+        m_canvas->CalcRowDimensions();
+        m_canvas->SetSize(m_originalSize);
+        }
+    }
+
+//------------------------------------------------------
+FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas,
+                                                 const wxSize newSize) :
+    m_canvas(canvas),
+    m_originalMinWidth(canvas ? canvas->GetCanvasMinWidthDIPs() : 0),
+    m_originalMinHeight(canvas ? canvas->GetCanvasMinHeightDIPs() : 0),
+    m_originalSize(canvas ? canvas->GetSize() : wxSize())
+    {
+    wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
+    const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),
+                             canvas->GetCanvasRectDIPs().GetHeight());
+    m_sizeChanged = currentSize != newSize;
+    if (m_canvas != nullptr && m_sizeChanged)
+        {
+        // set the physical size of the window; this will force a call to
+        // CalcAllSizes() and fit all the objects to the altered drawing area
+        m_canvas->SetSize(m_canvas->FromDIP(newSize));
+        }
+    }
+
+//------------------------------------------------------
+FitToSaveOptionsChanger::~FitToSaveOptionsChanger()
+    {
+    if (m_canvas != nullptr && m_sizeChanged)
         {
         m_canvas->SetCanvasMinWidthDIPs(m_originalMinWidth);
         m_canvas->SetCanvasMinHeightDIPs(m_originalMinHeight);

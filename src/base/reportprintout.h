@@ -91,12 +91,36 @@ namespace Wisteria
         /// @param printOut The printout containing the paper size.
         PrintFitToPageChanger(Canvas* canvas, const ReportPrintout* printOut);
         /// @brief Destructor, which resets the canvas back to its original aspect ratio and size.
+        /// @private
         ~PrintFitToPageChanger();
     private:
         Canvas* m_canvas{ nullptr };
         int m_originalMinWidth{ 0 };
         int m_originalMinHeight{ 0 };
         wxSize m_originalSize;
+        };
+
+    /// @brief Temporarily changes a canvas's size to fit a custom size
+    ///     when exporting as an image.
+    /// @warning Caller is responsible for maintaining the aspect ratio;
+    ///     the provided size will be explicitly used.
+    class FitToSaveOptionsChanger
+        {
+    public:
+        /// @brief Constructor, which caches the canvas's size
+        ///     and then adjusts it to fit the specified size.
+        /// @param canvas The canvas to adjust.
+        /// @param newSize The dimensions (in DIPs) to save the image to.
+        FitToSaveOptionsChanger(Canvas* canvas, const wxSize newSize);
+        /// @brief Destructor, which resets the canvas back to its original size.
+        /// @private
+        ~FitToSaveOptionsChanger();
+    private:
+        Canvas* m_canvas{ nullptr };
+        int m_originalMinWidth{ 0 };
+        int m_originalMinHeight{ 0 };
+        wxSize m_originalSize;
+        bool m_sizeChanged{ false };
         };
     };
 
