@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        DanielsonBryan2Plot.cpp
+// Name:        danielsonbryan2plot.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2022 Blake Madden
 // Licence:     3-Clause BSD licence
@@ -9,8 +9,8 @@
 #include "danielsonbryan2plot.h"
 
 using namespace Wisteria;
-using namespace Wisteria::GraphItems;
 using namespace Wisteria::Graphs;
+using namespace Wisteria::GraphItems;
 
 namespace Wisteria::Graphs
     {
@@ -45,10 +45,11 @@ namespace Wisteria::Graphs
         {
         SetDataset(data);
         ResetGrouping();
+        m_scoresColumn = nullptr;
         m_jitter.ResetJitterData();
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         SetGroupColumn(groupColumnName);
@@ -58,12 +59,7 @@ namespace Wisteria::Graphs
             { BuildGroupIdMap(); }
 
         // get the score data
-        m_scoresColumn = GetData()->GetContinuousColumn(scoreColumnName);
-        if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': score column not found for DB Plot."), scoreColumnName).ToUTF8());
-            }
+        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
         frequency_set<double> jitterPoints;
         for (const auto& datum : m_scoresColumn->GetValues())
@@ -170,7 +166,7 @@ namespace Wisteria::Graphs
 
         Graph2D::RecalcSizes(dc);
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         // start plotting the points
@@ -183,8 +179,8 @@ namespace Wisteria::Graphs
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
-        points->Reserve(GetData()->GetRowCount());
-        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+        points->Reserve(GetDataset()->GetRowCount());
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)))
                 { continue; }
@@ -216,7 +212,7 @@ namespace Wisteria::Graphs
                 m_jitter.JitterPoint(pt);
                 // points on the middle ruler
                 points->AddPoint(Point2D(
-                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                     AnchorPoint(pt).
                     Brush(GetColorScheme()->GetColor(colorIndex)),
                     Settings::GetPointRadius(),

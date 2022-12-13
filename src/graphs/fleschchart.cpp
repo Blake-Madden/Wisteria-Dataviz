@@ -120,12 +120,13 @@ namespace Wisteria::Graphs
         {
         SetDataset(data);
         ResetGrouping();
+        m_wordsPerSentenceColumn = m_scoresColumn = m_syllablesPerWordColumn = nullptr;
         m_jitterWords.ResetJitterData();
         m_jitterScores.ResetJitterData();
         m_jitterSyllables.ResetJitterData();
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         SetGroupColumn(groupColumnName);
@@ -134,37 +135,12 @@ namespace Wisteria::Graphs
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        // get the words data
         m_wordsPerSentenceColumn =
-            GetData()->GetContinuousColumn(wordsPerSentenceColumnName);
-        if (m_wordsPerSentenceColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': word column not found for Flesch Chart."),
-                wordsPerSentenceColumnName).
-                ToUTF8());
-            }
-
-        // get the score data
+            GetContinuousColumnRequired(wordsPerSentenceColumnName);
         m_scoresColumn =
-            GetData()->GetContinuousColumn(scoreColumnName);
-        if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': score column not found for Flesch Chart."), scoreColumnName).
-                ToUTF8());
-            }
-
-        // get the syllables data
+            GetContinuousColumnRequired(scoreColumnName);
         m_syllablesPerWordColumn =
-            GetData()->GetContinuousColumn(syllablesPerWordColumnName);
-        if (m_syllablesPerWordColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': syllable column not found for Flesch Chart."),
-                syllablesPerWordColumnName).
-                ToUTF8());
-            }
+            GetContinuousColumnRequired(syllablesPerWordColumnName);
 
         // words
             {
@@ -237,7 +213,7 @@ namespace Wisteria::Graphs
         legend->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
         AddObject(legend);
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         // plot the points
@@ -253,8 +229,8 @@ namespace Wisteria::Graphs
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
-        points->Reserve(GetData()->GetRowCount() * 3); // point for each ruler
-        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+        points->Reserve(GetDataset()->GetRowCount() * 3); // point for each ruler
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_wordsPerSentenceColumn->GetValue(i)) ||
                 std::isnan(m_scoresColumn->GetValue(i)) ||
@@ -288,7 +264,7 @@ namespace Wisteria::Graphs
                     const wxPoint linePts[4] = { pt1, pt2, pt2, pt3 };
                     const auto linePen =
                         wxPen(wxColour(0, 0, 255,
-                            (GetData()->GetRowCount() > 10) ? 100 : wxALPHA_OPAQUE));
+                            (GetDataset()->GetRowCount() > 10) ? 100 : wxALPHA_OPAQUE));
                     AddObject(std::make_shared<GraphItems::Polygon>(
                         GraphItemInfo().Pen(linePen).Brush(*wxBLUE_BRUSH).
                         Scaling(GetScaling()),
@@ -308,19 +284,19 @@ namespace Wisteria::Graphs
 
                 // points on the rulers
                 points->AddPoint(Point2D(
-                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                     AnchorPoint(pt1).Scaling(GetScaling()).
                     Brush(GetColorScheme()->GetColor(colorIndex)),
                     Settings::GetPointRadius(),
                     GetShapeScheme()->GetShape(colorIndex)), dc);
                 points->AddPoint(Point2D(
-                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                     AnchorPoint(pt2).Scaling(GetScaling()).
                     Brush(GetColorScheme()->GetColor(colorIndex)),
                     Settings::GetPointRadius(),
                     GetShapeScheme()->GetShape(colorIndex)), dc);
                 points->AddPoint(Point2D(
-                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                     AnchorPoint(pt3).Scaling(GetScaling()).
                     Brush(GetColorScheme()->GetColor(colorIndex)),
                     Settings::GetPointRadius(),

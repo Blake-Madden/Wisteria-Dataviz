@@ -71,8 +71,8 @@ namespace Wisteria::Graphs
     private:
         void RecalcSizes(wxDC& dc) final;
 
-        Wisteria::Data::ContinuousColumnConstIterator m_scoresColumn;
-        Wisteria::Data::ContinuousColumnConstIterator m_syllablesPer100WordsColumn;
+        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
+        const Wisteria::Data::Column<double>* m_syllablesPer100WordsColumn{ nullptr };
         };
     }
 

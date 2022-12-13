@@ -83,7 +83,7 @@ namespace Wisteria::Graphs
         void RecalcSizes(wxDC& dc) final;
         void AdjustAxes();
 
-        Wisteria::Data::ContinuousColumnConstIterator m_scoresColumn;
+        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         Wisteria::Data::Jitter m_jitter{ Wisteria::AxisType::LeftYAxis };
         bool m_useEnglishLabels{ false }; // use translated labels from Schulz article
         };

@@ -46,10 +46,11 @@ void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
     {
     SetDataset(data);
     ResetGrouping();
+    m_scoresColumn = nullptr;
     m_jitter.ResetJitterData();
     GetSelectedIds().clear();
 
-    if (GetData() == nullptr)
+    if (GetDataset() == nullptr)
         { return; }
 
     SetGroupColumn(groupColumnName);
@@ -59,12 +60,7 @@ void LixGauge::SetData(std::shared_ptr<const Data::Dataset> data,
         { BuildGroupIdMap(); }
 
     // get the score data
-    m_scoresColumn = GetData()->GetContinuousColumn(scoreColumnName);
-    if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
-        {
-        throw std::runtime_error(wxString::Format(
-            _(L"'%s': score column not found for Lix gauge."), scoreColumnName).ToUTF8());
-        }
+    m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
 
     frequency_set<double> jitterPoints;
     for (const auto& datum : m_scoresColumn->GetValues())
@@ -82,7 +78,7 @@ void LixGauge::AdjustAxes()
     {
     const auto getMinMaxForRange = [this]()
         {
-        if (GetData() != nullptr)
+        if (GetDataset() != nullptr)
             {
             const auto [minVal, maxVal] = std::minmax_element
                 (m_scoresColumn->GetValues().cbegin(),
@@ -197,7 +193,7 @@ void LixGauge::RecalcSizes(wxDC& dc)
 
     Graph2D::RecalcSizes(dc);
 
-    if (GetData() == nullptr)
+    if (GetDataset() == nullptr)
         { return; }
 
     // draw outer lines
@@ -227,8 +223,8 @@ void LixGauge::RecalcSizes(wxDC& dc)
     auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
     points->SetScaling(GetScaling());
     points->SetDPIScaleFactor(GetDPIScaleFactor());
-    points->Reserve(GetData()->GetRowCount());
-    for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+    points->Reserve(GetDataset()->GetRowCount());
+    for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
         {
         if (std::isnan(m_scoresColumn->GetValue(i)))
             { continue; }
@@ -252,7 +248,7 @@ void LixGauge::RecalcSizes(wxDC& dc)
             m_jitter.JitterPoint(pt);
             // points on the middle ruler
             points->AddPoint(Point2D(
-                GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                 AnchorPoint(pt).
                 Brush(GetColorScheme()->GetColor(colorIndex)),
                 Settings::GetPointRadius(),

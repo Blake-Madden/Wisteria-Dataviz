@@ -86,9 +86,9 @@ namespace Wisteria::Graphs
     private:
         void RecalcSizes(wxDC& dc) final;
 
-        Wisteria::Data::ContinuousColumnConstIterator m_wordsPerSentenceColumn;
-        Wisteria::Data::ContinuousColumnConstIterator m_scoresColumn;
-        Wisteria::Data::ContinuousColumnConstIterator m_syllablesPerWordColumn;
+        const Wisteria::Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
+        const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
+        const Wisteria::Data::Column<double>* m_syllablesPerWordColumn{ nullptr };
         
         Wisteria::Data::Jitter m_jitterWords{ Wisteria::AxisType::LeftYAxis };
         Wisteria::Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };

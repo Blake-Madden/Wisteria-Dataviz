@@ -56,7 +56,7 @@ namespace Wisteria::Graphs
         ResetGrouping();
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         SetGroupColumn(groupColumnName);
@@ -65,25 +65,9 @@ namespace Wisteria::Graphs
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        // get the score data
-        m_scoresColumn = GetData()->GetContinuousColumn(scoreColumnName);
-        if (m_scoresColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': score column not found for Crawford plot."), scoreColumnName).
-                ToUTF8());
-            }
-
-        // get the syllable data
+        m_scoresColumn = GetContinuousColumnRequired(scoreColumnName);
         m_syllablesPer100WordsColumn =
-            GetData()->GetContinuousColumn(syllablesPer100WordsColumnName);
-        if (m_syllablesPer100WordsColumn == GetData()->GetContinuousColumns().cend())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': syllable column not found for Crawford plot."),
-                  syllablesPer100WordsColumnName).
-                ToUTF8());
-            }
+            GetContinuousColumnRequired(syllablesPer100WordsColumnName);
         }
 
     //----------------------------------------------------------------
@@ -91,7 +75,7 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         wxPoint pt;
@@ -438,8 +422,8 @@ namespace Wisteria::Graphs
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
-        points->Reserve(GetData()->GetRowCount());
-        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+        points->Reserve(GetDataset()->GetRowCount());
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             if (std::isnan(m_scoresColumn->GetValue(i)) ||
                 std::isnan(m_syllablesPer100WordsColumn->GetValue(i)))
@@ -460,7 +444,7 @@ namespace Wisteria::Graphs
             if (GetPhyscialCoordinates(currentScore, currentSyllableCount, pt))
                 {
                 points->AddPoint(Point2D(
-                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                     AnchorPoint(pt).
                     Brush(GetColorScheme()->GetColor(colorIndex)),
                     Settings::GetPointRadius(),
