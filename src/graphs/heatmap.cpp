@@ -43,12 +43,12 @@ namespace Wisteria::Graphs
         ResetGrouping();
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
         
         SetGroupColumn(groupColumnName);
-        m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
+        m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
+        if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for heatmap."), continuousColumnName).ToUTF8());
@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
         m_matrix.clear();
         m_range = { 0, 0 };
 
-        if (GetData()->GetContinuousColumns().size() == 0)
+        if (GetDataset()->GetContinuousColumns().size() == 0)
             {
             wxFAIL_MSG(L"Heatmap requires a continuous column to analyze!");
             SetDataset(nullptr);
@@ -125,7 +125,7 @@ namespace Wisteria::Graphs
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
-                    GetData()->GetIdColumn().GetValue(i);
+                    GetDataset()->GetIdColumn().GetValue(i);
                 m_matrix[currentRow][currentColumn].m_groupId = GetGroupColumn()->GetValue(i);
                 ++currentColumn;
                 }
@@ -167,7 +167,7 @@ namespace Wisteria::Graphs
                         wxNumberFormatter::ToString(m_continuousColumn->GetValue(i), 1,
                             Settings::GetDefaultNumberFormat()));
                 m_matrix[currentRow][currentColumn].m_selectionLabel =
-                    GetData()->GetIdColumn().GetValue(i);
+                    GetDataset()->GetIdColumn().GetValue(i);
                 // ignored, just default to zero
                 m_matrix[currentRow][currentColumn].m_groupId = 0;
                 ++currentColumn;
@@ -179,7 +179,7 @@ namespace Wisteria::Graphs
     void HeatMap::RecalcSizes(wxDC& dc)
         {
         // if no data then bail
-        if (GetData() == nullptr || GetData()->GetRowCount() == 0 ||
+        if (GetDataset() == nullptr || GetDataset()->GetRowCount() == 0 ||
             m_matrix.size() == 0)
             { return; }
 
@@ -231,7 +231,7 @@ namespace Wisteria::Graphs
                 GraphItemInfo(
                 wxString::Format(L"%s %zu-%zu", GetGroupHeaderPrefix(),
                                  // largest possible range
-                                 GetData()->GetRowCount(), GetData()->GetRowCount())).
+                                 GetDataset()->GetRowCount(), GetDataset()->GetRowCount())).
                 Scaling(GetScaling()).Pen(wxNullPen).
                 DPIScaling(GetDPIScaleFactor()).
                 Padding(0, 0, labelRightPadding, 0).
@@ -254,7 +254,7 @@ namespace Wisteria::Graphs
                     {
                     groupHeaderLabelTemplate.SetText(
                         wxString::Format(L"%s\n%zu-%zu", GetGroupHeaderPrefix(),
-                                         GetData()->GetRowCount(), GetData()->GetRowCount()));
+                                         GetDataset()->GetRowCount(), GetDataset()->GetRowCount()));
                     groupHeaderLabelHeight = groupHeaderLabelTemplate.GetBoundingBox(dc).GetHeight();
                     groupHeaderLabelMultiline = true;
                     // readjust font size now that it is multiline and can be larger now
@@ -412,7 +412,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> HeatMap::CreateLegend(const LegendOptions& options)
         {
-        if (GetData() == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (GetDataset() == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return nullptr; }
 
         const auto minValue = *std::min_element(

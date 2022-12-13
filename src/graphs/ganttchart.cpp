@@ -51,28 +51,28 @@ namespace Wisteria::Graphs
         GetSelectedIds().clear();
         m_legendTitle.clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         m_dateDisplayInterval = interval;
         m_fyType = FYType;
 
-        auto taskColumn = GetData()->GetCategoricalColumn(taskColumnName);
-        if (taskColumn == GetData()->GetCategoricalColumns().cend())
+        auto taskColumn = GetDataset()->GetCategoricalColumn(taskColumnName);
+        if (taskColumn == GetDataset()->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': task name column not found for gantt chart."),
                 taskColumnName).ToUTF8());
             }
-        auto startColumn = GetData()->GetDateColumn(startDateColumnName);
-        if (startColumn == GetData()->GetDateColumns().cend())
+        auto startColumn = GetDataset()->GetDateColumn(startDateColumnName);
+        if (startColumn == GetDataset()->GetDateColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': start date column not found for gantt chart."),
                 startDateColumnName).ToUTF8());
             }
-        auto endColumn = GetData()->GetDateColumn(endDateColumnName);
-        if (endColumn == GetData()->GetDateColumns().cend())
+        auto endColumn = GetDataset()->GetDateColumn(endDateColumnName);
+        if (endColumn == GetDataset()->GetDateColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': end date column not found for gantt chart."),
@@ -80,19 +80,19 @@ namespace Wisteria::Graphs
             }
         // these columns are optional
         auto resourceColumn =
-            GetData()->GetCategoricalColumn(resourceColumnName.value_or(wxString()));
+            GetDataset()->GetCategoricalColumn(resourceColumnName.value_or(wxString()));
         auto completionColumn =
-            GetData()->GetContinuousColumn(completionColumnName.value_or(wxString()));
+            GetDataset()->GetContinuousColumn(completionColumnName.value_or(wxString()));
         // set the grouping column (or keep it as null if not in use)
         SetGroupColumn(groupColumnName);
         auto descriptionColumn =
-            GetData()->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
+            GetDataset()->GetCategoricalColumn(descriptionColumnName.value_or(wxString()));
 
         // if grouping, build the list of group IDs, sorted by their respective labels
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             const size_t colorIndex = IsUsingGrouping() ?
                 GetSchemeIndexFromGroupId(GetGroupColumn()->GetValue(i)) :
@@ -101,18 +101,18 @@ namespace Wisteria::Graphs
             AddTask(
                 GanttChart::TaskInfo(taskColumn->GetLabelFromID(taskColumn->GetValue(i))).
                 Resource(
-                    (resourceColumn != GetData()->GetCategoricalColumns().cend()) ?
+                    (resourceColumn != GetDataset()->GetCategoricalColumns().cend()) ?
                      resourceColumn->GetLabelFromID(resourceColumn->GetValue(i)) :
                      wxString()).
                 Description(
-                    (descriptionColumn != GetData()->GetCategoricalColumns().cend()) ?
+                    (descriptionColumn != GetDataset()->GetCategoricalColumns().cend()) ?
                      descriptionColumn->GetLabelFromID(descriptionColumn->GetValue(i)) :
                      wxString()).
                 StartDate(startColumn->GetValue(i)).
                 EndDate(endColumn->GetValue(i)).
                 Color(GetColorScheme()->GetColor(colorIndex)).
                 PercentFinished(
-                    (completionColumn != GetData()->GetContinuousColumns().cend() ?
+                    (completionColumn != GetDataset()->GetContinuousColumns().cend() ?
                      zero_if_nan(completionColumn->GetValue(i)) : 0)).
                 LabelDisplay(GetLabelDisplay()));
             }

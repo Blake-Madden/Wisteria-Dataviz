@@ -192,7 +192,7 @@ namespace Wisteria::Graphs
                          const size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
-            [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
+            [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetDataset() const noexcept
                 { return m_data; }
             /// @}
 

@@ -24,13 +24,13 @@ namespace Wisteria::Graphs
         ResetGrouping();
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         SetGroupColumn(groupColumnName);
         m_yColumnName = yColumnName;
-        m_yColumn = GetData()->GetContinuousColumn(yColumnName);
-        if (m_yColumn == GetData()->GetContinuousColumns().cend())
+        m_yColumn = GetDataset()->GetContinuousColumn(yColumnName);
+        if (m_yColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': Y column not found for line plot."), yColumnName).ToUTF8());
@@ -39,20 +39,20 @@ namespace Wisteria::Graphs
         // (do not reference these iterators after setting them here)
 
         // reset iterators
-        m_xColumnContinuous = GetData()->GetContinuousColumns().cend();
-        m_xColumnCategorical = GetData()->GetCategoricalColumns().cend();
-        m_xColumnDate = GetData()->GetDateColumns().cend();
+        m_xColumnContinuous = GetDataset()->GetContinuousColumns().cend();
+        m_xColumnCategorical = GetDataset()->GetCategoricalColumns().cend();
+        m_xColumnDate = GetDataset()->GetDateColumns().cend();
         // look for it as a continuous variable first
-        m_xColumnContinuous = GetData()->GetContinuousColumn(xColumnName);
-        if (m_xColumnContinuous == GetData()->GetContinuousColumns().cend())
+        m_xColumnContinuous = GetDataset()->GetContinuousColumn(xColumnName);
+        if (m_xColumnContinuous == GetDataset()->GetContinuousColumns().cend())
             {
             // if not found, look for it as a categorical
-            m_xColumnCategorical = GetData()->GetCategoricalColumn(xColumnName);
-            if (m_xColumnCategorical == GetData()->GetCategoricalColumns().cend())
+            m_xColumnCategorical = GetDataset()->GetCategoricalColumn(xColumnName);
+            if (m_xColumnCategorical == GetDataset()->GetCategoricalColumns().cend())
                 {
                 // try date columns
-                m_xColumnDate = GetData()->GetDateColumn(xColumnName);
-                if (m_xColumnDate == GetData()->GetDateColumns().cend())
+                m_xColumnDate = GetDataset()->GetDateColumn(xColumnName);
+                if (m_xColumnDate == GetDataset()->GetDateColumns().cend())
                     {
                     throw std::runtime_error(wxString::Format(
                         _(L"'%s': X column not found for line plot."), xColumnName).ToUTF8());
@@ -150,8 +150,8 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void LinePlot::AddLine(const LinePlot::Line& line)
         {
-        if (GetData() == nullptr ||
-            (GetData()->GetContinuousColumnValidN(m_yColumnName,
+        if (GetDataset() == nullptr ||
+            (GetDataset()->GetContinuousColumnValidN(m_yColumnName,
                                                   line.m_groupColumnName,
                                                   line.m_groupId) == 0))
             { return; }
@@ -162,7 +162,7 @@ namespace Wisteria::Graphs
             m_yColumn->GetValues().cbegin(),
             m_yColumn->GetValues().cend());
         const auto [minYValue, maxYValue] = IsUsingGrouping() ?
-            GetData()->GetContinuousMinMax(m_yColumnName,
+            GetDataset()->GetContinuousMinMax(m_yColumnName,
                                            line.m_groupColumnName,
                                            line.m_groupId) :
             std::make_pair(*fullYDataMin, *fullYDataMax);
@@ -228,9 +228,9 @@ namespace Wisteria::Graphs
             points->SetScaling(GetScaling());
             points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(line.GetStyle());
-            points->Reserve(GetData()->GetRowCount());
+            points->Reserve(GetDataset()->GetRowCount());
             wxPoint pt;
-            for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 // skip value if from a different group
                 if (IsUsingGrouping() && GetGroupColumn()->GetValue(i) != line.m_groupId)
@@ -253,7 +253,7 @@ namespace Wisteria::Graphs
                               m_yColumn->GetValue(i)) :
                     line.GetPen().GetColour());
                 points->AddPoint(Point2D(
-                                    GraphItemInfo(GetData()->GetIdColumn().GetValue(i)).
+                                    GraphItemInfo(GetDataset()->GetIdColumn().GetValue(i)).
                                     AnchorPoint(pt).
                                     Brush((ptColor.IsOk() ? ptColor : line.GetPen().GetColour())),
                                     Settings::GetPointRadius(),

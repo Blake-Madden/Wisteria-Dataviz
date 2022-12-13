@@ -353,6 +353,12 @@ namespace Wisteria::Graphs
         void SetColorScheme(std::shared_ptr<Colors::Schemes::ColorScheme> colors)
             { m_colorScheme = colors; }
 
+        /// @returns The dataset that the graph is using.
+        /// @note This is usually set in derived classes through a call to `SetData()`.
+        [[nodiscard]]
+        const std::shared_ptr<const Data::Dataset>& GetDataset() const noexcept
+            { return m_data; }
+
         /// @private
         void SetStippleBrush(wxBitmapBundle&& image) noexcept
             { m_stipple = std::move(image); }
@@ -402,6 +408,23 @@ namespace Wisteria::Graphs
             const std::vector<wxPoint>& interestPts = std::vector<wxPoint>())
             { AddAnnotation(object, pt, interestPts); }
     protected:
+        /** @private
+            @param Finds and returns a pointer to a continuous column
+                from the loaded dataset. If not found, throws.*/
+        [[nodiscard]]
+        const Wisteria::Data::Column<double>* GetContinuousColumnRequired(const wxString& colName)
+            {
+            auto continuousCol =
+                GetDataset()->GetContinuousColumn(colName);
+            if (continuousCol == GetDataset()->GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': continuous column not found."),
+                    colName).
+                    ToUTF8());
+                }
+            return &(*continuousCol);
+            }
         /// @returns The image drawn across all bars/boxes.\n
         ///     This will be the first image in the image scheme.
         [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
@@ -516,10 +539,6 @@ namespace Wisteria::Graphs
 
         /// @private
         void UpdateSelectedItems() final;
-
-        /// @private
-        [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
-            { return m_data; }
 
         /// @private
         void SetDataset(const std::shared_ptr<const Data::Dataset> data) noexcept

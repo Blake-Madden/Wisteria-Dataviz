@@ -30,15 +30,15 @@ namespace Wisteria::Graphs
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         SetBinLabelDisplay(blDisplay);
 
-        m_idColumn = &GetData()->GetIdColumn();
+        m_idColumn = &GetDataset()->GetIdColumn();
 
-        m_categoricalColumn = GetData()->GetCategoricalColumn(categoricalColumnName);
-        if (m_categoricalColumn == GetData()->GetCategoricalColumns().cend())
+        m_categoricalColumn = GetDataset()->GetCategoricalColumn(categoricalColumnName);
+        if (m_categoricalColumn == GetDataset()->GetCategoricalColumns().cend())
             {
             // see if they are using the ID column for the bars
             if (m_idColumn->GetName().CmpNoCase(categoricalColumnName) == 0)
@@ -54,9 +54,9 @@ namespace Wisteria::Graphs
         // set the grouping column (or keep it as null if not in use)
         SetGroupColumn(groupColumnName);
 
-        m_continuousColumn = (valueColumnName ? GetData()->GetContinuousColumn(valueColumnName.value()) :
-            GetData()->GetContinuousColumns().cend());
-        if (valueColumnName && m_continuousColumn == GetData()->GetContinuousColumns().cend())
+        m_continuousColumn = (valueColumnName ? GetDataset()->GetContinuousColumn(valueColumnName.value()) :
+            GetDataset()->GetContinuousColumns().cend());
+        if (valueColumnName && m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for categorical bar chart."),
@@ -71,7 +71,7 @@ namespace Wisteria::Graphs
         ClearBars();
 
         // if no data then just draw a blank 10x10 grid
-        if (GetData()->GetRowCount() == 0)
+        if (GetDataset()->GetRowCount() == 0)
             {
             GetScalingAxis().SetRange(0, 10, 0, 1, 1);
             GetBarAxis().SetRange(0, 10, 0, 1, 1);
@@ -92,7 +92,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void CategoricalBarChart::Calculate()
         {
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         // calculate how many observations are in each group
@@ -100,14 +100,14 @@ namespace Wisteria::Graphs
         std::map<wxString, size_t, Data::StringCmpNoCase> m_IDsMap;
         if (m_useIDColumnForBars)
             {
-            for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 m_IDsMap.insert(std::make_pair(m_idColumn->GetValue(i), m_IDsMap.size()));
                 }
             }
 
         double grandTotal{ 0 };
-        for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+        for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
             if (m_useValueColumn &&

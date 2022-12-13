@@ -17,11 +17,16 @@ using namespace Wisteria::Icons;
 void GroupGraph2D::SetGroupColumn(
     const std::optional<const wxString> groupColumnName /*= std::nullopt*/)
     {
-    wxASSERT_MSG(GetData(), L"You must call SetDataset before calling SetGroupColumn()!");
+    wxASSERT_MSG(GetDataset(), L"You must call SetDataset() before calling SetGroupColumn()!");
+    if (GetDataset() == nullptr)
+        {
+        throw std::runtime_error(wxString(
+            _(L"Dataset not set before calling SetGroupColumn().")).ToUTF8());
+        }
     const auto groupColIter = groupColumnName ?
-        GetData()->GetCategoricalColumn(groupColumnName.value()) :
-        GetData()->GetCategoricalColumns().cend();
-    if (groupColumnName && groupColIter == GetData()->GetCategoricalColumns().cend())
+        GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
+        GetDataset()->GetCategoricalColumns().cend();
+    if (groupColumnName && groupColIter == GetDataset()->GetCategoricalColumns().cend())
         {
         throw std::runtime_error(wxString::Format(
             _(L"'%s': group column not found for graph."),

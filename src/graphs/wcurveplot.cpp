@@ -77,7 +77,7 @@ namespace Wisteria::Graphs
     void WCurvePlot::ResetTimeLabels()
         {
         GetTopXAxis().ClearCustomLabels();
-        if (GetData()->GetRowCount() == 0)
+        if (GetDataset()->GetRowCount() == 0)
             { return; }
 
         auto [topRangeStart, topRangeEnd] = GetTopXAxis().GetRange();

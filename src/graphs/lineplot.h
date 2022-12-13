@@ -372,7 +372,7 @@ namespace Wisteria::Graphs
         /// @returns @c true if the given row in the X column is valid.
         [[nodiscard]] bool IsXValid(const size_t index) const
             {
-            if (index >= GetData()->GetRowCount())
+            if (index >= GetDataset()->GetRowCount())
                 { return std::numeric_limits<double>::quiet_NaN(); }
             // continuous X
             if (IsXContinuous())
@@ -394,7 +394,7 @@ namespace Wisteria::Graphs
         ///     Note that this value may be NaN if invalid.
         [[nodiscard]] double GetXValue(const size_t index) const
             {
-            if (index >= GetData()->GetRowCount())
+            if (index >= GetDataset()->GetRowCount())
                 { return std::numeric_limits<double>::quiet_NaN(); }
             // continuous X
             if (IsXContinuous())
@@ -429,7 +429,7 @@ namespace Wisteria::Graphs
         [[nodiscard]] std::pair<double, double> GetXMinMax() const
             {
             wxASSERT_MSG(!IsXDates(), L"GetXMinMaxDates() should be called instead!");
-            if (GetData()->GetRowCount() == 0)
+            if (GetDataset()->GetRowCount() == 0)
                 {
                 return std::make_pair(std::numeric_limits<double>::quiet_NaN(),
                                       std::numeric_limits<double>::quiet_NaN());
@@ -461,13 +461,13 @@ namespace Wisteria::Graphs
     private:
         /// @returns Whether X was loaded from a continuous column.
         [[nodiscard]] bool IsXContinuous() const noexcept
-            { return (m_xColumnContinuous != GetData()->GetContinuousColumns().cend()); }
+            { return (m_xColumnContinuous != GetDataset()->GetContinuousColumns().cend()); }
         /// @returns Whether X was loaded from a categorical column.
         [[nodiscard]] bool IsXCategorical() const noexcept
-            { return (m_xColumnCategorical != GetData()->GetCategoricalColumns().cend()); }
+            { return (m_xColumnCategorical != GetDataset()->GetCategoricalColumns().cend()); }
         /// @returns Whether X was loaded from a date column.
         [[nodiscard]] bool IsXDates() const noexcept
-            { return (m_xColumnDate != GetData()->GetDateColumns().cend()); }
+            { return (m_xColumnDate != GetDataset()->GetDateColumns().cend()); }
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
@@ -482,7 +482,7 @@ namespace Wisteria::Graphs
                                                  const Data::GroupIdType group) const noexcept;
         void UpdateCanvasForPoints()
             {
-            const auto avgPointsPerRow = safe_divide<size_t>(GetData()->GetRowCount(),
+            const auto avgPointsPerRow = safe_divide<size_t>(GetDataset()->GetRowCount(),
                                                              GetLineCount());
             if (avgPointsPerRow > GetPointsPerDefaultCanvasSize())
                 {

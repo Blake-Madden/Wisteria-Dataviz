@@ -57,7 +57,7 @@ namespace Wisteria::Graphs
         frequency_set<double> jitterPoints;
         if (m_useGrouping)
             {
-            for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 if (std::isnan(m_continuousColumn->GetValue(i)))
                     { continue; }
@@ -82,13 +82,13 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::BoxAndWhisker::Calculate()
         {
-        if (GetData() == nullptr || m_continuousColumn->GetRowCount() == 0)
+        if (GetDataset() == nullptr || m_continuousColumn->GetRowCount() == 0)
             { return; }
         std::vector<double> dest;
         if (m_useGrouping)
             {
-            dest.reserve(GetData()->GetRowCount());
-            for (size_t i = 0; i < GetData()->GetRowCount(); ++i)
+            dest.reserve(GetDataset()->GetRowCount());
+            for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
                 {
                 if (m_groupColumn->GetValue(i) == m_groupId &&
                     !std::isnan(m_continuousColumn->GetValue(i)))
@@ -97,7 +97,7 @@ namespace Wisteria::Graphs
             }
         else
             {
-            dest.reserve(GetData()->GetRowCount());
+            dest.reserve(GetDataset()->GetRowCount());
             std::copy_if(m_continuousColumn->GetValues().cbegin(),
                          m_continuousColumn->GetValues().cend(),
                          std::back_inserter(dest),
@@ -178,7 +178,7 @@ namespace Wisteria::Graphs
         GetBottomXAxis().Reset();
         GetTopXAxis().Reset();
 
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         // sets titles from variables
@@ -188,16 +188,16 @@ namespace Wisteria::Graphs
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
 
         m_groupColumn = (groupColumnName ?
-            GetData()->GetCategoricalColumn(groupColumnName.value()) :
-            GetData()->GetCategoricalColumns().cend());
-        if (groupColumnName && m_groupColumn == GetData()->GetCategoricalColumns().cend())
+            GetDataset()->GetCategoricalColumn(groupColumnName.value()) :
+            GetDataset()->GetCategoricalColumns().cend());
+        if (groupColumnName && m_groupColumn == GetDataset()->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': group column not found for box plot."),
                 groupColumnName.value()).ToUTF8());
             }
-        m_continuousColumn = GetData()->GetContinuousColumn(continuousColumnName);
-        if (m_continuousColumn == GetData()->GetContinuousColumns().cend())
+        m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
+        if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
                 _(L"'%s': continuous column not found for box plot."),
@@ -205,7 +205,7 @@ namespace Wisteria::Graphs
             }
 
         std::vector<BoxAndWhisker> boxes;
-        if (m_groupColumn != GetData()->GetCategoricalColumns().cend())
+        if (m_groupColumn != GetDataset()->GetCategoricalColumns().cend())
             {
             std::set<Data::GroupIdType> groups;
             for (const auto& groupId : m_groupColumn->GetValues())
@@ -234,7 +234,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::AddBox(const BoxAndWhisker& box)
         {
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         m_boxes.push_back(box);
@@ -264,7 +264,7 @@ namespace Wisteria::Graphs
             currentBox.m_continuousColumn->GetValues().cbegin(),
             currentBox.m_continuousColumn->GetValues().cend());
         const auto [minValue, maxValue] = currentBox.m_useGrouping ?
-            currentBox.GetData()->GetContinuousMinMax(
+            currentBox.GetDataset()->GetContinuousMinMax(
                 currentBox.m_continuousColumnName, currentBox.m_groupColumnName,
                 currentBox.m_groupId) :
             std::make_pair(*fullDataMin, *fullDataMax);
@@ -285,7 +285,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void BoxPlot::RecalcSizes(wxDC& dc)
         {
-        if (GetData() == nullptr)
+        if (GetDataset() == nullptr)
             { return; }
 
         Graph2D::RecalcSizes(dc);
@@ -323,7 +323,7 @@ namespace Wisteria::Graphs
         // main box renderer
         const auto drawBox = [&](auto& box, const bool measureOnly, const size_t boxIndex)
             {
-            if (box.GetData()->GetRowCount() == 0)
+            if (box.GetDataset()->GetRowCount() == 0)
                 { return; }
 
             GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
@@ -348,7 +348,7 @@ namespace Wisteria::Graphs
 
             // only draw a whisker if there is more than one datum
             // (which would certainly be the case, usually)
-            if (box.GetData()->GetRowCount() > 1)
+            if (box.GetDataset()->GetRowCount() > 1)
                 {
                 const wxString whiskerLabel = wxString::Format(_(L"Non-outlier range: %s-%s"),
                         wxNumberFormatter::ToString(box.GetLowerWhisker(),
@@ -384,7 +384,7 @@ namespace Wisteria::Graphs
                     linePoints, std::size(linePoints)));
                 }
 
-            if (box.GetData()->GetRowCount() > 1)
+            if (box.GetDataset()->GetRowCount() > 1)
                 {
                 const wxString boxLabel =
                     wxString::Format(_(L"75th Percentile: %s\n"
@@ -566,7 +566,7 @@ namespace Wisteria::Graphs
             auto dataPoints = std::make_shared<GraphItems::Points2D>(wxNullPen);
             dataPoints->SetScaling(GetScaling());
             dataPoints->SetDPIScaleFactor(GetDPIScaleFactor());
-            for (size_t i = 0; i < box.GetData()->GetRowCount(); ++i)
+            for (size_t i = 0; i < box.GetDataset()->GetRowCount(); ++i)
                 {
                 if (std::isnan(box.m_continuousColumn->GetValue(i)))
                     { continue; }
@@ -590,7 +590,7 @@ namespace Wisteria::Graphs
                         box.m_continuousColumn->GetValue(i) < box.GetLowerWhisker())
                         {
                         outliers->AddPoint(Point2D(
-                            GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).
+                            GraphItemInfo(box.GetDataset()->GetIdColumn().GetValue(i)).
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
@@ -599,7 +599,7 @@ namespace Wisteria::Graphs
                     else
                         {
                         dataPoints->AddPoint(Point2D(
-                            GraphItemInfo(box.GetData()->GetIdColumn().GetValue(i)).
+                            GraphItemInfo(box.GetDataset()->GetIdColumn().GetValue(i)).
                             AnchorPoint(pt).
                             Brush(GetPointColor()).Pen(pointOutline),
                             Settings::GetPointRadius(),
@@ -672,7 +672,7 @@ namespace Wisteria::Graphs
                 middleLabel->SetShadowType(GetShadowType());
                 AddObject(middleLabel);
 
-                if (box.GetData()->GetRowCount() > 1)
+                if (box.GetDataset()->GetRowCount() > 1)
                     {
                     // lower control limit
                         {
@@ -752,7 +752,7 @@ namespace Wisteria::Graphs
     std::shared_ptr<GraphItems::Label> BoxPlot::CreateLegend(
             const LegendOptions& options)
         {
-        if (GetData() == nullptr || GetBoxCount() != 1)
+        if (GetDataset() == nullptr || GetBoxCount() != 1)
             { return nullptr; }
 
         auto legend = std::make_shared<GraphItems::Label>(
