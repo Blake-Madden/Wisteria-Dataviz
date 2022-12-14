@@ -346,6 +346,7 @@ namespace Wisteria
             exportFile.CreateWithDIPSize(
                 wxSize(width, height),
                 GetDPIScaleFactor());
+            Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
             wxMemoryDC memDc(exportFile);
             memDc.Clear();
     #ifdef __WXMSW__
@@ -369,8 +370,7 @@ namespace Wisteria
             OnDraw(gcdc);
     #endif
             // unlock the image from the DC
-            memDc.SelectObject(wxNullBitmap);
-            Image::SetOpacity(exportFile, wxALPHA_OPAQUE);
+            memDc.SelectObject(wxNullBitmap); 
 
             // save image with contents of the DC to a file
             wxImage img(exportFile.ConvertToImage());
