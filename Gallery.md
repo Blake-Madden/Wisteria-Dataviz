@@ -21,6 +21,10 @@ Basic
 | :-------------------------------- |
 | ![](docs/doxygen/images/CatagorizedBarChartStipple.svg) |
 
+| Categorized Bar Chart with Watercolor Effect (Wisteria::Graphs::CategoricalBarChart) |
+| :-------------------------------- |
+| ![](docs/doxygen/images/WatercolorBarchart.png) |
+
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/doxygen/images/LinePlot.svg) | ![](docs/doxygen/images/LinePlotCustomized.svg) |

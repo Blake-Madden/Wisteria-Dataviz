@@ -1165,11 +1165,24 @@ namespace Wisteria::GraphItems
                 std::max<size_t>(safe_divide<size_t>(rect.GetHeight(),
                     ScaleToScreenAndCanvas(100)), 1);
 
-            const auto wiggleTopBottom = std::min(safe_divide<double>(ScaleToScreenAndCanvas(10),
-                                                                      rect.GetHeight()), math_constants::twentieth);
+            // get the min percect of the height needed, which is the lesser of 3 DIPs or 33%
+            const auto heightMinDIPsPercent = std::min(
+                safe_divide<double>(ScaleToScreenAndCanvas(3), rect.GetHeight()),
+                                    math_constants::third);
+            // ...and use the larger between that or 10 DIPs (or 20%) are the height
+            const auto wiggleTopBottom = std::max(std::min(
+                safe_divide<double>(ScaleToScreenAndCanvas(10), rect.GetHeight()),
+                math_constants::twentieth),
+                heightMinDIPsPercent);
             std::uniform_real_distribution<> wiggleDistroTopBottom(-wiggleTopBottom, wiggleTopBottom);
-            const auto wiggleLeftRight = std::min(safe_divide<double>(ScaleToScreenAndCanvas(10),
-                                                                      rect.GetWidth()), math_constants::twentieth);
+
+            const auto widthMinDIPsPercent = std::min(
+                safe_divide<double>(ScaleToScreenAndCanvas(3), rect.GetWidth()),
+                math_constants::third);
+            const auto wiggleLeftRight = std::max(std::min(
+                safe_divide<double>(ScaleToScreenAndCanvas(10), rect.GetWidth()),
+                math_constants::twentieth),
+                widthMinDIPsPercent);
             std::uniform_real_distribution<> wiggleDistroLeftRight(-wiggleLeftRight, wiggleLeftRight);
 
             // "watercolor" fill of rectangle
