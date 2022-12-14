@@ -13,6 +13,7 @@
 #define __WISTERIA_GRAPHIMAGE_H__
 
 #include <cstring>
+#include <omp.h>
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/mstream.h>
@@ -336,22 +337,32 @@ namespace Wisteria::GraphItems
                                    const wxColour destColor);
         /** @brief Applies an oil painting effect to an image.
             @param image The original image.
-            @param radius "For each pixel, a number of pixels around that pixel are taken into account.\n
+            @param radius 'For each pixel, a number of pixels around that pixel are taken into account.\n
                 The radius simply defines how many pixels in each direction to look for. A radius of 5,
-                for example, should be good for rough oil painting pictures."
-            @param intensity "For this algorithm, each pixel will be put into an intensity 'bin'.
+                for example, should be good for rough oil painting pictures.'
+            @param intensity 'For this algorithm, each pixel will be put into an intensity bin.
                 The true intensity of a pixel is defined as (r+b+g)/3, and can range anywhere from 0 to 256.
                 However, oil paintings have a much more blocky effect, so each pixel will have its
-                intensity binned. For a fairly blocky oil painting, 20 is a good reference number."\n
+                intensity binned. For a fairly blocky oil painting, 20 is a good reference number.\n
                 Note that the default here is 40 to produce a more pronounced effect.
             @returns The oil-painted image.
             @note Adapted from https://www.codeproject.com/articles/471994/oilpainteffect,
                 by author Santhosh G_. Santhosh G_'s code was based on
                 http://supercomputingblog.com/graphics/oil-painting-algorithm/, which is also the
-                source for the explanations for @c radius and @c intensity.*/
+                source for the explanations for @c radius and @c intensity.\n
+                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage OilPainting(const wxImage& image, const uint8_t radius = 10,
                                    const float intensity = 40);
+        /** @brief Applies a sepia (i.e., faded photograph) effect to an image.
+            @param image The original image.
+            @param magnitude The strength of the effect.
+            @returns The sepia-toned image.
+            @note Adapted from https://www.codeproject.com/articles/996192/some-cool-image-effects,
+                by Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata.\n
+                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
+        [[nodiscard]]
+        static wxImage Sepia(const wxImage& image, const uint8_t magnitude = 75);
         /// @}
 
         /** @name Size Functions

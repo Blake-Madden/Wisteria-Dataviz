@@ -29,14 +29,21 @@ canvas->SetBackgroundImage(
     );
 ```
 
-As another example, an image file can be loaded, have an effect applied to it, and then
-set as a canvas' watermark:
+More examples, where an image can be loaded, have an effect applied to it, and then
+be set as a canvas' watermark or background:
 
 ```cpp
 // set the watermark from a silhouette of an image
 canvas->SetWatermarkLogo(
         Image::CreateSilhouette(
             Image::LoadFile(L"C:\\Pictures\\IMG_0517.JPG")) );
+```
+
+```cpp
+// set the background as an "oil painting" version of an image
+canvas->SetBackgroundImage(
+        Image::OilPainting(
+            Image::LoadFile(L"C:\\Pictures\\Waterfall.jpg")) );
 ```
 
 Adjusting Image Sizes

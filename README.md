@@ -19,11 +19,14 @@ such as:
 - Data [importing](ImportingData.md) (Excel, CSV, tab-delimited, or user-defined delimited files) support
 - Data exporting (CSV, tab-delimited, or user-defined delimited files) support
 - A dataset interface, which allows for easily connecting data to most graphs
-  - Includes support for continuous, categorical, date, and ID columns
+  - Includes support for continuous, categorical, date/time, and ID columns
   - Graphs are designed to handle missing data
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
-- Image effects, such as applying an oil-painting look or stitching images together
+- Image effects, such as:
+  - Applying an oil-painting look
+  - Applying a Sepia tone
+  - Stitching images together (either vertically or horizontally)
 - Effects for boxes and bars, including transparency, a watercolor look, a glassy look, stipple brushes, and color fades
 - HiDPI display support (Windows)
 - Customizable point markers and line styles

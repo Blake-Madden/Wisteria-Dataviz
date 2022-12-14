@@ -210,10 +210,10 @@ namespace Wisteria::GraphItems
 
         // Note that radius pixels are avoided from left, right, top, and bottom edges.
         // Go to the next row of pixels...
+        #pragma omp parallel for
         for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
             {
             // ...and go across, pixel-by-pixel
-            #pragma omp parallel for
             for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
                 {
                 // Reset calculations of last pixel.
@@ -264,6 +264,63 @@ namespace Wisteria::GraphItems
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nSumG[nMaxIndex] / nCurMax;
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow + 2] = nSumB[nMaxIndex] / nCurMax;
                 }
+            }
+
+        return outImg;
+        }
+
+    //-------------------------------------------
+    wxImage Image::Sepia(const wxImage& image, const uint8_t magnitude /*= 50*/)
+        {
+        if (!image.IsOk())
+            { return wxNullImage; }
+
+        wxImage outImg{ image.Copy()};
+        auto const imgInData = image.GetData();
+        auto const imgOutData = outImg.GetData();
+
+        const auto byteCount = image.GetWidth() * image.GetHeight() * 3;
+        const double threshold = magnitude * 255.0 / 100.0;
+        const double thres6By7 = 7.0 * threshold / 6.0;
+        const double thres6 = threshold / 6.0;
+        const double thres7 = threshold / 7.0;
+
+        // Target image
+        for (auto index = 0; index < byteCount; index += 3)
+            {
+            const auto r = imgInData[index];
+            const auto g = imgInData[index + 1];
+            const auto b = imgInData[index + 2];
+            // Grayscale
+            const auto intensity = 0.3 * r + 0.6 * g + 0.1 * b;
+
+            // Red
+            auto tone = (intensity > threshold) ?
+                255.0 :
+                intensity + 255.0 - threshold;
+            const auto dRed = tone;
+
+            // Green
+            tone = (intensity > thres6By7) ?
+                255.0 :
+                intensity + 255.0 - thres6By7;
+            auto dGreen = tone;
+
+            // Blue
+            tone = (intensity < thres6) ?
+                0 :
+                intensity - thres6;
+            auto dBlue = tone;
+
+            tone = thres7;
+            if (dGreen < tone)
+                dGreen = tone;
+            if (dBlue < tone)
+                dBlue = tone;
+
+            imgOutData[index] = dRed;
+            imgOutData[index + 1] = dGreen;
+            imgOutData[index + 2] = dBlue;
             }
 
         return outImg;
