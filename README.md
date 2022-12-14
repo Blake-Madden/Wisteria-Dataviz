@@ -23,7 +23,8 @@ such as:
   - Graphs are designed to handle missing data
 - Uses high-quality `wxGraphicsContext` for rendering (also uses Direct2D on Windows, if available)
 - [Image](Images.md) support, including the ability to use images for plot and bar backgrounds, logos, and point markers
-- Effects for boxes and bars, including transparency, a glassy look, stipple brushes, and color fades
+- Image effects, such as applying an oil-painting look or stitching images together
+- Effects for boxes and bars, including transparency, a watercolor look, a glassy look, stipple brushes, and color fades
 - HiDPI display support (Windows)
 - Customizable point markers and line styles
   - Pre-defined and extensible shape schemes
