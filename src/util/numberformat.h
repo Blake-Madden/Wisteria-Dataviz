@@ -71,11 +71,13 @@ namespace Wisteria
         /// @brief Formats a string into a different format.
         /// @param value The string to reformat.
         /// @param format The format specification.
+        /// @returns The value, formatted as a string.
         virtual wxString GetFormattedValue(const wxString& value,
                                            const NumberFormatInfo& format) const = 0;
         /// @brief Formats a number into a string.
         /// @param value The number to format.
         /// @param format The format specification.
+        /// @returns The value, formatted as a string.
         virtual wxString GetFormattedValue(const double value,
                                            const NumberFormatInfo& format) const = 0;
         };
