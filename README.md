@@ -26,6 +26,7 @@ such as:
 - Image effects, such as:
   - Applying an oil-painting look
   - Applying a Sepia tone
+  - Creating a silhouette from an image
   - Stitching images together (either vertically or horizontally)
 - Effects for boxes and bars, including transparency, a watercolor look, a glassy look, stipple brushes, and color fades
 - HiDPI display support (Windows)
