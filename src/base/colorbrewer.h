@@ -1021,12 +1021,6 @@ namespace Wisteria::Colors
                 {}
             };
         }
-
-    /// @private
-    /// @returns A label used for a grouping label when grouping should not actually be used.
-    ///  Basically, a way to bin data without it actually creating a legend on the graph.
-    [[nodiscard]] inline wxString NoGroupLabel()
-        { return L"__NO_GROUPING__"; }
     }
 /** @}*/
 
