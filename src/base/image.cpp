@@ -193,8 +193,8 @@ namespace Wisteria::GraphItems
             { return wxNullImage; }
 
         wxImage outImg{ image.Copy()};
-        auto const imgInData = image.GetData();
-        auto const imgOutData = outImg.GetData();
+        const auto imgInData = image.GetData();
+        const auto imgOutData = outImg.GetData();
 
         // Border pixels (depends on radius) will become black.
         // On increasing radius boundary pixels should set as black.
@@ -270,14 +270,129 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    wxImage Image::FrostedGlass(const wxImage& image,
+        const Wisteria::Orientation orientation /*Orientation::Both*/,
+        const uint8_t coarseness /*= 50*/)
+        {
+        if (!image.IsOk())
+            { return wxNullImage; }
+
+        wxImage outImg{ image.Copy()};
+        const auto imgInData = image.GetData();
+        const auto imgOutData = outImg.GetData();
+        const auto byteCount{ image.GetWidth() * image.GetHeight() * 3 };
+
+        std::random_device dev;
+        std::mt19937 twister(dev());
+        std::uniform_real_distribution<> distro(0, 1);
+
+        const auto findXInBound = [&image](const int x)
+            {
+            const int x1 = (x < 0) ?
+                0 :
+                (x >= image.GetWidth() * 3) ?
+                (image.GetWidth() * 3) - 1 :
+                x;
+
+            const auto stepBackToRedChannel = x1 % 3;
+            return x1 - stepBackToRedChannel;
+            };
+
+        const auto findYInBound = [&image](const int y)
+            {
+            return (y < 0) ?
+                0 :
+                (y >= image.GetHeight()) ?
+                image.GetHeight() - 1 :
+                y;
+            };
+
+        // horizontal and bidirectional
+        if (orientation == Orientation::Horizontal || orientation == Orientation::Both)
+            {
+            for (auto rowCounter = 0; rowCounter < image.GetHeight(); ++rowCounter)
+                {
+                auto w2 = image.GetWidth() * 3 * rowCounter;
+                int y{ 0 };
+
+                // horizontally oriented glass
+                if (orientation == Orientation::Horizontal)
+                    {
+                    y = static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness);
+                    y = findYInBound(y);
+                    }
+
+                for (auto columCounter = 0; columCounter < image.GetWidth() * 3; columCounter += 3)
+                    {
+                    int x = static_cast<int>(columCounter + (distro(twister) - 0.5) * coarseness);
+
+                    // generally oriented glass
+                    if (orientation == Orientation::Both)
+                        {
+                        y = static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness);
+                        y = findYInBound(y);
+                        }
+
+                    x = findXInBound(x);
+
+                    // source pixel
+                    auto w1 = image.GetWidth() * 3 * y + x;
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    const auto r = imgInData[w1];
+                    const auto g = imgInData[w1 + 1];
+                    const auto b = imgInData[w1 + 2];
+
+                    // target pixel
+                    w1 = w2 + columCounter;
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    imgOutData[w1] = r;
+                    imgOutData[w1 + 1] = g;
+                    imgOutData[w1 + 2] = b;
+                    }
+                }
+            }
+        else // Vertical
+            {
+            for (auto columnCounter = 0; columnCounter < image.GetWidth() * 3; columnCounter += 3)
+                {
+                const auto x =
+                    findXInBound(
+                        static_cast<int>(columnCounter + (distro(twister) - 0.5) * coarseness));
+                for (auto rowCounter = 0; rowCounter < image.GetHeight(); ++rowCounter)
+                    {
+                    const auto y =
+                        findYInBound(
+                            static_cast<int>(rowCounter + (distro(twister) - 0.5) * coarseness));
+
+                    // Source pixel
+                    auto w1 = image.GetWidth() * 3 * y + x;
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    const auto r = imgInData[w1];
+                    const auto g = imgInData[w1 + 1];
+                    const auto b = imgInData[w1 + 2];
+
+                    // Target pixel
+                    w1 = image.GetWidth() * 3 * rowCounter + columnCounter;
+                    wxASSERT_MSG(w1 + 2 < byteCount, L"Invalid index in image buffer!");
+                    imgOutData[w1] = r;
+                    imgOutData[w1 + 1] = g;
+                    imgOutData[w1 + 2] = b;
+                    }
+                }
+            }
+
+        return outImg;
+        }
+
+    //-------------------------------------------
     wxImage Image::Sepia(const wxImage& image, const uint8_t magnitude /*= 50*/)
         {
         if (!image.IsOk())
             { return wxNullImage; }
 
         wxImage outImg{ image.Copy()};
-        auto const imgInData = image.GetData();
-        auto const imgOutData = outImg.GetData();
+        const auto imgInData = image.GetData();
+        const auto imgOutData = outImg.GetData();
 
         const auto byteCount = image.GetWidth() * image.GetHeight() * 3;
         const double threshold = magnitude * 255.0 / 100.0;

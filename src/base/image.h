@@ -13,6 +13,7 @@
 #define __WISTERIA_GRAPHIMAGE_H__
 
 #include <cstring>
+#include <random>
 #include <omp.h>
 #include <wx/wx.h>
 #include <wx/image.h>
@@ -363,6 +364,19 @@ namespace Wisteria::GraphItems
                 This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
         [[nodiscard]]
         static wxImage Sepia(const wxImage& image, const uint8_t magnitude = 75);
+        /** @brief Applies a frosted glass window effect to an image.
+            @param image The original image.
+            @param orientation The direction(s) of the frosting effect.
+            @param coarseness The strength of the effect.
+            @returns The image, as it may appear when viewed through frosted glass.
+            @note Adapted from https://www.codeproject.com/articles/996192/some-cool-image-effects,
+                by Bhumika Thatte, Raghavendra Sri, Prasad R V, and Avijnata.\n
+                The authors state that this algorithm is
+                'based on the Lecture Notes by Prof. Onur Guleryuz of Polytechnic University, New York.'\n
+                This article is licensed under the The Code Project Open License (CPOL) 1.02.*/
+        [[nodiscard]]
+        static wxImage FrostedGlass(const wxImage& image,
+            const Wisteria::Orientation orientation = Orientation::Both, const uint8_t coarseness = 50);
         /// @}
 
         /** @name Size Functions

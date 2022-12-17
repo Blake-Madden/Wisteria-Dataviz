@@ -251,6 +251,7 @@ namespace Wisteria
         {
         Horizontal, /*!< Horizontal (i.e., left to right).*/
         Vertical,   /*!< Vertical (i.e., top to bottom).*/
+        Both,       /*!< Both horizontal and vertical.*/
         /// @private
         ORIENTATION_COUNT
         };
