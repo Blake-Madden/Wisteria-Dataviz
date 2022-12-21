@@ -423,10 +423,10 @@ namespace Wisteria::GraphItems
                 { return !compare_doubles(m_value, value); }
             /// @private
             [[nodiscard]] bool operator<(const AxisPoint& that) const noexcept
-                { return m_value < that.m_value; }
+                { return compare_doubles_less(m_value, that.m_value); }
             /// @private
             [[nodiscard]] bool operator<(const double value) const noexcept
-                { return m_value < value; }
+                { return compare_doubles_less(m_value, value); }
         private:
             /** @brief Sets the point on the parent axis at the specified coordinate.
                 @param coordinate The axis coordinate to place the point.
