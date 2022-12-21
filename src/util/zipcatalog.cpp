@@ -219,6 +219,18 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     }
 
 //------------------------------------------------
+wxBitmapBundle ZipCatalog::ReadSVG(const wxString& path, const wxSize size) const
+    {
+    wxMemoryOutputStream memstream;
+    if (!ReadFile(path, memstream))
+        { return wxBitmapBundle{}; }
+    // convert it from the stream
+    return wxBitmapBundle::FromSVG(
+        static_cast<const wxByte*>(memstream.GetOutputStreamBuffer()->GetBufferStart()),
+        memstream.GetLength(), size);
+    }
+
+//------------------------------------------------
 wxBitmap ZipCatalog::ReadBitmap(const wxString& path, const wxBitmapType bitmapType) const
     {
     wxMemoryOutputStream memstream;
@@ -228,7 +240,7 @@ wxBitmap ZipCatalog::ReadBitmap(const wxString& path, const wxBitmapType bitmapT
     wxMemoryInputStream stream(memstream.GetOutputStreamBuffer()->GetBufferStart(),
                                memstream.GetLength());
     wxImage img;
-    if (!img.LoadFile(stream,bitmapType))
+    if (!img.LoadFile(stream, bitmapType))
         { return wxNullBitmap; }
 
     return wxBitmap(img);
