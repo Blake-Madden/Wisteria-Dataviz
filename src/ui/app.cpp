@@ -84,19 +84,19 @@ bool Wisteria::UI::BaseApp::OnInit()
             }
         };
 
-    logSystemColor(wxSYS_COLOUR_WINDOW, _DT(L"Window Color"));
-    logSystemColor(wxSYS_COLOUR_MENU, _DT(L"Menu Color"));
-    logSystemColor(wxSYS_COLOUR_WINDOWFRAME, _DT(L"Window Frame Color"));
-    logSystemColor(wxSYS_COLOUR_BTNFACE, _DT(L"Dialog/Controls Color"));
-    logSystemColor(wxSYS_COLOUR_HIGHLIGHT, _DT(L"Highlighted Item Color"));
-    logSystemColor(wxSYS_COLOUR_WINDOWTEXT, _DT(L"Window Text Color"));
-    logSystemColor(wxSYS_COLOUR_MENUTEXT, _DT(L"Menu Text Color"));
-    logSystemColor(wxSYS_COLOUR_HIGHLIGHTTEXT, _DT(L"Highlighted Text Color"));
-    logSystemColor(wxSYS_COLOUR_GRAYTEXT, _DT(L"Grayed Text Color"));
-    logSystemColor(wxSYS_COLOUR_HOTLIGHT, _DT(L"Hyperlink Color"));
+    logSystemColor(wxSYS_COLOUR_WINDOW, DONTTRANSLATE(L"Window Color"));
+    logSystemColor(wxSYS_COLOUR_MENU, DONTTRANSLATE(L"Menu Color"));
+    logSystemColor(wxSYS_COLOUR_WINDOWFRAME, DONTTRANSLATE(L"Window Frame Color"));
+    logSystemColor(wxSYS_COLOUR_BTNFACE, DONTTRANSLATE(L"Dialog/Controls Color"));
+    logSystemColor(wxSYS_COLOUR_HIGHLIGHT, DONTTRANSLATE(L"Highlighted Item Color"));
+    logSystemColor(wxSYS_COLOUR_WINDOWTEXT, DONTTRANSLATE(L"Window Text Color"));
+    logSystemColor(wxSYS_COLOUR_MENUTEXT, DONTTRANSLATE(L"Menu Text Color"));
+    logSystemColor(wxSYS_COLOUR_HIGHLIGHTTEXT, DONTTRANSLATE(L"Highlighted Text Color"));
+    logSystemColor(wxSYS_COLOUR_GRAYTEXT, DONTTRANSLATE(L"Grayed Text Color"));
+    logSystemColor(wxSYS_COLOUR_HOTLIGHT, DONTTRANSLATE(L"Hyperlink Color"));
 
     // fix color mapping on Windows
-    wxSystemOptions::SetOption(_DT(L"msw.remap"), 0);
+    wxSystemOptions::SetOption(DONTTRANSLATE(L"msw.remap"), 0);
 
     // set the locale (for number formatting, etc.) and load any translations
     wxUILocale::UseDefault();
@@ -161,7 +161,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
     // prepare font for drawing the app name
     gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
-                        wxFONTWEIGHT_BOLD, false, L"Georgia"));
+                        wxFONTWEIGHT_BOLD, false,
+                        DONTTRANSLATE(L"Georgia", DTExplanation::FontName)));
     gcdc.SetTextForeground(wxColour(L"#315184"));
 
     wxCoord width{ 0 }, height{ 0 };
@@ -171,7 +172,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
     // draw translucent backscreens on image so that text written on it can be read
         {
-        wxDCPenChanger pc(gcdc, wxPen(*wxBLACK_PEN));
+        wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
         wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
         gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(),BackscreenHeight));
         gcdc.DrawLine(0, BackscreenHeight, canvasBmp.GetWidth(), BackscreenHeight);
@@ -201,7 +202,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         gcdc.DrawText(secondWord, wxSizerFlags::GetDefaultBorder()+firstWidth, Padding);
         gcdc.GetTextExtent(secondWord, &secondWidth, &height);
         gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL,
-                            wxFONTWEIGHT_NORMAL, false, L"Georgia"));
+                            wxFONTWEIGHT_NORMAL, false,
+                            DONTTRANSLATE(L"Georgia", DTExplanation::FontName)));
         gcdc.SetTextForeground(wxColour(*wxBLACK));
         gcdc.DrawText(appSubName,
             wxSizerFlags::GetDefaultBorder() + firstWidth+secondWidth, Padding);
@@ -211,7 +213,8 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         {
         // draw the copyright at the bottom
         gcdc.SetFont(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
-                            wxFONTWEIGHT_NORMAL, false, L"Times New Roman"));
+                            wxFONTWEIGHT_NORMAL, false,
+                            DONTTRANSLATE(L"Times New Roman", DTExplanation::FontName)));
         gcdc.SetTextForeground(*wxBLACK);
 
         wxDateTime buildDate;
@@ -226,7 +229,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
         }
 
     // draw a border around the image
-    gcdc.SetPen(wxPen(*wxLIGHT_GREY));
+    gcdc.SetPen(*wxLIGHT_GREY_PEN);
     const auto penWidth = gcdc.GetPen().GetWidth();
     gcdc.DrawLine(0, 0, 0, canvasBmp.GetHeight()-penWidth);
     gcdc.DrawLine(0, canvasBmp.GetHeight()-penWidth,
@@ -276,7 +279,7 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
                 "Thank you for your patience."), newReportPath, m_supportEmail),
                 _(L"Error Report"), wxOK | wxICON_INFORMATION);
         #ifdef __WXMSW__
-            ShellExecute(NULL, _DT(L"open"), wxStandardPaths::Get().GetDocumentsDir().wc_str(),
+            ShellExecute(NULL, DONTTRANSLATE(L"open"), wxStandardPaths::Get().GetDocumentsDir().wc_str(),
                 NULL, NULL, SW_SHOWNORMAL);
         #endif
             }
@@ -288,8 +291,9 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
 //----------------------------------------------------------
 void Wisteria::UI::BaseApp::SaveFileHistoryMenu()
     {
-    wxConfig config(GetAppName() + _DT(L"MRU"), GetVendorName());
-    config.SetPath(_DT(L"Recent File List", DTExplanation::SystemEntry, L"This goes in the registry"));
+    wxConfig config(GetAppName() + DONTTRANSLATE(L"MRU"), GetVendorName());
+    config.SetPath(DONTTRANSLATE(L"Recent File List",
+                                 DTExplanation::SystemEntry, L"This goes into the registry"));
     GetDocManager()->FileHistorySave(config);
     }
 
@@ -301,8 +305,8 @@ void Wisteria::UI::BaseApp::LoadFileHistoryMenu()
         GetDocManager()->FileHistoryUseMenu(GetMainFrame()->GetMenuBar()->GetMenu(0));
         }
     // load the file history
-    wxConfig config(GetAppName() + _DT(L"MRU"), GetVendorName());
-    config.SetPath(_DT(L"Recent File List", DTExplanation::SystemEntry));
+    wxConfig config(GetAppName() + DONTTRANSLATE(L"MRU"), GetVendorName());
+    config.SetPath(DONTTRANSLATE(L"Recent File List", DTExplanation::SystemEntry));
     GetDocManager()->FileHistoryLoad(config);
     }
 
