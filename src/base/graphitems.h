@@ -9,8 +9,8 @@
      SPDX-License-Identifier: BSD-3-Clause
 @{*/
 
-#ifndef __WISTERIA_CANVAS_ITEMS_H__
-#define __WISTERIA_CANVAS_ITEMS_H__
+#ifndef __WISTERIA_GRAPH_ITEMS_H__
+#define __WISTERIA_GRAPH_ITEMS_H__
 
 #include <vector>
 #include <set>
@@ -27,6 +27,7 @@
 #include <wx/numformatter.h>
 #include "settings.h"
 #include "icons.h"
+#include "enums.h"
 #include "../math/mathematics.h"
 
 // forward declares
@@ -42,412 +43,11 @@ namespace Wisteria::Graphs
     class PieChart;
     }
 
-/// @brief Graphics classes and enumerations.
+/// @brief Classes for objects placed on graphs.
 namespace Wisteria
     {
-    /// @brief The sorting direction of bars along an axis.
-    enum class SortDirection
-        {
-        SortAscending,  /*!< Sorted smallest to largest.*/
-        SortDescending, /*!< Sorted largest to smallest.*/
-        NoSort          /*!< Not sorted.*/
-        };
-
-    /// @brief The direction to fill (paint) with a gradient brush.
-    enum class FillDirection
-        {
-        /// @brief fill upward.
-        North,
-        /// @brief fill downward.
-        South,
-        /// @brief fill to the right.
-        East,
-        /// @brief fill to the left.
-        West,
-        /// @brief fill upward.
-        Up = North,
-        /// @brief fill downward.
-        Down = South,
-        /// @brief fill to the right.
-        Right = East,
-        /// @brief fill to the left.
-        Left = West
-        };
-
-    /// @brief Which side something is on.
-    enum class Side
-        {
-        /// @brief Left side.
-        Left,
-        /// @brief Right side.
-        Right,
-        /// @brief Top side.
-        Top,
-        /// @brief Bottom side.
-        Bottom
-        };
-
-    /// @brief Where a ring is within a circle.
-    enum class Perimeter
-        {
-        /// @brief Inner ring.
-        Inner,
-        /// @brief outer ring.
-        Outer
-        };
-
-    /// @brief The type of influence something can have on a subject.
-    /// @details As an example, predictors in a linear regression.
-    /// @internal This enum is a bitmask, do not make it strongly typed.
-    enum Influence
-        {
-        /// @brief IVs with coefficients > 0.
-        Positive = 1,
-        /// @brief IVs with coefficients < 0.
-        Negative = 2,
-        /// @brief IVs with coefficients = 0.
-        Neutral = 4,
-        /// @brief All IVs.
-        All = 8
-        };
-
-    /** @brief How labels are aligned with their parents on a graph.*/
-    enum class LabelPlacement
-        {
-        /// @brief Labels are next to their parents.
-        NextToParent,
-        /// @brief Labels are flush with the plotting area's left or right side.
-        /// @details This is graph-type dependent.
-        Flush
-        };
-
-    /// @brief How an element is aligned to whatever it is being drawn on.
-    /// @note @c FlushRight and @c FlushBottom (and likewise, right and bottom)
-    ///     are synonyms for each other. That way, if the parent's orientation changes,
-    ///     the relative alignment of the subobject will adjust logically without
-    ///     having to be changed.
-    enum class RelativeAlignment
-        {
-        FlushLeft,                /*!< Flush left/ragged right.*/
-        FlushRight,               /*!< Flush right/ragged left.*/
-        Centered,                 /*!< Centered.*/
-        FlushBottom = FlushRight, /*!< Flush to the bottom.*/
-        FlushTop = FlushLeft      /*!< Flush to the top.*/
-        };
-
-    /// @brief Values for specifying how an element's point controls its anchoring on the canvas.
-    enum class Anchoring
-        {
-        TopLeftCorner,    /*!< Assume that point is the top-left corner.*/
-        TopRightCorner,   /*!< Assume that point is the top-right corner.*/
-        Center,           /*!< Assume that point is the center point.*/
-        BottomLeftCorner, /*!< Assume that point is the bottom-left corner.*/
-        BottomRightCorner /*!< Assume that point is the bottom-right corner.*/
-        };
-
-    /// @brief Methods for how objects should draw their shadow.
-    /// @todo Add support for other sides.
-    enum class ShadowType
-        {
-        NoShadow,                /*!< No shadow should be drawn.*/
-        RightSideShadow,         /*!< Draw a shadow on the right side.*/
-        RightSideAndBottomShadow /*!< Draw a shadow on the right side and bottom.*/
-        };
-
-    /// @brief How the decal's label should be adjusted to fit on its parent.
-    enum class LabelFit
-        {
-        ScaleFontToFit,       /*!< Text's font is scaled to fit inside the parent.*/
-        SplitTextToFit,       /*!< Text is split into multiple lines to fit in the parent.\n
-                                   May be truncated with an ellipsis if there are too many lines.*/
-        SplitTextToFitWidth,  /*!< Text is split into multiple lines to fit in the parent's width.*/
-        DisplayAsIs,          /*!< Text is drawn from where it is anchored and is
-                                   not scaled or split.\n
-                                   May go outside of its parent.*/
-        DisplayAsIsAutoFrame, /*!< Text is drawn from where it is anchored and is
-                                   not scaled or split.\n
-                                   May go outside of its parent. If it does go outside of parent,
-                                   will draw a frame around the text.*/
-        };
-
-    /// @brief How (single or multi-line) text is aligned.
-    /// @sa PageVerticalAlignment, PageHorizontalAlignment
-    enum class TextAlignment
-        {
-        /// @brief Text is flush left/ragged right. (This is the default for Labels.)
-        FlushLeft,
-        /// @brief Same as FlushLeft.
-        RaggedRight = FlushLeft,
-        /// @brief Text is flush right/ragged left.
-        FlushRight,
-        /// @brief Same as FlushRight.
-        RaggedLeft = FlushRight,
-        /// @brief Text is centered.
-        Centered,
-        /// @brief Multiline text is tracked (space inserted) to make lines equal width.
-        ///     Hair spaces are inserted between each character.
-        JustifiedAtCharacter,
-        /// @brief Same as JustifiedAtCharacter.
-        Justified = JustifiedAtCharacter,
-        /// @brief Multiline text is tracked (space inserted) to make lines equal width.
-        ///     Hair spaces are inserted between each word.
-        JustifiedAtWord
-        };
-
-    /// @brief @brief How a label's text is aligned within its user-defined bounding box,
-    ///     going from top-to-bottom.
-    /// @note This is only relevant if a Label is using a minimum user-defined size,
-    ///     and only if the user-defined size is taller than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
-    enum class PageVerticalAlignment
-        {
-        TopAligned,   /*!< Text is aligned to the top of the label's bounding box.*/
-        Centered,     /*!< Text is centered label's bounding box. (This is the default.)*/
-        BottomAligned /*!< Text is aligned to the bottom of the label's bounding box.*/
-        };
-
-    /// @brief @brief How a label's text is aligned within its user-defined bounding box,
-    ///     going from left-to-right.
-    /// @note This is only relevant if a Label is using a minimum user-defined size,
-    ///     and only if the user-defined size is wider than the text.
-    /// @sa Wisteria::GraphItems::Label::SetMinimumUserSizeDIPs(), TextAlignment.
-    enum class PageHorizontalAlignment
-        {
-        LeftAligned,   /*!< Text is aligned to the left of the label's bounding box.
-                            (This is the default.)*/
-        Centered,      /*!< Text is centered label's bounding box.*/
-        RightAligned   /*!< Text is aligned to the right of the label's bounding box.*/
-        };
-
-    /// @brief Background visual styles to apply a label.
-    enum class LabelStyle
-        {
-        NoLabelStyle,                    /*!< No extra visual style should be applied to the label,
-                                              other than possible outlining.*/
-        IndexCard,                       /*!< Display the label as an index card.*/
-        LinedPaper,                      /*!< Display the label as lined paper
-                                              (lines under each text line).*/
-        LinedPaperWithMargins,           /*!< Display the label as lined paper
-                                              (lines under each text line, within the margins
-                                               of the label).*/
-        DottedLinedPaper,                /*!< Display the label as dotted lined paper
-                                              (lines under each text line).*/
-        DottedLinedPaperWithMargins,     /*!< Display the label as dotted lined paper
-                                              (lines under each text line, within the margins
-                                              of the label).*/
-        RightArrowLinedPaper,            /*!< Display the label as lined paper
-                                              (right arrow lines under each text line).\n
-                                              Will use the same pen as the label's text.*/
-        RightArrowLinedPaperWithMargins, /*!< Display the label as lined paper
-                                              (right arrow lines under each text line,
-                                              within the margins of the label).
-                                              Will use the same pen as the label's text.*/
-        /// @private
-        LABEL_STYLE_COUNT
-        };
-
-    /// @brief The orientation of an item (e.g., a vertically drawn label).
-    enum class Orientation
-        {
-        Horizontal, /*!< Horizontal (i.e., left to right).*/
-        Vertical,   /*!< Vertical (i.e., top to bottom).*/
-        Both,       /*!< Both horizontal and vertical.*/
-        /// @private
-        ORIENTATION_COUNT
-        };
-
-    /// @brief A hint as to where a generated legend may be placed on a canvas.
-    ///     These hints are used by a plot to determine how padding, outlining,
-    ///     and canvas proportions should be used when creating a legend.
-    enum class LegendCanvasPlacementHint
-        {
-        EmbeddedOnGraph,    /*!< The legend will be on the plot.
-                                 This will include outlining on the legend*/
-        LeftOfGraph,        /*!< The legend will be on the right or left of the plot.
-                                 This will set the legend's canvas width % to a calculated value.*/
-        RightOfGraph,       /*!< The legend will be on the right or left of the plot.
-                                 This will set the legend's canvas width % to a calculated value.*/
-        AboveOrBeneathGraph /*!< The legend will be above or below the plot.
-                                 This will set the legend's canvas width % to 1.*/
-        };
-
-    /// @brief Date intervals used along axes.
-    enum class DateInterval
-        {
-        FiscalQuarterly, /*!< Fiscal year, by quarters.*/
-        Monthly,         /*!< Months.*/
-        Weekly,          /*!< Weeks.*/
-        Daily            /*!< Days.*/
-        };
-
-    /// @brief Types of fiscal years (based on start date).
-    enum class FiscalYear
-        {
-        Education, /*!< K-12 and College FY (July 1st to June 30th).*/
-        USBusiness /*!< US Businesses (April 1st to March 31st).*/
-        };
-
-    /// @brief Types of brackets to shown along an axis.
-    enum class BracketType
-        {
-        FiscalQuarterly /*!< Fiscal year, by quarters.*/
-        };
-
-    /// @brief The type of axis.
-    enum class AxisType
-        {
-        BottomXAxis, /*!< The bottom X axis.*/
-        TopXAxis,    /*!< The top X axis.*/
-        LeftYAxis,   /*!< The left Y axis.*/
-        RightYAxis   /*!< The right Y axis.*/
-        };
-
-    /// @brief How to draw the labels in relation to their parent axis.
-    enum class AxisLabelOrientation
-        {
-        Parallel,     /*!< Draw labels parallel to the axis.*/
-        Perpendicular /*!< Draw labels perpendicular to axis.*/
-        };
-
-    /// @brief How to display axis labels.
-    enum class AxisLabelDisplay
-        {
-        DisplayCustomLabelsOrValues,  /*!< Display either custom label (if available)
-                                           or numeric value.*/
-        DisplayOnlyCustomLabels,      /*!< Only show as a custom label; nothing will
-                                           be displayed if custom label isn't available.*/
-        DisplayCustomLabelsAndValues, /*!< Display both numeric value and custom label.*/
-        NoDisplay                     /*!< Do not display any label.*/
-        };
-
-    /// @brief How to align perpendicular labels with their parent axis or bracket.
-    enum class AxisLabelAlignment
-        {
-        AlignWithAxisLine, /*!< The labels will be flush right against the axis line.*/
-        AlignWithBoundary, /*!< If the labels are perpendicular against the axis and some are wider
-                                than others, then align the labels against the outer parameter of
-                                the axis area.
-                                @note Has no effect with parallel axes.*/
-        CenterOnAxisLine   /*!< The labels will be centered on the axis line.
-                                @note Has no effect on bracket labels.
-                                @todo Add support for horizontal axes.*/
-        };
-
-    /// @brief The type of cap (i.e., head) that an axis line displays at its ending point
-    ///     (right for horizontal, top for vertical).
-    enum class AxisCapStyle
-        {
-        Arrow, /*!< The top or right end of the axis line is an arrow.*/
-        NoCap  /*!< Nothing is drawn at the end of the axis line.*/
-        };
-
-    /// @brief How the segments between the points on a line are connected.
-    /// @note Setting the drawing pen to `wxNullPen` will turn off line drawing.
-    enum class LineStyle
-        {
-        Lines,  /*!< Each pair of points are connected with a regular line.*/
-        Arrows, /*!< Each pair of points are connected with a line with a terminal arrow.*/
-        Spline  /*!< Consecutive valid points are connected with a spline.*/
-        };
-
-    /// @brief Box rendering options (used for bar charts, box plots, etc.)
-    enum class BoxEffect
-        {
-        /// @brief Solid color.
-        Solid,
-        /// @brief Glass effect.
-        Glassy,
-        /// @brief Color gradient, bottom-to-top.
-        FadeFromBottomToTop,
-        /// @brief Color gradient, left-to-right.
-        FadeFromLeftToRight = FadeFromBottomToTop,
-        /// @brief Color gradient, top-to-bottom.
-        FadeFromTopToBottom,
-        /// @brief Color gradient, right-to-left.
-        FadeFromRightToLeft = FadeFromTopToBottom,
-        /// @brief Fill with repeating images.
-        Stipple,
-        /// @brief A subimage of a larger image shared by all boxes.
-        CommonImage,
-        /// @brief An image scaled down to fit the box.
-        Image,
-        /// @brief A watercolor-like effect, where the box is warped and looks
-        ///     like it was filled in with watercolor paint (or a marker).\n
-        ///     Note that if an outline pen is in use, it will be drawn over the
-        ///     fill color, giving the look that it showing through the "watercolor."
-        WaterColor,
-        /// @private
-        EFFECTS_COUNT
-        };
-
-    /// @brief Pie slice rendering options (used for pie charts.)
-    enum class PieSliceEffect
-        {
-        /// @brief Solid color.
-        Solid,
-        /// @brief An image scaled down to fit the slice
-        ///     (or repeated as a pattern if smaller than the slice area).
-        Image
-        };
-
-    /// @brief How the corners of how various boxes are drawn.
-    enum class BoxCorners
-        {
-        Straight, /*!< Straight lines meet at the corner.*/
-        Rounded   /*!< Corners are rounded.
-                       The roundedness level can be controlled via
-                       Settings::SetBoxRoundedCornerRadius().*/
-        };
-
-    /// @brief The type of label to display for a bin (i.e., a bar, pie slice, etc.).
-    enum class BinLabelDisplay
-        {
-        /** @brief The number of items in (or aggregated value of) each bin.*/
-        BinValue,
-        /** @brief The percentage of items in (or aggregated value of) each bin.*/
-        BinPercentage,
-        /** @brief Both the percentage and number of items in
-                (or aggregated value of) each bin.*/
-        BinValueAndPercentage,
-        /** @brief Don't display labels on the bins.*/
-        NoDisplay,
-        /** @brief The name of the bin (e.g., the group name).*/
-        BinName,
-        /** @brief The name of the bin (e.g., the group name) and the value.*/
-        BinNameAndValue,
-        /** @brief The name of the bin (e.g., the group name) and the
-                percentage of items in (or aggregated value of) each bin.*/
-        BinNameAndPercentage,
-        /// @private
-        BIN_LABEL_DISPLAY_COUNT
-        };
-
-    /// @brief How to round floating-point values when binning.
-    enum class RoundingMethod
-        {
-        Round,                 /*!< Round up or down.*/
-        RoundDown,             /*!< Round down (ceiling).*/
-        RoundUp,               /*!< Round up (floor).*/
-        NoRounding,            /*!< Do not round.*/
-        /// @private
-        ROUNDING_METHOD_COUNT
-        };
-
-    /// @brief How an object resized to fit into a new bounding box.
-    enum class ResizeMethod
-        {
-        /// @brief Make the item smaller or larger to fit the bounding box.
-        DownscaleOrUpscale,
-        /// @brief Only make items smaller if necessary.
-        DownscaleOnly,
-        /// @brief Only make items larger if necessary.
-        UpscaleOnly,
-        /// @brief Don't rescale the item.
-        NoResize
-        };
-
     /// @brief Lamba to return a color if a point's
-    ///     X and/or Y values meet a certain set of criteria.\n
+    ///     X and/or Y values meet a certain set of criteria.
     /// @details Should return an invalid color if values do not meet the criteria.
     using PointColorCriteria = std::function<wxColour(double x, double y)>;
 
@@ -472,7 +72,8 @@ namespace Wisteria
             m_lineStyles(penStyles)
             {}
         /// @returns The vector of pen & line styles from the scheme.
-        [[nodiscard]] const std::vector<std::pair<wxPenStyle, LineStyle>>&
+        [[nodiscard]]
+        const std::vector<std::pair<wxPenStyle, LineStyle>>&
             GetLineStyles() const noexcept
             { return m_lineStyles; }
         /** @returns The line style from a given index.
@@ -481,7 +82,8 @@ namespace Wisteria
                 For example, if there are 2 line styles, index 1 will return 1;
                 however, index 2 will wrap around and return line style 0 and
                 index 3 will return line style 1.*/
-        [[nodiscard]] const std::pair<wxPenStyle,LineStyle>&
+        [[nodiscard]]
+        const std::pair<wxPenStyle,LineStyle>&
             GetLineStyle(const size_t index) const
             { return m_lineStyles.at(index%m_lineStyles.size()); }
         /** @brief Adds a line style to the scheme.
@@ -588,7 +190,8 @@ namespace Wisteria
         public:
             /// @brief Whether the top line of a label object is a header.
             /// @returns @c true if the top line is treated like a header.
-            [[nodiscard]] bool IsEnabled() const noexcept
+            [[nodiscard]]
+            bool IsEnabled() const noexcept
                 { return m_enabled; }
             /** @brief Specifies whether to treat the top line of the label as a header.
                 @param enable @c true to enable header mode.
@@ -601,7 +204,8 @@ namespace Wisteria
 
             /// @brief Gets the text alignment of the header.
             /// @returns The text alignment.
-            [[nodiscard]] TextAlignment GetLabelAlignment() const noexcept
+            [[nodiscard]]
+            TextAlignment GetLabelAlignment() const noexcept
                 { return m_alignment; }
             /** @brief Specifies align the top line of the label.
                 @param alignment How to align the top line.
@@ -614,7 +218,8 @@ namespace Wisteria
 
             /// @brief Gets the font color of the header.
             /// @returns The font color.
-            [[nodiscard]] wxColour GetFontColor() const noexcept
+            [[nodiscard]]
+            wxColour GetFontColor() const noexcept
                 { return m_fontColor; }
             /** @brief Specifies the font color for the top line of the label.
                 @param fontColor The font color for the top line.
@@ -635,12 +240,14 @@ namespace Wisteria
                 }
             /** @brief Gets/sets the top line's font.
                 @returns The top line font.*/
-            [[nodiscard]] wxFont& GetFont() noexcept
+            [[nodiscard]]
+            wxFont& GetFont() noexcept
                 { return m_font; }
 
             /** @brief Gets the top line's scaling, relative to the rest of the text.
                 @returns The top line's scaling.*/
-            [[nodiscard]] double GetRelativeScaling() const noexcept
+            [[nodiscard]]
+            double GetRelativeScaling() const noexcept
                 { return m_relativeScaling; }
             /** @brief Specifies the top line's scaling, relative to the rest of the text.
                 @param scaling The relative scaling for the top line.
@@ -652,7 +259,8 @@ namespace Wisteria
                 }
 
             /// @private
-            [[nodiscard]] const wxFont& GetFont() const noexcept
+            [[nodiscard]]
+            const wxFont& GetFont() const noexcept
                 { return m_font; }
         private:
             TextAlignment m_alignment{ TextAlignment::FlushLeft };
@@ -1110,7 +718,7 @@ namespace Wisteria
 
             bool m_isOk{ true };
             /*!< @todo Expand support for this for Label.*/
-            ShadowType m_shadowType{ ShadowType::NoShadow };
+            ShadowType m_shadowType{ ShadowType::NoDisplay };
             std::vector<Wisteria::Icons::LegendIcon> m_legendIcons;
             // center point
             wxPoint m_point{ 0, 0 };
@@ -1335,8 +943,8 @@ namespace Wisteria
             /** @brief Sets which type of shadow is being drawn under the object
                 @param shadow The type of shadow to display.
                 @note For some objects, shadow will always be displayed as @c RightSideShadow
-                    (unless set to @c NoShadow); otherwise, it would look odd.
-                    Set to @c NoShadow to turn off shadows.*/
+                    (unless set to @c NoDisplay); otherwise, it would look odd.
+                    Set to @c NoDisplay to turn off shadows.*/
             void SetShadowType(const ShadowType shadow) noexcept
                 { m_itemInfo.m_shadowType = shadow; }
             /** @returns Which type of shadow is being drawn under the object.*/
@@ -2039,4 +1647,4 @@ namespace Wisteria
 
 /** @}*/
 
-#endif //__WISTERIA_CANVAS_ITEMS_H__
+#endif //__WISTERIA_GRAPH_ITEMS_H__
