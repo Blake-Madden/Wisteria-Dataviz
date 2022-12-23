@@ -21,20 +21,40 @@ namespace Wisteria::GraphItems
     {
     /** @brief Gets a @c wxGraphicsContext to draw to.
         @details If a provided @c wxDC supports @c GetGraphicsContext(),
-            that that will be returned. Otherwise, a @c wxGraphicsContext
+            then that will be returned. Otherwise, a @c wxGraphicsContext
             pointing to an internal @c wxMemoryDC is returned, which
             can be rendered to by the client the same way.\n
+            \n
             If using this fallback method, the rendering will be performed
             to a bitmap, which will be blitted to the original @c wxDC
             upon destruction of this object.*/
     class GraphicsContextFallback
         {
     public:
-        /** @brief Gets the @c wxGraphicsContext to render to.
+        /** @brief Takes a @c wxDC and a rectangle area within it, and creates a
+                @c wxGraphicsContext to render to that area.
             @param dc A pointer to the original @c wxDC that is being drawn to.
             @param rect The rectangle on the @c wxDC that is being drawn to.
-            @returns The @c wxGraphicsContext to render to, or null upon failure.*/
-        wxGraphicsContext* GetGraphicsContext(wxDC* dc, const wxRect rect);
+            @note Call GetGraphicsContext() after construction to get the graphics
+                context that you can being drawing with.*/
+        GraphicsContextFallback(wxDC* dc, const wxRect rect);
+        /// @private
+        GraphicsContextFallback(const GraphicsContextFallback&) = delete;
+        /// @private
+        GraphicsContextFallback(GraphicsContextFallback&&) = delete;
+        /// @private
+        GraphicsContextFallback& operator=(const GraphicsContextFallback&) = delete;
+        /// @private
+        GraphicsContextFallback& operator=(GraphicsContextFallback&&) = delete;
+        /** @returns The @c wxGraphicsContext to render to.\n
+                (May be null if a failure occurred).
+            @note The returned @c wxGraphicsContext may point to the original @c wxDC, or it may
+                be pointing to an internal bitmap that will be blitted to the @c wxDC when
+                this object goes out of scope. Either way, just use the returned
+                @c wxGraphicsContext to draw to and the rendering/blitting will be applied when
+                this object goes out of scope.*/
+        wxGraphicsContext* GetGraphicsContext() noexcept
+            { return m_gc; }
         /// @private
         ~GraphicsContextFallback();
     private:
@@ -72,7 +92,7 @@ namespace Wisteria::GraphItems
                                const wxBitmapBundle* img = nullptr) :
             m_graphInfo(itemInfo),
             m_iconImage(img)
-            { m_mt.seed(m_dev()); }
+            {}
         /// @private
         ShapeRenderer() = delete;
         /// @brief Gets/sets the shape's underlying information (e.g., brush color, pen, etc.).
@@ -297,8 +317,7 @@ namespace Wisteria::GraphItems
 
         GraphItemInfo m_graphInfo;
         const wxBitmapBundle* m_iconImage{ nullptr };
-        mutable std::random_device m_dev;
-        mutable std::mt19937 m_mt;
+        static std::mt19937 m_mt;
         };
 
     /** @brief Draws a shape onto a canvas.*/
