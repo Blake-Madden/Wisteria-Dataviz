@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "app.h"
+#include "../base/label.h"
 #ifdef __WXMSW__
     #include <psapi.h>
     #include <debugapi.h>
@@ -153,79 +154,88 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
                                      const bool includeCopyright)
     {
     const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
-    const wxCoord Padding = wxSizerFlags::GetDefaultBorder()*2;
 
     wxBitmap canvasBmp(bitmap);
     wxMemoryDC memDC(canvasBmp);
     wxGCDC gcdc(memDC);
 
     // prepare font for drawing the app name
-    gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
+    Wisteria::GraphItems::Label appLabel(
+            Wisteria::GraphItems::GraphItemInfo(appName).
+            Pen(wxNullPen).
+            Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
                         wxFONTWEIGHT_BOLD, false,
-                        DONTTRANSLATE(L"Georgia", DTExplanation::FontName)));
-    gcdc.SetTextForeground(wxColour(L"#315184"));
+                        DONTTRANSLATE(L"Georgia"))).
+            FontColor(wxColour(L"#315184")).
+            DPIScaling(GetMainFrame() != nullptr ? GetMainFrame()->GetDPIScaleFactor() : 1.0).
+            Scaling(2.0).
+            Anchoring(Anchoring::TopLeftCorner).AnchorPoint({ 0, 0 }).
+            Padding(4, 0, 4, 4));
+    auto boundingBox = appLabel.GetBoundingBox(gcdc);
 
-    wxCoord width{ 0 }, height{ 0 };
-    gcdc.GetTextExtent(appName, &width, &height);
-
-    const wxCoord BackscreenHeight = std::max(height+(Padding*2), bitmap.GetHeight()/5);
+    const wxCoord BackscreenHeight = std::max(boundingBox.GetHeight(), bitmap.GetHeight()/5);
 
     // draw translucent backscreens on image so that text written on it can be read
         {
         wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
         wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
-        gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(),BackscreenHeight));
+        gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(), BackscreenHeight));
         gcdc.DrawLine(0, BackscreenHeight, canvasBmp.GetWidth(), BackscreenHeight);
         if (includeCopyright)
             {
             gcdc.DrawRectangle(wxRect(0,canvasBmp.GetHeight() -
-                               BackscreenHeight,canvasBmp.GetWidth(),BackscreenHeight));
+                               BackscreenHeight,canvasBmp.GetWidth(), BackscreenHeight));
             gcdc.DrawLine(0, canvasBmp.GetHeight()-BackscreenHeight,
                           canvasBmp.GetWidth(), canvasBmp.GetHeight()-BackscreenHeight);
             }
         }
 
-    const int spacePos = appName.Find(L' ');
+    const auto spacePos = appName.find(L' ');
+
     if (spacePos == wxNOT_FOUND)
-        {
-        gcdc.DrawText(appName, Padding, Padding);
-        }
+        { appLabel.Draw(gcdc); }
     else
         {
         // write the app name with alternating font colors
-        wxCoord firstWidth(0), secondWidth(0);
-        wxString firstWord = appName.Mid(0, spacePos);
-        wxString secondWord = appName.Mid(spacePos);
-        gcdc.DrawText(firstWord, Padding, Padding);
-        gcdc.GetTextExtent(firstWord, &firstWidth, &height);
-        gcdc.SetTextForeground(wxColour(2,186,2));
-        gcdc.DrawText(secondWord, wxSizerFlags::GetDefaultBorder()+firstWidth, Padding);
-        gcdc.GetTextExtent(secondWord, &secondWidth, &height);
-        gcdc.SetFont(wxFont(ftSize*2, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL,
-                            wxFONTWEIGHT_NORMAL, false,
-                            DONTTRANSLATE(L"Georgia", DTExplanation::FontName)));
-        gcdc.SetTextForeground(wxColour(*wxBLACK));
-        gcdc.DrawText(appSubName,
-            wxSizerFlags::GetDefaultBorder() + firstWidth+secondWidth, Padding);
+        appLabel.SetText(appName.substr(0, spacePos));
+        boundingBox = appLabel.GetBoundingBox(gcdc);
+        appLabel.Draw(gcdc);
+
+        appLabel.GetGraphItemInfo().FontColor(wxColour(2, 186, 2)).
+            Padding(4, 0, 4, 0);
+        appLabel.Offset(boundingBox.GetWidth(), 0);
+        appLabel.SetText(appName.substr(spacePos+1));
+        boundingBox = appLabel.GetBoundingBox(gcdc);
+        appLabel.Draw(gcdc);
+
+        appLabel.GetGraphItemInfo().FontColor(*wxBLACK).
+            Padding(4, 4, 4, 2);
+        appLabel.Offset(boundingBox.GetWidth(), 0);
+        appLabel.SetText(appSubName);
+        appLabel.Draw(gcdc);
         }
 
     if (includeCopyright)
         {
         // draw the copyright at the bottom
-        gcdc.SetFont(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
-                            wxFONTWEIGHT_NORMAL, false,
-                            DONTTRANSLATE(L"Times New Roman", DTExplanation::FontName)));
-        gcdc.SetTextForeground(*wxBLACK);
-
         wxDateTime buildDate;
         buildDate.ParseDate(__DATE__);
-        wxString label = wxString::Format(L"%c%d %s. %s",
-            0xA9, buildDate.GetYear(), vendorName,
-            _("All rights reserved."));
 
-        gcdc.GetTextExtent(label, &width, &height);
-        gcdc.DrawText(label, canvasBmp.GetWidth()-(width+Padding),
-                      canvasBmp.GetHeight()-(height+Padding));
+        Wisteria::GraphItems::Label copyrightInfo(
+            Wisteria::GraphItems::GraphItemInfo(
+            wxString::Format(L"%c%d %s. %s",
+                0xA9, buildDate.GetYear(), vendorName,
+                _("All rights reserved."))).
+            Pen(wxNullPen).
+            DPIScaling(GetMainFrame() != nullptr ? GetMainFrame()->GetDPIScaleFactor() : 1.0).
+            Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
+                        wxFONTWEIGHT_NORMAL, false,
+                GraphItems::Label::GetFirstAvailableFont(
+                    { _DT(L"Consolas"), _DT(L"Times New Roman") }))).
+            FontColor(*wxBLACK).Padding(4, 4, 4, 4).Anchoring(Anchoring::BottomRightCorner).
+            AnchorPoint(wxRect{ gcdc.GetSize() }.GetBottomRight()));
+
+        copyrightInfo.Draw(gcdc);
         }
 
     // draw a border around the image
