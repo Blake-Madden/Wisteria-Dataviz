@@ -46,7 +46,7 @@ void OpacityDlg::CreateControls()
         {
         const wxSize scaledSize = FromDIP(wxSize(300,300));
         const std::pair<double,double> thumbSize =
-            geometry::calculate_downscaled_size(std::make_pair(m_image.GetWidth(), m_image.GetHeight()),
+            geometry::downscaled_size(std::make_pair(m_image.GetWidth(), m_image.GetHeight()),
             std::make_pair(scaledSize.GetWidth(),scaledSize.GetHeight()));
 
         m_thumb = new Thumbnail(this, m_image, Thumbnail::ClickMode::FullSizeViewable, false, wxID_ANY, wxDefaultPosition, wxSize(thumbSize.first, thumbSize.second));

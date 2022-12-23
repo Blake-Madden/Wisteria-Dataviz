@@ -34,13 +34,13 @@ void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
 
     if (event.GetId() == ControlIDs::IMAGE_WIDTH_ID)
         {
-        m_options.m_imageSize.y = geometry::calculate_rescale_height(
+        m_options.m_imageSize.y = geometry::rescaled_height(
                                     std::make_pair(imgSize.first, imgSize.second),
                                     m_options.m_imageSize.x);
         }
     else
         {
-        m_options.m_imageSize.x = geometry::calculate_rescale_width(
+        m_options.m_imageSize.x = geometry::rescaled_width(
             std::make_pair(imgSize.first, imgSize.second),
             m_options.m_imageSize.y);
         }

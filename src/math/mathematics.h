@@ -79,7 +79,8 @@ namespace math_constants
 /// @param first The start of the comparison range.
 /// @param second The end of the comparison range.
 template<typename T>
-[[nodiscard]] constexpr bool is_within(const T value, const T first, const T second) noexcept
+[[nodiscard]]
+constexpr bool is_within(const T value, const T first, const T second) noexcept
     {
     assert(first <= second);
     return (value >= first && value <= second);
@@ -89,7 +90,8 @@ template<typename T>
 /// @param range The comparison range.
 /// @param value The value to review.
 template<typename T>
-[[nodiscard]] constexpr bool is_within(const std::pair<T,T> range, const T value) noexcept
+[[nodiscard]]
+constexpr bool is_within(const std::pair<T,T> range, const T value) noexcept
     {
     assert(range.first <= range.second);
     return (value >= range.first && value <= range.second);
@@ -109,7 +111,8 @@ public:
     within() = delete;
     /** @returns @c true if @c value is within the valid range of values.
         @param value The value to review.*/
-    [[nodiscard]] inline bool operator()(T value) const noexcept
+    [[nodiscard]]
+    inline bool operator()(T value) const noexcept
         { return is_within(std::make_pair(m_range_begin, m_range_end), value); }
 private:
     T m_range_begin;
@@ -142,13 +145,15 @@ public:
     /** @returns @c true if this is less than another pair.
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared.*/
-    [[nodiscard]] bool operator<(const comparable_first_pair<T1,T2>& that) const
+    [[nodiscard]]
+    bool operator<(const comparable_first_pair<T1,T2>& that) const
         { return first < that.first; }
     /** @returns @c true if this is equal to another pair.
         @param that The other pair to compare against.
         @note The first items of the pairs are what are compared. The second items can be different.
-         This is a key difference from `std::pair`.*/
-    [[nodiscard]] bool operator==(const comparable_first_pair<T1,T2>& that) const
+            This is a key difference from `std::pair`.*/
+    [[nodiscard]]
+    bool operator==(const comparable_first_pair<T1,T2>& that) const
         { return first == that.first; }
     /// @brief The first item in the pair.
     T1 first;
@@ -159,7 +164,8 @@ public:
 /// @returns The first string with a value from a list of strings.
 /// @param list The list of strings.
 template<typename T>
-[[nodiscard]] constexpr std::basic_string<T> coalesce(std::initializer_list<std::basic_string_view<T>> list)
+[[nodiscard]]
+constexpr std::basic_string<T> coalesce(std::initializer_list<std::basic_string_view<T>> list)
     {
     for (const auto item : list)
         {
@@ -172,7 +178,8 @@ template<typename T>
 /// @returns The first item with a size (length) from a list.
 /// @param list The list of items.
 template<typename T>
-[[nodiscard]] constexpr T coalesce(std::initializer_list<T> list)
+[[nodiscard]]
+constexpr T coalesce(std::initializer_list<T> list)
     {
     for (const auto item : list)
         {
@@ -198,7 +205,8 @@ template<typename T>
     @param newDataRange The min and max of the range that the value is being rescaled to.
     @returns The value, rescaled to the new data range.
     @todo needs unit tests.*/
-[[nodiscard]] constexpr inline double scale_within(double unscaledValue,
+[[nodiscard]]
+constexpr inline double scale_within(double unscaledValue,
                                                    std::pair<double, double> dataRange,
                                                    std::pair<double, double> newDataRange)
     {
@@ -215,7 +223,8 @@ template<typename T>
      - 3 -> 100
      - 4 -> 1,000
     @todo needs a unit test.*/
-[[nodiscard]] constexpr inline double next_interval(const double value, const uint8_t intervalSize) noexcept
+[[nodiscard]]
+constexpr inline double next_interval(const double value, const uint8_t intervalSize) noexcept
     {
     return (intervalSize == 0) ? value :
         (std::ceil(value/std::pow(10, intervalSize-1))*std::pow(10, intervalSize-1));
@@ -230,7 +239,8 @@ template<typename T>
      - 3 -> 100
      - 4 -> 0
     @todo needs a unit test.*/
-[[nodiscard]] constexpr inline double previous_interval(const double value, const uint8_t intervalSize) noexcept
+[[nodiscard]]
+constexpr inline double previous_interval(const double value, const uint8_t intervalSize) noexcept
     {
     return (intervalSize == 0) ? value :
         (std::floor(value/std::pow(10, intervalSize-1))*std::pow(10, intervalSize-1));
@@ -238,11 +248,12 @@ template<typename T>
 
 /** @returns Intelligent intervals for @c start and @c end to fall within.
     @param start The start of the interval.
-    @param end The end of the interval.
-     For example:
+    @param end The end of the interval.\n
+     For example:\n
      - 0.75 & 4.2 -> 0-5
     @todo needs a unit test.*/
-[[nodiscard]] constexpr inline std::pair<double, double> adjust_intervals(const double start, const double end) noexcept
+[[nodiscard]]
+constexpr inline std::pair<double, double> adjust_intervals(const double start, const double end) noexcept
     {
     const auto rangeSize = (end-start);
     uint8_t intervalSize{ 1 };
@@ -272,7 +283,8 @@ template<typename T>
     @returns A 64-bit integer containing lowHalf in its lower half, and highHalf in the higher half.
     @param lowHalf The 32-bit integer to go into the lower half of the returned 64-bit integer.
     @param highHalf The 32-bit integer to go into the higher half of the returned 64-bit integer.*/
-[[nodiscard]] constexpr inline uint64_t join_int32s(const uint32_t lowHalf, const uint32_t highHalf) noexcept
+[[nodiscard]]
+constexpr inline uint64_t join_int32s(const uint32_t lowHalf, const uint32_t highHalf) noexcept
     {
     uint64_t sum = highHalf;
     sum = sum << 32;
@@ -284,7 +296,8 @@ template<typename T>
     @param value The 64-bit integer to split.
     @param[out] lowHalf The (32-bit) lower-half of the 64-bit integer.
     @param[out] highHalf The (32-bit) upper-half of the 64-bit integer.*/
-inline void split_int64(const uint64_t value, uint32_t& lowHalf, uint32_t& highHalf) noexcept
+inline
+void split_int64(const uint64_t value, uint32_t& lowHalf, uint32_t& highHalf) noexcept
     {
     highHalf = static_cast<uint32_t>(value >> 32);
     lowHalf = static_cast<uint32_t>(value);
@@ -292,16 +305,18 @@ inline void split_int64(const uint64_t value, uint32_t& lowHalf, uint32_t& highH
 
 /// @returns The mantissa (floating-point value beyond the decimal) of a double value.
 /// @param value The value to review.
-[[nodiscard]] inline double get_mantissa(const double value) noexcept
+[[nodiscard]]
+inline double get_mantissa(const double value) noexcept
     {
     double ifpart = 0;
     return std::modf(value, &ifpart);
     }
 
-/// @returns -1 for negative infinity, +1 for positive infinity, and 0 if finite.
+/// @returns @c -1 for negative infinity, @c +1 for positive infinity, and @c 0 if finite.
 /// @param value The value to review.
 template <typename T>
-[[nodiscard]] inline int is_infinity(T value) noexcept
+[[nodiscard]]
+inline int is_infinity(T value) noexcept
     {
     if (!std::numeric_limits<T>::has_infinity)
         return 0;
@@ -315,7 +330,8 @@ template <typename T>
 
 /// @returns Whether a double value has any floating-point data (up to 1e-6).
 /// @param value The value to review.
-[[nodiscard]] inline bool has_fractional_part(const double value) noexcept
+[[nodiscard]]
+inline bool has_fractional_part(const double value) noexcept
     {
     double ifpart = 0, fpart = 0;
     fpart = std::modf(value, &ifpart);
@@ -323,11 +339,12 @@ template <typename T>
     }
 
 /** @brief Rounds a (floating-point) number. Anything less than .5 is rounded down, anything equal
-     to or greater than .5 is rounded up.
+        to or greater than .5 is rounded up.
     @param x The number to round.
     @returns The rounded number.*/
 template<typename T>
-[[nodiscard]] inline double round_to_integer(const T x) noexcept
+[[nodiscard]]
+inline double round_to_integer(const T x) noexcept
     {
     double ipart = 0;
     const double fpart = modf(x, &ipart);
@@ -348,30 +365,32 @@ template<typename T>
 /** @brief Rounds a double value to a specified precision (e.g., 5.16 -> 5.2).
     @param x Value to round.
     @param decimalPlace The decimal place to round down to. 10 is the
-     tenths place, 100 the hundredths place, etc.
+        tenths place, 100 the hundredths place, etc.
     @returns The rounded number.*/
-[[nodiscard]] inline double round_decimal_place(const double x, const size_t decimalPlace) noexcept
+[[nodiscard]]
+inline double round_decimal_place(const double x, const size_t decimalPlace) noexcept
     {
     if (decimalPlace == 0)
         { return round_to_integer(x); }
     double ipart = 0;
     const double fpart = round_to_integer(modf(x, &ipart)*decimalPlace);
-    return safe_divide<double>(fpart, static_cast<double>(decimalPlace))+ipart;
+    return safe_divide<double>(fpart, static_cast<double>(decimalPlace)) + ipart;
     }
 
 /** @brief Truncates a double value down to a specified precision (e.g., 5.16 -> 5.1).
     @param x Value to truncated.
     @param decimalPlace The decimal place to truncate down to. 10 is the
-     tenths place, 100 the hundredths place, etc.
+        tenths place, 100 the hundredths place, etc.
     @returns The truncated value.
     @note Rounding is not used in this function, the number is simply "chopped" down to the specified precision.*/
-[[nodiscard]] inline double truncate_decimal_place(const double x, const size_t decimalPlace) noexcept
+[[nodiscard]]
+inline double truncate_decimal_place(const double x, const size_t decimalPlace) noexcept
     {
     double ipart{ 0 };
     const double fpart = (x < 0) ? ceil(modf(x, &ipart)*decimalPlace) : floor(modf(x, &ipart)*decimalPlace);
     if (decimalPlace == 0)
         { return ipart; }
-    return safe_divide<double>(fpart, static_cast<double>(decimalPlace))+ipart;
+    return safe_divide<double>(fpart, static_cast<double>(decimalPlace)) + ipart;
     }
 
 /// @brief Floors a number.
@@ -381,26 +400,30 @@ class floor_value
 public:
     /// @returns The floored value of @c value.
     /// @param value The value to floor.
-    [[nodiscard]] inline T operator()(const T& value) const noexcept
+    [[nodiscard]]
+    inline T operator()(const T& value) const noexcept
         { return std::floor(value); }
     };
 
 /// @returns Whether a number is even.
 /// @param value The number to review.
 template<typename T>
-[[nodiscard]] inline bool is_even(const T value) noexcept
+[[nodiscard]]
+inline constexpr bool is_even(const T value) noexcept
     { return (value%2) == 0; }
 /// @brief Specialized version of is_even() for (double) floating point value
-///  types that need to be "floored" first.
+///     types that need to be "floored" first.
 /// @param value The number to review.
 /// @returns Whether @c value is even.
-[[nodiscard]] inline bool is_even(const double value) noexcept
+[[nodiscard]]
+inline bool is_even(const double value) noexcept
     { return (static_cast<long>(std::floor(std::abs(value)))%2) == 0; }
 /// @brief Specialized version of is_even() for floating point value types
-///  that need to be "floored" first.
+///     that need to be "floored" first.
 /// @param value The number to review.
 /// @returns Whether @c value is even.
-[[nodiscard]] inline bool is_even(const float value) noexcept
+[[nodiscard]]
+inline bool is_even(const float value) noexcept
     { return (static_cast<long>(std::floor(std::abs(value)))%2) == 0; }
 
 /// @brief Determines if a number is even.
@@ -410,7 +433,8 @@ class even
 public:
     /// @returns Whether @c val is even.
     /// @param val The value to analyze.
-    [[nodiscard]] inline bool operator()(const T& val) const noexcept
+    [[nodiscard]]
+    inline bool operator()(const T& val) const noexcept
         { return is_even(val); }
     };
 
@@ -422,6 +446,7 @@ namespace geometry
         @param pt2 The second point.
         @returns The distance between the points.
         @todo Add unit test.*/
+    [[nodiscard]]
     inline double distance_between_points(const std::pair<double, double> pt1,
                                           const std::pair<double, double> pt2) noexcept
         {
@@ -435,6 +460,7 @@ namespace geometry
         @param pt The point to review.
         @returns @c true if the point is inside of the circle.
         @todo Add a unit test.*/
+    [[nodiscard]]
     inline bool is_point_inside_circle(const std::pair<double, double> ctr,
                                        const double radius,
                                        const std::pair<double, double> pt) noexcept
@@ -442,34 +468,39 @@ namespace geometry
     /** @brief Calculates the width of a rectangle that can fit inside of a circle.
         @param radius The radius of the circle.
         @returns The width of the largest rectangle that can fit inside of the circle.*/
-    [[nodiscard]] inline double radius_to_inner_rect_width(const double radius) noexcept
+    [[nodiscard]]
+    inline double radius_to_inner_rect_width(const double radius) noexcept
         { return radius * std::sqrt(2); }
     /** @brief Converts circumference to radius.
         @param circumference The circumference of the circle.
         @returns The radius of the circle.*/
-    [[nodiscard]] constexpr inline double circumference_to_radius(const double circumference) noexcept
+    [[nodiscard]]
+    constexpr inline double circumference_to_radius(const double circumference) noexcept
         { return safe_divide<double>(safe_divide<double>(circumference, M_PI), 2); }
 
     /** @brief Converts degrees (i.e., an angle) to radians.
         @param degrees The degrees to convert.
         @returns The degrees (angle), converted to radians.*/
-    [[nodiscard]] constexpr inline double degrees_to_radians(const double degrees) noexcept
+    [[nodiscard]]
+    constexpr inline double degrees_to_radians(const double degrees) noexcept
         { return degrees * M_PI/static_cast<double>(180); }
 
     /** @brief Converts radians to degrees (i.e., an angle).
         @param radians The radians to convert.
         @returns The radians, converted to degrees.*/
-    [[nodiscard]] constexpr inline double radians_to_degrees(const double radians) noexcept
+    [[nodiscard]]
+    constexpr inline double radians_to_degrees(const double radians) noexcept
         { return radians * 180/static_cast<double>(M_PI); }
 
     /** @brief Given a square area with an arc drawn from its center point counter-clockwise
-         (from the 3 o'clock position), calculates where the end point of the arc would be at.
+            (from the 3 o'clock position), calculates where the end point of the arc would be at.
         @param areaSize The size of the area with the arc drawn within it.
         @param degrees The angle (in degrees) of the arc, drawn from 3 o'clock going counter clockwise.
         @returns The end point of the arc.*/
-    [[nodiscard]] constexpr inline std::pair<double, double> calc_arc_vertex(
-                                                            std::pair<double, double> areaSize,
-                                                            const double degrees) noexcept
+    [[nodiscard]]
+    constexpr inline std::pair<double, double> arc_vertex(
+        std::pair<double, double> areaSize,
+        const double degrees) noexcept
         {
         return std::make_pair(
             (areaSize.first * safe_divide<double>(std::cos(degrees_to_radians(degrees)), 2) +
@@ -481,7 +512,7 @@ namespace geometry
     /** @returns The height of a right triangle, using the angle between the slope and the base side.
         @param hypotenuse The hypotenuse of the triangle (the slope of the triangle).
         @param angleInDegrees The angle between the hypotenuse and bottom side
-         (this angle is opposite from the height side).
+            (this angle is opposite from the height side).
 
                |*
              h |  *
@@ -493,8 +524,9 @@ namespace geometry
                |      angle   *
                |________________*
                      width        */
-    [[nodiscard]] inline double calc_right_triangle_height_opposite_angle(const double hypotenuse,
-                                                                          const double angleInDegrees) noexcept
+    [[nodiscard]]
+    inline double right_triangle_height_opposite_angle(const double hypotenuse,
+                                                       const double angleInDegrees) noexcept
         { return (std::sin(degrees_to_radians(angleInDegrees)) * hypotenuse); }
 
     /** @returns The height of a right triangle, using the angle between the slope and the height side.
@@ -511,16 +543,18 @@ namespace geometry
                |              *
                |________________*
                      width        */
-    [[nodiscard]] inline double calc_right_triangle_height_adjacent_angle(const double hypotenuse,
-                                                                          const double angleInDegrees) noexcept
+    [[nodiscard]]
+    inline double right_triangle_height_adjacent_angle(const double hypotenuse,
+                                                       const double angleInDegrees) noexcept
         { return (std::cos(degrees_to_radians(angleInDegrees)) * hypotenuse); }
 
     /** @returns The line segment length between two points.
         @param pt1 The first point.
         @param pt2 The second point.
         @note The ordering of points doesn't matter, the length will be the same either way.*/
-    [[nodiscard]] inline double calc_segment_length(const std::pair<double,double> pt1,
-                                                    const std::pair<double,double> pt2) noexcept
+    [[nodiscard]]
+    inline double segment_length(const std::pair<double, double> pt1,
+                                 const std::pair<double, double> pt2) noexcept
         { return std::sqrt(std::pow(pt1.first-pt2.first, 2) + std::pow(pt1.second-pt2.second, 2)); }
 
     /** @brief Gets the middle point between two points.
@@ -567,8 +601,9 @@ namespace geometry
         @param pt1 The first point of the line segment.
         @param pt2 The second point of the line segment.
         @note The angle is going from @c pt1 to @c pt2.*/
-    [[nodiscard]] inline double calc_segment_angle_degrees(const std::pair<double,double> pt1,
-                                                           const std::pair<double,double> pt2) noexcept
+    [[nodiscard]]
+    inline double segment_angle_degrees(const std::pair<double, double> pt1,
+                                        const std::pair<double, double> pt2) noexcept
         { return radians_to_degrees(std::atan2(pt2.second-pt1.second, pt2.first-pt1.first)); }
 
     /** @brief Given an angle and line length, finds end point of the line.
@@ -577,48 +612,51 @@ namespace geometry
         @param origin The x,y origin of the line.
         @returns The x,y end of the line.
         @todo needs unit tested.*/
-    [[nodiscard]] inline std::pair<double,double> find_point(const double angleInDegrees,
+    [[nodiscard]]
+    inline std::pair<double, double> find_point(const double angleInDegrees,
                                                const double length,
-                                               const std::pair<double,double> origin) noexcept
+                                               const std::pair<double, double> origin) noexcept
         {
         return std::make_pair(origin.first + length*std::cos(degrees_to_radians(angleInDegrees)),
                               origin.second + length*std::sin(degrees_to_radians(angleInDegrees)) );
         }
 
     /** @brief Given a starting size, calculate the new height if the size is rescaled
-         to the given width, maintaining the aspect ratio.
+            to the given width, maintaining the aspect ratio.
         @returns The rescaled height.
         @param size The starting size (width x height).
         @param newWidth The width to scale the image to.
         @returns The new height.
         @note A negative new width will yield a zero height (a negative width is nonsensical,
-         but at least try to return something sensical).*/
-    [[nodiscard]] inline double calculate_rescale_height(const std::pair<double,double> size,
-                                                         const double newWidth) noexcept
+            but at least try to return something sensical).*/
+    [[nodiscard]]
+    inline double rescaled_height(const std::pair<double, double> size,
+                                           const double newWidth) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newWidth >= 0) &&
             "size value cannot be negative");
         if (size.first < 0 || size.second < 0 || newWidth < 0)
             { return 0; }
-        return (newWidth<=0) ? 0 : (size.second*safe_divide<double>(newWidth,size.first));
+        return (newWidth <= 0) ? 0 : (size.second*safe_divide<double>(newWidth,size.first));
         }
 
     /** @brief Given a starting size, calculate the new width if the size is rescaled
-         to the given height, maintaining the aspect ratio.
+            to the given height, maintaining the aspect ratio.
         @returns The rescaled width.
         @param size The starting size (width x height).
         @param newHeight The height to scale the image to.
         @returns The new width.
         @note A negative new height will yield a zero width (a negative height is nonsensical,
-         but at least try to return something sensical).*/
-    [[nodiscard]] inline double calculate_rescale_width(const std::pair<double,double> size,
-                                                        const double newHeight) noexcept
+            but at least try to return something sensical).*/
+    [[nodiscard]]
+    inline double rescaled_width(const std::pair<double, double> size,
+                                          const double newHeight) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 && newHeight >= 0) &&
             "size value cannot be negative");
         if (size.first < 0 || size.second < 0 || newHeight < 0)
             { return 0; }
-        return (newHeight<=0) ? 0: (size.first*safe_divide<double>(newHeight,size.second));
+        return (newHeight <=0 ) ? 0: (size.first*safe_divide<double>(newHeight,size.second));
         }
 
     /** @brief Takes a size (width x height) and fits it into a smaller bounding box.
@@ -628,9 +666,10 @@ namespace geometry
         @note The assumption here is that @c size is either wider or taller (or both) than
             @c boundingSize and that it is being scaled down to fit inside of @c boundingSize.
             If it is already small enough to fit in @c boundingSize, then the original size is returned.*/
-    [[nodiscard]] inline std::pair<double, double> calculate_downscaled_size(
-                                                const std::pair<double,double> size,
-                                                const std::pair<double,double> boundingSize) noexcept
+    [[nodiscard]]
+    inline std::pair<double, double> downscaled_size(
+        const std::pair<double, double> size,
+        const std::pair<double, double> boundingSize) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 &&
                               boundingSize.first >= 0 && boundingSize.second >= 0) &&
@@ -643,10 +682,10 @@ namespace geometry
             { return size; }
         // original height is larger, so scale down by height
         else if (size.first <= boundingSize.first && size.second > boundingSize.second)
-            { return std::make_pair(calculate_rescale_width(size, boundingSize.second), boundingSize.second); }
+            { return std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second); }
         // original width is larger, so scale down by width
         else if (size.first > boundingSize.first && size.second <= boundingSize.second)
-            { return std::make_pair(boundingSize.first, calculate_rescale_height(size, boundingSize.first)); }
+            { return std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first)); }
         // original width and height are both larger,
         // but width is more proportionally larger, so scale down by that
         else if (size.first > boundingSize.first && size.second > boundingSize.second &&
@@ -654,17 +693,17 @@ namespace geometry
             {
             // shrink the width to the bounding box and scale down the height maintaining the aspect ratio
             const auto adjustedSize = std::make_pair(boundingSize.first,
-                                                     calculate_rescale_height(size, boundingSize.first));
+                                                     rescaled_height(size, boundingSize.first));
             // the scale it down to the bounding box
-            return calculate_downscaled_size(adjustedSize, boundingSize);
+            return downscaled_size(adjustedSize, boundingSize);
             }
         // otherwise, original width and height are both larger,
         // but height is more proportionally larger, so scale down by that
         else
             {
-            const auto adjustedSize = std::make_pair(calculate_rescale_width(size, boundingSize.second),
+            const auto adjustedSize = std::make_pair(rescaled_width(size, boundingSize.second),
                                                      boundingSize.second);
-            return calculate_downscaled_size(adjustedSize, boundingSize);
+            return downscaled_size(adjustedSize, boundingSize);
             }
         }
 
@@ -676,9 +715,10 @@ namespace geometry
             @c boundingSize and that it is being upscaled to fit inside of @c boundingSize.
             If it is already larger enough to consume one of the dimensions of @c boundingSize,
             then the original size is returned.*/
-    [[nodiscard]] inline std::pair<double, double> calculate_upscaled_size(
-                                    const std::pair<double,double> size,
-                                    const std::pair<double,double> boundingSize) noexcept
+    [[nodiscard]]
+    inline std::pair<double, double> upscaled_size(
+        const std::pair<double, double> size,
+        const std::pair<double, double> boundingSize) noexcept
         {
         NON_UNIT_TEST_ASSERT((size.first >= 0 && size.second >= 0 &&
                               boundingSize.first >= 0 && boundingSize.second >= 0) &&
@@ -691,10 +731,10 @@ namespace geometry
             { return size; }
         // original height is smaller, so scale up by height
         else if (size.first >= boundingSize.first && size.second < boundingSize.second)
-            { return std::make_pair(calculate_rescale_width(size, boundingSize.second), boundingSize.second); }
+            { return std::make_pair(rescaled_width(size, boundingSize.second), boundingSize.second); }
         // original width is smaller, so scale up by width
         else if (size.first < boundingSize.first && size.second >= boundingSize.second)
-            { return std::make_pair(boundingSize.first, calculate_rescale_height(size, boundingSize.first)); }
+            { return std::make_pair(boundingSize.first, rescaled_height(size, boundingSize.first)); }
         // original width and height are both smaller,
         // but width is more proportionally smaller, so scale up by that
         else if (size.first < boundingSize.first && size.second < boundingSize.second &&
@@ -702,17 +742,17 @@ namespace geometry
             {
             // grow the width to the bounding box and scale up the height maintaining the aspect ratio
             const auto adjustedSize = std::make_pair(boundingSize.first,
-                                                     calculate_rescale_height(size, boundingSize.first));
+                                                     rescaled_height(size, boundingSize.first));
             // the scale it up to the bounding box
-            return calculate_downscaled_size(adjustedSize, boundingSize);
+            return downscaled_size(adjustedSize, boundingSize);
             }
         // otherwise, original width and height are both smaller,
         // but height is more proportionally smaller, so scale up by that
         else
             {
-            const auto adjustedSize = std::make_pair(calculate_rescale_width(size, boundingSize.second),
+            const auto adjustedSize = std::make_pair(rescaled_width(size, boundingSize.second),
                                                      boundingSize.second);
-            return calculate_downscaled_size(adjustedSize, boundingSize);
+            return downscaled_size(adjustedSize, boundingSize);
             }
         }
     };

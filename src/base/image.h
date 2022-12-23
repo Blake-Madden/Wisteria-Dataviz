@@ -469,7 +469,7 @@ private:
         [[nodiscard]]
         bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }
-        /// @brief Helper for calling calculate_downscaled_size().
+        /// @brief Helper for calling downscaled_size().
         /// @param sz The size to convert.
         /// @returns The @c wxSize object, wrapped into a `std::pair`.
         [[nodiscard]]

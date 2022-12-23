@@ -21,7 +21,7 @@ namespace Wisteria::GraphItems
         if (!m_leftImage.IsOk())
             { return wxSize(0, 0); }
         const auto imgHeight = std::min(m_leftImage.GetDefaultSize().GetHeight(), textHeight);
-        const auto imgWidth = geometry::calculate_rescale_width(
+        const auto imgWidth = geometry::rescaled_width(
             { m_leftImage.GetDefaultSize().GetWidth(), m_leftImage.GetDefaultSize().GetHeight() },
             imgHeight);
         return wxSize(imgWidth, imgHeight);
@@ -33,7 +33,7 @@ namespace Wisteria::GraphItems
         if (!m_topImage.IsOk())
             { return wxSize(0, 0); }
         const auto imgWidth = std::min(m_topImage.GetDefaultSize().GetWidth(), textWidth);
-        const auto imgHeight = geometry::calculate_rescale_height(
+        const auto imgHeight = geometry::rescaled_height(
             { m_topImage.GetDefaultSize().GetWidth(), m_topImage.GetDefaultSize().GetHeight() },
             imgWidth);
         return wxSize(imgWidth, imgHeight);

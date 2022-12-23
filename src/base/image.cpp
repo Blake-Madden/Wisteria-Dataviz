@@ -70,7 +70,7 @@ namespace Wisteria::GraphItems
             // the height evenly on the top and bottom
             if (heightRatio >= weightRatio)
                 {
-                const auto scaledHeight = geometry::calculate_rescale_height(
+                const auto scaledHeight = geometry::rescaled_height(
                     std::make_pair(img.GetWidth(),
                                    img.GetHeight()),
                     rect.GetSize().GetWidth());
@@ -90,7 +90,7 @@ namespace Wisteria::GraphItems
                 }
             else
                 {
-                const auto scaledWidth = geometry::calculate_rescale_width(
+                const auto scaledWidth = geometry::rescaled_width(
                     std::make_pair(img.GetWidth(),
                                    img.GetHeight()),
                     rect.GetSize().GetHeight());
@@ -596,7 +596,7 @@ namespace Wisteria::GraphItems
                        background.GetSize().GetHeight()-shadowSize) :
                 background.GetSize();
 
-            auto adjustedSize = geometry::calculate_downscaled_size(wxSizeToPair(stipple.GetSize()),
+            auto adjustedSize = geometry::downscaled_size(wxSizeToPair(stipple.GetSize()),
                                                                     wxSizeToPair(canvasSize));
             // if the image is less than the height of the background
             // (but was originally wider than the background),
@@ -605,7 +605,7 @@ namespace Wisteria::GraphItems
                 stipple.GetHeight() >= canvasSize.GetHeight())
                 {
                 adjustedSize = std::make_pair(
-                    geometry::calculate_rescale_width(
+                    geometry::rescaled_width(
                         wxSizeToPair(stipple.GetSize()), canvasSize.GetHeight()),
                     canvasSize.GetHeight());
                 }
@@ -635,7 +635,7 @@ namespace Wisteria::GraphItems
                 wxSize(background.GetSize().GetWidth()-shadowSize, background.GetSize().GetHeight()) :
                 background.GetSize();
 
-            auto adjustedSize = geometry::calculate_downscaled_size(wxSizeToPair(stipple.GetSize()),
+            auto adjustedSize = geometry::downscaled_size(wxSizeToPair(stipple.GetSize()),
                                                                     wxSizeToPair(canvasSize));
             // if the image is less than the width of the background
             // (but was originally wider than the background),
@@ -644,7 +644,7 @@ namespace Wisteria::GraphItems
                 stipple.GetWidth() >= canvasSize.GetWidth())
                 {
                 adjustedSize = std::make_pair(canvasSize.GetWidth(),
-                    geometry::calculate_rescale_height(
+                    geometry::rescaled_height(
                         wxSizeToPair(stipple.GetSize()), canvasSize.GetWidth()));
                 }
             const wxBitmap scaledStipple = stipple.Scale(adjustedSize.first,
@@ -676,7 +676,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Image::SetWidth(const wxCoord width)
         {
-        m_size = wxSize(width, geometry::calculate_rescale_height(
+        m_size = wxSize(width, geometry::rescaled_height(
             std::make_pair<double, double>(m_originalImg.GetWidth(),
                                            m_originalImg.GetHeight()), width));
         m_frameSize = m_size;
@@ -685,7 +685,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     void Image::SetHeight(const wxCoord height)
         {
-        m_size = wxSize(geometry::calculate_rescale_width(
+        m_size = wxSize(geometry::rescaled_width(
             std::make_pair<double, double>(m_originalImg.GetWidth(),
                                            m_originalImg.GetHeight()), height), height);
         m_frameSize = m_size;
@@ -700,7 +700,7 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxSize Image::SetBestSize(const wxSize suggestedSz)
         {
-        const auto [width, height] = geometry::calculate_downscaled_size(
+        const auto [width, height] = geometry::downscaled_size(
             std::make_pair<double, double>(m_originalImg.GetWidth(), m_originalImg.GetHeight()),
             wxSizeToPair(suggestedSz));
         m_size = m_frameSize = wxSize(std::ceil(width), std::ceil(height));
@@ -714,7 +714,7 @@ namespace Wisteria::GraphItems
         if (originalSz.GetWidth() <= suggestedSz.GetWidth() &&
             originalSz.GetHeight() <= suggestedSz.GetHeight())
             {
-            const auto [width, height] = geometry::calculate_upscaled_size(
+            const auto [width, height] = geometry::upscaled_size(
                 std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
                 wxSizeToPair(suggestedSz));
             return wxSize(std::ceil(width), std::ceil(height));
@@ -723,7 +723,7 @@ namespace Wisteria::GraphItems
         else if (originalSz.GetWidth() >= suggestedSz.GetWidth() &&
             originalSz.GetHeight() >= suggestedSz.GetHeight())
             {
-            const auto [width, height] = geometry::calculate_downscaled_size(
+            const auto [width, height] = geometry::downscaled_size(
                 std::make_pair<double, double>(originalSz.GetWidth(), originalSz.GetHeight()),
                 wxSizeToPair(suggestedSz));
             return wxSize(std::ceil(width), std::ceil(height));
@@ -756,7 +756,7 @@ namespace Wisteria::GraphItems
         // adjust the height to fit the bounding box
         if (GetResizeMethod() == ResizeMethod::DownscaleOrUpscale)
             {
-            m_size = wxSize(geometry::calculate_rescale_width(
+            m_size = wxSize(geometry::rescaled_width(
                 std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(),
                                                m_originalImg.GetSize().GetHeight()),
                 rect.GetHeight()), rect.GetHeight());
@@ -764,21 +764,21 @@ namespace Wisteria::GraphItems
             // adjust the width to the rect and rescale the height to this new width
             if (m_size.GetWidth() > rect.GetWidth())
                 {
-                m_size = wxSize(rect.GetWidth(), geometry::calculate_rescale_height(
+                m_size = wxSize(rect.GetWidth(), geometry::rescaled_height(
                     std::make_pair<double, double>(m_size.GetWidth(),m_size.GetHeight()),
                                                    rect.GetWidth()));
                 }
             }
         else if (GetResizeMethod() == ResizeMethod::DownscaleOnly)
             {
-            auto downSize = geometry::calculate_downscaled_size(
+            auto downSize = geometry::downscaled_size(
                     std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
                     std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
             m_size = wxSize(downSize.first, downSize.second);
             }
         else if (GetResizeMethod() == ResizeMethod::UpscaleOnly)
             {
-            auto downSize = geometry::calculate_upscaled_size(
+            auto downSize = geometry::upscaled_size(
                     std::make_pair<double, double>(m_originalImg.GetSize().GetWidth(), m_originalImg.GetHeight()),
                     std::make_pair<double, double>(rect.GetWidth(), rect.GetHeight()));
             m_size = wxSize(downSize.first, downSize.second);
@@ -923,7 +923,7 @@ namespace Wisteria::GraphItems
 
         // Draw the shadow. This needs to be a polygon outside of the image
         // in case the image is translucent.
-        if (GetShadowType() != ShadowType::NoShadow && !IsSelected() &&
+        if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
             GetBoundingBox(dc).GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
             wxDCPenChanger pc(dc, wxPen(GetShadowColour(), ScaleToScreenAndCanvas(1)));

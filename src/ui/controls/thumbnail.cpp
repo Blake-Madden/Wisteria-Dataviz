@@ -202,7 +202,7 @@ namespace Wisteria::UI
             wxBitmap canvasBmp{ m_img.GetOriginalImage() };
 
             const std::pair<double,double> scaledSize =
-                geometry::calculate_downscaled_size(
+                geometry::downscaled_size(
                     std::make_pair<double, double>(canvasBmp.GetWidth(),canvasBmp.GetHeight()),
                     std::make_pair<double, double>(wxSystemSettings::GetMetric(wxSYS_SCREEN_X),
                                                    wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)));

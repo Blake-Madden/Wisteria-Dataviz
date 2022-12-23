@@ -236,7 +236,7 @@ PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
         int w{ 0 }, h{ 0 };
         printOut->GetPageSizePixels(&w, &h);
         const auto scaledHeight =
-            geometry::calculate_rescale_height(std::make_pair(w, h), m_originalMinWidth);
+            geometry::rescaled_height(std::make_pair(w, h), m_originalMinWidth);
 
         if (scaledHeight > 0) // sanity check in case page size calc failed
             {

@@ -22,28 +22,28 @@ TEST_CASE("Right triangles", "[geometry]")
     {
     SECTION("OppositeSide")
         {
-        CHECK_THAT(11.979, WithinRel(geometry::calc_right_triangle_height_opposite_angle(15, 53), 1e-3));
+        CHECK_THAT(11.979, WithinRel(geometry::right_triangle_height_opposite_angle(15, 53), 1e-3));
         }
 
     SECTION("OppositeSide2")
         {
-        CHECK_THAT(500, WithinRel(geometry::calc_right_triangle_height_adjacent_angle(1000, 60), 1e-3));
+        CHECK_THAT(500, WithinRel(geometry::right_triangle_height_adjacent_angle(1000, 60), 1e-3));
         }
 
     SECTION("LineLength")
         {
-        CHECK_THAT(7.8102, WithinRel(geometry::calc_segment_length(std::make_pair(3,2),std::make_pair(9,7)), 1e-3));
-        CHECK_THAT(7.8102, WithinRel(geometry::calc_segment_length(std::make_pair(9,7),std::make_pair(3,2)), 1e-3));
-        CHECK_THAT(11.66, WithinRel(geometry::calc_segment_length(std::make_pair(-3,5),std::make_pair(7,-1)), 1e-2));
+        CHECK_THAT(7.8102, WithinRel(geometry::segment_length(std::make_pair(3,2),std::make_pair(9,7)), 1e-3));
+        CHECK_THAT(7.8102, WithinRel(geometry::segment_length(std::make_pair(9,7),std::make_pair(3,2)), 1e-3));
+        CHECK_THAT(11.66, WithinRel(geometry::segment_length(std::make_pair(-3,5),std::make_pair(7,-1)), 1e-2));
         }
 
     SECTION("LineAngle")
         {
-        CHECK_THAT(0, WithinRel(geometry::calc_segment_angle_degrees(std::make_pair(0,0),std::make_pair(100,0)), 1e-3));
-        CHECK_THAT(90, WithinRel(geometry::calc_segment_angle_degrees(std::make_pair(0,0),std::make_pair(0,100)), 1e-3));
-        CHECK_THAT(180, WithinRel(geometry::calc_segment_angle_degrees(std::make_pair(0,0),std::make_pair(-100,0)), 1e-3));
-        CHECK_THAT(45, WithinRel(geometry::calc_segment_angle_degrees(std::make_pair(0,0),std::make_pair(5,5)), 1e-3));
-        CHECK_THAT(-45, WithinRel(geometry::calc_segment_angle_degrees(std::make_pair(0,0),std::make_pair(5,-5)), 1e-3));
+        CHECK_THAT(0, WithinRel(geometry::segment_angle_degrees(std::make_pair(0,0),std::make_pair(100,0)), 1e-3));
+        CHECK_THAT(90, WithinRel(geometry::segment_angle_degrees(std::make_pair(0,0),std::make_pair(0,100)), 1e-3));
+        CHECK_THAT(180, WithinRel(geometry::segment_angle_degrees(std::make_pair(0,0),std::make_pair(-100,0)), 1e-3));
+        CHECK_THAT(45, WithinRel(geometry::segment_angle_degrees(std::make_pair(0,0),std::make_pair(5,5)), 1e-3));
+        CHECK_THAT(-45, WithinRel(geometry::segment_angle_degrees(std::make_pair(0,0),std::make_pair(5,-5)), 1e-3));
         }
     }
 
@@ -51,70 +51,70 @@ TEST_CASE("Rescale", "[geometry]")
     {
     SECTION("Width")
         {
-        CHECK_THAT(50, WithinRel(geometry::calculate_rescale_height(std::make_pair(200, 100), 100), 1e-4));
-        CHECK_THAT(125, WithinRel(geometry::calculate_rescale_height(std::make_pair(400, 250), 200), 1e-4));
-        CHECK_THAT(300, WithinRel(geometry::calculate_rescale_height(std::make_pair(200, 150), 400), 1e-4));
+        CHECK_THAT(50, WithinRel(geometry::rescaled_height(std::make_pair(200, 100), 100), 1e-4));
+        CHECK_THAT(125, WithinRel(geometry::rescaled_height(std::make_pair(400, 250), 200), 1e-4));
+        CHECK_THAT(300, WithinRel(geometry::rescaled_height(std::make_pair(200, 150), 400), 1e-4));
         // dumb new widths should return zero
-        CHECK_THAT(0, WithinRel(geometry::calculate_rescale_height(std::make_pair(400, 250), 0), 1e-4));
-        CHECK_THAT(0, WithinRel(geometry::calculate_rescale_height(std::make_pair(400, 250), -100), 1e-4));
+        CHECK_THAT(0, WithinRel(geometry::rescaled_height(std::make_pair(400, 250), 0), 1e-4));
+        CHECK_THAT(0, WithinRel(geometry::rescaled_height(std::make_pair(400, 250), -100), 1e-4));
         }
     SECTION("Height")
         {
-        CHECK_THAT(100, WithinRel(geometry::calculate_rescale_width(std::make_pair(200, 100), 50), 1e-4));
-        CHECK_THAT(125, WithinRel(geometry::calculate_rescale_width(std::make_pair(250, 400), 200), 1e-4));
-        CHECK_THAT(500, WithinRel(geometry::calculate_rescale_width(std::make_pair(250, 400), 800), 1e-4));
+        CHECK_THAT(100, WithinRel(geometry::rescaled_width(std::make_pair(200, 100), 50), 1e-4));
+        CHECK_THAT(125, WithinRel(geometry::rescaled_width(std::make_pair(250, 400), 200), 1e-4));
+        CHECK_THAT(500, WithinRel(geometry::rescaled_width(std::make_pair(250, 400), 800), 1e-4));
         // dumb new widths should return zero
-        CHECK_THAT(0, WithinRel(geometry::calculate_rescale_width(std::make_pair(400, 250), 0), 1e-4));
-        CHECK_THAT(0, WithinRel(geometry::calculate_rescale_width(std::make_pair(400, 250), -100), 1e-4));
+        CHECK_THAT(0, WithinRel(geometry::rescaled_width(std::make_pair(400, 250), 0), 1e-4));
+        CHECK_THAT(0, WithinRel(geometry::rescaled_width(std::make_pair(400, 250), -100), 1e-4));
         }
     SECTION("DownscaleNoScale")
         {
         std::pair<double, double> result =
-            geometry::calculate_downscaled_size(std::make_pair(200, 100), std::make_pair(200, 100));
+            geometry::downscaled_size(std::make_pair(200, 100), std::make_pair(200, 100));
         CHECK_THAT(200, WithinRel(result.first, 1e-4));
         CHECK_THAT(100, WithinRel(result.second, 1e-4));
 
         result =
-            geometry::calculate_downscaled_size(std::make_pair(200, 100), std::make_pair(300, 110));
+            geometry::downscaled_size(std::make_pair(200, 100), std::make_pair(300, 110));
         CHECK_THAT(200, WithinRel(result.first, 1e-4));
         CHECK_THAT(100, WithinRel(result.second, 1e-4));
 
         // dumb values
         result =
-            geometry::calculate_downscaled_size(std::make_pair(200, 100), std::make_pair(300, -110));
+            geometry::downscaled_size(std::make_pair(200, 100), std::make_pair(300, -110));
         CHECK_THAT(0, WithinRel(result.first, 1e-4));
         CHECK_THAT(0, WithinRel(result.second, 1e-4));
 
         result =
-            geometry::calculate_downscaled_size(std::make_pair(200, 100), std::make_pair(-300, 110));
+            geometry::downscaled_size(std::make_pair(200, 100), std::make_pair(-300, 110));
         CHECK_THAT(0, WithinRel(result.first, 1e-4));
         CHECK_THAT(0, WithinRel(result.second, 1e-4));
         }
     SECTION("DownscaleByHeight")
         {
         std::pair<double, double> result =
-            geometry::calculate_downscaled_size(std::make_pair(400, 100), std::make_pair(200, 100));
+            geometry::downscaled_size(std::make_pair(400, 100), std::make_pair(200, 100));
         CHECK_THAT(200, WithinRel(result.first, 1e-4));
         CHECK_THAT(50, WithinRel(result.second, 1e-4));
         }
     SECTION("DownscaleByWidth")
         {
         std::pair<double, double> result =
-            geometry::calculate_downscaled_size(std::make_pair(200, 200), std::make_pair(200, 100));
+            geometry::downscaled_size(std::make_pair(200, 200), std::make_pair(200, 100));
         CHECK_THAT(100, WithinRel(result.first, 1e-4));
         CHECK_THAT(100, WithinRel(result.second, 1e-4));
         }
     SECTION("DownscaleByBothUseWidth")
         {
         std::pair<double, double> result =
-            geometry::calculate_downscaled_size(std::make_pair(800, 200), std::make_pair(200, 100));
+            geometry::downscaled_size(std::make_pair(800, 200), std::make_pair(200, 100));
         CHECK_THAT(200, WithinRel(result.first, 1e-4));
         CHECK_THAT(50, WithinRel(result.second, 1e-4));
         }
     SECTION("DownscaleByBothUseHeight")
         {
         std::pair<double, double> result =
-            geometry::calculate_downscaled_size(std::make_pair(400, 800), std::make_pair(200, 100));
+            geometry::downscaled_size(std::make_pair(400, 800), std::make_pair(200, 100));
         CHECK_THAT(50, WithinRel(result.first, 1e-4));
         CHECK_THAT(100, WithinRel(result.second, 1e-4));
         }

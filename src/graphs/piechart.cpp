@@ -236,7 +236,7 @@ namespace Wisteria::GraphItems
         outerRect.Offset(
             wxPoint(safe_divide(pieArea.GetWidth()-outerRect.GetWidth(), 2),
                     safe_divide(pieArea.GetHeight()-outerRect.GetHeight(), 2)));
-        auto midPt = geometry::calc_arc_vertex(
+        auto midPt = geometry::arc_vertex(
             std::make_pair(outerRect.GetWidth(), outerRect.GetHeight()),
             m_startAngle + ((m_endAngle - m_startAngle) / 2));
         // in case the rect doesn't start at (0, 0), offset the point
@@ -254,35 +254,35 @@ namespace Wisteria::GraphItems
         {
         std::vector<wxPoint> points;
 
-        auto startSweep = geometry::calc_arc_vertex(
+        auto startSweep = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_startAngle);
         // in case the rect doesn't start at (0, 0), offset the point
         startSweep.first += m_pieArea.GetTopLeft().x;
         startSweep.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(startSweep));
 
-        auto middleSweep1 = geometry::calc_arc_vertex(
+        auto middleSweep1 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::quarter) + m_startAngle);
         middleSweep1.first += m_pieArea.GetTopLeft().x;
         middleSweep1.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep1));
 
-        auto middleSweep2 = geometry::calc_arc_vertex(
+        auto middleSweep2 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::half) + m_startAngle);
         middleSweep2.first += m_pieArea.GetTopLeft().x;
         middleSweep2.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep2));
 
-        auto middleSweep3 = geometry::calc_arc_vertex(
+        auto middleSweep3 = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()),
             ((m_endAngle-m_startAngle) * math_constants::three_quarters) + m_startAngle);
         middleSweep3.first += m_pieArea.GetTopLeft().x;
         middleSweep3.second += m_pieArea.GetTopLeft().y;
         points.emplace_back(Polygon::PairToPoint(middleSweep3));
 
-        auto endSweep = geometry::calc_arc_vertex(
+        auto endSweep = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_endAngle);
         endSweep.first += m_pieArea.GetTopLeft().x;
         endSweep.second += m_pieArea.GetTopLeft().y;
@@ -331,7 +331,7 @@ namespace Wisteria::GraphItems
                                m_startAngle, m_endAngle);
             }
         // line from the pie center to the start of the arc
-        auto arcStart = geometry::calc_arc_vertex(std::make_pair(
+        auto arcStart = geometry::arc_vertex(std::make_pair(
             m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_startAngle);
         arcStart.first += m_pieArea.GetTopLeft().x;
         arcStart.second += m_pieArea.GetTopLeft().y;
@@ -340,7 +340,7 @@ namespace Wisteria::GraphItems
             dc.DrawLine(centerPoint, wxPoint(arcStart.first, arcStart.second));
             }
         // line from the pie center to the end of the arc
-        auto arcEnd = geometry::calc_arc_vertex(
+        auto arcEnd = geometry::arc_vertex(
             std::make_pair(m_pieArea.GetWidth(), m_pieArea.GetHeight()), m_endAngle);
         arcEnd.first += m_pieArea.GetTopLeft().x;
         arcEnd.second += m_pieArea.GetTopLeft().y;
@@ -792,7 +792,7 @@ namespace Wisteria::Graphs
                 {
                 const auto sliceBBox = pSlice->GetBoundingBox(dc);
                 const auto& bmp = GetImageScheme()->GetImage(i);
-                const auto bmpSize = geometry::calculate_downscaled_size(
+                const auto bmpSize = geometry::downscaled_size(
                     std::make_pair(bmp.GetDefaultSize().GetWidth(), bmp.GetDefaultSize().GetHeight()),
                     std::make_pair(sliceBBox.GetWidth(), sliceBBox.GetHeight()));
                 auto sliceBmp = bmp.GetBitmap(wxSize(bmpSize.first, bmpSize.second));
