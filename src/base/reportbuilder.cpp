@@ -795,6 +795,15 @@ namespace Wisteria
             {
             if (brushNode->IsValueNull())
                 { brush = wxNullBrush; }
+            // just a color string
+            else if (brushNode->IsValueString())
+                {
+                const wxColour brushColor(
+                    ConvertColor(brushNode->GetValueString()));
+                if (brushColor.IsOk())
+                    { brush.SetColour(brushColor); }
+                }
+            // or a full definition
             else
                 {
                 const wxColour brushColor(
@@ -802,7 +811,8 @@ namespace Wisteria
                 if (brushColor.IsOk())
                     { brush.SetColour(brushColor); }
 
-                const auto foundStyle = ConvertBrushStyle(brushNode->GetProperty(L"style")->GetValueString());
+                const auto foundStyle =
+                    ConvertBrushStyle(brushNode->GetProperty(L"style")->GetValueString());
                 if (foundStyle)
                     { brush.SetStyle(foundStyle.value()); }
                 }
