@@ -801,8 +801,8 @@ namespace Wisteria::Graphs
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -818,8 +818,8 @@ namespace Wisteria::Graphs
                                          barRect, true));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -837,13 +837,13 @@ namespace Wisteria::Graphs
                                     GetStippleBrush().GetBitmap(
                                         GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                                     wxSize(barLength, barWidth),
-                                    Orientation::Horizontal, (GetShadowType() != ShadowType::NoShadow),
+                                    Orientation::Horizontal, (GetShadowType() != ShadowType::NoDisplay),
                                     ScaleToScreenAndCanvas(4)));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             // note that stipples have their own shadows (a silhouette), so turn off the
                             // Image's native shadow renderer.
-                            barImage->SetShadowType(ShadowType::NoShadow);
+                            barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -855,7 +855,7 @@ namespace Wisteria::Graphs
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
                                 // Polygons don't support drop shadows, so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoShadow) && (barBlock.GetLength() > rangeStart))
+                                if ((GetShadowType() != ShadowType::NoDisplay) && (barBlock.GetLength() > rangeStart))
                                     {
                                     // in case this bar is way too small because of the scaling then don't bother with the shadow
                                     if (barRect.GetHeight() > scaledShadowOffset)
@@ -884,7 +884,7 @@ namespace Wisteria::Graphs
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
                                 {
-                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoShadow),
+                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
                                                      L"Drop shadow not supported for arrow shape currently.");
                                 barNeckRect.Deflate(wxSize(0,safe_divide(barNeckRect.GetHeight(),5)) );
                                 barNeckRect.SetRight(barNeckRect.GetRight()-(safe_divide(barNeckRect.GetWidth(),10)));
@@ -1028,7 +1028,7 @@ namespace Wisteria::Graphs
                         // make multiline decals a little more compact so that
                         // they have a better chance of fitting
                         decalLabel->SetLineSpacing(0);
-                        decalLabel->SetShadowType(ShadowType::NoShadow);
+                        decalLabel->SetShadowType(ShadowType::NoDisplay);
                         decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
                         decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         // allow selecting the bar underneath this label
@@ -1178,8 +1178,8 @@ namespace Wisteria::Graphs
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideShadow : ShadowType::NoShadow);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                ShadowType::RightSideShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -1195,8 +1195,8 @@ namespace Wisteria::Graphs
                                          barRect, true));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                            barImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                                ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                            barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                                ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -1214,13 +1214,13 @@ namespace Wisteria::Graphs
                                     GetStippleBrush().GetBitmap(
                                         GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                                     wxSize(barWidth, barLength), Orientation::Vertical,
-                                    (GetShadowType() != ShadowType::NoShadow),
+                                    (GetShadowType() != ShadowType::NoDisplay),
                                     ScaleToScreenAndCanvas(4)));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
                             // note that stipples have their own shadows (a silhouette), so turn off the
                             // Image's native shadow renderer.
-                            barImage->SetShadowType(ShadowType::NoShadow);
+                            barImage->SetShadowType(ShadowType::NoDisplay);
                             barImage->SetClippingRect(drawArea);
                             AddObject(barImage);
                             }
@@ -1231,7 +1231,7 @@ namespace Wisteria::Graphs
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
                                 // polygons don't support drop shadows, so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoShadow) && (barBlock.GetLength() > rangeStart))
+                                if ((GetShadowType() != ShadowType::NoDisplay) && (barBlock.GetLength() > rangeStart))
                                     {
                                     // in case this bar is way too small because of the scaling,
                                     // then don't bother with the shadow
@@ -1257,7 +1257,7 @@ namespace Wisteria::Graphs
                                 }
                             else if (bar.GetShape() == BarShape::Arrow)
                                 {
-                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoShadow),
+                                wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
                                                      L"Drop shadow not supported for arrow shape currently.");
                                 barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(),5), 0) );
                                 const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(),10);
@@ -1402,7 +1402,7 @@ namespace Wisteria::Graphs
                             }
                         // make multiline decals a little more compact so that they have a better chance of fitting
                         decalLabel->SetLineSpacing(0);
-                        decalLabel->SetShadowType(ShadowType::NoShadow);
+                        decalLabel->SetShadowType(ShadowType::NoDisplay);
                         decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
                         decalLabel->SetTextOrientation(Orientation::Horizontal);
                         decalLabel->SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);

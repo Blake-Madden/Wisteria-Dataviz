@@ -424,8 +424,8 @@ namespace Wisteria::Graphs
                             wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()), true));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
-                    boxImage->SetShadowType((GetShadowType() != ShadowType::NoShadow) ?
-                        ShadowType::RightSideAndBottomShadow : ShadowType::NoShadow);
+                    boxImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
+                        ShadowType::RightSideAndBottomShadow : ShadowType::NoDisplay);
                     AddObject(boxImage);
                     }
                 else if (box.GetBoxEffect() == BoxEffect::Stipple &&
@@ -438,14 +438,14 @@ namespace Wisteria::Graphs
                             GetStippleBrush().GetBitmap(
                                 GetStippleBrush().GetDefaultSize()).ConvertToImage(),
                             wxSize(box.m_boxRect.GetWidth(), box.m_boxRect.GetHeight()),
-                            Orientation::Vertical, (GetShadowType() != ShadowType::NoShadow),
+                            Orientation::Vertical, (GetShadowType() != ShadowType::NoDisplay),
                             ScaleToScreenAndCanvas(4)));
                     boxImage->SetOpacity(box.GetOpacity());
                     boxImage->SetAnchoring(Anchoring::TopLeftCorner);
                     boxImage->SetLabelStyle(LabelStyle::DottedLinedPaperWithMargins);
                     // note that stipples have their own shadows (a silhouette), so turn off
                     // the Image's native shadow renderer.
-                    boxImage->SetShadowType(ShadowType::NoShadow);
+                    boxImage->SetShadowType(ShadowType::NoDisplay);
                     AddObject(boxImage);
                     }
                 // color-filled box
@@ -455,7 +455,7 @@ namespace Wisteria::Graphs
                     GraphItems::Polygon::GetRectPoints(box.m_boxRect, boxPoints);
                     // Polygons don't support drop shadows, so need to manually add
                     // a shadow as another polygon
-                    if ((GetShadowType() != ShadowType::NoShadow))
+                    if ((GetShadowType() != ShadowType::NoDisplay))
                         {
                         const wxCoord scaledShadowOffset =
                             ScaleToScreenAndCanvas(GetShadowOffset());

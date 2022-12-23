@@ -854,7 +854,7 @@ namespace Wisteria::GraphItems
         const wxRect boundingBox = GetBoundingBox(dc);
 
         // draw the shadow (only if box is outlined)
-        if (GetShadowType() != ShadowType::NoShadow && GetPen().IsOk() && !IsSelected())
+        if (GetShadowType() != ShadowType::NoDisplay && GetPen().IsOk() && !IsSelected())
             {
             DCPenChangerIfDifferent pcBg(dc, GetShadowColour());
             DCBrushChangerIfDifferent bcBg(dc, GetShadowColour());
