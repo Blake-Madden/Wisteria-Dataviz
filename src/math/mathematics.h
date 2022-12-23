@@ -523,6 +523,46 @@ namespace geometry
                                                     const std::pair<double,double> pt2) noexcept
         { return std::sqrt(std::pow(pt1.first-pt2.first, 2) + std::pow(pt1.second-pt2.second, 2)); }
 
+    /** @brief Gets the middle point between two points.
+        @returns The middle point between two points.
+            The returned pair represents the x and y values of the middle point.
+        @param pt1 The first point.
+        @param pt2 The second point.
+        @todo needs unit tested.*/
+    [[nodiscard]]
+    inline constexpr std::pair<double, double> middle_point(
+        const std::pair<double, double> pt1,
+        const std::pair<double, double> pt2) noexcept
+        {
+        return std::make_pair(
+            safe_divide(pt1.first + pt2.first, 2.0),
+            safe_divide(pt1.second + pt2.second, 2.0));
+        }
+
+    /** @brief Gets the middle point between two points, where this point would
+            create a spline between the two points.
+        @details This assumes that the two points represent a line going
+            left-to-right, and the middle point will be adjusted up or down
+            to create a "ribbon" like spline.
+        @returns The middle point between two points.\n
+            The returned pair represents the x and y values of the middle point.
+        @param pt1 The first point.
+        @param pt2 The second point.
+        @todo needs unit tested.*/
+    [[nodiscard]]
+    inline constexpr std::pair<double, double> middle_point_horizontal_spline(
+        const std::pair<double, double> pt1,
+        const std::pair<double, double> pt2) noexcept
+        {
+        // see which point is which in our left-to-right flow
+        const auto leftPt{ (pt1.first <= pt2.first) ? pt1 : pt2 };
+        const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
+
+        const auto [x, y] = middle_point(pt1, pt2);
+        const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
+        return std::make_pair(x, y - safe_divide(distanceBetweenMidYAndRightY, 2.0) );
+        }
+
     /** @returns The angle (in degrees) of a line segment.
         @param pt1 The first point of the line segment.
         @param pt2 The second point of the line segment.
