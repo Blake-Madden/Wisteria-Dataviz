@@ -1685,14 +1685,12 @@ namespace Wisteria::GraphItems
              // system mapped font on macOS 10.15+, leave it alone
              theFont.GetFaceName() != L".AppleSystemUIFont")
             {
-            wxArrayString fontNames;
-            fontNames.Add(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName());
-            fontNames.Add(L"Helvetica Neue");
-            fontNames.Add(L"Lucida Grande");
-            fontNames.Add(L"Calibri");
-            fontNames.Add(L"Arial");
-            fontNames.Add(L"Courier New");
-            theFont.SetFaceName(GetFirstAvailableFont(fontNames));
+            theFont.SetFaceName(
+                GetFirstAvailableFont(
+                    {
+                    wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName(),
+                    L"Helvetica Neue", L"Lucida Grande", L"Calibri", L"Arial", L"Courier New"
+                    }));
             }
         wxASSERT_MSG(theFont.GetFaceName().length(), L"Corrected font facename is empty.");
         // if font is still messed up, fall back to system default
@@ -1707,32 +1705,30 @@ namespace Wisteria::GraphItems
         }
 
     //------------------------------------------------------
-    wxString Label::GetFirstAvailableFont(const wxArrayString& possibleFontNames)
+    wxString Label::GetFirstAvailableFont(const std::vector<wxString>& possibleFontNames)
         {
-        for (size_t i = 0; i < possibleFontNames.GetCount(); ++i)
+        for (const auto fontName : possibleFontNames)
             {
-            if (wxFontEnumerator::IsValidFacename(possibleFontNames[i]) )
-                { return possibleFontNames[i]; }
+            if (wxFontEnumerator::IsValidFacename(fontName) )
+                { return fontName; }
             }
         // fall back to system default if nothing in the provided list is found
         const wxString systemFont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName();
-        // if system font is weird mapping (or empty) that fails (happens on macOS), then fall back to Arial
+        // if system font is weird mapping (or empty) that fails (happens on macOS),
+        // then fall back to Arial
         return wxFontEnumerator::IsValidFacename(systemFont) ? systemFont : wxString(L"Arial");
         }
 
     //------------------------------------------------------
     wxString Label::GetFirstAvailableCursiveFont()
         {
-        wxArrayString cursiveFonts;
-        cursiveFonts.Add(L"Gabriola");
-        cursiveFonts.Add(L"Brush Script");
-        cursiveFonts.Add(L"Segoe Script");
-        cursiveFonts.Add(L"AR BERKLEY");
-        return GetFirstAvailableFont(cursiveFonts);
+        return GetFirstAvailableFont(
+            { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
         }
 
     //--------------------------------------------------
-    int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft, const wxRect& boundingBox, const wxString& text)
+    int Label::CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
+                                            const wxRect& boundingBox, const wxString& text)
         {
         // start with the smallest possible font and work our way up.
         wxFont resizedFont(ft); resizedFont.SetPointSize(1);

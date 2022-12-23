@@ -336,13 +336,15 @@ namespace Wisteria::GraphItems
         [[nodiscard]] static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
             const wxRect& boundingBox, const wxString& text);
         /** @returns The first available font (face name) found from the given list,
-             or the system default if none are found.
+                or the system default if none are found.
             @param possibleFontNames The list of font names to choose from.*/
-        [[nodiscard]] static wxString GetFirstAvailableFont(const wxArrayString& possibleFontNames);
+        [[nodiscard]]
+        static wxString GetFirstAvailableFont(const std::vector<wxString>& possibleFontNames);
         /** @returns The first available cursive font (face name) found on the system,
-             or the system default if none are found.
+                or the system default if none are found.
             @note This function uses a list of known cursive fonts to search with.*/
-        [[nodiscard]] static wxString GetFirstAvailableCursiveFont();
+        [[nodiscard]]
+        static wxString GetFirstAvailableCursiveFont();
         /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
