@@ -176,6 +176,8 @@ Properties for brushes:
 
 Note that brushes can be set to `null` to turn it off.
 
+Also, instead of properties, a single string can be specified indicating color for the brush.
+
 ## Image Files {#image-file-properties .unnumbered}
 
 Properties for image import specifications:
