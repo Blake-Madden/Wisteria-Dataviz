@@ -34,6 +34,7 @@ namespace Wisteria::Graphs
 
         ResetGrouping();
         GetSelectedIds().clear();
+        ClearBars();
 
         if (GetDataset() == nullptr)
             { return; }
@@ -65,9 +66,6 @@ namespace Wisteria::Graphs
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        // reset everything first
-        ClearBars();
-
         // if no data then just draw a blank 10x10 grid
         if (m_validN == 0)
             {
@@ -84,6 +82,9 @@ namespace Wisteria::Graphs
             { SortIntoUniqueValues(binCountRanges.first); }
         else
             { SortIntoRanges(binCountRanges.first); }
+
+        // re-build the bar labels now that the bars are ready
+        SetBinLabelDisplay(blDisplay);
 
         GetBarAxis().ShowOuterLabels(false);
 

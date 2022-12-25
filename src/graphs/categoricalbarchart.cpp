@@ -29,6 +29,7 @@ namespace Wisteria::Graphs
         m_useValueColumn = valueColumnName.has_value();
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
+        ClearBars();
 
         if (GetDataset() == nullptr)
             { return; }
@@ -67,9 +68,6 @@ namespace Wisteria::Graphs
         if (IsUsingGrouping())
             { BuildGroupIdMap(); }
 
-        // reset everything first
-        ClearBars();
-
         // if no data then just draw a blank 10x10 grid
         if (GetDataset()->GetRowCount() == 0)
             {
@@ -79,6 +77,9 @@ namespace Wisteria::Graphs
             }
 
         Calculate();
+
+        // re-build the bar labels now that the bars are ready
+        SetBinLabelDisplay(blDisplay);
 
         GetBarAxis().ShowOuterLabels(false);
 
