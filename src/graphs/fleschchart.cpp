@@ -27,8 +27,11 @@ namespace Wisteria::Graphs
             std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
 
-        GetCanvas()->SetLabel(_(L"Flesch Readability Chart"));
-        GetCanvas()->SetName(_(L"Flesch Readability Chart"));
+        if (GetCanvas() != nullptr)
+            {
+            GetCanvas()->SetLabel(_(L"Flesch Readability Chart"));
+            GetCanvas()->SetName(_(L"Flesch Readability Chart"));
+            }
         GetTitle() = GraphItems::Label(GraphItemInfo(_(L"How Easy?")).Pen(wxNullPen));
 
         // Set up the X axis

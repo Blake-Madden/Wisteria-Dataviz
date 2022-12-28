@@ -25,12 +25,14 @@ namespace Wisteria::Graphs
         SetShapeScheme(shapes != nullptr ? shapes :
             std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
+        if (GetCanvas() != nullptr)
+            {
+            GetCanvas()->SetLabel(_(L"Danielson-Bryan Plot"));
+            GetCanvas()->SetName(_(L"Danielson-Bryan Plot"));
+            }
 
-        GetCanvas()->SetLabel(_(L"Danielson-Bryan Plot"));
-        GetCanvas()->SetName(_(L"Danielson-Bryan Plot"));
-
-        GetBottomXAxis().SetRange(0,2,0,1,1);
-        GetLeftYAxis().SetRange(0,10,0);
+        GetBottomXAxis().SetRange(0, 2, 0, 1, 1);
+        GetLeftYAxis().SetRange(0, 10, 0);
         GetBottomXAxis().Show(false);
         GetLeftYAxis().Show(false);
         GetTopXAxis().Show(false);

@@ -253,7 +253,10 @@ namespace Wisteria::Graphs
             {
             return (GetBackgroundColor().IsOk() &&
                     GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
-                    GetBackgroundColor() : GetCanvas()->GetBackgroundColor();
+                        GetBackgroundColor() :
+                    GetCanvas() != nullptr ?
+                        GetCanvas()->GetBackgroundColor() :
+                        GetBackgroundColor();
             }
 
         /// @brief Sets the outline color when the common image effect in use.

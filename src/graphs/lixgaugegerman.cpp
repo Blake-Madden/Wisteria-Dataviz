@@ -26,11 +26,14 @@ namespace Wisteria::Graphs
             std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
 
-        GetCanvas()->SetLabel(_(L"German Lix Gauge"));
-        GetCanvas()->SetName(_(L"German Lix Gauge"));
+        if (GetCanvas() != nullptr)
+            {
+            GetCanvas()->SetLabel(_(L"German Lix Gauge"));
+            GetCanvas()->SetName(_(L"German Lix Gauge"));
+            }
 
-        GetBottomXAxis().SetRange(0,2,0,1,1);
-        GetLeftYAxis().SetRange(0,100,0,5,1);
+        GetBottomXAxis().SetRange(0, 2, 0, 1, 1);
+        GetLeftYAxis().SetRange(0, 100, 0, 5, 1);
         GetLeftYAxis().ReverseScale(true);
         GetBottomXAxis().Show(false);
         GetLeftYAxis().Show(false);

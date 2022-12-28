@@ -26,8 +26,11 @@ namespace Wisteria::Graphs
             std::make_shared<Wisteria::Icons::Schemes::IconScheme>(
                 Wisteria::Icons::Schemes::StandardShapes()));
 
-        GetCanvas()->SetLabel(_(L"Crawford Graph"));
-        GetCanvas()->SetName(_(L"Crawford Graph"));
+        if (GetCanvas() != nullptr)
+            {
+            GetCanvas()->SetLabel(_(L"Crawford Graph"));
+            GetCanvas()->SetName(_(L"Crawford Graph"));
+            }
         GetTitle() = GraphItems::Label(GraphItemInfo(_(L"SPANISH READABILITY GRAPH")).
                 Scaling(GetScaling()).Pen(wxNullPen));
         GetLeftYAxis().GetTitle().SetText(_(L"Number of Syllables per 100 Words"));

@@ -85,6 +85,12 @@ namespace Wisteria::Graphs
     void Graph2D::AdjustLegendSettings(std::shared_ptr<GraphItems::Label>& legend,
                                        const LegendCanvasPlacementHint hint)
         {
+        if (GetCanvas() == nullptr)
+            {
+            wxLogWarning(L"Canvas for graph is null; legend will not be sized correctly.");
+            return;
+            }
+
         legend->SetBoxCorners(BoxCorners::Rounded);
         if (hint == LegendCanvasPlacementHint::EmbeddedOnGraph)
             {
@@ -135,8 +141,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     Graph2D::Graph2D(Canvas* canvas)
         {
-        wxASSERT_MSG(canvas, L"Cannot use a null canvas with a plot!");
-        SetDPIScaleFactor(canvas ? canvas->GetDPIScaleFactor() : 1);
+        SetDPIScaleFactor(canvas != nullptr ? canvas->GetDPIScaleFactor() : 1);
         SetCanvas(canvas);
  
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
@@ -463,7 +468,17 @@ namespace Wisteria::Graphs
         // The normal case for this is when a graph is being meaured for a canvas
         // to a specific content scaling (e.g., Table).
         if (GetBoundingBox(dc).IsEmpty())
-            { SetBoundingBox(GetCanvas()->GetCanvasRect(dc), dc, GetScaling()); }
+            {
+            if (GetCanvas() != nullptr)
+                { SetBoundingBox(GetCanvas()->GetCanvasRect(dc), dc, GetScaling()); }
+            else
+                {
+                SetBoundingBox(
+                    wxRect(wxSize(Canvas::GetDefaultCanvasWidthDIPs(),
+                                  Canvas::GetDefaultCanvasHeightDIPs())),
+                    dc, 1.0);
+                }
+            }
 
         SetDPIScaleFactor(GetDPIScaleFactor());
 
