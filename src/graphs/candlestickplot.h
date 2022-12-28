@@ -136,29 +136,6 @@ namespace Wisteria::Graphs
             { return m_gainBrush; }
         /// @}
 
-        /// @name Layout Functions
-        /// @brief Functions relating to the layout of the plot.
-        /// @{
-
-        /// @brief Gets the maximum number of days displayed before the parent canvas
-        ///     is forced to be made wider. (Which will make this plot easier to read).
-        /// @returns The most days that can be plotted before the parent canvas will be widened.
-        [[nodiscard]] size_t GetPointsPerDefaultCanvasSize() const noexcept
-            { return m_pointsPerDefaultCanvasSize; }
-        /** @brief Sets the maximum number of days displayed before the parent canvas is
-                forced to be made wider.
-            @details Adjusting this is useful for when you have a large number of days and the
-                 display looks too condensed. Increasing this value will widen the plot, allowing
-                 for more space to spread the points out. The default is 100 days.
-            @param pointsPerDefaultCanvasSize The number points to display before requiring the
-                canvas to be made wider.*/
-        void SetPointsPerDefaultCanvasSize(const size_t pointsPerDefaultCanvasSize)
-            {
-            m_pointsPerDefaultCanvasSize = pointsPerDefaultCanvasSize;
-            UpdateCanvasForPoints();
-            }
-        /// @}
-
         /// @private
         [[deprecated("Candlestick plot does not support legends.")]]
         [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
@@ -183,21 +160,10 @@ namespace Wisteria::Graphs
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
 
-        void UpdateCanvasForPoints()
-            {
-            if (m_ohlcs.size() > GetPointsPerDefaultCanvasSize())
-                {
-                GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
-                    std::ceil(safe_divide<double>(m_ohlcs.size(),
-                                                  GetPointsPerDefaultCanvasSize())));
-                }
-            }
-
         wxBrush m_lossBrush{ *wxRED };
         wxBrush m_gainBrush{ *wxGREEN };
 
         std::vector<Ohlc> m_ohlcs;
-        size_t m_pointsPerDefaultCanvasSize{ 100 };
         PlotType m_chartType{ PlotType::Candlestick };
         };
     }

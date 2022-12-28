@@ -984,16 +984,6 @@ namespace Wisteria::Graphs
             }
         /// @}
 
-        /// @returns The maximum number of bars displayed before the parent canvas is forced
-        ///    to be made taller (which will make this chart easier to read).
-        [[nodiscard]] size_t GetBarsPerDefaultCanvasSize() const noexcept
-            { return m_barsPerDefaultCanvasSize; }
-        /** @brief Sets the maximum number of bars displayed before the parent canvas
-                is forced to be made taller.
-            @param barsPerDefaultCanvasSize The number bars to display before requiring
-                the canvas to be made taller.*/
-        void SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize);
-
         /// @private
         [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
             { return m_bars; }
@@ -1043,10 +1033,6 @@ namespace Wisteria::Graphs
         /** @brief Recalculates the scaling axis based on the size and positioning on a given bar.
             @param bar The bar to review.*/
         void UpdateScalingAxisFromBar(const Bar& bar);
-        /// @brief Adjusts the parent canvas size based on how many bars there are.
-        ///    The default behaviour is to compare the number of bars to GetBarsPerDefaultCanvasSize(),
-        ///    but you can override this function.
-        virtual void UpdateCanvasForBars();
         /** @brief Sets the DPI scaling.
             @param scaling The DPI scaling.*/
         void SetDPIScaleFactor(const double scaling) override
@@ -1072,7 +1058,6 @@ namespace Wisteria::Graphs
         bool m_isSortable{ false };
         std::vector<BarGroup> m_barGroups;
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
-        size_t m_barsPerDefaultCanvasSize{ 500 };
         Orientation m_barOrientation{ Orientation::Vertical };
         };
     }

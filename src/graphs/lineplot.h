@@ -327,29 +327,6 @@ namespace Wisteria::Graphs
             { m_autoSpline = autoSpline; }
         /// @}
 
-        /// @name Layout Functions
-        /// @brief Functions relating to the layout of the plot.
-        /// @{
-
-        /// @brief Gets the maximum number of points displayed before the parent canvas
-        ///     is forced to be made wider (which will make this plot easier to read).
-        /// @returns The most points that can be plotted before the parent canvas will be widened.
-        [[nodiscard]] size_t GetPointsPerDefaultCanvasSize() const noexcept
-            { return m_pointsPerDefaultCanvasSize; }
-        /** @brief Sets the maximum number of points displayed before the parent canvas is
-                forced to be made wider.
-            @details Adjusting this is useful for when you have a large number of points and the
-                display looks too condensed. Increasing this value will widen the plot, allowing
-                for more space to spread the points out. The default is 100 points.
-            @param pointsPerDefaultCanvasSize The number points to display before requiring the
-             canvas to be made wider.*/
-        void SetPointsPerDefaultCanvasSize(const size_t pointsPerDefaultCanvasSize)
-            {
-            m_pointsPerDefaultCanvasSize = pointsPerDefaultCanvasSize;
-            UpdateCanvasForPoints();
-            }
-        /// @}
-
         /** @brief Builds and returns a legend using the current colors and labels.
             @details This can then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.\n
@@ -480,17 +457,6 @@ namespace Wisteria::Graphs
         /// @note If X is dates or categorical, then this simply return @c true.
         [[nodiscard]] bool IsDataSingleDirection(std::shared_ptr<const Data::Dataset>& data,
                                                  const Data::GroupIdType group) const noexcept;
-        void UpdateCanvasForPoints()
-            {
-            const auto avgPointsPerRow = safe_divide<size_t>(GetDataset()->GetRowCount(),
-                                                             GetLineCount());
-            if (avgPointsPerRow > GetPointsPerDefaultCanvasSize())
-                {
-                GetCanvas()->SetCanvasMinWidthDIPs(GetCanvas()->GetDefaultCanvasWidthDIPs() *
-                    std::ceil(safe_divide<size_t>(avgPointsPerRow,
-                                                  GetPointsPerDefaultCanvasSize())));
-                }
-            }
 
         Data::ContinuousColumnConstIterator m_xColumnContinuous;
         Data::CategoricalColumnConstIterator m_xColumnCategorical;
@@ -499,7 +465,6 @@ namespace Wisteria::Graphs
         wxString m_yColumnName;
 
         std::vector<Line> m_lines;
-        size_t m_pointsPerDefaultCanvasSize{ 100 };
         bool m_autoSpline{ true };
 
         std::shared_ptr<LineStyleScheme> m_linePenStyles{ nullptr };

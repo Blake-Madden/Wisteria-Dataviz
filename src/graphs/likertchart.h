@@ -1000,9 +1000,7 @@ namespace Wisteria::Graphs
         /// @returns The number of slots for bars on the plot.
         [[nodiscard]] size_t GetBarSlotCount() const noexcept final
             { return m_responseBarCount; }
-        /// Updates the canvas size based on the bar count. This override handles extra bars
-        /// needing to be added for categorized plots.
-        void UpdateCanvasForBars() final;
+        /// @private
         void RecalcSizes(wxDC& dc) final;
 
         /// @brief Adds a question and its respective responses.

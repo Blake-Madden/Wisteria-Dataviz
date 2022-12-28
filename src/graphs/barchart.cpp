@@ -311,23 +311,6 @@ namespace Wisteria::Graphs
         }
 
     //-----------------------------------
-    void BarChart::SetBarsPerDefaultCanvasSize(const size_t barsPerDefaultCanvasSize)
-        {
-        m_barsPerDefaultCanvasSize = barsPerDefaultCanvasSize;
-        UpdateCanvasForBars();
-        }
-
-    //-----------------------------------
-    void BarChart::UpdateCanvasForBars()
-        {
-        if (GetBars().size() > GetBarsPerDefaultCanvasSize())
-            {
-            GetCanvas()->SetCanvasMinHeightDIPs(GetCanvas()->GetDefaultCanvasHeightDIPs() *
-                std::ceil(safe_divide<double>(GetBars().size(), GetBarsPerDefaultCanvasSize())));
-            }
-        }
-
-    //-----------------------------------
     void BarChart::AddBar(Bar bar, const bool adjustScalingAxis /*= true*/)
         {
         m_bars.push_back(bar);
@@ -449,8 +432,6 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-
-        UpdateCanvasForBars();
         }
 
     //-----------------------------------
@@ -577,8 +558,11 @@ namespace Wisteria::Graphs
             { GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), bar.GetAxisLabel()); }
 
         GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
-        wxMemoryDC measureDC;
-        GetCanvas()->CalcAllSizes(measureDC);
+        if (GetCanvas() != nullptr)
+            {
+            wxMemoryDC measureDC;
+            GetCanvas()->CalcAllSizes(measureDC);
+            }
         }
 
     //-----------------------------------
@@ -647,8 +631,11 @@ namespace Wisteria::Graphs
                 GetBarAxis().GetDisplayInterval());
             }
         GetBarAxis().ShowOuterLabels(isDisplayingOuterLabels);
-        wxMemoryDC measureDC;
-        GetCanvas()->CalcAllSizes(measureDC);
+        if (GetCanvas() != nullptr)
+            {
+            wxMemoryDC measureDC;
+            GetCanvas()->CalcAllSizes(measureDC);
+            }
         }
 
     //-----------------------------------

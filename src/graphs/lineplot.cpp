@@ -212,8 +212,6 @@ namespace Wisteria::Graphs
                     }
                 }
             }
-
-        UpdateCanvasForPoints();
         }
 
     //----------------------------------------------------------------

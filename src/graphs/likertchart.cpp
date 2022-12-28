@@ -419,28 +419,6 @@ namespace Wisteria::Graphs
         return (uniqueGroups.size() > 1) ? MakeFormatCategorized(format) : format;
         }
 
-    //-----------------------------------
-    void LikertChart::UpdateCanvasForBars()
-        {
-        auto barCount = GetBars().size();
-        // if using categorization, then ignore the parent question bars and
-        // just look at the group label bars
-        if (GetSurveyType() == LikertSurveyQuestionFormat::TwoPointCategorized ||
-            GetSurveyType() == LikertSurveyQuestionFormat::ThreePointCategorized)
-            { barCount -= m_threePointCategorizedQuestions.size(); }
-        else if (GetSurveyType() == LikertSurveyQuestionFormat::FourPointCategorized ||
-            GetSurveyType() == LikertSurveyQuestionFormat::FivePointCategorized)
-            { barCount -= m_fivePointCategorizedQuestions.size(); }
-        else if (GetSurveyType() == LikertSurveyQuestionFormat::SixPointCategorized ||
-            GetSurveyType() == LikertSurveyQuestionFormat::SevenPointCategorized)
-            { barCount -= m_sevenPointCategorizedQuestions.size(); }
-        if (barCount > GetBarsPerDefaultCanvasSize())
-            {
-            GetCanvas()->SetCanvasMinHeightDIPs(GetCanvas()->GetDefaultCanvasHeightDIPs() *
-                std::ceil(safe_divide<double>(barCount, GetBarsPerDefaultCanvasSize())));
-            }
-        }
-
     //----------------------------------------------------------------
     std::shared_ptr<GraphItems::Label> LikertChart::CreateLegend(const LegendOptions& options)
         {
@@ -598,9 +576,6 @@ namespace Wisteria::Graphs
         MirrorYAxis(true);
 
         IncludeSpacesBetweenBars(true);
-
-        // make the plot taller if it contains a certain number of questions (or groups)
-        SetBarsPerDefaultCanvasSize(20);
         }
 
     //----------------------------------------------------------------

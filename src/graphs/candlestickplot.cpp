@@ -68,7 +68,6 @@ namespace Wisteria::Graphs
                                 closeColumn->GetValue(i) });
             }
         Calculate(data, openColumnName, lowColumnName, highColumnName, closeColumnName);
-        UpdateCanvasForPoints();
         }
 
     //----------------------------------------------------------------
