@@ -21,8 +21,8 @@
 
 namespace Wisteria::UI
     {
-    /** @brief Dialog for showing a graph. Includes buttons for saving, copying,
-            and printing the graph.*/
+    /** @brief Dialog for showing a graph.
+        @details Includes buttons for saving, copying, and printing the graph.*/
     class GraphDlg final : public wxDialog
         {
     public:
@@ -31,25 +31,38 @@ namespace Wisteria::UI
             @param id the window ID for this dialog.
             @param caption the title of this dialog.
             @note This dialog takes ownership of the graph and will delete it upon destruction.
-                Therefore, the graph should be created on the heap.*/
-        GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Graph"))
-            { Create(parent, id, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER); }
+                Therefore, the graph should be created on the heap (with @c new).*/
+        GraphDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
+                 const wxString& caption = _(L"View Graph"))
+            {
+            Create(parent, id, caption, wxDefaultPosition, wxDefaultSize,
+                   wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
+            }
         /// @private
         GraphDlg() = delete;
+        /// @private
+        GraphDlg(const GraphDlg&) = delete;
+        /// @private
+        GraphDlg(GraphDlg&&) = delete;
+        /// @private
+        GraphDlg& operator==(const GraphDlg&) = delete;
+        /// @private
+        GraphDlg& operator==(GraphDlg&&) = delete;
 
         /// @returns Access to the canvas, where you can add the graph
-        //      (it has already been initialized to hold one graph).
+        ///     (it has already been initialized to hold one graph).
         [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
             { return m_canvas; }
     private:
-        // Creation step.
-        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Graph"),
+        /// Creation step.
+        bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
+                    const wxString& caption = _(L"View Graph"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                     long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER)
             {
             SetExtraStyle(GetExtraStyle()|wxWS_EX_BLOCK_EVENTS);
             wxDialog::Create(parent, id, caption, pos, size, style);
-            SetMinSize(FromDIP(wxSize(800,600)));
+            SetMinSize(FromDIP(wxSize(800, 600)));
 
             CreateControls();
 
@@ -66,35 +79,36 @@ namespace Wisteria::UI
         void CreateControls()
             {
             wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-            mainSizer->SetMinSize(FromDIP(wxSize(800,600)));
+            mainSizer->SetMinSize(FromDIP(wxSize(800, 600)));
 
             m_canvas = new Wisteria::Canvas(this);
-            m_canvas->SetFixedObjectsGridSize(1,1);
+            m_canvas->SetFixedObjectsGridSize(1, 1);
             mainSizer->Add(m_canvas, 1, wxALL|wxEXPAND, wxSizerFlags::GetDefaultBorder());
 
-            mainSizer->Add(new wxStaticLine(this), wxSizerFlags().Expand().Border(wxRIGHT|wxLEFT,wxSizerFlags::GetDefaultBorder()));
+            mainSizer->Add(new wxStaticLine(this), wxSizerFlags().Expand().
+                Border(wxRIGHT|wxLEFT,wxSizerFlags::GetDefaultBorder()));
             wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
                 wxButton* button = new wxButton(this, wxID_PRINT);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON, FromDIP(wxSize(16,16))));
+                button->SetBitmap(wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_COPY);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16,16))));
+                button->SetBitmap(wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_SAVE);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(16,16))));
+                button->SetBitmap(wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_CLOSE);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_CLOSE, wxART_BUTTON, FromDIP(wxSize(16,16))));
+                button->SetBitmap(wxArtProvider::GetBitmap(wxART_CLOSE, wxART_BUTTON));
                 button->SetDefault();
                 buttonSizer->Add(button);
                 }
@@ -118,8 +132,6 @@ namespace Wisteria::UI
                 { event.Skip(); }
             }
         Wisteria::Canvas* m_canvas{ nullptr };
-
-        wxDECLARE_NO_COPY_CLASS(GraphDlg);
         };
     }
 
