@@ -7,10 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "groupgraph2d.h"
-#include "categoricalbarchart.h"
-#include "barchart.h"
-#include "histogram.h"
-#include "ganttchart.h"
 
 using namespace Wisteria;
 using namespace Wisteria::GraphItems;
@@ -86,18 +82,6 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
     wxString legendText;
     size_t lineCount{ 0 };
 
-    IconShape defaultIcon{ IconShape::Square };
-    if (typeid(*this) == typeid(BarChart) ||
-        typeid(*this) == typeid(CategoricalBarChart) ||
-        typeid(*this) == typeid(Histogram) ||
-        typeid(*this) == typeid(GanttChart))
-        {
-        auto gr = dynamic_cast<const BarChart*>(this);
-        wxASSERT_MSG(gr, L"Failed dynamic cast to barchart when building legend!");
-        if (gr != nullptr && gr->GetBarEffect() == BoxEffect::WaterColor)
-            { defaultIcon = IconShape::WaterColorRectangle; }
-        }
-
     const auto mdCode = GetGroupColumn()->FindMissingDataCode();
     size_t mdSchemeIndex{ 0 };
     // scheme index and then group ID
@@ -141,7 +125,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
         legend->GetLegendIcons().emplace_back(
                 LegendIcon((GetShapeScheme() ?
                             GetShapeScheme()->GetShape(schemeIndex) :
-                            defaultIcon),
+                            m_defaultLegendShape),
                 *wxBLACK_PEN,
                 br,
                 GetColorScheme() ?
@@ -170,7 +154,7 @@ std::shared_ptr<GraphItems::Label> GroupGraph2D::CreateLegend(
             legend->GetLegendIcons().emplace_back(
                     LegendIcon((GetShapeScheme() ?
                                 GetShapeScheme()->GetShape(mdSchemeIndex) :
-                        defaultIcon),
+                        m_defaultLegendShape),
                     *wxBLACK_PEN,
                     br,
                     GetColorScheme() ?

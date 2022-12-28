@@ -102,6 +102,11 @@ namespace Wisteria::Graphs
         [[nodiscard]] bool IsUsingGrouping() const noexcept
             { return (m_groupColumn != nullptr); }
 
+        /// @brief Sets the shape to use in the legend (if a shape scheme isn't in use).
+        /// @param shape The shape to use.
+        void SetDefaultLegendShape(const Wisteria::Icons::IconShape& shape) noexcept
+            { m_defaultLegendShape = shape; }
+
         /// @private
         [[nodiscard]] const Wisteria::Data::ColumnWithStringTable* GetGroupColumn() const
             { return m_groupColumn;  }
@@ -110,12 +115,14 @@ namespace Wisteria::Graphs
             { m_groupColumn = groupColumn; }
 
         /// @private
-        /// @ Set the grouping column (or keep it as null if not in use).
+        /// @brief Sets the grouping column (or keep it as null if not in use).
         /// @warning Call SetDataset() first before calling this.
         void SetGroupColumn(const std::optional<const wxString> groupColumnName = std::nullopt);
     private:
         [[nodiscard]] const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
             { return m_groupIds; }
+
+        Wisteria::Icons::IconShape m_defaultLegendShape{ Wisteria::Icons::IconShape::Square };
 
         // cat ID and string order
         std::map<Data::GroupIdType, size_t> m_groupIds;

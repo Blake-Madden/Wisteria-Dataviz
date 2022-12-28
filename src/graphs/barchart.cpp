@@ -966,10 +966,14 @@ namespace Wisteria::Graphs
                                         ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                                         *wxBLACK : *wxWHITE);
                                     }
+                                SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
                                 }
                             // clip box to not be on top of axes
                             else
-                                { box->SetClippingRect(drawArea); }
+                                {
+                                box->SetClippingRect(drawArea);
+                                SetDefaultLegendShape(Icons::IconShape::Square);
+                                }
                             // add the box to the plot item collection
                             AddObject(box);
                             }
@@ -1341,10 +1345,14 @@ namespace Wisteria::Graphs
                                         ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
                                         *wxBLACK : *wxWHITE);
                                     }
+                                SetDefaultLegendShape(Icons::IconShape::WaterColorRectangle);
                                 }
                             // clip box to not be on top of axes
                             else
-                                { box->SetClippingRect(drawArea); }
+                                {
+                                box->SetClippingRect(drawArea);
+                                SetDefaultLegendShape(Icons::IconShape::Square);
+                                }
                             // add the box to the plot item collection
                             AddObject(box);
                             }
