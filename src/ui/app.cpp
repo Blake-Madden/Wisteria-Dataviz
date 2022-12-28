@@ -154,6 +154,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
                                      const bool includeCopyright)
     {
     const int ftSize = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize();
+    const auto backscreenHeight = bitmap.GetHeight() * math_constants::fifth;
 
     wxBitmap canvasBmp(bitmap);
     wxMemoryDC memDC(canvasBmp);
@@ -166,27 +167,26 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
             Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
                         wxFONTWEIGHT_BOLD, false,
                         DONTTRANSLATE(L"Georgia"))).
-            FontColor(wxColour(L"#315184")).
-            DPIScaling(GetMainFrame() != nullptr ? GetMainFrame()->GetDPIScaleFactor() : 1.0).
-            Scaling(2.0).
+            FontColor(wxColour(L"#315184")).DPIScaling(1.0).
             Anchoring(Anchoring::TopLeftCorner).AnchorPoint({ 0, 0 }).
             Padding(4, 0, 4, 4));
     auto boundingBox = appLabel.GetBoundingBox(gcdc);
-
-    const wxCoord BackscreenHeight = std::max(boundingBox.GetHeight(), bitmap.GetHeight()/5);
+    const auto fontUpcaling = safe_divide<double>(backscreenHeight, boundingBox.GetHeight()) *
+        math_constants::half;
+    appLabel.SetScaling(fontUpcaling);
 
     // draw translucent backscreens on image so that text written on it can be read
         {
         wxDCPenChanger pc(gcdc, *wxBLACK_PEN);
         wxDCBrushChanger bc(gcdc, wxBrush(wxColour(255, 255, 255, 174)));
-        gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(), BackscreenHeight));
-        gcdc.DrawLine(0, BackscreenHeight, canvasBmp.GetWidth(), BackscreenHeight);
+        gcdc.DrawRectangle(wxRect(0,0,canvasBmp.GetWidth(), backscreenHeight));
+        gcdc.DrawLine(0, backscreenHeight, canvasBmp.GetWidth(), backscreenHeight);
         if (includeCopyright)
             {
             gcdc.DrawRectangle(wxRect(0,canvasBmp.GetHeight() -
-                               BackscreenHeight,canvasBmp.GetWidth(), BackscreenHeight));
-            gcdc.DrawLine(0, canvasBmp.GetHeight()-BackscreenHeight,
-                          canvasBmp.GetWidth(), canvasBmp.GetHeight()-BackscreenHeight);
+                               backscreenHeight,canvasBmp.GetWidth(), backscreenHeight));
+            gcdc.DrawLine(0, canvasBmp.GetHeight()-backscreenHeight,
+                          canvasBmp.GetWidth(), canvasBmp.GetHeight()-backscreenHeight);
             }
         }
 
@@ -223,17 +223,17 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
         Wisteria::GraphItems::Label copyrightInfo(
             Wisteria::GraphItems::GraphItemInfo(
-            wxString::Format(L"%c%d %s. %s",
-                0xA9, buildDate.GetYear(), vendorName,
+            wxString::Format(L"\x00A9%d %s. %s",
+                buildDate.GetYear(), vendorName,
                 _("All rights reserved."))).
             Pen(wxNullPen).
-            DPIScaling(GetMainFrame() != nullptr ? GetMainFrame()->GetDPIScaleFactor() : 1.0).
             Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
                         wxFONTWEIGHT_NORMAL, false,
-                GraphItems::Label::GetFirstAvailableFont(
-                    { _DT(L"Consolas"), _DT(L"Times New Roman") }))).
-            FontColor(*wxBLACK).Padding(4, 4, 4, 4).Anchoring(Anchoring::BottomRightCorner).
+                GraphItems::Label::GetFirstAvailableMonospaceFont())).
+            FontColor(*wxBLACK).Padding(4, 4, 4, 4).DPIScaling(1.0).
+            Anchoring(Anchoring::BottomRightCorner).
             AnchorPoint(wxRect{ gcdc.GetSize() }.GetBottomRight()));
+        copyrightInfo.SetScaling(fontUpcaling * math_constants::third);
 
         copyrightInfo.Draw(gcdc);
         }
@@ -289,7 +289,8 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
                 "Thank you for your patience."), newReportPath, m_supportEmail),
                 _(L"Error Report"), wxOK | wxICON_INFORMATION);
         #ifdef __WXMSW__
-            ShellExecute(NULL, DONTTRANSLATE(L"open"), wxStandardPaths::Get().GetDocumentsDir().wc_str(),
+            ShellExecute(NULL, DONTTRANSLATE(L"open"),
+                wxStandardPaths::Get().GetDocumentsDir().wc_str(),
                 NULL, NULL, SW_SHOWNORMAL);
         #endif
             }
