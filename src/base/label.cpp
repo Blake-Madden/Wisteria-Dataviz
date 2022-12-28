@@ -94,7 +94,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageVerticalOffset(wxDC& dc) const
+    wxCoord Label::CalcPageVerticalOffset(const wxDC& dc) const
         {
         return !GetMinimumUserHeightDIPs() ? 0 : // if no min height, then no offset needed
             (dc.FromDIP(GetMinimumUserHeightDIPs().value()) <= GetCachedContentBoundingBox().GetHeight()) ?
@@ -107,7 +107,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Label::CalcPageHorizontalOffset(wxDC& dc) const
+    wxCoord Label::CalcPageHorizontalOffset(const wxDC& dc) const
         {
         return !GetMinimumUserWidthDIPs() ? 0 : // if no min width, then no offset needed
             (dc.FromDIP(GetMinimumUserWidthDIPs().value()) <= GetCachedContentBoundingBox().GetWidth()) ?
@@ -227,9 +227,9 @@ namespace Wisteria::GraphItems
 
         wxCoord measuredWidth{ 0 }, measuredHeight{ 0 };
         GetSize(dc, measuredWidth, measuredHeight);
-        wxCoord width = std::max<wxCoord>(measuredWidth,
+        const wxCoord width = std::max<wxCoord>(measuredWidth,
             dc.FromDIP(GetMinimumUserWidthDIPs().value_or(0)) );
-        wxCoord height = std::max<wxCoord>(measuredHeight,
+        const wxCoord height = std::max<wxCoord>(measuredHeight,
             dc.FromDIP(GetMinimumUserHeightDIPs().value_or(0)) );
 
         wxRect boundingBox;
@@ -500,9 +500,9 @@ namespace Wisteria::GraphItems
                 const wxCoord yOffset = (GetHeaderInfo().IsEnabled() ?
                     topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) : 0);
                 middleOfCurrentRow += yOffset;
-                wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
-                                       wxPoint(iconMiddleX, middleOfCurrentRow),
-                                       wxSize(1, 1)).Inflate(iconRadius) };
+                const wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
+                                             wxPoint(iconMiddleX, middleOfCurrentRow),
+                                             wxSize(1, 1)).Inflate(iconRadius) };
                 // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == IconShape::HorizontalSeparator ||
                     iconPos->m_shape == IconShape::HorizontalArrowRightSeparator ||
@@ -1074,7 +1074,7 @@ namespace Wisteria::GraphItems
         // add newline after all conjunctions
         const wxString andOrString{ L"(&|and|und|y|et|or|oder|o|ou)" };
         const wxRegEx reConjuctions(wxString::Format(L"(?i)\\b%s\\b", andOrString));
-        auto replacedCount = reConjuctions.ReplaceAll(&splitText, L"\\1\n");
+        const auto replacedCount = reConjuctions.ReplaceAll(&splitText, L"\\1\n");
         SetText(splitText);
         return (replacedCount > 0);
         }
@@ -1294,7 +1294,7 @@ namespace Wisteria::GraphItems
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
-            double hairSpaceWidth = safe_divide<double>(
+            const double hairSpaceWidth = safe_divide<double>(
                 dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
@@ -1498,7 +1498,7 @@ namespace Wisteria::GraphItems
             // Measure 10 hair spaces (with the current font)
             // and divide by 10 to more precisely measure of how wide one is.
             // Measuring just one will double up and cause the calculation to be way off.
-            double hairSpaceWidth = safe_divide<double>(
+            const double hairSpaceWidth = safe_divide<double>(
                 dc.GetTextExtent(wxString(hairSpace, 10)).GetWidth(), 10);
             tokenizedLineLetters.clear();
             // if line is shorter than the longest line, then fill it with
@@ -1534,8 +1534,9 @@ namespace Wisteria::GraphItems
                 for (const auto& letter : tokenizedLineLetters)
                     {
                     textLine.append(letter).append(
-                                                 (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
-                                                 (extraSpaces > 0 ? 1 : 0), hairSpace);
+                        (hairSpacesPerWordPair * (hairSpacesNeeded > 0 ? 1 : 0)) +
+                            (extraSpaces > 0 ? 1 : 0),
+                        hairSpace);
                     --extraSpaces;
                     hairSpacesNeeded -= hairSpacesPerWordPair;
                     }
@@ -1724,6 +1725,13 @@ namespace Wisteria::GraphItems
         {
         return GetFirstAvailableFont(
             { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
+        }
+
+    //------------------------------------------------------
+    wxString Label::GetFirstAvailableMonospaceFont()
+        {
+        return GetFirstAvailableFont(
+            { L"Cascadia Mono", L"Consolas", L"Times New Roman" });
         }
 
     //--------------------------------------------------

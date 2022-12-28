@@ -345,6 +345,11 @@ namespace Wisteria::GraphItems
             @note This function uses a list of known cursive fonts to search with.*/
         [[nodiscard]]
         static wxString GetFirstAvailableCursiveFont();
+        /** @returns The first available monospace font (face name) found on the system,
+                or the system default if none are found.
+            @note This function uses a list of monospace fonts to search with.*/
+        [[nodiscard]]
+        static wxString GetFirstAvailableMonospaceFont();
         /// @brief Corrects issues with fonts such as bogus facenames and point sizes.
         /// @param theFont The font to review and correct.
         static void FixFont(wxFont& theFont);
@@ -394,10 +399,10 @@ namespace Wisteria::GraphItems
         void GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const;
         /// @returns The offset from the top if user-defined minimum size is being used it is
         ///  taller than the measured size.
-        [[nodiscard]] wxCoord CalcPageVerticalOffset(wxDC& dc) const;
+        [[nodiscard]] wxCoord CalcPageVerticalOffset(const wxDC& dc) const;
         /// @returns The offset from the left if user-defined minimum size is being used it is
         ///     wider than the measured size.
-        [[nodiscard]] wxCoord CalcPageHorizontalOffset(wxDC& dc) const;
+        [[nodiscard]] wxCoord CalcPageHorizontalOffset(const wxDC& dc) const;
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };
