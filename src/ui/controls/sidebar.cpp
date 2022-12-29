@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        mainframe.cpp
+// Name:        sidebar.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2022 Blake Madden
 // Licence:     3-Clause BSD licence
@@ -29,7 +29,8 @@ SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
     m_itemHeight = FromDIP(wxSize(16, 16)).GetHeight()+GetPaddingHeight();
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetBackgroundColour(wxColour(200, 211, 231));
-    SetScrollbars(FromDIP(wxSize(30,30)).GetWidth(), FromDIP(wxSize(30,30)).GetHeight(), 0, 0);
+    SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(),
+                  FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
     ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
     SetVirtualSize(GetSize().GetWidth(), GetSize().GetHeight());
     SetMinSize(wxSize(GetPaddingWidth(), m_itemHeight));
@@ -374,10 +375,28 @@ bool SideBar::InsertSubItemById(const wxWindowID parentItemId, const wxString& l
     }
 
 //---------------------------------------------------
-void SideBar::OnDraw(wxDC& dc)
+void SideBar::ClearHighlightedItems() noexcept
+    {
+    m_highlightedRect = std::nullopt;
+    m_highlightedFolder = std::nullopt;
+    m_folderWithHighlightedSubitem = std::make_pair(std::nullopt, std::nullopt);
+    for (auto& item : m_items)
+        { item.m_highlightedItem = std::nullopt; }
+    }
+
+//---------------------------------------------------
+void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
     {
     if (GetFolderCount() == 0)
         { return; }
+
+    // if mouse is not inside of window, then turn off any item mouse highlighting
+    if (!GetScreenRect().Contains(wxGetMousePosition()))
+        { ClearHighlightedItems(); }
+
+    wxAutoBufferedPaintDC adc(this);
+    adc.Clear();
+    wxGCDC dc(adc);
 
     wxDCFontChanger fc(dc, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
     wxDCTextColourChanger tc(dc, GetForegroundColour());
@@ -434,7 +453,7 @@ void SideBar::OnDraw(wxDC& dc)
                                  GetSize().GetWidth(), GetItemHeight()));
                 }
             }
-        else if (m_highlightedItem.has_value() && m_highlightedItem.value() == i)
+        else if (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i)
             {
             if (GetStyle() == SidebarStyle::Glassy)
                 {
@@ -478,7 +497,7 @@ void SideBar::OnDraw(wxDC& dc)
         // draw parent labels
             {
             wxDCTextColourChanger tcc(dc,
-                (m_highlightedItem.has_value() && m_highlightedItem.value() == i) ?
+                (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i) ?
                     m_highlightFontColor :
                     (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
                      !m_items[i].m_isExpanded) ?
@@ -585,35 +604,13 @@ void SideBar::OnDraw(wxDC& dc)
         }
     }
 
-//---------------------------------------------------
-void SideBar::ClearHighlightedItems() noexcept
-    {
-    m_highlightedItem = std::nullopt;
-    for (auto& item : m_items)
-        { item.m_highlightedItem = std::nullopt; }
-    }
-
-//---------------------------------------------------
-void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
-    {
-    // if mouse is not inside of window, then turn off any item mouse highlighting
-    if (!GetScreenRect().Contains(wxGetMousePosition()))
-        { ClearHighlightedItems(); }
-
-    wxAutoBufferedPaintDC pdc(this);
-    pdc.Clear();
-    wxGCDC dc(pdc);
-    PrepareDC(dc);
-    OnDraw(dc);
-    }
-
 //-------------------------------------------
 void SideBar::OnMouseChange(wxMouseEvent& event)
     {
     if (HasShowHideToolbar())
         {
-        int x,y;
-        CalcUnscrolledPosition(0,0,&x,&y);
+        int x{ 0 }, y{ 0 };
+        CalcUnscrolledPosition(0, 0, &x, &y);
         if (m_toolbarRect.Contains(event.GetX()+x, event.GetY()+y))
             {
             SetToolTip(IsExpanded() ?
@@ -622,32 +619,52 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             }
         else
             { SetToolTip(wxEmptyString); }
-        // if not shown, then don't bother handling hover events for items that aren't being displayed
+        // if not shown, then don't bother handling hover
+        // events for items that aren't being displayed
         if (!IsExpanded())
             { return; }
         }
 
-    int x,y;
-    CalcUnscrolledPosition(0,0,&x,&y);
+    int x{ 0 }, y{ 0 };
+    CalcUnscrolledPosition(0, 0, &x, &y);
 
-    m_highlightedItem = std::nullopt;
+    const auto previouslyHighlightedRect = m_highlightedRect;
+    const auto previouslyHighlightedFolder = m_highlightedFolder;
+    const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
+    ClearHighlightedItems();
+
     for (size_t i = 0; i < m_items.size(); ++i)
         {
         if (m_items[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
-            m_highlightedItem = i;
+            m_highlightedFolder = i;
+            m_highlightedRect = m_items[i].m_Rect;
             m_items[i].m_highlightedItem = std::nullopt;
+            // mouse is over the same folder as before, don't bother repainting
+            if (previouslyHighlightedFolder.has_value() &&
+                previouslyHighlightedFolder.value() == i)
+                { return; }
             break;
             }
-        // if a parent item isn't being moused over, then see if its expanded subitems are being moused over.
-        // otherwise, turn off the subitems' highlighting.
+        // If a parent item isn't being moused over, then see if its
+        // expanded subitems are being moused over.
+        // Otherwise, turn off the subitems' highlighting.
         if (m_items[i].m_isExpanded)
             {
             for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
                 {
-                if (m_items[i].m_subItems[j].m_Rect.Contains(event.GetX()+x, event.GetY()+y))
+                if (m_items[i].m_subItems[j].m_Rect.
+                    Contains(event.GetX()+x, event.GetY()+y))
                     {
                     m_items[i].m_highlightedItem = j;
+                    m_highlightedRect = m_items[i].m_subItems[j].m_Rect;
+                    m_folderWithHighlightedSubitem = std::make_pair(i, j);
+                    // mouse is over the same subitem as before, don't bother repainting
+                    if (previouslyHighlightedSubitem.first.has_value() &&
+                        previouslyHighlightedSubitem.second.has_value() &&
+                        previouslyHighlightedSubitem.first.value() == i &&
+                        previouslyHighlightedSubitem.second.value() == j)
+                        { return; }
                     break;
                     }
                 else
@@ -656,6 +673,10 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             }
         }
 
+    // if nothing highlighted and nothing was highlighed before, then don't repaint
+    if (!previouslyHighlightedRect && !m_highlightedRect)
+        { return; }
+
     Refresh();
     Update();
     }
@@ -663,12 +684,11 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
 //-------------------------------------------
 void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     {
-    // if not shown, then don't bother handling hover events for items that aren't being displayed
+    // if not shown, then don't bother handling hover events for
+    // items that aren't being displayed
     if (!IsExpanded())
         { return; }
-    m_highlightedItem = std::nullopt;
-    for (size_t i = 0; i < m_items.size(); ++i)
-        { m_items[i].m_highlightedItem = std::nullopt; }
+    ClearHighlightedItems();
     Refresh();
     Update();
     }
@@ -735,7 +755,8 @@ void SideBar::OnMouseClick(wxMouseEvent& event)
             {
             for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
                 {
-                if (m_items[i].m_subItems[j].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
+                if (m_items[i].m_subItems[j].m_Rect.
+                    Contains(event.GetX()+x, event.GetY()+y) )
                     {
                     SelectSubItem(i, j);
                     return;
@@ -756,7 +777,8 @@ void SideBar::OnDblClick(wxMouseEvent& event)
         if (m_items[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
             SelectFolder(i);
-            m_items[i].m_isExpanded = !m_items[i].m_isExpanded; // flip collapsed state
+            // flip collapsed state
+            m_items[i].m_isExpanded = !m_items[i].m_isExpanded;
             RecalcSizes();
             Refresh();
             Update();
@@ -816,7 +838,8 @@ size_t SideBar::CalculateItemRects()
             for (size_t j = 0; j < pos->m_subItems.size(); ++j)
                 {
                 pos->m_subItems[j].m_Rect = wxRect(0,
-                    (GetItemHeight() * (pos - m_items.begin()+1)) + subItemHeight + GetToolbarHeight(),
+                    (GetItemHeight() * (pos - m_items.begin()+1)) +
+                        subItemHeight + GetToolbarHeight(),
                     GetClientSize().GetWidth() - GetSubitemIndentation(),
                     GetItemHeight());
                 pos->m_subItems[j].m_Rect.Offset(GetSubitemIndentation(), 0);

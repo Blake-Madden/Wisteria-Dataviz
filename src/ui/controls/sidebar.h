@@ -184,7 +184,7 @@ namespace Wisteria::UI
         void DeleteAllFolders()
             {
             m_items.clear();
-            m_highlightedItem = std::nullopt;
+            m_highlightedFolder = std::nullopt;
             m_activeItem = std::nullopt;
             RecalcSizes();
             Refresh();
@@ -194,7 +194,7 @@ namespace Wisteria::UI
         void DeleteFolder(const size_t index)
             {
             m_items.erase(m_items.begin() + index);
-            m_highlightedItem = std::nullopt;
+            m_highlightedFolder = std::nullopt;
             if (m_items.size() == 0)
                 { m_activeItem = std::nullopt; }
             else if (!m_activeItem.has_value() || m_activeItem.value() >= m_items.size())
@@ -241,27 +241,27 @@ namespace Wisteria::UI
         /** @brief Selects a root-level item.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
         void SelectFolder(const size_t item, const bool setFocus = true,
                             const bool sendEvent = true);
         /** @brief Selects a subitem.
             @param item The position of the parent item to select.
             @param subItem The position of the subitem (relative to its parent) to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
         void SelectSubItem(const size_t item, const size_t subItem,
                            const bool setFocus = true, const bool sendEvent = true);
         /** @brief Selects a subitem.
             @param item The position of the parent item and subitem (relative to its parent) to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
         void SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
                            const bool sendEvent = true)
             { SelectSubItem(item.first, item.second, setFocus, sendEvent); }
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c wxEVT_SIDEBAR_CLICK event.*/
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
         void SelectAnyItem(const size_t item, const bool setFocus = true,
                            const bool sendEvent = true);
         /** @returns The position of the selected root-level item, or @c std::nullopt
@@ -274,12 +274,14 @@ namespace Wisteria::UI
                 meaning the index of the item including subitems.\n
                 Returns @c std::nullopt if nothing is selected.*/
         [[nodiscard]] std::optional<size_t> GetSelectedAnyItem() const;
-        /** @returns The ID of the selected root-level item, or @c std::nullopt if nothing is selected.
+        /** @returns The ID of the selected root-level item,
+                or @c std::nullopt if nothing is selected.
             @note If a subitem is selected, this will return the ID of its parent item.*/
         [[nodiscard]] std::optional<wxWindowID> GetSelectedFolderId() const
             {
             return IsFolderSelected() ?
-                std::optional<wxWindowID>(m_items[GetSelectedFolder().value()].m_id) : std::nullopt;
+                std::optional<wxWindowID>(m_items[GetSelectedFolder().value()].m_id) :
+                std::nullopt;
             }
         /** @brief Gets parent position and ID of its selected subitem, or a pair of
                 @c std::nullopt if no subitem is selected.
@@ -327,10 +329,11 @@ namespace Wisteria::UI
                 pair of @c std::nullopt otherwise.*/
         [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
-        /** Searches for a sub item by label. Note that it will search within all of the root-level items.
+        /** @brief Searches for a subitem by label
+            @details Note that it will search within all of the root-level items.
             @param label The Label of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
-                pair of std::nullopt otherwise.*/
+                pair of @c std::nullopt otherwise.*/
         [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxString& label) const;
         /// @}
@@ -344,7 +347,8 @@ namespace Wisteria::UI
             @param show Set to @c true to include the show/hide toolbar.*/
         void IncludeShowHideToolbar(const bool show) noexcept
             { m_includeShowHideToolbar = show; }
-        /// @returns Whether or not a "show/hide" toolbar is being displayed at the top of the control.
+        /// @returns Whether or not a "show/hide" toolbar is being displayed
+        ///     at the top of the control.
         [[nodiscard]] bool HasShowHideToolbar() const noexcept
             { return m_includeShowHideToolbar; }
 
@@ -467,7 +471,8 @@ namespace Wisteria::UI
             @param item The position of the root item.
             @returns The item's width.*/
         [[nodiscard]] size_t GetFolderWidth(const size_t item);
-        /// @brief Updates the areas and positions for the items and returns their collective height.
+        /// @brief Updates the areas and positions for the items and returns
+        ///     their collective height.
         /// @returns The total height of all items.
         size_t CalculateItemRects();
         /// @brief Recalculates the control's content.
@@ -486,7 +491,7 @@ namespace Wisteria::UI
         [[nodiscard]] int GetToolbarHeight() const
             {
             return HasShowHideToolbar() ?
-                FromDIP(wxSize(16,16)).GetHeight() + GetPaddingHeight() : 0;
+                FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight() : 0;
             }
  
         // events
@@ -497,7 +502,6 @@ namespace Wisteria::UI
         void OnDblClick(wxMouseEvent& event);
         void OnChar(wxKeyEvent& event);
         void OnResize(wxSizeEvent& event);
-        void OnDraw(wxDC& dc) final;
 
         /** @brief Renders a glassy surface across a box.
             @param dc The device context to render on.
@@ -515,8 +519,8 @@ namespace Wisteria::UI
             }
         [[nodiscard]] wxCoord GetPaddingHeight() const
             {
-            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder()*2,
-                           wxSizerFlags::GetDefaultBorder()*2)).GetHeight();
+            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 2,
+                           wxSizerFlags::GetDefaultBorder() * 2)).GetHeight();
             }
         [[nodiscard]] wxCoord GetSubitemIndentation() const
             { return GetPaddingWidth() * 2; }
@@ -526,18 +530,24 @@ namespace Wisteria::UI
         [[nodiscard]] wxCoord GetHideWidth() const
             { return FromDIP(wxSize(16, 16)).GetWidth() + GetPaddingWidth(); }
         wxCoord m_itemHeight{ 0 };
-        std::optional<size_t> m_highlightedItem{ std::nullopt };
+        std::optional<size_t> m_highlightedFolder{ std::nullopt };
+        // the folder index, and the index of its subitem
+        std::pair<std::optional<size_t>, std::optional<size_t>>
+            m_folderWithHighlightedSubitem{ std::make_pair(std::nullopt, std::nullopt) };
+        std::optional<wxRect> m_highlightedRect{ std::nullopt };
         std::optional<size_t> m_activeItem{ std::nullopt };
         std::optional<size_t> m_savedActiveItem{ std::nullopt };
         SidebarStyle m_style{ SidebarStyle::Flat };
 
         struct SideBarStateInfo
             {
-            explicit SideBarStateInfo(const SideBarItem& that) noexcept : m_id(that.m_id),
+            explicit SideBarStateInfo(const SideBarItem& that) noexcept :
+                m_id(that.m_id),
                 m_activeItem(that.m_activeItem),
                 m_isExpanded(that.m_isExpanded)
                 {}
-            [[nodiscard]] bool operator<(const SideBarStateInfo& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const SideBarStateInfo& that) const noexcept
                 { return m_id < that.m_id; }
             wxWindowID m_id{ wxID_ANY };
             std::optional<size_t> m_activeItem{ std::nullopt };
