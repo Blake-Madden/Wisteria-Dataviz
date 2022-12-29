@@ -557,15 +557,17 @@ namespace Wisteria::UI
 
         std::vector<SideBarItem> m_items;
 
-        wxColour m_activeColor;
-        wxColour m_activeFontColor;
-        wxColour m_highlightColor;
-        wxColour m_highlightFontColor;
-        wxColour m_parentColor;
+        wxColour m_activeColor{ wxColour(L"#FDB759") };
+        wxColour m_activeFontColor{ *wxBLACK };
+        wxColour m_highlightColor{ wxColour(253, 211, 155) };
+        wxColour m_highlightFontColor{ *wxBLACK };
+        wxColour m_parentColor{ wxColour(180, 189, 207) };
 
         bool m_includeShowHideToolbar{ true };
         bool m_isExpanded{ true };
         wxRect m_toolbarRect;
+        wxBitmap m_goBackBmp;
+        wxBitmap m_goForwardBmp;
         };
     }
 

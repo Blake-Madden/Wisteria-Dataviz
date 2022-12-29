@@ -16,13 +16,13 @@ wxDEFINE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 //---------------------------------------------------
 SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
         : wxScrolledCanvas(parent, id, wxDefaultPosition, wxDefaultSize,
-                           wxWANTS_CHARS|wxVSCROLL|wxBORDER_THEME|wxFULL_REPAINT_ON_RESIZE),
-          m_activeColor(wxT("#FDB759")),
-          m_activeFontColor(*wxBLACK),
-          m_highlightColor(wxColour(253, 211, 155)),
-          m_highlightFontColor(*wxBLACK),
-          m_parentColor(wxColour(180, 189, 207))
+                           wxWANTS_CHARS|wxVSCROLL|wxBORDER_THEME|wxFULL_REPAINT_ON_RESIZE)
     {
+    // cache the toolbar images
+    m_goBackBmp = wxArtProvider::GetBitmap(wxART_GO_BACK, wxART_BUTTON,
+                                           FromDIP(wxSize(16, 16)));
+    m_goForwardBmp = wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_BUTTON,
+                                              FromDIP(wxSize(16, 16)));
     // Start off with enough height for a usual icon and some padding around it.
     // This will be adjusted in Realize() to take into account the actual height of the
     // text and any loaded icons.
@@ -414,8 +414,9 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
             wxDCPenChanger pc(dc, m_parentColor);
             dc.DrawRectangle(wxRect(0, 0, GetSize().GetWidth(), GetToolbarHeight()));
             }
-        dc.DrawBitmap(wxArtProvider::GetBitmap(IsExpanded() ?
-                wxART_GO_BACK : wxART_GO_FORWARD, wxART_BUTTON, FromDIP(wxSize(16, 16))),
+        dc.DrawBitmap(
+            IsExpanded() ?
+                m_goBackBmp : m_goForwardBmp,
             IsExpanded() ?
                 GetClientSize().GetWidth() - (FromDIP(wxSize(16,16)).GetWidth() +
                     wxSizerFlags::GetDefaultBorder()) :
@@ -677,19 +678,35 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     if (!previouslyHighlightedRect && !m_highlightedRect)
         { return; }
 
-    Refresh();
+    // refresh only the affected items, not the whole control
+    const wxRect refreshRect =
+        (previouslyHighlightedRect && m_highlightedRect) ?
+            previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
+        previouslyHighlightedRect ?
+            previouslyHighlightedRect.value() :
+        m_highlightedRect ?
+            m_highlightedRect.value() :
+        GetClientRect();
+
+    Refresh(true, &refreshRect);
     Update();
     }
 
 //-------------------------------------------
 void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     {
-    // if not shown, then don't bother handling hover events for
-    // items that aren't being displayed
-    if (!IsExpanded())
+    // If not shown, then don't bother handling hover events for
+    // items that aren't being displayed. Also, if nothing was
+    // highlighted, then don't bother repainting since there's
+    // nothing to remove highlighting from.
+    if (!IsExpanded() || !m_highlightedRect)
         { return; }
+
+    const wxRect previouslyHighlightedRect
+        { m_highlightedRect.value_or(GetClientRect()).Inflate(FromDIP(4)) };
     ClearHighlightedItems();
-    Refresh();
+
+    Refresh(true, &previouslyHighlightedRect);
     Update();
     }
 
