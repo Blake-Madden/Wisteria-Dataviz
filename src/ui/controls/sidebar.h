@@ -48,9 +48,9 @@ namespace Wisteria::UI
         /// @brief Text color.
         wxColour m_foregroundColor;
         /// @brief Background color of item when it's selected.
-        wxColour m_activeColor;
+        wxColour m_selectedColor;
         /// @brief Font color of item when it's selected.
-        wxColour m_activeFontColor;
+        wxColour m_selectedFontColor;
         /// @brief Background color of folders.
         wxColour m_parentColor;
         /// @brief Background color of item when mouse is over it.
@@ -122,8 +122,8 @@ namespace Wisteria::UI
             ///     one of this folder's children.
             [[nodiscard]] bool IsSubItemSelected() const noexcept
                 {
-                return (m_activeItem.has_value() &&
-                        m_activeItem.value() < m_subItems.size());
+                return (m_selectedItem.has_value() &&
+                        m_selectedItem.value() < m_subItems.size());
                 }
             /// @brief Sorts the folder's subitems alphabetically
             ///     (locale sensitive, case insensitively).
@@ -139,7 +139,7 @@ namespace Wisteria::UI
             wxRect m_Rect;
             std::vector<SideBarSubItem> m_subItems;
             std::optional<size_t> m_highlightedItem{ std::nullopt };
-            std::optional<size_t> m_activeItem{ std::nullopt };
+            std::optional<size_t> m_selectedItem{ std::nullopt };
             bool m_isExpanded{ false };
             };
 
@@ -176,16 +176,16 @@ namespace Wisteria::UI
             @returns The folder at item index.*/
         [[nodiscard]] SideBarItem& GetFolder(const size_t item)
             {
-            wxASSERT_MSG(item < m_items.size(), L"Invalid item in call to GetFolder()!");
-            return m_items.at(item);
+            wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
+            return m_folders.at(item);
             }
 
         /** @brief Deletes all items from the sidebar.*/
         void DeleteAllFolders()
             {
-            m_items.clear();
+            m_folders.clear();
             m_highlightedFolder = std::nullopt;
-            m_activeItem = std::nullopt;
+            m_selectedFolder = std::nullopt;
             RecalcSizes();
             Refresh();
             }
@@ -193,12 +193,13 @@ namespace Wisteria::UI
             @param index The index of the folder to delete.*/
         void DeleteFolder(const size_t index)
             {
-            m_items.erase(m_items.begin() + index);
+            m_folders.erase(m_folders.begin() + index);
             m_highlightedFolder = std::nullopt;
-            if (m_items.size() == 0)
-                { m_activeItem = std::nullopt; }
-            else if (!m_activeItem.has_value() || m_activeItem.value() >= m_items.size())
-                { m_activeItem = 0; }
+            if (m_folders.size() == 0)
+                { m_selectedFolder = std::nullopt; }
+            else if (!m_selectedFolder.has_value() ||
+                m_selectedFolder.value() >= m_folders.size())
+                { m_selectedFolder = 0; }
             RecalcSizes();
             Refresh();
             }
@@ -219,7 +220,7 @@ namespace Wisteria::UI
         /** @returns The total of (root level) items.
             @note Subitems are not included in this count.*/
         [[nodiscard]] size_t GetFolderCount() const noexcept
-            { return m_items.size(); }
+            { return m_folders.size(); }
         
         /** @returns The label of a given root item.
             @param item The index of the item in the list of root items.*/
@@ -227,7 +228,7 @@ namespace Wisteria::UI
             {
             if (item >= GetFolderCount())
                 { return wxEmptyString; }
-            return m_items[item].m_label;
+            return m_folders[item].m_label;
             }
         /** @brief Scrolls to folder (by index) if not fully visible.
             @param index The index of the folder to make visible.*/
@@ -268,7 +269,7 @@ namespace Wisteria::UI
                 if nothing is selected.
             @note If a subitem is selected, this will return the position of its parent item.*/
         [[nodiscard]] std::optional<size_t> GetSelectedFolder() const noexcept
-            { return m_activeItem; }
+            { return m_selectedFolder; }
         /** @brief Gets the position of the selected item (or sub item).
             @returns The raw position of the selected item,
                 meaning the index of the item including subitems.\n
@@ -280,7 +281,7 @@ namespace Wisteria::UI
         [[nodiscard]] std::optional<wxWindowID> GetSelectedFolderId() const
             {
             return IsFolderSelected() ?
-                std::optional<wxWindowID>(m_items[GetSelectedFolder().value()].m_id) :
+                std::optional<wxWindowID>(m_folders[GetSelectedFolder().value()].m_id) :
                 std::nullopt;
             }
         /** @brief Gets parent position and ID of its selected subitem, or a pair of
@@ -294,8 +295,8 @@ namespace Wisteria::UI
         /** @returns Whether a (root-level) item is selected in the sidebar.*/
         [[nodiscard]] bool IsFolderSelected() const noexcept
             {
-            return (m_activeItem.has_value() &&
-                    m_activeItem.value() < GetFolderCount());
+            return (m_selectedFolder.has_value() &&
+                    m_selectedFolder.value() < GetFolderCount());
             }
         /// @}
 
@@ -369,12 +370,12 @@ namespace Wisteria::UI
 
         /** @brief Sets the color for the currently selected item.
             @param color The color to use.*/
-        void SetActiveColour(const wxColour color) noexcept
-            { m_activeColor = color; }
+        void SetSelectedColour(const wxColour color) noexcept
+            { m_selectedColor = color; }
         /** @brief Sets the font color for the currently selected item.
             @param color The color to use.*/
-        void SetActiveFontColour(const wxColour color) noexcept
-            { m_activeFontColor = color; }
+        void SetSelectedFontColour(const wxColour color) noexcept
+            { m_selectedFontColor = color; }
         /** @brief Sets the color for the parents.
             @param color The color to use.*/
         void SetParentColour(const wxColour color) noexcept
@@ -393,8 +394,8 @@ namespace Wisteria::UI
             {
             SetBackgroundColour(colorScheme.m_backgroundColor);
             SetForegroundColour(colorScheme.m_foregroundColor);
-            SetActiveColour(colorScheme.m_activeColor);
-            SetActiveFontColour(colorScheme.m_activeFontColor);
+            SetSelectedColour(colorScheme.m_selectedColor);
+            SetSelectedFontColour(colorScheme.m_selectedFontColor);
             SetParentColour(colorScheme.m_parentColor);
             SetHighlightColour(colorScheme.m_highlightColor);
             SetHighlightFontColour(colorScheme.m_highlightFontColor);
@@ -428,8 +429,8 @@ namespace Wisteria::UI
         /// @private
         [[nodiscard]] const SideBarItem& GetFolder(const size_t item) const
             {
-            wxASSERT_MSG(item < m_items.size(), L"Invalid item in call to GetFolder()!");
-            return m_items.at(item);
+            wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
+            return m_folders.at(item);
             }
         /// @private
         [[nodiscard]] std::optional<size_t> FindFolder(const std::optional<wxWindowID> Id) const
@@ -535,36 +536,37 @@ namespace Wisteria::UI
         std::pair<std::optional<size_t>, std::optional<size_t>>
             m_folderWithHighlightedSubitem{ std::make_pair(std::nullopt, std::nullopt) };
         std::optional<wxRect> m_highlightedRect{ std::nullopt };
-        std::optional<size_t> m_activeItem{ std::nullopt };
-        std::optional<size_t> m_savedActiveItem{ std::nullopt };
+        std::optional<size_t> m_selectedFolder{ std::nullopt };
+        std::optional<size_t> m_savedSelectedItem{ std::nullopt };
         SidebarStyle m_style{ SidebarStyle::Flat };
 
         struct SideBarStateInfo
             {
             explicit SideBarStateInfo(const SideBarItem& that) noexcept :
                 m_id(that.m_id),
-                m_activeItem(that.m_activeItem),
+                m_selectedItem(that.m_selectedItem),
                 m_isExpanded(that.m_isExpanded)
                 {}
             [[nodiscard]]
             bool operator<(const SideBarStateInfo& that) const noexcept
                 { return m_id < that.m_id; }
             wxWindowID m_id{ wxID_ANY };
-            std::optional<size_t> m_activeItem{ std::nullopt };
+            std::optional<size_t> m_selectedItem{ std::nullopt };
             bool m_isExpanded{ true };
             };
         std::set<SideBarStateInfo> m_stateInfo;
 
-        std::vector<SideBarItem> m_items;
+        std::vector<SideBarItem> m_folders;
 
-        wxColour m_activeColor{ wxColour(L"#FDB759") };
-        wxColour m_activeFontColor{ *wxBLACK };
+        wxColour m_selectedColor{ wxColour(L"#FDB759") };
+        wxColour m_selectedFontColor{ *wxBLACK };
         wxColour m_highlightColor{ wxColour(253, 211, 155) };
         wxColour m_highlightFontColor{ *wxBLACK };
         wxColour m_parentColor{ wxColour(180, 189, 207) };
 
         bool m_includeShowHideToolbar{ true };
         bool m_isExpanded{ true };
+        bool m_highlightedIsSelected{ false };
         wxRect m_toolbarRect;
         wxBitmap m_goBackBmp;
         wxBitmap m_goForwardBmp;

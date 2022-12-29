@@ -68,10 +68,10 @@ std::optional<size_t> SideBar::GetSelectedAnyItem() const
     for (size_t i = 0; i < GetSelectedFolder(); ++i)
         {
         ++selectedSubItem;
-        selectedSubItem += m_items[i].GetSubItemCount();
+        selectedSubItem += m_folders[i].GetSubItemCount();
         }
-    selectedSubItem += m_items[GetSelectedFolder().value()].m_activeItem.has_value() ?
-        m_items[GetSelectedFolder().value()].m_activeItem.value()+1 : 0;
+    selectedSubItem += m_folders[GetSelectedFolder().value()].m_selectedItem.has_value() ?
+        m_folders[GetSelectedFolder().value()].m_selectedItem.value()+1 : 0;
     return selectedSubItem;
     }
 
@@ -98,7 +98,7 @@ void SideBar::OnResize(wxSizeEvent& event)
 //---------------------------------------------------
 void SideBar::CollapseAll()
     {
-    for (auto& item : m_items)
+    for (auto& item : m_folders)
         { item.Collapse(); }
     RecalcSizes();
     Refresh();
@@ -108,7 +108,7 @@ void SideBar::CollapseAll()
 //---------------------------------------------------
 void SideBar::ExpandAll()
     {
-    for (auto& item : m_items)
+    for (auto& item : m_folders)
         { item.Expand(); }
     RecalcSizes();
     Refresh();
@@ -118,26 +118,26 @@ void SideBar::ExpandAll()
 //---------------------------------------------------
 void SideBar::SaveState()
     {
-    m_savedActiveItem = m_activeItem;
+    m_savedSelectedItem = m_selectedFolder;
     m_stateInfo.clear();
-    for (const auto& item : m_items)
+    for (const auto& item : m_folders)
         { m_stateInfo.insert(SideBarStateInfo(item)); }
     }
 
 //---------------------------------------------------
 void SideBar::ResetState()
     {
-    m_activeItem = m_savedActiveItem;
-    for (auto& item : m_items)
+    m_selectedFolder = m_savedSelectedItem;
+    for (auto& item : m_folders)
         {
         const auto statePos = m_stateInfo.find(SideBarStateInfo(item));
         if (statePos != m_stateInfo.cend())
             {
-            item.m_activeItem = statePos->m_activeItem;
-            if ((item.m_subItems.size() && !item.m_activeItem.has_value()) ||
-                (item.m_activeItem.has_value() &&
-                    item.m_activeItem.value() >= item.m_subItems.size()))
-                { item.m_activeItem = 0; }
+            item.m_selectedItem = statePos->m_selectedItem;
+            if ((item.m_subItems.size() && !item.m_selectedItem.has_value()) ||
+                (item.m_selectedItem.has_value() &&
+                    item.m_selectedItem.value() >= item.m_subItems.size()))
+                { item.m_selectedItem = 0; }
             item.m_isExpanded = statePos->m_isExpanded;
             }
         }
@@ -151,13 +151,13 @@ void SideBar::OnChar(wxKeyEvent& event)
     // if going down, select next item. If it has subitems, then select the first subitem.
     if (event.GetKeyCode() == WXK_DOWN)
         {
-        if (IsFolderSelected() && m_items[GetSelectedFolder().value()].GetSubItemCount() &&
-            m_items[GetSelectedFolder().value()].m_activeItem.has_value() &&
-            m_items[GetSelectedFolder().value()].m_activeItem.value() <
-                m_items[GetSelectedFolder().value()].GetSubItemCount()-1)
+        if (IsFolderSelected() && m_folders[GetSelectedFolder().value()].GetSubItemCount() &&
+            m_folders[GetSelectedFolder().value()].m_selectedItem.has_value() &&
+            m_folders[GetSelectedFolder().value()].m_selectedItem.value() <
+                m_folders[GetSelectedFolder().value()].GetSubItemCount()-1)
             {
             SelectSubItem(GetSelectedFolder().value(),
-                          m_items[GetSelectedFolder().value()].m_activeItem.value() + 1);
+                          m_folders[GetSelectedFolder().value()].m_selectedItem.value() + 1);
             }
         else if (IsFolderSelected() && GetSelectedFolder().value() < GetFolderCount()-1)
             { SelectSubItem(GetSelectedFolder().value() + 1, 0); }
@@ -165,26 +165,26 @@ void SideBar::OnChar(wxKeyEvent& event)
     // if going up, select the previous item. If it has subitems, then select the last subitem.
     else if (event.GetKeyCode() == WXK_UP)
         {
-        if (IsFolderSelected() && m_items[GetSelectedFolder().value()].GetSubItemCount() &&
-            m_items[GetSelectedFolder().value()].m_activeItem.has_value() &&
-            m_items[GetSelectedFolder().value()].m_activeItem.value() > 0)
+        if (IsFolderSelected() && m_folders[GetSelectedFolder().value()].GetSubItemCount() &&
+            m_folders[GetSelectedFolder().value()].m_selectedItem.has_value() &&
+            m_folders[GetSelectedFolder().value()].m_selectedItem.value() > 0)
             {
             SelectSubItem(GetSelectedFolder().value(),
-                          m_items[GetSelectedFolder().value()].m_activeItem.value() - 1);
+                          m_folders[GetSelectedFolder().value()].m_selectedItem.value() - 1);
             }
         else if (IsFolderSelected() && GetSelectedFolder().value() > 0)
             {
             SelectSubItem(GetSelectedFolder().value() - 1,
-                m_items[GetSelectedFolder().value() - 1].GetSubItemCount() ?
-                    m_items[GetSelectedFolder().value() - 1].GetSubItemCount()-1 : 0);
+                m_folders[GetSelectedFolder().value() - 1].GetSubItemCount() ?
+                    m_folders[GetSelectedFolder().value() - 1].GetSubItemCount()-1 : 0);
             }
         }
     // going right will expanded the selected item
     else if (event.GetKeyCode() == WXK_RIGHT)
         {
-        if (IsFolderSelected() && !m_items[GetSelectedFolder().value()].m_isExpanded)
+        if (IsFolderSelected() && !m_folders[GetSelectedFolder().value()].m_isExpanded)
             {
-            m_items[GetSelectedFolder().value()].Expand();
+            m_folders[GetSelectedFolder().value()].Expand();
             RecalcSizes();
             Refresh();
             }
@@ -192,9 +192,9 @@ void SideBar::OnChar(wxKeyEvent& event)
     // going left will collapse the selected item
     else if (event.GetKeyCode() == WXK_LEFT)
         {
-        if (IsFolderSelected() && m_items[GetSelectedFolder().value()].m_isExpanded)
+        if (IsFolderSelected() && m_folders[GetSelectedFolder().value()].m_isExpanded)
             {
-            m_items[GetSelectedFolder().value()].Collapse();
+            m_folders[GetSelectedFolder().value()].Collapse();
             RecalcSizes();
             Refresh();
             }
@@ -206,17 +206,17 @@ void SideBar::OnChar(wxKeyEvent& event)
 //---------------------------------------------------
 std::pair<std::optional<size_t>, std::optional<wxWindowID>> SideBar::GetSelectedSubItemId() const
     {
-    if (!IsFolderSelected() || m_items[GetSelectedFolder().value()].GetSubItemCount() == 0 ||
-        !m_items[GetSelectedFolder().value()].IsSubItemSelected())
+    if (!IsFolderSelected() || m_folders[GetSelectedFolder().value()].GetSubItemCount() == 0 ||
+        !m_folders[GetSelectedFolder().value()].IsSubItemSelected())
         {
         return std::pair<std::optional<size_t>,
                          std::optional<wxWindowID>>(std::nullopt, std::nullopt);
         }
     else
         {
-        return std::pair<wxWindowID, wxWindowID>(m_items[GetSelectedFolder().value()].m_id,
-            m_items[GetSelectedFolder().value()].
-                m_subItems[m_items[GetSelectedFolder().value()].m_activeItem.value()].m_id);
+        return std::pair<wxWindowID, wxWindowID>(m_folders[GetSelectedFolder().value()].m_id,
+            m_folders[GetSelectedFolder().value()].
+                m_subItems[m_folders[GetSelectedFolder().value()].m_selectedItem.value()].m_id);
         }
     }
 
@@ -225,12 +225,12 @@ wxString SideBar::GetSelectedLabel() const
     {
     if (!IsFolderSelected())
         { return wxEmptyString; }
-    else if (m_items[GetSelectedFolder().value()].GetSubItemCount() == 0)
+    else if (m_folders[GetSelectedFolder().value()].GetSubItemCount() == 0)
         { return GetFolderText(GetSelectedFolder().value()); }
-    else if (m_items[GetSelectedFolder().value()].IsSubItemSelected())
+    else if (m_folders[GetSelectedFolder().value()].IsSubItemSelected())
         {
-        return m_items[GetSelectedFolder().value()].
-            m_subItems[m_items[GetSelectedFolder().value()].m_activeItem.value()].m_label;
+        return m_folders[GetSelectedFolder().value()].
+            m_subItems[m_folders[GetSelectedFolder().value()].m_selectedItem.value()].m_label;
         }
     else
         { return wxEmptyString; }
@@ -239,9 +239,9 @@ wxString SideBar::GetSelectedLabel() const
 //---------------------------------------------------
 std::optional<size_t> SideBar::FindFolder(const wxWindowID Id) const
     {
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        if (m_items[i].m_id == Id)
+        if (m_folders[i].m_id == Id)
             { return i; }
         }
     return std::nullopt;
@@ -251,11 +251,11 @@ std::optional<size_t> SideBar::FindFolder(const wxWindowID Id) const
 std::pair<std::optional<size_t>, std::optional<size_t>>
     SideBar::FindSubItem(const wxWindowID Id) const
     {
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
+        for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
             {
-            if (m_items[i].m_subItems[j].m_id == Id)
+            if (m_folders[i].m_subItems[j].m_id == Id)
                 { return std::pair<int,int>(i,j); }
             }
         }
@@ -266,11 +266,11 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
 std::pair<std::optional<size_t>, std::optional<size_t>>
     SideBar::FindSubItem(const wxString& label) const
     {
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
+        for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
             {
-            if (m_items[i].m_subItems[j].m_label.CmpNoCase(label) == 0)
+            if (m_folders[i].m_subItems[j].m_label.CmpNoCase(label) == 0)
                 { return std::pair<int,int>(i,j); }
             }
         }
@@ -285,9 +285,9 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
     const auto parentIndex = FindFolder(parentId);
     if (!parentIndex.has_value())
         { return std::make_pair(std::nullopt, std::nullopt); }
-    for (size_t j = 0; j < m_items[parentIndex.value()].m_subItems.size(); ++j)
+    for (size_t j = 0; j < m_folders[parentIndex.value()].m_subItems.size(); ++j)
         {
-        if (m_items[parentIndex.value()].m_subItems[j].m_id == subItemId)
+        if (m_folders[parentIndex.value()].m_subItems[j].m_id == subItemId)
             { return std::make_pair(parentIndex.value(), j); }
         }
     return std::make_pair(std::nullopt, std::nullopt);
@@ -301,11 +301,11 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
     const auto parentIndex = FindFolder(parentId);
     if (!parentIndex.has_value())
         { return std::make_pair(std::nullopt, std::nullopt); }
-    for (size_t j = 0; j < m_items[parentIndex.value()].m_subItems.size(); ++j)
+    for (size_t j = 0; j < m_folders[parentIndex.value()].m_subItems.size(); ++j)
         {
-        if (m_items[parentIndex.value()].m_subItems[j].m_id == subItem.m_id &&
-            (m_items[parentIndex.value()].m_subItems[j].m_iconIndex == subItem.m_iconIndex ||
-             m_items[parentIndex.value()].m_subItems[j].m_label == subItem.m_label))
+        if (m_folders[parentIndex.value()].m_subItems[j].m_id == subItem.m_id &&
+            (m_folders[parentIndex.value()].m_subItems[j].m_iconIndex == subItem.m_iconIndex ||
+             m_folders[parentIndex.value()].m_subItems[j].m_label == subItem.m_label))
             { return std::make_pair(parentIndex, j); }
         }
     return std::make_pair(std::nullopt, std::nullopt);
@@ -320,15 +320,15 @@ size_t SideBar::GetFolderWidth(const size_t item)
     wxClientDC dc(this);
     dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
     wxCoord textWidth(0), textHeight(0);
-    dc.GetTextExtent(m_items[item].m_label, &textWidth, &textHeight);
+    dc.GetTextExtent(m_folders[item].m_label, &textWidth, &textHeight);
     wxCoord parentWidth = textWidth;
-    parentWidth += IsValidImageId(m_items[item].m_iconIndex) ?
-        GetImageList()[m_items[item].m_iconIndex.value()].GetSize().GetWidth() +
+    parentWidth += IsValidImageId(m_folders[item].m_iconIndex) ?
+        GetImageList()[m_folders[item].m_iconIndex.value()].GetSize().GetWidth() +
         wxSizerFlags::GetDefaultBorder() : 0;
     parentWidth += GetPaddingWidth(); // padding around the label
     // see what the widest subitem is
     wxCoord widestSubItem = 0;
-    for (const auto& subItem : m_items[item].m_subItems)
+    for (const auto& subItem : m_folders[item].m_subItems)
         {
         dc.GetTextExtent(subItem.m_label, &textWidth, &textHeight);
         textWidth += IsValidImageId(subItem.m_iconIndex) ?
@@ -349,9 +349,9 @@ void SideBar::InsertItem(const size_t position, const wxString& label,
     item.m_id = Id;
     item.m_iconIndex = iconIndex;
     item.m_label = label;
-    if (position > m_items.size())
-        { m_items.resize(position); }
-    m_items.insert(m_items.begin()+position, item);
+    if (position > m_folders.size())
+        { m_folders.resize(position); }
+    m_folders.insert(m_folders.begin()+position, item);
     }
 
 //---------------------------------------------------
@@ -366,21 +366,22 @@ bool SideBar::InsertSubItemById(const wxWindowID parentItemId, const wxString& l
     const auto parent = FindFolder(parentItemId);
     if (!parent.has_value())
         { return false; }
-    m_items[parent.value()].m_subItems.push_back(subitem);
-    if (!m_items[parent.value()].m_highlightedItem.has_value())
-        { m_items[parent.value()].m_highlightedItem = 0; }
-    if (!m_items[parent.value()].m_activeItem.has_value())
-        { m_items[parent.value()].m_activeItem = 0; }
+    m_folders[parent.value()].m_subItems.push_back(subitem);
+    if (!m_folders[parent.value()].m_highlightedItem.has_value())
+        { m_folders[parent.value()].m_highlightedItem = 0; }
+    if (!m_folders[parent.value()].m_selectedItem.has_value())
+        { m_folders[parent.value()].m_selectedItem = 0; }
     return true;
     }
 
 //---------------------------------------------------
 void SideBar::ClearHighlightedItems() noexcept
     {
+    m_highlightedIsSelected = false;
     m_highlightedRect = std::nullopt;
     m_highlightedFolder = std::nullopt;
     m_folderWithHighlightedSubitem = std::make_pair(std::nullopt, std::nullopt);
-    for (auto& item : m_items)
+    for (auto& item : m_folders)
         { item.m_highlightedItem = std::nullopt; }
     }
 
@@ -432,11 +433,11 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
         }
 
     // draw the borders for the parent items
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        const wxRect buttonBorderRect = m_items[i].m_Rect;
+        const wxRect buttonBorderRect = m_folders[i].m_Rect;
         if (GetSelectedFolder().has_value() &&
-            GetSelectedFolder().value() == i && !m_items[i].m_isExpanded)
+            GetSelectedFolder().value() == i && !m_folders[i].m_isExpanded)
             {
             if (GetStyle() == SidebarStyle::Glassy)
                 {
@@ -444,11 +445,11 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
                     wxRect(buttonBorderRect.GetLeftTop().x,
                            buttonBorderRect.GetLeftTop().y,
                            GetSize().GetWidth(), GetItemHeight()),
-                    m_activeColor); }
+                    m_selectedColor); }
             else
                 {
-                wxDCBrushChanger bc(dc, m_activeColor);
-                wxDCPenChanger pc(dc, m_activeColor);
+                wxDCBrushChanger bc(dc, m_selectedColor);
+                wxDCPenChanger pc(dc, m_selectedColor);
                 dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
                                 buttonBorderRect.GetLeftTop().y,
                                  GetSize().GetWidth(), GetItemHeight()));
@@ -492,41 +493,48 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
             }
         }
 
-    // draw the parent labels and subitems
-    for (size_t i = 0; i < m_items.size(); ++i)
+    // draw the folders and subitems
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        // draw parent labels
+        // draw the folder (i.e., parent label)
             {
             wxDCTextColourChanger tcc(dc,
                 (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i) ?
                     m_highlightFontColor :
                     (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
-                     !m_items[i].m_isExpanded) ?
-                        m_activeFontColor :
+                     !m_folders[i].m_isExpanded) ?
+                        m_selectedFontColor :
                         GetForegroundColour());
-            if (IsValidImageId(m_items[i].m_iconIndex))
+            if (IsValidImageId(m_folders[i].m_iconIndex))
                 {
-                dc.DrawLabel(m_items[i].m_label,
-                             GetImageList()[m_items[i].m_iconIndex.value()],
-                             wxRect(m_items[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
+                dc.DrawLabel(m_folders[i].m_label,
+                             GetImageList()[m_folders[i].m_iconIndex.value()],
+                             wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
                              wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                 }
             else
                 {
-                dc.DrawLabel(m_items[i].m_label, wxNullBitmap,
-                             wxRect(m_items[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
+                dc.DrawLabel(m_folders[i].m_label, wxNullBitmap,
+                             wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
                              wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                 }
             }
-        // draw subitems (if parent item is expanded)
-        if (m_items[i].m_isExpanded)
+        // draw subitems (if folder is expanded)
+        if (m_folders[i].m_isExpanded)
             {
-            for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
+            for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
                 {
-                if (m_items[i].m_highlightedItem.has_value() &&
-                    m_items[i].m_highlightedItem.value() == j)
+                const bool subitemIsSelected =
+                    (GetSelectedFolder().has_value() &&
+                     GetSelectedFolder().value() == i &&
+                     m_folders[i].m_selectedItem.has_value() &&
+                     m_folders[i].m_selectedItem.value() == j);
+
+                if (m_folders[i].m_highlightedItem.has_value() &&
+                    m_folders[i].m_highlightedItem.value() == j &&
+                    !subitemIsSelected)
                     {
-                    const wxRect buttonBorderRect = m_items[i].m_subItems[j].m_Rect;
+                    const wxRect buttonBorderRect = m_folders[i].m_subItems[j].m_Rect;
                     if (GetStyle() == SidebarStyle::Glassy)
                         {
                         DrawGlassEffect(dc,
@@ -548,24 +556,21 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
                                          GetItemHeight()));
                         }
                     }
-                if (GetSelectedFolder().has_value() &&
-                    GetSelectedFolder().value() == i &&
-                    m_items[i].m_activeItem.has_value() &&
-                    m_items[i].m_activeItem.value() == j)
+                else if (subitemIsSelected)
                     {
-                    const wxRect buttonBorderRect = m_items[i].m_subItems[j].m_Rect;
+                    const wxRect buttonBorderRect = m_folders[i].m_subItems[j].m_Rect;
                     if (GetStyle() == SidebarStyle::Glassy)
                         {
                         DrawGlassEffect(dc, wxRect(buttonBorderRect.GetLeftTop().x,
                             buttonBorderRect.GetLeftTop().y,
                             GetSize().GetWidth() >= GetSubitemIndentation() ?
                                 GetSize().GetWidth()-GetSubitemIndentation() : 0,
-                            GetItemHeight()), m_activeColor);
+                            GetItemHeight()), m_selectedColor);
                         }
                     else
                         {
-                        wxDCBrushChanger bc(dc, m_activeColor);
-                        wxDCPenChanger pc(dc, m_activeColor);
+                        wxDCBrushChanger bc(dc, m_selectedColor);
+                        wxDCPenChanger pc(dc, m_selectedColor);
                         dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
                             buttonBorderRect.GetLeftTop().y,
                             GetSize().GetWidth() >= GetSubitemIndentation() ?
@@ -573,29 +578,30 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
                             GetItemHeight()));
                         }
                     }
+
                 // draw the subitem labels
                     {
                     wxDCTextColourChanger tcc(dc,
-                        (m_items[i].m_highlightedItem.has_value() &&
-                         m_items[i].m_highlightedItem.value() == j) ?
+                        (m_folders[i].m_highlightedItem.has_value() &&
+                         m_folders[i].m_highlightedItem.value() == j) ?
                             m_highlightFontColor :
                             (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
-                             m_items[i].m_activeItem.has_value() &&
-                             m_items[i].m_activeItem.value() == j) ?
-                                m_activeFontColor : GetForegroundColour());
-                    if (IsValidImageId(m_items[i].m_subItems[j].m_iconIndex))
+                             m_folders[i].m_selectedItem.has_value() &&
+                             m_folders[i].m_selectedItem.value() == j) ?
+                                m_selectedFontColor : GetForegroundColour());
+                    if (IsValidImageId(m_folders[i].m_subItems[j].m_iconIndex))
                         {
-                        dc.DrawLabel(m_items[i].m_subItems[j].m_label,
-                                     GetImageList()[m_items[i].m_subItems[j].m_iconIndex.value()],
-                                     wxRect(m_items[i].m_subItems[j].m_Rect).
+                        dc.DrawLabel(m_folders[i].m_subItems[j].m_label,
+                                     GetImageList()[m_folders[i].m_subItems[j].m_iconIndex.value()],
+                                     wxRect(m_folders[i].m_subItems[j].m_Rect).
                                         Deflate(wxSizerFlags::GetDefaultBorder()),
                                      wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                         }
                     else
                         {
-                        dc.DrawLabel(m_items[i].m_subItems[j].m_label,
+                        dc.DrawLabel(m_folders[i].m_subItems[j].m_label,
                                      wxNullBitmap,
-                                     wxRect(m_items[i].m_subItems[j].m_Rect).
+                                     wxRect(m_folders[i].m_subItems[j].m_Rect).
                                         Deflate(wxSizerFlags::GetDefaultBorder()),
                                      wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                         }
@@ -632,15 +638,25 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     const auto previouslyHighlightedRect = m_highlightedRect;
     const auto previouslyHighlightedFolder = m_highlightedFolder;
     const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
+    const bool previouslyHighlightedItemsIsSelected =
+        (GetSelectedFolder() &&
+         GetFolder(GetSelectedFolder().value()).m_selectedItem &&
+         previouslyHighlightedSubitem.first &&
+         previouslyHighlightedSubitem.second &&
+         GetSelectedFolder().value() ==
+            previouslyHighlightedSubitem.first.value() &&
+         GetFolder(GetSelectedFolder().value()).m_selectedItem ==
+            previouslyHighlightedSubitem.second.value());
     ClearHighlightedItems();
 
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        if (m_items[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
+        if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
             m_highlightedFolder = i;
-            m_highlightedRect = m_items[i].m_Rect;
-            m_items[i].m_highlightedItem = std::nullopt;
+            m_highlightedIsSelected = (m_selectedFolder && m_selectedFolder.value() == i);
+            m_highlightedRect = m_folders[i].m_Rect;
+            m_folders[i].m_highlightedItem = std::nullopt;
             // mouse is over the same folder as before, don't bother repainting
             if (previouslyHighlightedFolder.has_value() &&
                 previouslyHighlightedFolder.value() == i)
@@ -650,15 +666,20 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
         // If a parent item isn't being moused over, then see if its
         // expanded subitems are being moused over.
         // Otherwise, turn off the subitems' highlighting.
-        if (m_items[i].m_isExpanded)
+        if (m_folders[i].m_isExpanded)
             {
-            for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
+            for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
                 {
-                if (m_items[i].m_subItems[j].m_Rect.
+                if (m_folders[i].m_subItems[j].m_Rect.
                     Contains(event.GetX()+x, event.GetY()+y))
                     {
-                    m_items[i].m_highlightedItem = j;
-                    m_highlightedRect = m_items[i].m_subItems[j].m_Rect;
+                    m_folders[i].m_highlightedItem = j;
+                    m_highlightedIsSelected =
+                        (m_selectedFolder &&
+                         m_selectedFolder.value() == i &&
+                         m_folders[i].m_selectedItem &&
+                         m_folders[i].m_selectedItem.value() == j);
+                    m_highlightedRect = m_folders[i].m_subItems[j].m_Rect;
                     m_folderWithHighlightedSubitem = std::make_pair(i, j);
                     // mouse is over the same subitem as before, don't bother repainting
                     if (previouslyHighlightedSubitem.first.has_value() &&
@@ -669,7 +690,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
                     break;
                     }
                 else
-                    { m_items[i].m_highlightedItem = std::nullopt; }
+                    { m_folders[i].m_highlightedItem = std::nullopt; }
                 }
             }
         }
@@ -680,13 +701,17 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
 
     // refresh only the affected items, not the whole control
     const wxRect refreshRect =
-        (previouslyHighlightedRect && m_highlightedRect) ?
+        (previouslyHighlightedRect && !previouslyHighlightedItemsIsSelected &&
+         m_highlightedRect && !m_highlightedIsSelected) ?
             previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
-        previouslyHighlightedRect ?
+        (previouslyHighlightedRect && !previouslyHighlightedItemsIsSelected) ?
             previouslyHighlightedRect.value() :
-        m_highlightedRect ?
+        (m_highlightedRect && !m_highlightedIsSelected) ?
             m_highlightedRect.value() :
-        GetClientRect();
+        wxRect();
+
+    if (refreshRect.IsEmpty())
+        { return; }
 
     Refresh(true, &refreshRect);
     Update();
@@ -759,20 +784,20 @@ void SideBar::OnMouseClick(wxMouseEvent& event)
             { return; }
         }
 
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        if (m_items[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
+        if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
             SelectFolder(i);
             return;
             }
         // if a parent item isn't being moused over,
         // then see if it expanded subitems being moused over
-        if (m_items[i].m_isExpanded)
+        if (m_folders[i].m_isExpanded)
             {
-            for (size_t j = 0; j < m_items[i].m_subItems.size(); ++j)
+            for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
                 {
-                if (m_items[i].m_subItems[j].m_Rect.
+                if (m_folders[i].m_subItems[j].m_Rect.
                     Contains(event.GetX()+x, event.GetY()+y) )
                     {
                     SelectSubItem(i, j);
@@ -789,13 +814,13 @@ void SideBar::OnDblClick(wxMouseEvent& event)
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
 
-    for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_folders.size(); ++i)
         {
-        if (m_items[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
+        if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
             SelectFolder(i);
             // flip collapsed state
-            m_items[i].m_isExpanded = !m_items[i].m_isExpanded;
+            m_folders[i].m_isExpanded = !m_folders[i].m_isExpanded;
             RecalcSizes();
             Refresh();
             Update();
@@ -814,7 +839,7 @@ void SideBar::Realize()
         }
     // measure the items' text heights
     wxMemoryDC dc;
-    for (const auto& item : m_items)
+    for (const auto& item : m_folders)
         {
         const auto sz = dc.GetMultiLineTextExtent(item.m_label);
         if (sz.GetHeight()+GetPaddingHeight() > GetItemHeight())
@@ -842,12 +867,12 @@ size_t SideBar::CalculateItemRects()
     if (HasShowHideToolbar())
         { m_toolbarRect = wxRect(0, 0, GetSize().GetWidth(), GetToolbarHeight()); }
     size_t subItemHeight{ 0 };
-    for (auto pos = m_items.begin();
-        pos != m_items.end();
+    for (auto pos = m_folders.begin();
+        pos != m_folders.end();
         ++pos)
         {
         pos->m_Rect = wxRect(0,
-            (GetItemHeight()*(pos - m_items.begin())) + subItemHeight+GetToolbarHeight(), 
+            (GetItemHeight()*(pos - m_folders.begin())) + subItemHeight+GetToolbarHeight(), 
             GetClientSize().GetWidth(), GetItemHeight());
         // if an expanded item, then factor in its subitems' heights for the rest of the items
         if (pos->m_isExpanded)
@@ -855,7 +880,7 @@ size_t SideBar::CalculateItemRects()
             for (size_t j = 0; j < pos->m_subItems.size(); ++j)
                 {
                 pos->m_subItems[j].m_Rect = wxRect(0,
-                    (GetItemHeight() * (pos - m_items.begin()+1)) +
+                    (GetItemHeight() * (pos - m_folders.begin()+1)) +
                         subItemHeight + GetToolbarHeight(),
                     GetClientSize().GetWidth() - GetSubitemIndentation(),
                     GetItemHeight());
@@ -864,7 +889,7 @@ size_t SideBar::CalculateItemRects()
                 }
             }
         }
-    return (GetItemHeight() * m_items.size()) + subItemHeight;
+    return (GetItemHeight() * m_folders.size()) + subItemHeight;
     }
 
 //-------------------------------------------
@@ -879,10 +904,10 @@ void SideBar::EnsureFolderVisible(const size_t index)
     wxRect scrolledClientRect = GetClientRect();
     scrolledClientRect.Offset(x, y);
     const wxRect lastItemRectToBeVisible =
-        (m_items[index].m_isExpanded && m_items[index].GetSubItemCount() &&
-         m_items[index].IsSubItemSelected()) ?
-        m_items[index].m_subItems[m_items[index].m_activeItem.value()].m_Rect :
-            m_items[index].m_Rect;
+        (m_folders[index].m_isExpanded && m_folders[index].GetSubItemCount() &&
+         m_folders[index].IsSubItemSelected()) ?
+        m_folders[index].m_subItems[m_folders[index].m_selectedItem.value()].m_Rect :
+            m_folders[index].m_Rect;
     if (!scrolledClientRect.Contains(lastItemRectToBeVisible) && yUnit != 0)
         {
         // scroll to the middle of the item
@@ -900,16 +925,16 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         { return; }
     // first, see if we should fire a subitem selection event instead
     // (in case this parent has subitems)
-    if (m_items[item].GetSubItemCount())
+    if (m_folders[item].GetSubItemCount())
         {
-        if (!m_items[item].IsSubItemSelected())
-            { m_items[item].m_activeItem = 0; }
-        SelectSubItem(item, m_items[item].m_activeItem.value(), setFocus, sendEvent);
+        if (!m_folders[item].IsSubItemSelected())
+            { m_folders[item].m_selectedItem = 0; }
+        SelectSubItem(item, m_folders[item].m_selectedItem.value(), setFocus, sendEvent);
         return;
         }
 
-    m_activeItem = item;
-    m_items[GetSelectedFolder().value()].Expand();
+    m_selectedFolder = item;
+    m_folders[GetSelectedFolder().value()].Expand();
 
     RecalcSizes();
     EnsureFolderVisible(GetSelectedFolder().value());
@@ -921,8 +946,8 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     if (sendEvent)
         {
         wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
-        cevent.SetString(m_items[GetSelectedFolder().value()].m_label);
-        cevent.SetInt(m_items[GetSelectedFolder().value()].m_id);
+        cevent.SetString(m_folders[GetSelectedFolder().value()].m_label);
+        cevent.SetInt(m_folders[GetSelectedFolder().value()].m_id);
         cevent.SetEventObject(this);
         GetEventHandler()->ProcessEvent(cevent);
         }
@@ -940,7 +965,7 @@ void SideBar::SelectAnyItem(const size_t item, const bool setFocus /*= true*/,
             SelectFolder(i, setFocus, sendEvent);
             return;
             }
-        for (size_t j = 0; j < m_items[i].GetSubItemCount(); ++j)
+        for (size_t j = 0; j < m_folders[i].GetSubItemCount(); ++j)
             {
             ++itemToSelect;
             if (itemToSelect == item)
@@ -961,15 +986,15 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
     if (item >= GetFolderCount())
         { return; }
     // if bogus subitem, then just select the parent item
-    if (m_items[item].GetSubItemCount() == 0 ||
-        subItem >= m_items[item].GetSubItemCount())
+    if (m_folders[item].GetSubItemCount() == 0 ||
+        subItem >= m_folders[item].GetSubItemCount())
         {
         SelectFolder(item, setFocus, sendEvent);
         return;
         }
-    m_activeItem = item;
-    m_items[GetSelectedFolder().value()].Expand();
-    m_items[GetSelectedFolder().value()].m_activeItem = subItem;
+    m_selectedFolder = item;
+    m_folders[GetSelectedFolder().value()].Expand();
+    m_folders[GetSelectedFolder().value()].m_selectedItem = subItem;
 
     RecalcSizes();
     EnsureFolderVisible(GetSelectedFolder().value());
@@ -981,9 +1006,9 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
     if (sendEvent)
         {
         wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
-        cevent.SetString(m_items[GetSelectedFolder().value()].m_subItems[subItem].m_label);
-        cevent.SetExtraLong(m_items[GetSelectedFolder().value()].m_id);
-        cevent.SetInt(m_items[GetSelectedFolder().value()].m_subItems[subItem].m_id);
+        cevent.SetString(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_label);
+        cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
+        cevent.SetInt(m_folders[GetSelectedFolder().value()].m_subItems[subItem].m_id);
         cevent.SetEventObject(this);
         GetEventHandler()->ProcessEvent(cevent);
         }
