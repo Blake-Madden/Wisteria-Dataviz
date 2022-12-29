@@ -209,12 +209,11 @@ std::pair<std::optional<size_t>, std::optional<wxWindowID>> SideBar::GetSelected
     if (!IsFolderSelected() || m_folders[GetSelectedFolder().value()].GetSubItemCount() == 0 ||
         !m_folders[GetSelectedFolder().value()].IsSubItemSelected())
         {
-        return std::pair<std::optional<size_t>,
-                         std::optional<wxWindowID>>(std::nullopt, std::nullopt);
+        return std::make_pair(std::nullopt, std::nullopt);
         }
     else
         {
-        return std::pair<wxWindowID, wxWindowID>(m_folders[GetSelectedFolder().value()].m_id,
+        return std::make_pair(m_folders[GetSelectedFolder().value()].m_id,
             m_folders[GetSelectedFolder().value()].
                 m_subItems[m_folders[GetSelectedFolder().value()].m_selectedItem.value()].m_id);
         }
@@ -256,7 +255,7 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
         for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
             {
             if (m_folders[i].m_subItems[j].m_id == Id)
-                { return std::pair<int,int>(i,j); }
+                { return std::make_pair(i, j); }
             }
         }
     return std::make_pair(std::nullopt, std::nullopt);
@@ -271,7 +270,7 @@ std::pair<std::optional<size_t>, std::optional<size_t>>
         for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
             {
             if (m_folders[i].m_subItems[j].m_label.CmpNoCase(label) == 0)
-                { return std::pair<int,int>(i,j); }
+                { return std::make_pair(i, j); }
             }
         }
     return std::make_pair(std::nullopt, std::nullopt);
@@ -343,7 +342,7 @@ size_t SideBar::GetFolderWidth(const size_t item)
 
 //---------------------------------------------------
 void SideBar::InsertItem(const size_t position, const wxString& label,
-                           const wxWindowID Id, std::optional<size_t> iconIndex)
+                         const wxWindowID Id, std::optional<size_t> iconIndex)
     {
     SideBarItem item;
     item.m_id = Id;
@@ -386,18 +385,10 @@ void SideBar::ClearHighlightedItems() noexcept
     }
 
 //---------------------------------------------------
-void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
+void SideBar::OnDraw(wxDC& dc)
     {
     if (GetFolderCount() == 0)
         { return; }
-
-    // if mouse is not inside of window, then turn off any item mouse highlighting
-    if (!GetScreenRect().Contains(wxGetMousePosition()))
-        { ClearHighlightedItems(); }
-
-    wxAutoBufferedPaintDC adc(this);
-    adc.Clear();
-    wxGCDC dc(adc);
 
     wxDCFontChanger fc(dc, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
     wxDCTextColourChanger tc(dc, GetForegroundColour());
@@ -611,6 +602,42 @@ void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
         }
     }
 
+//---------------------------------------------------
+void SideBar::OnPaint([[maybe_unused]] wxPaintEvent& event)
+    {
+    // if mouse is not inside of window, then turn off any item mouse highlighting
+    if (!GetScreenRect().Contains(wxGetMousePosition()))
+        { ClearHighlightedItems(); }
+
+ #ifdef __WXMSW__
+    wxAutoBufferedPaintDC pdc(this);
+    pdc.Clear();
+    wxGraphicsContext* context{ nullptr };
+    auto renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+    if (renderer)
+        { context = renderer->CreateContext(pdc); }
+
+    if (context)
+        {
+        wxGCDC dc(context);
+        PrepareDC(dc);
+        OnDraw(dc);
+        }
+    else
+        {
+        wxGCDC dc(pdc);
+        PrepareDC(dc);
+        OnDraw(dc);
+        }
+#else
+    wxAutoBufferedPaintDC pdc(this);
+    pdc.Clear();
+    wxGCDC dc(pdc);
+    PrepareDC(dc);
+    OnDraw(dc);
+#endif
+    }
+
 //-------------------------------------------
 void SideBar::OnMouseChange(wxMouseEvent& event)
     {
@@ -638,7 +665,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     const auto previouslyHighlightedRect = m_highlightedRect;
     const auto previouslyHighlightedFolder = m_highlightedFolder;
     const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
-    const bool previouslyHighlightedItemsIsSelected =
+    m_previouslyHighlightedItemsIsSelected =
         (GetSelectedFolder() &&
          GetFolder(GetSelectedFolder().value()).m_selectedItem &&
          previouslyHighlightedSubitem.first &&
@@ -700,11 +727,11 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
         { return; }
 
     // refresh only the affected items, not the whole control
-    const wxRect refreshRect =
-        (previouslyHighlightedRect && !previouslyHighlightedItemsIsSelected &&
+    wxRect refreshRect =
+        (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected &&
          m_highlightedRect && !m_highlightedIsSelected) ?
             previouslyHighlightedRect.value().Union(m_highlightedRect.value()) :
-        (previouslyHighlightedRect && !previouslyHighlightedItemsIsSelected) ?
+        (previouslyHighlightedRect && !m_previouslyHighlightedItemsIsSelected) ?
             previouslyHighlightedRect.value() :
         (m_highlightedRect && !m_highlightedIsSelected) ?
             m_highlightedRect.value() :
@@ -712,6 +739,8 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
 
     if (refreshRect.IsEmpty())
         { return; }
+
+    refreshRect.Offset(-x, -y);
 
     Refresh(true, &refreshRect);
     Update();
@@ -724,14 +753,19 @@ void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     // items that aren't being displayed. Also, if nothing was
     // highlighted, then don't bother repainting since there's
     // nothing to remove highlighting from.
-    if (!IsExpanded() || !m_highlightedRect)
+    if (!IsExpanded() || !m_highlightedRect ||
+        m_previouslyHighlightedItemsIsSelected ||
+        m_highlightedIsSelected)
         { return; }
 
-    const wxRect previouslyHighlightedRect
-        { m_highlightedRect.value_or(GetClientRect()).Inflate(FromDIP(4)) };
+    int x{ 0 }, y{ 0 };
+    CalcUnscrolledPosition(0, 0, &x, &y);
+    wxRect refreshRect{ m_highlightedRect.value() };
+    refreshRect.Offset(-x, -y);
+
     ClearHighlightedItems();
 
-    Refresh(true, &previouslyHighlightedRect);
+    Refresh(true, &refreshRect);
     Update();
     }
 

@@ -503,6 +503,7 @@ namespace Wisteria::UI
         void OnDblClick(wxMouseEvent& event);
         void OnChar(wxKeyEvent& event);
         void OnResize(wxSizeEvent& event);
+        void OnDraw(wxDC& dc) final;
 
         /** @brief Renders a glassy surface across a box.
             @param dc The device context to render on.
@@ -567,6 +568,7 @@ namespace Wisteria::UI
         bool m_includeShowHideToolbar{ true };
         bool m_isExpanded{ true };
         bool m_highlightedIsSelected{ false };
+        bool m_previouslyHighlightedItemsIsSelected{ false };
         wxRect m_toolbarRect;
         wxBitmap m_goBackBmp;
         wxBitmap m_goForwardBmp;
