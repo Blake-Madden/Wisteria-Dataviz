@@ -745,7 +745,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     if (refreshRect.IsEmpty())
         { return; }
 
-    refreshRect.Offset(0, -y);
+    refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     Refresh(true, &refreshRect);
     Update();
@@ -781,7 +781,7 @@ void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
     wxRect refreshRect{ m_highlightedRect.value() };
-    refreshRect.Offset(-x, -y);
+    refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     ClearHighlightedItems();
 
@@ -913,24 +913,22 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     {
     if (item >= GetFolderCount())
         { return; }
-
-    m_selectedFolder = item;
     
-    EnsureFolderVisible(GetSelectedFolder().value());
+    EnsureFolderVisible(item);
 
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
 
     wxRect refreshRect{ GetClientRect() };
-    refreshRect.SetTop(m_folders[GetSelectedFolder().value()].m_Rect.GetTop());
-    refreshRect.Offset(0, -y);
+    refreshRect.SetTop(m_folders[item].m_Rect.GetTop());
+    refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     // If changing from expanded to collapsed, then just collapse it;
     // nothing is being seleced or de-selected, just closing the window.
     // Because of this, we won't be firing a selction event.
-    if (m_folders[GetSelectedFolder().value()].m_isExpanded)
+    if (m_folders[item].m_isExpanded)
         {
-        m_folders[GetSelectedFolder().value()].Collapse();
+        m_folders[item].Collapse();
         RecalcSizes();
         Refresh(true, &refreshRect);
         Update();
@@ -946,6 +944,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         return;
         }
 
+    m_selectedFolder = item;
     m_folders[GetSelectedFolder().value()].Expand();
     RecalcSizes();
     Refresh(true, &refreshRect);
@@ -1002,13 +1001,24 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
         SelectFolder(item, setFocus, sendEvent);
         return;
         }
+    const auto previouslySelectedFolder = m_selectedFolder.value_or(item);
     m_selectedFolder = item;
     m_folders[GetSelectedFolder().value()].Expand();
     m_folders[GetSelectedFolder().value()].m_selectedItem = subItem;
 
-    RecalcSizes();
     EnsureFolderVisible(GetSelectedFolder().value());
-    Refresh();
+    RecalcSizes();
+
+    int x{ 0 }, y{ 0 };
+    CalcUnscrolledPosition(0, 0, &x, &y);
+
+    wxRect refreshRect{ GetClientRect() };
+    refreshRect.SetTop(std::min(
+        m_folders[previouslySelectedFolder].m_Rect.GetTop(),
+        m_folders[GetSelectedFolder().value()].m_Rect.GetTop()));
+    refreshRect.Offset(0, -std::min(y, refreshRect.y));
+    
+    Refresh(true, &refreshRect);
     Update();
     if (setFocus)
         { SetFocus(); }
