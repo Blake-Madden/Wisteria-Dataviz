@@ -500,7 +500,6 @@ namespace Wisteria::UI
         void OnMouseChange(wxMouseEvent& event);
         void OnMouseClick(wxMouseEvent& event);
         void OnMouseLeave([[maybe_unused]] wxMouseEvent& event);
-        void OnDblClick(wxMouseEvent& event);
         void OnChar(wxKeyEvent& event);
         void OnResize(wxSizeEvent& event);
         void OnDraw(wxDC& dc) final;

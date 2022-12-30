@@ -42,7 +42,6 @@ SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
     Bind(wxEVT_MOTION, &SideBar::OnMouseChange, this);
     Bind(wxEVT_LEAVE_WINDOW, &SideBar::OnMouseLeave, this);
     Bind(wxEVT_LEFT_DOWN, &SideBar::OnMouseClick, this);
-    Bind(wxEVT_LEFT_DCLICK, &SideBar::OnDblClick, this);
     Bind(wxEVT_SIZE, &SideBar::OnResize, this);
     }
 
@@ -887,7 +886,7 @@ void SideBar::OnMouseClick(wxMouseEvent& event)
             return;
             }
         // if a parent item isn't being moused over,
-        // then see if it expanded subitems being moused over
+        // then see if its expanded subitems are being moused over
         if (m_folders[i].m_isExpanded)
             {
             for (size_t j = 0; j < m_folders[i].m_subItems.size(); ++j)
@@ -899,27 +898,6 @@ void SideBar::OnMouseClick(wxMouseEvent& event)
                     return;
                     }
                 }
-            }
-        }
-    }
-
-//-------------------------------------------
-void SideBar::OnDblClick(wxMouseEvent& event)
-    {
-    int x{ 0 }, y{ 0 };
-    CalcUnscrolledPosition(0, 0, &x, &y);
-
-    for (size_t i = 0; i < m_folders.size(); ++i)
-        {
-        if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
-            {
-            SelectFolder(i);
-            // flip collapsed state
-            m_folders[i].m_isExpanded = !m_folders[i].m_isExpanded;
-            RecalcSizes();
-            Refresh();
-            Update();
-            return;
             }
         }
     }
@@ -1020,7 +998,30 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     {
     if (item >= GetFolderCount())
         { return; }
-    // first, see if we should fire a subitem selection event instead
+
+    m_selectedFolder = item;
+    
+    EnsureFolderVisible(GetSelectedFolder().value());
+
+    int x{ 0 }, y{ 0 };
+    CalcUnscrolledPosition(0, 0, &x, &y);
+
+    wxRect refreshRect{ GetClientRect() };
+    refreshRect.SetTop(m_folders[GetSelectedFolder().value()].m_Rect.GetTop());
+    refreshRect.Offset(0, y);
+
+    // If changing from expanded to collapsed, then just collapse it;
+    // nothing is being seleced or de-selected, just closing the window.
+    // Because of this, we won't be firing a selction event.
+    if (m_folders[GetSelectedFolder().value()].m_isExpanded)
+        {
+        m_folders[GetSelectedFolder().value()].Collapse();
+        RecalcSizes();
+        Refresh(true, &refreshRect);
+        Update();
+        return;
+        }
+    // See if we should fire a subitem selection event instead
     // (in case this parent has subitems)
     if (m_folders[item].GetSubItemCount())
         {
@@ -1030,12 +1031,9 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
         return;
         }
 
-    m_selectedFolder = item;
     m_folders[GetSelectedFolder().value()].Expand();
-
     RecalcSizes();
-    EnsureFolderVisible(GetSelectedFolder().value());
-    Refresh();
+    Refresh(true, &refreshRect);
     Update();
     if (setFocus)
         { SetFocus(); }
