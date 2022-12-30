@@ -21,7 +21,6 @@ SideBarBook::SideBarBook(wxWindow *parent, wxWindowID id) :
                       wxBK_LEFT, wxDefaultValidator, L"SideBarBook")
     {
     m_sidebar = new SideBar(this);
-    m_sidebar->IncludeShowHideToolbar(false);
     m_sidebar->SetMinSize(wxSize(100, -1));
 
     // bind events

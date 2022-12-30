@@ -26,8 +26,6 @@
 
 /// @private
 wxDECLARE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
-/// @private
-wxDECLARE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 namespace Wisteria::UI
     {
@@ -339,31 +337,6 @@ namespace Wisteria::UI
             FindSubItem(const wxString& label) const;
         /// @}
 
-        /// @name Show/Hide Toolbar Functions
-        /// @brief Functions relating to the show/hide toolbar.
-        /// @{
-
-        /** @brief Specifies whether a small toolbar which can show/hide the control should
-                be included at the top.
-            @param show Set to @c true to include the show/hide toolbar.*/
-        void IncludeShowHideToolbar(const bool show) noexcept
-            { m_includeShowHideToolbar = show; }
-        /// @returns Whether or not a "show/hide" toolbar is being displayed
-        ///     at the top of the control.
-        [[nodiscard]] bool HasShowHideToolbar() const noexcept
-            { return m_includeShowHideToolbar; }
-
-        /// @brief Shows the control.
-        void Maximize();
-        /// @brief Hides the control.
-        void Minimize();
-
-        /// @returns @c true if this control is fully expanded for the user.
-        /// @note This only applies if the show/hide toolbar is being displayed.
-        [[nodiscard]] bool IsExpanded() const noexcept
-            { return m_isExpanded; }
-        /// @}
-
         /// @name Appearance Functions
         /// @brief Functions relating to the appearance of the control.
         /// @{
@@ -412,6 +385,16 @@ namespace Wisteria::UI
         /** @brief Sets the minimum width of the control to fit its widest item.
             @returns The new width of the control.*/
         size_t AdjustWidthToFitItems();
+        /// @}
+
+        /// @name Show/Hide Functions
+        /// @brief Functions relating to minimizing an maximizing the control.
+        /// @{
+
+        /// @brief Shows the control, where the width is set to fit the content.
+        void Maximize();
+        /// @brief Hides the control, where the width is zero.
+        void Minimize();
         /// @}
 
         /** @brief Saves information about which items are selected and expanded.*/
@@ -488,12 +471,6 @@ namespace Wisteria::UI
                 iconId.value() < GetImageList().size() &&
                 GetImageList()[iconId.value()].IsOk());
             }
-        /// @returns The height of the toolbar (if being shown).
-        [[nodiscard]] int GetToolbarHeight() const
-            {
-            return HasShowHideToolbar() ?
-                FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight() : 0;
-            }
  
         // events
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
@@ -525,11 +502,7 @@ namespace Wisteria::UI
             }
         [[nodiscard]] wxCoord GetSubitemIndentation() const
             { return GetPaddingWidth() * 2; }
-        /// @returns The width of the sidebar when hidden,
-        ///     which would be the width of a 16x16 icon (scaled to system's DPI)
-        ///     plus the system padding.
-        [[nodiscard]] wxCoord GetHideWidth() const
-            { return FromDIP(wxSize(16, 16)).GetWidth() + GetPaddingWidth(); }
+
         wxCoord m_itemHeight{ 0 };
         std::optional<size_t> m_highlightedFolder{ std::nullopt };
         // the folder index, and the index of its subitem
@@ -564,13 +537,8 @@ namespace Wisteria::UI
         wxColour m_highlightFontColor{ *wxBLACK };
         wxColour m_parentColor{ wxColour(180, 189, 207) };
 
-        bool m_includeShowHideToolbar{ true };
-        bool m_isExpanded{ true };
         bool m_highlightedIsSelected{ false };
         bool m_previouslyHighlightedItemsIsSelected{ false };
-        wxRect m_toolbarRect;
-        wxBitmap m_goBackBmp;
-        wxBitmap m_goForwardBmp;
         };
     }
 

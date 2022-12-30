@@ -11,7 +11,6 @@
 using namespace Wisteria::UI;
 
 wxDEFINE_EVENT(EVT_SIDEBAR_CLICK, wxCommandEvent);
-wxDEFINE_EVENT(EVT_SIDEBAR_SHOWHIDE_CLICK, wxCommandEvent);
 
 //---------------------------------------------------
 SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
@@ -19,11 +18,6 @@ SideBar::SideBar(wxWindow* parent, wxWindowID id /*= wxID_ANY*/)
                            wxWANTS_CHARS|wxVSCROLL|wxBORDER_THEME|
                            wxCLIP_CHILDREN|wxFULL_REPAINT_ON_RESIZE)
     {
-    // cache the toolbar images
-    m_goBackBmp = wxArtProvider::GetBitmap(wxART_GO_BACK, wxART_BUTTON,
-                                           FromDIP(wxSize(16, 16)));
-    m_goForwardBmp = wxArtProvider::GetBitmap(wxART_GO_FORWARD, wxART_BUTTON,
-                                              FromDIP(wxSize(16, 16)));
     // Start off with enough height for a usual icon and some padding around it.
     // This will be adjusted in Realize() to take into account the actual height of the
     // text and any loaded icons.
@@ -78,8 +72,6 @@ std::optional<size_t> SideBar::GetSelectedAnyItem() const
 //---------------------------------------------------
 size_t SideBar::AdjustWidthToFitItems()
     {
-    if (!IsExpanded())
-        { return GetHideWidth(); }
     size_t sideBarMinimumWidth = FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 10,
                                          wxSizerFlags::GetDefaultBorder() * 10)).GetWidth();
     for (size_t i = 0; i < GetFolderCount(); ++i)
@@ -428,39 +420,8 @@ void SideBar::OnDraw(wxDC& dc)
     if (!firstFolderToDraw || !lastFolderToDraw)
         { return; }
 
-    const wxRect toolbarRect{ wxRect(0, 0, GetSize().GetWidth(), GetToolbarHeight()) };
-
     wxDCFontChanger fc(dc, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
     wxDCTextColourChanger tc(dc, GetForegroundColour());
-
-    if (HasShowHideToolbar() && rectUpdate.Intersects(toolbarRect))
-        {
-        if (GetStyle() == SidebarStyle::Glassy)
-            {
-            DrawGlassEffect(dc, toolbarRect, m_parentColor);
-            }
-        else
-            {
-            wxDCBrushChanger bc(dc, m_parentColor);
-            wxDCPenChanger pc(dc, m_parentColor);
-            dc.DrawRectangle(toolbarRect);
-            }
-        dc.DrawBitmap(
-            IsExpanded() ?
-                m_goBackBmp : m_goForwardBmp,
-            IsExpanded() ?
-                GetClientSize().GetWidth() - (FromDIP(wxSize(16,16)).GetWidth() +
-                    wxSizerFlags::GetDefaultBorder()) :
-                (GetClientSize().GetWidth()/2) - (FromDIP(wxSize(16, 16)).GetWidth()/2),
-            (GetToolbarHeight()/2) - (FromDIP(wxSize(16, 16)).GetHeight()/2));
-        wxDCPenChanger pc(dc, wxColour(m_parentColor).ChangeLightness(50));
-        dc.DrawLine(wxPoint(0,GetToolbarHeight()-1), 
-                    wxPoint(GetSize().GetWidth(), GetToolbarHeight()-1));
-        // if the control is hidden (i.e., collapsed horizontally),
-        // then just display the "show" button
-        if (!IsExpanded())
-            { return; }
-        }
 
     // draw the borders and background for root-level folders
     const auto drawFolderBackground = [this, &dc](const size_t folderIndex)
@@ -706,22 +667,6 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
 
-    if (HasShowHideToolbar())
-        {
-        if (m_toolbarRect.Contains(event.GetX()+x, event.GetY()+y))
-            {
-            SetToolTip(IsExpanded() ?
-                _("Click to hide sidebar") :
-                _("Click to show sidebar"));
-            }
-        else
-            { SetToolTip(wxString{}); }
-        // if not shown, then don't bother handling hover
-        // events for items that aren't being displayed
-        if (!IsExpanded())
-            { return; }
-        }
-
     const auto previouslyHighlightedRect = m_highlightedRect;
     const auto previouslyHighlightedFolder = m_highlightedFolder;
     const auto previouslyHighlightedSubitem = m_folderWithHighlightedSubitem;
@@ -807,13 +752,28 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     }
 
 //-------------------------------------------
+void SideBar::Minimize()
+    {
+    ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
+    SetMinSize(wxSize(0, wxDefaultCoord));
+    SetSize(0, wxDefaultCoord);
+    }
+
+//-------------------------------------------
+void SideBar::Maximize()
+    {
+    ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
+    const auto sideBarMinimumWidth = AdjustWidthToFitItems();
+    SetMinSize(wxSize(sideBarMinimumWidth, wxDefaultCoord));
+    SetSize(sideBarMinimumWidth, wxDefaultCoord);
+    }
+
+//-------------------------------------------
 void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     {
-    // If not shown, then don't bother handling hover events for
-    // items that aren't being displayed. Also, if nothing was
-    // highlighted, then don't bother repainting since there's
+    // If nothing was highlighted, then don't bother repainting since there's
     // nothing to remove highlighting from.
-    if (!IsExpanded() || !m_highlightedRect ||
+    if (!m_highlightedRect ||
         m_previouslyHighlightedItemsIsSelected ||
         m_highlightedIsSelected)
         { return; }
@@ -830,53 +790,10 @@ void SideBar::OnMouseLeave([[maybe_unused]] wxMouseEvent& event)
     }
 
 //-------------------------------------------
-void SideBar::Minimize()
-    {
-    m_isExpanded = false;
-    ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
-    SetMinSize(wxSize(GetHideWidth(), wxDefaultCoord));
-    SetSize(GetHideWidth(), wxDefaultCoord);
-
-    wxCommandEvent cevent(EVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
-    cevent.SetEventObject(this);
-    GetEventHandler()->ProcessEvent(cevent);
-    }
-
-//-------------------------------------------
-void SideBar::Maximize()
-    {
-    m_isExpanded = true;
-    ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
-    const size_t sideBarMinimumWidth = AdjustWidthToFitItems();
-    SetMinSize(wxSize(sideBarMinimumWidth, wxDefaultCoord));
-    SetSize(sideBarMinimumWidth, wxDefaultCoord);
-
-    wxCommandEvent cevent(EVT_SIDEBAR_SHOWHIDE_CLICK, GetId());
-    cevent.SetEventObject(this);
-    GetEventHandler()->ProcessEvent(cevent);
-    }
-
-//-------------------------------------------
 void SideBar::OnMouseClick(wxMouseEvent& event)
     {
     int x{ 0 }, y{ 0 };
     CalcUnscrolledPosition(0, 0, &x, &y);
-
-    if (HasShowHideToolbar())
-        {
-        // if clicking on the show/hide toolbar, then adjust the size of the control
-        // and inform the parent control in case it needs to handle this event too
-        if (m_toolbarRect.Contains(event.GetX()+x, event.GetY()+y))
-            {
-            m_isExpanded = !m_isExpanded;
-            IsExpanded() ? Maximize() : Minimize();
-            return;
-            }
-        // if not shown, then don't bother handling click events for items
-        // that aren't being displayed
-        if (!IsExpanded())
-            { return; }
-        }
 
     for (size_t i = 0; i < m_folders.size(); ++i)
         {
@@ -937,14 +854,12 @@ void SideBar::RecalcSizes()
 //-------------------------------------------
 size_t SideBar::CalculateItemRects()
     {
-    if (HasShowHideToolbar())
-        { m_toolbarRect = wxRect(0, 0, GetSize().GetWidth(), GetToolbarHeight()); }
     size_t subItemHeight{ 0 };
     size_t currentFolderIndex{ 0 };
     for (auto& folder : m_folders)
         {
         folder.m_Rect = wxRect(0,
-            (GetItemHeight() * currentFolderIndex) + subItemHeight+GetToolbarHeight(), 
+            (GetItemHeight() * currentFolderIndex) + subItemHeight, 
             GetClientSize().GetWidth(), GetItemHeight());
         // update subitems' areas and factor them into the overall height
         for (auto& subitem : folder.m_subItems)
@@ -953,7 +868,7 @@ size_t SideBar::CalculateItemRects()
                 {
                 subitem.m_Rect = wxRect(0,
                     (GetItemHeight() * (currentFolderIndex + 1)) +
-                    subItemHeight + GetToolbarHeight(),
+                    subItemHeight,
                     GetClientSize().GetWidth() - GetSubitemIndentation(),
                     GetItemHeight());
                 subitem.m_Rect.Offset(GetSubitemIndentation(), 0);
@@ -970,7 +885,7 @@ size_t SideBar::CalculateItemRects()
 //-------------------------------------------
 void SideBar::EnsureFolderVisible(const size_t index)
     {
-    if (index >= GetFolderCount() || !IsExpanded())
+    if (index >= GetFolderCount())
         { return; }
 
     int x{ 0 }, y{ 0 }, xUnit{ 0 }, yUnit{ 0 };
