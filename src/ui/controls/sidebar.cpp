@@ -800,7 +800,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
     if (refreshRect.IsEmpty())
         { return; }
 
-    refreshRect.Offset(-x, -y);
+    refreshRect.Offset(0, -y);
 
     Refresh(true, &refreshRect);
     Update();
@@ -1008,7 +1008,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
 
     wxRect refreshRect{ GetClientRect() };
     refreshRect.SetTop(m_folders[GetSelectedFolder().value()].m_Rect.GetTop());
-    refreshRect.Offset(0, y);
+    refreshRect.Offset(0, -y);
 
     // If changing from expanded to collapsed, then just collapse it;
     // nothing is being seleced or de-selected, just closing the window.
