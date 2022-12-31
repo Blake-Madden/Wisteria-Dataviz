@@ -60,7 +60,7 @@ ENDIF()
 # Setup wxWidgets
 ########################
 
-# Linx: install the wxWidgets development files to your system
+# Linux: install the wxWidgets development files to your system
 # Windows: set wxWidgets_ROOT_DIR to the wxWidgets root path
 
 # Find wxWidgets and select its components
