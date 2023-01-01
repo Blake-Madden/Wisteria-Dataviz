@@ -83,10 +83,12 @@ namespace Wisteria::UI
         virtual void ClearFileHistoryMenu();
 
         /// @returns The mainframe.
-        [[nodiscard]] BaseMainFrame* GetMainFrame() noexcept
+        [[nodiscard]]
+        BaseMainFrame* GetMainFrame() noexcept
             { return m_mainFrame; }
         /// @private
-        [[nodiscard]] const BaseMainFrame* GetMainFrame() const noexcept
+        [[nodiscard]]
+        const BaseMainFrame* GetMainFrame() const noexcept
             { return m_mainFrame; }
         /// @brief Sets the mainframe.
         /// @param frame The mainframe to use.
@@ -97,7 +99,8 @@ namespace Wisteria::UI
             }
 
         /// @returns The document manager.
-        [[nodiscard]] wxDocManager* GetDocManager() noexcept
+        [[nodiscard]]
+        wxDocManager* GetDocManager() noexcept
             { return m_docManager; }
         /// @brief Sets the document manager.
         /// @param docManager The document manager to use.
@@ -110,7 +113,8 @@ namespace Wisteria::UI
             { m_documentTypeName = documentTypeName; }
 
         /// @returns The application's document version number.
-        [[nodiscard]] const wxString& GetDocumentVersionNumber() const noexcept
+        [[nodiscard]]
+        const wxString& GetDocumentVersionNumber() const noexcept
             { return m_documentVersionNumber; }
         /// @brief Sets the application's document version number.
         /// @param versionNumber The version number.
@@ -118,7 +122,8 @@ namespace Wisteria::UI
             { m_documentVersionNumber = versionNumber; }        
 
         /// @returns The application's subname.
-        [[nodiscard]] const wxString& GetAppSubName() const noexcept
+        [[nodiscard]]
+        const wxString& GetAppSubName() const noexcept
             { return m_appSubName; }
         /// @brief Sets the application's subname.
         /// @param name The subname.
@@ -127,11 +132,13 @@ namespace Wisteria::UI
 
         /// @returns The path of where the debug profiling data is being saved.
         /// @details This is only used if profiling is enabled.
-        [[nodiscard]] const wxString& GetProfileReportPath() const noexcept
+        [[nodiscard]]
+        const wxString& GetProfileReportPath() const noexcept
             { return m_profileReportPath; }
 
         /// @returns Everything sent to the logging system as a formatted string.
-        [[nodiscard]] wxString GetLogReport()
+        [[nodiscard]]
+        wxString GetLogReport()
             { return m_logBuffer->ReadLog(); }
 
         /// @brief Sets a support email for the application.
@@ -140,7 +147,8 @@ namespace Wisteria::UI
             { m_supportEmail = email; }
 
         /// @returns The printer settings.
-        [[nodiscard]] wxPrintData* GetPrintData()
+        [[nodiscard]]
+        wxPrintData* GetPrintData()
             {
             if (GetMainFrame())
                 { 
@@ -151,6 +159,18 @@ namespace Wisteria::UI
                 { return nullptr; }
             }
 
+        /// @returns The path to a file in the application's resource directory,
+        ///     or empty string if not found.
+        /// @param subFile The file to look for.
+        [[nodiscard]]
+        wxString FindResourceFile(const wxString& subFile) const;
+
+        /// @returns A subdirectory's full path in the application's resource directory,
+        ///     or empty string if not found.
+        /// @param subDir The subdirectory to look for.
+        [[nodiscard]]
+        wxString FindResourceDirectory(const wxString& subDir) const;
+
         /** @brief Creates a program's splashscreen using a base image and various program information.
             @param bitmap The base image.
             @param appName The application's name.
@@ -158,10 +178,18 @@ namespace Wisteria::UI
             @param vendorName The application's vendor.
             @param includeCopyright Whether to show a copyright label at the bottom of the splashscreen.
             @returns The decorated splashscreen.*/
-        [[nodiscard]] wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
+        [[nodiscard]]
+        wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
             const wxString& appSubName, const wxString& vendorName,
             const bool includeCopyright);
     private:
+        [[nodiscard]] 
+        wxString FindResourceFileWithAppInfo(const wxString& folder,
+                                             const wxString& subFile) const;
+        [[nodiscard]] 
+        wxString FindResourceDirectoryWithAppInfo(const wxString& folder,
+                                                  const wxString& subFile) const;
+
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };
         LogFile* m_logBuffer{ nullptr };

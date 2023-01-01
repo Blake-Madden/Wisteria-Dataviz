@@ -15,6 +15,17 @@
 
 using namespace Wisteria;
 
+/// @brief Temporarily turn off AppName being appended to @c wxStandardPaths calls.
+/// @private
+class NoAppInfoAppend
+    {
+public:
+    NoAppInfoAppend()
+        { wxStandardPaths::Get().UseAppInfo(wxStandardPaths::AppInfo_None); }
+    ~NoAppInfoAppend()
+        { wxStandardPaths::Get().UseAppInfo(wxStandardPaths::AppInfo_AppName); }
+    };
+
 //----------------------------------------------------------
 Wisteria::UI::BaseApp::BaseApp()
     {
@@ -326,4 +337,165 @@ void Wisteria::UI::BaseApp::ClearFileHistoryMenu()
     {
     while (GetDocManager()->GetHistoryFilesCount())
         { GetDocManager()->GetFileHistory()->RemoveFileFromHistory(0); }
+    }
+
+//----------------------------------------------------------
+wxString Wisteria::UI::BaseApp::FindResourceFile(const wxString& subFile) const
+    {
+    // Resources folder + file (OSX uses this)
+    wxString foundFile = wxStandardPaths::Get().GetResourcesDir() +
+        wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+
+    NoAppInfoAppend noAppInfo;
+
+    // all users' data dir + file    
+    foundFile = FindResourceFileWithAppInfo(wxStandardPaths::Get().GetConfigDir(), subFile);
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // user data dir + file
+    foundFile = FindResourceFileWithAppInfo(wxStandardPaths::Get().GetUserConfigDir(), subFile);
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // data dir + file
+    foundFile = FindResourceFileWithAppInfo(wxStandardPaths::Get().GetDataDir(), subFile);
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+#ifdef __WXOSX__
+    // centralized location for all users on OSX
+    foundFile = _DT(L"/Library/Application Support/") + wxTheApp->GetAppName() + L"/" + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+#endif
+    // Some special logic for Linux, where prefix logic is all over the map.
+    // Sometimes the program might be installed to a different prefix than what
+    // wxWidgets is detecting.
+#ifdef __UNIX__
+    // this is usually the default
+    foundFile = FindResourceFileWithAppInfo(_DT(L"/usr/local/share/"), subFile);
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // older systems might do this
+    foundFile = FindResourceFileWithAppInfo(_DT(L"/usr/share/"), subFile);
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+#endif
+    // ...or, program dir + file
+    foundFile = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // ...or, cwd + file
+    foundFile = wxFileName::GetCwd() + wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // give up, can't find it anywhere
+    return wxString{};
+    }
+
+//----------------------------------------------------------
+wxString Wisteria::UI::BaseApp::FindResourceDirectory(const wxString& subDir) const
+    {
+    // Resources folder + file (OSX uses this)
+    wxString foundFolder = wxStandardPaths::Get().GetResourcesDir() +
+        wxFileName::GetPathSeparator() + subDir;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+
+    NoAppInfoAppend noAppInfo;
+
+    // all users' data dir + subfolder
+    foundFolder = FindResourceDirectoryWithAppInfo(wxStandardPaths::Get().GetConfigDir(), subDir);
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    // user data dir + subfolder
+    foundFolder = FindResourceDirectoryWithAppInfo(wxStandardPaths::Get().GetUserConfigDir(), subDir);
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    // data dir + subfolder
+    foundFolder = FindResourceDirectoryWithAppInfo(wxStandardPaths::Get().GetDataDir(), subDir);
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    // Some special logic for Linux, where prefix logic is all over the map.
+    // Sometimes the program might be installed to a different prefix than what
+    // wxWidgets is detecting.
+#if defined (__UNIX__) || defined (__APPLE__)
+    //this is usually the default
+    foundFolder = FindResourceDirectoryWithAppInfo(_DT(L"/usr/local/share/"), subDir);
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    //older systems might do this
+    foundFolder = FindResourceDirectoryWithAppInfo(_DT(L"/usr/share/"), subDir);
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+#endif
+    //...or, program dir + subfolder
+    foundFolder = wxStandardPaths::Get().GetExecutablePath() +
+                    wxFileName::GetPathSeparator() + subDir;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    //...or, cwd + subfolder
+    foundFolder = wxFileName::GetCwd() + wxFileName::GetPathSeparator() + subDir;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    //give up, can't find it anywhere
+    return wxString{};
+    }
+
+//----------------------------------------------------------
+wxString Wisteria::UI::BaseApp::FindResourceFileWithAppInfo(
+    const wxString& folder, const wxString& subFile) const
+    {
+    wxString appFolderNameNoSpaces = GetAppName();
+    appFolderNameNoSpaces.Replace(L" ", wxString{}, true);
+
+    // try the folder + file
+    wxString foundFile = folder + wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // try the folder + program name + file
+    foundFile = folder + wxFileName::GetPathSeparator() + GetAppName() +
+        wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    foundFile = folder + wxFileName::GetPathSeparator() + appFolderNameNoSpaces +
+        wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    // try the folder + vendor name + program name + file
+    foundFile = folder + wxFileName::GetPathSeparator() + GetVendorName() +
+        wxFileName::GetPathSeparator() + GetAppName() +
+        wxFileName::GetPathSeparator() + subFile;
+    if (wxFileName::FileExists(foundFile))
+        { return foundFile; }
+    return wxString{};
+    }
+
+//----------------------------------------------------------
+wxString Wisteria::UI::BaseApp::FindResourceDirectoryWithAppInfo(
+    const wxString& folder, const wxString& subFolder) const
+    {
+    wxString appFolderNameNoSpaces = GetAppName();
+    appFolderNameNoSpaces.Replace(L" ", wxString{}, true);
+
+    // try the folder + file
+    wxString foundFolder = folder + wxFileName::GetPathSeparator() + subFolder;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    // try the folder + program name + file
+    foundFolder = folder + wxFileName::GetPathSeparator() + GetAppName() +
+        wxFileName::GetPathSeparator() + subFolder;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    foundFolder = folder + wxFileName::GetPathSeparator() + appFolderNameNoSpaces +
+        wxFileName::GetPathSeparator() + subFolder;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    // try the folder + vendor name + program name + file
+    foundFolder = folder + wxFileName::GetPathSeparator() + GetVendorName() +
+        wxFileName::GetPathSeparator() + GetAppName() +
+        wxFileName::GetPathSeparator() + subFolder;
+    if (wxFileName::DirExists(foundFolder))
+        { return foundFolder; }
+    return wxString{};
     }
