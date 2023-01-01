@@ -315,7 +315,7 @@ size_t SideBar::GetFolderWidth(const size_t item)
     dc.GetTextExtent(m_folders[item].m_label, &textWidth, &textHeight);
     wxCoord parentWidth = textWidth;
     parentWidth += IsValidImageId(m_folders[item].m_iconIndex) ?
-        GetImageList()[m_folders[item].m_iconIndex.value()].GetSize().GetWidth() +
+        GetIconSize().GetWidth() +
         wxSizerFlags::GetDefaultBorder() : 0;
     parentWidth += GetPaddingWidth(); // padding around the label
     // see what the widest subitem is
@@ -324,7 +324,7 @@ size_t SideBar::GetFolderWidth(const size_t item)
         {
         dc.GetTextExtent(subItem.m_label, &textWidth, &textHeight);
         textWidth += IsValidImageId(subItem.m_iconIndex) ?
-            GetImageList()[subItem.m_iconIndex.value()].GetSize().GetWidth() +
+            GetIconSize().GetWidth() +
             wxSizerFlags::GetDefaultBorder() : 0;
         textWidth += GetPaddingWidth() + GetSubitemIndentation(); // padding around the label
         widestSubItem = std::max(textWidth,widestSubItem);
@@ -512,7 +512,7 @@ void SideBar::OnDraw(wxDC& dc)
             if (IsValidImageId(m_folders[i].m_iconIndex))
                 {
                 dc.DrawLabel(m_folders[i].m_label,
-                             GetImageList()[m_folders[i].m_iconIndex.value()],
+                             GetImageList()[m_folders[i].m_iconIndex.value()].GetBitmap(GetIconSize()),
                              wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
                              wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
                 }
@@ -606,7 +606,9 @@ void SideBar::OnDraw(wxDC& dc)
                     if (IsValidImageId(m_folders[i].m_subItems[j].m_iconIndex))
                         {
                         dc.DrawLabel(m_folders[i].m_subItems[j].m_label,
-                                     GetImageList()[m_folders[i].m_subItems[j].m_iconIndex.value()],
+                                     GetImageList()
+                                        [m_folders[i].m_subItems[j].m_iconIndex.value()].
+                                        GetBitmap(GetIconSize()),
                                      wxRect(m_folders[i].m_subItems[j].m_Rect).
                                         Deflate(wxSizerFlags::GetDefaultBorder()),
                                      wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL);
@@ -824,8 +826,9 @@ void SideBar::Realize()
     {
     for (const auto& bmp : GetImageList())
         {
-        if (bmp.IsOk() && bmp.GetHeight()+GetPaddingHeight() > GetItemHeight())
-            { m_itemHeight = bmp.GetHeight()+GetPaddingHeight(); }
+        if (bmp.IsOk() &&
+            GetIconSize().GetHeight() + GetPaddingHeight() > GetItemHeight())
+            { m_itemHeight = GetIconSize().GetHeight() + GetPaddingHeight(); }
         }
     // measure the items' text heights
     wxMemoryDC dc;

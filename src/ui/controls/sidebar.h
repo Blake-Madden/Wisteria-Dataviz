@@ -204,10 +204,10 @@ namespace Wisteria::UI
 
         /** @brief Sets the control's image list.
             @param imageList A vector of bitmaps to use as the image list.*/
-        void SetImageList(const std::vector<wxBitmap>& imageList)
+        void SetImageList(const std::vector<wxBitmapBundle>& imageList)
             { m_imageList = imageList; }
         /** @returns The control's image list.*/
-        [[nodiscard]] std::vector<wxBitmap>& GetImageList() noexcept
+        [[nodiscard]] std::vector<wxBitmapBundle>& GetImageList() noexcept
             { return m_imageList; }
         /// @}
 
@@ -407,7 +407,7 @@ namespace Wisteria::UI
         void Realize();
 
         /// @private
-        [[nodiscard]] const std::vector<wxBitmap>& GetImageList() const noexcept
+        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImageList() const noexcept
             { return m_imageList; }
         /// @private
         [[nodiscard]] const SideBarItem& GetFolder(const size_t item) const
@@ -487,19 +487,15 @@ namespace Wisteria::UI
             @param color The base color to fill the box with.*/
         void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
 
-        std::vector<wxBitmap> m_imageList;
+        std::vector<wxBitmapBundle> m_imageList;
         [[nodiscard]] wxCoord GetItemHeight() const noexcept
             { return m_itemHeight; }
+        [[nodiscard]] wxSize GetIconSize() const
+            { return FromDIP(wxSize(16, 16)); }
         [[nodiscard]] wxCoord GetPaddingWidth() const
-            {
-            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 2,
-                                  wxSizerFlags::GetDefaultBorder() * 2)).GetWidth();
-            }
+            { return wxSizerFlags::GetDefaultBorder() * 2; }
         [[nodiscard]] wxCoord GetPaddingHeight() const
-            {
-            return FromDIP(wxSize(wxSizerFlags::GetDefaultBorder() * 2,
-                           wxSizerFlags::GetDefaultBorder() * 2)).GetHeight();
-            }
+            { return wxSizerFlags::GetDefaultBorder() * 2;}
         [[nodiscard]] wxCoord GetSubitemIndentation() const
             { return GetPaddingWidth() * 2; }
 

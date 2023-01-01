@@ -98,13 +98,13 @@ namespace Wisteria::UI
             { return m_sidebar; }
 
         /// @returns The image list used for the sidebar.
-        [[nodiscard]] std::vector<wxBitmap>& GetImageList()
+        [[nodiscard]] std::vector<wxBitmapBundle>& GetImageList()
             {
             wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
             }
         /// @returns The image list used for the sidebar (constantly).
-        [[nodiscard]] const std::vector<wxBitmap>& GetImageList() const
+        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImageList() const
             {
             wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
