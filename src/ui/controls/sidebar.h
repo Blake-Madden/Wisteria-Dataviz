@@ -406,6 +406,11 @@ namespace Wisteria::UI
         /// @note This should be called after filling the image list and adding all items.
         void Realize();
 
+        /** @brief Sets the size for all the icons (in DIPs).
+            @param sz The icons' sizes.*/
+        void SetIconSize(const wxSize sz)
+            { m_iconSizeDIPs = sz; }
+
         /// @private
         [[nodiscard]] const std::vector<wxBitmapBundle>& GetImageList() const noexcept
             { return m_imageList; }
@@ -491,7 +496,7 @@ namespace Wisteria::UI
         [[nodiscard]] wxCoord GetItemHeight() const noexcept
             { return m_itemHeight; }
         [[nodiscard]] wxSize GetIconSize() const
-            { return FromDIP(wxSize(16, 16)); }
+            { return FromDIP(m_iconSizeDIPs); }
         [[nodiscard]] wxCoord GetPaddingWidth() const
             { return wxSizerFlags::GetDefaultBorder() * 2; }
         [[nodiscard]] wxCoord GetPaddingHeight() const
@@ -526,6 +531,8 @@ namespace Wisteria::UI
         std::set<SideBarStateInfo> m_stateInfo;
 
         std::vector<SideBarItem> m_folders;
+
+        wxSize m_iconSizeDIPs{ 16, 16 };
 
         wxColour m_selectedColor{ wxColour(L"#FDB759") };
         wxColour m_selectedFontColor{ *wxBLACK };

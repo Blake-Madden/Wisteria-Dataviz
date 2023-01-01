@@ -109,6 +109,11 @@ namespace Wisteria::UI
             wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
             }
+
+        /** @brief Sets the size for all the icons (in DIPs).
+            @param sz The icons' sizes.*/
+        void SetIconSize(const wxSize sz)
+            { m_sidebar->SetIconSize(sz); }
     protected:
         // set the selection to the given page, sending the events (which can
         // possibly prevent the page change from taking place) if SendEvent flag is
