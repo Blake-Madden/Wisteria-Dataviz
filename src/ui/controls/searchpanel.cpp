@@ -21,12 +21,12 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     mainSizer->Add(m_search, 0, wxTOP|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
 
     wxBitmapButton* nextButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
-            wxArtProvider::GetBitmap(wxART_GO_DOWN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
     nextButton->SetToolTip(_("Find the next occurrence"));
     mainSizer->Add(nextButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBitmapButton* peviousButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
-            wxArtProvider::GetBitmap(wxART_GO_UP, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
     peviousButton->SetToolTip(_("Find the previous occurrence"));
     mainSizer->Add(peviousButton, 0, wxALIGN_CENTER_VERTICAL);
 

@@ -76,7 +76,7 @@ void GetDirFilterDialog::CreateControls()
     fileBrowseBoxSizer->Add(filePathEdit, 1, wxEXPAND);
 
     wxBitmapButton* fileBrowseButton = new wxBitmapButton(this, ID_FOLDER_BROWSE_BUTTON,
-        wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+        wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON));
     fileBrowseBoxSizer->Add(fileBrowseButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);

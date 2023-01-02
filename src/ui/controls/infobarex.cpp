@@ -160,9 +160,9 @@ void InfoBarEx::ShowMessage(const wxString& msg, int flags)
         { m_icon->Hide(); }
     else // do show an icon
         {
-        m_icon->SetBitmap(wxArtProvider::GetBitmap(
+        m_icon->SetBitmap(wxArtProvider::GetBitmapBundle(
                             wxArtProvider::GetMessageBoxIconId(flags),
-                          wxART_BUTTON, FromDIP(wxSize(16,16))));
+                          wxART_BUTTON));
         m_icon->Show();
         }
 

@@ -90,25 +90,25 @@ namespace Wisteria::UI
             wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
                 {
                 wxButton* button = new wxButton(this, wxID_PRINT);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON));
+                button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_PRINT, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_COPY);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON));
+                button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_COPY, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_SAVE);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON));
+                button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_FILE_SAVE, wxART_BUTTON));
                 buttonSizer->Add(button);
                 }
             buttonSizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
                 {
                 wxButton* button = new wxButton(this, wxID_CLOSE);
-                button->SetBitmap(wxArtProvider::GetBitmap(wxART_CLOSE, wxART_BUTTON));
+                button->SetBitmap(wxArtProvider::GetBitmapBundle(wxART_CLOSE, wxART_BUTTON));
                 button->SetDefault();
                 buttonSizer->Add(button);
                 }
