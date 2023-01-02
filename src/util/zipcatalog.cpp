@@ -219,15 +219,16 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     }
 
 //------------------------------------------------
-wxBitmapBundle ZipCatalog::ReadSVG(const wxString& path, const wxSize size) const
+wxBitmap ZipCatalog::ReadSVG(const wxString& path, const wxSize size) const
     {
     wxMemoryOutputStream memstream;
     if (!ReadFile(path, memstream))
-        { return wxBitmapBundle{}; }
+        { return wxBitmap{}; }
     // convert it from the stream
-    return wxBitmapBundle::FromSVG(
+    const auto bmp = wxBitmapBundle::FromSVG(
         static_cast<const wxByte*>(memstream.GetOutputStreamBuffer()->GetBufferStart()),
         memstream.GetLength(), size);
+    return bmp.GetBitmap(bmp.GetDefaultSize());
     }
 
 //------------------------------------------------

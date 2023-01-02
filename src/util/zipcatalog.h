@@ -107,10 +107,10 @@ namespace Wisteria
         /** @brief Reads an SVG entry from the ZIP file.
             @param path The path to the image (relative to its location in the ZIP folder structure).
             @param size The default size for the SVG.
-            @returns The SVG wrapped in a @c wxBitmapBundle from the ZIP file
+            @returns The SVG as a @c wxBitmap from the ZIP file
                 (which will be invalid if the path was not found).*/
         [[nodiscard]]
-        wxBitmapBundle ReadSVG(const wxString& path, const wxSize size) const;
+        wxBitmap ReadSVG(const wxString& path, const wxSize size) const;
         /**@brief Reads a text file in the archive, converts its contents to Unicode text,
                 and copies it to a temp file.
            @param path The path to the file (relative to its location in the ZIP folder structure).
