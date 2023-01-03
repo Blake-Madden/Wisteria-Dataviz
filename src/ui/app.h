@@ -32,6 +32,7 @@
 #include <wx/config.h>
 #include <wx/propgrid/propgrid.h>
 #include "../util/logfile.h"
+#include "../util/resource_manager.h"
 #include "../util/donttranslate.h"
 #include "../debug/debug_profile.h"
 #include "../math/safe_math.h"
@@ -39,8 +40,9 @@
 
 namespace Wisteria::UI
     {
-    /// @brief Application class with file history, file logger, profiler, exception handling,
-    ///     document manager, and ribbon-based main frame built-in
+    /// @brief Application class with file history, file logger, profiler,
+    ///      exception handling, document manager, and ribbon-based
+    ///     main frame built-in.
     class BaseApp : public wxApp
         {
     public:
@@ -63,11 +65,13 @@ namespace Wisteria::UI
         void GenerateReport(wxDebugReport::Context ctx);
 
         /// @returns The number of active documents.
-        [[nodiscard]] size_t GetDocumentCount() const
+        [[nodiscard]]
+        size_t GetDocumentCount() const
             { return m_docManager->GetDocuments().GetCount(); }
 
         /// @returns The application's main file extension.
-        [[nodiscard]] const wxString& GetAppFileExtension() const noexcept
+        [[nodiscard]]
+        const wxString& GetAppFileExtension() const noexcept
             { return m_fileExtension; }
         /// @brief Sets the application's main file extension.
         /// @param extension The file extension to use.
@@ -171,12 +175,26 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString FindResourceDirectory(const wxString& subDir) const;
 
-        /** @brief Creates a program's splashscreen using a base image and various program information.
+        /// @returns The resource manager, which can extract images and
+        ///     XRC files from a resource archive.
+        [[nodiscard]]
+        ResourceManager& GetResourceManager() noexcept
+            { return m_resManager; }
+
+        /// @private
+        [[nodiscard]]
+        const ResourceManager& GetResourceManager() const noexcept
+            { return m_resManager; }
+
+        /** @brief Creates a program's splashscreen using a base image and
+                various program information.
             @param bitmap The base image.
             @param appName The application's name.
-            @param appSubName The application's supplemental name (e.g., the version number).
+            @param appSubName The application's supplemental name
+                (e.g., the version number).
             @param vendorName The application's vendor.
-            @param includeCopyright Whether to show a copyright label at the bottom of the splashscreen.
+            @param includeCopyright Whether to show a copyright label at the
+                bottom of the splashscreen.
             @returns The decorated splashscreen.*/
         [[nodiscard]]
         wxBitmap CreateSplashscreen(const wxBitmap& bitmap, const wxString& appName,
@@ -193,6 +211,7 @@ namespace Wisteria::UI
         wxDocManager* m_docManager{ nullptr };
         Wisteria::UI::BaseMainFrame* m_mainFrame{ nullptr };
         LogFile* m_logBuffer{ nullptr };
+        ResourceManager m_resManager;
 
         wxString m_appSubName;
         wxString m_fileExtension;

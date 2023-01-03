@@ -74,6 +74,8 @@ SET(WISTERIA_SRC
     ../src/util/idhelpers.cpp
     ../src/util/logfile.cpp
     ../src/util/memorymappedfile.cpp
+    ../src/util/resource_manager.cpp
+    ../src/util/screenshot.cpp
     ../src/util/textreplace.cpp
     ../src/util/textstream.cpp
     ../src/util/warningmanager.cpp

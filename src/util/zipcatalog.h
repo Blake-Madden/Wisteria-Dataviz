@@ -82,7 +82,7 @@ namespace Wisteria
                 (relative to its location in the ZIP folder structure).
             @param path The name of the folder to iterate.*/
         [[nodiscard]]
-        wxArrayString FindFilesInFolder(const wxString& path) const;
+        wxArrayString GetFilesInFolder(const wxString& path) const;
         /** @returns A list of all files (relative to its location in the ZIP folder structure).*/
         [[nodiscard]]
         wxArrayString GetPaths() const;

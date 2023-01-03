@@ -295,7 +295,7 @@ void ZipCatalog::WriteText(wxZipOutputStream& zip, const wxString& fileName, con
     }
 
 //------------------------------------------------
-wxArrayString ZipCatalog::FindFilesInFolder(const wxString& path) const
+wxArrayString ZipCatalog::GetFilesInFolder(const wxString& path) const
     {
     wxArrayString files;
     wxString formattedPath = path;
