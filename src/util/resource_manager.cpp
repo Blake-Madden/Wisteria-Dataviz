@@ -129,3 +129,30 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
     else
         { return imagePos->second; }
     }
+
+//-------------------------------------------------------
+wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
+    {
+    wxASSERT_LEVEL_2(color.IsOk());
+
+    std::vector<wxBitmap> bmps =
+        {
+        wxBitmap(16, 16), wxBitmap(32, 32),
+        wxBitmap(64, 64), wxBitmap(128, 128)
+        };
+
+    const auto buildIcon = [&color](wxBitmap& bmp)
+        {
+        wxMemoryDC memDC(bmp);
+        memDC.SetBrush(wxBrush(color));
+        memDC.SetPen(*wxBLACK_PEN);
+        memDC.Clear();
+        memDC.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight());
+        memDC.SelectObject(wxNullBitmap);
+        wxASSERT_LEVEL_2(bmp.IsOk());
+        };
+
+    std::for_each(bmps.begin(), bmps.end(), buildIcon);
+
+    return wxBitmapBundle::FromBitmaps(bmps);
+    }

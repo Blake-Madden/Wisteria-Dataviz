@@ -90,6 +90,12 @@ public:
     [[nodiscard]]
     wxArrayString GetFilesInFolder(const wxString& path) const
         { return m_zipCatalog.GetFilesInFolder(path); }
+
+    /// @brief Creates an icon filled with the specified color.
+    /// @param color The color of the icon.
+    /// @returns The color-filled icon.
+    [[nodiscard]]
+    static wxBitmapBundle CreateColorIcon(const wxColour& color);
 private:
     wxBitmap ExtractBitmap(const wxString& bmpPath, const wxBitmapType bitmapType) const;
     wxString m_resourceFile;
