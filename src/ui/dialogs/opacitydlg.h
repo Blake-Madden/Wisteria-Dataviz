@@ -37,12 +37,16 @@ namespace Wisteria::UI
                    wxWindowID id = wxID_ANY, const wxString& caption = _(L"Set Opacity"),
                    const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                    long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
+        /// @private
         OpacityDlg() = delete;
+        /// @private
         OpacityDlg(const OpacityDlg&) = delete;
+        /// @private
         OpacityDlg& operator=(const OpacityDlg&) = delete;
 
         /// @returns The selected opacity.
-        [[nodiscard]] int GetOpacity() const noexcept
+        [[nodiscard]]
+        int GetOpacity() const noexcept
             { return m_opacity; }
     private:
         void CreateControls();
