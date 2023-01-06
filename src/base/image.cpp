@@ -919,7 +919,7 @@ namespace Wisteria::GraphItems
                           wxIMAGE_QUALITY_HIGH);
             }
 
-        SetOpacity(m_img, m_opacity, true);
+        SetOpacity(m_img, m_opacity, false);
 
         // Draw the shadow. This needs to be a polygon outside of the image
         // in case the image is translucent.
