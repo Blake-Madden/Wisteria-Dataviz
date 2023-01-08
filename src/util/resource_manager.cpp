@@ -94,7 +94,7 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             wxASSERT_MSG(wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).IsOk(),
                 wxString::Format(L"Failed to load '%s' SVG icon", path));
 
-            std::vector<wxBitmap> bmps =
+            wxVector<wxBitmap> bmps =
                 {
                 wxBitmapBundle::FromSVGFile(path, wxSize(16, 16)).GetBitmap(wxSize(16, 16)),
                 wxBitmapBundle::FromSVGFile(path, wxSize(32, 32)).GetBitmap(wxSize(32, 32)),
@@ -112,7 +112,7 @@ wxBitmapBundle ResourceManager::GetSVG(const wxString& path)
             wxASSERT_MSG(m_zipCatalog.ReadSVG(path, wxSize(16, 16)).IsOk(),
                 wxString::Format(L"Failed to load '%s' SVG icon", path));
 
-            std::vector<wxBitmap> bmps =
+            wxVector<wxBitmap> bmps =
                 {
                 m_zipCatalog.ReadSVG(path, wxSize(16, 16)),
                 m_zipCatalog.ReadSVG(path, wxSize(32, 32)),
@@ -135,13 +135,13 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
     wxASSERT_LEVEL_2(color.IsOk());
 
-    std::vector<wxBitmap> bmps =
+    wxVector<wxBitmap> bmps =
         {
         wxBitmap(16, 16), wxBitmap(32, 32),
         wxBitmap(64, 64), wxBitmap(128, 128)
         };
 
-    const auto buildIcon = [&color](wxBitmap& bmp)
+    const auto fillIcon = [&color](wxBitmap& bmp)
         {
         wxMemoryDC memDC(bmp);
         memDC.SetBrush(wxBrush(color));
@@ -152,7 +152,7 @@ wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
         wxASSERT_LEVEL_2(bmp.IsOk());
         };
 
-    std::for_each(bmps.begin(), bmps.end(), buildIcon);
+    std::for_each(bmps.begin(), bmps.end(), fillIcon);
 
     return wxBitmapBundle::FromBitmaps(bmps);
     }
