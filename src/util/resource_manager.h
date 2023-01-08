@@ -54,7 +54,7 @@ public:
     /** @brief Loads the archive file (must be in ZIP format) to extract resources from.
         @param resourceArchivePath The path to the ZIP file containing the resources
             to use for the application.
-        @param Only one archive can be loaded at a time; calling this will unload
+        @note Only one archive can be loaded at a time; calling this will unload
             any previoulys loaded ZIP file.*/
     void LoadArchive(const wxString& resourceArchivePath);
 
