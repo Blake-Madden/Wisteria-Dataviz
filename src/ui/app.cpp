@@ -203,7 +203,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
 
     const auto spacePos = appName.find(L' ');
 
-    if (spacePos == wxNOT_FOUND)
+    if (spacePos == std::wstring::npos)
         { appLabel.Draw(gcdc); }
     else
         {
