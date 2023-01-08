@@ -1708,7 +1708,7 @@ namespace Wisteria::GraphItems
     //------------------------------------------------------
     wxString Label::GetFirstAvailableFont(const std::vector<wxString>& possibleFontNames)
         {
-        for (const auto fontName : possibleFontNames)
+        for (const auto& fontName : possibleFontNames)
             {
             if (wxFontEnumerator::IsValidFacename(fontName) )
                 { return fontName; }
