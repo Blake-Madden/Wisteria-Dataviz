@@ -101,7 +101,8 @@ private:
     ///     In that case, may return null.
     /// @warning This is only meant for screenshots. Use @c wxTheApp->GetTopWindow()
     ///     to get the app's main window.
-    wxNODISCARD static wxWindow* GetActiveDialogOrFrame();
+    [[nodiscard]]
+    static wxWindow* GetActiveDialogOrFrame();
 
     static void AddBorderToImage(wxBitmap& bmp);
 
