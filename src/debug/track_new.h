@@ -11,11 +11,16 @@
 
 //********************************************************
 // Modified by Blake Madden, where status info is also sent
-//  to the debug window (under Windows).
+//  to the debug window (under Windows). Also, emits a
+//  compile error if being included in a release build.
 
 
 #ifndef TRACKNEW_HPP
 #define TRACKNEW_HPP
+
+#ifdef NDEBUG
+#error Do not include track_new.h in a release build.
+#endif
 
 #include <new>        // for std::align_val_t
 #include <cstdio>     // for printf()
