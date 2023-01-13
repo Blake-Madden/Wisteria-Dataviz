@@ -1782,13 +1782,18 @@ namespace string_util
             }
         }
 
-    /** @brief Converts a full-width number/English letter/various symbols into its "narrow" counterpart.
+    /** @brief Converts a full-width number/English letter/various symbols
+            into its "narrow" counterpart.
         @param ch The character to convert.
         @returns The narrow version of a character, or the character if not full-width.
         @todo Add support for wide Japanese/Korean characters.*/
-    [[nodiscard]] inline constexpr wchar_t full_width_to_narrow(const wchar_t ch) noexcept
+    [[nodiscard]]
+    inline constexpr wchar_t full_width_to_narrow(const wchar_t ch) noexcept
         {
-        return (ch >= 65'281 && ch <= 65'374) ? (ch - 65'248) :
+        return 
+            // lower area of Unicode, most likely branch
+            (ch < 65'000) ? ch :
+            (ch >= 65'281 && ch <= 65'374) ? (ch - 65'248) :
             // cent and pound sterling
             (ch >= 65'504 && ch <= 65'505) ? (ch - 65'342) :
             // Yen
