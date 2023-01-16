@@ -80,6 +80,9 @@ IF(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
     ENDIF()
 ENDIF()
 
+ADD_COMPILE_OPTIONS("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 # Build Wisteria library
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
