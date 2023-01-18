@@ -715,3 +715,719 @@ TEST_CASE("Natural Order Cmp", "[stringutil][natural order]")
         CHECK(string_util::strnatordcmp(L"8,780", L"8,001,870", true) < 0);
         }
     }
+
+TEST_CASE("atoi", "[stringutil][atoi]")
+    {
+    SECTION("NULLs")
+        {
+        CHECK(string_util::atoi(L"") == 0);
+        wchar_t* val = nullptr;
+        CHECK(string_util::atoi(val) == 0);
+        CHECK(string_util::atoi(L"873") == 873);
+        CHECK(string_util::atoi(L"7") == 7);
+        CHECK(string_util::atoi(L"-10") == -10);
+        }
+    }
+
+TEST_CASE("StrICmp", "[stringutil][StrICmp]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::stricmp("", "") == 0);
+        CHECK(string_util::stricmp<char>(nullptr, nullptr) == 0);
+        CHECK(string_util::stricmp<char>(nullptr, "a") < 0);
+        CHECK(string_util::stricmp<char>("a", nullptr) > 0);
+        }
+    SECTION("TestCaseComparisons")
+        {
+        CHECK(string_util::stricmp("some text", "SoMe TEXt") == 0);
+        CHECK(string_util::stricmp("some text", "SoMe TEXt") == 0);
+        CHECK(string_util::stricmp("SoMe TEXt", "some text") == 0);
+        }
+    SECTION("TestDifferentLengthComparison")
+        {
+        CHECK(string_util::stricmp("SoMe TEXt", "some") > 0);
+        CHECK(string_util::stricmp("Text100", "Text0") > 0);
+        CHECK(string_util::stricmp("Text100", "Text00100moretext") > 0);
+        CHECK(string_util::stricmp("Text000", "Text10000moretext") < 0);
+        }
+    }
+
+TEST_CASE("StrNICmp", "[stringutil][StrNICmp]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::strnicmp("", "", 9) == 0);
+        CHECK(string_util::strnicmp<char>(nullptr, nullptr, 9) == 0);
+        CHECK(string_util::strnicmp<char>(nullptr, "a", 9) < 0);
+        CHECK(string_util::strnicmp<char>("a", nullptr, 9) > 0);
+        }
+    SECTION("TestCaseComparisons")
+        {
+        CHECK(string_util::strnicmp("some text", "SoMe TEXt", 9) == 0);
+        CHECK(string_util::strnicmp("some text", "SoMe TEXt", 9) == 0);
+        CHECK(string_util::strnicmp("SoMe TEXt", "some text", 9) == 0);
+        }
+    SECTION("TestDifferentLengthComparison")
+        {
+        CHECK(string_util::strnicmp("SoMe TEXt", "some", 4) == 0);
+        CHECK(string_util::strnicmp("Text100", "Text0", 4) == 0);
+        CHECK(string_util::strnicmp("Text100", "Text00100moretext", 5) > 0);
+        CHECK(string_util::strnicmp("Text000", "Text10000moretext", 5) < 0);
+        }
+    }
+
+TEST_CASE("HasSuffix", "[stringutil][HasSuffix]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::has_suffix<wchar_t>(nullptr, 5, L"es", 2) == false);
+        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, nullptr, 2) == false);
+        CHECK(string_util::has_suffix<wchar_t>(L"e", 1, L"es", 2) == false);
+        }
+    SECTION("TestHasSuffix")
+        {
+        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, L"ed", 2));
+        CHECK(string_util::has_suffix<wchar_t>(L"ted", 3, L"ed", 2));
+        }
+    SECTION("TestNotHasSuffix")
+        {
+        CHECK(string_util::has_suffix<wchar_t>(L"hunted", 6, L"es", 2) == false);
+        // text must be longer than suffix for it to have the suffix
+        CHECK(string_util::has_suffix<wchar_t>(L"ed", 2, L"ed", 2) == false);
+        }
+    }
+
+TEST_CASE("StrCSpnPointer", "[stringutil][StrCSpnPointer]")
+    {
+    SECTION("TestTestNulls")
+        {
+        CHECK(string_util::strcspn_pointer<char>(nullptr, "hello", 5) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>("HelLo", nullptr, 0) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>(nullptr, nullptr, 0) == nullptr);
+        }
+    SECTION("TestFindFirst")
+        {
+        const char* buffer = "<blah blah>";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer);
+        buffer = ">blah blah>";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer);
+        }
+    SECTION("TestFindMiddle")
+        {
+        const char* buffer = "blah <blah";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+5);
+        buffer = "blah >blah";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+5);
+        }
+    SECTION("TestFindLast")
+        {
+        const char* buffer = "blah blah<";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+9);
+        buffer = "blah blah>";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == buffer+9);
+        }
+    SECTION("TestNotFind")
+        {
+        const char* buffer = "blah blah";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == nullptr);
+        buffer = "blah blah";
+        CHECK(string_util::strcspn_pointer<char>(buffer, "<>", 2) == nullptr);
+        CHECK(string_util::strcspn_pointer<char>("", "<>", 2) == nullptr);
+        }
+    }
+
+TEST_CASE("FindLastNotOf", "[stringutil][FindLastNotOf]")
+    {
+    SECTION("TestNulls")
+        {
+        const wchar_t* buffer = L"ABB9";
+        CHECK(string_util::find_last_not_of<wchar_t>(nullptr, L"0123456789") == -1);
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, nullptr) == -1);
+        }
+    SECTION("TestNotFound")
+        {
+        const wchar_t* buffer = L"124578";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == -1);
+        }
+    SECTION("TestFound")
+        {
+        const wchar_t* buffer = L"ABB8";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == 2);
+        }
+    SECTION("TestFoundAtEnd")
+        {
+        const wchar_t* buffer = L"5ABB";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == 3);
+        }
+    SECTION("TestFoundUsingOffset")
+        {
+        const wchar_t* buffer = L"A56BB5";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789", 2) == 0);
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == 4); // not using offset
+        }
+    SECTION("TestEmptyString")
+        {
+        const wchar_t* buffer = L"";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == -1);
+        buffer = L"A56BB5";
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"") == -1);
+        }
+    }
+
+TEST_CASE("FindMatchingTag", "[stringutil][FindMatchingTag]")
+    {
+    SECTION("TestClosingWithOpenTagsStrings")
+        {
+        const wchar_t* buffer = L"[[img [[]]]hello]]], world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L"[[", L"]]]") == buffer+16);
+        }
+    SECTION("TestClosingWithOpenTagsStrings2")
+        {
+        const wchar_t* buffer = L"[[img [[]]]h[[e]]]llo]]], world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L"[[", L"]]]") == buffer+21);
+        }
+    SECTION("TestClosingWithOpenTagsStringsStartWithSameChar")
+        {
+        const wchar_t* buffer = L"[[img [[[]]hello[]], world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L"[[", L"[]]") == buffer+16);
+        }
+    SECTION("TestTestNullsStrings")
+        {
+        CHECK(string_util::find_matching_close_tag<wchar_t>(nullptr, L"[[", L"[]]") == nullptr);
+        CHECK(string_util::find_matching_close_tag<wchar_t>(L"text", nullptr, L"[]]") == nullptr);
+        CHECK(string_util::find_matching_close_tag<wchar_t>(L"text", L"[]]", nullptr) == nullptr);
+        CHECK(string_util::find_matching_close_tag<wchar_t>(L"[[img [[[]]hello[]], world", L"", L"[]]") == nullptr);
+        CHECK(string_util::find_matching_close_tag<wchar_t>(L"[[img [[[]]hello[]], world", L"[[", L"") == nullptr);
+        }
+    SECTION("TestNoClosingTagsStrings")
+        {
+        const wchar_t* buffer = L"[[img hello, world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L"[[", L"[]]") == nullptr);
+        }
+    SECTION("TestClosingWithStrayOpenTagStrings")
+        {
+        const wchar_t* buffer = L"[[img [[ihello[]], world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L"[[", L"[]]") == nullptr);
+        }
+    // single characters
+    SECTION("TestTestNulls")
+        {
+        CHECK(string_util::find_matching_close_tag<wchar_t>(nullptr, L'<', L'>') == nullptr);
+        }
+    SECTION("TestNoClosingTags")
+        {
+        const wchar_t* buffer = L"<img hello, world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        }
+    SECTION("TestClosingTags")
+        {
+        const wchar_t* buffer = L"<img hello>, world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+10);
+        }
+    SECTION("TestClosingWithOpenTags")
+        {
+        const wchar_t* buffer = L"<img <i>hello</i>>, world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == buffer+17);
+        }
+    SECTION("TestClosingWithStrayOpenTag")
+        {
+        const wchar_t* buffer = L"<img <ihello>, world";
+        CHECK(string_util::find_matching_close_tag<wchar_t>(buffer+1, L'<', L'>') == nullptr);
+        }
+    }
+
+TEST_CASE("ItoaStr", "[stringutil][ItoaStr]")
+    {
+    SECTION("TestItoaiNULL")
+        {
+        wchar_t result[5];
+        CHECK(string_util::itoa(548, (wchar_t*)nullptr, 5) == -1);
+        CHECK(string_util::itoa(548, result, 0) == -1);
+
+        CHECK(string_util::itoa(12345, result, 5) == -1); // no space for nullptr terminator, should fail
+        CHECK(std::wmemcmp(result, L"\0\0\0\0\0", 5) == 0);
+
+        CHECK(string_util::itoa(1234, result, 5) == 0); // just enough space
+        CHECK(std::wcscmp(result, L"1234") == 0);
+        }
+
+    SECTION("TestItoai")
+        {
+        wchar_t result[12];
+        CHECK(string_util::itoa(-112993, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"-112993") == 0);
+
+        CHECK(string_util::itoa(-9, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"-9") == 0);
+
+        CHECK(string_util::itoa(9, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"9") == 0);
+
+        CHECK(string_util::itoa(98, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"98") == 0);
+
+        CHECK(string_util::itoa(978, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"978") == 0);
+
+        CHECK(string_util::itoa(0, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"0") == 0);
+
+        CHECK(string_util::itoa(84579541, result, 12) == 0);
+        CHECK(std::wcscmp(result, L"84579541") == 0);
+        }
+    };
+
+TEST_CASE("RemoveSpaces", "[stringutil][RemoveSpaces]")
+    {
+    SECTION("TestRemoveBlankLinesEmpty")
+        {
+        std::wstring text(L"");
+        CHECK(string_util::remove_blank_lines(text) == 0);
+        CHECK(text == L"");
+        }
+    SECTION("TestRemoveBlankLines")
+        {
+        std::wstring text(L"Blah\n\nLine2");
+        CHECK(string_util::remove_blank_lines(text) == 1);
+        CHECK(text == L"Blah\nLine2");
+        }
+    SECTION("TestRemoveBlankLines2")
+        {
+        std::wstring text(L"Blah\n\nLine2\n\n");
+        CHECK(string_util::remove_blank_lines(text) == 2);
+        CHECK(text == L"Blah\nLine2\n");
+        }
+    SECTION("TestRemoveBlankLines3")
+        {
+        std::wstring text(L"Blah\r\n\r\nLine2\n\n");
+        CHECK(string_util::remove_blank_lines(text) == 3);
+        CHECK(text == L"Blah\r\nLine2\n");
+        }
+    SECTION("TestRemoveSpacesEmpty")
+        {
+        std::wstring text(L"");
+        CHECK(string_util::remove_extra_spaces(text) == 0);
+        CHECK(text == L"");
+        }
+    SECTION("TestRemoveNoSpaces")
+        {
+        std::wstring text(L"hellothereworld!newline");
+        CHECK(string_util::remove_extra_spaces(text) == 0);
+        CHECK(text == L"hellothereworld!newline");
+        }
+    SECTION("TestRemoveSpaces")
+        {
+        std::wstring text(L"hello  there    \t \r\n world !\r\nnew line");
+        CHECK(string_util::remove_extra_spaces(text) == 9);
+        CHECK(text == L"hello there world !\r\nnew line");
+        }
+    SECTION("TestRemoveSpacesNoExtraSpaces")
+        {
+        std::wstring text(L"hello there\tworld!\r\nnew line");
+        CHECK(string_util::remove_extra_spaces(text) == 0);
+        CHECK(text == L"hello there\tworld!\r\nnew line");
+        }
+    };
+
+TEST_CASE("StrIStr", "[stringutil][StrIStr]")
+    {
+    SECTION("TestTestNulls")
+        {
+        CHECK(string_util::stristr<char>(nullptr, "HelLo") == nullptr);
+        CHECK(string_util::stristr<char>("HelLo", nullptr) == nullptr);
+        }
+    SECTION("TestFindFirstItem")
+        {
+        char buffer[] = "hello, world";
+        // should find at the beginning
+        CHECK(string_util::stristr(buffer, "HelLo") == buffer);
+        }
+    SECTION("TestLastItemInSequenceString")
+        {
+        char buffer[] = "hello, world";
+        // should find last item in sequence
+        CHECK(string_util::stristr(buffer, "WORLD") == buffer+7);
+        }
+    SECTION("TestMiddleItemInSequenceString")
+        {
+        char buffer[] = "hello, world!!! Goodbye, cruel world!";
+        // should find last item in sequence
+        CHECK(string_util::stristr(buffer, "WORLD") == buffer+7);
+        }
+    SECTION("TestFindNothing")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return nullptr
+        CHECK(string_util::stristr(buffer, "Help") == nullptr);
+        }
+    SECTION("TestFindNothingEmptySearchString")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return nullptr
+        CHECK(string_util::stristr(buffer, "") == nullptr);
+        }
+    SECTION("TestEmptyString")
+        {
+        // should find nothing and return nullptr
+        CHECK(string_util::stristr("", "Hello") == nullptr);
+        }
+    SECTION("TestSubStringTooBig")
+        {
+        CHECK(string_util::stristr("Hello", "Hello World") == nullptr);
+        CHECK(string_util::stristr("Hello", "StringLongerThanMainString") == nullptr);
+        }
+    };
+
+TEST_CASE("StrNChr", "[stringutil][StrNChr]")
+    {
+    SECTION("TestNull")
+        {
+        CHECK(string_util::strnchr<char>(nullptr, ',', 5) == nullptr);
+        }
+    SECTION("TestNotSearchFarEnough")
+        {
+        char buffer[] = "hello, world";
+        // should only search "hello" and not find ,
+        CHECK(string_util::strnchr(buffer, ',', 5) == nullptr);
+        }
+    SECTION("TestFindFirstItem")
+        {
+        char buffer[] = "hello, world";
+        // should find first ,
+        CHECK(string_util::strnchr(buffer, ',', 6) == buffer+5);
+        }
+    SECTION("TestLastItemInSequenceString")
+        {
+        char buffer[] = "hello, world";
+        // should find last item in sequence
+        CHECK(string_util::strnchr(buffer, 'd', 12) == buffer+11);
+        }
+    SECTION("TestFindNothing")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return size argument
+        CHECK(string_util::strnchr(buffer, 'z', 12) == nullptr);
+        }
+    SECTION("TestEmptyString")
+        {
+        // should find nothing and nullptr
+        CHECK(string_util::strnchr("", 'z', 0) == nullptr);
+        }
+    SECTION("TestBoundaryError")
+        {
+        wchar_t text[100];
+        std::wmemset(text, 0, 100);
+        std::wcscpy(text, L"abc");
+        // will really only scan first three letter, see the embedded NULLs, and return
+        // what the caller thought was the length of the string to know that it failed.
+        CHECK(string_util::strnchr<wchar_t>(L"abc", L'x', 100) == nullptr);
+        }
+    };
+
+TEST_CASE("StrtodEx", "[stringutil][StrtodEx]")
+    {
+    SECTION("TestNull")
+        {
+        wchar_t* end;
+        CHECK(string_util::strtod_ex<wchar_t>(nullptr, &end) == 0);
+        CHECK(end == nullptr);
+        }
+    // make sure your system's region is set to English or won't work
+    // (this test case assumes US English decimal)
+    SECTION("TestDouble")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"5.27";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
+        // end should point to the value's null terminator
+        CHECK(end == (value+4));
+        CHECK(*end == 0);
+        }
+    SECTION("TestEndingHyphen")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"5.27-";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.27);
+        // end should point to the dash at the end
+        CHECK(end == (value+4));
+        CHECK(*end == L'-');
+        }
+    SECTION("TestHyphen")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"5.5-6";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
+        // end should point to the value's null terminator
+        CHECK(end == (value+5));
+        CHECK(*end == 0);
+        }
+    SECTION("TestColon")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"5.5:6";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 5.75);
+        // end should point to the value's null terminator
+        CHECK(end == (value+5));
+        CHECK(*end == 0);
+        }
+    SECTION("TestNonDoubles")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"5:8";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 6.5);
+        // end should point to the value's null terminator
+        CHECK(end == (value+3));
+        CHECK(*end == 0);
+        }
+    SECTION("TestZeros")
+        {
+        wchar_t* end;
+        const wchar_t* value = L"0:0.0";
+        CHECK(string_util::strtod_ex<wchar_t>(value, &end) == 0);
+        // end should point to the value's null terminator
+        CHECK(end == (value+5));
+        CHECK(*end == 0);
+        }
+    };
+
+TEST_CASE("StrNCsp", "[stringutil][StrNCsp]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::strncspn<char>(nullptr, 5, ", w", 3) == 5);
+        CHECK(string_util::strncspn<char>("hello, world", 5, nullptr, 0) == 5);
+        CHECK(string_util::strncspn<char>("hello, world", 0, ", w", 3) == 0);
+        }
+    SECTION("TestNotSearchFarEnough")
+        {
+        // should only search "hello" and not find , or ' '
+        CHECK(string_util::strncspn("hello, world", 5, ", w", 3) == 5);
+        }
+    SECTION("TestFindFirstItem")
+        {
+        // should find first ,
+        CHECK(string_util::strncspn("hello, world", 6, ", ", 2) == 5);
+        }
+    SECTION("TestOneItemSequenceString")
+        {
+        // should find first ,
+        CHECK(string_util::strncspn("hello, world", 6, ",", 1) == 5);
+        }
+    SECTION("TestFirstItemEarly")
+        {
+        // should find first l before reaching last character in string being scanned
+        CHECK(string_util::strncspn("hello, world", 9, "l ", 2) == 2);
+        }
+    SECTION("TestLastItemInSequenceString")
+        {
+        // should find last item in sequence
+        CHECK(string_util::strncspn("hello, world", 9, "zy ", 3) == 6);
+        }
+    SECTION("TestFindNothing")
+        {
+        // should find nothing and return size argument
+        CHECK(string_util::strncspn("hello, world", 12, "zy", 2) == 12);
+        }
+    SECTION("TestLargeSequenceStringFindNothing")
+        {
+        // should find nothing and return size argument
+        CHECK(string_util::strncspn("hello, world", 12, "abcfgijkmnpqstuvxyz", 19) == 12);
+        }
+    SECTION("TestEmptySequenceString")
+        {
+        // should find nothing and return size argument
+        CHECK(string_util::strncspn("hello, world", 12, "", 0) == 12);
+        }
+    SECTION("TestEmptyString")
+        {
+        // should find nothing and return size argument
+        CHECK(string_util::strncspn("", 0, "abcdef", 6) == 0);
+        }
+    SECTION("TestBoundaryError")
+        {
+        wchar_t text[100];
+        std::wmemset(text, 0, 100);
+        std::wcscpy(text, L"abc");
+        // will really only scan first three letter, see the embedded NULLs, and return
+        // what the caller thought was the length of the string to know that it failed.
+        CHECK(string_util::strncspn(L"abc", 100, L"x", 1) == 100);
+        }
+    };
+
+TEST_CASE("RemoveAllWhitespace", "[stringutil][RemoveAllWhitespace]")
+    {
+    SECTION("HasWhitespaces")
+        {
+        std::wstring theWord = L"\nWords\rMore\n\rEnd.\n";
+        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+        CHECK(theWord == L"WordsMoreEnd.");
+        }
+    SECTION("AllWhitespaces")
+        {
+        std::wstring theWord = L"\n\r\n\r\n";
+        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+        CHECK(theWord == L"");
+        }
+    SECTION("HasNoWhitespaces")
+        {
+        std::wstring theWord = L"WordsMoreEnd.";
+        theWord = string_util::remove_all_whitespace<std::wstring>(theWord);
+        CHECK(theWord == L"WordsMoreEnd.");
+        }
+    };
+
+TEST_CASE("Strnlen", "[stringutil][Strnlen]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::strnlen<wchar_t>(nullptr, 5) == 0);
+        }
+    SECTION("TestNormal")
+        {
+        CHECK(string_util::strnlen(L"hello", 5) == 5);
+        CHECK(string_util::strnlen(L"longer string here. ", 20) == 20);
+        }
+    SECTION("TestNotScanningWholeText")
+        {
+        CHECK(string_util::strnlen(L"hello", 3) == 3);
+        CHECK(string_util::strnlen(L"longer string here. ", 15) == 15);
+        }
+    SECTION("TestMaxValueTooBig")
+        {
+        CHECK(string_util::strnlen(L"hello", 10) == 5);
+        CHECK(string_util::strnlen(L"longer string here. ", 999) == 20);
+        }
+    SECTION("TestBadString")
+        {
+        const wchar_t text[5] = { L'h', L'e', L'l', L'l', L'o' }; // no nullptr terminator
+        CHECK(string_util::strnlen(text, 5) == 5);
+        }
+    };
+
+TEST_CASE("FindLastOf", "[stringutil][FindLastOf]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::find_last_of<wchar_t>(nullptr, L'/', 1) == -1);
+        CHECK(string_util::find_last_of(L"", L'/') == -1);
+        }
+    SECTION("TestFind")
+        {
+        CHECK(string_util::find_last_of(L"fire/dept.", L'/') == 4);
+        CHECK(string_util::find_last_of(L"fire/dept.", L'/', 9) == 4);
+        CHECK(string_util::find_last_of(L"fire/dept.", L'/', 5) == 4);
+        }
+    SECTION("TestNotFind")
+        {
+        CHECK(string_util::find_last_of(L"fire/dept.", L'/', 3) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L'z', 4) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L'z', (size_t)-1) == -1);
+        }
+    };
+
+TEST_CASE("FindLastOfSequence", "[stringutil][FindLastOfSequence]")
+    {
+    SECTION("TestNulls")
+        {
+        CHECK(string_util::find_last_of<wchar_t>(nullptr, L"/", 1) == -1);
+        CHECK(string_util::find_last_of(L"", L"/") == -1);
+        }
+    SECTION("TestFind")
+        {
+        CHECK(string_util::find_last_of(L"fire/*dept.", L"/") == 4);
+        CHECK(string_util::find_last_of(L"fire/*dept.", L"/*") == 5);
+        CHECK(string_util::find_last_of(L"fire/dept.", L"/*", 9) == 4);
+        CHECK(string_util::find_last_of(L"fire/dept.", L"/*", 4) == 4);
+        CHECK(string_util::find_last_of(L"%fire/dept.", L"*%", 10) == 0);
+        }
+    SECTION("TestNotFind")
+        {
+        CHECK(string_util::find_last_of(L"fire/dept.", L"/*%", 3) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", 4) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", (size_t)-1) == -1);
+        }
+    };
+
+TEST_CASE("StrNIStr", "[stringutil][StrNIStr]")
+    {
+    SECTION("TestNotSearchFarEnough")
+        {
+        char buffer[] = "hello, world";
+        // should only search "hell" and not find "hello"
+        CHECK(string_util::strnistr(buffer, "HeLlO", 4) == nullptr);
+        }
+    SECTION("TestFindItemBufferAndSearchAreTheSame")
+        {
+        char buffer[] = "hello";
+        // should find first ,
+        CHECK(string_util::strnistr(buffer, "HelLo", std::strlen(buffer)) == buffer);
+        }
+    SECTION("TestFindFirstItem")
+        {
+        char buffer[] = "hello, world";
+        // should find first ,
+        CHECK(string_util::strnistr(buffer, "HelLo", 5) == buffer);
+        }
+    SECTION("TestFindItemInMiddle")
+        {
+        char buffer[] = "hello, there world";
+        // should find first ,
+        CHECK(string_util::strnistr(buffer, "THErE", std::strlen(buffer)) == buffer+7);
+        }
+    SECTION("TestLastItemInSequenceString")
+        {
+        char buffer[] = "hello, world";
+        // should find last item in sequence
+        CHECK(string_util::strnistr(buffer, "WORLD", std::strlen(buffer) ) == buffer+7);
+        }
+    SECTION("TestLastItemInSequenceStringCharacter")
+        {
+        char buffer[] = "hello, world";
+        //should find last item in sequence
+        CHECK(string_util::strnistr(buffer, "d", std::strlen(buffer) ) == buffer+11);
+        }
+    SECTION("TestFindNothing")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return nullptr
+        CHECK(string_util::strnistr(buffer, "Help", std::strlen(buffer)) == nullptr);
+        }
+    SECTION("TestFindNothingPartialMatchAtEnd")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return nullptr
+        CHECK(string_util::strnistr(buffer, "WORLDs", std::strlen(buffer)) == nullptr);
+        }
+    SECTION("TestFindNothingNonTerminatedBuffer")
+        {
+        char buffer[] = { 'h', 'e', 'l', 'l', 'o' };
+        // should find nothing and return nullptr
+        CHECK(string_util::strnistr(buffer, "hello there", 5) == nullptr);
+        }
+    SECTION("TestFindNothingEmptyString")
+        {
+        char buffer[] = "hello, world";
+        // should find nothing and return nullptr
+        CHECK(string_util::strnistr(buffer, "", std::strlen(buffer)) == nullptr);
+        }
+    SECTION("TestEmptyString")
+        {
+        // should find nothing and nullptr
+        CHECK(string_util::strnistr("", "Hello", 0) == nullptr);
+        }
+    SECTION("TestBoundaryError")
+        {
+        // pass in buffersize that is incorrect
+        CHECK(string_util::strnistr("", "Hello", 5) == nullptr);
+        }
+    SECTION("TestBoundaryError2")
+        {
+        // pass in buffersize that is incorrect
+        CHECK(string_util::strnistr("Hell", "Hello", 5) == nullptr);
+        }
+    SECTION("TestSubStringTooBig")
+        {
+        CHECK(string_util::strnistr("Hello", "Hello World", 11) == nullptr);
+        }
+    };
