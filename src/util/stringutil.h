@@ -167,7 +167,7 @@ namespace string_util
         @param ch The character to convert.
         @returns The character converted into its subscript equivalent, or
                  the original value if it can't be converted.
-        @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> ²)*/
+        @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> Â²)*/
     [[nodiscard]] static inline constexpr wchar_t to_subscript(const wchar_t ch) noexcept
         {
         return (ch == L'0' || ch == 0xFF10) ? 0x2080 :
@@ -297,7 +297,7 @@ namespace string_util
         @param ch The character to convert.
         @returns The character converted into its superscript equivalent, or
             the original value if it can't be converted.
-        @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> ²).*/
+        @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> Â²).*/
     [[nodiscard]] static inline constexpr wchar_t to_superscript(const wchar_t ch) noexcept
         {
         return (ch == L'0' || ch == 0xFF10) ? 0x2070 :
@@ -346,7 +346,7 @@ namespace string_util
 
     ///functions not available in ANSI C
     /** @brief Converts an integer value into a string.
-        @param value The integer to convert.
+Â        @param value The integer to convert.
         @param[out] out The character buffer to write the integer as a string into.
             This can be either a char* or wchar_t* buffer.
         @param length The length of the output buffer (in character count).
@@ -1041,10 +1041,11 @@ namespace string_util
         @returns The position of where the last non-matching character is at,
             or @c -1 if it can't be found.*/
     template<typename T>
-    [[nodiscard]] size_t find_last_not_of(const T* string, const T* search,
-                                          size_t offset = std::basic_string<T>::npos) noexcept
+    [[nodiscard]]
+    size_t find_last_not_of(const T* string, const T* search,
+                            size_t offset = std::basic_string<T>::npos) noexcept
         {
-        if (!string || !search)
+        if (!string || !search || search[0] == 0)
             { return std::basic_string<T>::npos; }
         if (offset == std::basic_string<T>::npos)
             {
@@ -1427,6 +1428,26 @@ namespace string_util
     template<typename string_typeT>
     void trim(string_typeT& str)
         { ltrim(str); rtrim(str); }
+
+    /// @brief "Trims" left and right sides of a wstring_view.
+    /// @param str The string to trim.
+    /// @returns A subset of the view, with leading and trailing spaces excluded.
+    inline std::wstring_view trim_view(std::wstring_view str)
+        {
+        if (str.empty())
+            { return str; }
+        auto left = str.cbegin();
+        for (;; ++left)
+            {
+            if (left == str.cend())
+                { return std::wstring_view{}; }
+            if (!std::iswspace(*left))
+                { break; }
+            }
+        auto right = str.cend() - 1;
+        for (; right > left && std::iswspace(*right); --right);
+        return str.substr(std::distance(str.cbegin(), left), std::distance(left, right) + 1);
+        }
 
     /// @brief Trims punctuation from left side of @c str (in-place).
     /// @param[in,out] str The string to trim.
