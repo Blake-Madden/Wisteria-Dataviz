@@ -497,6 +497,14 @@ TEST_CASE("HTML Parser", "[html import]")
         {
         const wchar_t* text = L"<h1>My header</H1>";
         CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
+        text = L"<h1>   My header</H1>";
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        text = L"<h1>My header   </H1>";
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        text = L"<h1>   My header   </H1>";
+        CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
+        text = L"<h1></H1>";
+        CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text + std::wcslen(text), L"h1", 2));
         // malformed
         text = L"<h1>My header</l1>";
         CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
@@ -574,7 +582,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, true) == L"Color Value");
         CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, false) == L"Color");
         }
-    SECTION("GetTagName")
+    SECTION("GetElementName")
         {
         CHECK(html_extract_text::get_element_name(L"body style=\"color=#FF0000\">there<style width=250>world<br >!") == L"body");
         CHECK(html_extract_text::get_element_name(L"br>there<style width=250>world<br >!") == L"br");
@@ -582,8 +590,16 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::get_element_name(L"/br") == L"/br");
         CHECK(html_extract_text::get_element_name(L"br>") == L"br");
         CHECK(html_extract_text::get_element_name(L"br") == L"br");
-        CHECK(html_extract_text::get_element_name(nullptr) == L"");
+        CHECK(html_extract_text::get_element_name(nullptr).empty());
         CHECK(html_extract_text::get_element_name(L"") == L"");
+        }
+    SECTION("GetBody")
+        {
+        CHECK(html_extract_text::get_body(L"<html bgcolor=\"red\"><body style=\"color=#FF0000\">there<style width=250>world<br >!</body>") ==
+            L"there<style width=250>world<br >!");
+        CHECK(html_extract_text::get_body(L"<html bgcolor=\"red\"><bd style=\"color=#FF0000\">there<style width=250>world<br >!</body>") ==
+            L"<html bgcolor=\"red\"><bd style=\"color=#FF0000\">there<style width=250>world<br >!</body>");
+        CHECK(html_extract_text::get_body(L"").empty());
         }
     SECTION("Null")
         {

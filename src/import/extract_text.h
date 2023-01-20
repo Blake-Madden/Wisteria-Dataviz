@@ -13,6 +13,7 @@
 #define __EXTRACT_TEXT_H__
 
 #include <exception>
+#include <string_view>
 #include "../util/stringutil.h"
 #include "../util/chartraits.h"
 #include "../util/donttranslate.h"
