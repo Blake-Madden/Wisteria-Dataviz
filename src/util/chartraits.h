@@ -13,6 +13,7 @@
 #define __INSENSITIVE_STRING_H__
 
 #include <cstring>
+#include <string_view>
 #include <cwchar>
 #include <cwctype>
 #include <cstdio>
@@ -140,6 +141,7 @@ namespace string_util
 
     /// @brief Case-insensitive @c std::wstring.
     using case_insensitive_wstring = std::basic_string<wchar_t, case_insensitive_character_traits>;
+    using case_insensitive_wstring_view = std::basic_string_view<wchar_t, case_insensitive_character_traits>;
     }
 
 /** @}*/
