@@ -13,7 +13,7 @@ using namespace string_util;
 namespace lily_of_the_valley
     {
     //------------------------------------------------------------------
-    std::wstring html_extract_text::read_element_as_string(const wchar_t* html_text,
+    std::wstring_view html_extract_text::read_element_as_string(const wchar_t* html_text,
                                                            const wchar_t* html_end,
                                                            const wchar_t* element,
                                                            const size_t element_length)
@@ -27,12 +27,10 @@ namespace lily_of_the_valley
             if (elementStart && elementEnd)
                 {
                 ++elementStart;
-                std::wstring elementValue(elementStart, elementEnd-elementStart);
-                string_util::trim(elementValue);
-                return elementValue;
+                return string_util::trim_view(std::wstring_view(elementStart, elementEnd - elementStart));
                 }
             }
-        return L"";
+        return std::wstring_view{};
         }
 
     //------------------------------------------------------------------
@@ -380,9 +378,10 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::wstring html_extract_text::convert_symbol_font_section(const std::wstring& symbolFontText)
+    std::wstring html_extract_text::convert_symbol_font_section(const std::wstring_view& symbolFontText)
         {
         std::wstring convertedText;
+        convertedText.reserve(symbolFontText.length());
         for (size_t i = 0; i < symbolFontText.length(); ++i)
             { convertedText += SYMBOL_FONT_TABLE.find(symbolFontText[i]); }
         return convertedText;
@@ -494,6 +493,7 @@ namespace lily_of_the_valley
             { return charset; }
         }
 
+    //------------------------------------------------------------------
     const wchar_t* html_extract_text::stristr_not_quoted(
             const wchar_t* string, const size_t stringSize,
             const wchar_t* strSearch, const size_t strSearchSize) noexcept
@@ -631,8 +631,8 @@ namespace lily_of_the_valley
                 { return foundTag; }
             else if (allowQuotedTags && is_either<wchar_t>(foundTag[-1], L'\'', L'\"'))
                 { return foundTag; }
-            // this tag should not be count if it is really just part of a bigger tag (e.g., "color" will
-            // not count if what we are really on is "bgcolor")
+            // this tag should not be count if it is really just part of a bigger tag
+            // (e.g., "color" will not count if what we are really on is "bgcolor")
             else if (std::iswspace(foundTag[-1]) || (foundTag[-1] == L';'))
                 { return foundTag; }
             foundTag += tagSize;
@@ -695,10 +695,11 @@ namespace lily_of_the_valley
         const wchar_t* end = nullptr;
 
         const wchar_t* const endSentinel = html_text+text_length;
+        case_insensitive_wstring currentElement;
         while (start && (start < endSentinel))
             {
             const size_t remainingTextLength = (endSentinel-start);
-            const case_insensitive_wstring currentElement = get_element_name(start+1, false).c_str();
+            currentElement.assign(get_element_name(start + 1, false));
             bool isSymbolFontSection = false;
             // if it's a comment, then look for matching comment ending sequence
             if (remainingTextLength >= 4 && start[0] == L'<' &&
@@ -1099,11 +1100,13 @@ namespace lily_of_the_valley
                it to the expected symbol.*/
             if (isSymbolFontSection)
                 {
-                const std::wstring copiedOverText = convert_symbol_font_section(std::wstring(get_filtered_text()+previousLength, (get_filtered_text_length()-previousLength)) );
+                const std::wstring copiedOverText =
+                    convert_symbol_font_section(std::wstring_view(get_filtered_text() + previousLength,
+                                                                  get_filtered_text_length() - previousLength) );
                 set_filtered_text_length(previousLength);
                 add_characters(copiedOverText.c_str(), copiedOverText.length());
                 if (copiedOverText.length())
-                    { log_message(L"Symbol font used for the following: \""+copiedOverText+L"\""); }
+                    { log_message(L"Symbol font used for the following: \"" + copiedOverText + L"\""); }
                 }
             // after parsing this section, see if this is the end of a preformatted area
             if (string_util::strnicmp<wchar_t>(start, L"</pre>", 6) == 0)
@@ -1125,7 +1128,7 @@ namespace lily_of_the_valley
                 }
             }
 
-        //get any text lingering after the last >
+        // get any text lingering after the last >
         if (end && end < endSentinel && include_outer_text)
             {
             parse_raw_text(end, endSentinel-end);
@@ -1238,18 +1241,18 @@ namespace lily_of_the_valley
     std::wstring html_extract_text::get_body(const std::wstring_view& text)
         {
         size_t bodyStart = text.find(L"<body");
-        if (bodyStart != std::wstring_view::npos)
+        if (bodyStart != std::wstring::npos)
             {
             bodyStart = text.find(L'>', bodyStart);
-            if (bodyStart == std::wstring_view::npos)
-                { return std::wstring(text); } // ill-formed file
+            if (bodyStart == std::wstring::npos)
+                { return std::wstring{ text }; } // ill-formed file
             ++bodyStart;
             const size_t bodyEnd = text.find(L"</body>", bodyStart);
-            if (bodyEnd != std::wstring_view::npos)
+            if (bodyEnd != std::wstring::npos)
                 { return std::wstring(text.substr(bodyStart, bodyEnd-bodyStart)); }
             }
         // no body tags found, so assume the whole thing is the body
-        return std::wstring(text);
+        return std::wstring{ text };
         }
 
     //------------------------------------------------------------------
@@ -1282,11 +1285,11 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::wstring html_extract_text::get_element_name(const wchar_t* text,
-                                                     const bool accept_self_terminating_elements /*= true*/)
+    case_insensitive_wstring_view html_extract_text::get_element_name(
+        const wchar_t* text, const bool accept_self_terminating_elements /*= true*/)
         {
         if (text == nullptr)
-            { return std::wstring{}; }
+            { return case_insensitive_wstring_view{}; }
         const wchar_t* start = text;
         for (;;)
             {
@@ -1300,7 +1303,7 @@ namespace lily_of_the_valley
                 { break; }
             ++text;
             }
-        return std::wstring(start, text-start);
+        return case_insensitive_wstring_view(start, text-start);
         }
 
     //------------------------------------------------------------------
@@ -1479,146 +1482,150 @@ namespace html_utilities
     symbol_font_table::symbol_font_table()
         {
         // Greek alphabet
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'A'), static_cast<wchar_t>(913)) );//uppercase Alpha
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'B'), static_cast<wchar_t>(914)) );//uppercase Beta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'G'), static_cast<wchar_t>(915)) );//uppercase Gamma
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'D'), static_cast<wchar_t>(916)) );//uppercase Delta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'E'), static_cast<wchar_t>(917)) );//uppercase Epsilon
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'Z'), static_cast<wchar_t>(918)) );//uppercase Zeta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'H'), static_cast<wchar_t>(919)) );//uppercase Eta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'Q'), static_cast<wchar_t>(920)) );//uppercase Theta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'I'), static_cast<wchar_t>(921)) );//uppercase Iota
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'K'), static_cast<wchar_t>(922)) );//uppercase Kappa
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'L'), static_cast<wchar_t>(923)) );//uppercase Lambda
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'M'), static_cast<wchar_t>(924)) );//uppercase Mu
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'N'), static_cast<wchar_t>(925)) );//uppercase Nu
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'X'), static_cast<wchar_t>(926)) );//uppercase Xi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'O'), static_cast<wchar_t>(927)) );//uppercase Omicron
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'P'), static_cast<wchar_t>(928)) );//uppercase Pi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'R'), static_cast<wchar_t>(929)) );//uppercase Rho
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'S'), static_cast<wchar_t>(931)) );//uppercase Sigma
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'T'), static_cast<wchar_t>(932)) );//uppercase Tau
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'U'), static_cast<wchar_t>(933)) );//uppercase Upsilon
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'F'), static_cast<wchar_t>(934)) );//uppercase Phi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'C'), static_cast<wchar_t>(935)) );//uppercase Chi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'Y'), static_cast<wchar_t>(936)) );//uppercase Psi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'W'), static_cast<wchar_t>(937)) );//uppercase Omega
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'a'), static_cast<wchar_t>(945)) );//lowercase alpha
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'b'), static_cast<wchar_t>(946)) );//lowercase beta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'g'), static_cast<wchar_t>(947)) );//lowercase gamma
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'd'), static_cast<wchar_t>(948)) );//lowercase delta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'e'), static_cast<wchar_t>(949)) );//lowercase epsilon
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'z'), static_cast<wchar_t>(950)) );//lowercase zeta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'h'), static_cast<wchar_t>(951)) );//lowercase eta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'q'), static_cast<wchar_t>(952)) );//lowercase theta
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'i'), static_cast<wchar_t>(953)) );//lowercase iota
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'k'), static_cast<wchar_t>(954)) );//lowercase kappa
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'l'), static_cast<wchar_t>(955)) );//lowercase lambda
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'm'), static_cast<wchar_t>(956)) );//lowercase mu
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'n'), static_cast<wchar_t>(957)) );//lowercase nu
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'x'), static_cast<wchar_t>(958)) );//lowercase xi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'o'), static_cast<wchar_t>(959)) );//lowercase omicron
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'p'), static_cast<wchar_t>(960)) );//lowercase pi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'r'), static_cast<wchar_t>(961)) );//lowercase rho
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'V'), static_cast<wchar_t>(962)) );//uppercase sigmaf
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L's'), static_cast<wchar_t>(963)) );//lowercase sigma
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L't'), static_cast<wchar_t>(964)) );//lowercase tau
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'u'), static_cast<wchar_t>(965)) );//lowercase upsilon
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'f'), static_cast<wchar_t>(966)) );//lowercase phi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'c'), static_cast<wchar_t>(967)) );//lowercase chi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'y'), static_cast<wchar_t>(968)) );//lowercase psi
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'w'), static_cast<wchar_t>(969)) );//lowercase omega
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'J'), static_cast<wchar_t>(977)) );//uppercase thetasym
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(161), static_cast<wchar_t>(978)) );//lowercase Upsilon1
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'j'), static_cast<wchar_t>(981)) );//lowercase phi1
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(L'v'), static_cast<wchar_t>(982)) );//lowercase omega1
-        //arrows
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(171), static_cast<wchar_t>(8596)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(172), static_cast<wchar_t>(8592)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(173), static_cast<wchar_t>(8593)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(174), static_cast<wchar_t>(8594)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(175), static_cast<wchar_t>(8595)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(191), static_cast<wchar_t>(8629)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(219), static_cast<wchar_t>(8660)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(220), static_cast<wchar_t>(8656)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(221), static_cast<wchar_t>(8657)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(222), static_cast<wchar_t>(8658)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(223), static_cast<wchar_t>(8659)) );
-        //math
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(34), static_cast<wchar_t>(8704)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(36), static_cast<wchar_t>(8707)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(39), static_cast<wchar_t>(8717)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(42), static_cast<wchar_t>(8727)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(45), static_cast<wchar_t>(8722)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(64), static_cast<wchar_t>(8773)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(92), static_cast<wchar_t>(8756)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(94), static_cast<wchar_t>(8869)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(126), static_cast<wchar_t>(8764)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(163), static_cast<wchar_t>(8804)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(165), static_cast<wchar_t>(8734)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(179), static_cast<wchar_t>(8805)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(181), static_cast<wchar_t>(8733)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(182), static_cast<wchar_t>(8706)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(183), static_cast<wchar_t>(8729)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(185), static_cast<wchar_t>(8800)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(186), static_cast<wchar_t>(8801)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(187), static_cast<wchar_t>(8776)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(196), static_cast<wchar_t>(8855)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(197), static_cast<wchar_t>(8853)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(198), static_cast<wchar_t>(8709)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(199), static_cast<wchar_t>(8745)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(200), static_cast<wchar_t>(8746)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(201), static_cast<wchar_t>(8835)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(202), static_cast<wchar_t>(8839)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(203), static_cast<wchar_t>(8836)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(204), static_cast<wchar_t>(8834)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(205), static_cast<wchar_t>(8838)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(206), static_cast<wchar_t>(8712)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(207), static_cast<wchar_t>(8713)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(208), static_cast<wchar_t>(8736)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(209), static_cast<wchar_t>(8711)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(213), static_cast<wchar_t>(8719)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(214), static_cast<wchar_t>(8730)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(215), static_cast<wchar_t>(8901)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(217), static_cast<wchar_t>(8743)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(218), static_cast<wchar_t>(8744)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(229), static_cast<wchar_t>(8721)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(242), static_cast<wchar_t>(8747)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(224), static_cast<wchar_t>(9674)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(189), static_cast<wchar_t>(9168)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(190), static_cast<wchar_t>(9135)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(225), static_cast<wchar_t>(9001)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(230), static_cast<wchar_t>(9115)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(231), static_cast<wchar_t>(9116)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(232), static_cast<wchar_t>(9117)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(233), static_cast<wchar_t>(9121)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(234), static_cast<wchar_t>(9122)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(235), static_cast<wchar_t>(9123)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(236), static_cast<wchar_t>(9127)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(237), static_cast<wchar_t>(9128)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(238), static_cast<wchar_t>(9129)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(239), static_cast<wchar_t>(9130)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(241), static_cast<wchar_t>(9002)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(243), static_cast<wchar_t>(8992)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(244), static_cast<wchar_t>(9134)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(245), static_cast<wchar_t>(8993)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(246), static_cast<wchar_t>(9118)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(247), static_cast<wchar_t>(9119)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(248), static_cast<wchar_t>(9120)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(249), static_cast<wchar_t>(9124)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(250), static_cast<wchar_t>(9125)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(251), static_cast<wchar_t>(9126)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(252), static_cast<wchar_t>(9131)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(253), static_cast<wchar_t>(9132)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(254), static_cast<wchar_t>(9133)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(180), static_cast<wchar_t>(215)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(184), static_cast<wchar_t>(247)) );
-        m_symbol_table.insert(std::make_pair(static_cast<wchar_t>(216), static_cast<wchar_t>(172)) );
+        m_symbol_table =
+            {
+            std::make_pair(static_cast<wchar_t>(L'A'), static_cast<wchar_t>(913)), // uppercase Alpha
+            std::make_pair(static_cast<wchar_t>(L'B'), static_cast<wchar_t>(914)), // uppercase Beta
+            std::make_pair(static_cast<wchar_t>(L'G'), static_cast<wchar_t>(915)), // uppercase Gamma
+            std::make_pair(static_cast<wchar_t>(L'D'), static_cast<wchar_t>(916)), // uppercase Delta
+            std::make_pair(static_cast<wchar_t>(L'E'), static_cast<wchar_t>(917)), // uppercase Epsilon
+            std::make_pair(static_cast<wchar_t>(L'Z'), static_cast<wchar_t>(918)), // uppercase Zeta
+            std::make_pair(static_cast<wchar_t>(L'H'), static_cast<wchar_t>(919)), // uppercase Eta
+            std::make_pair(static_cast<wchar_t>(L'Q'), static_cast<wchar_t>(920)), // uppercase Theta
+            std::make_pair(static_cast<wchar_t>(L'I'), static_cast<wchar_t>(921)), // uppercase Iota
+            std::make_pair(static_cast<wchar_t>(L'K'), static_cast<wchar_t>(922)), // uppercase Kappa
+            std::make_pair(static_cast<wchar_t>(L'L'), static_cast<wchar_t>(923)), // uppercase Lambda
+            std::make_pair(static_cast<wchar_t>(L'M'), static_cast<wchar_t>(924)), // uppercase Mu
+            std::make_pair(static_cast<wchar_t>(L'N'), static_cast<wchar_t>(925)), // uppercase Nu
+            std::make_pair(static_cast<wchar_t>(L'X'), static_cast<wchar_t>(926)), // uppercase Xi
+            std::make_pair(static_cast<wchar_t>(L'O'), static_cast<wchar_t>(927)), // uppercase Omicron
+            std::make_pair(static_cast<wchar_t>(L'P'), static_cast<wchar_t>(928)), // uppercase Pi
+            std::make_pair(static_cast<wchar_t>(L'R'), static_cast<wchar_t>(929)), // uppercase Rho
+            std::make_pair(static_cast<wchar_t>(L'S'), static_cast<wchar_t>(931)), // uppercase Sigma
+            std::make_pair(static_cast<wchar_t>(L'T'), static_cast<wchar_t>(932)), // uppercase Tau
+            std::make_pair(static_cast<wchar_t>(L'U'), static_cast<wchar_t>(933)), // uppercase Upsilon
+            std::make_pair(static_cast<wchar_t>(L'F'), static_cast<wchar_t>(934)), // uppercase Phi
+            std::make_pair(static_cast<wchar_t>(L'C'), static_cast<wchar_t>(935)), // uppercase Chi
+            std::make_pair(static_cast<wchar_t>(L'Y'), static_cast<wchar_t>(936)), // uppercase Psi
+            std::make_pair(static_cast<wchar_t>(L'W'), static_cast<wchar_t>(937)), // uppercase Omega
+            std::make_pair(static_cast<wchar_t>(L'a'), static_cast<wchar_t>(945)), // lowercase alpha
+            std::make_pair(static_cast<wchar_t>(L'b'), static_cast<wchar_t>(946)), // lowercase beta
+            std::make_pair(static_cast<wchar_t>(L'g'), static_cast<wchar_t>(947)), // lowercase gamma
+            std::make_pair(static_cast<wchar_t>(L'd'), static_cast<wchar_t>(948)), // lowercase delta
+            std::make_pair(static_cast<wchar_t>(L'e'), static_cast<wchar_t>(949)), // lowercase epsilon
+            std::make_pair(static_cast<wchar_t>(L'z'), static_cast<wchar_t>(950)), // lowercase zeta
+            std::make_pair(static_cast<wchar_t>(L'h'), static_cast<wchar_t>(951)), // lowercase eta
+            std::make_pair(static_cast<wchar_t>(L'q'), static_cast<wchar_t>(952)), // lowercase theta
+            std::make_pair(static_cast<wchar_t>(L'i'), static_cast<wchar_t>(953)), // lowercase iota
+            std::make_pair(static_cast<wchar_t>(L'k'), static_cast<wchar_t>(954)), // lowercase kappa
+            std::make_pair(static_cast<wchar_t>(L'l'), static_cast<wchar_t>(955)), // lowercase lambda
+            std::make_pair(static_cast<wchar_t>(L'm'), static_cast<wchar_t>(956)), // lowercase mu
+            std::make_pair(static_cast<wchar_t>(L'n'), static_cast<wchar_t>(957)), // lowercase nu
+            std::make_pair(static_cast<wchar_t>(L'x'), static_cast<wchar_t>(958)), // lowercase xi
+            std::make_pair(static_cast<wchar_t>(L'o'), static_cast<wchar_t>(959)), // lowercase omicron
+            std::make_pair(static_cast<wchar_t>(L'p'), static_cast<wchar_t>(960)), // lowercase pi
+            std::make_pair(static_cast<wchar_t>(L'r'), static_cast<wchar_t>(961)), // lowercase rho
+            std::make_pair(static_cast<wchar_t>(L'V'), static_cast<wchar_t>(962)), // uppercase sigmaf
+            std::make_pair(static_cast<wchar_t>(L's'), static_cast<wchar_t>(963)), // lowercase sigma
+            std::make_pair(static_cast<wchar_t>(L't'), static_cast<wchar_t>(964)), // lowercase tau
+            std::make_pair(static_cast<wchar_t>(L'u'), static_cast<wchar_t>(965)), // lowercase upsilon
+            std::make_pair(static_cast<wchar_t>(L'f'), static_cast<wchar_t>(966)), // lowercase phi
+            std::make_pair(static_cast<wchar_t>(L'c'), static_cast<wchar_t>(967)), // lowercase chi
+            std::make_pair(static_cast<wchar_t>(L'y'), static_cast<wchar_t>(968)), // lowercase psi
+            std::make_pair(static_cast<wchar_t>(L'w'), static_cast<wchar_t>(969)), // lowercase omega
+            std::make_pair(static_cast<wchar_t>(L'J'), static_cast<wchar_t>(977)), // uppercase thetasym
+            std::make_pair(static_cast<wchar_t>(161), static_cast<wchar_t>(978)),  // lowercase Upsilon1
+            std::make_pair(static_cast<wchar_t>(L'j'), static_cast<wchar_t>(981)), // lowercase phi1
+            std::make_pair(static_cast<wchar_t>(L'v'), static_cast<wchar_t>(982)), // lowercase omega1
+            // arrows
+            std::make_pair(static_cast<wchar_t>(171), static_cast<wchar_t>(8596)),
+            std::make_pair(static_cast<wchar_t>(172), static_cast<wchar_t>(8592)),
+            std::make_pair(static_cast<wchar_t>(173), static_cast<wchar_t>(8593)),
+            std::make_pair(static_cast<wchar_t>(174), static_cast<wchar_t>(8594)),
+            std::make_pair(static_cast<wchar_t>(175), static_cast<wchar_t>(8595)),
+            std::make_pair(static_cast<wchar_t>(191), static_cast<wchar_t>(8629)),
+            std::make_pair(static_cast<wchar_t>(219), static_cast<wchar_t>(8660)),
+            std::make_pair(static_cast<wchar_t>(220), static_cast<wchar_t>(8656)),
+            std::make_pair(static_cast<wchar_t>(221), static_cast<wchar_t>(8657)),
+            std::make_pair(static_cast<wchar_t>(222), static_cast<wchar_t>(8658)),
+            std::make_pair(static_cast<wchar_t>(223), static_cast<wchar_t>(8659)),
+            // math
+            std::make_pair(static_cast<wchar_t>(34), static_cast<wchar_t>(8704)),
+            std::make_pair(static_cast<wchar_t>(36), static_cast<wchar_t>(8707)),
+            std::make_pair(static_cast<wchar_t>(39), static_cast<wchar_t>(8717)),
+            std::make_pair(static_cast<wchar_t>(42), static_cast<wchar_t>(8727)),
+            std::make_pair(static_cast<wchar_t>(45), static_cast<wchar_t>(8722)),
+            std::make_pair(static_cast<wchar_t>(64), static_cast<wchar_t>(8773)),
+            std::make_pair(static_cast<wchar_t>(92), static_cast<wchar_t>(8756)),
+            std::make_pair(static_cast<wchar_t>(94), static_cast<wchar_t>(8869)),
+            std::make_pair(static_cast<wchar_t>(126), static_cast<wchar_t>(8764)),
+            std::make_pair(static_cast<wchar_t>(163), static_cast<wchar_t>(8804)),
+            std::make_pair(static_cast<wchar_t>(165), static_cast<wchar_t>(8734)),
+            std::make_pair(static_cast<wchar_t>(179), static_cast<wchar_t>(8805)),
+            std::make_pair(static_cast<wchar_t>(181), static_cast<wchar_t>(8733)),
+            std::make_pair(static_cast<wchar_t>(182), static_cast<wchar_t>(8706)),
+            std::make_pair(static_cast<wchar_t>(183), static_cast<wchar_t>(8729)),
+            std::make_pair(static_cast<wchar_t>(185), static_cast<wchar_t>(8800)),
+            std::make_pair(static_cast<wchar_t>(186), static_cast<wchar_t>(8801)),
+            std::make_pair(static_cast<wchar_t>(187), static_cast<wchar_t>(8776)),
+            std::make_pair(static_cast<wchar_t>(196), static_cast<wchar_t>(8855)),
+            std::make_pair(static_cast<wchar_t>(197), static_cast<wchar_t>(8853)),
+            std::make_pair(static_cast<wchar_t>(198), static_cast<wchar_t>(8709)),
+            std::make_pair(static_cast<wchar_t>(199), static_cast<wchar_t>(8745)),
+            std::make_pair(static_cast<wchar_t>(200), static_cast<wchar_t>(8746)),
+            std::make_pair(static_cast<wchar_t>(201), static_cast<wchar_t>(8835)),
+            std::make_pair(static_cast<wchar_t>(202), static_cast<wchar_t>(8839)),
+            std::make_pair(static_cast<wchar_t>(203), static_cast<wchar_t>(8836)),
+            std::make_pair(static_cast<wchar_t>(204), static_cast<wchar_t>(8834)),
+            std::make_pair(static_cast<wchar_t>(205), static_cast<wchar_t>(8838)),
+            std::make_pair(static_cast<wchar_t>(206), static_cast<wchar_t>(8712)),
+            std::make_pair(static_cast<wchar_t>(207), static_cast<wchar_t>(8713)),
+            std::make_pair(static_cast<wchar_t>(208), static_cast<wchar_t>(8736)),
+            std::make_pair(static_cast<wchar_t>(209), static_cast<wchar_t>(8711)),
+            std::make_pair(static_cast<wchar_t>(213), static_cast<wchar_t>(8719)),
+            std::make_pair(static_cast<wchar_t>(214), static_cast<wchar_t>(8730)),
+            std::make_pair(static_cast<wchar_t>(215), static_cast<wchar_t>(8901)),
+            std::make_pair(static_cast<wchar_t>(217), static_cast<wchar_t>(8743)),
+            std::make_pair(static_cast<wchar_t>(218), static_cast<wchar_t>(8744)),
+            std::make_pair(static_cast<wchar_t>(229), static_cast<wchar_t>(8721)),
+            std::make_pair(static_cast<wchar_t>(242), static_cast<wchar_t>(8747)),
+            std::make_pair(static_cast<wchar_t>(224), static_cast<wchar_t>(9674)),
+            std::make_pair(static_cast<wchar_t>(189), static_cast<wchar_t>(9168)),
+            std::make_pair(static_cast<wchar_t>(190), static_cast<wchar_t>(9135)),
+            std::make_pair(static_cast<wchar_t>(225), static_cast<wchar_t>(9001)),
+            std::make_pair(static_cast<wchar_t>(230), static_cast<wchar_t>(9115)),
+            std::make_pair(static_cast<wchar_t>(231), static_cast<wchar_t>(9116)),
+            std::make_pair(static_cast<wchar_t>(232), static_cast<wchar_t>(9117)),
+            std::make_pair(static_cast<wchar_t>(233), static_cast<wchar_t>(9121)),
+            std::make_pair(static_cast<wchar_t>(234), static_cast<wchar_t>(9122)),
+            std::make_pair(static_cast<wchar_t>(235), static_cast<wchar_t>(9123)),
+            std::make_pair(static_cast<wchar_t>(236), static_cast<wchar_t>(9127)),
+            std::make_pair(static_cast<wchar_t>(237), static_cast<wchar_t>(9128)),
+            std::make_pair(static_cast<wchar_t>(238), static_cast<wchar_t>(9129)),
+            std::make_pair(static_cast<wchar_t>(239), static_cast<wchar_t>(9130)),
+            std::make_pair(static_cast<wchar_t>(241), static_cast<wchar_t>(9002)),
+            std::make_pair(static_cast<wchar_t>(243), static_cast<wchar_t>(8992)),
+            std::make_pair(static_cast<wchar_t>(244), static_cast<wchar_t>(9134)),
+            std::make_pair(static_cast<wchar_t>(245), static_cast<wchar_t>(8993)),
+            std::make_pair(static_cast<wchar_t>(246), static_cast<wchar_t>(9118)),
+            std::make_pair(static_cast<wchar_t>(247), static_cast<wchar_t>(9119)),
+            std::make_pair(static_cast<wchar_t>(248), static_cast<wchar_t>(9120)),
+            std::make_pair(static_cast<wchar_t>(249), static_cast<wchar_t>(9124)),
+            std::make_pair(static_cast<wchar_t>(250), static_cast<wchar_t>(9125)),
+            std::make_pair(static_cast<wchar_t>(251), static_cast<wchar_t>(9126)),
+            std::make_pair(static_cast<wchar_t>(252), static_cast<wchar_t>(9131)),
+            std::make_pair(static_cast<wchar_t>(253), static_cast<wchar_t>(9132)),
+            std::make_pair(static_cast<wchar_t>(254), static_cast<wchar_t>(9133)),
+            std::make_pair(static_cast<wchar_t>(180), static_cast<wchar_t>(215)),
+            std::make_pair(static_cast<wchar_t>(184), static_cast<wchar_t>(247)),
+            std::make_pair(static_cast<wchar_t>(216), static_cast<wchar_t>(172))
+            };
         }
+    //------------------------------------------------------------------
     wchar_t symbol_font_table::find(const wchar_t letter) const
         {
-        std::map<wchar_t, wchar_t>::const_iterator pos = m_symbol_table.find(letter);
-        if (pos == m_symbol_table.end() )
+        const auto pos = m_symbol_table.find(letter);
+        if (pos == m_symbol_table.cend() )
             { return letter; }
         return pos->second;
         }
@@ -1626,275 +1633,277 @@ namespace html_utilities
     //------------------------------------------------------------------
     html_entity_table::html_entity_table()
         {
-        m_table.insert(std::make_pair(std::wstring(L"apos"), static_cast<wchar_t>(L'\'')) ); // not standard, but common
-        m_table.insert(std::make_pair(std::wstring(L"gt"), static_cast<wchar_t>(L'>')) );
-        m_table.insert(std::make_pair(std::wstring(L"lt"), static_cast<wchar_t>(L'<')) );
-        m_table.insert(std::make_pair(std::wstring(L"amp"), static_cast<wchar_t>(L'&')) );
-        m_table.insert(std::make_pair(std::wstring(L"quot"), static_cast<wchar_t>(L'"')) );
-        m_table.insert(std::make_pair(std::wstring(L"nbsp"), static_cast<wchar_t>(L' ')) );
-        m_table.insert(std::make_pair(std::wstring(L"iexcl"), static_cast<wchar_t>(161)) );
-        m_table.insert(std::make_pair(std::wstring(L"cent"), static_cast<wchar_t>(162)) );
-        m_table.insert(std::make_pair(std::wstring(L"pound"), static_cast<wchar_t>(163)) );
-        m_table.insert(std::make_pair(std::wstring(L"curren"), static_cast<wchar_t>(164)) );
-        m_table.insert(std::make_pair(std::wstring(L"yen"), static_cast<wchar_t>(165)) );
-        m_table.insert(std::make_pair(std::wstring(L"brvbar"), static_cast<wchar_t>(166)) );
-        m_table.insert(std::make_pair(std::wstring(L"sect"), static_cast<wchar_t>(167)) );
-        m_table.insert(std::make_pair(std::wstring(L"uml"), static_cast<wchar_t>(168)) );
-        m_table.insert(std::make_pair(std::wstring(L"copy"), static_cast<wchar_t>(169)) );
-        m_table.insert(std::make_pair(std::wstring(L"ordf"), static_cast<wchar_t>(170)) );
-        m_table.insert(std::make_pair(std::wstring(L"laquo"), static_cast<wchar_t>(171)) );
-        m_table.insert(std::make_pair(std::wstring(L"not"), static_cast<wchar_t>(172)) );
-        m_table.insert(std::make_pair(std::wstring(L"shy"), static_cast<wchar_t>(173)) );
-        m_table.insert(std::make_pair(std::wstring(L"reg"), static_cast<wchar_t>(174)) );
-        m_table.insert(std::make_pair(std::wstring(L"macr"), static_cast<wchar_t>(175)) );
-        m_table.insert(std::make_pair(std::wstring(L"deg"), static_cast<wchar_t>(176)) );
-        m_table.insert(std::make_pair(std::wstring(L"plusmn"), static_cast<wchar_t>(177)) );
-        m_table.insert(std::make_pair(std::wstring(L"sup2"), static_cast<wchar_t>(178)) );
-        m_table.insert(std::make_pair(std::wstring(L"sup3"), static_cast<wchar_t>(179)) );
-        m_table.insert(std::make_pair(std::wstring(L"acute"), static_cast<wchar_t>(180)) );
-        m_table.insert(std::make_pair(std::wstring(L"micro"), static_cast<wchar_t>(181)) );
-        m_table.insert(std::make_pair(std::wstring(L"para"), static_cast<wchar_t>(182)) );
-        m_table.insert(std::make_pair(std::wstring(L"middot"), static_cast<wchar_t>(183)) );
-        m_table.insert(std::make_pair(std::wstring(L"mcedilicro"), static_cast<wchar_t>(184)) );
-        m_table.insert(std::make_pair(std::wstring(L"sup1"), static_cast<wchar_t>(185)) );
-        m_table.insert(std::make_pair(std::wstring(L"ordm"), static_cast<wchar_t>(186)) );
-        m_table.insert(std::make_pair(std::wstring(L"raquo"), static_cast<wchar_t>(187)) );
-        m_table.insert(std::make_pair(std::wstring(L"frac14"), static_cast<wchar_t>(188)) );
-        m_table.insert(std::make_pair(std::wstring(L"texfrac12t"), static_cast<wchar_t>(189)) );
-        m_table.insert(std::make_pair(std::wstring(L"frac34"), static_cast<wchar_t>(190)) );
-        m_table.insert(std::make_pair(std::wstring(L"iquest"), static_cast<wchar_t>(191)) );
-        m_table.insert(std::make_pair(std::wstring(L"Agrave"), static_cast<wchar_t>(192)) );
-        m_table.insert(std::make_pair(std::wstring(L"Aacute"), static_cast<wchar_t>(193)) );
-        m_table.insert(std::make_pair(std::wstring(L"Acirc"), static_cast<wchar_t>(194)) );
-        m_table.insert(std::make_pair(std::wstring(L"Atilde"), static_cast<wchar_t>(195)) );
-        m_table.insert(std::make_pair(std::wstring(L"Auml"), static_cast<wchar_t>(196)) );
-        m_table.insert(std::make_pair(std::wstring(L"Aring"), static_cast<wchar_t>(197)) );
-        m_table.insert(std::make_pair(std::wstring(L"AElig"), static_cast<wchar_t>(198)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ccedil"), static_cast<wchar_t>(199)) );
-        m_table.insert(std::make_pair(std::wstring(L"Egrave"), static_cast<wchar_t>(200)) );
-        m_table.insert(std::make_pair(std::wstring(L"Eacute"), static_cast<wchar_t>(201)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ecirc"), static_cast<wchar_t>(202)) );
-        m_table.insert(std::make_pair(std::wstring(L"Euml"), static_cast<wchar_t>(203)) );
-        m_table.insert(std::make_pair(std::wstring(L"Igrave"), static_cast<wchar_t>(204)) );
-        m_table.insert(std::make_pair(std::wstring(L"Iacute"), static_cast<wchar_t>(205)) );
-        m_table.insert(std::make_pair(std::wstring(L"Icirc"), static_cast<wchar_t>(206)) );
-        m_table.insert(std::make_pair(std::wstring(L"Iuml"), static_cast<wchar_t>(207)) );
-        m_table.insert(std::make_pair(std::wstring(L"ETH"), static_cast<wchar_t>(208)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ntilde"), static_cast<wchar_t>(209)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ograve"), static_cast<wchar_t>(210)) );
-        m_table.insert(std::make_pair(std::wstring(L"Oacute"), static_cast<wchar_t>(211)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ocirc"), static_cast<wchar_t>(212)) );
-        m_table.insert(std::make_pair(std::wstring(L"Otilde"), static_cast<wchar_t>(213)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ouml"), static_cast<wchar_t>(214)) );
-        m_table.insert(std::make_pair(std::wstring(L"Oslash"), static_cast<wchar_t>(216)) );
-        m_table.insert(std::make_pair(std::wstring(L"times"), static_cast<wchar_t>(215)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ugrave"), static_cast<wchar_t>(217)) );
-        m_table.insert(std::make_pair(std::wstring(L"Uacute"), static_cast<wchar_t>(218)) );
-        m_table.insert(std::make_pair(std::wstring(L"Ucirc"), static_cast<wchar_t>(219)) );
-        m_table.insert(std::make_pair(std::wstring(L"Uuml"), static_cast<wchar_t>(220)) );
-        m_table.insert(std::make_pair(std::wstring(L"Yacute"), static_cast<wchar_t>(221)) );
-        m_table.insert(std::make_pair(std::wstring(L"THORN"), static_cast<wchar_t>(222)) );
-        m_table.insert(std::make_pair(std::wstring(L"szlig"), static_cast<wchar_t>(223)) );
-        m_table.insert(std::make_pair(std::wstring(L"agrave"), static_cast<wchar_t>(224)) );
-        m_table.insert(std::make_pair(std::wstring(L"aacute"), static_cast<wchar_t>(225)) );
-        m_table.insert(std::make_pair(std::wstring(L"acirc"), static_cast<wchar_t>(226)) );
-        m_table.insert(std::make_pair(std::wstring(L"atilde"), static_cast<wchar_t>(227)) );
-        m_table.insert(std::make_pair(std::wstring(L"auml"), static_cast<wchar_t>(228)) );
-        m_table.insert(std::make_pair(std::wstring(L"aring"), static_cast<wchar_t>(229)) );
-        m_table.insert(std::make_pair(std::wstring(L"aelig"), static_cast<wchar_t>(230)) );
-        m_table.insert(std::make_pair(std::wstring(L"ccedil"), static_cast<wchar_t>(231)) );
-        m_table.insert(std::make_pair(std::wstring(L"egrave"), static_cast<wchar_t>(232)) );
-        m_table.insert(std::make_pair(std::wstring(L"eacute"), static_cast<wchar_t>(233)) );
-        m_table.insert(std::make_pair(std::wstring(L"ecirc"), static_cast<wchar_t>(234)) );
-        m_table.insert(std::make_pair(std::wstring(L"euml"), static_cast<wchar_t>(235)) );
-        m_table.insert(std::make_pair(std::wstring(L"igrave"), static_cast<wchar_t>(236)) );
-        m_table.insert(std::make_pair(std::wstring(L"iacute"), static_cast<wchar_t>(237)) );
-        m_table.insert(std::make_pair(std::wstring(L"icirc"), static_cast<wchar_t>(238)) );
-        m_table.insert(std::make_pair(std::wstring(L"iuml"), static_cast<wchar_t>(239)) );
-        m_table.insert(std::make_pair(std::wstring(L"eth"), static_cast<wchar_t>(240)) );
-        m_table.insert(std::make_pair(std::wstring(L"ntilde"), static_cast<wchar_t>(241)) );
-        m_table.insert(std::make_pair(std::wstring(L"ograve"), static_cast<wchar_t>(242)) );
-        m_table.insert(std::make_pair(std::wstring(L"oacute"), static_cast<wchar_t>(243)) );
-        m_table.insert(std::make_pair(std::wstring(L"ocirc"), static_cast<wchar_t>(244)) );
-        m_table.insert(std::make_pair(std::wstring(L"otilde"), static_cast<wchar_t>(245)) );
-        m_table.insert(std::make_pair(std::wstring(L"ouml"), static_cast<wchar_t>(246)) );
-        m_table.insert(std::make_pair(std::wstring(L"divide"), static_cast<wchar_t>(247)) );
-        m_table.insert(std::make_pair(std::wstring(L"oslash"), static_cast<wchar_t>(248)) );
-        m_table.insert(std::make_pair(std::wstring(L"ugrave"), static_cast<wchar_t>(249)) );
-        m_table.insert(std::make_pair(std::wstring(L"uacute"), static_cast<wchar_t>(250)) );
-        m_table.insert(std::make_pair(std::wstring(L"ucirc"), static_cast<wchar_t>(251)) );
-        m_table.insert(std::make_pair(std::wstring(L"uuml"), static_cast<wchar_t>(252)) );
-        m_table.insert(std::make_pair(std::wstring(L"yacute"), static_cast<wchar_t>(253)) );
-        m_table.insert(std::make_pair(std::wstring(L"thorn"), static_cast<wchar_t>(254)) );
-        m_table.insert(std::make_pair(std::wstring(L"yuml"), static_cast<wchar_t>(255)) );
-        m_table.insert(std::make_pair(std::wstring(L"fnof"), static_cast<wchar_t>(402)) );
-        m_table.insert(std::make_pair(std::wstring(L"Alpha"), static_cast<wchar_t>(913)) );
-        m_table.insert(std::make_pair(std::wstring(L"Beta"), static_cast<wchar_t>(914)) );
-        m_table.insert(std::make_pair(std::wstring(L"Gamma"), static_cast<wchar_t>(915)) );
-        m_table.insert(std::make_pair(std::wstring(L"Delta"), static_cast<wchar_t>(916)) );
-        m_table.insert(std::make_pair(std::wstring(L"Epsilon"), static_cast<wchar_t>(917)) );
-        m_table.insert(std::make_pair(std::wstring(L"Zeta"), static_cast<wchar_t>(918)) );
-        m_table.insert(std::make_pair(std::wstring(L"Eta"), static_cast<wchar_t>(919)) );
-        m_table.insert(std::make_pair(std::wstring(L"Theta"), static_cast<wchar_t>(920)) );
-        m_table.insert(std::make_pair(std::wstring(L"Iota"), static_cast<wchar_t>(921)) );
-        m_table.insert(std::make_pair(std::wstring(L"Kappa"), static_cast<wchar_t>(922)) );
-        m_table.insert(std::make_pair(std::wstring(L"Lambda"), static_cast<wchar_t>(923)) );
-        m_table.insert(std::make_pair(std::wstring(L"Mu"), static_cast<wchar_t>(924)) );
-        m_table.insert(std::make_pair(std::wstring(L"Nu"), static_cast<wchar_t>(925)) );
-        m_table.insert(std::make_pair(std::wstring(L"Xi"), static_cast<wchar_t>(926)) );
-        m_table.insert(std::make_pair(std::wstring(L"Omicron"), static_cast<wchar_t>(927)) );
-        m_table.insert(std::make_pair(std::wstring(L"Pi"), static_cast<wchar_t>(928)) );
-        m_table.insert(std::make_pair(std::wstring(L"Rho"), static_cast<wchar_t>(929)) );
-        m_table.insert(std::make_pair(std::wstring(L"Sigma"), static_cast<wchar_t>(931)) );
-        m_table.insert(std::make_pair(std::wstring(L"Tau"), static_cast<wchar_t>(932)) );
-        m_table.insert(std::make_pair(std::wstring(L"Upsilon"), static_cast<wchar_t>(933)) );
-        m_table.insert(std::make_pair(std::wstring(L"Phi"), static_cast<wchar_t>(934)) );
-        m_table.insert(std::make_pair(std::wstring(L"Chi"), static_cast<wchar_t>(935)) );
-        m_table.insert(std::make_pair(std::wstring(L"Psi"), static_cast<wchar_t>(936)) );
-        m_table.insert(std::make_pair(std::wstring(L"Omega"), static_cast<wchar_t>(937)) );
-        m_table.insert(std::make_pair(std::wstring(L"alpha"), static_cast<wchar_t>(945)) );
-        m_table.insert(std::make_pair(std::wstring(L"beta"), static_cast<wchar_t>(946)) );
-        m_table.insert(std::make_pair(std::wstring(L"gamma"), static_cast<wchar_t>(947)) );
-        m_table.insert(std::make_pair(std::wstring(L"delta"), static_cast<wchar_t>(948)) );
-        m_table.insert(std::make_pair(std::wstring(L"epsilon"), static_cast<wchar_t>(949)) );
-        m_table.insert(std::make_pair(std::wstring(L"zeta"), static_cast<wchar_t>(950)) );
-        m_table.insert(std::make_pair(std::wstring(L"eta"), static_cast<wchar_t>(951)) );
-        m_table.insert(std::make_pair(std::wstring(L"theta"), static_cast<wchar_t>(952)) );
-        m_table.insert(std::make_pair(std::wstring(L"iota"), static_cast<wchar_t>(953)) );
-        m_table.insert(std::make_pair(std::wstring(L"kappa"), static_cast<wchar_t>(954)) );
-        m_table.insert(std::make_pair(std::wstring(L"lambda"), static_cast<wchar_t>(955)) );
-        m_table.insert(std::make_pair(std::wstring(L"mu"), static_cast<wchar_t>(956)) );
-        m_table.insert(std::make_pair(std::wstring(L"nu"), static_cast<wchar_t>(957)) );
-        m_table.insert(std::make_pair(std::wstring(L"xi"), static_cast<wchar_t>(958)) );
-        m_table.insert(std::make_pair(std::wstring(L"omicron"), static_cast<wchar_t>(959)) );
-        m_table.insert(std::make_pair(std::wstring(L"pi"), static_cast<wchar_t>(960)) );
-        m_table.insert(std::make_pair(std::wstring(L"rho"), static_cast<wchar_t>(961)) );
-        m_table.insert(std::make_pair(std::wstring(L"sigmaf"), static_cast<wchar_t>(962)) );
-        m_table.insert(std::make_pair(std::wstring(L"sigma"), static_cast<wchar_t>(963)) );
-        m_table.insert(std::make_pair(std::wstring(L"tau"), static_cast<wchar_t>(964)) );
-        m_table.insert(std::make_pair(std::wstring(L"upsilon"), static_cast<wchar_t>(965)) );
-        m_table.insert(std::make_pair(std::wstring(L"phi"), static_cast<wchar_t>(966)) );
-        m_table.insert(std::make_pair(std::wstring(L"chi"), static_cast<wchar_t>(967)) );
-        m_table.insert(std::make_pair(std::wstring(L"psi"), static_cast<wchar_t>(968)) );
-        m_table.insert(std::make_pair(std::wstring(L"omega"), static_cast<wchar_t>(969)) );
-        m_table.insert(std::make_pair(std::wstring(L"thetasym"), static_cast<wchar_t>(977)) );
-        m_table.insert(std::make_pair(std::wstring(L"upsih"), static_cast<wchar_t>(978)) );
-        m_table.insert(std::make_pair(std::wstring(L"piv"), static_cast<wchar_t>(982)) );
-        m_table.insert(std::make_pair(std::wstring(L"bull"), static_cast<wchar_t>(8226)) );
-        m_table.insert(std::make_pair(std::wstring(L"hellip"), static_cast<wchar_t>(8230)) );
-        m_table.insert(std::make_pair(std::wstring(L"prime"), static_cast<wchar_t>(8242)) );
-        m_table.insert(std::make_pair(std::wstring(L"Prime"), static_cast<wchar_t>(8243)) );
-        m_table.insert(std::make_pair(std::wstring(L"oline"), static_cast<wchar_t>(8254)) );
-        m_table.insert(std::make_pair(std::wstring(L"frasl"), static_cast<wchar_t>(8260)) );
-        m_table.insert(std::make_pair(std::wstring(L"weierp"), static_cast<wchar_t>(8472)) );
-        m_table.insert(std::make_pair(std::wstring(L"image"), static_cast<wchar_t>(8465)) );
-        m_table.insert(std::make_pair(std::wstring(L"real"), static_cast<wchar_t>(8476)) );
-        m_table.insert(std::make_pair(std::wstring(L"trade"), static_cast<wchar_t>(8482)) );
-        m_table.insert(std::make_pair(std::wstring(L"alefsym"), static_cast<wchar_t>(8501)) );
-        m_table.insert(std::make_pair(std::wstring(L"larr"), static_cast<wchar_t>(8592)) );
-        m_table.insert(std::make_pair(std::wstring(L"uarr"), static_cast<wchar_t>(8593)) );
-        m_table.insert(std::make_pair(std::wstring(L"rarr"), static_cast<wchar_t>(8594)) );
-        m_table.insert(std::make_pair(std::wstring(L"darr"), static_cast<wchar_t>(8595)) );
-        m_table.insert(std::make_pair(std::wstring(L"harr"), static_cast<wchar_t>(8596)) );
-        m_table.insert(std::make_pair(std::wstring(L"crarr"), static_cast<wchar_t>(8629)) );
-        m_table.insert(std::make_pair(std::wstring(L"lArr"), static_cast<wchar_t>(8656)) );
-        m_table.insert(std::make_pair(std::wstring(L"uArr"), static_cast<wchar_t>(8657)) );
-        m_table.insert(std::make_pair(std::wstring(L"rArr"), static_cast<wchar_t>(8658)) );
-        m_table.insert(std::make_pair(std::wstring(L"dArr"), static_cast<wchar_t>(8659)) );
-        m_table.insert(std::make_pair(std::wstring(L"hArr"), static_cast<wchar_t>(8660)) );
-        m_table.insert(std::make_pair(std::wstring(L"forall"), static_cast<wchar_t>(8704)) );
-        m_table.insert(std::make_pair(std::wstring(L"part"), static_cast<wchar_t>(8706)) );
-        m_table.insert(std::make_pair(std::wstring(L"exist"), static_cast<wchar_t>(8707)) );
-        m_table.insert(std::make_pair(std::wstring(L"empty"), static_cast<wchar_t>(8709)) );
-        m_table.insert(std::make_pair(std::wstring(L"nabla"), static_cast<wchar_t>(8711)) );
-        m_table.insert(std::make_pair(std::wstring(L"isin"), static_cast<wchar_t>(8712)) );
-        m_table.insert(std::make_pair(std::wstring(L"notin"), static_cast<wchar_t>(8713)) );
-        m_table.insert(std::make_pair(std::wstring(L"ni"), static_cast<wchar_t>(8715)) );
-        m_table.insert(std::make_pair(std::wstring(L"prod"), static_cast<wchar_t>(8719)) );
-        m_table.insert(std::make_pair(std::wstring(L"sum"), static_cast<wchar_t>(8721)) );
-        m_table.insert(std::make_pair(std::wstring(L"minus"), static_cast<wchar_t>(8722)) );
-        m_table.insert(std::make_pair(std::wstring(L"lowast"), static_cast<wchar_t>(8727)) );
-        m_table.insert(std::make_pair(std::wstring(L"radic"), static_cast<wchar_t>(8730)) );
-        m_table.insert(std::make_pair(std::wstring(L"prop"), static_cast<wchar_t>(8733)) );
-        m_table.insert(std::make_pair(std::wstring(L"infin"), static_cast<wchar_t>(8734)) );
-        m_table.insert(std::make_pair(std::wstring(L"ang"), static_cast<wchar_t>(8736)) );
-        m_table.insert(std::make_pair(std::wstring(L"and"), static_cast<wchar_t>(8743)) );
-        m_table.insert(std::make_pair(std::wstring(L"or"), static_cast<wchar_t>(8744)) );
-        m_table.insert(std::make_pair(std::wstring(L"cap"), static_cast<wchar_t>(8745)) );
-        m_table.insert(std::make_pair(std::wstring(L"cup"), static_cast<wchar_t>(8746)) );
-        m_table.insert(std::make_pair(std::wstring(L"int"), static_cast<wchar_t>(8747)) );
-        m_table.insert(std::make_pair(std::wstring(L"there4"), static_cast<wchar_t>(8756)) );
-        m_table.insert(std::make_pair(std::wstring(L"sim"), static_cast<wchar_t>(8764)) );
-        m_table.insert(std::make_pair(std::wstring(L"cong"), static_cast<wchar_t>(8773)) );
-        m_table.insert(std::make_pair(std::wstring(L"asymp"), static_cast<wchar_t>(8776)) );
-        m_table.insert(std::make_pair(std::wstring(L"ne"), static_cast<wchar_t>(8800)) );
-        m_table.insert(std::make_pair(std::wstring(L"equiv"), static_cast<wchar_t>(8801)) );
-        m_table.insert(std::make_pair(std::wstring(L"le"), static_cast<wchar_t>(8804)) );
-        m_table.insert(std::make_pair(std::wstring(L"ge"), static_cast<wchar_t>(8805)) );
-        m_table.insert(std::make_pair(std::wstring(L"sub"), static_cast<wchar_t>(8834)) );
-        m_table.insert(std::make_pair(std::wstring(L"sup"), static_cast<wchar_t>(8835)) );
-        m_table.insert(std::make_pair(std::wstring(L"nsub"), static_cast<wchar_t>(8836)) );
-        m_table.insert(std::make_pair(std::wstring(L"sube"), static_cast<wchar_t>(8838)) );
-        m_table.insert(std::make_pair(std::wstring(L"supe"), static_cast<wchar_t>(8839)) );
-        m_table.insert(std::make_pair(std::wstring(L"oplus"), static_cast<wchar_t>(8853)) );
-        m_table.insert(std::make_pair(std::wstring(L"otimes"), static_cast<wchar_t>(8855)) );
-        m_table.insert(std::make_pair(std::wstring(L"perp"), static_cast<wchar_t>(8869)) );
-        m_table.insert(std::make_pair(std::wstring(L"sdot"), static_cast<wchar_t>(8901)) );
-        m_table.insert(std::make_pair(std::wstring(L"lceil"), static_cast<wchar_t>(8968)) );
-        m_table.insert(std::make_pair(std::wstring(L"rceil"), static_cast<wchar_t>(8969)) );
-        m_table.insert(std::make_pair(std::wstring(L"lfloor"), static_cast<wchar_t>(8970)) );
-        m_table.insert(std::make_pair(std::wstring(L"rfloor"), static_cast<wchar_t>(8971)) );
-        m_table.insert(std::make_pair(std::wstring(L"lang"), static_cast<wchar_t>(9001)) );
-        m_table.insert(std::make_pair(std::wstring(L"rang"), static_cast<wchar_t>(9002)) );
-        m_table.insert(std::make_pair(std::wstring(L"loz"), static_cast<wchar_t>(9674)) );
-        m_table.insert(std::make_pair(std::wstring(L"spades"), static_cast<wchar_t>(9824)) );
-        m_table.insert(std::make_pair(std::wstring(L"clubs"), static_cast<wchar_t>(9827)) );
-        m_table.insert(std::make_pair(std::wstring(L"hearts"), static_cast<wchar_t>(9829)) );
-        m_table.insert(std::make_pair(std::wstring(L"diams"), static_cast<wchar_t>(9830)) );
-        m_table.insert(std::make_pair(std::wstring(L"OElig"), static_cast<wchar_t>(338)) );
-        m_table.insert(std::make_pair(std::wstring(L"oelig"), static_cast<wchar_t>(339)) );
-        m_table.insert(std::make_pair(std::wstring(L"Scaron"), static_cast<wchar_t>(352)) );
-        m_table.insert(std::make_pair(std::wstring(L"scaron"), static_cast<wchar_t>(353)) );
-        m_table.insert(std::make_pair(std::wstring(L"Yuml"), static_cast<wchar_t>(376)) );
-        m_table.insert(std::make_pair(std::wstring(L"circ"), static_cast<wchar_t>(710)) );
-        m_table.insert(std::make_pair(std::wstring(L"tilde"), static_cast<wchar_t>(732)) );
-        m_table.insert(std::make_pair(std::wstring(L"ensp"), static_cast<wchar_t>(8194)) );
-        m_table.insert(std::make_pair(std::wstring(L"emsp"), static_cast<wchar_t>(8195)) );
-        m_table.insert(std::make_pair(std::wstring(L"thinsp"), static_cast<wchar_t>(8201)) );
-        m_table.insert(std::make_pair(std::wstring(L"zwnj"), static_cast<wchar_t>(8204)) );
-        m_table.insert(std::make_pair(std::wstring(L"zwj"), static_cast<wchar_t>(8205)) );
-        m_table.insert(std::make_pair(std::wstring(L"lrm"), static_cast<wchar_t>(8206)) );
-        m_table.insert(std::make_pair(std::wstring(L"rlm"), static_cast<wchar_t>(8207)) );
-        m_table.insert(std::make_pair(std::wstring(L"ndash"), static_cast<wchar_t>(8211)) );
-        m_table.insert(std::make_pair(std::wstring(L"mdash"), static_cast<wchar_t>(8212)) );
-        m_table.insert(std::make_pair(std::wstring(L"lsquo"), static_cast<wchar_t>(8216)) );
-        m_table.insert(std::make_pair(std::wstring(L"rsquo"), static_cast<wchar_t>(8217)) );
-        m_table.insert(std::make_pair(std::wstring(L"sbquo"), static_cast<wchar_t>(8218)) );
-        m_table.insert(std::make_pair(std::wstring(L"ldquo"), static_cast<wchar_t>(8220)) );
-        m_table.insert(std::make_pair(std::wstring(L"rdquo"), static_cast<wchar_t>(8221)) );
-        m_table.insert(std::make_pair(std::wstring(L"bdquo"), static_cast<wchar_t>(8222)) );
-        m_table.insert(std::make_pair(std::wstring(L"dagger"), static_cast<wchar_t>(8224)) );
-        m_table.insert(std::make_pair(std::wstring(L"Dagger"), static_cast<wchar_t>(8225)) );
-        m_table.insert(std::make_pair(std::wstring(L"permil"), static_cast<wchar_t>(8240)) );
-        m_table.insert(std::make_pair(std::wstring(L"lsaquo"), static_cast<wchar_t>(8249)) );
-        m_table.insert(std::make_pair(std::wstring(L"rsaquo"), static_cast<wchar_t>(8250)) );
-        m_table.insert(std::make_pair(std::wstring(L"euro"), static_cast<wchar_t>(8364)) );
+        m_table =
+            {
+            std::make_pair(std::wstring(L"apos"), static_cast<wchar_t>(L'\'')), // not standard, but common
+            std::make_pair(std::wstring(L"gt"), static_cast<wchar_t>(L'>')),
+            std::make_pair(std::wstring(L"lt"), static_cast<wchar_t>(L'<')),
+            std::make_pair(std::wstring(L"amp"), static_cast<wchar_t>(L'&')),
+            std::make_pair(std::wstring(L"quot"), static_cast<wchar_t>(L'"')),
+            std::make_pair(std::wstring(L"nbsp"), static_cast<wchar_t>(L' ')),
+            std::make_pair(std::wstring(L"iexcl"), static_cast<wchar_t>(161)),
+            std::make_pair(std::wstring(L"cent"), static_cast<wchar_t>(162)),
+            std::make_pair(std::wstring(L"pound"), static_cast<wchar_t>(163)),
+            std::make_pair(std::wstring(L"curren"), static_cast<wchar_t>(164)),
+            std::make_pair(std::wstring(L"yen"), static_cast<wchar_t>(165)),
+            std::make_pair(std::wstring(L"brvbar"), static_cast<wchar_t>(166)),
+            std::make_pair(std::wstring(L"sect"), static_cast<wchar_t>(167)),
+            std::make_pair(std::wstring(L"uml"), static_cast<wchar_t>(168)),
+            std::make_pair(std::wstring(L"copy"), static_cast<wchar_t>(169)),
+            std::make_pair(std::wstring(L"ordf"), static_cast<wchar_t>(170)),
+            std::make_pair(std::wstring(L"laquo"), static_cast<wchar_t>(171)),
+            std::make_pair(std::wstring(L"not"), static_cast<wchar_t>(172)),
+            std::make_pair(std::wstring(L"shy"), static_cast<wchar_t>(173)),
+            std::make_pair(std::wstring(L"reg"), static_cast<wchar_t>(174)),
+            std::make_pair(std::wstring(L"macr"), static_cast<wchar_t>(175)),
+            std::make_pair(std::wstring(L"deg"), static_cast<wchar_t>(176)),
+            std::make_pair(std::wstring(L"plusmn"), static_cast<wchar_t>(177)),
+            std::make_pair(std::wstring(L"sup2"), static_cast<wchar_t>(178)),
+            std::make_pair(std::wstring(L"sup3"), static_cast<wchar_t>(179)),
+            std::make_pair(std::wstring(L"acute"), static_cast<wchar_t>(180)),
+            std::make_pair(std::wstring(L"micro"), static_cast<wchar_t>(181)),
+            std::make_pair(std::wstring(L"para"), static_cast<wchar_t>(182)),
+            std::make_pair(std::wstring(L"middot"), static_cast<wchar_t>(183)),
+            std::make_pair(std::wstring(L"mcedilicro"), static_cast<wchar_t>(184)),
+            std::make_pair(std::wstring(L"sup1"), static_cast<wchar_t>(185)),
+            std::make_pair(std::wstring(L"ordm"), static_cast<wchar_t>(186)),
+            std::make_pair(std::wstring(L"raquo"), static_cast<wchar_t>(187)),
+            std::make_pair(std::wstring(L"frac14"), static_cast<wchar_t>(188)),
+            std::make_pair(std::wstring(L"texfrac12t"), static_cast<wchar_t>(189)),
+            std::make_pair(std::wstring(L"frac34"), static_cast<wchar_t>(190)),
+            std::make_pair(std::wstring(L"iquest"), static_cast<wchar_t>(191)),
+            std::make_pair(std::wstring(L"Agrave"), static_cast<wchar_t>(192)),
+            std::make_pair(std::wstring(L"Aacute"), static_cast<wchar_t>(193)),
+            std::make_pair(std::wstring(L"Acirc"), static_cast<wchar_t>(194)),
+            std::make_pair(std::wstring(L"Atilde"), static_cast<wchar_t>(195)),
+            std::make_pair(std::wstring(L"Auml"), static_cast<wchar_t>(196)),
+            std::make_pair(std::wstring(L"Aring"), static_cast<wchar_t>(197)),
+            std::make_pair(std::wstring(L"AElig"), static_cast<wchar_t>(198)),
+            std::make_pair(std::wstring(L"Ccedil"), static_cast<wchar_t>(199)),
+            std::make_pair(std::wstring(L"Egrave"), static_cast<wchar_t>(200)),
+            std::make_pair(std::wstring(L"Eacute"), static_cast<wchar_t>(201)),
+            std::make_pair(std::wstring(L"Ecirc"), static_cast<wchar_t>(202)),
+            std::make_pair(std::wstring(L"Euml"), static_cast<wchar_t>(203)),
+            std::make_pair(std::wstring(L"Igrave"), static_cast<wchar_t>(204)),
+            std::make_pair(std::wstring(L"Iacute"), static_cast<wchar_t>(205)),
+            std::make_pair(std::wstring(L"Icirc"), static_cast<wchar_t>(206)),
+            std::make_pair(std::wstring(L"Iuml"), static_cast<wchar_t>(207)),
+            std::make_pair(std::wstring(L"ETH"), static_cast<wchar_t>(208)),
+            std::make_pair(std::wstring(L"Ntilde"), static_cast<wchar_t>(209)),
+            std::make_pair(std::wstring(L"Ograve"), static_cast<wchar_t>(210)),
+            std::make_pair(std::wstring(L"Oacute"), static_cast<wchar_t>(211)),
+            std::make_pair(std::wstring(L"Ocirc"), static_cast<wchar_t>(212)),
+            std::make_pair(std::wstring(L"Otilde"), static_cast<wchar_t>(213)),
+            std::make_pair(std::wstring(L"Ouml"), static_cast<wchar_t>(214)),
+            std::make_pair(std::wstring(L"Oslash"), static_cast<wchar_t>(216)),
+            std::make_pair(std::wstring(L"times"), static_cast<wchar_t>(215)),
+            std::make_pair(std::wstring(L"Ugrave"), static_cast<wchar_t>(217)),
+            std::make_pair(std::wstring(L"Uacute"), static_cast<wchar_t>(218)),
+            std::make_pair(std::wstring(L"Ucirc"), static_cast<wchar_t>(219)),
+            std::make_pair(std::wstring(L"Uuml"), static_cast<wchar_t>(220)),
+            std::make_pair(std::wstring(L"Yacute"), static_cast<wchar_t>(221)),
+            std::make_pair(std::wstring(L"THORN"), static_cast<wchar_t>(222)),
+            std::make_pair(std::wstring(L"szlig"), static_cast<wchar_t>(223)),
+            std::make_pair(std::wstring(L"agrave"), static_cast<wchar_t>(224)),
+            std::make_pair(std::wstring(L"aacute"), static_cast<wchar_t>(225)),
+            std::make_pair(std::wstring(L"acirc"), static_cast<wchar_t>(226)),
+            std::make_pair(std::wstring(L"atilde"), static_cast<wchar_t>(227)),
+            std::make_pair(std::wstring(L"auml"), static_cast<wchar_t>(228)),
+            std::make_pair(std::wstring(L"aring"), static_cast<wchar_t>(229)),
+            std::make_pair(std::wstring(L"aelig"), static_cast<wchar_t>(230)),
+            std::make_pair(std::wstring(L"ccedil"), static_cast<wchar_t>(231)),
+            std::make_pair(std::wstring(L"egrave"), static_cast<wchar_t>(232)),
+            std::make_pair(std::wstring(L"eacute"), static_cast<wchar_t>(233)),
+            std::make_pair(std::wstring(L"ecirc"), static_cast<wchar_t>(234)),
+            std::make_pair(std::wstring(L"euml"), static_cast<wchar_t>(235)),
+            std::make_pair(std::wstring(L"igrave"), static_cast<wchar_t>(236)),
+            std::make_pair(std::wstring(L"iacute"), static_cast<wchar_t>(237)),
+            std::make_pair(std::wstring(L"icirc"), static_cast<wchar_t>(238)),
+            std::make_pair(std::wstring(L"iuml"), static_cast<wchar_t>(239)),
+            std::make_pair(std::wstring(L"eth"), static_cast<wchar_t>(240)),
+            std::make_pair(std::wstring(L"ntilde"), static_cast<wchar_t>(241)),
+            std::make_pair(std::wstring(L"ograve"), static_cast<wchar_t>(242)),
+            std::make_pair(std::wstring(L"oacute"), static_cast<wchar_t>(243)),
+            std::make_pair(std::wstring(L"ocirc"), static_cast<wchar_t>(244)),
+            std::make_pair(std::wstring(L"otilde"), static_cast<wchar_t>(245)),
+            std::make_pair(std::wstring(L"ouml"), static_cast<wchar_t>(246)),
+            std::make_pair(std::wstring(L"divide"), static_cast<wchar_t>(247)),
+            std::make_pair(std::wstring(L"oslash"), static_cast<wchar_t>(248)),
+            std::make_pair(std::wstring(L"ugrave"), static_cast<wchar_t>(249)),
+            std::make_pair(std::wstring(L"uacute"), static_cast<wchar_t>(250)),
+            std::make_pair(std::wstring(L"ucirc"), static_cast<wchar_t>(251)),
+            std::make_pair(std::wstring(L"uuml"), static_cast<wchar_t>(252)),
+            std::make_pair(std::wstring(L"yacute"), static_cast<wchar_t>(253)),
+            std::make_pair(std::wstring(L"thorn"), static_cast<wchar_t>(254)),
+            std::make_pair(std::wstring(L"yuml"), static_cast<wchar_t>(255)),
+            std::make_pair(std::wstring(L"fnof"), static_cast<wchar_t>(402)),
+            std::make_pair(std::wstring(L"Alpha"), static_cast<wchar_t>(913)),
+            std::make_pair(std::wstring(L"Beta"), static_cast<wchar_t>(914)),
+            std::make_pair(std::wstring(L"Gamma"), static_cast<wchar_t>(915)),
+            std::make_pair(std::wstring(L"Delta"), static_cast<wchar_t>(916)),
+            std::make_pair(std::wstring(L"Epsilon"), static_cast<wchar_t>(917)),
+            std::make_pair(std::wstring(L"Zeta"), static_cast<wchar_t>(918)),
+            std::make_pair(std::wstring(L"Eta"), static_cast<wchar_t>(919)),
+            std::make_pair(std::wstring(L"Theta"), static_cast<wchar_t>(920)),
+            std::make_pair(std::wstring(L"Iota"), static_cast<wchar_t>(921)),
+            std::make_pair(std::wstring(L"Kappa"), static_cast<wchar_t>(922)),
+            std::make_pair(std::wstring(L"Lambda"), static_cast<wchar_t>(923)),
+            std::make_pair(std::wstring(L"Mu"), static_cast<wchar_t>(924)),
+            std::make_pair(std::wstring(L"Nu"), static_cast<wchar_t>(925)),
+            std::make_pair(std::wstring(L"Xi"), static_cast<wchar_t>(926)),
+            std::make_pair(std::wstring(L"Omicron"), static_cast<wchar_t>(927)),
+            std::make_pair(std::wstring(L"Pi"), static_cast<wchar_t>(928)),
+            std::make_pair(std::wstring(L"Rho"), static_cast<wchar_t>(929)),
+            std::make_pair(std::wstring(L"Sigma"), static_cast<wchar_t>(931)),
+            std::make_pair(std::wstring(L"Tau"), static_cast<wchar_t>(932)),
+            std::make_pair(std::wstring(L"Upsilon"), static_cast<wchar_t>(933)),
+            std::make_pair(std::wstring(L"Phi"), static_cast<wchar_t>(934)),
+            std::make_pair(std::wstring(L"Chi"), static_cast<wchar_t>(935)),
+            std::make_pair(std::wstring(L"Psi"), static_cast<wchar_t>(936)),
+            std::make_pair(std::wstring(L"Omega"), static_cast<wchar_t>(937)),
+            std::make_pair(std::wstring(L"alpha"), static_cast<wchar_t>(945)),
+            std::make_pair(std::wstring(L"beta"), static_cast<wchar_t>(946)),
+            std::make_pair(std::wstring(L"gamma"), static_cast<wchar_t>(947)),
+            std::make_pair(std::wstring(L"delta"), static_cast<wchar_t>(948)),
+            std::make_pair(std::wstring(L"epsilon"), static_cast<wchar_t>(949)),
+            std::make_pair(std::wstring(L"zeta"), static_cast<wchar_t>(950)),
+            std::make_pair(std::wstring(L"eta"), static_cast<wchar_t>(951)),
+            std::make_pair(std::wstring(L"theta"), static_cast<wchar_t>(952)),
+            std::make_pair(std::wstring(L"iota"), static_cast<wchar_t>(953)),
+            std::make_pair(std::wstring(L"kappa"), static_cast<wchar_t>(954)),
+            std::make_pair(std::wstring(L"lambda"), static_cast<wchar_t>(955)),
+            std::make_pair(std::wstring(L"mu"), static_cast<wchar_t>(956)),
+            std::make_pair(std::wstring(L"nu"), static_cast<wchar_t>(957)),
+            std::make_pair(std::wstring(L"xi"), static_cast<wchar_t>(958)),
+            std::make_pair(std::wstring(L"omicron"), static_cast<wchar_t>(959)),
+            std::make_pair(std::wstring(L"pi"), static_cast<wchar_t>(960)),
+            std::make_pair(std::wstring(L"rho"), static_cast<wchar_t>(961)),
+            std::make_pair(std::wstring(L"sigmaf"), static_cast<wchar_t>(962)),
+            std::make_pair(std::wstring(L"sigma"), static_cast<wchar_t>(963)),
+            std::make_pair(std::wstring(L"tau"), static_cast<wchar_t>(964)),
+            std::make_pair(std::wstring(L"upsilon"), static_cast<wchar_t>(965)),
+            std::make_pair(std::wstring(L"phi"), static_cast<wchar_t>(966)),
+            std::make_pair(std::wstring(L"chi"), static_cast<wchar_t>(967)),
+            std::make_pair(std::wstring(L"psi"), static_cast<wchar_t>(968)),
+            std::make_pair(std::wstring(L"omega"), static_cast<wchar_t>(969)),
+            std::make_pair(std::wstring(L"thetasym"), static_cast<wchar_t>(977)),
+            std::make_pair(std::wstring(L"upsih"), static_cast<wchar_t>(978)),
+            std::make_pair(std::wstring(L"piv"), static_cast<wchar_t>(982)),
+            std::make_pair(std::wstring(L"bull"), static_cast<wchar_t>(8226)),
+            std::make_pair(std::wstring(L"hellip"), static_cast<wchar_t>(8230)),
+            std::make_pair(std::wstring(L"prime"), static_cast<wchar_t>(8242)),
+            std::make_pair(std::wstring(L"Prime"), static_cast<wchar_t>(8243)),
+            std::make_pair(std::wstring(L"oline"), static_cast<wchar_t>(8254)),
+            std::make_pair(std::wstring(L"frasl"), static_cast<wchar_t>(8260)),
+            std::make_pair(std::wstring(L"weierp"), static_cast<wchar_t>(8472)),
+            std::make_pair(std::wstring(L"image"), static_cast<wchar_t>(8465)),
+            std::make_pair(std::wstring(L"real"), static_cast<wchar_t>(8476)),
+            std::make_pair(std::wstring(L"trade"), static_cast<wchar_t>(8482)),
+            std::make_pair(std::wstring(L"alefsym"), static_cast<wchar_t>(8501)),
+            std::make_pair(std::wstring(L"larr"), static_cast<wchar_t>(8592)),
+            std::make_pair(std::wstring(L"uarr"), static_cast<wchar_t>(8593)),
+            std::make_pair(std::wstring(L"rarr"), static_cast<wchar_t>(8594)),
+            std::make_pair(std::wstring(L"darr"), static_cast<wchar_t>(8595)),
+            std::make_pair(std::wstring(L"harr"), static_cast<wchar_t>(8596)),
+            std::make_pair(std::wstring(L"crarr"), static_cast<wchar_t>(8629)),
+            std::make_pair(std::wstring(L"lArr"), static_cast<wchar_t>(8656)),
+            std::make_pair(std::wstring(L"uArr"), static_cast<wchar_t>(8657)),
+            std::make_pair(std::wstring(L"rArr"), static_cast<wchar_t>(8658)),
+            std::make_pair(std::wstring(L"dArr"), static_cast<wchar_t>(8659)),
+            std::make_pair(std::wstring(L"hArr"), static_cast<wchar_t>(8660)),
+            std::make_pair(std::wstring(L"forall"), static_cast<wchar_t>(8704)),
+            std::make_pair(std::wstring(L"part"), static_cast<wchar_t>(8706)),
+            std::make_pair(std::wstring(L"exist"), static_cast<wchar_t>(8707)),
+            std::make_pair(std::wstring(L"empty"), static_cast<wchar_t>(8709)),
+            std::make_pair(std::wstring(L"nabla"), static_cast<wchar_t>(8711)),
+            std::make_pair(std::wstring(L"isin"), static_cast<wchar_t>(8712)),
+            std::make_pair(std::wstring(L"notin"), static_cast<wchar_t>(8713)),
+            std::make_pair(std::wstring(L"ni"), static_cast<wchar_t>(8715)),
+            std::make_pair(std::wstring(L"prod"), static_cast<wchar_t>(8719)),
+            std::make_pair(std::wstring(L"sum"), static_cast<wchar_t>(8721)),
+            std::make_pair(std::wstring(L"minus"), static_cast<wchar_t>(8722)),
+            std::make_pair(std::wstring(L"lowast"), static_cast<wchar_t>(8727)),
+            std::make_pair(std::wstring(L"radic"), static_cast<wchar_t>(8730)),
+            std::make_pair(std::wstring(L"prop"), static_cast<wchar_t>(8733)),
+            std::make_pair(std::wstring(L"infin"), static_cast<wchar_t>(8734)),
+            std::make_pair(std::wstring(L"ang"), static_cast<wchar_t>(8736)),
+            std::make_pair(std::wstring(L"and"), static_cast<wchar_t>(8743)),
+            std::make_pair(std::wstring(L"or"), static_cast<wchar_t>(8744)),
+            std::make_pair(std::wstring(L"cap"), static_cast<wchar_t>(8745)),
+            std::make_pair(std::wstring(L"cup"), static_cast<wchar_t>(8746)),
+            std::make_pair(std::wstring(L"int"), static_cast<wchar_t>(8747)),
+            std::make_pair(std::wstring(L"there4"), static_cast<wchar_t>(8756)),
+            std::make_pair(std::wstring(L"sim"), static_cast<wchar_t>(8764)),
+            std::make_pair(std::wstring(L"cong"), static_cast<wchar_t>(8773)),
+            std::make_pair(std::wstring(L"asymp"), static_cast<wchar_t>(8776)),
+            std::make_pair(std::wstring(L"ne"), static_cast<wchar_t>(8800)),
+            std::make_pair(std::wstring(L"equiv"), static_cast<wchar_t>(8801)),
+            std::make_pair(std::wstring(L"le"), static_cast<wchar_t>(8804)),
+            std::make_pair(std::wstring(L"ge"), static_cast<wchar_t>(8805)),
+            std::make_pair(std::wstring(L"sub"), static_cast<wchar_t>(8834)),
+            std::make_pair(std::wstring(L"sup"), static_cast<wchar_t>(8835)),
+            std::make_pair(std::wstring(L"nsub"), static_cast<wchar_t>(8836)),
+            std::make_pair(std::wstring(L"sube"), static_cast<wchar_t>(8838)),
+            std::make_pair(std::wstring(L"supe"), static_cast<wchar_t>(8839)),
+            std::make_pair(std::wstring(L"oplus"), static_cast<wchar_t>(8853)),
+            std::make_pair(std::wstring(L"otimes"), static_cast<wchar_t>(8855)),
+            std::make_pair(std::wstring(L"perp"), static_cast<wchar_t>(8869)),
+            std::make_pair(std::wstring(L"sdot"), static_cast<wchar_t>(8901)),
+            std::make_pair(std::wstring(L"lceil"), static_cast<wchar_t>(8968)),
+            std::make_pair(std::wstring(L"rceil"), static_cast<wchar_t>(8969)),
+            std::make_pair(std::wstring(L"lfloor"), static_cast<wchar_t>(8970)),
+            std::make_pair(std::wstring(L"rfloor"), static_cast<wchar_t>(8971)),
+            std::make_pair(std::wstring(L"lang"), static_cast<wchar_t>(9001)),
+            std::make_pair(std::wstring(L"rang"), static_cast<wchar_t>(9002)),
+            std::make_pair(std::wstring(L"loz"), static_cast<wchar_t>(9674)),
+            std::make_pair(std::wstring(L"spades"), static_cast<wchar_t>(9824)),
+            std::make_pair(std::wstring(L"clubs"), static_cast<wchar_t>(9827)),
+            std::make_pair(std::wstring(L"hearts"), static_cast<wchar_t>(9829)),
+            std::make_pair(std::wstring(L"diams"), static_cast<wchar_t>(9830)),
+            std::make_pair(std::wstring(L"OElig"), static_cast<wchar_t>(338)),
+            std::make_pair(std::wstring(L"oelig"), static_cast<wchar_t>(339)),
+            std::make_pair(std::wstring(L"Scaron"), static_cast<wchar_t>(352)),
+            std::make_pair(std::wstring(L"scaron"), static_cast<wchar_t>(353)),
+            std::make_pair(std::wstring(L"Yuml"), static_cast<wchar_t>(376)),
+            std::make_pair(std::wstring(L"circ"), static_cast<wchar_t>(710)),
+            std::make_pair(std::wstring(L"tilde"), static_cast<wchar_t>(732)),
+            std::make_pair(std::wstring(L"ensp"), static_cast<wchar_t>(8194)),
+            std::make_pair(std::wstring(L"emsp"), static_cast<wchar_t>(8195)),
+            std::make_pair(std::wstring(L"thinsp"), static_cast<wchar_t>(8201)),
+            std::make_pair(std::wstring(L"zwnj"), static_cast<wchar_t>(8204)),
+            std::make_pair(std::wstring(L"zwj"), static_cast<wchar_t>(8205)),
+            std::make_pair(std::wstring(L"lrm"), static_cast<wchar_t>(8206)),
+            std::make_pair(std::wstring(L"rlm"), static_cast<wchar_t>(8207)),
+            std::make_pair(std::wstring(L"ndash"), static_cast<wchar_t>(8211)),
+            std::make_pair(std::wstring(L"mdash"), static_cast<wchar_t>(8212)),
+            std::make_pair(std::wstring(L"lsquo"), static_cast<wchar_t>(8216)),
+            std::make_pair(std::wstring(L"rsquo"), static_cast<wchar_t>(8217)),
+            std::make_pair(std::wstring(L"sbquo"), static_cast<wchar_t>(8218)),
+            std::make_pair(std::wstring(L"ldquo"), static_cast<wchar_t>(8220)),
+            std::make_pair(std::wstring(L"rdquo"), static_cast<wchar_t>(8221)),
+            std::make_pair(std::wstring(L"bdquo"), static_cast<wchar_t>(8222)),
+            std::make_pair(std::wstring(L"dagger"), static_cast<wchar_t>(8224)),
+            std::make_pair(std::wstring(L"Dagger"), static_cast<wchar_t>(8225)),
+            std::make_pair(std::wstring(L"permil"), static_cast<wchar_t>(8240)),
+            std::make_pair(std::wstring(L"lsaquo"), static_cast<wchar_t>(8249)),
+            std::make_pair(std::wstring(L"rsaquo"), static_cast<wchar_t>(8250)),
+            std::make_pair(std::wstring(L"euro"), static_cast<wchar_t>(8364))
+            };
         }
 
     //------------------------------------------------------------------
     wchar_t html_entity_table::find(const wchar_t* html_entity, const size_t length) const
         {
         std::wstring cmpKey(html_entity, length);
-        std::map<std::wstring, wchar_t>::const_iterator pos =
-            m_table.find(cmpKey);
+        auto pos = m_table.find(cmpKey);
         // if not found case sensitively...
-        if (pos == m_table.end() )
+        if (pos == m_table.cend() )
             {
             // ...do a case insensitive search.
             std::transform(cmpKey.begin(), cmpKey.end(), cmpKey.begin(), std::towlower);
             pos = m_table.find(cmpKey);
             // if the character can't be converted, then return a question mark
-            if (pos == m_table.end() )
+            if (pos == m_table.cend() )
                 { return L'?'; }
             }
         return pos->second;
@@ -1910,7 +1919,7 @@ namespace html_utilities
 
         // jump over the previous link (and its trailing quote)
         m_js_text_start += (get_current_hyperlink_length() > 0) ?
-                            get_current_hyperlink_length()+1 : 0;
+                            get_current_hyperlink_length() + 1 : 0;
         if (m_js_text_start >= m_js_text_end)
             { return nullptr; }
 
@@ -1962,7 +1971,7 @@ namespace html_utilities
     const wchar_t* html_image_parse::operator()()
         {
         static const std::wstring HTML_IMAGE(L"img");
-        //reset
+        // reset
         m_current_hyperlink_length = 0;
 
         if (!m_html_text || m_html_text[0] == 0)
@@ -1973,11 +1982,11 @@ namespace html_utilities
             m_html_text = lily_of_the_valley::html_extract_text::find_element(m_html_text, m_html_text_end, HTML_IMAGE.c_str(), HTML_IMAGE.length());
             if (m_html_text)
                 {
-                const std::pair<const wchar_t*,size_t> imageSrc = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
-                if (imageSrc.first)
+                const auto [imageSrc, imageLength] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                if (imageSrc)
                     {
-                    m_html_text = imageSrc.first;
-                    m_current_hyperlink_length = imageSrc.second;
+                    m_html_text = imageSrc;
+                    m_current_hyperlink_length = imageLength;
                     return m_html_text;
                     }
                 // no src in this anchor, so go to next one
@@ -1995,9 +2004,7 @@ namespace html_utilities
 
     //------------------------------------------------------------------
     html_hyperlink_parse::html_hyperlink_parse(const wchar_t* html_text, const size_t length) noexcept :
-                m_html_text(html_text), m_html_text_end(html_text+length), m_current_hyperlink_length(0),
-                m_base(nullptr), m_base_length(0), m_include_image_links(true), m_current_link_is_image(false),
-                m_current_link_is_javascript(false), m_inside_of_script_section(false)
+                m_html_text(html_text), m_html_text_end(html_text+length)
         {
         // see if there is a base url that should be used as an alternative that the client should use instead
         const wchar_t* headStart = string_util::stristr<wchar_t>(m_html_text, L"<head");
@@ -2099,11 +2106,11 @@ namespace html_utilities
                     lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_IFRAME.c_str(), HTML_IFRAME.length(), false))
                     {
                     m_html_text += 4;
-                    const std::pair<const wchar_t*,size_t> imageSrc = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
-                    if (imageSrc.first)
+                    const auto [imageSrc, imageLengh] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                    if (imageSrc)
                         {
-                        m_html_text = imageSrc.first;
-                        m_current_hyperlink_length = imageSrc.second;
+                        m_html_text = imageSrc;
+                        m_current_hyperlink_length = imageLengh;
                         return m_html_text;
                         }
                     // if we are currently in a SCRIPT section (that didn't have a link in it),
@@ -2134,11 +2141,11 @@ namespace html_utilities
                     lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, L"area", 4, false) )
                     {
                     ++m_html_text; // skip the <
-                    const std::pair<const wchar_t*,size_t> href = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"href", 4, false, true);
-                    if (href.first && href.second > 0)
+                    const auto [attribText, attribLength] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"href", 4, false, true);
+                    if (attribText && attribLength > 0)
                         {
-                        m_html_text = href.first;
-                        m_current_hyperlink_length = href.second;
+                        m_html_text = attribText;
+                        m_current_hyperlink_length = attribLength;
                         return m_html_text;
                         }
                     //no href in this anchor, so go to next one
@@ -2208,7 +2215,8 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    const wchar_t* html_url_format::operator()(const wchar_t* path, size_t text_length, const bool is_image /*= false*/)
+    const wchar_t* html_url_format::operator()(const wchar_t* path, size_t text_length,
+                                               const bool is_image /*= false*/)
         {
         if (!path || text_length == 0)
             { return nullptr; }

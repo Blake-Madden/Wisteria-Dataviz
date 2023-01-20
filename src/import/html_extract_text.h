@@ -292,34 +292,34 @@ namespace html_utilities
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "yahoo.com".*/
         [[nodiscard]]
-        std::wstring get_root_domain() const
+        const std::wstring& get_root_domain() const noexcept
             { return m_root_domain; }
         /** @returns The subdomain of the base URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "business.yahoo.com".*/
         [[nodiscard]]
-        std::wstring get_root_subdomain() const
+        const std::wstring& get_root_subdomain() const noexcept
             { return m_root_subdomain; }
         /** @returns The full domain of the base URL (domain, subdomain, and protocol).*/
         [[nodiscard]]
-        std::wstring get_root_full_domain() const
+        const std::wstring& get_root_full_domain() const noexcept
             { return m_root_full_domain; }
 
         /** @returns The domain of the current URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "yahoo.com".*/
         [[nodiscard]]
-        std::wstring get_domain() const
+        const std::wstring& get_domain() const noexcept
             { return m_current_domain; }
         /** @returns The subdomain of the current URL.\n
                 For example, a base URL of "http://www.business.yahoo.com"
                 will return "business.yahoo.com".*/
         [[nodiscard]]
-        std::wstring get_subdomain() const
+        const std::wstring& get_subdomain() const noexcept
             { return m_current_subdomain; }
         /** @returns The full domain of the current URL (domain, subdomain, and protocol).*/
         [[nodiscard]]
-        std::wstring get_full_domain() const
+        const std::wstring& get_full_domain() const noexcept
             { return m_current_full_domain; }
 
         /** @returns The subdomain and folder structure of the current URL.*/
@@ -538,13 +538,14 @@ namespace lily_of_the_valley
         static bool compare_element_case_sensitive(const wchar_t* text, const wchar_t* element,
             const size_t element_size,
             const bool accept_self_terminating_elements = false);
-        /** @returns The current element that a stream is on. This assumes that you have
-                already skipped the leading < symbol.
+        /** @returns The current element that a stream is on. (This assumes that you have
+                already skipped the leading < symbol.)
+            @note The returned string view will wrap @c text and will share the same lifetime.
             @param text The HTML stream to analyze.
             @param accept_self_terminating_elements Whether to analyze element such as "<br />".*/
         [[nodiscard]]
-        static std::wstring get_element_name(const wchar_t* text,
-                                             const bool accept_self_terminating_elements = true);
+        static string_util::case_insensitive_wstring_view get_element_name(const wchar_t* text,
+            const bool accept_self_terminating_elements = true);
         /** @returns The body of an HTML buffer.
             @param text The HTML stream to parse.*/
         [[nodiscard]]
@@ -566,7 +567,7 @@ namespace lily_of_the_valley
             @returns The string inside of the element.
             @note Returned string may need to be decoded by another html_extract_text object.*/
         [[nodiscard]]
-        static std::wstring read_element_as_string(const wchar_t* html_text,
+        static std::wstring_view read_element_as_string(const wchar_t* html_text,
                                                    const wchar_t* html_end,
                                                    const wchar_t* element,
                                                    const size_t element_length);
@@ -670,7 +671,7 @@ namespace lily_of_the_valley
             @returns The start of the element (i.e., "<a name="citation" /></> and the
                 bookmark name (e.g., "citation").*/
         [[nodiscard]]
-        static const std::pair<const wchar_t*,std::wstring>
+        static const std::pair<const wchar_t*, std::wstring>
             find_bookmark(const wchar_t* sectionStart,
                           const wchar_t* sectionEnd);
         /** @brief Searches for a single character in a string, but ensures that
@@ -707,7 +708,7 @@ namespace lily_of_the_valley
             @param symbolFontText The text to convert.
             @return The converted text.*/
         [[nodiscard]]
-        static std::wstring convert_symbol_font_section(const std::wstring& symbolFontText);
+        static std::wstring convert_symbol_font_section(const std::wstring_view& symbolFontText);
         /** @brief Parses raw (HTML) text and loads its filtered content into the buffer.
             @param text The text to parse.
             @param textSize The size of the text being parsed.*/
