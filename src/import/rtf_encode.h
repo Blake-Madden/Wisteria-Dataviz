@@ -24,8 +24,6 @@ namespace lily_of_the_valley
             @details This includes escaping '\', '{', and '}' symbols,
                 and encoding tabs, newlines, and Unicode values.
             @param text The text to encode.
-            @param length The length of the text to encode. Pass @c -1 for the function
-                to determine the length.
             @returns A string encoded to RTF.
             @todo Replace @c swprintf() code with `std::format()` when upgrading to C++20.*/
         [[nodiscard]]
