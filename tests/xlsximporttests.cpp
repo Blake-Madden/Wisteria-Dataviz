@@ -5,6 +5,7 @@
 using namespace Catch::Matchers;
 using namespace Wisteria;
 using namespace Wisteria::Data;
+using namespace lily_of_the_valley;
 
 TEST_CASE("XLSX import", "[xlsx]")
 	{

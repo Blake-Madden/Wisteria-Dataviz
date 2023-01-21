@@ -3,6 +3,7 @@
 #include "../src/import/hhc_hhk_extract_text.h"
 
 using namespace Catch::Matchers;
+using namespace lily_of_the_valley;
 
 TEST_CASE("HHC Import", "[hhc import]")
 	{
