@@ -26,50 +26,48 @@ namespace lily_of_the_valley
             @param text The text to encode.
             @param length The length of the text to encode. Pass @c -1 for the function
                 to determine the length.
-            @returns A string encoded to RTF.*/
+            @returns A string encoded to RTF.
+            @todo Replace @c swprintf() code with `std::format()` when upgrading to C++20.*/
         [[nodiscard]]
-        std::wstring operator()(const wchar_t* text, size_t length) const
+        std::wstring operator()(const std::wstring_view text) const
             {
-            if (std::wstring::npos == length)
-                { length = std::wcslen(text); }
             std::wstring encoded_text;
-            if (text == nullptr || length == 0)
+            if (text.empty())
                 { return encoded_text; }
-            encoded_text.reserve(length*2);
-            wchar_t formatBuffer[256]; std::memset(formatBuffer,0,sizeof(formatBuffer));
-            const size_t formatBufferSize = sizeof(formatBuffer)/sizeof(wchar_t);
-            for (size_t i = 0; i < length; ++i)
+            encoded_text.reserve(text.length() * 2);
+            std::array<wchar_t, 256> formatBuffer{ 0 };
+            for (size_t i = 0; i < text.length(); ++i)
                 {
-                //insert a '\' in front of RTF escape characters
+                // insert a '\' in front of RTF escape characters
                 if (string_util::is_one_of(text[i], L"\\{}") )
                     {
                     encoded_text += L'\\';
                     encoded_text += text[i];
                     }
-                //extended ASCII and Unicode have to be encoded differently due to RTF quirkiness
+                // extended ASCII and Unicode have to be encoded differently due to RTF quirkiness
                 else if (text[i] >= 127 && text[i] <= 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer, formatBufferSize, L"\\\'%02X", text[i]);
+                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(), L"\\\'%02X", text[i]);
                     assert(retVal != -1);
                     if (retVal != -1)
-                        { encoded_text.append(formatBuffer, retVal); }
+                        { encoded_text.append(formatBuffer.data(), retVal); }
                     }
                 else if (text[i] > 255)
                     {
-                    const int retVal = std::swprintf(formatBuffer, formatBufferSize, L"\\u%04d?", static_cast<int>(text[i]));
+                    const int retVal = std::swprintf(formatBuffer.data(), formatBuffer.size(), L"\\u%04d?", static_cast<int>(text[i]));
                     assert(retVal != -1);
                     if (retVal != -1)
-                        { encoded_text.append(formatBuffer, retVal); }
+                        { encoded_text.append(formatBuffer.data(), retVal); }
                     }
-                //encode tabs
+                // encode tabs
                 else if (text[i] == 9)
                     { encoded_text += L"\\tab "; }
-                //turn carriage return/line feeds into RTF breaks
+                // turn carriage return/line feeds into RTF breaks
                 else if (text[i] == 10 ||
                         text[i] == 13)
                     {
-                    //Treats CRLF combo as one break
-                    if (i < length-1 &&
+                    // treats CRLF combo as one break
+                    if (i < text.length() - 1 &&
                         (text[i+1] == 10 ||
                         text[i+1] == 13) )
                         {
@@ -90,20 +88,18 @@ namespace lily_of_the_valley
         /** @brief Determines if a block of text has characters in it that need to
                 be encoded to be RTF compliant.
             @param text The text to review.
-            @param length The length of @c text.
             @returns @c true if text should be encoded.*/
         [[nodiscard]]
-        bool needs_to_be_encoded(const wchar_t* text, const size_t length) const
+        bool needs_to_be_encoded(const std::wstring_view text) const
             {
-            if (text == nullptr || length == 0)
+            if (text.empty())
                 { return false; }
-            for (size_t scanCounter = 0; scanCounter < length; ++scanCounter)
+            const auto foundPos = std::find_if(text.cbegin(), text.cend(),
+                [](const auto& ch) noexcept
                 {
-                if (text[scanCounter] >= 127 ||
-                    string_util::is_one_of(text[scanCounter], L"\\{}\r\n\t"))
-                    { return true; }
-                }
-            return false;
+                return (ch >= 127 || string_util::is_one_of(ch, L"\\{}\r\n\t"));
+                });
+            return (foundPos != text.cend());
             }
         };
     }
