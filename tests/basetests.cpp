@@ -177,35 +177,35 @@ TEST_CASE("Split text to fit length", "[label]")
     {
     Label lbl;
     lbl.SetText(L"High School Sophomore");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"High School\nSophomore");
 
     lbl.SetText(L"High School: Sophomore");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"High School:\nSophomore");
     // trim padding
     lbl.SetText(L"High School Sophomore ");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"High School\nSophomore");
     // no delimiters
     lbl.SetText(L"HighSchoolSophomore");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"HighSchoolSophomore");
     // delimiter at end only
     lbl.SetText(L"HighSchoolSophomore ");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"HighSchoolSophomore");
     // string not long enough
     lbl.SetText(L"High School Sophomore");
-    lbl.Label::SplitTextToFitLength(30);
+    lbl.SplitTextToFitLength(30);
     CHECK(lbl.GetText() == L"High School Sophomore");
     // dumb suggested length
     lbl.SetText(L"High School Sophomore");
-    lbl.Label::SplitTextToFitLength(0);
+    lbl.SplitTextToFitLength(0);
     CHECK(lbl.GetText() == L"High\nSchool\nSophomore");
     // lot of delimiting
     lbl.SetText(L"High School Sophomore");
-    lbl.Label::SplitTextToFitLength(4);
+    lbl.SplitTextToFitLength(4);
     CHECK(lbl.GetText() == L"High\nSchool\nSophomore");
     }
 
@@ -213,7 +213,7 @@ TEST_CASE("Split text to fit length with new lines", "[label]")
     {
     Label lbl;
     lbl.SetText(L"High School-Junior\nhigh");
-    lbl.Label::SplitTextToFitLength(10);
+    lbl.SplitTextToFitLength(10);
     CHECK(lbl.GetText() == L"High School-\nJunior high");
     }
 
