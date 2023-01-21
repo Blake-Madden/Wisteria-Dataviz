@@ -8,11 +8,13 @@ SET(TEST_SRC_FILES
     datatests.cpp
     evenoddtests.cpp
     geometrytests.cpp
+    hhcimporttests.cpp
     htmlencodetests.cpp
     htmlimporttests.cpp
     idlparsetests.cpp
     intsplittests.cpp
     mapstests.cpp
+    postscriptimporttests.cpp
     roundtest.cpp
     rtfencodetests.cpp
     safemathtests.cpp

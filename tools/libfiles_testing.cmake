@@ -51,6 +51,7 @@ SET(WISTERIA_SRC
     ../src/graphs/table.cpp
     ../src/graphs/wcurveplot.cpp
     ../src/import/html_extract_text.cpp
+    ../src/import/postscript_extract_text.cpp
     ../src/import/xlsx_extract_text.cpp
     ../src/ui/app.cpp
     ../src/ui/controls/codeeditor.cpp
