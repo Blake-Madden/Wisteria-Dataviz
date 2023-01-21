@@ -22,36 +22,35 @@ namespace lily_of_the_valley
     public:
         /** @brief Main interface for extracting plain text from an IDL buffer.
             @param idl_buffer The IDL text to strip.
-            @param text_length The length of the text.
             @returns A pointer to the parsed text, or null upon failure.*/
         [[nodiscard]]
-        const wchar_t* operator()(const wchar_t* idl_buffer, const size_t text_length)
+        const wchar_t* operator()(const std::wstring_view idl_buffer)
             {
+            static const std::wstring HELP_STRING{ L"helpstring(\"" };
             clear_log();
-            if (idl_buffer == nullptr || idl_buffer[0] == 0 || text_length == 0)
+            if (idl_buffer.empty())
                 {
                 set_filtered_text_length(0);
                 return nullptr;
                 }
 
-            if (!allocate_text_buffer(text_length))
+            if (!allocate_text_buffer(idl_buffer.length()))
                 {
                 set_filtered_text_length(0);
                 return nullptr;
                 }
 
-            const wchar_t* nextHelpStr = std::wcsstr(idl_buffer, L"helpstring(\"");
-            const wchar_t* endOfHelpStr = nullptr;
-            while (nextHelpStr || nextHelpStr > (idl_buffer+text_length))
+            auto nextHelpStr = idl_buffer.find(HELP_STRING.c_str());
+            while (nextHelpStr != std::wstring_view::npos)
                 {
-                nextHelpStr += 12;
-                endOfHelpStr = std::wcschr(nextHelpStr, L'\"');
-                if (!endOfHelpStr || endOfHelpStr > (idl_buffer+text_length))
+                nextHelpStr += HELP_STRING.length();
+                const auto endOfHelpStr = idl_buffer.find(L'\"', nextHelpStr);
+                if (endOfHelpStr == std::wstring_view::npos)
                     { break; }
-                add_characters(nextHelpStr, (endOfHelpStr-nextHelpStr));
+                add_characters(idl_buffer.substr(nextHelpStr, (endOfHelpStr - nextHelpStr)));
                 add_character(L'\n');
                 add_character(L'\n');
-                nextHelpStr = std::wcsstr(nextHelpStr, L"helpstring(\"");
+                nextHelpStr = idl_buffer.find(HELP_STRING.c_str(), nextHelpStr);
                 }
 
             // returns the text buffer
