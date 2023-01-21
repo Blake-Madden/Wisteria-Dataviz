@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <string>
 #include <functional>
+#include <array>
 #include <cassert>
 #include <clocale>
 #include <stdexcept>

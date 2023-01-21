@@ -28,17 +28,11 @@ namespace lily_of_the_valley
         {
     public:
         /// @brief Default constructor.
-        extract_text() : m_log_message_separator(L"\n"),
-                         m_owns_buffer(false), m_text_buffer_size(0),
-                         m_filtered_text_length(0), m_text_buffer(nullptr) {}
+        extract_text() = default;
         /// @private
         extract_text(const extract_text&) = delete;
         /// @private
-        extract_text(extract_text&&) = delete;
-        /// @private
         void operator=(const extract_text&) = delete;
-        /// @private
-        void operator=(extract_text&&) = delete;
         /// @private
         virtual ~extract_text()
             {
@@ -47,16 +41,19 @@ namespace lily_of_the_valley
             m_text_buffer = nullptr;
             }
         /// @returns The text that has been extracted from the formatted stream.
-        [[nodiscard]] const wchar_t* get_filtered_text() const noexcept
+        [[nodiscard]]
+        const wchar_t* get_filtered_text() const noexcept
             { return m_text_buffer; }
         /// @returns The length of the parsed text.
-        [[nodiscard]] size_t get_filtered_text_length() const noexcept
+        [[nodiscard]]
+        size_t get_filtered_text_length() const noexcept
             { return m_filtered_text_length; }
-        /** Sets the writable buffer to the specified external buffer. This object will not own this buffer
-            and will not delete it, caller must assume ownership of it.
+        /** @brief Sets the writable buffer to the specified external buffer.
+            @details This object will not own this buffer
+                and will not delete it, caller must assume ownership of it.
             @note If subsequent calls to allocate_text_buffer() requires a larger buffer,
-             then the object will stop using this buffer and switch to using an internal one.
-             Call is_using_internal_buffer() to confirm which type of buffer is being used.
+                then the object will stop using this buffer and switch to using an internal one.\n
+                Call is_using_internal_buffer() to confirm which type of buffer is being used.
             @param buffer The external buffer to write filtered text to.
             @param length The size of the external buffer.*/
         void set_writable_buffer(wchar_t* buffer, const size_t length) noexcept
@@ -70,16 +67,18 @@ namespace lily_of_the_valley
             std::wmemset(m_text_buffer, 0, m_text_buffer_size);
             }
         /** @returns Whether an internal buffer owned by this object is storing the filtered text.
-            This will return false if an external buffer specified by the caller is being used or
-            if a buffer hasn't been allocated yet.*/
-        [[nodiscard]] bool is_using_internal_buffer() const noexcept
+            @note This will return false if an external buffer specified by the caller is being
+                used or if a buffer hasn't been allocated yet.*/
+        [[nodiscard]]
+        bool is_using_internal_buffer() const noexcept
             { return m_owns_buffer; }
         /// @returns A report of any issues with the last read block.
-        [[nodiscard]] const std::wstring& get_log() const noexcept
+        [[nodiscard]]
+        const std::wstring& get_log() const noexcept
             { return m_log; }
-        /** Sets the string used to separate the messages in the log report.
-            By default, messages are separated by newlines, so call this to separate them
-            by something like commas (if you are needing a single-line report).
+        /** @brief Sets the string used to separate the messages in the log report.
+            @details By default, messages are separated by newlines, so call this to separate them
+                by something like commas (if you are needing a single-line report).
             @param separator The separator character to use.*/
         void set_log_message_separator(const std::wstring& separator)
             { m_log_message_separator = separator; }
@@ -121,7 +120,7 @@ namespace lily_of_the_valley
             @param character The character to add.*/
         void add_character(const wchar_t character) noexcept
             {
-            assert(character !=0 && "null terminator passed to add_character()!");
+            assert(character != 0 && "null terminator passed to add_character()!");
             if (character != 0)
                 { m_text_buffer[m_filtered_text_length++] = character; }
             }
@@ -130,7 +129,7 @@ namespace lily_of_the_valley
             @param repeatCount The number of times to add the character.*/
         void add_character(const wchar_t character, const size_t repeatCount) noexcept
             {
-            assert(character !=0 && "null terminator passed to add_character()!");
+            assert(character != 0 && "null terminator passed to add_character()!");
             if (character != 0)
                 {
                 std::wmemset(m_text_buffer+m_filtered_text_length, character, repeatCount);
@@ -147,9 +146,20 @@ namespace lily_of_the_valley
             std::wcsncpy(m_text_buffer+m_filtered_text_length, characters, length);
             m_filtered_text_length += length;
             }
+        /** @brief Adds a string to the parsed buffer.
+            @param characters The string to add.*/
+        void add_characters(const std::wstring_view characters) noexcept
+            {
+            if (characters.empty())
+                { return; }
+            std::wcsncpy(m_text_buffer+m_filtered_text_length, characters.data(), characters.length());
+            m_filtered_text_length += characters.length();
+            }
         /** @returns A writable copy of the text that has been extracted from the formatted stream.
-            This should only be used under special circumstances where you need to directly write to the buffer;
-            otherwise, you should use add_character() or add_characters() to normally copy text to this buffer.*/
+            @note This should only be used under special circumstances where you need to
+                directly write to the buffer; otherwise, you should use add_character() or
+                add_characters() to normally copy text to this buffer.*/
+        [[nodiscard]]
         wchar_t* get_writable_buffer() noexcept
             { return m_text_buffer; }
         /** @brief Trims any trailing whitespace from the end of the parsed text.*/
@@ -189,7 +199,7 @@ namespace lily_of_the_valley
             }
     private:
         std::wstring m_log;
-        std::wstring m_log_message_separator;
+        std::wstring m_log_message_separator{ L"\n" };
         // data
         bool m_owns_buffer{ false };
         size_t m_text_buffer_size{ 0 };
