@@ -8,6 +8,7 @@ SET(TEST_SRC_FILES
     datatests.cpp
     evenoddtests.cpp
     geometrytests.cpp
+    htmlencodetests.cpp
     htmlimporttests.cpp
     idlparsetests.cpp
     intsplittests.cpp
@@ -19,4 +20,5 @@ SET(TEST_SRC_FILES
     stringutiltests.cpp
     tagfiltertests.cpp
     textimporttests.cpp
-    truncatetests.cpp)
+    truncatetests.cpp
+    xlsximporttests.cpp)
