@@ -13,8 +13,8 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     int xlsx_extract_text::dmy_to_excel_serial_date(int nDay, int nMonth, int nYear)
         {
-        // Excel/Lotus 123 have a bug with 29-02-1900. 1900 is not a
-        // leap year, but Excel/Lotus 123 think it is...
+        // Excel and Lotus 123 have a legacy issue with 29-02-1900. 1900 is not a
+        // leap year, but Excel and Lotus 123 treat it like it is...
         if (nDay == 29 && nMonth == 02 && nYear == 1900)
             { return 60; }
 
@@ -27,7 +27,7 @@ namespace lily_of_the_valley
 
         if (nSerialDate < 60)
             {
-            // Because of the 29-02-1900 bug, any serial date 
+            // Because of the 29-02-1900 quirk, any serial date 
             // under 60 is one off... Compensate.
             --nSerialDate;
             }
@@ -41,8 +41,8 @@ namespace lily_of_the_valley
         {
         nDay = nMonth = nYear = 0;
 
-        // Excel/Lotus 123 have a bug with 29-02-1900. 1900 is not a
-        // leap year, but Excel/Lotus 123 think it is...
+        // Excel and Lotus 123 have a legacy issue with 29-02-1900. 1900 is not a
+        // leap year, but Excel and Lotus 123 treat it like it is...
         if (nSerialDate == 60)
             {
             nDay = 29;
@@ -53,7 +53,7 @@ namespace lily_of_the_valley
             }
         else if (nSerialDate < 60)
             {
-            // Because of the 29-02-1900 bug, any serial date 
+            // Because of the 29-02-1900 issue, any serial date 
             // under 60 is one off... Compensate.
             ++nSerialDate;
             }
