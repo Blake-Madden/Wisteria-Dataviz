@@ -27,12 +27,12 @@ namespace lily_of_the_valley
             @param end_tag The closing tag.*/
         text_filter_tag(const std::wstring& start_tag, const std::wstring& end_tag) :
             m_start_tag(start_tag), m_end_tag(end_tag),
-            m_tags_identical(start_tag == m_end_tag)
+            m_tags_identical(m_start_tag == m_end_tag)
             {}
         /// @private
         text_filter_tag(std::wstring&& start_tag, std::wstring&& end_tag) :
             m_start_tag(std::move(start_tag)), m_end_tag(std::move(end_tag)),
-            m_tags_identical(start_tag == m_end_tag)
+            m_tags_identical(m_start_tag == m_end_tag)
             {}
         /// @brief Determines if a block of text is an opening tag.
         /// @param text The block of text to review.
@@ -83,13 +83,12 @@ namespace lily_of_the_valley
                 }
 
             // marks the beginning and size of the sections to copy over
-            std::map<size_t,size_t> sectionsToIncludeMarkers;
+            std::map<size_t, size_t> sectionsToIncludeMarkers;
             size_t currentInclusionStart{ 0 };
-            std::vector<text_filter_tag>::const_iterator exclusion_tag_pos;
 
             for (size_t i = 0; i < length; /*handled in loop*/)
                 {
-                exclusion_tag_pos =
+                const auto exclusion_tag_pos =
                     std::find(m_text_filter_tags.cbegin(), m_text_filter_tags.cend(), text + i);
                 if (exclusion_tag_pos != m_text_filter_tags.cend())
                     {
@@ -134,10 +133,10 @@ namespace lily_of_the_valley
         /// @brief Adds a set of filtering tags.
         /// @param tags The pair of tags to use for blocking out sections of text.
         void add_filter_tag(const text_filter_tag& tags) noexcept
-            { return m_text_filter_tags.push_back(tags); }
+            { m_text_filter_tags.push_back(tags); }
         /// @private
         void add_filter_tag(text_filter_tag&& tags) noexcept
-            { return m_text_filter_tags.emplace_back(tags); }
+            { m_text_filter_tags.emplace_back(tags); }
         /// @brief Removes the filter tags.
         void clear_tags() noexcept
             { m_text_filter_tags.clear(); }
