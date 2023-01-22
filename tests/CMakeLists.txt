@@ -62,6 +62,12 @@ ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 # (run "tools/Build CMake Files List.R" to update this)
 INCLUDE(${CMAKE_SOURCE_DIR}/../tools/libfiles_testing.cmake)
 ADD_LIBRARY(Wisteria STATIC ${WISTERIA_SRC})
+# Add OpenMP for mutlithreading
+FIND_PACKAGE(OpenMP)
+IF(OpenMP_CXX_FOUND)
+    MESSAGE(STATUS "OpenMP available; will be included.")
+    TARGET_LINK_LIBRARIES(WisteriaLib PUBLIC OpenMP::OpenMP_CXX)
+ENDIF()
 TARGET_INCLUDE_DIRECTORIES(Wisteria PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)

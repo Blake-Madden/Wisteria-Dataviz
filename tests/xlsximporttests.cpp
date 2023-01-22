@@ -1297,19 +1297,19 @@ TEST_CASE("XLSX import", "[xlsx]")
 
         info = ext.get_column_and_row_info(L"$23");
         CHECK(xlsx_extract_text::column_index_to_column_name(info.first.m_position) == L"");
-        CHECK(info.first.m_position == -1);//bogus column
+        CHECK(info.first.m_position == static_cast<size_t>(-1)); // bogus column
         CHECK(info.second == 23);
 
         info = ext.get_column_and_row_info(L"23");
-        //no column info, so this is just trash
+        // no column info, so this is just trash
         CHECK(xlsx_extract_text::column_index_to_column_name(info.first.m_position) == L"");
-        CHECK(info.first.m_position == -1);
-        CHECK(info.second == -1);
+        CHECK(info.first.m_position == static_cast<size_t>(-1));
+        CHECK(info.second == static_cast<size_t>(-1));
 
         info = ext.get_column_and_row_info(L"AA");
-        //no row info, so this is just trash
+        // no row info, so this is just trash
         CHECK(xlsx_extract_text::column_index_to_column_name(info.first.m_position) == L"");
-        CHECK(info.first.m_position == -1);
-        CHECK(info.second == -1);
+        CHECK(info.first.m_position == static_cast<size_t>(-1));
+        CHECK(info.second == static_cast<size_t>(-1));
         }
 	}
