@@ -942,10 +942,10 @@ TEST_CASE("ItoaStr", "[stringutil][ItoaStr]")
     SECTION("TestItoaiNULL")
         {
         wchar_t result[5];
-        CHECK(string_util::itoa(548, (wchar_t*)nullptr, 5) == static_cast<size_t>(-1));
-        CHECK(string_util::itoa(548, result, 0) == static_cast<size_t>(-1));
+        CHECK(string_util::itoa(548, (wchar_t*)nullptr, 5) == -1);
+        CHECK(string_util::itoa(548, result, 0) == -1);
 
-        CHECK(string_util::itoa(12345, result, 5) == static_cast<size_t>(-1)); // no space for nullptr terminator, should fail
+        CHECK(string_util::itoa(12345, result, 5) == -1); // no space for nullptr terminator, should fail
         CHECK(std::wmemcmp(result, L"\0\0\0\0\0", 5) == 0);
 
         CHECK(string_util::itoa(1234, result, 5) == 0); // just enough space
@@ -1330,7 +1330,7 @@ TEST_CASE("FindLastOfSequence", "[stringutil][FindLastOfSequence]")
     {
     SECTION("TestNulls")
         {
-        CHECK(string_util::find_last_of<wchar_t>(nullptr, L"/", 1) == -);
+        CHECK(string_util::find_last_of<wchar_t>(nullptr, L"/", 1) == static_cast<size_t>(-1));
         CHECK(string_util::find_last_of(L"", L"/") == static_cast<size_t>(-1));
         }
     SECTION("TestFind")
