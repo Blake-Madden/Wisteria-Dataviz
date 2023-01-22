@@ -15,6 +15,23 @@
 /// @brief Enumerations.
 namespace Wisteria
     {
+    /// @brief How values can be compared.
+    enum class Comparison
+        {
+        /// @brief Items are equal.
+        Equals,
+        /// @brief Items are not equal.
+        NotEquals,
+        /// @brief First item is less than the other.
+        LessThan,
+        /// @brief First item is less than or equal to the other.
+        LessThanOrEqualTo,
+        /// @brief First item is greater than the other.
+        GreaterThan,
+        /// @brief First item is greater than or equal to the other.
+        GreaterThanOrEqualTo,
+        };
+
     /// @brief The sorting direction of bars along an axis.
     enum class SortDirection
         {

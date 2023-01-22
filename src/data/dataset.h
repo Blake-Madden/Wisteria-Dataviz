@@ -33,29 +33,13 @@
 #include "excelreader.h"
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
+#include "../base/enums.h"
 #include "../math/mathematics.h"
 #include "../util/frequencymap.h"
 #include "../debug/debug_assert.h"
 
 namespace Wisteria
     {
-    /// @brief How values can be compared.
-    enum class Comparison
-        {
-        /// @brief Items are equal.
-        Equals,
-        /// @brief Items are not equal.
-        NotEquals,
-        /// @brief First item is less than the other.
-        LessThan,
-        /// @brief First item is less than or equal to the other.
-        LessThanOrEqualTo,
-        /// @brief First item is greater than the other.
-        GreaterThan,
-        /// @brief First item is greater than or equal to the other.
-        GreaterThanOrEqualTo,
-        };
-
     // forward declarations for friendships
     class ReportBuilder;
     }
@@ -90,6 +74,21 @@ namespace Wisteria::Data
         /// @private
         [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const
             { return lhs.CmpNoCase(rhs) < 0; };
+        };
+
+    /// @brief Helper functor to compare @c std::wstring case insensitively.
+    /// @details This is useful as a predicate for maps and sets.
+    class WStringCmpNoCase
+        {
+    public:
+        /// @private
+        [[nodiscard]]
+        bool operator()(const std::wstring_view lhs, const std::wstring_view rhs) const noexcept
+            { return string_util::stricmp(lhs.data(), rhs.data()) < 0; };
+        /// @private
+        [[nodiscard]]
+        bool operator()(const std::wstring& lhs, const std::wstring& rhs) const noexcept
+            { return string_util::stricmp(lhs.c_str(), rhs.c_str()) < 0; };
         };
 
     /// @private
@@ -218,14 +217,6 @@ namespace Wisteria::Data
         /// @param name The name.
         void SetName(const wxString& name)
             { m_name = name; }
-        /// @private
-        [[deprecated("Use GetName().")]]
-        [[nodiscard]] const wxString& GetTitle() const noexcept
-            { return m_name; }
-        /// @private
-        [[deprecated("Use SetName().")]]
-        void SetTitle(const wxString& title)
-            { m_name = title; }
     protected:
         /// @brief Removes all data.
         virtual void Clear() noexcept
@@ -248,7 +239,8 @@ namespace Wisteria::Data
         void AddValue(const T& val)
             { m_data.push_back(val); }
         /// @returns The data.
-        [[nodiscard]] const std::vector<T>& GetData() const noexcept
+        [[nodiscard]]
+        const std::vector<T>& GetData() const noexcept
             { return m_data; }
     private:
         wxString m_name;
@@ -818,10 +810,10 @@ namespace Wisteria::Data
         /// @details This is used by ReadColumnInfo().
         enum class ColumnImportType
             {
-            String,        /*!< %Column is text.*/
-            Discrete,      /*!< %Column is integral (small range, representing codes).*/
-            Numeric,       /*!< %Column is floating point or wide range of integers.*/
-            Date           /*!< %Column is a date.*/
+            String,   /*!< %Column is text.*/
+            Discrete, /*!< %Column is integral (small range, representing codes).*/
+            Numeric,  /*!< %Column is floating point or wide range of integers.*/
+            Date      /*!< %Column is a date.*/
             };
 
         /// @brief The names and data types of columns in a dataset.
@@ -830,7 +822,8 @@ namespace Wisteria::Data
         using ColumnPreviewInfo = std::vector<std::pair<wxString, ColumnImportType>>;
 
         /// @returns The name of the dataset.
-        [[nodiscard]] const wxString& GetName() const noexcept
+        [[nodiscard]]
+        const std::wstring& GetName() const noexcept
             { return m_name; }
 
         /** @brief Removes a column name(s) from a list of columns.
@@ -1263,7 +1256,6 @@ namespace Wisteria::Data
                 If no matches are found, then the target value will be missing data.*/
         void MutateCategoricalColumn(const wxString& srcColumnName, const wxString& targetColumnName,
                                      const RegExMap& replacementMap);
-
         /// @}
 
         /** @name Import Functions
@@ -1423,7 +1415,6 @@ namespace Wisteria::Data
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ExportCSV(const wxString& filePath) const
             { ExportText(filePath, L',', true); }
-
         /// @}
 
         /// @private
@@ -1483,7 +1474,7 @@ namespace Wisteria::Data
                                                const DateImportMethod method,
                                                const wxString& formatStr);
 
-        wxString m_name;
+        std::wstring m_name;
 
         double m_importContinousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
 
