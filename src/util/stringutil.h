@@ -1518,7 +1518,8 @@ namespace string_util
             }
         /// @param val The string to tokenize.
         /// @returns The number of tokens in a provided string.
-        [[nodiscard]] size_t count_tokens(const T& val)
+        [[nodiscard]]
+        size_t count_tokens(const T& val)
             {
             size_t tokenCount{ 0 };
             for (size_t i = 0; i < val.length(); ++i)
@@ -1539,16 +1540,20 @@ namespace string_util
             return tokenCount+1;
             }
         /// @returns Whether or not there are more tokens in the string.
-        [[nodiscard]] bool has_more_tokens() const noexcept
+        [[nodiscard]]
+        bool has_more_tokens() const noexcept
             { return m_has_more_tokens; }
-        /// @returns Whether or not there are more delimiters in the string.
-        ///  This is useful for seeing if there are any delimiters at all when first loading the string.
-        [[nodiscard]] bool has_more_delimiters() const noexcept
+        /// @returns Whether or not there are more delimiters in the string.\n
+        ///     This is useful for seeing if there are any delimiters at all when
+        ///     first loading the string.
+        [[nodiscard]]
+        bool has_more_delimiters() const noexcept
             { return (m_next_delim != nullptr); }
         /// @returns The next token from the original string as a string object
         /// @note Empty tokens can be returned if there is proceeding or trailing
         ///  delimiters in the string, or if there are repeated delimiters next to each other.
-        [[nodiscard]] T get_next_token()
+        [[nodiscard]]
+        T get_next_token()
             {
             if (m_next_delim)
                 {
@@ -1582,10 +1587,10 @@ namespace string_util
         string_tokenize(const string_tokenize&) = delete;
 
         T m_value;
-        bool m_skip_empty_tokens{ true };
         const wchar_t* m_start{ nullptr };
         const wchar_t* m_next_delim{ nullptr };
         std::wstring m_delims;
+        bool m_skip_empty_tokens{ true };
         bool m_has_more_tokens{ false };
         };
 
