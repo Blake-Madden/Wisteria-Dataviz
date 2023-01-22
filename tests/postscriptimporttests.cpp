@@ -23,12 +23,12 @@ TEST_CASE("Postscript Import", "[postscript import]")
         {
         const char* text = "%!PS-Adobe-3.0\n(This is a string)";
         postscript_extract_text ext;
-        ext(text, std::strlen(text));
+        CHECK_THROWS(ext(text, std::strlen(text)));
         }
     SECTION("MissingHeader")
         {
         postscript_extract_text ext;
-        ext("some text", 9);
+        CHECK_THROWS(ext("some text", 9));
         }
     SECTION("Simple")
         {
@@ -39,7 +39,7 @@ TEST_CASE("Postscript Import", "[postscript import]")
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Strings may contain newlines\nand such.") == 0);
         text = "%!PS-Adobe-2.0\n(Strings may contain special characters *!&}^% and\nbalanced parentheses ( ) (and so on).)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"Strings may contain special characters *!&}^% and\nbalanced parentheses ( ) (and so on).") == 0);
-        text = "%!PS-Adobe-2.0\n(The following is an empty string.)\n")";
+        text = "%!PS-Adobe-2.0\n(The following is an empty string.)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"The following is an empty string.") == 0);
         text = "%!PS-Adobe-2.0\n(It has 0 (zero) length.)";
         CHECK(std::wcscmp(ext(text, std::strlen(text)), L"It has 0 (zero) length.") == 0);
