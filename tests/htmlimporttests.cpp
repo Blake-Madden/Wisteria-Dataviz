@@ -955,7 +955,7 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Descriptions")
         {
         html_extract_text filter_html;
-        wchar_t* text = LR"(<head>
+        const wchar_t* text = LR"(<head>
                               <meta charset="utf-8" />
                               <meta http-equiv="X-UA-Compatible" content="IE=edge" />
                               <title>About the Author | Readability Studio 2021 Manual</title>
@@ -968,41 +968,41 @@ TEST_CASE("HTML Parser", "[html import]")
     SECTION("Author")
         {
         html_extract_text filter_html;
-        wchar_t* text = LR"(<head>
+        const wchar_t* text = LR"(<head>
                               <meta charset="utf-8" />
                               <meta http-equiv="X-UA-Compatible" content="IE=edge" />
                               <title>About the Author  | Readability Studio 2021 Manual </title>
                               <meta name="description" content="About the Author &amp; Readability Studio 2021 Manual" />
                               <meta name="author" content=" Blake  &amp; Nancy" />
                             </head>)";
-        [[maybe_unused]]const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        [[maybe_unused]] const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Blake & Nancy") == filter_html.get_author());
         }
     SECTION("Keywords")
         {
         html_extract_text filter_html;
-        wchar_t* text = LR"(<head>
+        const wchar_t* text = LR"(<head>
                               <meta charset="utf-8" />
                               <meta http-equiv="X-UA-Compatible" content="IE=edge" />
                               <meta name="keywords" content=" Debugging &amp; Testing" />
                               <meta name="description" content="About the Author &amp; Readability Studio 2021 Manual" />
                               <meta name="author" content="Blake &amp; Nancy" />
                             </head>)";
-        [[maybe_unused]]const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        [[maybe_unused]] const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Debugging & Testing") == filter_html.get_keywords());
         }
     SECTION("Subject")
         {
         html_extract_text filter_html;
-        wchar_t* text = L"<head>\n<subject>Anthro. &amp; Geo Studies</subject>\n</head>";
-        [[maybe_unused]]const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
+        const wchar_t* text = L"<head>\n<subject>Anthro. &amp; Geo Studies</subject>\n</head>";
+        [[maybe_unused]] const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Anthro. & Geo Studies") == filter_html.get_subject());
         }
     SECTION("FilledWithNulls")
         {
         html_extract_text filter_html;
         wchar_t* text = new wchar_t[101];
-        std::wmemset(text, 0, 101);//101 place is the last null terminator
+        std::wmemset(text, 0, 101); // 101 place is the last null terminator
         std::wcscpy(text, L"<span>List.</span> \r\n (pane)");
         const wchar_t* p = filter_html(text, 100, true, false);
         CHECK(std::wcscmp(p, L"List.    (pane)") == 0);

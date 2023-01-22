@@ -499,13 +499,13 @@ TEST_CASE("StdDevContainer", "[stats][stddev]")
 TEST_CASE("StdDevOneObs", "[stats][stddev]")
     {
     std::vector<double> singleValues = { 5.2 };
-    CHECK_THROWS(5.200000, WithinRel(statistics::standard_deviation(singleValues, true), 1e-6));
+    CHECK_THROWS(WithinRel(statistics::standard_deviation(singleValues, true), 1e-6));
     }
 
 TEST_CASE("Std Dev No Obs", "[stats][stddev]")
     {
     std::vector<double> values = { 5.2 };
-    CHECK_THROWS(0.00000, WithinRel(statistics::standard_deviation(values, true), 1e-6));
+    CHECK_THROWS(WithinRel(statistics::standard_deviation(values, true), 1e-6));
     }
 
 TEST_CASE("Skewness", "[stats][skewness]")

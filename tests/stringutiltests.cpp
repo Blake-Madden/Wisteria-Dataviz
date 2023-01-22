@@ -842,13 +842,13 @@ TEST_CASE("FindLastNotOf", "[stringutil][FindLastNotOf]")
     SECTION("TestNulls")
         {
         const wchar_t* buffer = L"ABB9";
-        CHECK(string_util::find_last_not_of<wchar_t>(nullptr, L"0123456789") == -1);
-        CHECK(string_util::find_last_not_of<wchar_t>(buffer, nullptr) == -1);
+        CHECK(string_util::find_last_not_of<wchar_t>(nullptr, L"0123456789") == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, nullptr) == static_cast<size_t>(-1));
         }
     SECTION("TestNotFound")
         {
         const wchar_t* buffer = L"124578";
-        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == -1);
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == static_cast<size_t>(-1));
         }
     SECTION("TestFound")
         {
@@ -869,9 +869,9 @@ TEST_CASE("FindLastNotOf", "[stringutil][FindLastNotOf]")
     SECTION("TestEmptyString")
         {
         const wchar_t* buffer = L"";
-        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == -1);
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"0123456789") == static_cast<size_t>(-1));
         buffer = L"A56BB5";
-        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"") == -1);
+        CHECK(string_util::find_last_not_of<wchar_t>(buffer, L"") == static_cast<size_t>(-1));
         }
     }
 
@@ -942,10 +942,10 @@ TEST_CASE("ItoaStr", "[stringutil][ItoaStr]")
     SECTION("TestItoaiNULL")
         {
         wchar_t result[5];
-        CHECK(string_util::itoa(548, (wchar_t*)nullptr, 5) == -1);
-        CHECK(string_util::itoa(548, result, 0) == -1);
+        CHECK(string_util::itoa(548, (wchar_t*)nullptr, 5) == static_cast<size_t>(-1));
+        CHECK(string_util::itoa(548, result, 0) == static_cast<size_t>(-1));
 
-        CHECK(string_util::itoa(12345, result, 5) == -1); // no space for nullptr terminator, should fail
+        CHECK(string_util::itoa(12345, result, 5) == static_cast<size_t>(-1)); // no space for nullptr terminator, should fail
         CHECK(std::wmemcmp(result, L"\0\0\0\0\0", 5) == 0);
 
         CHECK(string_util::itoa(1234, result, 5) == 0); // just enough space
@@ -1309,8 +1309,8 @@ TEST_CASE("FindLastOf", "[stringutil][FindLastOf]")
     {
     SECTION("TestNulls")
         {
-        CHECK(string_util::find_last_of<wchar_t>(nullptr, L'/', 1) == -1);
-        CHECK(string_util::find_last_of(L"", L'/') == -1);
+        CHECK(string_util::find_last_of<wchar_t>(nullptr, L'/', 1) == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_of(L"", L'/') == static_cast<size_t>(-1));
         }
     SECTION("TestFind")
         {
@@ -1320,9 +1320,9 @@ TEST_CASE("FindLastOf", "[stringutil][FindLastOf]")
         }
     SECTION("TestNotFind")
         {
-        CHECK(string_util::find_last_of(L"fire/dept.", L'/', 3) == -1);
-        CHECK(string_util::find_last_of(L"fire/dept.", L'z', 4) == -1);
-        CHECK(string_util::find_last_of(L"fire/dept.", L'z', (size_t)-1) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L'/', 3) == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_of(L"fire/dept.", L'z', 4) == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_of(L"fire/dept.", L'z', (size_t)-1) == static_cast<size_t>(-1));
         }
     };
 
@@ -1330,8 +1330,8 @@ TEST_CASE("FindLastOfSequence", "[stringutil][FindLastOfSequence]")
     {
     SECTION("TestNulls")
         {
-        CHECK(string_util::find_last_of<wchar_t>(nullptr, L"/", 1) == -1);
-        CHECK(string_util::find_last_of(L"", L"/") == -1);
+        CHECK(string_util::find_last_of<wchar_t>(nullptr, L"/", 1) == -);
+        CHECK(string_util::find_last_of(L"", L"/") == static_cast<size_t>(-1));
         }
     SECTION("TestFind")
         {
@@ -1343,9 +1343,9 @@ TEST_CASE("FindLastOfSequence", "[stringutil][FindLastOfSequence]")
         }
     SECTION("TestNotFind")
         {
-        CHECK(string_util::find_last_of(L"fire/dept.", L"/*%", 3) == -1);
-        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", 4) == -1);
-        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", (size_t)-1) == -1);
+        CHECK(string_util::find_last_of(L"fire/dept.", L"/*%", 3) == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", 4) == static_cast<size_t>(-1));
+        CHECK(string_util::find_last_of(L"fire/dept.", L"*%", (size_t)-1) == static_cast<size_t>(-1));
         }
     };
 
