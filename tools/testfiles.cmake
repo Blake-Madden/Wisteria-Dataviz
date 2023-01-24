@@ -20,7 +20,10 @@ SET(TEST_SRC_FILES
     safemathtests.cpp
     statstests.cpp
     stringutiltests.cpp
+    subsettests.cpp
     tagfiltertests.cpp
+    testableframe.cpp
+    testingmain.cpp
     textimporttests.cpp
     truncatetests.cpp
     xlsximporttests.cpp)

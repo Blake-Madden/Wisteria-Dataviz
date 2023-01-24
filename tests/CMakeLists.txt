@@ -38,9 +38,7 @@ PROJECT(WisteriaTestRunner)
 
 # Find wxWidgets and select its components
 FIND_PACKAGE(wxWidgets REQUIRED core base adv html ribbon xml xrc qa propgrid OPTIONAL_COMPONENTS net)
-# Usually you would include the following line, but not here as it appears to redefine main() for wxWidgets,
-# and that prevents Catch2WithMain from working
-#INCLUDE(${wxWidgets_USE_FILE})
+INCLUDE(${wxWidgets_USE_FILE})
 MESSAGE(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
 MESSAGE(STATUS "Adding wxWidgets configuration file: ${wxWidgets_CONFIGURATION}/wx/setup.h")
 
@@ -118,15 +116,22 @@ ENDIF()
 MESSAGE(STATUS "Preparing the test runner...")
 SET(TEST_APP WisteriaTestRunner)
 INCLUDE(${CMAKE_SOURCE_DIR}/../tools/testfiles.cmake)
-ADD_EXECUTABLE(${TEST_APP} ${TEST_SRC_FILES})
+ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${TEST_SRC_FILES})
 
 # Link required libraries to the executable
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2WithMain Wisteria ${wxWidgets_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2 Wisteria ${wxWidgets_LIBRARIES})
 ELSEIF(UNIX)
     FIND_LIBRARY(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${TEST_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2WithMain)
+    TARGET_LINK_LIBRARIES(${TEST_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2)
 ENDIF()
+
+# Copy datasets into build folder
+MESSAGE(STATUS "Copying datasets...")
+ADD_CUSTOM_COMMAND(TARGET ${TEST_APP}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/../datasets $<TARGET_FILE_DIR:${TEST_APP}>/datasets)
 
 # load the test cases into the runner
 INCLUDE(CTest)
