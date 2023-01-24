@@ -238,10 +238,6 @@ namespace Wisteria::Data
             @param val The new value.*/
         void AddValue(const T& val)
             { m_data.push_back(val); }
-        /// @returns The data.
-        [[nodiscard]]
-        const std::vector<T>& GetData() const noexcept
-            { return m_data; }
     private:
         wxString m_name;
         std::vector<T> m_data;

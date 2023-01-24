@@ -209,7 +209,7 @@ namespace Wisteria::Data
                                             const wxString& otherLabel /*= _("Other")*/)
         {
         frequency_set<GroupIdType> vals;
-        std::for_each(GetData().cbegin(), GetData().cend(),
+        std::for_each(GetValues().cbegin(), GetValues().cend(),
             [&vals](const auto& datum)
             { vals.insert(datum); });
         bool recodingNeeded{ false };
