@@ -28,13 +28,9 @@ namespace Wisteria::Data
         /// @private
         DatasetClone(const DatasetClone&) = delete;
         /// @private
-        DatasetClone(DatasetClone&&) = delete;
-        /// @private
         DatasetClone& operator=(const DatasetClone&) = delete;
         /// @private
-        DatasetClone& operator=(DatasetClone&&) = delete;
-        /// @private
-        virtual ~DatasetClone() {}
+        virtual ~DatasetClone() = default;
         /** @brief Sets the source dataset to clone from.
             @param fromDataset The dataset to clone.
             @warning The source dataset should not be altered after calling this.
@@ -45,10 +41,12 @@ namespace Wisteria::Data
         /// @brief Creates a clone of the original dataset.
         /// @returns A cloned copy of the original dataset, or null if SetSourceData()
         ///     hasn't been called.
-        [[nodiscard]] std::shared_ptr<Dataset> Clone();
+        [[nodiscard]]
+        std::shared_ptr<Dataset> Clone();
     protected:
         /// @returns @c true if there are more rows that can be copied or skipped.
-        [[nodiscard]] bool HasMoreRows() const noexcept
+        [[nodiscard]]
+        bool HasMoreRows() const noexcept
             { return m_currentSrcRow < m_fromDataset->GetRowCount(); }
         /// @brief Skip the next row in the source file, not copying it into the destination.
         void SkipNextRow() noexcept
@@ -59,14 +57,17 @@ namespace Wisteria::Data
         /// @details Derived classes can call this after calls to CopyNextRow() and
         ///     SkipNextRow() are finished.
         /// @returns The cloned dataset.
-        [[nodiscard]] std::shared_ptr<Dataset> GetClone() const
+        [[nodiscard]]
+        std::shared_ptr<Dataset> GetClone() const
             { return m_toDataset; }
         /// @returns The source dataset.
-        [[nodiscard]] const std::shared_ptr<const Dataset>& GetSource() const noexcept
+        [[nodiscard]]
+        const std::shared_ptr<const Dataset>& GetSource() const noexcept
             { return m_fromDataset; }
         /// @returns The position of the next row queued to be copied or skipped.\n
         ///     Will return @c std::nullopt if all rows have been processed and there are no more.
-        [[nodiscard]] std::optional<size_t> GetNextRowPosition() const noexcept
+        [[nodiscard]]
+        std::optional<size_t> GetNextRowPosition() const noexcept
             { return HasMoreRows() ? std::optional<size_t>(m_currentSrcRow) : std::nullopt; }
     private:
         /// @brief Builds a map of pointers to the corresponding columns between the datasets.

@@ -42,7 +42,8 @@ namespace Wisteria::Data
                 of this filter.
             @param rowPosition The row index in the dataset to review.
             @returns @c true if the row matches the filter, @c false otherwise.*/
-        [[nodiscard]] bool MeetsCriterion(const size_t rowPosition) const;
+        [[nodiscard]]
+        bool MeetsCriterion(const size_t rowPosition) const;
     private:
         const Wisteria::Data::Column<wxString>* m_idColumn;
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
@@ -94,11 +95,7 @@ namespace Wisteria::Data
         /// @private
         Subset(const Subset&) = delete;
         /// @private
-        Subset(Subset&&) = delete;
-        /// @private
         Subset& operator=(const Subset&) = delete;
-        /// @private
-        Subset& operator=(Subset&&) = delete;
         /** @brief Creates a subset, based on a single column's criteria.
             @param fromDataset The source datasource to subset.
             @param columnFilter The criteria for subsetting, defining the column and value(s)
@@ -108,7 +105,8 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::shared_ptr<Dataset> SubsetSimple(
+        [[nodiscard]]
+        std::shared_ptr<Dataset> SubsetSimple(
             const std::shared_ptr<const Dataset>& fromDataset,
             const ColumnFilterInfo& columnFilter);
         /** @brief Creates a subset, based on multiple filters that are ORed together.
@@ -122,7 +120,8 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::shared_ptr<Dataset> SubsetOr(
+        [[nodiscard]]
+        std::shared_ptr<Dataset> SubsetOr(
             const std::shared_ptr<const Dataset>& fromDataset,
             const std::vector<ColumnFilterInfo>& columnFilters);
         /** @brief Creates a subset, based on multiple filters that are ANDed together.
@@ -136,7 +135,8 @@ namespace Wisteria::Data
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::shared_ptr<Dataset> SubsetAnd(
+        [[nodiscard]]
+        std::shared_ptr<Dataset> SubsetAnd(
             const std::shared_ptr<const Dataset>& fromDataset,
             const std::vector<ColumnFilterInfo>& columnFilters);
         };

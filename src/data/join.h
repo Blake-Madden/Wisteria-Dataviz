@@ -25,13 +25,9 @@ namespace Wisteria::Data
         /// @private
         DatasetJoin(const DatasetJoin&) = delete;
         /// @private
-        DatasetJoin(DatasetJoin&&) = delete;
-        /// @private
         DatasetJoin& operator=(const DatasetJoin&) = delete;
         /// @private
-        DatasetJoin& operator=(DatasetJoin&&) = delete;
-        /// @private
-        virtual ~DatasetJoin() {}
+        virtual ~DatasetJoin() = default;
         /** @brief Left joins one dataset with another.\n
                 In the case of duplicate keys from the right dataset, only the last
                 instance's data will be included in the results. This is useful preventing
@@ -58,13 +54,15 @@ namespace Wisteria::Data
                 having more rows than the original left dataset, adding what could be considered
                 duplicate rows.\n
                 This function instead will not add additional rows compared to the left dataset,
-                and instead merge data from the last row from any duplicate keys from the
+                but instead merge data from the last row from any duplicate keys from the
                 right dataset.\n
-                Finally, if duplicate keys are encountered in the right dataset, a warning will
-                issues via @c wxLogWarning().
+                Also, if duplicate keys are encountered in the right dataset, a warning will
+                be issued via @c wxLogWarning().
+            @todo Add unit tests.
             @throws std::runtime_error If invalid columns or dataset are provided,
                 throws an exception.*/
-        [[nodiscard]] static std::shared_ptr<Dataset> LeftJoinUnique(
+        [[nodiscard]]
+        static std::shared_ptr<Dataset> LeftJoinUnique(
             const std::shared_ptr<const Dataset>& leftDataset,
             const std::shared_ptr<const Dataset>& rightDataset,
             const std::vector<std::pair<wxString, wxString>>& byColumns,

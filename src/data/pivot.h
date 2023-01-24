@@ -55,11 +55,7 @@ namespace Wisteria::Data
         /// @private
         Pivot(const Pivot&) = delete;
         /// @private
-        Pivot(Pivot&&) = delete;
-        /// @private
         Pivot& operator=(const Pivot&) = delete;
-        /// @private
-        Pivot& operator=(Pivot&&) = delete;
         /** @brief Creates a single row for each observation, with a categorical column
                 split into new columns, filled with respective values from specified
                 continuous columns.
@@ -81,10 +77,12 @@ namespace Wisteria::Data
             @param namesPrefix A string to prepend to newly created pivot columns.
             @param fillValue If any observation is missing a label from @c namesFromColumn
                 that other observations have, then an empty cell will be added for that
-                column. This value will be used for fill this cell, with missing data
+                column. This value will be used for fill this cell, with missing data (i.e., NaN)
                 being the default.
+            @todo Add unit test.
             @returns The pivoted dataset.*/
-        [[nodiscard]] std::shared_ptr<Dataset> PivotWider(
+        [[nodiscard]]
+        std::shared_ptr<Dataset> PivotWider(
             const std::shared_ptr<const Dataset>& dataset,
             const std::vector<wxString>& IdColumns,
             const wxString& namesFromColumn,
@@ -111,8 +109,10 @@ namespace Wisteria::Data
                 this regular expression can be used. It should contain capture groups, where each group
                 will be the name of a new target column.\n
                 Leave blank (the default) to use the full name of @c fromColumns as the labels.
+            @todo Add unit test.
             @returns The pivoted dataset.*/
-        [[nodiscard]] std::shared_ptr<Dataset> PivotLonger(
+        [[nodiscard]]
+        std::shared_ptr<Dataset> PivotLonger(
             const std::shared_ptr<const Dataset>& dataset,
             const std::vector<wxString>& columnsToKeep,
             const std::vector<wxString>& fromColumns,

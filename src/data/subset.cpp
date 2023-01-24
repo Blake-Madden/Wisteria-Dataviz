@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #include "subset.h"
 
 namespace Wisteria::Data
@@ -189,8 +188,8 @@ namespace Wisteria::Data
             else
                 {
                 // < or > will require comparing as the strings though since
-                // group IDs probably aren't ordered the same ways as the strings
-                // would be alphabetically
+                // the underlying (integral) group IDs probably aren't ordered the same way
+                // as the strings would be alphabetically
                 for (const auto& str : m_stringValues)
                     {
                     const auto currentString =

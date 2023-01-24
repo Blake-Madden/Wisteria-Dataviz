@@ -34,16 +34,18 @@ namespace Wisteria::Data
         /// @param filePath The path to the Excel file to load.
         void LoadFile(const wxString& filePath);
         /** @returns The list of worksheet names in the Excel file.*/
-        [[nodiscard]] const std::vector<std::wstring>& GetWorksheetNames() const noexcept
+        [[nodiscard]]
+        const std::vector<std::wstring>& GetWorksheetNames() const noexcept
             { return m_xlsxTextExtractor.get_worksheet_names(); }
         /** @brief Reads a worksheet from the loaded workbook.
             @param worksheet The name or 1-based index of the worksheet to read.
             @param delimiter The charater to delimit the columns with.
-            @returns The worksheet delimited as text.
+            @returns The worksheet data, delimited as text.
             @throws std::runtime_error If the worksheet can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] wxString ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
+        [[nodiscard]]
+        wxString ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
             const wchar_t delimiter = L'\t');
     private:
         wxString m_filePath;
