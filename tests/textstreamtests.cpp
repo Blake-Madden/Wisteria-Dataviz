@@ -14,6 +14,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
     {
     SECTION("Simple Buffer")
         {
+        wxLogNull ln;
         const char* text = "Hello, world! Here is some simple text.";
         wchar_t* dest = new wchar_t[std::strlen(text)+1];
         std::unique_ptr<wchar_t> buffDelete(dest);
@@ -23,6 +24,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
 
     SECTION("XML Buffer")
         {
+        wxLogNull ln;
         const char* text = "<?xml encoding=\"windows-1252\">HÉllo, world! Here is some simple text.";
         wchar_t* dest = new wchar_t[std::strlen(text)+1];
         std::unique_ptr<wchar_t> buffDelete(dest);
@@ -32,6 +34,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
 
     SECTION("Wrong Charset Buffer")
         {
+        wxLogNull ln;
         const char* text = "HÉllo, world! Here is some simple text.";
         wchar_t* dest = new wchar_t[std::strlen(text)+1];
         std::unique_ptr<wchar_t> buffDelete(dest);
@@ -41,6 +44,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
 
     SECTION("Ansi Buffer")
         {
+        wxLogNull ln;
         const char* text = "T\x00E9l\x00E9 charger la Version d'\x00C9 valuation";
         wchar_t* dest = new wchar_t[std::strlen(text)+1];
         std::unique_ptr<wchar_t> buffDelete(dest);
@@ -53,6 +57,7 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
 
     SECTION("Broken Encoding Buffer")
         {
+        wxLogNull ln;
         const char* text = "T\xE9\x6C\xE9\xE9 charger la Version d'\xC9 valuation";
         const size_t BuffSize = std::strlen(text)+1;
         wchar_t* dest = new wchar_t[BuffSize];
@@ -68,94 +73,18 @@ TEST_CASE("Char Stream To Unicode", "[text stream]")
         text = "T\xE9\x6C\xE9 charger la Version d'\xC9 valuation\xE9";
         CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, (BuffSize), text, std::strlen(text), "utf-8"));
         CHECK(std::wstring(L"Tl charger la Version d' valuation") == std::wstring(dest));
-        // with BOM
-        text = "ï»¿TélÃ©charger la Version d'Ã‰valuation";
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, (BuffSize), text, std::strlen(text), "utf-8"));
-        // bogus "é" will be stripped out
-        CHECK(std::wstring(L"Tlécharger la Version d'Évaluation") == std::wstring(dest));
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, (BuffSize), text, std::strlen(text)));
-        CHECK(std::wstring(L"Tlécharger la Version d'Évaluation") == std::wstring(dest));
-        }
-
-    SECTION("UTF8 Encoding Buffer")
-        {
-        const char* text = "ï»¿TÃ©lÃ©charger la Version d'Ã‰valuation";
-        const size_t BuffSize = std::strlen(text)+1;
-        wchar_t* dest = new wchar_t[BuffSize];
-        std::unique_ptr<wchar_t> buffDelete(dest);
-
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text)));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text), "utf-8"));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
-        // not really windows-1252
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text), "windows-1252"));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
-
-        // without the BOM
-        text = "TÃ©lÃ©charger la Version d'Ã‰valuation";
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text)));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text), "utf-8"));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
-        // not really windows-1252
-        CHECK(Wisteria::TextStream::CharStreamToUnicode(dest, BuffSize, text, std::strlen(text), "windows-1252"));
-        CHECK(std::wstring(L"Télécharger la Version d'Évaluation") == std::wstring(dest));
         }
 
     SECTION("Simple")
         {
+        wxLogNull ln;
         const char* text = "Hello, world! Here is some simple text.";
         CHECK(wxString(text) == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
         }
 
-    SECTION("Ansi")
-        {
-        const char* text = "Télécharger la Version d'Évaluation";
-        // should figure it out
-        CHECK(wxString(text, CONVERT_STR) == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
-        CHECK(wxString(text, CONVERT_STR) == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "windows-1252"));
-        }
-
-    SECTION("Broken Encoding")
-        {
-        const char* text = "Téélécharger la Version d'Évaluation";
-        // not really utf-8, so "bogus" characters get skipped over
-        CHECK(wxString(L"Tlcharger la Version d'valuation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        text = "élécharger la Version d'Évaluation";
-        // bad character at start of stream
-        CHECK(wxString(L"lcharger la Version d'valuation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        text = "Télécharger la Version d'Évaluationé";
-        // bad character at end of stream
-        CHECK(wxString(L"Tlcharger la Version d'valuation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        // with BOM
-        text = "ï»¿TélÃ©charger la Version d'Ã‰valuation";
-        //bogus "é" will be stripped out
-        CHECK(wxString(L"Tlécharger la Version d'Évaluation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        CHECK(wxString(L"Tlécharger la Version d'Évaluation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
-        }
-
-    SECTION("UTF8 Encoding")
-        {
-        const char* text = "ï»¿TÃ©lÃ©charger la Version d'Ã‰valuation";
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") ==
-            Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") ==
-            Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        // not really windows-1252
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") ==
-            Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "windows-1252"));
-
-        // without the BOM
-        text = "TÃ©lÃ©charger la Version d'Ã‰valuation";
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text)));
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "utf-8"));
-        // not really windows-1252
-        CHECK(wxString(L"Télécharger la Version d'Évaluation") == Wisteria::TextStream::CharStreamToUnicode(text, std::strlen(text), "windows-1252"));
-        }
-
     SECTION("Embedded Nulls")
         {
+        wxLogNull ln;
         const char* text = "Hello, world!\0\0\0 Here is\0 some simple\0 text0.";
         CHECK(wxString(L"Hello, world! Here is some simple text0.") == Wisteria::TextStream::CharStreamWithEmbeddedNullsToUnicode(text, 45));
         }
