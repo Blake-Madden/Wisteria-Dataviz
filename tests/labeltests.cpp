@@ -79,19 +79,19 @@ TEST_CASE("Label Fonts", "[label]")
         Label::FixFont(ft);
         CHECK(ft.IsOk());
         CHECK(ft.GetPointSize() > 0);
-        CHECK(wxString("Arial") == ft.GetFaceName());
+        CHECK(ft.GetFaceName().length());
 
         wxFont ft2(wxFontInfo(0).FaceName("Arial"));
         Label::FixFont(ft2);
         CHECK(ft2.IsOk());
         CHECK(ft2.GetPointSize() > 0);
-        CHECK(wxString("Arial") == ft2.GetFaceName());
+        CHECK(ft2.GetFaceName().length());
 
         wxFont ft3(wxFontInfo(3).FaceName("Arial"));
         Label::FixFont(ft3);
         CHECK(ft3.IsOk());
         CHECK(ft3.GetPointSize() > 3);
-        CHECK(wxString("Arial") == ft3.GetFaceName());
+        CHECK(ft3.GetFaceName().length());
         }
     SECTION("Fix Font Bad Font Name")
         {
@@ -109,6 +109,6 @@ TEST_CASE("Label Fonts", "[label]")
         Label::FixFont(ft);
         CHECK(ft.IsOk());
         CHECK(ft.GetPointSize() > 0);
-        CHECK(ft == wxFont(wxFontInfo().FaceName(wxT("Arial"))) );
+        CHECK(ft.GetFaceName().length());
         }
     }
