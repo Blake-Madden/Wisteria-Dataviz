@@ -10,7 +10,7 @@
     #define CONVERT_STR wxConvUTF8
 #endif
 
-TEST_CAST("Char Stream To Unicode", "[text stream]")
+TEST_CASE("Char Stream To Unicode", "[text stream]")
     {
     SECTION("Simple Buffer")
         {

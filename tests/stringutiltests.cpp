@@ -3,9 +3,11 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "../src/util/stringutil.h"
 
 using namespace string_util;
+using namespace Catch::Matchers;
 
 TEST_CASE("full_width_to_narrow", "[stringutil][fullwidth]")
 	{
@@ -1438,7 +1440,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
 
     SECTION("Null")
         {
-        CHECK(0, wcstod_thousands_separator(nullptr, nullptr));
+        CHECK(0 == wcstod_thousands_separator(nullptr, nullptr));
         }
 
     SECTION("Skip Spaces")
@@ -1446,8 +1448,8 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "de-DE");
 	    const wchar_t* buffer = L"    8.080.287.890,47 ml";
 	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
-        CHECK(0, wcsncmp(end == L" ml", 3));
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("Plus")
@@ -1455,8 +1457,8 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L"+8,080,287,890.47 ml";
 	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
-        CHECK(0, wcsncmp(end == L" ml", 3));
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
+        CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
     SECTION("Minus")
@@ -1464,7 +1466,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L"-8,080,287,890.47 ml";
 	    wchar_t* end;
-	    CHECK_THAT(-8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(-8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
@@ -1474,9 +1476,9 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
 	    const wchar_t* buffer =
             L"-8,080,287,890.457425548545785245742554854578524574255485457852457425548545785245742554854578524574255485457852";
 	    wchar_t* end;
-	    CHECK_THAT(-8080287890.45743, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(-8080287890.45743, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         // some of the ridiculously long number string will not be read and converted
-        CHECK(0, wcsncmp(end == L"425548545785245742554854578524574255485457852", 45));
+        CHECK(0 == wcsncmp(end, L"425548545785245742554854578524574255485457852", 45));
         }
 
     SECTION("Short Number")
@@ -1484,7 +1486,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L"-8ml";
 	    wchar_t* end;
-	    CHECK_THAT(-8, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(-8, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         CHECK(0 == wcsncmp(end, L"ml", 2));
         }
 
@@ -1493,7 +1495,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L",ml";
 	    wchar_t* end;
-	    CHECK_THAT(0, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(0, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         CHECK(0 == wcsncmp(end, L",ml", 3));
         }
 
@@ -1502,7 +1504,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "de-DE");
 	    const wchar_t* buffer = L"8.080.287.890,47 ml";
 	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
@@ -1511,7 +1513,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L"8,080,287,890.47 ml";
 	    wchar_t* end;
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end), 1e-4));
         CHECK(0 == wcsncmp(end, L" ml", 3));
         }
 
@@ -1519,7 +1521,7 @@ TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator
         {
         setlocale(LC_NUMERIC, "en-US");
 	    const wchar_t* buffer = L"8,080,287,890.47 ml";
-	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, nullptr)), 1e-4);
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, nullptr), 1e-4));
         }
 
     setlocale(LC_NUMERIC, "");

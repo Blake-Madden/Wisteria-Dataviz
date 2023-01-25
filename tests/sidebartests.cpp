@@ -7,7 +7,7 @@ using namespace Wisteria::UI;
 TEST_CASE("Sidebar control", "[sidebar]")
     {
     std::vector<wxBitmapBundle> m_imageList;
-    SideBar m_sideBar = new SideBar(wxTheApp->GetTopWindow());
+    SideBar* m_sideBar = new SideBar(wxTheApp->GetTopWindow());
     m_sideBar->SetImageList(m_imageList);
     m_sideBar->SetSize(200, 400);
     m_sideBar->DeleteAllFolders();
