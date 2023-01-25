@@ -13,11 +13,13 @@ SET(TEST_SRC_FILES
     htmlimporttests.cpp
     idlparsetests.cpp
     intsplittests.cpp
+    labeltests.cpp
     mapstests.cpp
     postscriptimporttests.cpp
     roundtest.cpp
     rtfencodetests.cpp
     safemathtests.cpp
+    sidebartests.cpp
     statstests.cpp
     stringutiltests.cpp
     subsettests.cpp
@@ -25,5 +27,6 @@ SET(TEST_SRC_FILES
     testableframe.cpp
     testingmain.cpp
     textimporttests.cpp
+    textstreamtests.cpp
     truncatetests.cpp
     xlsximporttests.cpp)

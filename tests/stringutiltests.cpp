@@ -1431,3 +1431,357 @@ TEST_CASE("StrNIStr", "[stringutil][StrNIStr]")
         CHECK(string_util::strnistr("Hello", "Hello World", 11) == nullptr);
         }
     };
+
+TEST_CASE("wcstod_thousands_separator", "[stringutil][wcstod_thousands_separator]")
+    {
+    setlocale(LC_NUMERIC, "");
+
+    SECTION("Null")
+        {
+        CHECK(0, wcstod_thousands_separator(nullptr, nullptr));
+        }
+
+    SECTION("Skip Spaces")
+        {
+        setlocale(LC_NUMERIC, "de-DE");
+	    const wchar_t* buffer = L"    8.080.287.890,47 ml";
+	    wchar_t* end;
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0, wcsncmp(end == L" ml", 3));
+        }
+
+    SECTION("Plus")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L"+8,080,287,890.47 ml";
+	    wchar_t* end;
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0, wcsncmp(end == L" ml", 3));
+        }
+
+    SECTION("Minus")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L"-8,080,287,890.47 ml";
+	    wchar_t* end;
+	    CHECK_THAT(-8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0 == wcsncmp(end, L" ml", 3));
+        }
+
+    SECTION("Long Number")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer =
+            L"-8,080,287,890.457425548545785245742554854578524574255485457852457425548545785245742554854578524574255485457852";
+	    wchar_t* end;
+	    CHECK_THAT(-8080287890.45743, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        // some of the ridiculously long number string will not be read and converted
+        CHECK(0, wcsncmp(end == L"425548545785245742554854578524574255485457852", 45));
+        }
+
+    SECTION("Short Number")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L"-8ml";
+	    wchar_t* end;
+	    CHECK_THAT(-8, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0 == wcsncmp(end, L"ml", 2));
+        }
+
+    SECTION("Not A Number")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L",ml";
+	    wchar_t* end;
+	    CHECK_THAT(0, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0 == wcsncmp(end, L",ml", 3));
+        }
+
+    SECTION("German")
+        {
+        setlocale(LC_NUMERIC, "de-DE");
+	    const wchar_t* buffer = L"8.080.287.890,47 ml";
+	    wchar_t* end;
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0 == wcsncmp(end, L" ml", 3));
+        }
+
+    SECTION("English")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L"8,080,287,890.47 ml";
+	    wchar_t* end;
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, &end)), 1e-4);
+        CHECK(0 == wcsncmp(end, L" ml", 3));
+        }
+
+    SECTION("Ignore End")
+        {
+        setlocale(LC_NUMERIC, "en-US");
+	    const wchar_t* buffer = L"8,080,287,890.47 ml";
+	    CHECK_THAT(8080287890.47, WithinRel(wcstod_thousands_separator(buffer, nullptr)), 1e-4);
+        }
+
+    setlocale(LC_NUMERIC, "");
+    }
+
+TEST_CASE("Superscript/Subscrpt", "[stringutil][superscript][subscript]")
+    {
+    SECTION("ToSuperscript")
+        {
+        CHECK(L'⁰' == string_util::to_superscript(L'0'));
+        CHECK(L'¹' == string_util::to_superscript(L'1'));
+        CHECK(L'²' == string_util::to_superscript(L'2'));
+        CHECK(L'³' == string_util::to_superscript(L'3'));
+        CHECK(L'⁴' == string_util::to_superscript(L'4'));
+        CHECK(L'⁵' == string_util::to_superscript(L'5'));
+        CHECK(L'⁶' == string_util::to_superscript(L'6'));
+        CHECK(L'⁷' == string_util::to_superscript(L'7'));
+        CHECK(L'⁸' == string_util::to_superscript(L'8'));
+        CHECK(L'⁹' == string_util::to_superscript(L'9'));
+        CHECK(L'⁺' == string_util::to_superscript(L'+'));
+        CHECK(L'⁻' == string_util::to_superscript(L'-'));
+        CHECK(L'⁼' == string_util::to_superscript(L'='));
+        CHECK(L'⁽' == string_util::to_superscript(L'('));
+        CHECK(L'⁾' == string_util::to_superscript(L')'));
+        CHECK(L'ᵃ' == string_util::to_superscript(L'a'));
+        CHECK(L'ᵇ' == string_util::to_superscript(L'b'));
+        CHECK(L'ᶜ' == string_util::to_superscript(L'c'));
+        CHECK(L'ᵈ' == string_util::to_superscript(L'd'));
+        CHECK(L'ᵉ' == string_util::to_superscript(L'e'));
+        CHECK(L'ᶠ' == string_util::to_superscript(L'f'));
+        CHECK(L'ᵍ' == string_util::to_superscript(L'g'));
+        CHECK(L'ʰ' == string_util::to_superscript(L'h'));
+        CHECK(L'ʲ' == string_util::to_superscript(L'j'));
+        CHECK(L'ᵏ' == string_util::to_superscript(L'k'));
+        CHECK(L'ˡ' == string_util::to_superscript(L'l'));
+        CHECK(L'ᵐ' == string_util::to_superscript(L'm'));
+        CHECK(L'ⁿ' == string_util::to_superscript(L'n'));
+        CHECK(L'ᵒ' == string_util::to_superscript(L'o'));
+        CHECK(L'ᵖ' == string_util::to_superscript(L'p'));
+        CHECK(L'ʳ' == string_util::to_superscript(L'r'));
+        CHECK(L'ˢ' == string_util::to_superscript(L's'));
+        CHECK(L'ᵗ' == string_util::to_superscript(L't'));
+        CHECK(L'ᵘ' == string_util::to_superscript(L'u'));
+        CHECK(L'ᵛ' == string_util::to_superscript(L'v'));
+        CHECK(L'ʷ' == string_util::to_superscript(L'w'));
+        CHECK(L'ʸ' == string_util::to_superscript(L'y'));
+        CHECK(L'ˣ' == string_util::to_superscript(L'x'));
+        CHECK(L'ᶻ' == string_util::to_superscript(L'z'));
+        CHECK(L'ⁱ' == string_util::to_superscript(L'i'));
+        CHECK(L'ⁿ' == string_util::to_superscript(L'n'));
+        CHECK(L'⁰' == string_util::to_superscript(L'０'));
+        CHECK(L'¹' == string_util::to_superscript(L'１'));
+        CHECK(L'²' == string_util::to_superscript(L'２'));
+        CHECK(L'³' == string_util::to_superscript(L'３'));
+        CHECK(L'⁴' == string_util::to_superscript(L'４'));
+        CHECK(L'⁵' == string_util::to_superscript(L'５'));
+        CHECK(L'⁶' == string_util::to_superscript(L'６'));
+        CHECK(L'⁷' == string_util::to_superscript(L'７'));
+        CHECK(L'⁸' == string_util::to_superscript(L'８'));
+        CHECK(L'⁹' == string_util::to_superscript(L'９'));
+        CHECK(L'*' == string_util::to_superscript(L'*'));                            
+
+        CHECK(string_util::is_superscript_number(L'⁰'));
+        CHECK(string_util::is_superscript_number(L'¹'));
+        CHECK(string_util::is_superscript_number(L'²'));
+        CHECK(string_util::is_superscript_number(L'³'));
+        CHECK(string_util::is_superscript_number(L'⁴'));
+        CHECK(string_util::is_superscript_number(L'⁵'));
+        CHECK(string_util::is_superscript_number(L'⁶'));
+        CHECK(string_util::is_superscript_number(L'⁷'));
+        CHECK(string_util::is_superscript_number(L'⁸'));
+        CHECK(string_util::is_superscript_number(L'⁹'));
+        CHECK(!string_util::is_superscript_number(L'2'));
+        CHECK(!string_util::is_superscript_number(L'₀'));
+        CHECK(!string_util::is_superscript_number(L'a'));
+        CHECK(!string_util::is_superscript_number(L'⁺'));
+        CHECK(!string_util::is_superscript_number(L'ⁿ'));
+        // Roman numerals
+        CHECK(string_util::is_superscript_number(L'ᶜ'));
+        CHECK(string_util::is_superscript_number(L'ᵈ'));
+        CHECK(string_util::is_superscript_number(L'ⁱ'));
+        CHECK(string_util::is_superscript_number(L'ᵐ'));
+        CHECK(string_util::is_superscript_number(L'ᵛ'));
+        CHECK(string_util::is_superscript_number(L'ˣ'));
+        }
+
+    SECTION("ToSubscript")
+        {
+        CHECK(L'₀' == string_util::to_subscript(L'0'));
+        CHECK(L'₁' == string_util::to_subscript(L'1'));
+        CHECK(L'₂' == string_util::to_subscript(L'2'));
+        CHECK(L'₃' == string_util::to_subscript(L'3'));
+        CHECK(L'₄' == string_util::to_subscript(L'4'));
+        CHECK(L'₅' == string_util::to_subscript(L'5'));
+        CHECK(L'₆' == string_util::to_subscript(L'6'));
+        CHECK(L'₇' == string_util::to_subscript(L'7'));
+        CHECK(L'₈' == string_util::to_subscript(L'8'));
+        CHECK(L'₉' == string_util::to_subscript(L'9'));
+        CHECK(L'₊' == string_util::to_subscript(L'+'));
+        CHECK(L'₋' == string_util::to_subscript(L'-'));
+        CHECK(L'₌' == string_util::to_subscript(L'='));
+        CHECK(L'₍' == string_util::to_subscript(L'('));
+        CHECK(L'₎' == string_util::to_subscript(L')'));
+        CHECK(L'ₐ' == string_util::to_subscript(L'a'));
+        CHECK(L'ₑ' == string_util::to_subscript(L'e'));
+        CHECK(L'ₒ' == string_util::to_subscript(L'o'));
+        CHECK(L'ₕ' == string_util::to_subscript(L'h'));
+        CHECK(L'ₖ' == string_util::to_subscript(L'k'));
+        CHECK(L'ₗ' == string_util::to_subscript(L'l'));
+        CHECK(L'ₘ' == string_util::to_subscript(L'm'));
+        CHECK(L'ₙ' == string_util::to_subscript(L'n'));
+        CHECK(L'ₚ' == string_util::to_subscript(L'p'));
+        CHECK(L'ₛ' == string_util::to_subscript(L's'));
+        CHECK(L'ₜ' == string_util::to_subscript(L't'));
+        CHECK(L'₀' == string_util::to_subscript(L'０'));
+        CHECK(L'₁' == string_util::to_subscript(L'１'));
+        CHECK(L'₂' == string_util::to_subscript(L'２'));
+        CHECK(L'₃' == string_util::to_subscript(L'３'));
+        CHECK(L'₄' == string_util::to_subscript(L'４'));
+        CHECK(L'₅' == string_util::to_subscript(L'５'));
+        CHECK(L'₆' == string_util::to_subscript(L'６'));
+        CHECK(L'₇' == string_util::to_subscript(L'７'));
+        CHECK(L'₈' == string_util::to_subscript(L'８'));
+        CHECK(L'₉' == string_util::to_subscript(L'９'));
+        CHECK(L'z' == string_util::to_subscript(L'z'));
+
+        CHECK(string_util::is_subscript_number(L'₀'));
+        CHECK(string_util::is_subscript_number(L'₁'));
+        CHECK(string_util::is_subscript_number(L'₂'));
+        CHECK(string_util::is_subscript_number(L'₃'));
+        CHECK(string_util::is_subscript_number(L'₄'));
+        CHECK(string_util::is_subscript_number(L'₅'));
+        CHECK(string_util::is_subscript_number(L'₆'));
+        CHECK(string_util::is_subscript_number(L'₇'));
+        CHECK(string_util::is_subscript_number(L'₈'));
+        CHECK(string_util::is_subscript_number(L'₉'));
+        }
+    }
+
+TEST_CASE("Find Whole Word", "[stringutil][whole word]")
+    {
+    SECTION("Find")
+        {
+        std::wstring needle{L"needle"};
+        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                "knitting-needle? Anyway, just find needle" };
+        CHECK((size_t)0 == string_util::find_whole_word(haystack, needle));
+        CHECK((size_t)94 == string_util::find_whole_word(haystack, needle, 1));
+        CHECK((size_t)94 == string_util::find_whole_word(haystack, needle, 94));
+        CHECK((size_t)120 == string_util::find_whole_word(haystack, needle, 95));
+        CHECK((size_t)-1 == string_util::find_whole_word(haystack, needle, 200));
+        }
+
+    SECTION("No Find")
+        {
+        std::wstring needle{L"pin"};
+        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                 "knitting-needle? Anyway, just find needle" };
+        CHECK((size_t)-1 == string_util::find_whole_word(haystack, needle));
+        CHECK((size_t)-1 == string_util::find_whole_word(haystack, needle, 500));
+        CHECK((size_t)-1 == string_util::find_whole_word(haystack, std::wstring(L"")));
+        CHECK((size_t)-1 == string_util::find_whole_word(std::wstring(L""), needle));
+        }
+    }
+
+TEST_CASE("String Equal Functors", "[stringutil][equal]")
+    {
+    SECTION("NoCaseStringMap")
+        {
+        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"Fred",2))) == false);
+        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"fred").operator()(std::make_pair(L"Fred",2))));
+        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"bob",2))));
+        CHECK((equal_basic_string_i_compare_map<std::wstring,size_t>(L"bob").operator()(std::make_pair(L"bobby",2))) == false);
+        }
+    }
+
+TEST_CASE("Remove all", "[stringutil][remove]")
+    {
+    SECTION("Empty")
+        {
+        std::wstring blah(L"");
+        string_util::remove_all(blah, L'/');
+        CHECK(blah.empty());
+        }
+
+    SECTION("NothingRemoved")
+        {
+        std::wstring blah(L"Some text here");
+        string_util::remove_all(blah, L'&');
+        CHECK(blah == L"Some text here");
+        }
+
+    SECTION("Removed")
+        {
+        std::wstring blah(L"&Some &te&&xt here&");
+        string_util::remove_all(blah, L'&');
+        CHECK(blah == L"Some text here");
+        }
+
+    SECTION("AllRemoved")
+        {
+        std::wstring blah(L"&");
+        string_util::remove_all(blah, L'&');
+        CHECK(blah.empty());
+        blah = L"&&&";
+        string_util::remove_all(blah, L'&');
+        CHECK(blah.empty());
+        blah = L"& &&";
+        string_util::remove_all(blah, L'&');
+        CHECK(blah == L" ");
+        }
+    }
+
+TEST_CASE("Find First Not Of", "[stringutil][find]")
+    {
+    SECTION("Nulls")
+        {
+        CHECK(string_util::find_first_not_of<wchar_t>(nullptr, 0, L"text", 4) == 0);
+        CHECK(string_util::find_first_not_of<wchar_t>(L"text", 4, nullptr, 0) == 4);
+        }
+
+    SECTION("Find")
+        {
+        CHECK(string_util::find_first_not_of<wchar_t>(L"some text5", 10, L" ", 1) == 0);
+        CHECK(string_util::find_first_not_of<wchar_t>(L"some text5", 10, L"some", 4) == 4);
+        CHECK(string_util::find_first_not_of<wchar_t>(L"some text5", 10, L"some text", 9) == 9);
+        CHECK(string_util::find_first_not_of<wchar_t>(L"some text5", 10, L"some text5", 10) == 10);
+        }
+
+    SECTION("BoundaryError")
+        {
+        wchar_t text[100];
+        std::wmemset(text, 0, 100);
+        std::wcscpy(text, L"abc");
+        // will really only scan first three letter, see the embedded nulls, and return
+        // what the caller thought was the length of the string to know that it failed.
+        CHECK(string_util::find_first_not_of<wchar_t>(text, 100, L"abc", 4) == 100);
+        }
+    }
+
+TEST_CASE("Replace whole word", "[stringutil][whole word]")
+    {
+    SECTION("Find")
+        {
+        std::wstring needle{L"needle"};
+        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                 "knitting-needle? Anyway, just find needle" };
+        string_util::replace_all_whole_word<std::wstring>(haystack, needle, L"pin");
+        CHECK(std::wstring(L"pin in the haystack. There are needles in the haystack, including knittingneedles."
+                               "knitting-pin? Anyway, just find pin") == haystack);
+        string_util::replace_all_whole_word<std::wstring>(haystack, L"pin", L"needle");
+        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                 "knitting-needle? Anyway, just find needle") == haystack);
+        }
+
+    SECTION("No Find")
+        {
+        std::wstring needle{L"pin"};
+        std::wstring haystack{ L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                 "knitting-needle? Anyway, just find needle" };
+        string_util::replace_all_whole_word<std::wstring>(haystack, needle, L"pin");
+        CHECK(std::wstring(L"needle in the haystack. There are needles in the haystack, including knittingneedles."
+                                 "knitting-needle? Anyway, just find needle") == haystack);
+        }
+    }
