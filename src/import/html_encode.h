@@ -22,22 +22,18 @@ namespace lily_of_the_valley
     public:
         /** @brief Encodes a regular string into HTML.
             @details This includes escaping quotes and angle symbols,
-            and encoding tabs, newlines, and Unicode values.
+                and encoding tabs, newlines, and Unicode values.
             @param text The text to encode.
-            @param length The length of the text to encode.\n
-                Pass @c -1 for the function to determine the length.
             @param encodeSpaces @c true to preserve consecutive spaces with `&#nbsp;`.
             @returns A string encoded to HTML.*/
-        [[nodiscard]] std::wstring operator()(const wchar_t* text, size_t length,
+        [[nodiscard]] std::wstring operator()(const std::wstring_view text,
                                               const bool encodeSpaces) const
             {
-            if (std::wstring::npos == length)
-                { length = std::wcslen(text); }
             std::wstring encoded_text;
-            if (text == nullptr || length == 0)
+            if (text.empty())
                 { return encoded_text; }
-            encoded_text.reserve(length*2);
-            for (size_t i = 0; i < length; ++i)
+            encoded_text.reserve(text.length() * 2);
+            for (size_t i = 0; i < text.length(); ++i)
                 {
                 if (text[i] >= 127)
                     {
@@ -60,7 +56,7 @@ namespace lily_of_the_valley
                          text[i] == 13)
                     {
                     // treats CRLF combo as one break
-                    if (i < length-1 &&
+                    if (i < text.length() - 1 &&
                         (text[i+1] == 10 ||
                         text[i+1] == 13) )
                         {
@@ -79,7 +75,7 @@ namespace lily_of_the_valley
                     if (i > 0 && text[i-1] == L' ')
                         {
                         encoded_text += L"&nbsp;";
-                        while (i+1 < length)
+                        while (i+1 < text.length())
                             {
                             if (text[i+1] == L' ')
                                 {
@@ -98,17 +94,17 @@ namespace lily_of_the_valley
                 }
             return encoded_text;
             }
+
         /** @brief Determines if a block of text has characters in it that
                 need to be encoded to be HTML compliant.
             @param text The text to be reviewed.
-            @param length The length of @c text.
             @returns @c true if text should be HTML encoded.*/
         [[nodiscard]]
-        static bool needs_to_be_encoded(const wchar_t* text, const size_t length)
+        static bool needs_to_be_encoded(const std::wstring_view text)
             {
-            if (text == nullptr || length == 0)
+            if (text.empty())
                 { return false; }
-            for (size_t scanCounter = 0; scanCounter < length; ++scanCounter)
+            for (size_t scanCounter = 0; scanCounter < text.length(); ++scanCounter)
                 {
                 if (text[scanCounter] >= 127 ||
                     string_util::is_one_of(text[scanCounter], L"&\"\'<>\n\r\t") ||

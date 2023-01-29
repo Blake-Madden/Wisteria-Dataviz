@@ -10,56 +10,47 @@ TEST_CASE("HTML Encode", "[html encode]")
     SECTION("Null")
         {
         lily_of_the_valley::html_encode_text encode;
-        CHECK(encode.needs_to_be_encoded(nullptr, 1) == false);
-        CHECK(encode.needs_to_be_encoded(L"text", 0) == false);
-        CHECK(encode(nullptr, 1, true) == L"");
-        CHECK(encode(L"text", 0, true) == L"");
+        CHECK_FALSE(encode.needs_to_be_encoded({ L"text", 0 }));
+        CHECK(encode({ L"text", 0 }, true) == L"");
         }
     SECTION("Plain Text")
         {
         lily_of_the_valley::html_encode_text encode;
         const wchar_t* text = L"hello, world";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)) == false);
-        CHECK(encode(text, std::wcslen(text), true) == L"hello, world");
+        CHECK_FALSE(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello, world");
         }
     SECTION("Whitespace")
         {
         lily_of_the_valley::html_encode_text encode;
         const wchar_t* text = L"hello\tworld";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello&nbsp;&nbsp;&nbsp;world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello&nbsp;&nbsp;&nbsp;world");
         text = L"hello\nworld";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello<p></p>world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello<p></p>world");
         text = L"hello\n\rworld";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello<p></p>world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello<p></p>world");
         text = L"hello    world";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello &nbsp;&nbsp;&nbsp;world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello &nbsp;&nbsp;&nbsp;world");
         text = L"hello  world";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello &nbsp;world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello &nbsp;world");
         }
     SECTION("Illegal Symbols")
         {
         lily_of_the_valley::html_encode_text encode;
         const wchar_t* text = L"hello&<>\"\'world";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"hello&#38;&#60;&#62;&#34;&#39;world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"hello&#38;&#60;&#62;&#34;&#39;world");
         }
     SECTION("Unicode")
         {
         lily_of_the_valley::html_encode_text encode;
         const wchar_t* text = L"heâllo\x432";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)));
-        CHECK(encode(text, std::wcslen(text), true) == L"he&#226;llo&#1074;");
-        }
-    SECTION("Size Not Specified")
-        {
-        lily_of_the_valley::html_encode_text encode;
-        const wchar_t* text = L"hello, world";
-        CHECK(encode.needs_to_be_encoded(text, std::wcslen(text)) == false);
-        CHECK(encode(text, static_cast<size_t>(-1), true) == L"hello, world");
+        CHECK(encode.needs_to_be_encoded(text));
+        CHECK(encode(text, true) == L"he&#226;llo&#1074;");
         }
     }
