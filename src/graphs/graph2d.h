@@ -12,6 +12,7 @@
 #ifndef __WISTERIA_GRAPH2D_H__
 #define __WISTERIA_GRAPH2D_H__
 
+#include <random>
 #include "../base/points.h"
 #include "../base/polygon.h"
 #include "../base/canvas.h"
@@ -86,11 +87,7 @@ namespace Wisteria::Graphs
         /// @private
         Graph2D(const Graph2D&) = delete;
         /// @private
-        Graph2D(Graph2D&&) = delete;
-        /// @private
         Graph2D& operator=(const Graph2D&) = delete;
-        /// @private
-        Graph2D& operator=(Graph2D&&) = delete;
 
         /** @brief Embeds an annotation object onto the plot.
             @param object The object (e.g., a text note or image) to embed onto the plot.
@@ -549,6 +546,10 @@ namespace Wisteria::Graphs
 
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
+
+        /// @brief Random number engine that can be used with a @c uniform_int_distribution.
+        /// @details For example, this could be used to generate random coordinates for an object.
+        static std::mt19937 m_mt;
     private:
         /// @brief Sets a non-const pointer to the parent canvas.
         /// @param canvas The parent canvas.

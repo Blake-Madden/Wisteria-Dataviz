@@ -15,6 +15,9 @@ using namespace Wisteria::Icons::Schemes;
 
 namespace Wisteria::Graphs
     {
+    // random number generator that can be used by the graph
+    std::mt19937 Graph2D::m_mt{ std::random_device{}() };
+
     //----------------------------------------------------------------
     void Graph2D::AddReferenceLinesAndAreasToLegend(std::shared_ptr<GraphItems::Label>& legend) const
         {
