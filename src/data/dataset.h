@@ -76,21 +76,6 @@ namespace Wisteria::Data
             { return lhs.CmpNoCase(rhs) < 0; };
         };
 
-    /// @brief Helper functor to compare @c std::wstring case insensitively.
-    /// @details This is useful as a predicate for maps and sets.
-    class WStringCmpNoCase
-        {
-    public:
-        /// @private
-        [[nodiscard]]
-        bool operator()(const std::wstring_view lhs, const std::wstring_view rhs) const noexcept
-            { return string_util::stricmp(lhs.data(), rhs.data()) < 0; };
-        /// @private
-        [[nodiscard]]
-        bool operator()(const std::wstring& lhs, const std::wstring& rhs) const noexcept
-            { return string_util::stricmp(lhs.c_str(), rhs.c_str()) < 0; };
-        };
-
     /// @private
     enum class ColumnType
         {
