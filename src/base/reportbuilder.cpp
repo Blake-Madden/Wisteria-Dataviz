@@ -187,6 +187,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadProConRoadmap(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"word-cloud") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadWordCloud(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -2490,13 +2495,13 @@ namespace Wisteria
                 for (const auto& pred : preds)
                     {
                     if (pred.CmpNoCase(_DT(L"positive")) == 0)
-                        { lrPredictors |= Influence::Positive; }
+                        { lrPredictors |= Influence::InfluencePositive; }
                     else if (pred.CmpNoCase(_DT(L"negative")) == 0)
-                        { lrPredictors |= Influence::Negative; }
+                        { lrPredictors |= Influence::InfluenceNegative; }
                     else if (pred.CmpNoCase(_DT(L"neutral")) == 0)
-                        { lrPredictors |= Influence::Neutral; }
+                        { lrPredictors |= Influence::InfluenceNeutral; }
                     else if (pred.CmpNoCase(_DT(L"all")) == 0)
-                        { lrPredictors |= Influence::All; }
+                        { lrPredictors |= Influence::InfluenceAll; }
                     }
                 }
 
@@ -3259,6 +3264,43 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for bar chart.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadWordCloud(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for word cloud."),
+                                 dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
+            const auto wordColName = variablesNode->GetProperty(L"words")->GetValueString();
+
+            auto wordCloud = std::make_shared<WordCloud>(canvas,
+                LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
+
+            wordCloud->SetData(foundPos->second, wordColName,
+                (aggVarName.length() ? std::optional<wxString>(aggVarName) : std::nullopt));
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, wordCloud);
+            return wordCloud;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for word cloud.").ToUTF8());
             }
         }
 

@@ -50,6 +50,7 @@ SET(WISTERIA_SRC
     ../src/graphs/roadmap.cpp
     ../src/graphs/table.cpp
     ../src/graphs/wcurveplot.cpp
+    ../src/graphs/wordcloud.cpp
     ../src/import/html_extract_text.cpp
     ../src/import/postscript_extract_text.cpp
     ../src/import/xlsx_extract_text.cpp
