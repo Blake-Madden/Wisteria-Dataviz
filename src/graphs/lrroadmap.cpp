@@ -74,15 +74,15 @@ namespace Wisteria::Graphs
             // default to all included
             else if (!preditorsToIncludes.has_value())
                 { return true; }
-            else if ((preditorsToIncludes.value() & Influence::All) == Influence::All)
+            else if ((preditorsToIncludes.value() & Influence::InfluenceAll) == Influence::InfluenceAll)
                 { return true; }
-            else if ((preditorsToIncludes.value() & Influence::Negative) == Influence::Negative &&
+            else if ((preditorsToIncludes.value() & Influence::InfluenceNegative) == Influence::InfluenceNegative &&
                 value < 0)
                 { return true; }
-            else if ((preditorsToIncludes.value() & Influence::Neutral) == Influence::Neutral &&
+            else if ((preditorsToIncludes.value() & Influence::InfluenceNeutral) == Influence::InfluenceNeutral &&
                 value == 0)
                 { return true; }
-            else if ((preditorsToIncludes.value() & Influence::Positive) == Influence::Positive &&
+            else if ((preditorsToIncludes.value() & Influence::InfluencePositive) == Influence::InfluencePositive &&
                 value > 0)
                 { return true; }
             else

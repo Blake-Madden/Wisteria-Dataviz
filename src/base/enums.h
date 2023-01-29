@@ -89,13 +89,13 @@ namespace Wisteria
     enum Influence
         {
         /// @brief Positive influence (e.g., IVs with coefficients > 0).
-        Positive = 1,
+        InfluencePositive = 1,
         /// @brief Negative infuence (e.g., IVs with coefficients < 0).
-        Negative = 2,
+        InfluenceNegative = 2,
         /// @brief No influence (e.g., IVs with coefficients = 0).
-        Neutral = 4,
+        InfluenceNeutral = 4,
         /// @brief All levels of influence.
-        All = 8
+        InfluenceAll = (InfluencePositive | InfluenceNegative | InfluenceNeutral)
         };
 
     /** @brief How labels are aligned with their parents on a graph.*/

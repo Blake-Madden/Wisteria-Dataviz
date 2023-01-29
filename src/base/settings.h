@@ -39,7 +39,7 @@ namespace Wisteria
     enum DebugSettings
         {
         /** @brief No %Wisteria-specific debugging should be enabled.*/
-        None = 0x00,
+        DebugNone = 0x00,
         /** @brief Draw a bounding box around objects when they are selected.*/
         DrawBoundingBoxesOnSelection = 0x01,
         /** @brief Write additional information on the screen when an object is selected
@@ -172,7 +172,7 @@ namespace Wisteria
 #ifdef DEBUG_FILE_IO
         DebugSettings::AllowFileIO|
 #endif
-        DebugSettings::None
+        DebugSettings::DebugNone
         };
         std::shared_ptr<Colors::Schemes::ColorScheme> m_defaultColorScheme;
         };
