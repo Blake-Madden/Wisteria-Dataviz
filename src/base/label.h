@@ -259,17 +259,19 @@ namespace Wisteria::GraphItems
             @param dc An existing graphics context to measure the label on.
             @note This is a more optimal alternative to GetBoundingBox(), which doesn't have to
                 create its own temporary @c wxDC.*/
-        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox(wxDC& dc) const final;
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.
             @param parentScaling The parent's scaling (not used in this implementation).
             @note The scaling of the label will be adjusted to this box,
-             and will also be anchored (length-wise if vertical, height-wise if horizontal)
-             within this box.\n
-             If the label isn't wide/tall enough to fill the bounding box precisely
-             width- and length-wise, then it will be anchored.\n
-             Call SetAnchoring() to control how it is anchored.*/
+                and will also be anchored (length-wise if vertical, height-wise if horizontal)
+                within this box.\n
+                If the label isn't wide/tall enough to fill the bounding box precisely
+                width- and length-wise, then it will be anchored.\n
+                Call SetAnchoring() to control how it is anchored.
+            @sa SetBoundingBoxToContentAdjustment().*/
         void SetBoundingBox(const wxRect& rect, wxDC& dc, [[maybe_unused]] const double parentScaling) final;
 
         /** @brief Moves the item by the specified x and y values.
@@ -281,11 +283,9 @@ namespace Wisteria::GraphItems
             InvalidateCachedBoundingBox();
             }
 
-        /** @brief Set this to @c true so that calls to SetBoundingBox() will only
-                be treated as a suggestion. The bounding box will be set to the suggested size,
-                but then be scaled down to the content.
-            @details This behaviour is turned off by default, so that calls to SetBoundingBox()
-                will explicitly set the size.\n
+        /** @brief Set how the bounding box passed to SetBoundingBox() is used.
+            @details This behaviour is turned off by default (i.e., @c None),
+                so that calls to SetBoundingBox() will explicitly set the size.\n
                 This is mostly useful for legends being embedded on a canvas. Having this option
                 set will tell the canvas to re-measure the legend and only use the space that it
                 needs, giving any extra space back to the items in the same row. If this is not
@@ -296,18 +296,18 @@ namespace Wisteria::GraphItems
                 its canvas proportion was calculated.
              @param adjust @c true to tell SetBoundingBox() to only treat its size
                 as a suggestion.*/
-        void AdjustingBoundingBoxToContent(const bool adjust) noexcept
+        void SetBoundingBoxToContentAdjustment(const LabelBoundingBoxContentAdjustment adjust) noexcept
             { m_adjustBoundingBoxToContent = adjust; }
-        /// @returns @c true if the bounding box passed to SetBoundingBox() is only
-        ///     treated as a suggestion.
-        [[nodiscard]] bool IsAdjustingBoundingBoxToContent() const noexcept
+        /// @returns How the bounding box passed to SetBoundingBox() is being applied.
+        [[nodiscard]]
+        LabelBoundingBoxContentAdjustment GetBoundingBoxToContentAdjustment() const noexcept
             { return m_adjustBoundingBoxToContent; }
         /// @}
 
         /// @name Font Functions
         /// @brief Helper functions for font selection and adjustments.
         /// @note To change or edit the font for a label, call
-        ///     @c GetGraphItemInfo().Font() or GetFont().
+        ///     `GetGraphItemInfo().Font()` or `GetFont()`.
         /// @{
 
         /** @returns The best font size to fit a given string across an area diagonally.
@@ -320,21 +320,25 @@ namespace Wisteria::GraphItems
                 so the font size returned will fit this area as-is.\n
                 Because `Label`s adjust their font size based on scaling,
                 setting its point size to this should also set its scaling to 1 (not the parent's).*/
-        [[nodiscard]] static int CalcDiagonalFontSize(wxDC& dc,
-                                                      const wxFont& ft, const wxRect& boundingBox,
-                                                      const double angleInDegrees,
-                                                      const wxString& text);
+        [[nodiscard]]
+        static int CalcDiagonalFontSize(wxDC& dc,
+                                        const wxFont& ft, const wxRect& boundingBox,
+                                        const double angleInDegrees,
+                                        const wxString& text);
         /** @returns The font size that would fit for a given string within a given bounding box.
             @param dc The device context that the text is being drawn on.
             @param ft The font this is being drawn with.
             @param boundingBox The bounding box that the text should fit inside of.
             @param text The text that is being drawn.
             @warning `boundingBoxSize` is assumed to be scaled from the parent already,
-             so the font size returned will fit this area as-is.\n
-             Because `Label`s adjust their font size based on scaling,
-             setting its point size to this should also set its scaling to 1 (not the parent's)*/
-        [[nodiscard]] static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
-            const wxRect& boundingBox, const wxString& text);
+                so the font size returned will fit this area as-is.\n
+                Because `Label`s adjust their font size based on scaling,
+                setting its point size to this should also set its scaling to @c 1.0
+                (not the parent's)*/
+        [[nodiscard]]
+        static int CalcFontSizeToFitBoundingBox(wxDC& dc, const wxFont& ft,
+                                                const wxRect& boundingBox,
+                                                const wxString& text);
         /** @returns The first available font (face name) found from the given list,
                 or the system default if none are found.
             @param possibleFontNames The list of font names to choose from.*/
@@ -406,7 +410,8 @@ namespace Wisteria::GraphItems
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };
-        bool m_adjustBoundingBoxToContent{ false };
+        LabelBoundingBoxContentAdjustment m_adjustBoundingBoxToContent
+            { LabelBoundingBoxContentAdjustment::ContentAdjustNone };
         size_t m_lineCount{ 0 };
         size_t m_longestLineLength{ 0 };
         std::set<size_t> m_linesIgnoringLeftMargin;

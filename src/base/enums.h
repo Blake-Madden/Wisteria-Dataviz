@@ -159,6 +159,25 @@ namespace Wisteria
                                    will draw a frame around the text.*/
         };
 
+    /** @brief When calling `SetBoundingBox()` for a `Label`, this will control how the user-provided
+            bounding box is used.
+        @internal This enum is a bitmask, do not make it strongly typed.*/
+    enum LabelBoundingBoxContentAdjustment
+        {
+        /// @brief The bounding box is used verbatim. If the measured content of the label
+        ///     is smaller than the box, then the text will be aligned with the box
+        ///     according to the label's page alignment.
+        ContentAdjustNone = 0,
+        /// @brief The height of the bounding box is treated as a suggestion and will be
+        ///     adjusted to fit the final measured size of the text.
+        ContentAdjustHeight = 1,
+        /// @brief The width of the bounding box is treated as a suggestion and will be
+        ///     adjusted to fit the final measured size of the text.
+        ContentAdjustWidth = 2,
+        /// @brief readjusts both width and height of the label to its content.
+        ContentAdjustAll = (ContentAdjustHeight | ContentAdjustWidth)
+        };
+
     /// @brief How (single or multi-line) text is aligned.
     /// @sa PageVerticalAlignment, PageHorizontalAlignment
     enum class TextAlignment

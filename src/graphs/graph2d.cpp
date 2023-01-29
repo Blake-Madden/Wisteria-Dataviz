@@ -107,7 +107,7 @@ namespace Wisteria::Graphs
             {
             legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
             legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
-            legend->AdjustingBoundingBoxToContent(true);
+            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4).
@@ -119,7 +119,7 @@ namespace Wisteria::Graphs
             {
             legend->SetCanvasWidthProportion(GetCanvas()->CalcMinWidthProportion(legend));
             legend->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
-            legend->AdjustingBoundingBoxToContent(true);
+            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).
                 CanvasPadding(4, 4, 4, 4).
@@ -132,7 +132,7 @@ namespace Wisteria::Graphs
         // was off to the right of the graph
         else if (hint == LegendCanvasPlacementHint::AboveOrBeneathGraph)
             {
-            legend->AdjustingBoundingBoxToContent(true);
+            legend->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustWidth);
             legend->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
             legend->GetGraphItemInfo().Pen(wxNullPen).
                 Padding(0, 0, 0, (legend->HasLegendIcons() ? Label::GetMinLegendWidthDIPs() : 0)).

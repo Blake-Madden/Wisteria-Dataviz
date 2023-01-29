@@ -206,14 +206,21 @@ namespace Wisteria::GraphItems
         contentRect.x += CalcPageHorizontalOffset(dc);
         SetCachedContentBoundingBox(contentRect);
 
-        if (IsAdjustingBoundingBoxToContent())
+        wxRect clippedRect{ rect };
+        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustWidth)
+            { clippedRect.SetWidth(measuredWidth); }
+        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
+            { clippedRect.SetHeight(measureHeight); }
+        // if both width and height are being readjusted, then adjust the min size as well since
+        // page alignment is irrelevant now.
+        if (GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustWidth &&
+            GetBoundingBoxToContentAdjustment() & LabelBoundingBoxContentAdjustment::ContentAdjustHeight)
             {
-            wxRect clippedRect{ rect };
-            clippedRect.SetWidth(measuredWidth);
-            SetCachedBoundingBox(clippedRect);
+            SetMinimumUserSizeDIPs(dc.ToDIP(clippedRect.GetWidth()),
+                                   dc.ToDIP(clippedRect.GetHeight()));
             }
-        else
-            { SetCachedBoundingBox(rect); }
+
+        SetCachedBoundingBox(clippedRect);
         }
 
     //-------------------------------------------
@@ -1016,10 +1023,16 @@ namespace Wisteria::GraphItems
                     const auto bBox = GetBoundingBox(dc);
                     Label infoLabel(GraphItemInfo(
                         wxString::Format(L"Scaling: %s\n"
+                                          "Width: %s\n"
+                                          "Height: %s\n"
                                           "Default font size: %d\n"
                                           "Font size: %d",
                             wxNumberFormatter::ToString(GetScaling(), 1,
-                                                        wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(bBox.GetWidth(), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
+                            wxNumberFormatter::ToString(bBox.GetHeight(), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
                             GetFont().GetPointSize(),
                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize())).
                         AnchorPoint(bBox.GetTopLeft()).
