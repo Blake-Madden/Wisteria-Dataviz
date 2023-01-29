@@ -1079,12 +1079,13 @@ namespace Wisteria::Graphs
 
         /// @private
         void AddCellAnnotation(CellAnnotation&& cellNote);
-        /// @private
+    private:
         [[deprecated("Tables do not support legends.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
-    private:
+
         void CalcMainTableSize(std::vector<wxCoord>& columnWidths,
                                std::vector<wxCoord>& rowHeights,
                                GraphItems::Label& measuringLabel,

@@ -25,7 +25,7 @@ namespace Wisteria::Graphs
          | :-------------- | :--------------------------------
          | @image html CatagorizedBarChart.svg width=90% | @image html GroupedCatagorizedBarChart.svg width=90%
 
-        @par Data:
+        @par %Data:
          This plot accepts a Data::Dataset, where a categorical column is split into levels
          and aggregated. The aggregation can either be the frequency of observations or
          summed values from a corresponding continuous column.
@@ -71,8 +71,7 @@ namespace Wisteria::Graphs
           // plot->SetData(mpgData, L"manufacturer", std::nullopt, L"model");
 
           canvas->SetFixedObject(0, 0, plot);
-         @endcode
-        */
+         @endcode*/
     class CategoricalBarChart final : public Wisteria::Graphs::BarChart
         {
     public:

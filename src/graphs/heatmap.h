@@ -132,7 +132,7 @@ namespace Wisteria::Graphs
                 which creates a grayscale spectrum.*/
         explicit HeatMap(Wisteria::Canvas* canvas,
                          std::shared_ptr<Colors::Schemes::ColorScheme> colors = nullptr);
-        /** @brief Set the data across the heatmap.
+        /** @brief Sets the data across the heatmap.
             @param data The data.
             @param continuousColumnName The data column from the dataset to use for
                 the heatmapping.
