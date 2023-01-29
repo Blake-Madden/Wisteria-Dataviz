@@ -509,6 +509,14 @@ The remaining properties are executed in the following order:
   - `"value"`: the cell value (as a string) to add a footnote number to. Can include [constants](#constants-properties).
   - `"footnote"`: the footnote to add to the caption. Can include [constants](#constants-properties).
 
+## Word Cloud {#word-cloud-properties .unnumbered}
+
+Properties for `"word-cloud"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"words"`: the categorical column containing the words.
+  - `"aggregate"`: (optional) the continuous column containing the words' frequency counts.
+
 ## W-Curve Plot {#w-curve-plot-properties .unnumbered}
 
 Properties for `"w-curve-plot"` nodes:
