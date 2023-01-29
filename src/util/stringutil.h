@@ -1783,6 +1783,21 @@ namespace string_util
         return numberOfLinesRemoved;
         }
 
+    /// @brief `std::less`-like functor to compare @c std::wstring case insensitively.
+    /// @details This is useful as a predicate for `std::map` and `std::set`.
+    class string_no_case_less
+        {
+    public:
+        /// @private
+        [[nodiscard]]
+        bool operator()(const std::wstring_view lhs, const std::wstring_view rhs) const noexcept
+            { return string_util::stricmp(lhs.data(), rhs.data()) < 0; };
+        /// @private
+        [[nodiscard]]
+        bool operator()(const std::wstring& lhs, const std::wstring& rhs) const noexcept
+            { return string_util::stricmp(lhs.c_str(), rhs.c_str()) < 0; };
+        };
+
     /** @brief Converts strings to double values, but also takes into account ranges (returning the average).
         @details For example, a string like "5-8" will return 6.5. Hyphens and colons are seen as range separators.
         @param nptr The string to parse.

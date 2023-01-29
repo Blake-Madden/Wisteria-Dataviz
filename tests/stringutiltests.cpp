@@ -1,6 +1,7 @@
 ﻿#include <iomanip>
 #include <sstream>
 #include <algorithm>
+#include <set>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -729,6 +730,26 @@ TEST_CASE("atoi", "[stringutil][atoi]")
         CHECK(string_util::atoi(L"7") == 7);
         CHECK(string_util::atoi(L"-10") == -10);
         }
+    }
+
+TEST_CASE("string_no_case_less", "[stringutil][string_no_case_less]")
+    {
+    std::set<std::wstring, string_no_case_less> strMap =
+        {
+        L"ERNIE",
+        L"BERT",
+        L"Ernie",
+        L"Gordan",
+        L"Maria",
+        L"bert"
+        };
+    CHECK(strMap.size() == 4);
+    CHECK(strMap.find(L"BeRt") != strMap.cend());
+    CHECK(strMap.find(L"Ernie") != strMap.cend());
+    CHECK(strMap.find(L"Oscar") == strMap.cend());
+    CHECK(strMap.find(L"ERNI") == strMap.cend());
+    CHECK(strMap.find(L"ERNIE'S") == strMap.cend());
+    CHECK(strMap.find(L"") == strMap.cend());
     }
 
 TEST_CASE("StrICmp", "[stringutil][StrICmp]")
