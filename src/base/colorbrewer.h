@@ -65,9 +65,10 @@ namespace Wisteria::Colors
         /// @param blue The blue channel.
         /// @param alpha The alpha channel.
         /// @returns The value to pass to @c wxColour::SetRGBA(). 
-        [[nodiscard]] static constexpr wxUint32 RGBA(const unsigned char red,
-                                const unsigned char green, const unsigned char blue,
-                                const unsigned char alpha) noexcept
+        [[nodiscard]]
+        static constexpr wxUint32 RGBA(const unsigned char red,
+                                       const unsigned char green, const unsigned char blue,
+                                       const unsigned char alpha) noexcept
             {
             wxUint32 color = 0;
             // note that channels go in reverse order
@@ -80,12 +81,14 @@ namespace Wisteria::Colors
         /** @brief Creates a color from a Colors::Color value.
             @returns A color from a list of known colors.
             @param color The color ID to use.*/
-        [[nodiscard]] static wxColour GetColor(const Colors::Color color);
+        [[nodiscard]]
+        static wxColour GetColor(const Colors::Color color);
         /** @brief Creates a color from a Colors::Color value and applies an opacity to it.
             @returns A color from a list of known colors.
             @param color The color ID to use.
             @param opacity The opacity to set the color.*/
-        [[nodiscard]] static wxColour GetColor(const Colors::Color color, const uint8_t opacity)
+        [[nodiscard]]
+        static wxColour GetColor(const Colors::Color color, const uint8_t opacity)
             {
             auto foundColor = GetColor(color);
             return wxColour(foundColor.Red(), foundColor.Green(), foundColor.Blue(), opacity);
@@ -117,7 +120,8 @@ namespace Wisteria::Colors
             @note Any NaN values in the range will be mapped to an invalid `wxColour`,
                 so be sure to call `IsOk()` when using the returned colors.*/
         template<typename T>
-        [[nodiscard]] std::vector<wxColour> BrewColors(const T start, const T end)
+        [[nodiscard]]
+        std::vector<wxColour> BrewColors(const T start, const T end)
             {
             m_range.first = *std::min_element(start, end);
             m_range.second = *std::max_element(start, end);
@@ -137,7 +141,8 @@ namespace Wisteria::Colors
             @note Any NaN values in the range will be mapped to an invalid `wxColour`,
                 so be sure to call `IsOk()` when using the returned colors.*/
         template<typename T>
-        [[nodiscard]] std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
+        [[nodiscard]]
+        std::vector<wxColour> BrewColors(const std::initializer_list<T>& values)
             {
             m_range.first = *std::min_element(values.cbegin(), values.cend());
             m_range.second = *std::max_element(values.cbegin(), values.cend());
@@ -152,7 +157,8 @@ namespace Wisteria::Colors
                 call to BrewColors().
             @returns The min and max of the values represented by the color scale.
             @sa BrewColors().*/
-        [[nodiscard]] std::pair<double, double> GetRange() const noexcept
+        [[nodiscard]]
+        std::pair<double, double> GetRange() const noexcept
             { return m_range; }
         /** @brief Converts a value from the range into a color laying on the
                 color scale mapped to that range.
@@ -166,7 +172,8 @@ namespace Wisteria::Colors
                 passed to BrewColors(); otherwise, it will re-adjust the color/value mapping
                 and invalidate previous calls to BrewColor(s).
             @note This code is adapted from http://andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients.*/
-        [[nodiscard]] wxColour BrewColor(const double value) const;
+        [[nodiscard]]
+        wxColour BrewColor(const double value) const;
     private:
         std::pair<double,double> m_range{ 0, 0 };
         std::vector<wxColour> m_colorSpectrum;
@@ -184,11 +191,13 @@ namespace Wisteria::Colors
         /// @returns A variation of @c color that is adjusted to contrast against the base color
         ///     (that was set in the constructor).
         /// @param color The color to adjust so that it contrasts.
-        [[nodiscard]] wxColour Contrast(const wxColour& color);
+        [[nodiscard]]
+        wxColour Contrast(const wxColour& color);
         /// @returns A variation of @c color with a different opacity.
         /// @param color The base color to apply an opacity to.
         /// @param opacity The opacity to use for the new color.
-        [[nodiscard]] static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
+        [[nodiscard]]
+        static wxColour ChangeOpacity(const wxColour& color, const uint8_t opacity)
             {
             wxASSERT_MSG(color.IsOk(), L"Invalid color passed to ChangeOpacity().");
             return (color.IsOk() ?
@@ -203,7 +212,8 @@ namespace Wisteria::Colors
         ///     be considered not dark.
         /// @param color The color to review.
         /// @returns @c true if the color is dark.
-        [[nodiscard]] static bool IsDark(const wxColour& color)
+        [[nodiscard]]
+        static bool IsDark(const wxColour& color)
             {
             wxASSERT_MSG(color.IsOk(), L"Invalid color passed to IsDark().");
             return (color.IsOk() &&
@@ -214,13 +224,15 @@ namespace Wisteria::Colors
         ///     (i.e., luminance is >= 50% and not heavily translucent).
         /// @param color The color to review.
         /// @returns @c true if the color's luminance is >= 50%.
-        [[nodiscard]] static bool IsLight(const wxColour& color)
+        [[nodiscard]]
+        static bool IsLight(const wxColour& color)
             { return !IsDark(color); }
         /// @returns A darkened version of a color.
         /// @param color The base color to darken.
         /// @param minimumLuminance The minimum darkness of the color,
         ///     ranging from @c 0.0 to @c 1.0 (the lower, the darker).
-        [[nodiscard]] static wxColour Shade(wxColour color,
+        [[nodiscard]]
+        static wxColour Shade(wxColour color,
             const double minimumLuminance = math_constants::half)
             {
             wxASSERT_MSG(color.IsOk(), L"Invalid color passed to Shade().");
@@ -239,8 +251,9 @@ namespace Wisteria::Colors
         /// @param shadeOrTintValue How much to lighten or darken a color
         ///      (should be between @c 0.0 to @c 1.0.)
         /// @returns The shaded or tinted color.
-        [[nodiscard]] static wxColour ShadeOrTint(const wxColour& color,
-                                                  const double shadeOrTintValue = math_constants::fifth)
+        [[nodiscard]]
+        static wxColour ShadeOrTint(const wxColour& color,
+                                    const double shadeOrTintValue = math_constants::fifth)
             {
             return (IsDark(color) ?
                 color.ChangeLightness(100 + std::clamp(static_cast<int>(shadeOrTintValue*100), 0, 100)) :
@@ -250,7 +263,8 @@ namespace Wisteria::Colors
         ///     against the specified color.
         /// @param color The color to contrast against to see if white or black should go on it.
         /// @returns Black or white; whichever contrasts better against @c color.
-        [[nodiscard]] static wxColour BlackOrWhiteContrast(const wxColour& color)
+        [[nodiscard]]
+        static wxColour BlackOrWhiteContrast(const wxColour& color)
             { return (IsDark(color) ? *wxWHITE : *wxBLACK); }
         /// @returns @c true if two colors' luminance values are close.
         /// @param color1 First color to compare.
@@ -258,8 +272,9 @@ namespace Wisteria::Colors
         /// @param delta The difference threshold to use when comparing.
         ///     Should be between @c 0.0 to @c 1.0.
         /// @note Returns @c false if either color is invalid.
-        [[nodiscard]] static bool AreColorsClose(const wxColour color1, const wxColour color2,
-                                                 const double delta = math_constants::tenth)
+        [[nodiscard]]
+        static bool AreColorsClose(const wxColour color1, const wxColour color2,
+                                   const double delta = math_constants::tenth)
             {
             wxASSERT_MSG(color1.IsOk() && color2.IsOk(), L"Invalid color passed to AreColorsClose().");
             return (color1.IsOk() && color2.IsOk() &&
@@ -273,8 +288,9 @@ namespace Wisteria::Colors
         /// @returns If @c mainColor is close to @c secondaryColor,
         ///     then returns a shaded version of @c mainColor; otherwise,
         ///     returns the original @c mainColor.
-        [[nodiscard]] static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
-                                                         const wxColour& secondaryColor)
+        [[nodiscard]]
+        static wxColour ShadeOrTintIfClose(const wxColour& mainColor,
+                                           const wxColour& secondaryColor)
             {
             return AreColorsClose(mainColor, secondaryColor) ?
                 ShadeOrTint(mainColor, .40f) : mainColor;
@@ -310,7 +326,8 @@ namespace Wisteria::Colors
                 {}
             /** @brief Gets the list of colors from the scheme.
                 @returns The scheme's colors.*/
-            [[nodiscard]] const std::vector<wxColour>& GetColors() const noexcept
+            [[nodiscard]]
+            const std::vector<wxColour>& GetColors() const noexcept
                 { return m_colors; }
             /** @brief Gets the color from a given index.
                 @param index The index into the color list to return.
@@ -324,8 +341,11 @@ namespace Wisteria::Colors
                     of the second color.\n
                     Index 15 will return a shaded/tinted version of the last color,
                     and index 16 will return white.
-                @returns The color from a given index.*/
-            [[nodiscard]] wxColour GetColor(const size_t index) const
+                @sa GetRecycledColor().
+                @returns The color from a given index,
+                    or white if scheme is empty.*/
+            [[nodiscard]]
+            wxColour GetColor(const size_t index) const
                 {
                 return (m_colors.size() == 0) ?
                     *wxWHITE :
@@ -338,11 +358,28 @@ namespace Wisteria::Colors
             /** @brief Gets the color from a given index and applies an opacity value to it.
                 @param index The index into the color list to return.
                 @param opacity The opacity to set the color.
-                @returns The color from given index, or black if index is invalid.*/
-            [[nodiscard]] wxColour GetColor(const size_t index, const uint8_t opacity) const
+                @returns The color from given index, or white if index is invalid.*/
+            [[nodiscard]]
+            wxColour GetColor(const size_t index, const uint8_t opacity) const
                 {
                 auto color = GetColor(index);
                 return wxColour(color.Red(), color.Green(), color.Blue(), opacity);
+                }
+            /** @brief Gets the color from a given index.
+                @param index The index into the color scheme to return. If index is outside
+                    number of colors, then it will recycle (i.e., wrap around).
+                    For example, if there are 2 colors, index 1 will return 1;
+                    however, index 2 will wrap around and return colors 0 and
+                    colors 3 will return colors 1.
+                @sa GetColor().
+                @returns The (possibly recycled) color from a given index,
+                    or white if scheme is empty.*/
+            [[nodiscard]]
+            wxColour GetRecycledColor(const size_t index) const
+                {
+                return (m_colors.size() == 0) ?
+                    *wxWHITE :
+                    m_colors.at(index % m_colors.size());
                 }
             /** @brief Adds a color to the scheme.
                 @param color The color to add.*/
