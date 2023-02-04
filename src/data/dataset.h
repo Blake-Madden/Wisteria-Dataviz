@@ -30,6 +30,7 @@
 #include <wx/filename.h>
 #include <wx/numformatter.h>
 #include <wx/regex.h>
+#include <wx/xlocale.h>
 #include "excelreader.h"
 #include "../import/text_matrix.h"
 #include "../import/text_preview.h"
@@ -1448,8 +1449,8 @@ namespace Wisteria::Data
         [[nodiscard]] Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
             { return m_dateColumns.at(column); }
         // conversion helpers
-        [[nodiscard]] static double ConvertToDouble(const wxString& input, double MDRecodeValue);
-        [[nodiscard]] static GroupIdType ConvertToGroupId(const wxString& input,
+        [[nodiscard]] static double ConvertToDouble(const std::wstring& input, double MDRecodeValue);
+        [[nodiscard]] static GroupIdType ConvertToGroupId(const std::wstring& input,
                                                    const GroupIdType mdCode);
         [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
                                                const DateImportMethod method,

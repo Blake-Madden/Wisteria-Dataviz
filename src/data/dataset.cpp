@@ -366,14 +366,19 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    double Dataset::ConvertToDouble(const wxString& input, double MDRecodeValue)
+    double Dataset::ConvertToDouble(const std::wstring& input, double MDRecodeValue)
         {
         if (input.empty())
             { return MDRecodeValue; }
         else
             {
-            double val{ 0 };
-            if (input.ToCDouble(&val))
+            const wchar_t* const start = input.c_str();
+            wchar_t* end{ nullptr };
+            double val = wxStrtod_l(start, &end, wxCLocale);
+            if (end == start || errno == ERANGE)
+                { return MDRecodeValue; }
+            // if we read all the way to the null terminator, then conversion worked
+            if (*end == 0)
                 { return val; }
             else
                 { return MDRecodeValue; }
@@ -381,15 +386,16 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    GroupIdType Dataset::ConvertToGroupId(const wxString& input, const GroupIdType mdCode)
+    GroupIdType Dataset::ConvertToGroupId(const std::wstring& input, const GroupIdType mdCode)
         {
         if (input.empty())
             { return mdCode; }
         else
             {
+            const wchar_t* const start = input.c_str();
             wchar_t* end{ nullptr };
-            GroupIdType value = std::wcstoull(input.c_str(), &end, 10);
-            return (input.c_str() == end) ? 0 : value;
+            GroupIdType value = std::wcstoull(start, &end, 10);
+            return (start == end) ? 0 : value;
             }
         }
 
@@ -912,28 +918,28 @@ namespace Wisteria::Data
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
         size_t skipRows /*= 0*/)
         {
-        std::vector<std::vector<wxString>> dataStrings;
+        std::vector<std::vector<std::wstring>> dataStrings;
 
-        lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
+        lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
         if (skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
-            lily_of_the_valley::text_row<wxString> noReadRowsStart{ skipRows };
+            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ skipRows };
             noReadRowsStart.add_column(noReadColumn);
             importer.add_row_definition(noReadRowsStart);
             }
 
         // skip the header
-        lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
+        lily_of_the_valley::text_row<std::wstring> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
-        lily_of_the_valley::text_row<wxString> row{};
+        lily_of_the_valley::text_row<std::wstring> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
 
@@ -1142,28 +1148,28 @@ namespace Wisteria::Data
 
         SetImportContinuousMDRecodeValue(info.m_continousMDRecodeValue);
 
-        std::vector<std::vector<wxString>> dataStrings;
+        std::vector<std::vector<std::wstring>> dataStrings;
 
-        lily_of_the_valley::text_matrix<wxString> importer{ &dataStrings };
+        lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
         if (info.GetRowsToSkip() > 0)
             {
             // skip initial lines of text that the caller asked to skip
-            lily_of_the_valley::text_row<wxString> noReadRowsStart{ info.GetRowsToSkip() };
+            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ info.GetRowsToSkip() };
             noReadRowsStart.add_column(noReadColumn);
             importer.add_row_definition(noReadRowsStart);
             }
 
         // skip the header
-        lily_of_the_valley::text_row<wxString> noReadRow{ 1 };
+        lily_of_the_valley::text_row<std::wstring> noReadRow{ 1 };
         noReadRow.add_column(noReadColumn);
         importer.add_row_definition(noReadRow);
 
         lily_of_the_valley::standard_delimited_character_column
             deliminatedColumn(lily_of_the_valley::text_column_delimited_character_parser{ delimiter });
-        lily_of_the_valley::text_row<wxString> row{};
+        lily_of_the_valley::text_row<std::wstring> row{};
         row.add_column(deliminatedColumn);
         importer.add_row_definition(row);
 
