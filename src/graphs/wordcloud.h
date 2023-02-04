@@ -47,26 +47,45 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& wordColumnName,
             const std::optional<const wxString> valueColumnName = std::nullopt);
+
+        /// @returns How the words are organized visually.
+        [[nodiscard]]
+        WordCloudLayout GetLayout() const noexcept
+            { return m_layout; }
     private:
-        [[deprecated("Word Clouds do not support legends.")]]
+        [[deprecated("Word clouds do not support legends.")]]
         [[nodiscard]]
         std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
 
-        void AdjustRectToDrawArea(wxRect& rect) const
+        wxRect GetMaxDrawingRect() const
             {
-            if (rect.GetRight() > GetPlotAreaBoundingBox().GetRight())
+            return (GetLayout() == WordCloudLayout::Spiral) ?
+                wxRect{ wxSize(GetPlotAreaBoundingBox().GetWidth() * math_constants::half,
+                               GetPlotAreaBoundingBox().GetHeight() * math_constants::half) } :
+                GetPlotAreaBoundingBox();
+            }
+
+        // randomly positions labels with a rect
+        void TryPlaceLabelsInRect(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+                                  wxDC& dc, const wxRect& drawArea);
+
+        void AdjustRectToDrawArea(wxRect& rect, const wxRect& drawArea) const
+            {
+            if (rect.GetRight() > drawArea.GetRight())
                 {
-                rect.SetLeft(rect.GetLeft() - (rect.GetRight() - GetPlotAreaBoundingBox().GetRight()));
+                rect.SetLeft(rect.GetLeft() - (rect.GetRight() - drawArea.GetRight()));
                 }
-            if (rect.GetBottom() > GetPlotAreaBoundingBox().GetBottom())
+            if (rect.GetBottom() > drawArea.GetBottom())
                 {
-                rect.SetTop(rect.GetTop() - (rect.GetBottom() - GetPlotAreaBoundingBox().GetBottom()));
+                rect.SetTop(rect.GetTop() - (rect.GetBottom() - drawArea.GetBottom()));
                 }
             }
-        // layout algorithms from https://www2.cs.arizona.edu/~kobourov/wordle2.pdf.
-        void RandomLayout(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc);
+        /// @brief Fill in a center rect, then fill rects around that,
+        ///     going clockwise (starting at 3 o'clock).
+        /// @note layout algorithm from https://www2.cs.arizona.edu/~kobourov/wordle2.pdf.
+        void RandomLayoutSpiral(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc);
         struct WordInfo
             {
             std::wstring m_word;
@@ -74,6 +93,9 @@ namespace Wisteria::Graphs
             };
         void RecalcSizes(wxDC& dc) final;
         std::vector<WordInfo> m_words;
+        WordCloudLayout m_layout{ WordCloudLayout::Spiral };
+        // the number of times that we will try to place a label within a given ploygon
+        size_t m_placementAttempts{ 10 };
         };
     }
 

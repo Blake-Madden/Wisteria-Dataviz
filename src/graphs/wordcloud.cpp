@@ -81,7 +81,8 @@ namespace Wisteria::Graphs
                           freqAndCount.second });
             }
         std::sort(m_words.begin(), m_words.end(),
-            // least frequent to most frequent
+            // least frequent to most frequent because we go backwards when
+            // moving these into drawable labels
             [](const auto& lhv, const auto& rhv) noexcept
             { return lhv.m_frequency < rhv.m_frequency; });
         // convert raw frequencies to percentages
@@ -102,59 +103,142 @@ namespace Wisteria::Graphs
 
         Graph2D::RecalcSizes(dc);
 
-        const auto drawAreaWidth = GetPlotAreaBoundingBox().GetWidth() * math_constants::three_fourths;
-        const auto drawAreaHeight = GetPlotAreaBoundingBox().GetHeight();
-
         // create the word labels and stack them on top of each other
         std::vector<std::shared_ptr<GraphItems::Label>> labels;
         wxPoint origin = GetPlotAreaBoundingBox().GetTopLeft();
         size_t wordCount{ 0 };
+        int maxWidth{ 0 }, maxHeight{ 0 };
         for (const auto& word : m_words)
             {
             wxRect suggestedRect(
                 wxPoint(0, origin.y),
-                wxSize(drawAreaWidth, drawAreaHeight * word.m_frequency));
+                wxSize(GetPlotAreaBoundingBox().GetWidth(), GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
             auto currentLabel =
                 std::make_shared<GraphItems::Label>(GraphItemInfo(word.m_word).
                     Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()).
-                    Anchoring(Anchoring::TopLeftCorner).AnchorPoint(origin));
+                    Anchoring(Anchoring::TopLeftCorner).AnchorPoint(origin).
+                    FontColor(GetColorScheme()->GetRecycledColor(wordCount)));
             currentLabel->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustAll);
             currentLabel->SetBoundingBox(suggestedRect, dc, GetScaling());
             const auto bBox = currentLabel->GetBoundingBox(dc);
             origin.y += bBox.GetHeight();
             labels.push_back(currentLabel);
             ++wordCount;
+
+            maxWidth = std::max({ maxWidth, bBox.GetWidth() });
+            maxHeight = std::max({ maxHeight, bBox.GetHeight() });
             }
 
-        RandomLayout(labels, dc);
+        const wxRect maxDrawRect = GetMaxDrawingRect();
+
+        const double getWidthRescale = (maxWidth > maxDrawRect.GetWidth()) ?
+            safe_divide<double>(maxDrawRect.GetWidth(), maxWidth) : 1.0;
+        const double getHeightRescale = (maxHeight > maxDrawRect.GetHeight()) ?
+            safe_divide<double>(maxDrawRect.GetHeight(), maxHeight) : 1.0;
+        const double rescaleValue = std::min({ getWidthRescale, getHeightRescale , 1.0 });
+
+        for (auto& label : labels)
+            {
+            label->SetScaling(label->GetScaling() * rescaleValue);
+            label->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+            }
+
+        // the less words, the more aggressively we should try to fit them together
+        m_placementAttempts = (labels.size() < 100) ? 25 :
+            (labels.size() < 1'000) ? 10 :
+            5;
+
+        if (GetLayout() == WordCloudLayout::Spiral)
+            { RandomLayoutSpiral(labels, dc); }
         }
 
     //----------------------------------------------------------------
-    void WordCloud::RandomLayout(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc)
+    void WordCloud::RandomLayoutSpiral(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc)
         {
-        // sort remaining labels by width
+        // sort remaining labels by width, largest-to-smallest
         std::sort(labels.begin(), labels.end(),
             [&dc](const auto& lhv, const auto& rhv) noexcept
-            { return lhv->GetBoundingBox(dc).GetHeight() < rhv->GetBoundingBox(dc).GetHeight(); });
+            { return lhv->GetBoundingBox(dc).GetWidth() > rhv->GetBoundingBox(dc).GetWidth(); });
 
-        std::vector<wxRect> drawnRects;
-
+        // try to place everything in a band 1/2 the size of the plot area
+        // so that the labels are more dense
         auto drawArea = GetPlotAreaBoundingBox();
+        drawArea.Deflate(drawArea.GetWidth() * math_constants::fourth,
+                         drawArea.GetHeight() * math_constants::fourth);
+        const auto centerRect{ drawArea };
+        TryPlaceLabelsInRect(labels, dc, drawArea);
 
-        std::uniform_int_distribution<> xPosDistro(drawArea.GetLeft(), drawArea.GetWidth());
-        std::uniform_int_distribution<> yPosDistro(drawArea.GetLeft(), drawArea.GetHeight());
-
-        // random positioning lambda
-        const auto tryPlaceLabel = [&,this]()
+        // right side
+        if (labels.size())
             {
-            auto& label{ labels.back() };
-            auto bBox = label->GetBoundingBox(dc);
+            drawArea = centerRect;
+            drawArea.SetWidth(drawArea.GetWidth() / 2);
+            drawArea.SetLeft(centerRect.GetRight());
+            TryPlaceLabelsInRect(labels, dc, drawArea);
+            }
+
+        // bottom side
+        if (labels.size())
+            {
+            drawArea = centerRect;
+            drawArea.SetHeight(drawArea.GetHeight() / 2);
+            drawArea.SetTop(centerRect.GetBottom());
+            TryPlaceLabelsInRect(labels, dc, drawArea);
+            }
+
+        // left side
+        if (labels.size())
+            {
+            drawArea = centerRect;
+            drawArea.SetWidth(drawArea.GetWidth() / 2);
+            drawArea.SetLeft(GetPlotAreaBoundingBox().GetLeft());
+            TryPlaceLabelsInRect(labels, dc, drawArea);
+            }
+
+        // top side
+        if (labels.size())
+            {
+            drawArea = centerRect;
+            drawArea.SetHeight(drawArea.GetHeight() / 2);
+            drawArea.SetTop(GetPlotAreaBoundingBox().GetTop());
+            TryPlaceLabelsInRect(labels, dc, drawArea);
+            }
+
+        // If there are any remaining labels at this point, then they won't be drawn.
+        // This is preferrable to looping an enormous (or infinite) number of times
+        // if the real estate is really tight. This is acceptable, as these would
+        // be the less frequently occurring labels.
+        }
+
+    //----------------------------------------------------------------
+    void WordCloud::TryPlaceLabelsInRect(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+                                         wxDC& dc, const wxRect& drawArea)
+        {
+        if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
+            {
+            wxPoint pt[4];
+            GraphItems::Polygon::GetRectPoints(drawArea, pt);
+            AddObject(std::make_shared<GraphItems::Polygon>(
+                GraphItemInfo().Pen(*wxBLUE), pt, std::size(pt)));
+            }
+
+        // random positioning lambda for the last label in the list
+        const auto tryPlaceLabel = [&dc, this]
+                                    (auto& label, const auto& drawArea, std::vector<wxRect>& drawnRects,
+                                     auto& xPosDistro, auto& yPosDistro)
+            {
+            auto bBox = label->GetBoundingBox(dc); // will already be cached
+
+            if (bBox.GetWidth() > drawArea.GetWidth() ||
+                bBox.GetHeight() > drawArea.GetWidth())
+                { return false; }
 
             // make it fit with the drawing area
             bBox.SetTopLeft(wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) });
-            AdjustRectToDrawArea(bBox);
+            AdjustRectToDrawArea(bBox, drawArea);
 
-            auto foundPos = std::find_if(drawnRects.cbegin(), drawnRects.cend(),
+            auto foundPos = std::find_if(std::execution::par,
+                drawnRects.cbegin(), drawnRects.cend(),
                 [&bBox](const auto& rect) noexcept
                 { return rect.Intersects(bBox); });
             // overlapping another label...
@@ -162,58 +246,89 @@ namespace Wisteria::Graphs
                 {
                 // ...push over to the right of it
                 bBox.SetTopLeft(foundPos->GetTopRight());
-                if (bBox.GetRight() > GetPlotAreaBoundingBox().GetRight())
+                if (bBox.GetRight() > drawArea.GetRight())
                     {
                     // ...try it under the other label if it went outside of the draw area
                     bBox.SetTopLeft(foundPos->GetBottomLeft());
-                    if (bBox.GetBottom() > GetPlotAreaBoundingBox().GetBottom())
+                    if (bBox.GetBottom() > drawArea.GetBottom())
                         {
                         // ...try it to the left of the other label
                         bBox.SetTopLeft(foundPos->GetTopLeft());
                         bBox.SetLeft(bBox.GetLeft() - bBox.GetWidth());
                         // ...try it above the other label
-                        if (bBox.GetLeft() < GetPlotAreaBoundingBox().GetLeft())
+                        if (bBox.GetLeft() < drawArea.GetLeft())
                             {
                             bBox.SetTopLeft(foundPos->GetTopLeft());
                             bBox.SetTop(bBox.GetTop() - bBox.GetHeight());
                             // ...too high (outside of draw area), so give up
-                            if (bBox.GetTop() < GetPlotAreaBoundingBox().GetTop())
-                                { return; }
+                            if (bBox.GetTop() < drawArea.GetTop())
+                                { return false; }
                             }
                         }
                     }
                 // it fit next to the other label, so recheck for overlapping
                 // and give up if another overlap happens
-                foundPos = std::find_if(drawnRects.cbegin(), drawnRects.cend(),
+                foundPos = std::find_if(std::execution::par,
+                    drawnRects.cbegin(), drawnRects.cend(),
                     [&bBox](const auto& rect) noexcept
                     { return rect.Intersects(bBox); });
                 if (foundPos != drawnRects.cend())
-                    { return; }
+                    { return false; }
                 }
 
-            // place it, add it to be rendered, and remove from the list
+            // place it and add it to be rendered
             drawnRects.push_back(bBox);
             label->SetAnchorPoint(bBox.GetTopLeft());
             AddObject(label);
-            labels.pop_back();
+
+            return true;
             };
 
-        // the number of times that we will loop through the labels and try to place
-        // them within the current drawing area
-        constexpr auto maxPlacementAttempts{ 5 };
+        std::vector<wxRect> drawnRects;
 
-        // try to place everything in a band half the height of the plot area
-        // so that the labels are more dense
-        int64_t placementAttempts{ static_cast<int64_t>(labels.size()) * maxPlacementAttempts };
-        while (labels.size() && placementAttempts > 0)
+        std::uniform_int_distribution<> xPosDistro(drawArea.GetLeft(), drawArea.GetLeft() + drawArea.GetWidth());
+        std::uniform_int_distribution<> yPosDistro(drawArea.GetTop(), drawArea.GetTop() + drawArea.GetHeight());
+
+        for (auto labelPos = labels.begin(); labelPos < labels.end(); /*in loop*/)
             {
-            tryPlaceLabel();
-            --placementAttempts;
+            bool sucessfullyPlaced{ false };
+            for (size_t i = 0; i < m_placementAttempts; ++i)
+                {
+                if (tryPlaceLabel(*labelPos, drawArea, drawnRects, xPosDistro, yPosDistro))
+                    {
+                    labelPos = labels.erase(labelPos);
+                    sucessfullyPlaced = true;
+                    break;
+                    }
+                }
+            // If the first (and implicitly widest) label didn't get placed in the rect,
+            // then force it to be drawn in the center. This will help with ensuring that
+            // more frequently occurring words are shown.
+            if (!sucessfullyPlaced && drawnRects.empty())
+                {
+                auto bBox = (*labelPos)->GetBoundingBox(dc);
+                // if it can fit, then center it
+                if (bBox.GetWidth() <= drawArea.GetWidth() &&
+                    bBox.GetHeight() <= drawArea.GetHeight())
+                    {
+                    wxPoint centerPoint{ drawArea.GetLeft() + (drawArea.GetWidth() / 2),
+                                         drawArea.GetTop() + (drawArea.GetHeight() / 2) };
+                    drawnRects.push_back(bBox);
+                    bBox.SetTopLeft(
+                        { centerPoint.x - (bBox.GetWidth() / 2),
+                          centerPoint.y - (bBox.GetHeight() / 2) });
+                    (*labelPos)->SetAnchorPoint(
+                        { centerPoint.x - (bBox.GetWidth() / 2),
+                          centerPoint.y - (bBox.GetHeight() / 2) });
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
+                else
+                    { ++labelPos; }
+                }
+            // wasn't erased, so skip over it
+            else if (!sucessfullyPlaced)
+                { ++labelPos; }
             }
-
-        // If there are any remaining labels at this point, then they won't be drawn.
-        // This is preferrable to looping an enormous (or infinite) number of times
-        // if the real estate is really tight. This is acceptable, as these would
-        // be the less frequently occurring labels.
         }
     }
