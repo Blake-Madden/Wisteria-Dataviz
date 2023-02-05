@@ -3232,7 +3232,7 @@ namespace Wisteria::GraphItems
             (upperLineValue-lowerLineValue));
         if (IsHorizontal())
             {
-            const long coordinateDifference = pos->GetPhysicalCoordinate() -
+            const auto coordinateDifference = pos->GetPhysicalCoordinate() -
                                               previousLine->GetPhysicalCoordinate();
             result = previousLine->GetPhysicalCoordinate() +
                      (coordinateDifference*percentage);
@@ -3240,7 +3240,7 @@ namespace Wisteria::GraphItems
             }
         else if (IsVertical())
             {
-            const long coordinateDifference = previousLine->GetPhysicalCoordinate() -
+            const auto coordinateDifference = previousLine->GetPhysicalCoordinate() -
                                               pos->GetPhysicalCoordinate();
             result = previousLine->GetPhysicalCoordinate() -
                      (coordinateDifference*percentage);
