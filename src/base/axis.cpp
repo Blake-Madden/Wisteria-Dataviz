@@ -2114,7 +2114,7 @@ namespace Wisteria::GraphItems
                         if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::AlignWithBoundary &&
                             !IsStackingLabels())
                             {
-                            x = axisPtIter->GetPhysicalCoordinate()-safe_divide(axisTextHeight,2);
+                            x = axisPtIter->GetPhysicalCoordinate() - safe_divide(axisTextHeight, 2);
                             y = axisRect.GetBottom();
                             if (GetBrackets().size())
                                 {
@@ -3209,7 +3209,9 @@ namespace Wisteria::GraphItems
         else
             {
             pos = std::lower_bound(GetAxisPoints().cbegin(),
-                                   GetAxisPoints().cend(), value);
+                                   GetAxisPoints().cend(), value,
+                [](const auto& lhv, const auto& rhv) noexcept
+                { return compare_doubles_less(lhv.GetValue(), rhv); });
             }
         if (pos == GetAxisPoints().cend() )
             { return false; }
