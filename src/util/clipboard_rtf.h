@@ -22,7 +22,7 @@
 class wxRtfDataObject : public wxDataObjectSimple
     {
 public:
-    /** @brief Constructor. May be used to initialise the text
+    /** @brief Constructor. May be used to initialize the text
             (otherwise, SetText() should be used later).
         @param rtf The RTF data.*/
     wxRtfDataObject(const wxString& rtf = wxEmptyString)
@@ -61,7 +61,7 @@ public:
         { return GetDataHere(buf); }
     /** @brief Copy the data to the buffer.
         @param[out] buf The data buffer to write to.
-        @returns @true on success.*/
+        @returns @c true on success.*/
     [[nodiscard]]
     bool GetDataHere(void *buf) const final
         {
@@ -72,5 +72,7 @@ public:
 private:
     wxString m_rtf;
     };
+
+/** @}*/
 
 #endif //__WX_CLIPBOARD_RTF_H__
