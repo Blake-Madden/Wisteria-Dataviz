@@ -375,7 +375,7 @@ namespace Wisteria::Data
             const wchar_t* const start = input.c_str();
             wchar_t* end{ nullptr };
             double val = wxStrtod_l(start, &end, wxCLocale);
-            if (end == start || errno == ERANGE)
+            if (end == start)
                 { return MDRecodeValue; }
             // if we read all the way to the null terminator, then conversion worked
             if (*end == 0)
