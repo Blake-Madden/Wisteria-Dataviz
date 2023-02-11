@@ -797,6 +797,11 @@ namespace Wisteria::Data
         {
         wxASSERT_MSG(columnName.length(),
             L"Column name is empty in call to AddCategoricalColumn()!");
+        // see if already in the dataset
+        auto foundColumn = GetCategoricalColumn(columnName);
+        if (foundColumn != GetCategoricalColumns().end())
+            { return *foundColumn; }
+
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
         m_categoricalColumns.back().SetName(columnName);
         // add a string table with an empty value and fill the data with that
@@ -804,7 +809,7 @@ namespace Wisteria::Data
         if (GetRowCount())
             {
             m_categoricalColumns.back().GetStringTable().
-                insert(std::make_pair(0, wxString()));
+                insert(std::make_pair(0, wxString{}));
             m_categoricalColumns.back().Resize(GetRowCount(), 0);
             }
         return m_categoricalColumns.back();
@@ -816,6 +821,14 @@ namespace Wisteria::Data
         {
         wxASSERT_MSG(columnName.length(),
             L"Column name is empty in call to AddCategoricalColumn()!");
+        // see if already in the dataset
+        auto foundColumn = GetCategoricalColumn(columnName);
+        if (foundColumn != GetCategoricalColumns().end())
+            {
+            foundColumn->SetStringTable(stringTable);
+            return *foundColumn;
+            }
+
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
         m_categoricalColumns.back().SetName(columnName);
         m_categoricalColumns.back().GetStringTable() = stringTable;
@@ -825,7 +838,7 @@ namespace Wisteria::Data
             if (stringTable.size() == 0)
                 {
                 m_categoricalColumns.back().GetStringTable().
-                    insert(std::make_pair(0, wxString()));
+                    insert(std::make_pair(0, wxString{}));
                 m_categoricalColumns.back().Resize(GetRowCount(), 0);
                 }
             else
@@ -844,7 +857,7 @@ namespace Wisteria::Data
                 // higher than the last one) and fill the existing rows with that
                 const auto& [lastKey, lastValue] = *stringTable.crbegin();
                 m_categoricalColumns.back().GetStringTable().
-                    insert(std::make_pair(lastKey+1, wxString()));
+                    insert(std::make_pair(lastKey+1, wxString{}));
                 m_categoricalColumns.back().Resize(GetRowCount(), lastKey+1);
                 }
             }
@@ -1068,15 +1081,15 @@ namespace Wisteria::Data
             colNames.RemoveLast();
             return colNames;
             };
-        const wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString();
+        const wxString idName = HasValidIdData() ? wrapText(GetIdColumn().GetName()) : wxString{};
         const wxString catColumnNames = concatColNames(GetCategoricalColumns());
         const wxString dateColumnNames = concatColNames(GetDateColumns());
         const wxString continuousColumnNames = concatColNames(GetContinuousColumns());
 
-        wxString colNames = (idName.length() ? idName + delimiter : wxString()) +
-            (catColumnNames.length() ? catColumnNames + delimiter : wxString()) +
-            (dateColumnNames.length() ? dateColumnNames + delimiter : wxString()) +
-            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString());
+        wxString colNames = (idName.length() ? idName + delimiter : wxString{}) +
+            (catColumnNames.length() ? catColumnNames + delimiter : wxString{}) +
+            (dateColumnNames.length() ? dateColumnNames + delimiter : wxString{}) +
+            (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString{});
         if (colNames.length() && colNames[colNames.length()-1] == delimiter)
             { colNames.RemoveLast(); }
         
@@ -1102,13 +1115,13 @@ namespace Wisteria::Data
                 currentRow.append(
                            wrapText(col.GetValue(i).IsValid() ?
                                col.GetValue(i).FormatISOCombined() :
-                               wxString())).
+                               wxString{})).
                            append(1, delimiter);
                 }
             // continuous
             for (const auto& col : GetContinuousColumns())
                 {
-                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString() :
+                currentRow.append(wrapText(std::isnan(col.GetValue(i)) ? wxString{} :
                                   wxNumberFormatter::ToString(col.GetValue(i), 6,
                                       wxNumberFormatter::Style::Style_NoTrailingZeroes))).
                            append(1, delimiter);

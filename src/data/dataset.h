@@ -73,7 +73,8 @@ namespace Wisteria::Data
         {
     public:
         /// @private
-        [[nodiscard]] bool operator()(const wxString& lhs, const wxString& rhs) const
+        [[nodiscard]]
+        bool operator()(const wxString& lhs, const wxString& rhs) const
             { return lhs.CmpNoCase(rhs) < 0; };
         };
 
@@ -115,11 +116,13 @@ namespace Wisteria::Data
         /// @{
 
         /// @returns The raw data.
-        [[nodiscard]] const std::vector<T>& GetValues() const noexcept
+        [[nodiscard]]
+        const std::vector<T>& GetValues() const noexcept
             { return m_data; }
         /** @returns A value from the data.
             @param index The index into the data to set.*/
-        [[nodiscard]] const T& GetValue(const size_t index) const
+        [[nodiscard]]
+        const T& GetValue(const size_t index) const
             {
             wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::GetValue()");
             return m_data.at(index);
@@ -136,7 +139,8 @@ namespace Wisteria::Data
             }
         /// @returns @c true if value at the given index is missing data.
         /// @param index The index into the data to read.
-        [[nodiscard]] virtual bool IsMissingData(const size_t index) const
+        [[nodiscard]]
+        virtual bool IsMissingData(const size_t index) const
             {
             wxASSERT_MSG(index < m_data.size(), L"Invalid index in call to Column::IsMissingData()");
             if (index >= m_data.size())
@@ -194,10 +198,12 @@ namespace Wisteria::Data
         /// @}
         
         /// @returns The number of rows.
-        [[nodiscard]] size_t GetRowCount() const noexcept
+        [[nodiscard]]
+        size_t GetRowCount() const noexcept
             { return m_data.size(); }
         /// @returns The name of the column.
-        [[nodiscard]] const wxString& GetName() const noexcept
+        [[nodiscard]]
+        const wxString& GetName() const noexcept
             { return m_name; }
         /// @brief Sets the column's name.
         /// @param name The name.
@@ -251,10 +257,12 @@ namespace Wisteria::Data
         /// @brief Gets/sets the string table.
         /// @details This can be called to fill or edit the table.
         /// @returns The string table.
-        [[nodiscard]] StringTableType& GetStringTable() noexcept
+        [[nodiscard]]
+        StringTableType& GetStringTable() noexcept
             { return m_stringTable; }
         /// @private
-        [[nodiscard]] const StringTableType& GetStringTable() const noexcept
+        [[nodiscard]]
+        const StringTableType& GetStringTable() const noexcept
             { return m_stringTable; }
         /// @brief Sets the string table.
         /// @param sTable The new string table for the column.
@@ -274,10 +282,12 @@ namespace Wisteria::Data
         ///     FindMissingDataCode() and compare values from GetValue() against that instead.
         ///     This function has to call FindMissingDataCode() (making it less than optimal)
         ///     and is only meant for convenience.
-        [[nodiscard]] bool IsMissingData(const size_t index) const final;
+        [[nodiscard]]
+        bool IsMissingData(const size_t index) const final;
 
         /// @returns @c true if the column contains any missing data.
-        [[nodiscard]] bool ContainsMissingData() const;
+        [[nodiscard]]
+        bool ContainsMissingData() const;
 
         /** @brief Applies a regular expression string replacement for all values in
                 the string table.
@@ -315,7 +325,8 @@ namespace Wisteria::Data
                 or the code formatted as a string if not found.
             @returns The label from the string table, or the code as a string if not found.
             @param code The ID to look up.*/
-        [[nodiscard]] wxString GetLabelFromID(const GroupIdType code) const
+        [[nodiscard]]
+        wxString GetLabelFromID(const GroupIdType code) const
             {
             const auto foundLabel = m_stringTable.find(code);
             if (foundLabel != m_stringTable.cend())
@@ -327,7 +338,8 @@ namespace Wisteria::Data
                 or @c std::nullopt if not found.
             @returns The ID from the string table, or @c std::nullopt if not found.
             @param str The string value to look up.*/
-        [[nodiscard]] std::optional<GroupIdType> GetIDFromLabel(const wxString& str) const
+        [[nodiscard]]
+        std::optional<GroupIdType> GetIDFromLabel(const wxString& str) const
             {
             // cppcheck-suppress unassignedVariable
             for (const auto& [key, value] : m_stringTable)
@@ -340,13 +352,15 @@ namespace Wisteria::Data
 
         /** @returns The value at the given index as a string.
             @param index The index into the data to set.*/
-        [[nodiscard]] const wxString GetValueAsLabel(const size_t index) const
+        [[nodiscard]]
+        const wxString GetValueAsLabel(const size_t index) const
             { return GetLabelFromID(GetValue(index)); }
 
         /// @returns The key value from a string table that represents missing data
         ///     (i.e., empty string), or @c std::nullopt if not found.
         /// @param stringTable The string table to review.
-        [[nodiscard]] static std::optional<GroupIdType> FindMissingDataCode(
+        [[nodiscard]]
+        static std::optional<GroupIdType> FindMissingDataCode(
             const StringTableType& stringTable)
             {
             // cppcheck-suppress unassignedVariable
@@ -359,12 +373,14 @@ namespace Wisteria::Data
             }
         /// @returns The key value from the string table that represents missing data
         ///     (i.e., empty string), or @c std::nullopt if not found.
-        [[nodiscard]] std::optional<GroupIdType> FindMissingDataCode() const
+        [[nodiscard]]
+        std::optional<GroupIdType> FindMissingDataCode() const
             { return FindMissingDataCode(m_stringTable); }
 
         /** @returns The next group ID that can be inserted into a string table.
             @param stringTable The string table to review.*/
-        [[nodiscard]] static GroupIdType GetNextKey(const StringTableType& stringTable)
+        [[nodiscard]]
+        static GroupIdType GetNextKey(const StringTableType& stringTable)
             {
             if (stringTable.size())
                 {
@@ -377,7 +393,8 @@ namespace Wisteria::Data
             }
 
         /** @returns The next group ID that can be inserted into the string table.*/
-        [[nodiscard]] GroupIdType GetNextKey()
+        [[nodiscard]]
+        GroupIdType GetNextKey()
             { return GetNextKey(GetStringTable()); }
     private:
         /// @brief Combines duplicate values in the string table and recodes
@@ -743,7 +760,8 @@ namespace Wisteria::Data
             return *this;
             }
         /// @returns The row to start reading text from.
-        [[nodiscard]] size_t GetRowsToSkip() const noexcept
+        [[nodiscard]]
+        size_t GetRowsToSkip() const noexcept
             { return m_skipRows; }
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
@@ -832,10 +850,12 @@ namespace Wisteria::Data
 
         /** @brief Determines if there are any valid IDs in the ID column.
             @returns @c true if there are any ID values in the ID column.*/
-        [[nodiscard]] bool HasValidIdData() const;
+        [[nodiscard]]
+        bool HasValidIdData() const;
 
         /// @returns The number of rows (observations) in the data.
-        [[nodiscard]] size_t GetRowCount() const noexcept
+        [[nodiscard]]
+        size_t GetRowCount() const noexcept
             { return m_idColumn.GetRowCount(); }
 
         /** @name Data Management Functions
@@ -884,8 +904,8 @@ namespace Wisteria::Data
                 { column.Resize(rowCount, std::numeric_limits<double>::quiet_NaN()); }
             }
         /// @brief Removes all data from the dataset.
-        /// @details All continuous, categorical, and date columns will be removed,
-        ///     and the ID column will be cleared.
+        /// @details The ID column and all continuous, categorical, and date columns
+        ///     will be cleared.
         void Clear() noexcept
             {
             m_idColumn.Clear();
@@ -915,49 +935,61 @@ namespace Wisteria::Data
             @brief Functions related to adding and accessing columns.*/
         /// @{
 
-        /** @brief Adds a new continuous column.
+        /** @brief Adds a new continuous column (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
                 with more generic names.
-            @returns The newly added column.*/
+            @returns The newly added (or pre-existing) column.*/
         Column<double>& AddContinuousColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Column name is empty in call to AddContinuousColumn()!");
+            // see if already in the dataset
+            auto foundColumn = GetContinuousColumn(columnName);
+            if (foundColumn != GetContinuousColumns().end())
+                { return *foundColumn; }
+
             m_continuousColumns.resize(m_continuousColumns.size()+1);
             m_continuousColumns.back().SetName(columnName);
             m_continuousColumns.back().Resize(GetRowCount(),
                                               std::numeric_limits<double>::quiet_NaN());
             return m_continuousColumns.back();
             }
-        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
+        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable)
+                (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
                 with more generic names.
-            @returns The newly added column.*/
+            @returns The newly added (or pre-existing) column.*/
         ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName);
-        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable).
+        /** @brief Adds a new categorical column (i.e., ColumnWithStringTable)
+                (if not already in the dataset).
             @param columnName The name of the column.
             @param stringTable A string table to assign to the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
                 with more generic names.
-            @returns The newly added column.*/
+            @returns The newly added (or pre-existing) column.*/
         ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName,
             const ColumnWithStringTable::StringTableType& stringTable);
         
-        /** @brief Adds a new date column.
+        /** @brief Adds a new date column (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
                 with more generic names.
-            @returns The newly added column.*/
+            @returns The newly added (or pre-existing) column.*/
         Column<wxDateTime>& AddDateColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Date name is empty in call to AddDateColumn()!");
+            // see if already in the dataset
+            auto foundColumn = GetDateColumn(columnName);
+            if (foundColumn != GetDateColumns().end())
+                { return *foundColumn; }
+
             m_dateColumns.resize(m_dateColumns.size()+1);
             m_dateColumns.back().SetName(columnName);
             m_dateColumns.back().Resize(GetRowCount(), wxInvalidDateTime);
@@ -973,10 +1005,12 @@ namespace Wisteria::Data
         /// @param colName The name of the column.
         /// @returns A column iterator if found, @c std::nullopt otherwise.
         ///     Note that the returned iterator is a @c std::variant that needs to be unwrapped.
-        [[nodiscard]] std::optional<ColumnIterator> FindColumn(const wxString& colName);
+        [[nodiscard]]
+        std::optional<ColumnIterator> FindColumn(const wxString& colName);
 
         /// @returns The ID column.
-        [[nodiscard]] Column<wxString>& GetIdColumn() noexcept
+        [[nodiscard]]
+        Column<wxString>& GetIdColumn() noexcept
             { return m_idColumn; }
 
         /** @brief Gets an iterator to a categorical column by name.
@@ -985,7 +1019,8 @@ namespace Wisteria::Data
                 `GetCategoricalColumns().cend()` otherwise.
             @note Check the return against `GetCategoricalColumns().cend()`
                 to confirm that the column was found prior to using it.*/
-        [[nodiscard]] const auto GetCategoricalColumn(const wxString& columnName) const noexcept
+        [[nodiscard]]
+        CategoricalColumnConstIterator GetCategoricalColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetCategoricalColumns().cbegin(),
                 GetCategoricalColumns().cend(),
@@ -999,7 +1034,8 @@ namespace Wisteria::Data
             @note Check the return against `GetCategoricalColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetCategoricalColumn() unless you need to edit the column.*/
-        [[nodiscard]] auto GetCategoricalColumn(const wxString& columnName) noexcept
+        [[nodiscard]]
+        CategoricalColumnIterator GetCategoricalColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetCategoricalColumns().begin(),
                 GetCategoricalColumns().end(),
@@ -1012,7 +1048,8 @@ namespace Wisteria::Data
                 `GetDateColumns().cend()` otherwise.
             @note Check the return against `GetDateColumns().cend()`
                 to confirm that the column was found prior to using it.*/
-        [[nodiscard]] const auto GetDateColumn(const wxString& columnName) const noexcept
+        [[nodiscard]]
+        DateColumnConstIterator GetDateColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetDateColumns().cbegin(),
                 GetDateColumns().cend(),
@@ -1026,7 +1063,8 @@ namespace Wisteria::Data
             @note Check the return against `GetDateColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetDateColumn() unless you need to edit the column.*/
-        [[nodiscard]] auto GetDateColumn(const wxString& columnName) noexcept
+        [[nodiscard]]
+        DateColumnIterator GetDateColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetDateColumns().begin(),
                 GetDateColumns().end(),
@@ -1039,7 +1077,8 @@ namespace Wisteria::Data
                 `GetContinuousColumns().end()` otherwise.
             @note Check the return against `GetContinuousColumns().cend()`
                 to confirm that the column was found prior to using it.*/
-        [[nodiscard]] ContinuousColumnConstIterator
+        [[nodiscard]]
+        ContinuousColumnConstIterator
             GetContinuousColumn(const wxString& columnName) const noexcept
             {
             return std::find_if(GetContinuousColumns().cbegin(),
@@ -1054,7 +1093,8 @@ namespace Wisteria::Data
             @note Check the return against `GetContinuousColumns().end()`
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetContinuousColumns() unless you need to edit the column.*/
-        [[nodiscard]] ContinuousColumnIterator GetContinuousColumn(const wxString& columnName) noexcept
+        [[nodiscard]]
+        ContinuousColumnIterator GetContinuousColumn(const wxString& columnName) noexcept
             {
             return std::find_if(GetContinuousColumns().begin(),
                 GetContinuousColumns().end(),
@@ -1063,11 +1103,13 @@ namespace Wisteria::Data
             }
 
         /// @returns The continuous columns.
-        [[nodiscard]] std::vector<Column<double>>& GetContinuousColumns() noexcept
+        [[nodiscard]]
+        std::vector<Column<double>>& GetContinuousColumns() noexcept
             { return m_continuousColumns; }
         /// @returns A vector of all continuous column names.
         /// @sa RemoveColumnNamesFromList().
-        [[nodiscard]] std::vector<wxString> GetContinuousColumnNames() const noexcept
+        [[nodiscard]]
+        std::vector<wxString> GetContinuousColumnNames() const noexcept
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetContinuousColumns())
@@ -1075,11 +1117,13 @@ namespace Wisteria::Data
             return colNames;
             }
         /// @returns The categorical columns.
-        [[nodiscard]] std::vector<ColumnWithStringTable>& GetCategoricalColumns() noexcept
+        [[nodiscard]]
+        std::vector<ColumnWithStringTable>& GetCategoricalColumns() noexcept
             { return m_categoricalColumns; }
         /// @returns A vector of all categorical column names.
         /// @sa RemoveColumnNamesFromList().
-        [[nodiscard]] std::vector<wxString> GetCategoricalColumnNames() const noexcept
+        [[nodiscard]]
+        std::vector<wxString> GetCategoricalColumnNames() const noexcept
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetCategoricalColumns())
@@ -1087,11 +1131,13 @@ namespace Wisteria::Data
             return colNames;
             }
         /// @returns The date columns.
-        [[nodiscard]] std::vector<Column<wxDateTime>>& GetDateColumns() noexcept
+        [[nodiscard]]
+        std::vector<Column<wxDateTime>>& GetDateColumns() noexcept
             { return m_dateColumns; }
         /// @returns A vector of all date column names.
         /// @sa RemoveColumnNamesFromList().
-        [[nodiscard]] std::vector<wxString> GetDateColumnNames() const noexcept
+        [[nodiscard]]
+        std::vector<wxString> GetDateColumnNames() const noexcept
             {
             std::vector<wxString> colNames;
             for (const auto& col : GetDateColumns())
@@ -1102,7 +1148,8 @@ namespace Wisteria::Data
         /** @brief Determines if a column name already exists in the dataset.
             @param colName The column name to look for.
             @returns @c true if the column name is in the dataset.*/
-        [[nodiscard]] bool ContainsColumn(const wxString& colName) const noexcept;
+        [[nodiscard]]
+        bool ContainsColumn(const wxString& colName) const noexcept;
         /// @}
 
         /** @name Column Manipulation Functions
@@ -1124,7 +1171,8 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::pair<wxString, wxString> GetCategoricalMinMax(const wxString& column,
+        [[nodiscard]]
+        std::pair<wxString, wxString> GetCategoricalMinMax(const wxString& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-empty strings) of the specified categorical column,
@@ -1139,7 +1187,8 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] size_t GetCategoricalColumnValidN(const wxString& column,
+        [[nodiscard]]
+        size_t GetCategoricalColumnValidN(const wxString& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
@@ -1155,7 +1204,8 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] std::pair<double, double> GetContinuousMinMax(
+        [[nodiscard]]
+        std::pair<double, double> GetContinuousMinMax(
             const std::variant<wxString, size_t>& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
@@ -1171,7 +1221,8 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] double GetContinuousTotal(const std::variant<wxString, size_t>& column,
+        [[nodiscard]]
+        double GetContinuousTotal(const std::variant<wxString, size_t>& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
         /** @brief Returns the valid N (i.e., non-NaN) of the specified continuous column,
@@ -1186,7 +1237,8 @@ namespace Wisteria::Data
                 column is provided without a group ID, then throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded,
                 so pass it to @c wxString::FromUTF8() when formatting it for an error message.*/
-        [[nodiscard]] size_t GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
+        [[nodiscard]]
+        size_t GetContinuousColumnValidN(const std::variant<wxString, size_t>& column,
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
@@ -1258,7 +1310,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportInfoFromPreview().*/
-        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+        [[nodiscard]]
+        static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
             std::optional<size_t> rowPreviewCount = std::nullopt,
             size_t skipRows = 0,
             const std::variant<wxString, size_t>& worksheet = L"");
@@ -1275,7 +1328,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportInfoFromPreview().*/
-        [[nodiscard]] static ColumnPreviewInfo ReadColumnInfoRaw(const wxString& fileText,
+        [[nodiscard]]
+        static ColumnPreviewInfo ReadColumnInfoRaw(const wxString& fileText,
             const wchar_t delimiter,
             std::optional<size_t> rowPreviewCount = std::nullopt,
             size_t skipRows = 0);
@@ -1299,7 +1353,8 @@ namespace Wisteria::Data
                 will be imported as categorical. If you require a string column to be used as the
                 ID column, then you will need to define your own column definitions.
             @sa ReadColumnInfo(), ImportCSV(), ImportTSV().*/
-        [[nodiscard]] static ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
+        [[nodiscard]]
+        static ImportInfo ImportInfoFromPreview(const ColumnPreviewInfo& previewInfo);
         /** @brief Imports a text file into the dataset.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.
@@ -1400,20 +1455,25 @@ namespace Wisteria::Data
         /// @}
 
         /// @private
-        [[nodiscard]] const Column<wxString>& GetIdColumn() const noexcept
+        [[nodiscard]]
+        const Column<wxString>& GetIdColumn() const noexcept
             { return m_idColumn; }
         /// @private
-        [[nodiscard]] const std::vector<ColumnWithStringTable>& GetCategoricalColumns() const noexcept
+        [[nodiscard]]
+        const std::vector<ColumnWithStringTable>& GetCategoricalColumns() const noexcept
             { return m_categoricalColumns; }
         /// @private
-        [[nodiscard]] const std::vector<Column<wxDateTime>>& GetDateColumns() const noexcept
+        [[nodiscard]]
+        const std::vector<Column<wxDateTime>>& GetDateColumns() const noexcept
             { return m_dateColumns; }
         /// @private
-        [[nodiscard]] const std::vector<Column<double>>& GetContinuousColumns() const noexcept
+        [[nodiscard]]
+        const std::vector<Column<double>>& GetContinuousColumns() const noexcept
             { return m_continuousColumns; }
     private:
         /// @returns The specified continuous column by name or index.
-        [[nodiscard]] ContinuousColumnConstIterator
+        [[nodiscard]]
+        ContinuousColumnConstIterator
             GetContinuousColumn(const std::variant<wxString, size_t>& column) const noexcept
             {
             if (const auto strVal{ std::get_if<wxString>(&column) };
@@ -1430,29 +1490,38 @@ namespace Wisteria::Data
             }
         /// @returns The specified continuous column.
         /// @param column The index into the list of continuous columns.
-        [[nodiscard]] Column<double>& GetContinuousColumn(const size_t column) noexcept
+        [[nodiscard]]
+        Column<double>& GetContinuousColumn(const size_t column) noexcept
             { return m_continuousColumns.at(column); }
-        [[nodiscard]] const Column<double>& GetContinuousColumn(const size_t column) const noexcept
+        [[nodiscard]]
+        const Column<double>& GetContinuousColumn(const size_t column) const noexcept
             { return m_continuousColumns.at(column); }
         /// @private
-        [[nodiscard]] const ColumnWithStringTable& GetCategoricalColumn(const size_t column) const noexcept
+        [[nodiscard]]
+        const ColumnWithStringTable& GetCategoricalColumn(const size_t column) const noexcept
             { return m_categoricalColumns.at(column); }
         /// @returns The specified categorical column.
         /// @param column The index into the list of categorical columns.
-        [[nodiscard]] ColumnWithStringTable& GetCategoricalColumn(const size_t column) noexcept
+        [[nodiscard]]
+        ColumnWithStringTable& GetCategoricalColumn(const size_t column) noexcept
             { return m_categoricalColumns.at(column); }
         /// @private
-        [[nodiscard]] const Column<wxDateTime>& GetDateColumn(const size_t column) const noexcept
+        [[nodiscard]]
+        const Column<wxDateTime>& GetDateColumn(const size_t column) const noexcept
             { return m_dateColumns.at(column); }
         /// @returns The specified date column.
         /// @param column The index into the list of date columns.
-        [[nodiscard]] Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
+        [[nodiscard]]
+        Column<wxDateTime>& GetDateColumn(const size_t column) noexcept
             { return m_dateColumns.at(column); }
         // conversion helpers
-        [[nodiscard]] static double ConvertToDouble(const std::wstring& input, double MDRecodeValue);
-        [[nodiscard]] static GroupIdType ConvertToGroupId(const std::wstring& input,
+        [[nodiscard]]
+        static double ConvertToDouble(const std::wstring& input, double MDRecodeValue);
+        [[nodiscard]]
+        static GroupIdType ConvertToGroupId(const std::wstring& input,
                                                    const GroupIdType mdCode);
-        [[nodiscard]] static wxDateTime ConvertToDate(const wxString& input,
+        [[nodiscard]]
+        static wxDateTime ConvertToDate(const wxString& input,
                                                const DateImportMethod method,
                                                const wxString& formatStr);
 
