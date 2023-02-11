@@ -34,14 +34,14 @@ namespace string_util
     /// ANSI C decorators
     /// atoi
     /// @private
-    inline int atoi(const char* str) noexcept
+    inline int atoi(const char* str)
         {
         if (str == nullptr)
             { return 0; }
         return std::atoi(str);
         }
     /// @private
-    inline int atoi(const wchar_t* str) noexcept
+    inline int atoi(const wchar_t* str)
         {
         if (str == nullptr)
             { return 0; }
@@ -50,14 +50,14 @@ namespace string_util
         }
     /// atol
     /// @private
-    inline long atol(const char* str) noexcept
+    inline long atol(const char* str)
         {
         if (str == nullptr)
             { return 0; }
         return std::atol(str);
         }
     /// @private
-    inline long atol(const wchar_t* str) noexcept
+    inline long atol(const wchar_t* str)
         {
         if (str == nullptr)
             { return 0; }
@@ -66,44 +66,32 @@ namespace string_util
         }
     /// tolower
     /// @private
-    inline int tolower(char c) noexcept
-        {
-        return std::tolower(static_cast<unsigned char>(c));
-        }
+    inline int tolower(char c)
+        { return std::tolower(static_cast<unsigned char>(c)); }
     /// @private
-    inline wchar_t tolower(wchar_t c) noexcept
-        {
-        return std::towlower(c);
-        }
+    inline wchar_t tolower(wchar_t c)
+        { return std::towlower(c); }
     // strlen
     /// @private
-    inline size_t strlen(const char* text) noexcept
+    inline size_t strlen(const char* text)
         { return std::strlen(text); }
     /// @private
-    inline size_t strlen(const wchar_t* text) noexcept
+    inline size_t strlen(const wchar_t* text)
         { return std::wcslen(text); }
     /// strcmp
     /// @private
-    inline int strcmp(const char* string1, const char* string2) noexcept
-        {
-        return std::strcmp(string1, string2);
-        }
+    inline int strcmp(const char* string1, const char* string2)
+        { return std::strcmp(string1, string2); }
     /// @private
-    inline int strcmp(const wchar_t* string1, const wchar_t* string2) noexcept
-        {
-        return std::wcscmp(string1, string2);
-        }
+    inline int strcmp(const wchar_t* string1, const wchar_t* string2)
+        { return std::wcscmp(string1, string2); }
     /// strncmp
     /// @private
-    inline int strncmp(const char* string1, const char* string2, size_t count) noexcept
-        {
-        return std::strncmp(string1, string2, count);
-        }
+    inline int strncmp(const char* string1, const char* string2, size_t count)
+        { return std::strncmp(string1, string2, count); }
     /// @private
-    inline int strncmp(const wchar_t* string1, const wchar_t* string2, size_t count) noexcept
-        {
-        return std::wcsncmp(string1, string2, count);
-        }
+    inline int strncmp(const wchar_t* string1, const wchar_t* string2, size_t count)
+        { return std::wcsncmp(string1, string2, count); }
 
     /// @brief Determines if a given value is either of two other given values.
     /// @param value The value to compare with.
@@ -1332,7 +1320,7 @@ namespace string_util
     class less_string_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const
+        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::stricmp(a_, b_) < 0); }
         };
 

@@ -60,7 +60,8 @@ public:
     void clear() noexcept
         { m_table.clear(); }
     /// @returns The (const) set of values and their respective frequency counts.
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
 private:
     map_type m_table;
@@ -163,7 +164,8 @@ public:
             }
         }
     /// @returns The set of values and their respective frequency counts.
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
 private:
     map_type m_table;
@@ -171,7 +173,6 @@ private:
 
 /// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added,
 ///     as well as an additional value to accumulate.
-/// @todo needs unit test
 template <typename T, typename Compare = std::less<T>>
 class aggregate_frequency_set
     {
@@ -217,10 +218,12 @@ public:
     void clear() noexcept
         { m_table.clear(); }
     /// @private
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
     /// @returns The set of values and their respective counts and totals.
-    [[nodiscard]] map_type& get_data() noexcept
+    [[nodiscard]]
+    map_type& get_data() noexcept
         { return m_table; }
 private:
     map_type m_table;
@@ -265,7 +268,8 @@ public:
         return index_iter;
         }
     /// @returns The map of pairs and their respective frequency counts.
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
 private:
     map_type m_table;
@@ -350,7 +354,8 @@ public:
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
-    [[nodiscard]] std::pair<const_iterator, bool> insert(const value_type& value)
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(const value_type& value)
         { return m_table.try_emplace(value); }
     /** @brief Insert an already constructed item with its values and counts loaded.
         @details This would normally be used if needing to update an item,
@@ -358,10 +363,12 @@ public:
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
-    [[nodiscard]] std::pair<const_iterator, bool> insert(value_type&& value)
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(value_type&& value)
         { return m_table.try_emplace(value); }
     /// @returns The map of pairs and their respective frequency counts.
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
     /// Clears the contents from the map.
     void clear() noexcept
@@ -402,8 +409,7 @@ private:
 
 /** @brief Same as a @c std::map (where the key is a single value), but also
          supports multiple (unique) values (with their own freqency counts)
-         connected to each key. Also includes an aggregator for each key.
-    @todo Needs unit tests.*/
+         connected to each key. Also includes an aggregator for each key.*/
 template <typename T1, typename T2,
           typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
 class multi_value_frequency_aggregate_map
@@ -476,7 +482,8 @@ public:
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
-    [[nodiscard]] std::pair<const_iterator, bool> insert(const value_type& value)
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(const value_type& value)
         { return m_table.try_emplace(value); }
     /** @brief Insert an already constructed item with its values and counts loaded.
         @details This would normally be used if needing to update an item,
@@ -484,10 +491,12 @@ public:
         @param value The value to insert.
         @returns A (const) iterator and flag indicating whether the value was inserted
             (will be @c false if value was already in the map).*/
-    [[nodiscard]] std::pair<const_iterator, bool> insert(value_type&& value)
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(value_type&& value)
         { return m_table.try_emplace(value); }
     /// @returns The map of pairs and their respective frequency counts.
-    [[nodiscard]] const map_type& get_data() const noexcept
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
         { return m_table; }
     /// Clears the contents from the map.
     void clear() noexcept

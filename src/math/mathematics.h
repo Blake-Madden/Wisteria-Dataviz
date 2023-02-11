@@ -444,8 +444,7 @@ namespace geometry
     /** @brief Gets the distance between points.
         @param pt1 The first point.
         @param pt2 The second point.
-        @returns The distance between the points.
-        @todo Add unit test.*/
+        @returns The distance between the points.*/
     [[nodiscard]]
     inline double distance_between_points(const std::pair<double, double> pt1,
                                           const std::pair<double, double> pt2) noexcept
@@ -458,13 +457,12 @@ namespace geometry
         @param ctr The center point of the circle.
         @param radius of the circle.
         @param pt The point to review.
-        @returns @c true if the point is inside of the circle.
-        @todo Add a unit test.*/
+        @returns @c true if the point is inside of the circle.*/
     [[nodiscard]]
     inline bool is_point_inside_circle(const std::pair<double, double> ctr,
                                        const double radius,
                                        const std::pair<double, double> pt) noexcept
-        { return (radius >= distance_between_points(ctr, pt)); }
+        { return (distance_between_points(ctr, pt) <= radius); }
     /** @brief Calculates the width of a rectangle that can fit inside of a circle.
         @param radius The radius of the circle.
         @returns The width of the largest rectangle that can fit inside of the circle.*/

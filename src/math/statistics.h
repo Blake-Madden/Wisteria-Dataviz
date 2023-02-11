@@ -29,9 +29,9 @@
 namespace statistics
     {
     /** @returns The valid (non-NaN) number of observations from the specified range.
-        @param data The data to analyze.
-        @todo needs unit test*/
-    [[nodiscard]] inline size_t valid_n(const std::vector<double>& data) noexcept
+        @param data The data to analyze.*/
+    [[nodiscard]]
+    inline size_t valid_n(const std::vector<double>& data) noexcept
         {
         return static_cast<size_t>(
             std::accumulate(data.cbegin(), data.cend(), 0.0,
@@ -41,11 +41,12 @@ namespace statistics
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
         @param data The data to analyze.
-        @returns A set containing all modes from a specified range.
-         In the case of a tie, multiple modes will be returned.
+        @returns A set containing all modes from a specified range.\n
+            In the case of a tie, multiple modes will be returned.
         @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
     template <typename T>
-    [[nodiscard]] std::set<T> mode(const std::vector<T>& data)
+    [[nodiscard]]
+    std::set<T> mode(const std::vector<T>& data)
         {
         std::set<T> modes;
         if (data.size() == 0)
@@ -79,13 +80,14 @@ namespace statistics
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
         @param data The data to analyze.
-        @param transformValue Function to transform values when grouping them.
-        For example, you can pass in a functor to round double values into integers.
-        @returns A set containing all modes from a specified range.
-         In the case of a tie, multiple modes will be returned.
+        @param transformValue Function to transform values when grouping them.\n
+            For example, you can pass in a functor to round double values into integers.
+        @returns A set containing all modes from a specified range.\n
+            In the case of a tie, multiple modes will be returned.
         @warning If analyzing floating-point data, NaN should be removed prior to calling this.*/
     template <typename T, typename predicateT>
-    [[nodiscard]] std::set<T> mode(const std::vector<T>& data, predicateT transformValue)
+    [[nodiscard]]
+    std::set<T> mode(const std::vector<T>& data, predicateT transformValue)
         {
         std::set<T> modes;
         if (data.size() == 0)
@@ -122,7 +124,8 @@ namespace statistics
     /** @returns The means (average) value from the specified range.
         @param data The data to analyze.
         @throws std::invalid_argument If no observations are provided, throws an exception.*/
-    [[nodiscard]] inline double mean(const std::vector<double>& data)
+    [[nodiscard]]
+    inline double mean(const std::vector<double>& data)
         {
         const auto N = valid_n(data);
         const double summation = std::accumulate(data.cbegin(), data.cend(), 0.0,
@@ -140,7 +143,8 @@ namespace statistics
         @param end The end of the data range.
         @warning NaN values should be removed from the input prior to calling this.
         @throws std::invalid_argument If no observations are provided, throws an exception.*/
-    [[nodiscard]] inline double median_presorted(const std::vector<double>::const_iterator& begin,
+    [[nodiscard]]
+    inline double median_presorted(const std::vector<double>::const_iterator& begin,
                                                  const std::vector<double>::const_iterator& end)
         {
         // since we are looking at specific positions in the data,
@@ -164,12 +168,14 @@ namespace statistics
     /** @returns The median value from the specified range (assumes data is already sorted).
         @param data The data to analyze.
         @warning NaN values should be removed from the input prior to calling this.*/
-    [[nodiscard]] inline double median_presorted(const std::vector<double>& data)
+    [[nodiscard]]
+    inline double median_presorted(const std::vector<double>& data)
         { return median_presorted(data.cbegin(), data.cend()); }
 
     /** @returns The median value from the specified range.
         @param data The data to analyze.*/
-    [[nodiscard]] inline double median(const std::vector<double>& data)
+    [[nodiscard]]
+    inline double median(const std::vector<double>& data)
         {
         std::vector<double> dest;
         dest.reserve(data.size());
@@ -185,7 +191,8 @@ namespace statistics
     /** @returns The sum of squares/cubes/etc. from the specified range.
         @param data The data to analyze.
         @param power The exponent value (e.g., 2 will give you the sum of squares).*/
-    [[nodiscard]] inline double sum_of_powers(const std::vector<double>& data, const double power)
+    [[nodiscard]]
+    inline double sum_of_powers(const std::vector<double>& data, const double power)
         {
         const double mean_val = mean(data);
 
@@ -204,7 +211,8 @@ namespace statistics
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
-    [[nodiscard]] inline double variance(const std::vector<double>& data, const bool is_sample)
+    [[nodiscard]]
+    inline double variance(const std::vector<double>& data, const bool is_sample)
         {
         // sum of squares/N-1
         const double sos = sum_of_powers(data, 2);
@@ -220,7 +228,8 @@ namespace statistics
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
-    [[nodiscard]] inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
+    [[nodiscard]]
+    inline double standard_deviation(const std::vector<double>& data, const bool is_sample)
         {
         if (data.size() < 2)
             { throw std::invalid_argument("Not enough observations to calculate std. dev."); }
@@ -246,7 +255,8 @@ namespace statistics
         @param data The data to analyze.
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @throws std::invalid_argument If less than two observations are provided, throws an exception.*/
-    [[nodiscard]] inline double standard_error_of_mean(const std::vector<double>& data,
+    [[nodiscard]]
+    inline double standard_error_of_mean(const std::vector<double>& data,
                                                        const bool is_sample)
         {
         const auto N = valid_n(data);
@@ -266,7 +276,8 @@ namespace statistics
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @returns The skewness from the specified range.
         @throws std::invalid_argument If less than three observations are provided, throws an exception.*/
-    [[nodiscard]] inline double skewness(const std::vector<double>& data, const bool is_sample)
+    [[nodiscard]]
+    inline double skewness(const std::vector<double>& data, const bool is_sample)
         {
         const auto N = valid_n(data);
         if (N < 3)
@@ -283,7 +294,8 @@ namespace statistics
         @param is_sample Set to @c true to use sample variance (i.e., N-1).
         @returns The Kurtosis from the specified range.
         @throws std::invalid_argument If less than four observations are provided, throws an exception.*/
-    [[nodiscard]] inline double kurtosis(const std::vector<double>& data, const bool is_sample)
+    [[nodiscard]]
+    inline double kurtosis(const std::vector<double>& data, const bool is_sample)
         {
         const auto N = valid_n(data);
         if (N < 4)
@@ -294,9 +306,9 @@ namespace statistics
         }
 
     /** @brief Calculates the 25th and 75th percentiles from the specified range using the
-         Tukey hinges method. Median is taken from lower and upper halves if N is even.
-         If N is odd, then overall median is included in both the lower and upper half and
-         median is taken from those halves. This is that method that R appears to do.
+            Tukey hinges method. Median is taken from lower and upper halves if N is even.
+            If N is odd, then overall median is included in both the lower and upper half and
+            median is taken from those halves. This is that method that R appears to do.
         @param data The data to analyze.
         @param[out] lower_quartile_value The calculated lower quartile.
         @param[out] upper_quartile_value The calculated upper quartile.

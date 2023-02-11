@@ -4,6 +4,20 @@
 
 using namespace Catch::Matchers;
 
+TEST_CASE("Valid N", "[stats][validN]")
+    {
+    CHECK(statistics::valid_n({}) == 0);
+    CHECK(statistics::valid_n(std::vector<double>{ std::numeric_limits<double>::quiet_NaN() }) == 0);
+    CHECK(statistics::valid_n(std::vector<double>{
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN() }) == 0);
+    CHECK(statistics::valid_n(std::vector<double>{
+        std::numeric_limits<double>::quiet_NaN(),
+        1.0,
+        std::numeric_limits<double>::quiet_NaN() }) == 1);
+    CHECK(statistics::valid_n(std::vector<double>{ -7.8, 1.0, 5.1 }) == 3);
+    }
+
 TEST_CASE("Normalize", "[stats][normalize]")
     {
     CHECK_THAT(statistics::normalize(1,50,1), WithinRel(0, 1e-4));
