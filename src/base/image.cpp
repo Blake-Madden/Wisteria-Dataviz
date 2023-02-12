@@ -912,14 +912,14 @@ namespace Wisteria::GraphItems
         // the original image to maintain fidelity
         const wxSize scaledSize(GetImageSize().GetWidth()*GetScaling(),
                                 GetImageSize().GetHeight()*GetScaling());
+        m_img = m_originalImg;
         if (m_img.GetSize() != scaledSize)
             {
-            m_img = m_originalImg;
             m_img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(),
                           wxIMAGE_QUALITY_HIGH);
             }
 
-        SetOpacity(m_img, m_opacity, false);
+        SetOpacity(m_img, m_opacity, true);
 
         // Draw the shadow. This needs to be a polygon outside of the image
         // in case the image is translucent.
