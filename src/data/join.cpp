@@ -121,9 +121,10 @@ namespace Wisteria::Data
                 { continue; }
             const wxString mergeColName = mergedData->ContainsColumn(catCol.GetName()) ?
                 catCol.GetName() + suffix : catCol.GetName();
-            auto& col = mergedData->AddCategoricalColumn(mergeColName);
-            col.SetStringTable(catCol.GetStringTable());
-            col.FillWithMissingData();
+            mergedData->AddCategoricalColumn(mergeColName, catCol.GetStringTable());
+            auto newCol = mergedData->GetCategoricalColumn(mergeColName);
+            if (newCol != mergedData->GetCategoricalColumns().cend())
+                { newCol->FillWithMissingData(); }
             outCatColNamesMap.push_back(std::make_pair(catCol.GetName(), mergeColName));
             }
         // add continuous

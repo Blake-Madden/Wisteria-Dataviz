@@ -40,25 +40,31 @@ namespace Wisteria::Data
             m_fromDataset->GetDateColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetDateColumns())
             {
-            auto& newColumn = m_toDataset->AddDateColumn(srcColumn.GetName());
-            newColumn.Reserve(srcColumn.GetRowCount());
+            m_toDataset->AddDateColumn(srcColumn.GetName());
+            auto newColumn = m_toDataset->GetDateColumn(srcColumn.GetName());
+            if (newColumn != m_toDataset->GetDateColumns().cend())
+                { newColumn->Reserve(srcColumn.GetRowCount()); }
             }
         // continous columns
         m_toDataset->GetContinuousColumns().reserve(
             m_fromDataset->GetContinuousColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetContinuousColumns())
             {
-            auto& newColumn = m_toDataset->AddContinuousColumn(srcColumn.GetName());
-            newColumn.Reserve(srcColumn.GetRowCount());
+            m_toDataset->AddContinuousColumn(srcColumn.GetName());
+            auto newColumn = m_toDataset->GetContinuousColumn(srcColumn.GetName());
+            if (newColumn != m_toDataset->GetContinuousColumns().cend())
+                { newColumn->Reserve(srcColumn.GetRowCount()); }
             }
         // categorical columns
         m_toDataset->GetCategoricalColumns().reserve(
             m_fromDataset->GetCategoricalColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetCategoricalColumns())
             {
-            auto& newColumn = m_toDataset->AddCategoricalColumn(srcColumn.GetName());
-            newColumn.SetStringTable(srcColumn.GetStringTable());
-            newColumn.Reserve(srcColumn.GetRowCount());
+            m_toDataset->AddCategoricalColumn(srcColumn.GetName(),
+                                              srcColumn.GetStringTable());
+            auto newColumn = m_toDataset->GetCategoricalColumn(srcColumn.GetName());
+            if (newColumn != m_toDataset->GetCategoricalColumns().cend())
+                { newColumn->Reserve(srcColumn.GetRowCount()); }
             }
 
         // map the variables between the source and destination datasets

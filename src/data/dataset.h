@@ -939,61 +939,55 @@ namespace Wisteria::Data
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
-                with more generic names.
-            @returns The newly added (or pre-existing) column.*/
-        Column<double>& AddContinuousColumn(const wxString& columnName)
+                with more generic names.*/
+        void AddContinuousColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Column name is empty in call to AddContinuousColumn()!");
             // see if already in the dataset
             auto foundColumn = GetContinuousColumn(columnName);
             if (foundColumn != GetContinuousColumns().end())
-                { return *foundColumn; }
+                { return; }
 
             m_continuousColumns.resize(m_continuousColumns.size()+1);
             m_continuousColumns.back().SetName(columnName);
             m_continuousColumns.back().Resize(GetRowCount(),
                                               std::numeric_limits<double>::quiet_NaN());
-            return m_continuousColumns.back();
             }
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable)
                 (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
-                with more generic names.
-            @returns The newly added (or pre-existing) column.*/
-        ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName);
+                with more generic names.*/
+        void AddCategoricalColumn(const wxString& columnName);
         /** @brief Adds a new categorical column (i.e., ColumnWithStringTable)
                 (if not already in the dataset).
             @param columnName The name of the column.
             @param stringTable A string table to assign to the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
-                with more generic names.
-            @returns The newly added (or pre-existing) column.*/
-        ColumnWithStringTable& AddCategoricalColumn(const wxString& columnName,
+                with more generic names.*/
+        void AddCategoricalColumn(const wxString& columnName,
             const ColumnWithStringTable::StringTableType& stringTable);
         
         /** @brief Adds a new date column (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();
                 otherwise, that function will rely on creating new columns
-                with more generic names.
-            @returns The newly added (or pre-existing) column.*/
-        Column<wxDateTime>& AddDateColumn(const wxString& columnName)
+                with more generic names.*/
+        void AddDateColumn(const wxString& columnName)
             {
             wxASSERT_MSG(columnName.length(),
                 L"Date name is empty in call to AddDateColumn()!");
             // see if already in the dataset
             auto foundColumn = GetDateColumn(columnName);
             if (foundColumn != GetDateColumns().end())
-                { return *foundColumn; }
+                { return; }
 
             m_dateColumns.resize(m_dateColumns.size()+1);
             m_dateColumns.back().SetName(columnName);
             m_dateColumns.back().Resize(GetRowCount(), wxInvalidDateTime);
-            return m_dateColumns.back();
             }
 
         /** @brief During import, sets the column names to the names

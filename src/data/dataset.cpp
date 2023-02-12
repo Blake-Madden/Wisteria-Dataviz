@@ -793,14 +793,14 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
-    ColumnWithStringTable& Dataset::AddCategoricalColumn(const wxString& columnName)
+    void Dataset::AddCategoricalColumn(const wxString& columnName)
         {
         wxASSERT_MSG(columnName.length(),
             L"Column name is empty in call to AddCategoricalColumn()!");
         // see if already in the dataset
         auto foundColumn = GetCategoricalColumn(columnName);
         if (foundColumn != GetCategoricalColumns().end())
-            { return *foundColumn; }
+            { return; }
 
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
         m_categoricalColumns.back().SetName(columnName);
@@ -812,11 +812,10 @@ namespace Wisteria::Data
                 insert(std::make_pair(0, wxString{}));
             m_categoricalColumns.back().Resize(GetRowCount(), 0);
             }
-        return m_categoricalColumns.back();
         }
 
     //----------------------------------------------
-    ColumnWithStringTable& Dataset::AddCategoricalColumn(const wxString& columnName,
+    void Dataset::AddCategoricalColumn(const wxString& columnName,
         const ColumnWithStringTable::StringTableType& stringTable)
         {
         wxASSERT_MSG(columnName.length(),
@@ -826,7 +825,7 @@ namespace Wisteria::Data
         if (foundColumn != GetCategoricalColumns().end())
             {
             foundColumn->SetStringTable(stringTable);
-            return *foundColumn;
+            return;
             }
 
         m_categoricalColumns.resize(m_categoricalColumns.size()+1);
@@ -850,7 +849,7 @@ namespace Wisteria::Data
                     if (value.empty())
                         {
                         m_categoricalColumns.back().Resize(GetRowCount(), key);
-                        return m_categoricalColumns.back();
+                        return;
                         }
                     }
                 // no empty string in string table, so add one (with an ID one
@@ -861,7 +860,6 @@ namespace Wisteria::Data
                 m_categoricalColumns.back().Resize(GetRowCount(), lastKey+1);
                 }
             }
-        return m_categoricalColumns.back();
         }
 
     //----------------------------------------------

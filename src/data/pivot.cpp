@@ -199,8 +199,7 @@ namespace Wisteria::Data
             }
         for (const auto& catCol : IdColumnsIters.m_catColumns)
             {
-            pivotedData->AddCategoricalColumn(catCol->GetName()).
-                SetStringTable(catCol->GetStringTable());
+            pivotedData->AddCategoricalColumn(catCol->GetName(), catCol->GetStringTable());
             }
         // add the pivoted columns
         for (const auto& pivotedColumnName : pivotedColumnNames)
@@ -336,8 +335,7 @@ namespace Wisteria::Data
             else if (const auto foundCatVar = dataset->GetCategoricalColumn(columnToKeep);
                 foundCatVar != dataset->GetCategoricalColumns().cend())
                 {
-                pivottedData->AddCategoricalColumn(columnToKeep).
-                    SetStringTable(foundCatVar->GetStringTable());
+                pivottedData->AddCategoricalColumn(columnToKeep, foundCatVar->GetStringTable());
                 columnsToKeepMap.push_back(std::make_pair(foundCatVar, nullptr));
                 }
             else if (const auto foundContinousVar = dataset->GetContinuousColumn(columnToKeep);
