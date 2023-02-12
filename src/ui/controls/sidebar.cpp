@@ -801,7 +801,7 @@ void SideBar::OnMouseClick(wxMouseEvent& event)
         {
         if (m_folders[i].m_Rect.Contains(event.GetX()+x, event.GetY()+y) )
             {
-            SelectFolder(i);
+            SelectFolder(i, true, true, true);
             return;
             }
         // if a parent item isn't being moused over,
@@ -912,7 +912,8 @@ void SideBar::EnsureFolderVisible(const size_t index)
 
 //-------------------------------------------
 void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
-                           const bool sendEvent /*= true*/)
+                           const bool sendEvent /*= true*/,
+                           const bool collapseIfExpanded /*= false*/)
     {
     if (item >= GetFolderCount())
         { return; }
@@ -927,9 +928,9 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     // If changing from expanded to collapsed, then just collapse it;
-    // nothing is being seleced or de-selected, just closing the window.
+    // nothing is being seleced or de-selected, just closing the folder.
     // Because of this, we won't be firing a selction event.
-    if (m_folders[item].m_isExpanded)
+    if (collapseIfExpanded && m_folders[item].m_isExpanded)
         {
         m_folders[item].Collapse();
         RecalcSizes();

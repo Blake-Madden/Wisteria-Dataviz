@@ -240,9 +240,13 @@ namespace Wisteria::UI
         /** @brief Selects a root-level item.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @param toggleExpansion @c true to collapse the folder if already expanded.\n
+                If collapsing the folder, then @c sendEvent will be overridden
+                (i.e., the selection event will not be fired).*/
         void SelectFolder(const size_t item, const bool setFocus = true,
-                            const bool sendEvent = true);
+                          const bool sendEvent = true,
+                          const bool collapseIfExpanded = false);
         /** @brief Selects a subitem.
             @param item The position of the parent item to select.
             @param subItem The position of the subitem (relative to its parent) to select.
