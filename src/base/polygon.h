@@ -96,7 +96,8 @@ namespace Wisteria::GraphItems
         void SetShape(const PolygonShape shape) noexcept
             { m_polygonShape = shape; }
         /// @returns The polygon's shape.
-        [[nodiscard]] PolygonShape GetShape() const noexcept
+        [[nodiscard]]
+        PolygonShape GetShape() const noexcept
             { return m_polygonShape; }
 
         /** @brief Sets the points of the polygon.
@@ -122,7 +123,8 @@ namespace Wisteria::GraphItems
                 }
             }
         /// @returns The points in the polygon.
-        [[nodiscard]] const std::vector<wxPoint>& GetPoints() const noexcept
+        [[nodiscard]]
+        const std::vector<wxPoint>& GetPoints() const noexcept
             { return m_points; }
         /// @}
 
@@ -143,10 +145,12 @@ namespace Wisteria::GraphItems
             { m_backgroundFill = fill; }
         /// @returns The color underneath the polygon's brush.
         /// @sa GetBrush().
-        [[nodiscard]] const Colors::GradientFill& GetBackgroundFill() const noexcept
+        [[nodiscard]]
+        const Colors::GradientFill& GetBackgroundFill() const noexcept
             { return m_backgroundFill; }
         /// @returns How the corners are drawn.
-        [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
+        [[nodiscard]]
+        BoxCorners GetBoxCorners() const noexcept
             { return m_boxCorners; }
         /** @brief Sets how the corners are drawn.
             @details Only relevant if shape is set to @c Rectangle and painting with a solid color.
@@ -159,6 +163,47 @@ namespace Wisteria::GraphItems
             @brief Helper functions for collision detection and shape calculations.*/
         /// @{
 
+        /** @returns The widest area of the polygon.
+            @param polygon The polygon to review.*/
+        template<typename polygonT>
+        [[nodiscard]]
+        static int GetPolygonWidth(const polygonT& polygon)
+            {
+            int areaWidth{ 0 };
+            for (auto pt : polygon)
+                {
+                auto startX{ pt.x };
+                while (IsInsidePolygon(pt, &polygon[0], polygon.size()))
+                    { ++pt.x; }
+                areaWidth = std::max({ pt.x - startX, areaWidth });
+                }
+            return areaWidth;
+            }
+        /** @returns The area of a polygon using the shoelace formuala.
+            @param polygon The polygon's points.
+            @param N The number of points in the polygon.
+            @details Based on https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
+            @todo needs unit testing*/
+        template<typename polygonT>
+        [[nodiscard]]
+        static double GetPolygonArea(const polygonT& polygon)
+            {
+            if (polygon.size() == 0)
+                { return 0.0; }
+            // Initialize area
+            double area{ 0.0 };
+ 
+            // Calculate value of shoelace formula
+            int j = polygon.size() - 1;
+            for (int i = 0; i < polygon.size(); i++)
+                {
+                area += (polygon[j].x + polygon[i].x) * (polygon[j].y - polygon[i].y);
+                j = i;  // j is previous vertex to i
+                }
+ 
+            // Return absolute value
+            return std::abs(area / 2.0);
+            }
         /** @brief Alexander Motrichuk's implementation of determining if a point is
                 inside of a polygon.
             @details Tests if a point is within a polygon (or on an edge or vertex)
@@ -167,14 +212,30 @@ namespace Wisteria::GraphItems
             @param polygon The polygon's points.
             @param N The number of points in the polygon.
             @returns Whether the point is inside of the polygon.*/
-        [[nodiscard]] static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon,
-                                                  const int N);
+        [[nodiscard]]
+        static bool IsInsidePolygon(const wxPoint p, const wxPoint* polygon, const int N);
+        /** @brief Determines if a rectangle is inside of a polygon.
+            @details Tests if a point is within a polygon (or on an edge or vertex)
+                by shooting a ray along the X axis.
+            @param rect The rectangle to review against the polygon.
+            @param polygon The polygon to perform collision detection within.
+            @returns Whether the point is inside of the polygon.
+            @todo needs unit testing*/
+        template<typename polygonT>
+        [[nodiscard]]
+        static bool IsRectInsidePolygon(const wxRect rect, const polygonT& polygon)
+            {
+            return (IsInsidePolygon(rect.GetTopLeft(), &polygon[0], polygon.size()) &&
+                IsInsidePolygon(rect.GetTopRight(), &polygon[0], polygon.size()) &&
+                IsInsidePolygon(rect.GetBottomLeft(), &polygon[0], polygon.size()) &&
+                IsInsidePolygon(rect.GetBottomRight(), &polygon[0], polygon.size()));
+            }
         /** @brief Determines if a rectangle entirely fits another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
             @returns @c true if @c innerRect is inside of @c outerRect.*/
-        [[nodiscard]] static bool IsRectInsideRect(const wxRect innerRect,
-                                                   const wxRect outerRect);
+        [[nodiscard]]
+        static bool IsRectInsideRect(const wxRect innerRect, const wxRect outerRect);
         /** @brief Determines how much of a rectangle fits into another rectangle.
             @param innerRect The smaller rect.
             @param outerRect the larger rect.
@@ -182,8 +243,9 @@ namespace Wisteria::GraphItems
                 that fits inside of @c outerRect.\n
                 For example, if 3/4 of the smaller rect's width is inside of the larger rect
                 and 1/2 of its height fits, then this will return @c 0.75 and @c 0.5.*/
-        [[nodiscard]] static std::pair<double, double> GetPercentInsideRect(const wxRect innerRect,
-                                                       const wxRect outerRect);
+        [[nodiscard]]
+        static std::pair<double, double> GetPercentInsideRect(const wxRect innerRect,
+                                                              const wxRect outerRect);
         /** @brief Draws a line from @c pt1 to @c pt2 with an arrowhead pointing at pt2.
             @details The line is drawn with the current pen and the arrowhead is filled
                 with the current brush. Adapted from code by Adrian McCarthy.
@@ -199,8 +261,9 @@ namespace Wisteria::GraphItems
             @param scaling Scale factor to scale it down. For example, 2 will
                 downscale the rectangle to half its original size.
             @returns The downscaled rectangle.*/
-        [[nodiscard]] inline static wxRect DownScaleRect(const wxRect& theRect,
-                                                         const double scaling)
+        [[nodiscard]]
+        inline static wxRect DownScaleRect(const wxRect& theRect,
+                                           const double scaling)
             {
             return wxRect(
                 wxSize(safe_divide<double>(theRect.GetWidth(), scaling),
@@ -216,32 +279,37 @@ namespace Wisteria::GraphItems
             @param N The number of points in the polygon.
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
-        [[nodiscard]] static wxRect GetPolygonBoundingBox(const wxPoint* polygon,
-                                                          const size_t N);
+        [[nodiscard]]
+        static wxRect GetPolygonBoundingBox(const wxPoint* polygon,
+                                            const size_t N);
         /** @brief Determines the bounding box that a polygon requires to fit inside of.
             @param polygon The polygon's points.
             @returns The rectangle that the polygon would need to fit in.
             @todo needs unit testing*/
-        [[nodiscard]] static wxRect GetPolygonBoundingBox(const std::vector<wxPoint>& polygon);
+        [[nodiscard]]
+        static wxRect GetPolygonBoundingBox(const std::vector<wxPoint>& polygon);
 
         /** @brief Converts a pair of doubles to a @c wxPoint.
             @param coordPair The two double values representing a point.
             @returns The double values as a @c wxPoint.*/
-        [[nodiscard]] static wxPoint PairToPoint(const std::pair<double,
+        [[nodiscard]]
+        static wxPoint PairToPoint(const std::pair<double,
                                                     double>& coordPair) noexcept
             { return wxPoint(coordPair.first, coordPair.second); }
         /// @}
     private:
         /** @returns @c true if the given point is inside of this polygon.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final;
         /** @brief Draws the polygon.
             @param dc The canvas to draw the point on.
             @returns The box that the polygon is being drawn within.*/
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             { return GetPolygonBoundingBox(&m_scaledPoints[0], m_scaledPoints.size()); }
         /** @brief Moves the polygon by the specified x and y values.
             @param xToMove The amount to move horizontally.
@@ -257,7 +325,8 @@ namespace Wisteria::GraphItems
         /** @returns A rectangle from four points.
             @param points The four points to construct the rectangle.
             @warning It is assumed that there are four elements in @c points.*/
-        [[nodiscard]] static wxRect GetRectFromPoints(const wxPoint* points);
+        [[nodiscard]]
+        static wxRect GetRectFromPoints(const wxPoint* points);
         void UpdatePointPositions();
         std::vector<wxPoint> m_points;
         // secondary cache used for actual (i.e., scaled) bounding box

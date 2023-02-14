@@ -388,15 +388,6 @@ namespace Wisteria
         EFFECTS_COUNT
         };
 
-    /// @brief How the words in a word cloud are organized.
-    enum class WordCloudLayout
-        {
-        /// @brief Attempts to place words in a center box of the cloud.
-        ///     Remaining words are then placed within boxes around the center
-        ///     box, going clockwise (starting at 3 o'clock).
-        Spiral
-        };
-
     /// @brief Pie slice rendering options (used for pie charts.)
     enum class PieSliceEffect
         {

@@ -81,6 +81,18 @@ namespace Wisteria::Graphs
                           freqAndCount.second });
             }
         std::sort(m_words.begin(), m_words.end(),
+            // most frequent to least frequent
+            [](const auto& lhv, const auto& rhv) noexcept
+            { return lhv.m_frequency > rhv.m_frequency; });
+
+        // remove words that don't meet the minimum frequency
+        auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
+            [](const auto& item) noexcept
+            { return item.m_frequency < m_minFrequency; });
+        if (wordsToRemoveStart != m_words.cend())
+            { m_words.erase(wordsToRemoveStart, m_words.end()); }
+
+        std::sort(m_words.begin(), m_words.end(),
             // least frequent to most frequent because we go backwards when
             // moving these into drawable labels
             [](const auto& lhv, const auto& rhv) noexcept
@@ -107,6 +119,7 @@ namespace Wisteria::Graphs
         std::vector<std::shared_ptr<GraphItems::Label>> labels;
         wxPoint origin = GetPlotAreaBoundingBox().GetTopLeft();
         size_t wordCount{ 0 };
+        double labelsArea{ 0.0 };
         int maxWidth{ 0 }, maxHeight{ 0 };
         for (const auto& word : m_words)
             {
@@ -121,21 +134,54 @@ namespace Wisteria::Graphs
             currentLabel->SetBoundingBoxToContentAdjustment(LabelBoundingBoxContentAdjustment::ContentAdjustAll);
             currentLabel->SetBoundingBox(suggestedRect, dc, GetScaling());
             const auto bBox = currentLabel->GetBoundingBox(dc);
+            labelsArea += bBox.GetWidth() * bBox.GetHeight();
+            maxWidth = std::max({ maxWidth, bBox.GetWidth() });
+            maxHeight = std::max({ maxHeight, bBox.GetHeight() });
             origin.y += bBox.GetHeight();
             labels.push_back(currentLabel);
             ++wordCount;
-
-            maxWidth = std::max({ maxWidth, bBox.GetWidth() });
-            maxHeight = std::max({ maxHeight, bBox.GetHeight() });
             }
 
-        const wxRect maxDrawRect = GetMaxDrawingRect();
+        // a cloud polygon
+        std::vector<wxPoint> polygon
+            {
+            // top
+            wxPoint{ GetPlotAreaBoundingBox().GetLeftTop() +
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * math_constants::quarter, 0) },
+            wxPoint{ GetPlotAreaBoundingBox().GetRightTop() -
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * math_constants::quarter, 0) },
+            // right
+            wxPoint{ GetPlotAreaBoundingBox().GetRightTop() -
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * (math_constants::eighth / 2.0),
+                                 -(GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
+            wxPoint{ GetPlotAreaBoundingBox().GetRightTop() +
+                         wxPoint(0, GetPlotAreaBoundingBox().GetHeight() * math_constants::half) },
+            wxPoint{ GetPlotAreaBoundingBox().GetRightBottom() -
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * (math_constants::eighth / 2.0),
+                                 (GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
+            // bottom
+            wxPoint{ GetPlotAreaBoundingBox().GetRightBottom() -
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * math_constants::quarter, 0) },
+            wxPoint{ GetPlotAreaBoundingBox().GetLeftBottom() +
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * math_constants::quarter, 0) },
+            wxPoint{ GetPlotAreaBoundingBox().GetLeftBottom() +
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * (math_constants::eighth / 2.0),
+                                 -(GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
+            // left
+            wxPoint{ GetPlotAreaBoundingBox().GetLeftTop() +
+                         wxPoint(0, GetPlotAreaBoundingBox().GetHeight() * math_constants::half) },
+            wxPoint{ GetPlotAreaBoundingBox().GetLeftTop() +
+                         wxPoint(GetPlotAreaBoundingBox().GetWidth() * (math_constants::eighth / 2.0),
+                                 (GetPlotAreaBoundingBox().GetHeight() * math_constants::eighth)) },
+            };
 
-        const double getWidthRescale = (maxWidth > maxDrawRect.GetWidth()) ?
-            safe_divide<double>(maxDrawRect.GetWidth(), maxWidth) : 1.0;
-        const double getHeightRescale = (maxHeight > maxDrawRect.GetHeight()) ?
-            safe_divide<double>(maxDrawRect.GetHeight(), maxHeight) : 1.0;
-        const double rescaleValue = std::min({ getWidthRescale, getHeightRescale , 1.0 });
+        const auto polyArea = Polygon::GetPolygonArea(polygon) * math_constants::half;
+        const auto polygonBoundingBox = Polygon::GetPolygonBoundingBox(polygon);
+
+        const double getWidthRescale = safe_divide<double>(Polygon::GetPolygonWidth(polygon), maxWidth);
+        const double getHeightRescale = safe_divide<double>(polygonBoundingBox.GetHeight(), maxHeight);
+        const double rescaleValue = std::min({ getWidthRescale, getHeightRescale,
+                                               safe_divide<double>(polyArea, labelsArea) });
 
         for (auto& label : labels)
             {
@@ -148,94 +194,42 @@ namespace Wisteria::Graphs
             (labels.size() < 1'000) ? 10 :
             5;
 
-        if (GetLayout() == WordCloudLayout::Spiral)
-            { RandomLayoutSpiral(labels, dc); }
-        }
-
-    //----------------------------------------------------------------
-    void WordCloud::RandomLayoutSpiral(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc)
-        {
         // sort remaining labels by width, largest-to-smallest
         std::sort(labels.begin(), labels.end(),
             [&dc](const auto& lhv, const auto& rhv) noexcept
             { return lhv->GetBoundingBox(dc).GetWidth() > rhv->GetBoundingBox(dc).GetWidth(); });
 
-        // try to place everything in a band 1/2 the size of the plot area
-        // so that the labels are more dense
-        auto drawArea = GetPlotAreaBoundingBox();
-        drawArea.Deflate(drawArea.GetWidth() * math_constants::fourth,
-                         drawArea.GetHeight() * math_constants::fourth);
-        const auto centerRect{ drawArea };
-        TryPlaceLabelsInRect(labels, dc, drawArea);
-
-        // right side
-        if (labels.size())
-            {
-            drawArea = centerRect;
-            drawArea.SetWidth(drawArea.GetWidth() / 2);
-            drawArea.SetLeft(centerRect.GetRight());
-            TryPlaceLabelsInRect(labels, dc, drawArea);
-            }
-
-        // bottom side
-        if (labels.size())
-            {
-            drawArea = centerRect;
-            drawArea.SetHeight(drawArea.GetHeight() / 2);
-            drawArea.SetTop(centerRect.GetBottom());
-            TryPlaceLabelsInRect(labels, dc, drawArea);
-            }
-
-        // left side
-        if (labels.size())
-            {
-            drawArea = centerRect;
-            drawArea.SetWidth(drawArea.GetWidth() / 2);
-            drawArea.SetLeft(GetPlotAreaBoundingBox().GetLeft());
-            TryPlaceLabelsInRect(labels, dc, drawArea);
-            }
-
-        // top side
-        if (labels.size())
-            {
-            drawArea = centerRect;
-            drawArea.SetHeight(drawArea.GetHeight() / 2);
-            drawArea.SetTop(GetPlotAreaBoundingBox().GetTop());
-            TryPlaceLabelsInRect(labels, dc, drawArea);
-            }
-
-        // If there are any remaining labels at this point, then they won't be drawn.
-        // This is preferrable to looping an enormous (or infinite) number of times
-        // if the real estate is really tight. This is acceptable, as these would
-        // be the less frequently occurring labels.
+        TryPlaceLabelsInPolygon(labels, dc, polygon);
         }
 
     //----------------------------------------------------------------
-    void WordCloud::TryPlaceLabelsInRect(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
-                                         wxDC& dc, const wxRect& drawArea)
+    void WordCloud::TryPlaceLabelsInPolygon(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+                                            wxDC& dc, const std::vector<wxPoint>& polygon)
         {
         if constexpr (Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
-            wxPoint pt[4];
-            GraphItems::Polygon::GetRectPoints(drawArea, pt);
             AddObject(std::make_shared<GraphItems::Polygon>(
-                GraphItemInfo().Pen(*wxBLUE), pt, std::size(pt)));
+                GraphItemInfo().Pen(*wxBLUE), polygon));
             }
 
+        auto polyBoundingBox{ Polygon::GetPolygonBoundingBox(polygon) };
+
+        std::vector<wxRect> drawnRects;
+
         // random positioning lambda for the last label in the list
-        const auto tryPlaceLabel = [&dc, this]
-                                    (auto& label, const auto& drawArea, std::vector<wxRect>& drawnRects,
-                                     auto& xPosDistro, auto& yPosDistro)
+        const auto tryPlaceLabel = [&dc, &polygon, &drawnRects, this]
+                                    (auto& label, const auto& polyBoundingBox,
+                                     const wxPoint pt)
             {
             auto bBox = label->GetBoundingBox(dc); // will already be cached
 
-            if (bBox.GetWidth() > drawArea.GetWidth() ||
-                bBox.GetHeight() > drawArea.GetWidth())
+            if (bBox.GetWidth() > polyBoundingBox.GetWidth() ||
+                bBox.GetHeight() > polyBoundingBox.GetWidth())
                 { return false; }
 
             // make it fit with the drawing area
-            bBox.SetTopLeft(wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) });
-            AdjustRectToDrawArea(bBox, drawArea);
+            bBox.SetTopLeft(pt);
+            AdjustRectToDrawArea(bBox, polyBoundingBox);
 
             auto foundPos = std::find_if(std::execution::par,
                 drawnRects.cbegin(), drawnRects.cend(),
@@ -246,22 +240,22 @@ namespace Wisteria::Graphs
                 {
                 // ...push over to the right of it
                 bBox.SetTopLeft(foundPos->GetTopRight());
-                if (bBox.GetRight() > drawArea.GetRight())
+                if (bBox.GetRight() > polyBoundingBox.GetRight())
                     {
                     // ...try it under the other label if it went outside of the draw area
                     bBox.SetTopLeft(foundPos->GetBottomLeft());
-                    if (bBox.GetBottom() > drawArea.GetBottom())
+                    if (bBox.GetBottom() > polyBoundingBox.GetBottom())
                         {
                         // ...try it to the left of the other label
                         bBox.SetTopLeft(foundPos->GetTopLeft());
                         bBox.SetLeft(bBox.GetLeft() - bBox.GetWidth());
                         // ...try it above the other label
-                        if (bBox.GetLeft() < drawArea.GetLeft())
+                        if (bBox.GetLeft() < polyBoundingBox.GetLeft())
                             {
                             bBox.SetTopLeft(foundPos->GetTopLeft());
                             bBox.SetTop(bBox.GetTop() - bBox.GetHeight());
                             // ...too high (outside of draw area), so give up
-                            if (bBox.GetTop() < drawArea.GetTop())
+                            if (bBox.GetTop() < polyBoundingBox.GetTop())
                                 { return false; }
                             }
                         }
@@ -276,25 +270,30 @@ namespace Wisteria::Graphs
                     { return false; }
                 }
 
-            // place it and add it to be rendered
-            drawnRects.push_back(bBox);
-            label->SetAnchorPoint(bBox.GetTopLeft());
-            AddObject(label);
+            if (Polygon::IsRectInsidePolygon(bBox, polygon))
+                {
+                // place it and add it to be rendered
+                drawnRects.push_back(bBox);
+                label->SetAnchorPoint(bBox.GetTopLeft());
+                AddObject(label);
 
-            return true;
+                return true;
+                }
+            else
+                { return false; }
             };
 
-        std::vector<wxRect> drawnRects;
-
-        std::uniform_int_distribution<> xPosDistro(drawArea.GetLeft(), drawArea.GetLeft() + drawArea.GetWidth());
-        std::uniform_int_distribution<> yPosDistro(drawArea.GetTop(), drawArea.GetTop() + drawArea.GetHeight());
+        std::uniform_int_distribution<> xPosDistro(polyBoundingBox.GetLeft(),
+                                                   polyBoundingBox.GetLeft() + polyBoundingBox.GetWidth());
+        std::uniform_int_distribution<> yPosDistro(polyBoundingBox.GetTop(),
+                                                   polyBoundingBox.GetTop() + polyBoundingBox.GetHeight());
 
         for (auto labelPos = labels.begin(); labelPos < labels.end(); /*in loop*/)
             {
             bool sucessfullyPlaced{ false };
             for (size_t i = 0; i < m_placementAttempts; ++i)
                 {
-                if (tryPlaceLabel(*labelPos, drawArea, drawnRects, xPosDistro, yPosDistro))
+                if (tryPlaceLabel(*labelPos, polyBoundingBox, wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) }))
                     {
                     labelPos = labels.erase(labelPos);
                     sucessfullyPlaced = true;
@@ -308,18 +307,19 @@ namespace Wisteria::Graphs
                 {
                 auto bBox = (*labelPos)->GetBoundingBox(dc);
                 // if it can fit, then center it
-                if (bBox.GetWidth() <= drawArea.GetWidth() &&
-                    bBox.GetHeight() <= drawArea.GetHeight())
+                if (bBox.GetWidth() <= polyBoundingBox.GetWidth() &&
+                    bBox.GetHeight() <= polyBoundingBox.GetHeight())
                     {
-                    wxPoint centerPoint{ drawArea.GetLeft() + (drawArea.GetWidth() / 2),
-                                         drawArea.GetTop() + (drawArea.GetHeight() / 2) };
-                    drawnRects.push_back(bBox);
+                    const wxPoint centerPoint{ polyBoundingBox.GetLeft() + (polyBoundingBox.GetWidth() / 2),
+                                               polyBoundingBox.GetTop() + (polyBoundingBox.GetHeight() / 2) };
+
                     bBox.SetTopLeft(
                         { centerPoint.x - (bBox.GetWidth() / 2),
                           centerPoint.y - (bBox.GetHeight() / 2) });
                     (*labelPos)->SetAnchorPoint(
                         { centerPoint.x - (bBox.GetWidth() / 2),
                           centerPoint.y - (bBox.GetHeight() / 2) });
+                    drawnRects.push_back(bBox);
                     AddObject((*labelPos));
                     labelPos = labels.erase(labelPos);
                     }

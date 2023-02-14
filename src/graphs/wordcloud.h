@@ -47,11 +47,10 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& wordColumnName,
             const std::optional<const wxString> valueColumnName = std::nullopt);
-
-        /// @returns How the words are organized visually.
-        [[nodiscard]]
-        WordCloudLayout GetLayout() const noexcept
-            { return m_layout; }
+        /** @brief Sets the minimum frequency that a word must appear to be included in the cloud.
+            @param minFreq The minimum frequency.*/
+        void SetMinimumFrequency(const size_t minFreq) noexcept
+            { m_minFrequency = minFreq; }
     private:
         [[deprecated("Word clouds do not support legends.")]]
         [[nodiscard]]
@@ -59,17 +58,9 @@ namespace Wisteria::Graphs
             [[maybe_unused]] const LegendOptions& options) override
             { return nullptr; }
 
-        wxRect GetMaxDrawingRect() const
-            {
-            return (GetLayout() == WordCloudLayout::Spiral) ?
-                wxRect{ wxSize(GetPlotAreaBoundingBox().GetWidth() * math_constants::half,
-                               GetPlotAreaBoundingBox().GetHeight() * math_constants::half) } :
-                GetPlotAreaBoundingBox();
-            }
-
         // randomly positions labels with a rect
-        void TryPlaceLabelsInRect(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
-                                  wxDC& dc, const wxRect& drawArea);
+        void TryPlaceLabelsInPolygon(std::vector<std::shared_ptr<GraphItems::Label>>& labels,
+                                  wxDC& dc, const std::vector<wxPoint>& polygon);
 
         void AdjustRectToDrawArea(wxRect& rect, const wxRect& drawArea) const
             {
@@ -82,10 +73,6 @@ namespace Wisteria::Graphs
                 rect.SetTop(rect.GetTop() - (rect.GetBottom() - drawArea.GetBottom()));
                 }
             }
-        /// @brief Fill in a center rect, then fill rects around that,
-        ///     going clockwise (starting at 3 o'clock).
-        /// @note layout algorithm from https://www2.cs.arizona.edu/~kobourov/wordle2.pdf.
-        void RandomLayoutSpiral(std::vector<std::shared_ptr<GraphItems::Label>>& labels, wxDC& dc);
         struct WordInfo
             {
             std::wstring m_word;
@@ -93,7 +80,7 @@ namespace Wisteria::Graphs
             };
         void RecalcSizes(wxDC& dc) final;
         std::vector<WordInfo> m_words;
-        WordCloudLayout m_layout{ WordCloudLayout::Spiral };
+        size_t m_minFrequency{ 1 };
         // the number of times that we will try to place a label within a given ploygon
         size_t m_placementAttempts{ 10 };
         };
