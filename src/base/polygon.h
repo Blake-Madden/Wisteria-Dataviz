@@ -195,7 +195,7 @@ namespace Wisteria::GraphItems
  
             // Calculate value of shoelace formula
             int j = polygon.size() - 1;
-            for (int i = 0; i < polygon.size(); i++)
+            for (size_t i = 0; i < polygon.size(); i++)
                 {
                 area += (polygon[j].x + polygon[i].x) * (polygon[j].y - polygon[i].y);
                 j = i;  // j is previous vertex to i
