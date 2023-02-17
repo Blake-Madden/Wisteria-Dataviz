@@ -76,6 +76,7 @@ namespace Wisteria
     /// @brief %Canvas for drawing, movable objects.
     class Canvas final : public wxScrolledWindow
         {
+        wxDECLARE_DYNAMIC_CLASS(Canvas);
     public:
         friend class ReportPrintout;
         friend class FitToSaveOptionsChanger;
@@ -149,6 +150,8 @@ namespace Wisteria
                const wxPoint& pos = wxDefaultPosition,
                const wxSize& size = wxDefaultSize,
                const long flags = 0);
+        /// @private
+        Canvas() = default;
         /// @private
         Canvas(const Canvas&) = delete;
         /// @private
