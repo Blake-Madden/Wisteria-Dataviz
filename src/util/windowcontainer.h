@@ -40,7 +40,7 @@ public:
     /// @brief Inserts a window into the container at a give position.
     /// @param position The position to insert the window.
     /// @param window The window to add.
-    void InsertWindow(const size_t position, wxWindow* window)
+    void InsertWindow(const int position, wxWindow* window)
         {
         // don't add any duplicate or null windows
         if (!window)
@@ -52,9 +52,10 @@ public:
             if (*pos == window)
                 { return; }
             }
-        wxASSERT_MSG(position <= GetWindowCount(),
-            wxString(__WXFUNCTION__) + wxT(": position is larger than container."));
-        if (position > GetWindowCount()) // shouldn't happen, but work around a bad insert
+        wxASSERT_MSG(static_cast<size_t>(position) <= GetWindowCount(),
+            wxString(__WXFUNCTION__) + L": position is larger than container.");
+        // shouldn't happen, but work around a bad insert
+        if (static_cast<size_t>(position) > GetWindowCount())
             { AddWindow(window); }
         else
             { m_windows.insert(m_windows.begin()+position, window); }
@@ -98,12 +99,17 @@ public:
     void Clear() noexcept
         { m_windows.clear(); }
     /// @returns The window at the given index, or null if out of range.
-    /// @param index The index of the window to get.
-    [[nodiscard]] wxWindow* GetWindow(const size_t index)
-        { return (index >= GetWindowCount()) ? nullptr : m_windows[index]; }
+    /// @param position The position of the window to get.
+    [[nodiscard]]
+    wxWindow* GetWindow(const int position)
+        {
+        return (static_cast<size_t>(position) >= GetWindowCount()) ?
+                nullptr : m_windows[position];
+        }
     /// @returns The window with @c id, or null if not found.
     /// @param id The window ID to search for.
-    [[nodiscard]] wxWindow* FindWindowById(const wxWindowID id)
+    [[nodiscard]]
+    wxWindow* FindWindowById(const wxWindowID id)
         {
         for (auto pos = m_windows.begin();
              pos != m_windows.end();
@@ -118,7 +124,8 @@ public:
     ///     @c classInfo, or null if not found.
     /// @param id The window ID to search for.
     /// @param classInfo The class information that the window should match.
-    [[nodiscard]] wxWindow* FindWindowById(const wxWindowID id, const wxClassInfo* classInfo)
+    [[nodiscard]]
+    wxWindow* FindWindowById(const wxWindowID id, const wxClassInfo* classInfo)
         {
         wxASSERT_LEVEL_2(classInfo);
         for (auto pos = m_windows.begin();
@@ -133,7 +140,8 @@ public:
     /// @returns The window that matches a window ID and label, or null if not found.
     /// @param id The id to search for.
     /// @param label The label to search for.
-    [[nodiscard]] wxWindow* FindWindowByIdAndLabel(const wxWindowID id, const wxString& label)
+    [[nodiscard]]
+    wxWindow* FindWindowByIdAndLabel(const wxWindowID id, const wxString& label)
         {
         for (auto pos = m_windows.begin();
              pos != m_windows.end();
@@ -146,7 +154,8 @@ public:
         }
     /// @returns The first window with the same class type as @c classInfo, or null if not found.
     /// @param classInfo The class information that the window should match.
-    [[nodiscard]] wxWindow* FindWindowByType(const wxClassInfo* classInfo)
+    [[nodiscard]]
+    wxWindow* FindWindowByType(const wxClassInfo* classInfo)
         {
         wxASSERT_LEVEL_2(classInfo);
         for (auto win : m_windows)
@@ -157,9 +166,24 @@ public:
             }
         return nullptr;
         }
+    /// @returns The last window with the same class type as @c classInfo, or null if not found.
+    /// @param classInfo The class information that the window should match.
+    [[nodiscard]]
+    wxWindow* RFindWindowByType(const wxClassInfo* classInfo)
+        {
+        wxASSERT_LEVEL_2(classInfo);
+        for (auto win = m_windows.crbegin(); win != m_windows.crend(); ++win)
+            {
+            wxASSERT_LEVEL_2_MSG(*win, "NULL window in window container!");
+            if (*win && (*win)->IsKindOf(classInfo))
+                { return *win; }
+            }
+        return nullptr;
+        }
     /// @returns The position of the window with @c id, or @c wxNOT_FOUND if not found.
     /// @param id The id to search for.
-    [[nodiscard]] size_t FindWindowPositionById(const wxWindowID id)
+    [[nodiscard]]
+    int FindWindowPositionById(const wxWindowID id)
         {
         for (auto pos = m_windows.begin();
              pos != m_windows.end();
@@ -168,13 +192,14 @@ public:
             if (*pos && (*pos)->GetId() == id)
                 { return (pos-m_windows.begin()); }
             }
-        return static_cast<size_t>(wxNOT_FOUND);
+        return wxNOT_FOUND;
         }
     /// @returns The position of the window with @c id that is also the same class type as
     ///     @c classInfo, or @c wxNOT_FOUND if not found.
     /// @param id The window ID to search for.
     /// @param classInfo The class information that the window should match.
-    [[nodiscard]] size_t FindWindowPositionById(const wxWindowID id, const wxClassInfo* classInfo)
+    [[nodiscard]]
+    int FindWindowPositionById(const wxWindowID id, const wxClassInfo* classInfo)
         {
         wxASSERT_LEVEL_2(classInfo);
         for (auto pos = m_windows.begin();
@@ -184,10 +209,11 @@ public:
             if (*pos && ((*pos)->GetId() == id) && (*pos)->IsKindOf(classInfo))
                 { return (pos-m_windows.begin()); }
             }
-        return static_cast<size_t>(wxNOT_FOUND);
+        return wxNOT_FOUND;
         }
     /// @returns The number of windows in the container.
-    [[nodiscard]] size_t GetWindowCount() const noexcept
+    [[nodiscard]]
+    size_t GetWindowCount() const noexcept
         { return m_windows.size(); }
 private:
     std::vector<wxWindow*> m_windows;
