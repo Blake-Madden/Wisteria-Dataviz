@@ -181,7 +181,7 @@ namespace Wisteria::Graphs
         const double getWidthRescale = safe_divide<double>(Polygon::GetPolygonWidth(polygon), maxWidth);
         const double getHeightRescale = safe_divide<double>(polygonBoundingBox.GetHeight(), maxHeight);
         const double rescaleValue = std::min({ getWidthRescale, getHeightRescale,
-                                               safe_divide<double>(polyArea, labelsArea) });
+                                               std::sqrt(safe_divide<double>(polyArea, labelsArea)) });
 
         for (auto& label : labels)
             {
