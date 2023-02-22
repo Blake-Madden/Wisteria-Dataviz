@@ -181,7 +181,6 @@ namespace Wisteria::GraphItems
             }
         /** @returns The area of a polygon using the shoelace formuala.
             @param polygon The polygon's points.
-            @param N The number of points in the polygon.
             @details Based on https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
             @todo needs unit testing*/
         template<typename polygonT>

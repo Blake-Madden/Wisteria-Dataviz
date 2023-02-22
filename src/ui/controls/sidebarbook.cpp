@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        mainframe.cpp
+// Name:        sidebarbook.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2022 Blake Madden
 // Licence:     3-Clause BSD licence
