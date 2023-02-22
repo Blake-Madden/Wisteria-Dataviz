@@ -1396,9 +1396,14 @@ namespace Wisteria
     wxString Canvas::GetWatermark() const
         {
         wxString watermark = m_watermark;
-        watermark.Replace(L"@[DATE]", wxDateTime().Now().FormatDate());
-        watermark.Replace(L"@[TIME]", wxDateTime().Now().FormatTime());
-        watermark.Replace(L"@[DATETIME]", wxDateTime().Now().FormatDate() + L" " +
+        watermark.Replace(L"@DATE@", wxDateTime().Now().FormatDate());
+        watermark.Replace(L"@TIME@", wxDateTime().Now().FormatTime());
+        watermark.Replace(L"@DATETIME@", wxDateTime().Now().FormatDate() + L" " +
+            wxDateTime().Now().FormatTime());
+        // backward compatibility
+        watermark.Replace(L"[DATE]", wxDateTime().Now().FormatDate());
+        watermark.Replace(L"[TIME]", wxDateTime().Now().FormatTime());
+        watermark.Replace(L"[DATETIME]", wxDateTime().Now().FormatDate() + L" " +
             wxDateTime().Now().FormatTime());
         return watermark;
         }

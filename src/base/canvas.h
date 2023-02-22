@@ -230,7 +230,7 @@ namespace Wisteria
         void SetWatermark(const wxString& watermark)
             { m_watermark = watermark; }
         /// @returns The watermark label shown across the canvas.
-        /// @note The tags @c [DATETIME], @c [DATE], and @c [TIME] are expanded to their literal
+        /// @note The tags `@DATETIME@`, `@DATE@`, and `@TIME@` are expanded to their literal
         ///     values at time of rendering.
         [[nodiscard]]
         wxString GetWatermark() const;
