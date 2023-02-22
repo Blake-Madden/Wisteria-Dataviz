@@ -1,6 +1,6 @@
 /** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
-    @date 2010-2020
+    @date 2005-2020
     @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -13,6 +13,7 @@
 #define __HTML_ENCODE_H__
 
 #include "../util/stringutil.h"
+#include "html_extract_text.h"
 
 namespace lily_of_the_valley
     {
@@ -26,8 +27,9 @@ namespace lily_of_the_valley
             @param text The text to encode.
             @param encodeSpaces @c true to preserve consecutive spaces with `&#nbsp;`.
             @returns A string encoded to HTML.*/
-        [[nodiscard]] std::wstring operator()(const std::wstring_view text,
-                                              const bool encodeSpaces) const
+        [[nodiscard]]
+        std::wstring operator()(const std::wstring_view text,
+                                const bool encodeSpaces) const
             {
             std::wstring encoded_text;
             if (text.empty())
@@ -113,6 +115,205 @@ namespace lily_of_the_valley
                     { return true; }
                 }
             return false;
+            }
+        };
+
+    /// @brief HTML formatting helper.
+    class html_format
+        {
+    public:
+        /// @brief Adds a title to an HTML buffer.
+        /// @param[in,out] HtmlText The HTML to set the title within.
+        /// @param Title The title to use.
+        /// @todo needs unit test.
+        static void set_title(std::wstring& HtmlText, const std::wstring& Title)
+            {
+            auto titleStart = HtmlText.find(L"<title>");
+            if (titleStart == std::wstring::npos)
+                {
+                auto headStart = HtmlText.find(L"<head>");
+                // add <head> section if needed
+                if (headStart == std::wstring::npos)
+                    {
+                    auto htmlStart = HtmlText.find(L"<html");
+                    if (htmlStart == std::wstring::npos)
+                        { return; }//give up if this is bogus HTML
+                    // find the end of the <html> tag
+                    htmlStart = HtmlText.find(L">", htmlStart);
+                    // give up if this is bogus HTML
+                    if (htmlStart == std::wstring::npos)
+                        { return; }
+                    headStart = htmlStart + 1;
+                    HtmlText.insert(headStart, L"\n<head></head>\n");
+                    // skip newline in front of <head>
+                    ++headStart;
+                    }
+                HtmlText.insert(headStart + 6, L"\n<title></title>");
+                // skip over '<head>\n'
+                titleStart = headStart + 7;
+                }
+            // skip over <title>
+            titleStart += 7;
+            const auto titleEnd = HtmlText.find(L"</", titleStart);
+            if (titleEnd == std::wstring::npos)
+                { return; }
+            HtmlText.replace(titleStart, (titleEnd-titleStart), Title);
+            }
+        /// @brief Specifies the encoding of an HTML buffer.
+        /// @param[in,out] HtmlText The HTML to set edit.
+        /// @param encoding The encoding to use.
+        /// @todo needs unit test.
+        static void set_encoding(std::wstring& HtmlText, const std::wstring& encoding = L"UTF-8")
+            {
+            auto headStart = HtmlText.find(L"<head");
+            // add <head> section if needed
+            if (headStart == std::wstring::npos)
+                {
+                auto htmlStart = HtmlText.find(L"<html");
+                // give up if this is bogus HTML
+                if (htmlStart == std::wstring::npos)
+                    { return; }
+                // find the end of the <html> tag
+                htmlStart = HtmlText.find(L">", htmlStart);
+                // give up if this is bogus HTML
+                if (htmlStart == std::wstring::npos)
+                    { return; }
+                headStart = htmlStart+1;
+                HtmlText.insert(headStart, L"\n<head></head>\n");
+                // skip newline in front of <head>
+                ++headStart;
+                }
+            headStart += 5;
+            headStart = HtmlText.find(L">", headStart);
+            if (headStart == std::wstring::npos)
+                { return; }
+            ++headStart;
+
+            const size_t metaStart = HtmlText.find(L"<meta", headStart);
+            if (metaStart == std::wstring::npos)
+                {
+                const std::wstring encodingDef =
+                    L"<meta http-equiv=\"content-type\" content=\"text/html; charset=" +
+                    encoding + L"\" />";
+                HtmlText.insert(headStart, encodingDef);
+                }
+            /// @todo if meta section is actually found then update it
+            }
+        /** @brief Removes any hyperlinks in a file, and optionally preserve bookmarks
+                that are in the same file.
+            @details This is mostly used for HTML windows that have application-related
+                bookmarks in them that need to be removed prior to printing or saving them.
+            @param[in,out] HtmlText The text to strip hyperlinks from.
+            @param preserveInPageBookmarks Whether or not to preserve hyperlinks to bookmarks that
+                happen to be in the current block of text.
+            @todo needs unit test.*/
+        static void strip_hyperlinks(std::wstring& HtmlText,
+                                     const bool preserveInPageBookmarks = true)
+            {
+            std::set<std::wstring> BookmarksInCurrentPage;
+            std::pair<const wchar_t*, std::wstring> foundBookMark{ HtmlText.c_str(), std::wstring() };
+            assert(foundBookMark.first);
+            if (!foundBookMark.first)
+                { return; }
+            const wchar_t* const htmlEnd = foundBookMark.first + HtmlText.length();
+            while (preserveInPageBookmarks && foundBookMark.first)
+                {
+                foundBookMark = html_extract_text::find_bookmark(foundBookMark.first, htmlEnd);
+                if (foundBookMark.first)
+                    {
+                    BookmarksInCurrentPage.insert(foundBookMark.second);
+                    foundBookMark.first += foundBookMark.second.length();
+                    }
+                else
+                    { break; }
+                }
+
+            size_t start = 0;
+            while (start != std::wstring::npos)
+                {
+                start = HtmlText.find(L"<a href=", start);
+                if (start == std::wstring::npos)
+                    { break; }
+                const auto endOfTag = HtmlText.find(L">", start);
+                if (endOfTag == std::wstring::npos)
+                    { break; }
+                const auto startOfLink = start + 8;
+                std::wstring link = HtmlText.substr(startOfLink, (endOfTag-startOfLink));
+                if (link.length() && link[0] == '\"')
+                    { link.erase(0, 1); }
+                if (link.length() && link[link.length()-1] == '\"')
+                    { link.erase(link.length()-1, 1); }
+                // see if it's a bookmark into the current page
+                if (link.length() && link[0] == '#')
+                    {
+                    link.erase(0, 1);
+                    // if the bookmark isn't found in this file then remove the link to it
+                    if (BookmarksInCurrentPage.find(link) == BookmarksInCurrentPage.cend())
+                        {
+                        HtmlText.erase(start, (endOfTag-start)+1);
+                        const size_t endOfAnchor = HtmlText.find(L"</a>", start);
+                        if (endOfAnchor == std::wstring::npos)
+                            { continue; }
+                        HtmlText.erase(endOfAnchor, 4);
+                        }
+                    // bookmark was found and we didn't delete this link, so move over it instead 
+                    else
+                        { start = endOfTag; }
+                    }
+                // not an internal bookmark, so just remove it
+                else
+                    {
+                    HtmlText.erase(start, (endOfTag-start)+1);
+                    const auto endOfAnchor = HtmlText.find(L"</a>", start);
+                    if (endOfAnchor == std::wstring::npos)
+                        { continue; }
+                    HtmlText.erase(endOfAnchor, 4);
+                    }
+                }
+            }
+        /// @brief Removes any image tags from an HTML block
+        /// @param[in,out] HtmlText The HTML to strip.
+        /// @param removePadding @c true to remove padding (i.e., `&nbsp;`) around the images.
+        /// @todo needs unit test.
+        /// @todo use wstring_view.
+        static void strip_images(std::wstring& HtmlText, const bool removePadding = true)
+            {
+            size_t start = 0;
+            while (start != std::wstring::npos)
+                {
+                start = HtmlText.find(L"<img ", start);
+                if (start == std::wstring::npos)
+                    { break; }
+                const size_t endOfTag = HtmlText.find(L">", start);
+                if (endOfTag == std::wstring::npos)
+                    { break; }
+                // remove padding that was around the image
+                if (removePadding &&
+                    start > 6 &&
+                    HtmlText.substr(start-6, 6) == L"&nbsp;")
+                    { start -= 6; }
+                HtmlText.erase(start, (endOfTag-start)+1);
+                // remove padding that was around the image
+                if (removePadding &&
+                    (HtmlText.length()-start) >= 6 &&
+                    HtmlText.substr(start, 6) == L"&nbsp;")
+                    {HtmlText.erase(start, 6); }
+                }
+            }
+        /// @brief Removes any attributes in the `<body>` element.
+        /// @param[in,out] HtmlText The HTML to strip.
+        /// @todo needs unit test.
+        static void strip_body_atributes(std::wstring& HtmlText)
+            {
+            auto start = HtmlText.find(L"<body ");
+            if (start != std::wstring::npos)
+                {
+                const auto endOfTag = HtmlText.find(L">", start);
+                if (endOfTag == std::wstring::npos)
+                    { return; }
+                start += 5;
+                HtmlText.erase(start, endOfTag-start);
+                }
             }
         };
     }
