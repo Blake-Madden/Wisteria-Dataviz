@@ -97,6 +97,31 @@ namespace lily_of_the_valley
             return encoded_text;
             }
 
+        /** @brief Simplified version that encodes a regular string into HTML.
+            @details This only encodes `<`, `>`, and `&`.
+            @param text The text to encode.
+            @returns A string (partially) encoded to HTML.*/
+        [[nodiscard]]
+        static std::wstring simple_encode(const std::wstring_view text)
+            {
+            std::wstring encoded_text;
+            if (text.empty())
+                { return encoded_text; }
+            encoded_text.reserve(text.length() * 2);
+            for (const auto character : text)
+                {
+                if (character == L'<')
+                    { encoded_text += L"&#60;"; }
+                else if (character == L'>')
+                    { encoded_text += L"&#62;"; }
+                else if (character == L'&')
+                    { encoded_text += L"&#38;"; }
+                else
+                    { encoded_text += character; }
+                }
+            return encoded_text;
+            }
+
         /** @brief Determines if a block of text has characters in it that
                 need to be encoded to be HTML compliant.
             @param text The text to be reviewed.
