@@ -294,37 +294,35 @@ void CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
     }
 
 //-------------------------------------------------------------
-void CodeEditor::AddFunctionsOrClasses(const std::vector<wxString>& functions)
+void CodeEditor::AddFunctionsOrClasses(const NameList& functions)
     {
-    for (size_t i = 0; i < functions.size(); ++i)
-        { m_libaryAndClassNames.insert(StripExtraInfo(functions[i])); }
+    for (const auto& func : functions)
+        { m_libaryAndClassNames.insert(StripExtraInfo(func.c_str())); }
     }
 
 //-------------------------------------------------------------
-void CodeEditor::AddLibrary(const wxString& library, std::vector<wxString>& functions)
+void CodeEditor::AddLibrary(const wxString& library, NameList& functions)
     {
-    std::sort(functions.begin(), functions.end());
     wxString functionString;
     wxString returnTypeStr;
-    for (size_t i = 0; i < functions.size(); ++i)
+    for (const auto& func : functions)
         {
-        functionString += L" " + StripExtraInfo(functions[i]);
-        returnTypeStr = GetReturnType(functions[i]);
+        functionString += L" " + StripExtraInfo(func);
+        returnTypeStr = GetReturnType(func);
         if (returnTypeStr.length())
             { m_libraryFunctionsWithReturnTypes.insert(
-                std::make_pair(library+L"."+StripExtraInfo(functions[i]), returnTypeStr) ); }
+                std::make_pair(library + L"." + StripExtraInfo(func), returnTypeStr) ); }
         }
     m_libraryCollection.insert(std::make_pair(library, functionString) );
     m_libaryAndClassNames.insert(library);
     }
 
 //-------------------------------------------------------------
-void CodeEditor::AddClass(const wxString& theClass, std::vector<wxString>& functions)
+void CodeEditor::AddClass(const wxString& theClass, NameList& functions)
     {
-    std::sort(functions.begin(), functions.end());
     wxString functionString;
-    for (size_t i = 0; i < functions.size(); ++i)
-        { functionString += L" " + StripExtraInfo(functions[i]); }
+    for (const auto& func : functions)
+        { functionString += L" " + StripExtraInfo(func); }
     m_classCollection.insert(std::make_pair(theClass, functionString) );
     m_libaryAndClassNames.insert(theClass);
     }
