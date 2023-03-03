@@ -60,26 +60,36 @@ public:
         [[nodiscard]]
         const wxItemAttr* GetItemAttributes() const noexcept
             { return m_attributes; }
+        /// @brief Sets the attributes for an item.
+        /// @param attrib The item attributes to add.
         void SetItemAttributes(const wxItemAttr& attrib)
             {
             wxDELETE(m_attributes);
             m_attributes = new wxItemAttr(attrib);
             }
-        ///numeric format display
+        /// @brief Sets The numeric format display.
+        /// @param format The format to use.
         void SetNumberFormatType(const Wisteria::NumberFormatInfo& format) noexcept
             { m_format = format; }
+        /// @returns The number display format.
         [[nodiscard]]
         Wisteria::NumberFormatInfo GetNumberFormatType() const noexcept
             { return m_format; }
+        /// @returns The image list index for the item.
         [[nodiscard]]
         int GetImage() const noexcept
             { return m_image; }
+        /// @brief Sets the image list index for the item.
+        /// @param image The image list index to use for the item's icon.
         void SetImage(const int image) noexcept
             { m_image = image; }
     protected:
+        /// @private
         wxItemAttr* m_attributes{ nullptr };
+        /// @private
         Wisteria::NumberFormatInfo m_format
             { Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting };
+        /// @private
         int m_image{ -1 }; // no image
         };
 
@@ -88,8 +98,8 @@ public:
         {
         /// @private
         DoubleWithLabel() = default;
-        [[nodiscard]]
         /// @returns @c true if label is being displayed.
+        [[nodiscard]]
         bool IsDisplayingLabel() const noexcept
             { return (m_labelCode != 0); }
         /// @brief The numeric value.
@@ -141,36 +151,105 @@ public:
     /// @private
     using DoubleWithLabelMatrix = std::vector<std::vector<DoubleWithLabel>>;
 
-    /// @brief Default constructor.
-    ListCtrlExDataProviderBase() : m_formatNumber(nullptr) {}
+    /// @private
+    ListCtrlExDataProviderBase() = default;
     /// @brief Sets the number formatting interface for the entire grid.
     /// @param format The format to use.
     void SetNumberFormatter(const Wisteria::NumberFormat* format) noexcept
         { m_formatNumber = format; }
 
     // Virtual interfaces to be implemented by derived class
+    //------------------------------------------------------
+    /// @returns The underlying value of a cell.
+    /// @param row The row to access.
+    /// @param column The column to access.
     virtual wxString GetItemText(const size_t row, const size_t column) const = 0;
+    /// @returns The (possibly) formatted value of a cell.
+    /// @param row The row to access.
+    /// @param column The column to access.
     virtual wxString GetItemTextFormatted(const size_t row, const size_t column) const = 0;
+    /// @returns The item's index into the image list if it has an icon.
+    /// @param row The row to access.
+    /// @param column The column to access.
     virtual int GetItemImage(const size_t row, const size_t column) const = 0;
+    // @brief Sets the item's index into the image list.
+    /// @param row The row to access.
+    /// @param column The column to access.
+    /// @param image The image to use (index into the image list).
     virtual void SetItemImage(const size_t row, const size_t column, const int image) = 0;
+    /** @brief Sets the cell's text.
+        @param row The row of the cell.
+        @param column The column of the cell.
+        @param text The text to assign to the cell.
+        @param format The number format used to display the value
+        @param sortableValue An underlying value that can be assigned to the cell
+            for when it is compared to other cells during a sort operation.*/
     virtual void SetItemText(const size_t row, const size_t column, const wxString& text,
-        const Wisteria::NumberFormatInfo format = Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+        const Wisteria::NumberFormatInfo format =
+            Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
         const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+    /// @returns The row's attributes (visual look).
+    /// @param row The row to return.
     virtual const wxItemAttr* GetRowAttributes(const size_t row) const = 0;
+    /// @brief Sets the row's attributes (visual look).
+    /// @param row The row to eidt.
+    /// @param attribs The attributes to apply.
     virtual void SetRowAttributes(const size_t row, const wxItemAttr& attribs) = 0;
+    /** @brief Sets the number of rows and columns.
+        @param rowCount The number of rows.
+        @param columnCount The number of columns.
+        @warning If @c rowCount is less than the current number of rows or
+            @c columnCount is less than the number of columns, then the data will be shrunk.*/
     virtual void SetSize(const size_t rowCount, const size_t columnCount) = 0;
+    /** @brief Sets the number of rows.
+        @param rowCount The number of rows.
+        @note The number of columns will be preserved.
+        @warning If @c rowCount is less than the current number of rows
+            then the data will be shrunk.*/
     virtual void SetSize(const size_t rowCount) = 0;
+    /// @returns The number of rows.
     virtual size_t GetItemCount() const = 0;
+    /// @return The number of columns in the data.
     virtual size_t GetColumnCount() const = 0;
+    /// @brief Deletes a row.
+    /// @param row The row (by index) to delete.
     virtual void DeleteItem(const size_t row) = 0;
+    /// @brief Clears all data from the grid.
     virtual void DeleteAllItems() = 0;
+    /// @brief Swaps two rows.
+    /// @param row1 The first row.
+    /// @param row2 The second row.
     virtual void SwapRows(const size_t row1, const size_t row2) = 0;
-    virtual int CompareItem(const size_t row1, const size_t col1, const wchar_t* text) const = 0;
+    /** @brief Compares a cell with a string.
+        @param row The cell's row.
+        @param col The cell's column.
+        @param text The text to compare against.
+        @returns The comparison result.*/
+    virtual int CompareItem(const size_t row, const size_t col, const wchar_t* text) const = 0;
+    /** @brief Compares two cells.
+        @param row1 The first cell's row.
+        @param col1 The first cell's column.
+        @param row2 The second cell's row.
+        @param col2 The second cell's column.
+        @returns The comparison result.*/
     virtual int CompareItems(const size_t row1, const size_t col1,
                              const size_t row2, const size_t col2) const = 0;
+    /** @brief Finds a text items as it is displayed to the user (even if it is custom formatted).
+        @param textToFind The text to find.
+        @param startIndex The row to start the search from.
+        @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
     virtual long Find(const wchar_t* textToFind, const size_t startIndex = 0) const = 0;
+    /// @brief Sorts a column.
+    /// @param column The column to sort.
+    /// @param direction The direftion to sort.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     virtual void Sort(const size_t column, const Wisteria::SortDirection direction,
                       const size_t low /*= 0*/, const size_t high /*= -1*/) = 0;
+    /// @brief Sorts multiple columns.
+    /// @param columns The columns to sort and their respective directions.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     virtual void Sort(const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columns,
                       const size_t low /*= 0*/, const size_t high /*= -1*/) = 0;
 protected:
@@ -223,9 +302,12 @@ public:
         else
             { return iterator->second; }
         }
+    /// @returns The labels map.
     [[nodiscard]]
     const IDLabelMap& GetLabels() const noexcept
         { return m_labelsMap; }
+    /// @returns The label from the provided ID.
+    /// @param id The ID to look up for the label.
     [[nodiscard]]
     const wxString& GetLabel(const long id) const
         {
@@ -246,11 +328,17 @@ private:
 class DoubleWithTextCompare
     {
 public:
+    /** @brief Constructor.
+        @param textValues The text values (and IDs) to use.
+        @param columnsToCompare When sorting, the columns in the row to sort by.*/
     DoubleWithTextCompare(const ListCtrlLabelManager::IDLabelMap& textValues,
-                          const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columnsToCompare) :
+                          const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columnsToCompare) :
         m_columnsToCompare(columnsToCompare), m_labelsMap(textValues)
         {}
 protected:
+    /// @returns The comparison result to two items.
+    /// @param cell1 The first cell to compare.
+    /// @param cell2 The second cell to compare.
     [[nodiscard]]
     int Compare(const ListCtrlExDataProviderBase::DoubleWithLabel& cell1,
                 const ListCtrlExDataProviderBase::DoubleWithLabel& cell2) const;
@@ -259,7 +347,7 @@ protected:
     [[nodiscard]]
     const wxString& GetLabel(const long id) const;
     /// @private
-    const std::vector<std::pair<size_t,Wisteria::SortDirection>> m_columnsToCompare;
+    const std::vector<std::pair<size_t, Wisteria::SortDirection>> m_columnsToCompare;
     /// @private
     const ListCtrlLabelManager::IDLabelMap& m_labelsMap;
     /// @private
@@ -270,6 +358,9 @@ protected:
 class DoubleWithTextValuesMultiDirectional final : public DoubleWithTextCompare
     {
 public:
+    /** @brief Constructor.
+        @param textValues The text values (and IDs) to use.
+        @param columnsToCompare When sorting, the columns in the row to sort by.*/
     DoubleWithTextValuesMultiDirectional(const ListCtrlLabelManager::IDLabelMap& textValues,
             const std::vector<std::pair<size_t, Wisteria::SortDirection>>& columnsToCompare) :
         DoubleWithTextCompare(textValues, columnsToCompare)
@@ -311,6 +402,9 @@ public:
 class DoubleWithTextValuesLessThan final : public DoubleWithTextCompare
     {
 public:
+    /** @brief Constructor.
+        @param textValues The text values (and IDs) to use.
+        @param columnsToCompare When sorting, the columns in the row to sort by.*/
     DoubleWithTextValuesLessThan(const ListCtrlLabelManager::IDLabelMap& textValues,
             const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columnsToCompare) :
         DoubleWithTextCompare(textValues, columnsToCompare)
@@ -349,6 +443,9 @@ public:
 class DoubleWithTextValuesGreaterThan final : public DoubleWithTextCompare
     {
 public:
+    /** @brief Constructor.
+        @param textValues The text values (and IDs) to use.
+        @param columnsToCompare When sorting, the columns in the row to sort by.*/
     DoubleWithTextValuesGreaterThan(const ListCtrlLabelManager::IDLabelMap& textValues, 
              const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columnsToCompare) :
         DoubleWithTextCompare(textValues, columnsToCompare)
@@ -470,9 +567,12 @@ private:
 class StringCellGreaterThan
     {
 public:
+    /// @brief Constructor.
+    /// @param columnsToCompare The columns to compare.
     explicit StringCellGreaterThan(const std::vector<size_t>& columnsToCompare) :
         m_columnsToCompare(columnsToCompare)
         {}
+    /// @private
     [[nodiscard]]
     inline bool operator()(const std::vector<ListCtrlExDataProviderBase::ListCellString>& row1,
                            const std::vector<ListCtrlExDataProviderBase::ListCellString>& row2) const
@@ -494,7 +594,7 @@ public:
                 else
                     { return result > 0; }
                 }
-            //all the columns are the same
+            // all the columns are the same
             return false;
             }
         }
@@ -572,7 +672,8 @@ public:
 
     /// @returns The row's attributes (visual look).
     /// @param row The row to return.
-    [[nodiscard]] const wxItemAttr* GetRowAttributes(const size_t row) const final
+    [[nodiscard]]
+    const wxItemAttr* GetRowAttributes(const size_t row) const final
         { return m_virtualData.operator[](row).operator[](0).GetItemAttributes(); }
     /// @brief Sets the row's attributes (visual look).
     /// @param row The row to eidt.
@@ -613,16 +714,32 @@ public:
     [[nodiscard]]
     size_t GetColumnCount() const final
         { return m_virtualData.size() ? m_virtualData.begin()->size() : 0; }
+    /// @brief Deletes a row.
+    /// @param row The row (by index) to delete.
     void DeleteItem(const size_t row) final
         { m_virtualData.erase(m_virtualData.begin()+row); }
     /// @brief Deletes all items from the grid.
     void DeleteAllItems() final
         { m_virtualData.clear(); }
+    /// @brief Swaps two rows.
+    /// @param row1 The first row.
+    /// @param row2 The second row.
     void SwapRows(const size_t row1, const size_t row2) final
         { m_virtualData[row1].swap(m_virtualData[row2]); }
+    /** @brief Compares a cell with a string.
+        @param row The cell's row.
+        @param col The cell's column.
+        @param text The text to compare against.
+        @returns The comparison result.*/
     [[nodiscard]]
-    int CompareItem(const size_t row1, const size_t col1, const wchar_t* text) const final
-        { return string_util::strnatordncasecmp(GetItemText(row1, col1).wc_str(), text); }
+    int CompareItem(const size_t row, const size_t col, const wchar_t* text) const final
+        { return string_util::strnatordncasecmp(GetItemText(row, col).wc_str(), text); }
+    /** @brief Compares two cells.
+        @param row1 The first cell's row.
+        @param col1 The first cell's column.
+        @param row2 The second cell's row.
+        @param col2 The second cell's column.
+        @returns The comparison result.*/
     [[nodiscard]]
     int CompareItems(const size_t row1, const size_t col1,
                             const size_t row2, const size_t col2) const final
@@ -630,6 +747,10 @@ public:
         return string_util::strnatordncasecmp(GetItemText(row1, col1).wc_str(),
                                               GetItemText(row2, col2).wc_str());
         }
+    /** @brief Finds a text items as it is displayed to the user (even if it is custom formatted).
+        @param textToFind The text to find.
+        @param startIndex The row to start the search from.
+        @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
     [[nodiscard]]
     long Find(const wchar_t* textToFind, const size_t startIndex = 0) const final
         {
@@ -654,6 +775,11 @@ public:
         for (size_t i = 0; i < arr.GetCount(); ++i)
             { SetItemText(i, 0, arr.Item(i)); }
         }
+    /// @brief Sorts a column.
+    /// @param column The column to sort.
+    /// @param direction The direftion to sort.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     void Sort(const size_t column, const Wisteria::SortDirection direction,
                const size_t low /*= 0*/, const size_t high /*= -1*/) final
         {
@@ -675,6 +801,10 @@ public:
                     StringCellGreaterThan(std::vector<size_t>(1,column)));
             }
         }
+    /// @brief Sorts multiple columns.
+    /// @param columns The columns to sort and their respective directions.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     void Sort(const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columns,
                const size_t low /*= 0*/, const size_t high /*= -1*/) final
         {
@@ -691,6 +821,7 @@ public:
         std::sort(m_virtualData.begin()+low, dataEndToSortTo,
             StringCellMultiDirectional(columns));
         }
+    /// @brief Frees memory by shrinking the matrix size to its content.
     void ShrinkToFit()
         { StringMatrix(m_virtualData).swap(m_virtualData); }
 private:
@@ -707,6 +838,10 @@ public:
     ListCtrlExNumericDataProvider(const ListCtrlExNumericDataProvider& that) = delete;
     /// @private
     ListCtrlExNumericDataProvider& operator=(const ListCtrlExNumericDataProvider& that) = delete;
+    /// @brief Sorts multiple columns.
+    /// @param columns The columns to sort and their respective directions.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     void Sort(const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columns,
                const size_t low /*= 0*/, const size_t high /*= -1*/) final
         {
@@ -724,6 +859,11 @@ public:
         std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
                 DoubleWithTextValuesMultiDirectional(m_labelManager.GetLabels(), columns));
         }
+    /// @brief Sorts a column.
+    /// @param column The column to sort.
+    /// @param direction The direftion to sort.
+    /// @param low The starting row to begin the sort.
+    /// @param high The ending row for the sort.
     void Sort(const size_t column, const Wisteria::SortDirection direction,
               const size_t low /*= 0*/, const size_t high /*= -1*/) final
         {
@@ -869,21 +1009,30 @@ public:
         { return m_virtualData.operator[](row).operator[](column).m_numericValue; }
 
     /// @returns The item's index into the image list if it has an icon.
+    /// @param row The cell's row.
+    /// @param column The cell's column.
     [[nodiscard]]
     int GetItemImage(const size_t row, const size_t column) const final
         {
         return m_virtualData.operator[](row).operator[](column).GetImage();
         }
     /// @brief Sets the item's index into the image list.
+    /// @param row The row to access.
+    /// @param column The column to access.
+    /// @param image The image to use (index into the image list).
     void SetItemImage(const size_t row, const size_t column, const int image) final
         {
         m_virtualData.operator[](row).operator[](column).SetImage(image);
         }
 
-    //get/set cell attributes (visual look)
+    /// @returns The row's attributes (visual look).
+    /// @param row The row to return.
     [[nodiscard]]
     const wxItemAttr* GetRowAttributes(const size_t row) const final
         { return m_virtualData.operator[](row).operator[](0).GetItemAttributes(); }
+    /// @brief Sets the row's attributes (visual look).
+    /// @param row The row to eidt.
+    /// @param attribs The attributes to apply.
     void SetRowAttributes(const size_t row, const wxItemAttr& attribs) final
         { m_virtualData.operator[](row).operator[](0).SetItemAttributes(attribs); }
 
@@ -891,7 +1040,7 @@ public:
         @param rowCount The number of rows.
         @param columnCount The number of columns.
         @warning If @c rowCount is less than the current number of rows or
-         @c columnCount is less than the number of columns, then the data will be shrunk.*/
+            @c columnCount is less than the number of columns, then the data will be shrunk.*/
     void SetSize(const size_t rowCount, const size_t columnCount) final
         {
         m_virtualData.resize(rowCount);
@@ -932,19 +1081,30 @@ public:
     /// @param row2 The second row.
     void SwapRows(const size_t row1, const size_t row2) final
         { m_virtualData[row1].swap(m_virtualData[row2]); }
+    /** @brief Compares a cell with a string.
+        @param row The cell's row.
+        @param col The cell's column.
+        @param text The text to compare against.
+        @returns The comparison result.*/
     [[nodiscard]]
-    int CompareItem(const size_t row1, const size_t col1, const wchar_t* text) const final
-        { return string_util::strnatordncasecmp(GetItemText(row1, col1).wc_str(), text); }
+    int CompareItem(const size_t row, const size_t col, const wchar_t* text) const final
+        { return string_util::strnatordncasecmp(GetItemText(row, col).wc_str(), text); }
+    /** @brief Compares two cells.
+        @param row1 The first cell's row.
+        @param col1 The first cell's column.
+        @param row2 The second cell's row.
+        @param col2 The second cell's column.
+        @returns The comparison result.*/
     [[nodiscard]]
     int CompareItems(const size_t row1, const size_t col1,
-                            const size_t row2, const size_t col2) const final
+                     const size_t row2, const size_t col2) const final
         {
         return string_util::strnatordncasecmp(GetItemText(row1, col1).wc_str(),
                                               GetItemText(row2, col2).wc_str()); }
     /** @brief Finds a text items as it is displayed to the user (even if it is custom formatted).
         @param textToFind The text to find.
         @param startIndex The row to start the search from.
-        @returns The index of the row if text is found, wxNOT_FOUND otherwise.*/
+        @returns The index of the row if text is found, @c wxNOT_FOUND otherwise.*/
     [[nodiscard]]
     long Find(const wchar_t* textToFind, const size_t startIndex = 0) const final
         {

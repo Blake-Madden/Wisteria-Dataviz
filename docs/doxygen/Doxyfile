@@ -972,9 +972,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../build \
                          ../../src/wxSimpleJSON \
                          ../../src/CRCpp \
-                         ../../src/utfcpp \
-                         ../../src/ui/controls/listctrlexdataprovider.h \
-                         ../../src/ui/controls/listctrlexdataprovider.cpp
+                         ../../src/utfcpp
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
