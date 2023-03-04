@@ -36,7 +36,7 @@ namespace statistics
         return static_cast<size_t>(
             std::accumulate(data.cbegin(), data.cend(), 0.0,
             [](const auto initVal, const auto val) noexcept
-                { return initVal + (std::isnan(val) ? 0 : 1); }));
+                { return initVal + (std::isnan(val) ? 0.0 : 1.0); }));
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
@@ -62,7 +62,8 @@ namespace statistics
             pos != groups.get_data().cend();
             ++pos)
             { groupsByCount.emplace(pos->second, pos->first); }
-        // start at the most frequent group and work forwards to get any other modes that have the same count
+        // start at the most frequent group and work forwards to get any other modes
+        // that have the same count
         if (groupsByCount.size())
             {
             const size_t modeGroupSize = groupsByCount.cbegin()->first;

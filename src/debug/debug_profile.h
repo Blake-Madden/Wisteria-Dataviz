@@ -168,18 +168,24 @@ namespace __debug
     class __profile_info
         {
     public:
-        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time) : m_name(name),
-                       m_called_count(1), m_lowest_duration_time(duration_time), m_highest_duration_time(duration_time),
-                       m_total_duration_time(duration_time), m_average_duration_time(duration_time)
+        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time) :
+            m_name(name),
+            m_called_count(1), m_lowest_duration_time(duration_time),
+            m_highest_duration_time(duration_time),
+            m_total_duration_time(duration_time), m_average_duration_time(duration_time)
             {}
-        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time, const char* extra_info) :
-                       m_name(name), m_extra_info(extra_info),
-                       m_called_count(1), m_lowest_duration_time(duration_time), m_highest_duration_time(duration_time),
-                       m_total_duration_time(duration_time), m_average_duration_time(duration_time)
+        __profile_info(const char* name, const std::chrono::nanoseconds& duration_time,
+                       const char* extra_info) :
+            m_name(name), m_extra_info(extra_info),
+            m_called_count(1), m_lowest_duration_time(duration_time),
+            m_highest_duration_time(duration_time),
+            m_total_duration_time(duration_time), m_average_duration_time(duration_time)
             {}
-        [[nodiscard]] inline bool operator<(const __profile_info& that) const noexcept
+        [[nodiscard]]
+        inline bool operator<(const __profile_info& that) const noexcept
             { return m_name < that.m_name; }
-        [[nodiscard]] inline bool operator==(const __profile_info& that) const noexcept
+        [[nodiscard]]
+        inline bool operator==(const __profile_info& that) const noexcept
             { return m_name == that.m_name; }
         void add_duration_time(const std::chrono::nanoseconds& duration_time, const char* extra_info);
 
@@ -200,13 +206,11 @@ namespace __debug
         explicit __profiler(const char* name);
         __profiler(const char* name, const char* extra_info);
         __profiler(const __profiler& that) = delete;
-        __profiler(__profiler&& that) = delete;
         __profiler& operator=(const __profiler&) = delete;
-        __profiler& operator=(__profiler&&) = delete;
         ~__profiler();
 
-        inline void push_profiler(__profiler* profiler) const;
-        inline void pop_profiler() const;
+        inline static void push_profiler(__profiler* profiler);
+        inline static void pop_profiler();
 
         inline void pause() noexcept
             { m_pause_starttime = std::chrono::high_resolution_clock::now(); }
@@ -220,7 +224,7 @@ namespace __debug
         std::chrono::time_point<std::chrono::high_resolution_clock> m_endtime;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_pause_starttime;
         std::chrono::time_point<std::chrono::high_resolution_clock> m_pause_endtime;
-        std::chrono::nanoseconds m_total_pause_duration;
+        std::chrono::nanoseconds m_total_pause_duration{ 0 };
         std::string m_block_name;
         std::string m_extra_info;
         };
@@ -231,9 +235,7 @@ namespace __debug
     public:
         __profile_reporter() noexcept {}
         __profile_reporter(const __profile_reporter& that) = delete;
-        __profile_reporter(__profile_reporter&& that) = delete;
         __profile_reporter& operator=(const __profile_reporter& that) = delete;
-        __profile_reporter& operator=(__profile_reporter&& that) = delete;
         ~__profile_reporter()
             { dump_results(); }
         static void set_output_path(const char* path)

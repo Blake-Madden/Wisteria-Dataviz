@@ -99,7 +99,8 @@ namespace string_util
     /// @param second The second value to compare against.
     /// @returns @c true if value is either of the other values.
     template<typename T>
-    [[nodiscard]] constexpr bool is_either(const T value, const T first, const T second) noexcept
+    [[nodiscard]]
+    constexpr bool is_either(const T value, const T first, const T second) noexcept
         { return (value == first || value == second); }
 
     /// @brief Determines if a given value is neither of two other given values.
@@ -108,7 +109,8 @@ namespace string_util
     /// @param second The second value to compare against.
     /// @returns @c true if value is neither of the other values.
     template<typename T>
-    [[nodiscard]] constexpr bool is_neither(const T value, const T first, const T second) noexcept
+    [[nodiscard]]
+    constexpr bool is_neither(const T value, const T first, const T second) noexcept
         {
         assert(first != second);
         return (value != first && value != second);
@@ -116,7 +118,8 @@ namespace string_util
 
     /** @returns Whether a character is a number (0-9 characters only, narrow versions).
         @param ch The letter to be reviewed.*/
-    [[nodiscard]] static constexpr bool is_numeric_8bit(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static constexpr bool is_numeric_8bit(const wchar_t ch) noexcept
         {
         return (ch >= L'0' && ch <= L'9') ?
             true : false;
@@ -124,12 +127,14 @@ namespace string_util
 
     /// @returns @c true if @c ch is a subscript number.
     /// @param ch The character to review.
-    [[nodiscard]] static inline constexpr bool is_subscript_number(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_subscript_number(const wchar_t ch) noexcept
         { return (ch >= 0x2080 && ch <= 0x2089); }
 
     /// @returns @c true if @c ch is a subscript.
     /// @param ch The character to review.
-    [[nodiscard]] static inline constexpr bool is_subscript(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_subscript(const wchar_t ch) noexcept
         {
         return (ch >= 0x2080 && ch <= 0x2089) ||
             (ch == 0x208A) ||
@@ -155,45 +160,48 @@ namespace string_util
     /** @brief Converts a character into its subscript equivalent.
         @param ch The character to convert.
         @returns The character converted into its subscript equivalent, or
-                 the original value if it can't be converted.
-        @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> ²)*/
-    [[nodiscard]] static inline constexpr wchar_t to_subscript(const wchar_t ch) noexcept
+            the original value if it can't be converted.
+        @note This only applies to numbers, simple math characters,
+            and a few letters (e.g., 2 -> ²)*/
+    [[nodiscard]]
+    static inline constexpr wchar_t to_subscript(const wchar_t ch) noexcept
         {
-        return (ch == L'0' || ch == 0xFF10) ? 0x2080 :
-            (ch == L'1' || ch == 0xFF11) ? 0x2081 :
-            (ch == L'2' || ch == 0xFF12) ? 0x2082 :
-            (ch == L'3' || ch == 0xFF13) ? 0x2083 :
-            (ch == L'4' || ch == 0xFF14) ? 0x2084 :
-            (ch == L'5' || ch == 0xFF15) ? 0x2085 :
-            (ch == L'6' || ch == 0xFF16) ? 0x2086 :
-            (ch == L'7' || ch == 0xFF17) ? 0x2087 :
-            (ch == L'8' || ch == 0xFF18) ? 0x2088 :
-            (ch == L'9' || ch == 0xFF19) ? 0x2089 :
+        return (ch == L'0' || ch == 0xFF10) ? static_cast<wchar_t>(0x2080) :
+            (ch == L'1' || ch == 0xFF11) ? static_cast<wchar_t>(0x2081) :
+            (ch == L'2' || ch == 0xFF12) ? static_cast<wchar_t>(0x2082) :
+            (ch == L'3' || ch == 0xFF13) ? static_cast<wchar_t>(0x2083) :
+            (ch == L'4' || ch == 0xFF14) ? static_cast<wchar_t>(0x2084) :
+            (ch == L'5' || ch == 0xFF15) ? static_cast<wchar_t>(0x2085) :
+            (ch == L'6' || ch == 0xFF16) ? static_cast<wchar_t>(0x2086) :
+            (ch == L'7' || ch == 0xFF17) ? static_cast<wchar_t>(0x2087) :
+            (ch == L'8' || ch == 0xFF18) ? static_cast<wchar_t>(0x2088) :
+            (ch == L'9' || ch == 0xFF19) ? static_cast<wchar_t>(0x2089) :
             // simple math characters and letters
-            (ch == L'+') ? 0x208A :
-            (ch == L'-') ? 0x208B :
-            (ch == L'=') ? 0x208C :
-            (ch == L'(') ? 0x208D :
-            (ch == L')') ? 0x208E :
-            (ch == L'a') ? 0x2090 :
-            (ch == L'e') ? 0x2091 :
-            (ch == L'o') ? 0x2092 :
-            (ch == L'x') ? 0x2093 :
+            (ch == L'+') ? static_cast<wchar_t>(0x208A) :
+            (ch == L'-') ? static_cast<wchar_t>(0x208B) :
+            (ch == L'=') ? static_cast<wchar_t>(0x208C) :
+            (ch == L'(') ? static_cast<wchar_t>(0x208D) :
+            (ch == L')') ? static_cast<wchar_t>(0x208E) :
+            (ch == L'a') ? static_cast<wchar_t>(0x2090) :
+            (ch == L'e') ? static_cast<wchar_t>(0x2091) :
+            (ch == L'o') ? static_cast<wchar_t>(0x2092) :
+            (ch == L'x') ? static_cast<wchar_t>(0x2093) :
             // 0x2094 is upsidedown 'e', no real equivalent with this
-            (ch == L'h') ? 0x2095 :
-            (ch == L'k') ? 0x2096 :
-            (ch == L'l') ? 0x2097 :
-            (ch == L'm') ? 0x2098 :
-            (ch == L'n') ? 0x2099 :
-            (ch == L'p') ? 0x209A :
-            (ch == L's') ? 0x209B :
-            (ch == L't') ? 0x209C :
+            (ch == L'h') ? static_cast<wchar_t>(0x2095) :
+            (ch == L'k') ? static_cast<wchar_t>(0x2096) :
+            (ch == L'l') ? static_cast<wchar_t>(0x2097) :
+            (ch == L'm') ? static_cast<wchar_t>(0x2098) :
+            (ch == L'n') ? static_cast<wchar_t>(0x2099) :
+            (ch == L'p') ? static_cast<wchar_t>(0x209A) :
+            (ch == L's') ? static_cast<wchar_t>(0x209B) :
+            (ch == L't') ? static_cast<wchar_t>(0x209C) :
             ch;
         }
 
     /// @param ch The character to review.
     /// @returns @c true if @c ch is a fraction symbol.
-    [[nodiscard]] static inline constexpr bool is_fraction(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_fraction(const wchar_t ch) noexcept
         {
         return (ch == 0xBC || ch == 0xBD || ch == 0xBE);
         }
@@ -201,7 +209,8 @@ namespace string_util
     /// @param ch The character to review.
     /// @note This includes lowercased Roman numeral letters.
     /// @returns @c true if @c ch is a superscript number.
-    [[nodiscard]] static inline constexpr bool is_superscript_number(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_superscript_number(const wchar_t ch) noexcept
         {
         return (ch == 0x2070) ||
             (ch == 0xB9) ||
@@ -224,7 +233,8 @@ namespace string_util
 
     /// @returns @c true if @c ch is a lowercased superscript letter.
     /// @param ch The character to review.
-    [[nodiscard]] static inline constexpr bool is_superscript_lowercase(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_superscript_lowercase(const wchar_t ch) noexcept
         {
         return // a-z
             (ch == 0x207A) ||
@@ -261,7 +271,8 @@ namespace string_util
 
     /// @returns @c true if @c ch is a superscript.
     /// @param ch The character to review.
-    [[nodiscard]] static inline constexpr bool is_superscript(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr bool is_superscript(const wchar_t ch) noexcept
         {
         return (ch == 0x2070) ||
             (ch == 0xB9) ||
@@ -287,7 +298,8 @@ namespace string_util
         @returns The character converted into its superscript equivalent, or
             the original value if it can't be converted.
         @note This only applies to numbers, simple math characters, and a few letters (e.g., 2 -> ²).*/
-    [[nodiscard]] static inline constexpr wchar_t to_superscript(const wchar_t ch) noexcept
+    [[nodiscard]]
+    static inline constexpr wchar_t to_superscript(const wchar_t ch) noexcept
         {
         return (ch == L'0' || ch == 0xFF10) ? 0x2070 :
             (ch == L'1' || ch == 0xFF11) ? 0xB9 :
@@ -342,7 +354,8 @@ namespace string_util
         @returns @c 0 on success, @c -1 on failure. Will fail if the buffer is either invalid
             or not large enough to hold the converted value.*/
     template<typename charT>
-    [[nodiscard]] int itoa(long value, charT* out, const size_t length)
+    [[nodiscard]]
+    int itoa(long value, charT* out, const size_t length)
         {
         if (length == 0 || out == nullptr)
             { return -1; }
@@ -377,7 +390,8 @@ namespace string_util
         @param ch The letter to be analyzed.
         @returns @c true if @c ch is a hex digit.*/
     template<typename T>
-    [[nodiscard]] constexpr bool is_hex_digit(const T ch) noexcept
+    [[nodiscard]]
+    constexpr bool is_hex_digit(const T ch) noexcept
         {
         return (is_numeric_8bit(static_cast<wchar_t>(ch)) ||
             ((ch >= 0x61/*'a'*/ && ch <= 0x66/*'f'*/) ||
@@ -392,7 +406,8 @@ namespace string_util
          to read until there are no more valid hexadecimal digits. Will return the length that was read.
         @returns The value of the string as an integer.*/
     template<typename T>
-    [[nodiscard]] int axtoi(const T* hexStr, size_t& length)
+    [[nodiscard]]
+    int axtoi(const T* hexStr, size_t& length)
         {
         if (hexStr == nullptr || *hexStr == 0 || length == 0)
             {
@@ -464,14 +479,15 @@ namespace string_util
         return intValue;
         }
 
-    /** Attempts to convert a string @c buffer to a double. Same as wcstod(),
-        except it handles thousands separators as well.
+    /** @brief Attempts to convert a string @c buffer to a double.
+        @details Same as wcstod(), except it handles thousands separators as well.
         @param buffer The string buffer to read a number from.
         @param[out] endPtr The (optional) pointer in the buffer where the number text ends.
-         (Will be the null terminator if the entire string is a number.)
+            (Will be the null terminator if the entire string is a number.)
         @returns The string's value converted to a number. (Will be zero if conversion failed.)
         @todo Need to support 0x (hex) strings.*/
-    [[nodiscard]] inline double wcstod_thousands_separator(wchar_t const* buffer, wchar_t** endPtr)
+    [[nodiscard]]
+    inline double wcstod_thousands_separator(wchar_t const* buffer, wchar_t** endPtr)
         {
         if (!buffer)
             { return 0; }
@@ -525,14 +541,16 @@ namespace string_util
         }
 
     /** Returns the number of characters in the string pointed to by @c str, not including the
-        terminating '\0' character, but at most @c maxlen. In doing this, this looks only at
-        the first @c maxlen characters in @c str and never beyond @c str+ @c maxlen. This function should be used
-        for input that may not be null terminated.
+            terminating '\0' character, but at most @c maxlen.\n
+            In doing this, this looks only at the first @c maxlen characters in @c str and
+            never beyond @c str+ @c maxlen.\n
+            This function should be used for input that may not be null terminated.
         @param str The string to review.
         @param maxlen The maximum length of the string to scan.
         @returns The valid length of the string or maxlen, whichever is shorter.*/
     template<typename T>
-    [[nodiscard]] size_t strnlen(const T* str, const size_t maxlen) noexcept
+    [[nodiscard]]
+    size_t strnlen(const T* str, const size_t maxlen) noexcept
         {
         if (!str || maxlen == 0)
             { return 0; }
@@ -546,7 +564,8 @@ namespace string_util
     /// @param strSearch The string to search for.
     /// @returns The pointer to where the substring was found, or null if not found.
     template<typename T>
-    [[nodiscard]] const T* stristr(const T* string, const T* strSearch) noexcept
+    [[nodiscard]]
+    const T* stristr(const T* string, const T* strSearch) noexcept
         {
         if (!string || !strSearch || *strSearch == 0)
             { return nullptr; }
@@ -571,14 +590,15 @@ namespace string_util
         return nullptr;
         }
 
-    /** @brief Searches for substring in a larger string (case-insensitively), limiting the search
-        to a specified number of characters.
+    /** @brief Searches for substring in a larger string (case-insensitively),
+            limiting the search to a specified number of characters.
         @param string The string to review.
         @param strSearch The string to search for.
         @param charCount The number of characters to search for within @c string.
         @returns A pointer to the found string, or null otherwise.*/
     template<typename T>
-    [[nodiscard]] const T* strnistr(const T* string, const T* strSearch, const size_t charCount) noexcept
+    [[nodiscard]]
+    const T* strnistr(const T* string, const T* strSearch, const size_t charCount) noexcept
         {
         if (!string || !strSearch || charCount == 0 || *strSearch == 0)
             { return nullptr; }
@@ -606,9 +626,10 @@ namespace string_util
         @param offset How far we are in the source string already and how far to go back.
         @returns The pointer to where the substring was found, or null if not found.*/
     template<typename T>
-    [[nodiscard]] const T* strrstr(const T* string,
-                    const T* search,
-                    size_t offset) noexcept
+    [[nodiscard]]
+    const T* strrstr(const T* string,
+                     const T* search,
+                     size_t offset) noexcept
         {
         if (!string || !search)
             { return nullptr; }
@@ -641,7 +662,8 @@ namespace string_util
     /// @param charCount The max number of characters to within.
     /// @returns The comparison result.
     template<typename T>
-    [[nodiscard]] int strnicmp(const T* first, const T* second, size_t charCount) noexcept
+    [[nodiscard]]
+    int strnicmp(const T* first, const T* second, size_t charCount) noexcept
         {
         // first check if either of the strings are null
         if (!first && !second)
@@ -671,7 +693,8 @@ namespace string_util
     /// @param second The second string to compare.
     /// @returns The comparison result.
     template<typename T>
-    [[nodiscard]] int stricmp(const T* first, const T* second) noexcept
+    [[nodiscard]]
+    int stricmp(const T* first, const T* second) noexcept
         {
         // first check if either of the strings are null
         if (!first && !second)
@@ -699,7 +722,8 @@ namespace string_util
         @returns @c -1 if the first string is less, 1 if the first string is greater,
             or @c 0 if the strings are equal.*/
     template<typename T>
-    [[nodiscard]] int strnatordcmp(const T* first_string, const T* second_string, bool case_insensitive = false)
+    [[nodiscard]]
+    int strnatordcmp(const T* first_string, const T* second_string, bool case_insensitive = false)
         {
         // first check if either of the strings are null
         if (!first_string && !second_string)
@@ -787,7 +811,8 @@ namespace string_util
     /// @param b The second string to compare.
     /// @returns The comparison result.
     template<typename T>
-    [[nodiscard]] int strnatordncasecmp(const T* a, const T* b)
+    [[nodiscard]]
+    int strnatordncasecmp(const T* a, const T* b)
         { return strnatordcmp(a, b, true); }
 
     /// Indicates whether a larger strings ends with the specified suffix. Lengths are provided
@@ -798,7 +823,8 @@ namespace string_util
     /// @param suffix_length The length of @c suffix.
     /// @returns @c true if text contains the provided suffix.
     template<typename T>
-    [[nodiscard]] bool has_suffix(const T* text, const size_t text_length, const T* suffix, const size_t suffix_length) noexcept
+    [[nodiscard]]
+    bool has_suffix(const T* text, const size_t text_length, const T* suffix, const size_t suffix_length) noexcept
         {
         if (text == nullptr || suffix == nullptr || text_length <= suffix_length)
             { return false; }
@@ -813,8 +839,9 @@ namespace string_util
             symbol is found before a matching close symbol.
         @returns A pointer to where the closing tag is, or null if one can't be found.*/
     template<typename T>
-    [[nodiscard]] const T* find_matching_close_tag(const T* stringToSearch, const T openSymbol, const T closeSymbol,
-                                                   const bool fail_on_overlapping_open_symbol = false) noexcept
+    [[nodiscard]]
+    const T* find_matching_close_tag(const T* stringToSearch, const T openSymbol, const T closeSymbol,
+                                     const bool fail_on_overlapping_open_symbol = false) noexcept
         {
         if (!stringToSearch)
             { return nullptr; }
@@ -844,8 +871,9 @@ namespace string_util
     /// @param closeSymbol The closing symbol.
     /// @returns Pointer to where the closing tag is, or null if not found.
     template<typename T>
-    [[nodiscard]] const T* find_matching_close_tag(const T* stringToSearch, const T* openSymbol,
-                                            const T* closeSymbol) noexcept
+    [[nodiscard]]
+    const T* find_matching_close_tag(const T* stringToSearch, const T* openSymbol,
+                                     const T* closeSymbol) noexcept
         {
         if (!stringToSearch || !openSymbol || !closeSymbol)
             { return nullptr; }
@@ -885,8 +913,9 @@ namespace string_util
         @returns A pointer in the string where the character was found, or nullptr if not found.
         @todo Needs a unit test.*/
     template<typename T>
-    [[nodiscard]] const T* find_unescaped_matching_close_tag(const T* stringToSearch, const T openSymbol,
-                                                             const T closeSymbol) noexcept
+    [[nodiscard]]
+    const T* find_unescaped_matching_close_tag(const T* stringToSearch, const T openSymbol,
+                                               const T closeSymbol) noexcept
         {
         assert(openSymbol != closeSymbol);
         if (!stringToSearch || openSymbol == closeSymbol)
@@ -922,7 +951,8 @@ namespace string_util
         @returns A pointer in the string where the character was found, or nullptr if not found.
         @todo Needs a unit test.*/
     template<typename T>
-    [[nodiscard]] const T* find_unescaped_char(const T* stringToSearch, const T ch) noexcept
+    [[nodiscard]]
+    const T* find_unescaped_char(const T* stringToSearch, const T ch) noexcept
         {
         if (!stringToSearch)
             { return nullptr; }
@@ -948,7 +978,8 @@ namespace string_util
         @param numberOfCharacters The number of characters to search through in the string.
         @returns A pointer in the string where the character was found, or nullptr if not found.*/
     template<typename T>
-    [[nodiscard]] const T* strnchr(const T* stringToSearch, const T ch, size_t numberOfCharacters) noexcept
+    [[nodiscard]]
+    const T* strnchr(const T* stringToSearch, const T ch, size_t numberOfCharacters) noexcept
         {
         if (!stringToSearch)
             { return nullptr; }
@@ -971,12 +1002,14 @@ namespace string_util
         @param searchSeqLength The length of the search sequence.
         @returns A pointer to where the character was found, or null if not found.*/
     template<typename T>
-    [[nodiscard]] const T* strcspn_pointer(const T* stringToSearch, const T* searchSequence,
-                                           const size_t searchSeqLength) noexcept
+    [[nodiscard]]
+    const T* strcspn_pointer(const T* stringToSearch, const T* searchSequence,
+                             const size_t searchSeqLength) noexcept
         {
         if (!stringToSearch || !searchSequence || searchSeqLength == 0)
             { return nullptr; }
-        assert((string_util::strlen(searchSequence) == searchSeqLength) && "Invalid length passed to strcspn_pointer().");
+        assert((string_util::strlen(searchSequence) == searchSeqLength) &&
+               "Invalid length passed to strcspn_pointer().");
         while (stringToSearch)
             {
             if (stringToSearch[0] == 0)
@@ -998,12 +1031,14 @@ namespace string_util
         @param searchStringLength The length of the sequence string.
         @returns The index into the string that the character was found. Returns the length of the string if not found.*/
     template<typename T>
-    [[nodiscard]] size_t strncspn(const T* stringToSearch, const size_t stringToSearchLength,
-        const T* searchString, const size_t searchStringLength) noexcept
+    [[nodiscard]]
+    size_t strncspn(const T* stringToSearch, const size_t stringToSearchLength,
+                    const T* searchString, const size_t searchStringLength) noexcept
         {
         if (!stringToSearch || !searchString || stringToSearchLength == 0 || searchStringLength == 0)
             { return stringToSearchLength; }
-        assert((string_util::strlen(searchString) == searchStringLength) && "Invalid length passed to strncspn().");
+        assert((string_util::strlen(searchString) == searchStringLength) &&
+               "Invalid length passed to strncspn().");
         size_t i{ 0 };
         for (i = 0; i < stringToSearchLength; ++i)
             {
@@ -1073,7 +1108,8 @@ namespace string_util
             The default (@c -1) will begin the search at the end of the string.
         @returns The offset of the found character, or @c -1 if not found.*/
     template<typename T>
-    [[nodiscard]] size_t find_last_of(const T* string,
+    [[nodiscard]]
+    size_t find_last_of(const T* string,
                     const T ch,
                     size_t offset = -1) noexcept
         {
@@ -1105,8 +1141,9 @@ namespace string_util
         @returns The position of where the last matching character is at,
             or @c -1 if it can't be found.*/
     template<typename T>
-    [[nodiscard]] size_t find_last_of(const T* string, const T* search,
-                    size_t offset = std::basic_string<T>::npos) noexcept
+    [[nodiscard]]
+    size_t find_last_of(const T* string, const T* search,
+                        size_t offset = std::basic_string<T>::npos) noexcept
         {
         if (!string || !search)
             { return std::basic_string<T>::npos; }
@@ -1149,8 +1186,9 @@ namespace string_util
         @returns The index into the string that the character was not found, or 
             the length of the string if nothing was found that couldn't match the search string.*/
     template<typename T>
-    [[nodiscard]] size_t find_first_not_of(const T* stringToSearch, const size_t stringToSearchLength,
-                                           const T* searchString, const size_t searchStringLength) noexcept
+    [[nodiscard]]
+    size_t find_first_not_of(const T* stringToSearch, const size_t stringToSearchLength,
+                            const T* searchString, const size_t searchStringLength) noexcept
         {
         if (!stringToSearch || !searchString || stringToSearchLength == 0 || searchStringLength == 0)
             { return stringToSearchLength; }
@@ -1183,9 +1221,10 @@ namespace string_util
     /// @param start_index The starting position within @c haystack to start the search.
     /// @returns The position of the found word, or @c npos if not found.
     template<typename T>
-    [[nodiscard]] typename T::size_type find_whole_word(const T& haystack,
-                                        const T& needle,
-                                        size_t start_index = 0)
+    [[nodiscard]]
+    typename T::size_type find_whole_word(const T& haystack,
+                                          const T& needle,
+                                          size_t start_index = 0)
         {
         if (needle.length() == 0 || haystack.length() == 0)
             { return T::npos; }
@@ -1252,7 +1291,8 @@ namespace string_util
     class equal_string_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::stricmp(a_, b_) == 0); }
         };
 
@@ -1260,7 +1300,8 @@ namespace string_util
     class equal_basic_string_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T& a_, const T& b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T& a_, const T& b_) const noexcept
             { return (string_util::stricmp(a_.c_str(), b_.c_str()) == 0); }
         };
 
@@ -1277,7 +1318,8 @@ namespace string_util
             {}
         /// @returns @c true if initial value is the same the pair's key.
         /// @param val The pair to compare against.
-        [[nodiscard]] bool operator()(const std::pair<TKey,TVal>& val) const noexcept
+        [[nodiscard]]
+        bool operator()(const std::pair<TKey,TVal>& val) const noexcept
             { return (string_util::stricmp(val.first.c_str(), m_key.c_str()) == 0); }
     private:
         TKey m_key;
@@ -1287,7 +1329,8 @@ namespace string_util
     class equal_string_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::strcmp(a_, b_) == 0); }
         };
 
@@ -1298,7 +1341,8 @@ namespace string_util
     public:
         explicit less_string_n_compare(size_t comparison_size) :
             m_comparison_size(comparison_size) {}
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::strncmp(a_, b_, m_comparison_size) < 0); }
     private:
         size_t m_comparison_size{ 0 };
@@ -1310,7 +1354,8 @@ namespace string_util
     public:
         explicit less_string_ni_compare(size_t comparison_size) :
             m_comparison_size(comparison_size) {}
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::strnicmp(a_, b_, m_comparison_size) < 0); }
     private:
         size_t m_comparison_size{ 0 };
@@ -1320,7 +1365,8 @@ namespace string_util
     class less_string_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const noexcept
             { return (string_util::stricmp(a_, b_) < 0); }
         };
 
@@ -1328,7 +1374,8 @@ namespace string_util
     class less_string_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const
             { return (string_util::strcmp(a_, b_) < 0); }
         };
 
@@ -1336,7 +1383,8 @@ namespace string_util
     class less_basic_string_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T& a_, const T& b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T& a_, const T& b_) const noexcept
             { return (string_util::strcmp(a_.c_str(), b_.c_str()) < 0); }
         };
 
@@ -1344,7 +1392,8 @@ namespace string_util
     class less_basic_string_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T& a_, const T& b_) const noexcept
+        [[nodiscard]]
+        bool operator()(const T& a_, const T& b_) const noexcept
             { return (string_util::stricmp(a_.c_str(), b_.c_str()) < 0); }
         };
 
@@ -1352,7 +1401,8 @@ namespace string_util
     class less_string_natural_order_i_compare
         {
     public:
-        [[nodiscard]] bool operator()(const T* a_, const T* b_) const
+        [[nodiscard]]
+        bool operator()(const T* a_, const T* b_) const
             { return (string_util::strnatordncasecmp(a_, b_) < 0); }
         };
 
@@ -1362,7 +1412,8 @@ namespace string_util
         @returns @c true if @c buffer is some sort of ASCII, false if possibly UTF-16.
         @note The larger the buffer, the more accurate the check will be.*/
     template<typename T>
-    [[nodiscard]] bool is_extended_ascii(const T* buffer, const size_t buffSize) noexcept
+    [[nodiscard]]
+    bool is_extended_ascii(const T* buffer, const size_t buffSize) noexcept
         {
         static_assert(std::is_same<T, char>::value || std::is_same<T, unsigned char>::value);
         if (!buffer || buffSize == 0)
@@ -1474,8 +1525,9 @@ namespace string_util
         @param char_string The list of characters to compare against.
         @returns @c true if the character of one of the list of characters.*/
     template<typename Tchar_type>
-    [[nodiscard]] constexpr bool is_one_of(const Tchar_type character,
-                                           const Tchar_type* char_string) noexcept
+    [[nodiscard]]
+    constexpr bool is_one_of(const Tchar_type character,
+                             const Tchar_type* char_string) noexcept
         {
         if (char_string == nullptr)
             { return false; }
@@ -1586,7 +1638,8 @@ namespace string_util
     /// @param text The text to review.
     /// @returns The text with all whitespace removed.
     template<typename T>
-    [[nodiscard]] T remove_all_whitespace(const T& text)
+    [[nodiscard]]
+    T remove_all_whitespace(const T& text)
         {
         T tempText = text;
         for (typename T::size_type i = 0; i < tempText.length(); /*in loop*/)
@@ -1792,7 +1845,8 @@ namespace string_util
         @param[out] endptr Where the parsing of @c nptr stopped.
         @returns The double value that was parsed.*/
     template<typename Tchar_type>
-    [[nodiscard]] double strtod_ex(const Tchar_type* nptr, Tchar_type** endptr) noexcept
+    [[nodiscard]]
+    double strtod_ex(const Tchar_type* nptr, Tchar_type** endptr) noexcept
         {
         if (nptr == nullptr)
             {

@@ -156,23 +156,23 @@ bool SideBarBook::DeletePage(size_t nPage)
     }
 
 //---------------------------------------------------
-int SideBarBook::DoSetSelection(size_t n, int flags)
+int SideBarBook::DoSetSelection(size_t nPage, int flags)
 {
-    wxCHECK_MSG( n < GetPageCount(), wxNOT_FOUND,
+    wxCHECK_MSG( nPage < GetPageCount(), wxNOT_FOUND,
                  L"invalid page index in DoSetSelection()");
 
     wxWindowUpdateLocker noUpdates(this);
 
     const int oldSel = GetSelection();
 
-    if ( n != static_cast<size_t>(oldSel) )
+    if ( nPage != static_cast<size_t>(oldSel) )
     {
         wxBookCtrlEvent *event = CreatePageChangingEvent();
         bool allowed = false;
 
         if ( flags & SetSelection_SendEvent )
         {
-            event->SetSelection(static_cast<int>(n));
+            event->SetSelection(static_cast<int>(nPage));
             event->SetOldSelection(oldSel);
             event->SetEventObject(this);
 
@@ -184,12 +184,12 @@ int SideBarBook::DoSetSelection(size_t n, int flags)
             if ( oldSel != wxNOT_FOUND )
                 m_pages[oldSel]->Hide();
 
-            wxWindow *page = m_pages[n];
+            wxWindow *page = m_pages[nPage];
             page->SetSize(GetPageRect());
             page->Show();
 
             // change selection now to ignore the selection change event
-            UpdateSelectedPage(n);
+            UpdateSelectedPage(nPage);
 
             if ( flags & SetSelection_SendEvent )
             {
@@ -406,7 +406,7 @@ void SideBarBook::DoSize()
 
 //---------------------------------------------------
 bool SideBarBook::DoInsertPage(size_t nPage,
-                           wxWindow *page,
+                           wxWindow* page,
                            [[maybe_unused]] const wxString& text,
                            [[maybe_unused]] bool bSelect,
                            [[maybe_unused]] int imageId)

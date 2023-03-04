@@ -17,12 +17,14 @@ namespace __debug
     std::vector<__profiler*> __profile_reporter::m_profilers;
     static __profile_reporter __profile_reporter__;
 
-    void __profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time, const char* extra_info)
+    void __profile_info::add_duration_time(const std::chrono::nanoseconds& duration_time,
+                                           const char* extra_info)
         {
         ++m_called_count;
         m_total_duration_time += duration_time;
         m_average_duration_time = m_total_duration_time / m_called_count;
-        m_lowest_duration_time = (duration_time < m_lowest_duration_time) ? duration_time : m_lowest_duration_time;
+        m_lowest_duration_time = (duration_time < m_lowest_duration_time) ?
+            duration_time : m_lowest_duration_time;
         if (duration_time > m_highest_duration_time)
             {
             m_highest_duration_time = duration_time;
@@ -33,19 +35,19 @@ namespace __debug
         }
 
     __profiler::__profiler(const char* name) :
-                                    m_starttime(std::chrono::high_resolution_clock::now()),
-                                    m_block_name(name), m_total_pause_duration(0)
+        m_starttime(std::chrono::high_resolution_clock::now()),
+        m_block_name(name)
         { push_profiler(this); }
 
     __profiler::__profiler(const char* name, const char* extra_info) :
-                                    m_starttime(std::chrono::high_resolution_clock::now()),
-                                    m_block_name(name), m_extra_info(extra_info), m_total_pause_duration(0)
+        m_starttime(std::chrono::high_resolution_clock::now()),
+        m_block_name(name), m_extra_info(extra_info)
         { push_profiler(this); }
 
     __profiler::~__profiler()
         {
         m_endtime = std::chrono::high_resolution_clock::now();
-        const auto totalTime = (m_endtime-m_starttime)-m_total_pause_duration;
+        const auto totalTime = (m_endtime-m_starttime) - m_total_pause_duration;
 
         const auto [iterator, inserted] = __profile_reporter__.m_profiles.emplace(
             m_block_name.c_str(), totalTime, m_extra_info.c_str() );
@@ -59,7 +61,7 @@ namespace __debug
         pop_profiler();
         }
 
-    void __profiler::push_profiler(__profiler* profiler) const
+    void __profiler::push_profiler(__profiler* profiler)
         {
         if (__profile_reporter__.m_profilers.size() )
             {
@@ -68,7 +70,7 @@ namespace __debug
         __profile_reporter__.m_profilers.push_back(profiler);
         }
 
-    void __profiler::pop_profiler() const
+    void __profiler::pop_profiler()
         {
         __profile_reporter__.m_profilers.pop_back();
         if (__profile_reporter__.m_profilers.size() )

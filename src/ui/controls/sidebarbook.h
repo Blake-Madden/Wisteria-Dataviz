@@ -121,12 +121,12 @@ namespace Wisteria::UI
         /// @private
         int DoSetSelection(size_t nPage, int flags = 0);
         /// @brief Remove one page from the control and delete it.
-        /// @param n The index of the page to delete.
+        /// @param nPage The index of the page to delete.
         /// @returns @c true if the page was successfully deleted.
-        bool DeletePage(size_t n);
+        bool DeletePage(size_t nPage);
         // remove the page and return a pointer to it
         /// @private
-        wxWindow* DoRemovePage(size_t page);
+        wxWindow* DoRemovePage(size_t nPage);
 
         // This method also invalidates the size of the controller and should be
         // called instead of just InvalidateBestSize() whenever pages are added or
@@ -157,7 +157,7 @@ namespace Wisteria::UI
         void UpdateSize();
 
         /// @private
-        bool DoInsertPage(size_t n,
+        bool DoInsertPage(size_t nPage,
                           wxWindow* page,
                           [[maybe_unused]] const wxString& text,
                           [[maybe_unused]] bool bSelect = false,
