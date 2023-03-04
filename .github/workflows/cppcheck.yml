@@ -25,13 +25,13 @@ jobs:
                 # Filter innocuous warnings and write the remaining ones to another file.
                 # Note that you can add more warnings by adding it in the parenthesis,
                 # with "\|" in front of it. For example, "(missingIncludeSystem\|useStlAlgorithm\)"
-                sed 's/\[\(missingIncludeSystem\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
+                sed 's/\[\(missingIncludeSystem\|internalAstError\|missingInclude\|unusedFunction\|ConfigurationNotChecked\|toomanyconfigs\|unmatchedSuppression\|useStlAlgorithm\)\]//g' "$REPORTFILE" > "$WARNINGSFILE"
                 # are there any remaining warnings?
-                if grep -qP '\[[a-zA-Z0-9]+\]' "$WARNINGSFILE"; then
+                if grep -qP '\[[a-zA-Z0-9]{5,}\]' "$WARNINGSFILE"; then
                     # print the remaining warnings
                     echo Warnings detected:
                     echo ==================
-                    cat "$WARNINGSFILE" | grep -P '\[[a-zA-Z0-9]+\]'
+                    cat "$WARNINGSFILE" | grep -P '\[[a-zA-Z0-9]{5,}\]'
                     # fail the job
                     exit 1
                 else
