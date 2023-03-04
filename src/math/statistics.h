@@ -36,7 +36,7 @@ namespace statistics
         return static_cast<size_t>(
             std::accumulate(data.cbegin(), data.cend(), 0.0,
             [](const auto initVal, const auto val) noexcept
-                { return initVal + (std::isnan(val) ? 0.0 : 1.0); }));
+                { return initVal + (std::isnan(val) ? 0 : 1); }));
         }
 
     /** @brief Calculates the mode(s) (most repeated value) from a specified range.
