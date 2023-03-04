@@ -14,10 +14,12 @@ SET(TEST_SRC_FILES
     idlparsetests.cpp
     intsplittests.cpp
     labeltests.cpp
+    listctrlextests.cpp
     mapstests.cpp
     postscriptimporttests.cpp
     roundtest.cpp
     rtfencodetests.cpp
+    rtfparsetests.cpp
     safemathtests.cpp
     sidebartests.cpp
     statstests.cpp
@@ -29,4 +31,5 @@ SET(TEST_SRC_FILES
     textimporttests.cpp
     textstreamtests.cpp
     truncatetests.cpp
+    unicodeparsetests.cpp
     xlsximporttests.cpp)
