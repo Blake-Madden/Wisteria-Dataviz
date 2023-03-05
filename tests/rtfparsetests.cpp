@@ -109,7 +109,7 @@ TEST_CASE("RTF Parser", "[rtf import]")
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
         const wchar_t* p = filter_rtf_html(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"Into a granite-ware saucepan") == std::wstring(p));
-        / /try plain text too
+        // try plain text too
         rtf_extract_text filter_rtfText;
         p = filter_rtfText(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"Into a granite-ware saucepan") == std::wstring(p));
@@ -136,7 +136,7 @@ TEST_CASE("RTF Parser", "[rtf import]")
         // try plain text too
         rtf_extract_text filter_rtfText;
         p = filter_rtfText(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"blah") std::wstring(p));
+        CHECK(std::wstring(L"blah") == std::wstring(p));
         }
     SECTION("Underline to html")
         {
@@ -145,7 +145,7 @@ TEST_CASE("RTF Parser", "[rtf import]")
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
         const wchar_t* p = filter_rtf_html(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"<span style='text-decoration:underline;'>blah</span>") == std::wstring(p));
-        / /try plain text too
+        // try plain text too
         rtf_extract_text filter_rtfText;
         p = filter_rtfText(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"blah") == std::wstring(p));
@@ -157,7 +157,7 @@ TEST_CASE("RTF Parser", "[rtf import]")
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
         const wchar_t* p = filter_rtf_html(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"<span style='text-decoration:line-through;'>blah</span>") == std::wstring(p));
-        //try plain text too
+        // try plain text too
         rtf_extract_text filter_rtfText;
         p = filter_rtfText(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"blah") == std::wstring(p));
@@ -267,7 +267,8 @@ TEST_CASE("RTF Parser", "[rtf import]")
     SECTION("Overlapping styles spaces")
         {
         rtf_extract_text filter_rtf;
-        const char* rtf = "{\\colortbl ;\\red255\\green0\\blue0;\\red0\\green255\\blue0;\\red0\\green0\\blue255;}{\\highlight3 Into a }{\\highlight2\\strike granite-ware}{\\highlight3  }{\\highlight2\\strike saucepan}";
+        const char* rtf = "{\\colortbl ;\\red255\\green0\\blue0;\\red0\\green255\\blue0;\\red0\\green0\\blue255;}{\\highlight3 Into a }"
+                            "{\\highlight2\\strike granite-ware}{\\highlight3  }{\\highlight2\\strike saucepan}";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
         const wchar_t* p = filter_rtf_html(rtf, std::strlen(rtf));
         CHECK(std::wstring(L"<span class=\"bc3\">Into a </span><span class=\"bc2\">"
@@ -294,52 +295,57 @@ TEST_CASE("RTF Parser", "[rtf import]")
         {
         const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}})";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"My title"), filter_rtf_html.get_title"));
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"My title") == filter_rtf_html.get_title());
         }
     SECTION("Read subject")
         {
         const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}})";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify"), filter_rtf_html.get_subject());
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify") ==
+            filter_rtf_html.get_subject());
 
         rtf = R"({\info{\title My title\}}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}})";
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"My title}"), filter_rtf_html.get_title());
-        CHECK(std::wstring(L"I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify"), filter_rtf_html.get_subject());
+        blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"My title}") == filter_rtf_html.get_title());
+        CHECK(std::wstring(L"I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify") ==
+            filter_rtf_html.get_subject());
         }
     SECTION("Read author")
         {
         const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Joe Smith}})";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"Joe Smith"), filter_rtf_html.get_author"));
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"Joe Smith") == filter_rtf_html.get_author());
 
-        rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Ren\'c9e}})";
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"RenÉe"), filter_rtf_html.get_author());
+        rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, "
+                "it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Ren\'c9e}})";
+        blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"RenÉe") == filter_rtf_html.get_author());
         }
     SECTION("Read comments")
         {
-        const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Joe Smith}})";
+        const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, "
+                            "it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Joe Smith}})";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"My fantastic comments."), filter_rtf_html.get_comments());
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"My fantastic comments.") == filter_rtf_html.get_comments());
         }
     SECTION("Read keywords")
         {
-        const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Joe Smith}})";
+        const char* rtf = R"({\info{\title My title}{\subject I originally wrote this in fulfillment of a writing exercise, but true to my long-windedness, "
+                            "it's exactly twice the length it should be to qualify}{\keywords testing}{\doccomm My fantastic comments.}{\author Joe Smith}})";
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"testing"), filter_rtf_html.get_keywords());
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(std::wstring(L"testing") == filter_rtf_html.get_keywords());
         }
     SECTION("Ignore list level")
         {
         rtf_extract_text filter_rtf;
         const char* rtf = R"({{\leveltext\'01\u-3913;}\par Hello!})";
         const std::wstring p = filter_rtf(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"\nHello!"), p);
+        CHECK(std::wstring(L"\nHello!") == p);
         }
     SECTION("Grouped italics to Html")
         {
@@ -392,7 +398,8 @@ TEST_CASE("RTF Parser", "[rtf import]")
 
         rtf = R"(I saw {\ul Brazil\ulnone} yesterday.)";
         p = filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(std::wstring(L"I saw <span style='text-decoration:underline;'>Brazil<span style='text-decoration:none;'></span></span> yesterday.") == std::wstring(p));
+        CHECK(std::wstring(L"I saw <span style='text-decoration:underline;'>Brazil<span style='text-decoration:none;'>"
+                            "</span></span> yesterday.") == std::wstring(p));
 
         rtf = R"(I saw {\ul {Brazil}} yesterday.)";
         p = filter_rtf_html(rtf, std::strlen(rtf));
@@ -433,9 +440,9 @@ TEST_CASE("RTF Parser", "[rtf import]")
         {
         rtf_extract_text filter_rtf;
         const char* rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Book Antiqua;}}"
-                            "{\\colortbl ;\\red0\\green0\\blue0;\\red152\\green251\\blue152;}"
-                            "{\\*\\generator Msftedit 5.41.15.1507;}\\viewkind4\\uc1\\pard\\cf2\\f0\\fs24\\'e1\\'df }";
-        filter_rtf(rtf, std::strlen(rtf));
+                          "{\\colortbl ;\\red0\\green0\\blue0;\\red152\\green251\\blue152;}"
+                          "{\\*\\generator Msftedit 5.41.15.1507;}\\viewkind4\\uc1\\pard\\cf2\\f0\\fs24\\'e1\\'df }";
+        [[maybe_unused]] auto blah = filter_rtf(rtf, std::strlen(rtf));
         // text parser should just ignore the font info, so this should just default to Arial
         CHECK(filter_rtf.get_font() == "Arial");
         CHECK(filter_rtf.get_font_size() == 12);
@@ -446,7 +453,7 @@ TEST_CASE("RTF Parser", "[rtf import]")
         CHECK(color.blue == 0);
         // test html convertor
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
+        blah = filter_rtf_html(rtf, std::strlen(rtf));
         CHECK(filter_rtf_html.get_font() == "Book Antiqua");
         CHECK(filter_rtf_html.get_font_size() == 12);
         color = filter_rtf_html.get_font_color();
@@ -462,30 +469,40 @@ TEST_CASE("RTF Parser", "[rtf import]")
                             "{\\*\\generator Msftedit 5.41.15.1507;}\\viewkind4\\uc1\\pard\\cf2\\f0\\fs24\\'e1\\'df }";
         //test html convertor
         rtf_extract_text filter_rtf_html(rtf_extract_text::rtf_extraction_type::rtf_to_html);
-        filter_rtf_html(rtf, std::strlen(rtf));
-        CHECK(filter_rtf_html.get_style_section() == L".bc0 {background-color:#FFFFFF;}\n.fc0 {color:#000000;}\n.bc1 {background-color:#FF0000;}\n.fc1 {color:#FF0000;}\n.bc2 {background-color:#98FB98;}\n.fc2 {color:#98FB98;}");
+        [[maybe_unused]] auto blah = filter_rtf_html(rtf, std::strlen(rtf));
+        CHECK(filter_rtf_html.get_style_section() == L".bc0 {background-color:#FFFFFF;}\n.fc0 {color:#000000;}\n"
+            ".bc1 {background-color:#FF0000;}\n.fc1 {color:#FF0000;}\n.bc2 {background-color:#98FB98;}\n.fc2 {color:#98FB98;}");
         }
     SECTION("Page breaks")
         {
         rtf_extract_text filter_rtf;
         const char* rtf = "{\\rtf1\\ansi\\deff3\\adeflang1025"
-            "{\\fonttbl{\\f0\\froman\\fprq2\\fcharset0 Times New Roman;}{\\f1\\froman\\fprq2\\fcharset2 Symbol;}{\\f2\\fswiss\\fprq2\\fcharset0 Arial;}{\\f3\\froman\\fprq2\\fcharset0 Liberation Serif{\\*\\falt Times New Roman};}{\\f4\\fswiss\\fprq2\\fcharset0 Liberation Sans{\\*\\falt Arial};}{\\f5\\fnil\\fprq2\\fcharset0 Microsoft YaHei;}{\\f6\\fnil\\fprq2\\fcharset0 Arial;}{\\f7\\fswiss\\fprq0\\fcharset0 Arial;}}"
+            "{\\fonttbl{\\f0\\froman\\fprq2\\fcharset0 Times New Roman;}{\\f1\\froman\\fprq2\\fcharset2 Symbol;}"
+            "{\\f2\\fswiss\\fprq2\\fcharset0 Arial;}{\\f3\\froman\\fprq2\\fcharset0 Liberation Serif{\\*\\falt Times New Roman};}"
+            "{\\f4\\fswiss\\fprq2\\fcharset0 Liberation Sans{\\*\\falt Arial};}{\\f5\\fnil\\fprq2\\fcharset0 Microsoft YaHei;}"
+            "{\\f6\\fnil\\fprq2\\fcharset0 Arial;}{\\f7\\fswiss\\fprq0\\fcharset0 Arial;}}"
             "{\\colortbl;\\red0\\green0\\blue0;\\red128\\green128\\blue128;}"
-            "{\\stylesheet{\\s0\\snext0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033 Normal;}"
+            "{\\stylesheet{\\s0\\snext0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1"
+            "\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033 Normal;}"
             "{\\s15\\sbasedon0\\snext16\\sb240\\sa120\\keepn\\dbch\\af5\\dbch\\af6\\afs28\\loch\\f4\\fs28 Heading;}"
             "{\\s16\\sbasedon0\\snext16\\sl288\\slmult1\\sb0\\sa140 Text Body;}"
             "{\\s17\\sbasedon16\\snext17\\sl288\\slmult1\\sb0\\sa140\\dbch\\af7 List;}"
             "{\\s18\\sbasedon0\\snext18\\sb120\\sa120\\noline\\i\\dbch\\af7\\afs24\\ai\\fs24 Caption;}"
             "{\\s19\\sbasedon0\\snext19\\noline\\dbch\\af7 Index;}"
-            "}{\\*\\generator LibreOffice/4.4.3.2$Windows_x86 LibreOffice_project/88805f81e9fe61362df02b9941de8e38a9b5fd16}{\\info{\\creatim\\yr2016\\mo10\\dy28\\hr9\\min41}{\\revtim\\yr2016\\mo10\\dy28\\hr9\\min42}{\\printim\\yr0\\mo0\\dy0\\hr0\\min0}}\\deftab709"
+            "}{\\*\\generator LibreOffice/4.4.3.2$Windows_x86 LibreOffice_project/88805f81e9fe61362df02b9941de8e38a9b5fd16}"
+            "{\\info{\\creatim\\yr2016\\mo10\\dy28\\hr9\\min41}{\\revtim\\yr2016\\mo10\\dy28\\hr9\\min42}{\\printim\\yr0\\mo0\\dy0\\hr0\\min0}}\\deftab709"
             "\\viewscale100"
             "{\\*\\pgdsctbl"
             "{\\pgdsc0\\pgdscuse451\\pgwsxn12240\\pghsxn15840\\marglsxn1134\\margrsxn1134\\margtsxn1134\\margbsxn1134\\pgdscnxt0 Default Style;}}"
-            "\\formshade\\paperh15840\\paperw12240\\margl1134\\margr1134\\margt1134\\margb1134\\sectd\\sbknone\\sectunlocked1\\pgndec\\pgwsxn12240\\pghsxn15840\\marglsxn1134\\margrsxn1134\\margtsxn1134\\margbsxn1134\\ftnbj\\ftnstart1\\ftnrstcont\\ftnnar\\aenddoc\\aftnrstcont\\aftnstart1\\aftnnrlc"
-            "{\\*\\ftnsep\\chftnsep}\\pgndec\\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033{\\rtlch \\ltrch\\loch "
+            "\\formshade\\paperh15840\\paperw12240\\margl1134\\margr1134\\margt1134\\margb1134\\sectd\\sbknone\\sectunlocked1\\pgndec\\pgwsxn12240"
+            "\\pghsxn15840\\marglsxn1134\\margrsxn1134\\margtsxn1134\\margbsxn1134\\ftnbj\\ftnstart1\\ftnrstcont\\ftnnar\\aenddoc\\aftnrstcont\\aftnstart1\\aftnnrlc"
+            "{\\*\\ftnsep\\chftnsep}\\pgndec\\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha"
+            "\\ltrpar\\cf0\\kerning1\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033{\\rtlch \\ltrch\\loch "
             "Hello.}"
-            "\\par \\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033\\rtlch \\ltrch\\loch "
-            "\\par \\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033\\pagebb{\\rtlch \\ltrch\\loch "
+            "\\par \\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8"
+            "\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033\\rtlch \\ltrch\\loch "
+            "\\par \\pard\\plain \\s0\\nowidctlpar{\\*\\hyphen2\\hyphlead2\\hyphtrail2\\hyphmax0}\\aspalpha\\ltrpar\\cf0\\kerning1\\dbch\\af8"
+            "\\langfe2052\\dbch\\af6\\afs24\\alang1081\\loch\\f3\\fs24\\lang1033\\pagebb{\\rtlch \\ltrch\\loch "
             "Here is page 2.}"
             "\\par }";
         // test html convertor

@@ -225,6 +225,54 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
         columns.push_back(std::pair<size_t,Wisteria::SortDirection>(2, Wisteria::SortDirection::SortDescending));
         dataProvider.Sort(columns,0,(size_t)-1);
         }
+    SECTION("Sort items multicolumn nothing to sort second column descending numeric")
+        {
+        dataProvider.SetSize(4,2);
+        dataProvider.SetItemValue(0,0,2);
+        dataProvider.SetItemValue(0,1,2);
+        dataProvider.SetItemValue(1,0,2);
+        dataProvider.SetItemValue(1,1,9);
+        dataProvider.SetItemValue(2,0,2);
+        dataProvider.SetItemValue(2,1,2);
+        dataProvider.SetItemValue(3,0,2);
+        dataProvider.SetItemValue(3,1,2);
+        std::vector<std::pair<size_t,Wisteria::SortDirection> > columns;
+        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
+        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(1, Wisteria::SortDirection::SortDescending));
+        dataProvider.Sort(columns,0,(size_t)-1);
+        CHECK(dataProvider.GetItemText(0,0) == L"2");
+        CHECK(dataProvider.GetItemText(0,1) == L"9");
+        CHECK(dataProvider.GetItemText(1,0) == L"2");
+        CHECK(dataProvider.GetItemText(1,1) == L"2");
+        CHECK(dataProvider.GetItemText(2,0) == L"2");
+        CHECK(dataProvider.GetItemText(2,1) == L"2");
+        CHECK(dataProvider.GetItemText(3,0) == L"2");
+        CHECK(dataProvider.GetItemText(3,1) == L"2");
+        }
+    SECTION("Sort items multicolumn nothing to sort second column ascending numeric")
+        {
+        dataProvider.SetSize(4,2);
+        dataProvider.SetItemValue(0,0,2);
+        dataProvider.SetItemValue(0,1,2);
+        dataProvider.SetItemValue(1,0,2);
+        dataProvider.SetItemValue(1,1,9);
+        dataProvider.SetItemValue(2,0,2);
+        dataProvider.SetItemValue(2,1,2);
+        dataProvider.SetItemValue(3,0,2);
+        dataProvider.SetItemValue(3,1,2);
+        std::vector<std::pair<size_t,Wisteria::SortDirection> > columns;
+        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortAscending));
+        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(1, Wisteria::SortDirection::SortAscending));
+        dataProvider.Sort(columns,0,(size_t)-1);
+        CHECK(dataProvider.GetItemText(0,0) == L"2");
+        CHECK(dataProvider.GetItemText(0,1) == L"2");
+        CHECK(dataProvider.GetItemText(1,0) == L"2");
+        CHECK(dataProvider.GetItemText(1,1) == L"2");
+        CHECK(dataProvider.GetItemText(2,0) == L"2");
+        CHECK(dataProvider.GetItemText(2,1) == L"2");
+        CHECK(dataProvider.GetItemText(3,0) == L"2");
+        CHECK(dataProvider.GetItemText(3,1) == L"9");
+        }
     SECTION("Empty data")
         {
         dataProvider.SetSize(10,1);
@@ -393,54 +441,6 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
         CHECK(dataProvider.GetItemText(3,0) == L"2");
         CHECK(dataProvider.GetItemText(3,1) == L"zzz");
         }
-    SECTION("Sort items multicolumn nothing to sort second column descending numeric")
-        {
-        dataProvider.SetSize(4,2);
-        dataProvider.SetItemValue(0,0,2);
-        dataProvider.SetItemValue(0,1,2);
-        dataProvider.SetItemValue(1,0,2);
-        dataProvider.SetItemValue(1,1,9);
-        dataProvider.SetItemValue(2,0,2);
-        dataProvider.SetItemValue(2,1,2);
-        dataProvider.SetItemValue(3,0,2);
-        dataProvider.SetItemValue(3,1,2);
-        std::vector<std::pair<size_t,Wisteria::SortDirection> > columns;
-        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
-        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(1, Wisteria::SortDirection::SortDescending));
-        dataProvider.Sort(columns,0,(size_t)-1);
-        CHECK(dataProvider.GetItemText(0,0) == L"2");
-        CHECK(dataProvider.GetItemText(0,1) == L"9");
-        CHECK(dataProvider.GetItemText(1,0) == L"2");
-        CHECK(dataProvider.GetItemText(1,1) == L"2");
-        CHECK(dataProvider.GetItemText(2,0) == L"2");
-        CHECK(dataProvider.GetItemText(2,1) == L"2");
-        CHECK(dataProvider.GetItemText(3,0) == L"2");
-        CHECK(dataProvider.GetItemText(3,1) == L"2");
-        }
-    SECTION("Sort items multicolumn nothing to sort second column ascending numeric")
-        {
-        dataProvider.SetSize(4,2);
-        dataProvider.SetItemValue(0,0,2);
-        dataProvider.SetItemValue(0,1,2);
-        dataProvider.SetItemValue(1,0,2);
-        dataProvider.SetItemValue(1,1,9);
-        dataProvider.SetItemValue(2,0,2);
-        dataProvider.SetItemValue(2,1,2);
-        dataProvider.SetItemValue(3,0,2);
-        dataProvider.SetItemValue(3,1,2);
-        std::vector<std::pair<size_t,Wisteria::SortDirection> > columns;
-        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortAscending));
-        columns.push_back(std::pair<size_t,Wisteria::SortDirection>(1, Wisteria::SortDirection::SortAscending));
-        dataProvider.Sort(columns,0,(size_t)-1);
-        CHECK(dataProvider.GetItemText(0,0) == L"2");
-        CHECK(dataProvider.GetItemText(0,1) == L"2");
-        CHECK(dataProvider.GetItemText(1,0) == L"2");
-        CHECK(dataProvider.GetItemText(1,1) == L"2");
-        CHECK(dataProvider.GetItemText(2,0) == L"2");
-        CHECK(dataProvider.GetItemText(2,1) == L"2");
-        CHECK(dataProvider.GetItemText(3,0) == L"2");
-        CHECK(dataProvider.GetItemText(3,1) == L"9");
-        }
     SECTION("Sort items multicolumn first")
         {
         dataProvider.SetSize(4,2);
@@ -584,11 +584,11 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
 
 TEST_CASE("ListCtrlEx", "[listctrlex]")
     {
-    m_dataProvider = new ListCtrlExNumericDataProvider;
-    m_list = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL|wxLC_REPORT|wxBORDER_SUNKEN);
+    auto m_dataProvider = new ListCtrlExNumericDataProvider;
+    auto m_list = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
     m_list->Hide();
 
-    void Reset()
+    const auto Reset = [&m_dataProvider, &m_list]()
         {
         m_dataProvider->SetSize(7,1);
         m_dataProvider->SetItemText(0,0,L"Text");
@@ -601,8 +601,8 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->SetVirtualDataProvider(m_dataProvider);
         m_list->SetVirtualDataSize(7, 1);
         m_list->InsertColumn(0, _("NAME"));
-        }
-    void Reset2Columns()
+        };
+    const auto Reset2Columns = [&m_dataProvider, &m_list]()
         {
         m_dataProvider->SetSize(7,2);
         m_dataProvider->SetItemText(0,0,L"Text");
@@ -624,7 +624,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->SetVirtualDataSize(7, 2);
         m_list->InsertColumn(0, _("NAME"));
         m_list->InsertColumn(1, _("OTHER"));
-        }
+        };
+
+    Reset();
 
     SECTION("Add row")
         {
