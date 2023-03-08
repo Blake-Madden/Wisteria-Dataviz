@@ -65,16 +65,16 @@ namespace lily_of_the_valley
         static const std::wstring OFFICE_ANNOTATION(L"office:annotation");
         static const std::wstring OFFICE_ANNOTATION_OOO(L"officeooo:annotation");
         // text section tags
-        const std::wstring TEXT_P(L"text:p");
-        const std::wstring TEXT_P_END(L"</text:p>");
-        const std::wstring TEXT_H(L"text:h");
-        const std::wstring TEXT_H_END(L"</text:h>");
-        const std::wstring TEXT_S(L"text:s");
-        const std::wstring TEXT_C(L"text:c");
+        static const std::wstring TEXT_P(L"text:p");
+        static const std::wstring TEXT_P_END(L"</text:p>");
+        static const std::wstring TEXT_H(L"text:h");
+        static const std::wstring TEXT_H_END(L"</text:h>");
+        static const std::wstring TEXT_S(L"text:s");
+        static const std::wstring TEXT_C(L"text:c");
         // tables
-        const std::wstring TABLE_ROW(L"table:table-row");
+        static const std::wstring TABLE_ROW(L"table:table-row");
         // paragraph info
-        const std::wstring TEXT_STYLE_NAME(L"text:style-name");
+        static const std::wstring TEXT_STYLE_NAME(L"text:style-name");
 
         clear_log();
         if (html_text == nullptr || html_text[0] == 0 || text_length == 0)
@@ -261,11 +261,11 @@ namespace lily_of_the_valley
     void odt_odp_extract_text::read_paragraph_styles(const wchar_t* text, const wchar_t* textEnd)
         {
         // items for reading in general style information
-        const std::wstring STYLE_STYLE_END(L"</style:style>");
-        const std::wstring STYLE_NAME(L"style:name");
-        const std::wstring ALIGNMENT(L"fo:text-align");
-        const std::wstring BREAK_BEFORE(L"fo:break-before");
-        const std::wstring MARGIN_ALIGNMENT(L"fo:margin-left");
+        static const std::wstring STYLE_STYLE_END(L"</style:style>");
+        static const std::wstring STYLE_NAME(L"style:name");
+        static const std::wstring ALIGNMENT(L"fo:text-align");
+        static const std::wstring BREAK_BEFORE(L"fo:break-before");
+        static const std::wstring MARGIN_ALIGNMENT(L"fo:margin-left");
 
         const wchar_t* const officeStyleStart =
             find_element(text, textEnd, L"office:automatic-styles", 23);
@@ -284,7 +284,7 @@ namespace lily_of_the_valley
                     find_closing_element(currentStyleStart, textEnd, L"style:style", 11);
                 if (currentStyleStart && currentStyleEnd && (currentStyleStart < currentStyleEnd))
                     {
-                    //read in the name of the current style
+                    // read in the name of the current style
                     const std::wstring styleName = read_attribute_as_string(currentStyleStart,
                         STYLE_NAME.c_str(), STYLE_NAME.length(), false, true);
                     if (styleName.empty())

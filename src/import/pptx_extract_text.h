@@ -184,12 +184,12 @@ namespace lily_of_the_valley
             // reset meta data from last call
             reset_meta_data();
 
-            const std::wstring OFFICE_META(L"cp:coreProperties");
-            const std::wstring SUBJECT(L"dc:subject");
-            const std::wstring TITLE(L"dc:title");
-            const std::wstring DESCRIPTION(L"dc:description");
-            const std::wstring KEYWORDS(L"cp:keywords");
-            const std::wstring AUTHOR(L"dc:creator");
+            static const std::wstring OFFICE_META(L"cp:coreProperties");
+            static const std::wstring SUBJECT(L"dc:subject");
+            static const std::wstring TITLE(L"dc:title");
+            static const std::wstring DESCRIPTION(L"dc:description");
+            static const std::wstring KEYWORDS(L"cp:keywords");
+            static const std::wstring AUTHOR(L"dc:creator");
             const wchar_t* const textEnd = html_text+text_length;
 
             const wchar_t* const officMetaStart =
