@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <utility>
+#include <cassert>
 #include "text_column.h"
 
 namespace lily_of_the_valley
