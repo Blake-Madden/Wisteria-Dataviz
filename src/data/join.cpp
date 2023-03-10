@@ -85,7 +85,7 @@ namespace Wisteria::Data
 
         // prepare the fused dataset with non-join columns from the right dataset
         //--------------------------
-        std::set<wxString, StringCmpNoCase> rightColumnsToJoinBy;
+        std::set<wxString, wxStringLessNoCase> rightColumnsToJoinBy;
         std::for_each(byColumns.begin(), byColumns.end(),
             [&](const auto& val)
             { rightColumnsToJoinBy.insert(val.second); });

@@ -131,7 +131,7 @@ namespace Wisteria::Graphs
             { return; }
 
         // calculate how many observations are in each group
-        multi_value_aggregate_map<BinBlock, wxString, std::less<BinBlock>, Data::StringCmpNoCase> groups;
+        multi_value_aggregate_map<BinBlock, wxString, std::less<BinBlock>, Data::wxStringLessNoCase> groups;
         groups.set_values_list_max_size(Settings::GetMaxObservationInBin());
         bool hasFloatingPointValue{ false };
 
@@ -343,7 +343,7 @@ namespace Wisteria::Graphs
             { wxASSERT(!has_fractional_part(BinSize)); }
 
         // calculate how many observations are in each group
-        using valuesCounter = std::pair<double, std::set<wxString, Data::StringCmpNoCase>>;
+        using valuesCounter = std::pair<double, std::set<wxString, Data::wxStringLessNoCase>>;
         std::vector<std::vector<comparable_first_pair<Data::GroupIdType, valuesCounter>>> bins(numOfBins);
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
@@ -360,7 +360,7 @@ namespace Wisteria::Graphs
                     {
                     auto foundGroup = std::find(bins[0].begin(), bins[0].end(),
                         comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
-                            valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
+                            valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
                     if (foundGroup != bins[0].end())
                         {
                         ++foundGroup->second.first;
@@ -369,7 +369,7 @@ namespace Wisteria::Graphs
                         }
                     else
                         {
-                        std::set<wxString, Data::StringCmpNoCase> theSet;
+                        std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
                         bins[0].emplace_back(
                             comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
@@ -382,7 +382,7 @@ namespace Wisteria::Graphs
                     {
                     auto foundGroup = std::find(bins[j].begin(), bins[j].end(),
                         comparable_first_pair((IsUsingGrouping() ? GetGroupColumn()->GetValue(i) : 0),
-                            valuesCounter(0.0, std::set<wxString, Data::StringCmpNoCase>{})));
+                            valuesCounter(0.0, std::set<wxString, Data::wxStringLessNoCase>{})));
                     if (foundGroup != bins[j].end())
                         {
                         ++foundGroup->second.first;
@@ -391,7 +391,7 @@ namespace Wisteria::Graphs
                         }
                     else
                         {
-                        std::set<wxString, Data::StringCmpNoCase> theSet;
+                        std::set<wxString, Data::wxStringLessNoCase> theSet;
                         theSet.emplace(GetDataset()->GetIdColumn().GetValue(i).c_str());
                         bins[j].emplace_back(
                             comparable_first_pair((IsUsingGrouping() ?

@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
 
         // calculate how many observations are in each group
         aggregate_frequency_set<CatBarBlock> groups;
-        std::map<wxString, size_t, Data::StringCmpNoCase> m_IDsMap;
+        std::map<wxString, size_t, Data::wxStringLessNoCase> m_IDsMap;
         if (m_useIDColumnForBars)
             {
             for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)

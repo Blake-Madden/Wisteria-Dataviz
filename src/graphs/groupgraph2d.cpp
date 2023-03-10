@@ -42,7 +42,7 @@ void GroupGraph2D::BuildGroupIdMap()
     if (!IsUsingGrouping())
         { return; }
     // make reverse string table, sorted by label
-    std::map<wxString, Data::GroupIdType, Data::StringCmpNoCase> groups;
+    std::map<wxString, Data::GroupIdType, Data::wxStringLessNoCase> groups;
     if (GetGroupColumn()->GetStringTable().size())
         {
         for (const auto& [id, str] : GetGroupColumn()->GetStringTable())

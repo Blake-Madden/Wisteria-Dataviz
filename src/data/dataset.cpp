@@ -93,7 +93,7 @@ namespace Wisteria::Data
         GroupIdType mdCode{ 0 };
         targetVar->GetStringTable().clear();
         targetVar->GetStringTable().insert(std::make_pair(mdCode, wxEmptyString));
-        std::map<wxString, GroupIdType, StringCmpNoCase> idMap;
+        std::map<wxString, GroupIdType, wxStringLessNoCase> idMap;
         for (const auto& re : replacementMap)
             {
             const auto nextId{ targetVar->GetNextKey() };
@@ -521,7 +521,7 @@ namespace Wisteria::Data
 
         const auto MDCode = ColumnWithStringTable::FindMissingDataCode(
             catColumnIterator->GetStringTable());
-        std::set<wxString, StringCmpNoCase> strings;
+        std::set<wxString, wxStringLessNoCase> strings;
         for (size_t i = 0; i < GetRowCount(); ++i)
             {
             if ((!MDCode.has_value() ||
@@ -963,7 +963,7 @@ namespace Wisteria::Data
                         (rowPreviewCount.value() + 1/*header*/) : 100);
 
         // see if there are any duplicate column names
-        std::set<wxString, StringCmpNoCase> colNames;
+        std::set<wxString, wxStringLessNoCase> colNames;
         for (const auto& headerName : preview.get_header_names())
             {
             // skip blank names, we will throw those out later
@@ -1331,7 +1331,7 @@ namespace Wisteria::Data
                 { return m_strings; }
         private:
             GroupIdType currentId{ 0 };
-            std::map<wxString, GroupIdType, StringCmpNoCase> m_strings;
+            std::map<wxString, GroupIdType, wxStringLessNoCase> m_strings;
             };
 
         std::vector<StringTableBuilder> categoricalVars{ catColumnIndices.size() };

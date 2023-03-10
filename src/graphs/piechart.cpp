@@ -509,7 +509,7 @@ namespace Wisteria::Graphs
                 totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
                 }
 
-            std::map<wxString, PieInfo, Data::StringCmpNoCase> innerPie;
+            std::map<wxString, PieInfo, Data::wxStringLessNoCase> innerPie;
             // the outer ring (main group) for the inner group slices
             for (const auto& innerGroupOuterRing : innerGroups)
                 {

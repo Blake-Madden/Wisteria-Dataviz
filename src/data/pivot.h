@@ -24,7 +24,7 @@ namespace Wisteria::Data
     public:
         PivotedWiderRow(const wxString& id,
             std::vector<std::pair<wxString, CategoricalOrIdDataType>>& idColumns,
-            std::map<wxString, double, StringCmpNoCase>& pivotedColumns) :
+            std::map<wxString, double, wxStringLessNoCase>& pivotedColumns) :
             m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
             {}
         /// @private
@@ -34,7 +34,7 @@ namespace Wisteria::Data
         ///     columns, or combining values with common pivots.
         void Combine(const PivotedWiderRow& that);
         /// @brief Adds any missing pivoted columns and sets its value to NaN.
-        void Expand(const std::set<wxString, StringCmpNoCase>& pivotedColumnNames,
+        void Expand(const std::set<wxString, wxStringLessNoCase>& pivotedColumnNames,
                     const double fillValue = std::numeric_limits<double>::quiet_NaN());
     private:
         // ID hash, which is the ID column(s) names combined into one string
@@ -43,7 +43,7 @@ namespace Wisteria::Data
         // (these should remain in the same order that the client specifies)
         std::vector<std::pair<wxString, CategoricalOrIdDataType>> m_idColumns;
         // Pivoted column(s) names and values (these are sorted by name)
-        std::map<wxString, double, StringCmpNoCase> m_pivotedColumns;
+        std::map<wxString, double, wxStringLessNoCase> m_pivotedColumns;
         };
 
     /** @brief Pivots a dataset wider (a.k.a. unstacking or melting data).*/

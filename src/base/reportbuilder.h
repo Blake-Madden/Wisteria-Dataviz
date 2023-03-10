@@ -483,8 +483,8 @@ namespace Wisteria
             const std::shared_ptr<const Data::Dataset>& dataset) const;
 
         // the datasets used by all subitems in the report
-        std::map<wxString, std::shared_ptr<Data::Dataset>, Data::StringCmpNoCase> m_datasets;
-        std::map<wxString, ValuesType, Data::StringCmpNoCase> m_values;
+        std::map<wxString, std::shared_ptr<Data::Dataset>, Data::wxStringLessNoCase> m_datasets;
+        std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
 
         size_t m_pageNumber{ 1 };

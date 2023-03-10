@@ -28,7 +28,7 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    void PivotedWiderRow::Expand(const std::set<wxString, StringCmpNoCase>& pivotedColumnNames,
+    void PivotedWiderRow::Expand(const std::set<wxString, wxStringLessNoCase>& pivotedColumnNames,
         const double fillValue /*= std::numeric_limits<double>::quiet_NaN()*/)
         {
         for (const auto& pivotedColumnName : pivotedColumnNames)
@@ -111,8 +111,8 @@ namespace Wisteria::Data
 
         wxString currentKey;
         std::vector<std::pair<wxString, CategoricalOrIdDataType>> idColumns;
-        std::map<wxString, double, StringCmpNoCase> pivotedColumns;
-        std::set<wxString, StringCmpNoCase> pivotedColumnNames;
+        std::map<wxString, double, wxStringLessNoCase> pivotedColumns;
+        std::set<wxString, wxStringLessNoCase> pivotedColumnNames;
         for (size_t i = 0; i < dataset->GetRowCount(); ++i)
             {
             currentKey.clear();

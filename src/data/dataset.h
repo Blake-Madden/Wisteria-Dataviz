@@ -69,7 +69,7 @@ namespace Wisteria::Data
 
     /// @brief Helper functor to compare wxStrings case insensitively.
     /// @details This is useful as a predicate for maps and sets.
-    class StringCmpNoCase
+    class wxStringLessNoCase
         {
     public:
         /// @private
