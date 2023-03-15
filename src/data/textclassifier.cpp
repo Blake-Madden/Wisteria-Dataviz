@@ -91,7 +91,7 @@ namespace Wisteria::Data
                 }
             else
                 {
-                wxLogWarning(_(L"'%s': regular expression syntax error for category '%s.'"),
+                wxLogWarning(L"'%s': regular expression syntax error for category '%s.'",
                              reValue,
                              categoryCol->GetLabelFromID(categoryCol->GetValue(i)));
                 }

@@ -125,7 +125,7 @@ namespace Wisteria::Data
                         {
                         // shouldn't happen
                         wxFAIL_MSG(wxString::Format(
-                            _(L"'%s': internal error finding mapped value for category mutation."),
+                            L"'%s': internal error finding mapped value for category mutation.",
                             re.second));
                         throw std::runtime_error(wxString::Format(
                             _(L"'%s': internal error finding mapped value for category mutation."),
@@ -354,7 +354,7 @@ namespace Wisteria::Data
             wxRegEx testRe(currentRegex);
             if (currentRegex.empty() || !testRe.IsValid())
                 {
-                wxLogWarning(_(L"'%s': regular expression syntax error."), currentRegex);
+                wxLogWarning(L"'%s': regular expression syntax error.", currentRegex);
                 continue;
                 }
             reMap.push_back(std::make_pair(
@@ -437,7 +437,7 @@ namespace Wisteria::Data
             break;
             }
         if (!dt.IsValid())
-            { wxLogWarning(_(L"'%s': error parsing date."), input); }
+            { wxLogWarning(L"'%s': error parsing date.", input); }
         return dt;
         }
 
@@ -915,7 +915,7 @@ namespace Wisteria::Data
             wxFile fl(filePath);
             if (!fl.IsOpened() || !fl.ReadAll(&fileText))
                 {
-                throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
+                throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
                                          wxSysErrorMsg(fl.GetLastError())).ToUTF8());
                 }
             }
@@ -1132,7 +1132,7 @@ namespace Wisteria::Data
         wxFile fl(filePath, wxFile::write);
         if (!fl.IsOpened() || !fl.Write(fileContent))
             {
-            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
+            throw std::runtime_error(wxString::FormatL"'%s':\n%s", filePath,
                                      wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         }
@@ -1425,7 +1425,7 @@ namespace Wisteria::Data
         wxFile fl(filePath);
         if (!fl.IsOpened() || !fl.ReadAll(&fileText))
             {
-            throw std::runtime_error(wxString::Format(_(L"'%s':\n%s"), filePath,
+            throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
                                      wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         fileText.Trim(true).Trim(false);

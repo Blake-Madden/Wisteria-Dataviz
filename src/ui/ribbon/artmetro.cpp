@@ -277,7 +277,7 @@ void RibbonMetroArtProvider::DrawHelpButton(wxDC& dc,
     wxRect iconRect(wxRect(rect).Deflate(wnd->FromDIP(4)));
 
     Wisteria::GraphItems::Shape sh(
-        GraphItemInfo(_("?")).Pen(GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR)).
+        GraphItemInfo(L"?").Pen(GetColour(wxRIBBON_ART_TAB_LABEL_COLOUR)).
             DPIScaling(wnd->GetDPIScaleFactor()),
         IconShape::Text,
         iconRect.GetSize());
