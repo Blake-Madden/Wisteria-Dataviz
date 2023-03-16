@@ -1132,7 +1132,7 @@ namespace Wisteria::Data
         wxFile fl(filePath, wxFile::write);
         if (!fl.IsOpened() || !fl.Write(fileContent))
             {
-            throw std::runtime_error(wxString::FormatL"'%s':\n%s", filePath,
+            throw std::runtime_error(wxString::Format(L"'%s':\n%s", filePath,
                                      wxSysErrorMsg(fl.GetLastError())).ToUTF8());
             }
         }
