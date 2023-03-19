@@ -12,7 +12,7 @@
 #ifndef __RTF_ENCODE_H__
 #define __RTF_ENCODE_H__
 
-#include "../util/stringutil.h"
+#include "../i18n-check/src/string_util.h"
 
 namespace lily_of_the_valley
     {

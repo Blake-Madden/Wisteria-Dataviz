@@ -36,7 +36,7 @@
 #endif
 #include "../../base/canvas.h"
 #include "../../math/mathematics.h"
-#include "../../util/donttranslate.h"
+#include "../../i18n-check/src/donttranslate.h"
 #include "../dialogs/gridexportdlg.h"
 #include "../dialogs/listctrlitemviewdlg.h"
 #include "../../util/fileutil.h"

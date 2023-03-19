@@ -14,7 +14,7 @@
 
 #include "groupgraph2d.h"
 #include "../data/jitter.h"
-#include "../util/donttranslate.h"
+#include "../i18n-check/src/donttranslate.h"
 #include "../math/mathematics.h"
 
 namespace Wisteria::Graphs

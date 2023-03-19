@@ -28,8 +28,8 @@
     #include <windows.h>
     #include <shlobj.h>
 #endif
-#include "stringutil.h"
-#include "donttranslate.h"
+#include "../i18n-check/src/string_util.h"
+#include "../i18n-check/src/donttranslate.h"
 
 /// @brief The filepaths that a string may be resolved to.
 enum class FilePathType

@@ -21,7 +21,7 @@
 #include <wx/listctrl.h>
 #include <wx/math.h>
 #include <wx/numformatter.h>
-#include "../../util/stringutil.h"
+#include "../../i18n-check/src/string_util.h"
 #include "../../util/numberformat.h"
 #include "../../base/graphitems.h"
 

@@ -24,7 +24,7 @@
 #include <wx/xrc/xmlres.h>
 #include <wx/html/htmprint.h>
 #include "../../base/canvas.h"
-#include "../../util/donttranslate.h"
+#include "../../i18n-check/src/donttranslate.h"
 
 namespace Wisteria::UI
     {

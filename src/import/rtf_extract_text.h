@@ -19,7 +19,7 @@
 #include <iomanip>
 #include "extract_text.h"
 #include "html_extract_text.h"
-#include "../util/stringutil.h"
+#include "../i18n-check/src/string_util.h"
 
 namespace lily_of_the_valley
     {

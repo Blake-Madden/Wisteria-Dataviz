@@ -14,9 +14,9 @@
 
 #include <exception>
 #include <string_view>
-#include "../util/stringutil.h"
-#include "../util/chartraits.h"
-#include "../util/donttranslate.h"
+#include "../i18n-check/src/string_util.h"
+#include "../i18n-check/src/char_traits.h"
+#include "../i18n-check/src/donttranslate.h"
 #include "../math/safe_math.h"
 
 namespace lily_of_the_valley

@@ -26,7 +26,7 @@
 #include <set>
 #include "dialogwithhelp.h"
 #include "../controls/sidebar.h"
-#include "../../util/stringutil.h"
+#include "../../i18n-check/src/string_util.h"
 #include "../../import/html_encode.h"
 #include "../../import/html_extract_text.h"
 

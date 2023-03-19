@@ -33,7 +33,7 @@
 #include <wx/propgrid/propgrid.h>
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
-#include "../util/donttranslate.h"
+#include "../i18n-check/src/donttranslate.h"
 #include "../debug/debug_profile.h"
 #include "../math/safe_math.h"
 #include "mainframe.h"

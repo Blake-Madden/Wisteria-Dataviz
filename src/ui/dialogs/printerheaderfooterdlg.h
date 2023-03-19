@@ -21,7 +21,7 @@
 #include <wx/regex.h>
 #include <set>
 #include "dialogwithhelp.h"
-#include "../../util/donttranslate.h"
+#include "../../i18n-check/src/donttranslate.h"
 
 namespace Wisteria::UI
     {

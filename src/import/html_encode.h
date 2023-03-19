@@ -12,7 +12,7 @@
 #ifndef __HTML_ENCODE_H__
 #define __HTML_ENCODE_H__
 
-#include "../util/stringutil.h"
+#include "../i18n-check/src/string_util.h"
 #include "html_extract_text.h"
 
 namespace lily_of_the_valley

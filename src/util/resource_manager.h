@@ -25,7 +25,7 @@
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
 #include "memorymappedfile.h"
-#include "donttranslate.h"
+#include "../i18n-check/src/donttranslate.h"
 #include "zipcatalog.h"
 #include "../math/mathematics.h"
 

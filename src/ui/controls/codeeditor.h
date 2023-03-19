@@ -19,7 +19,7 @@
 #include <map>
 #include <set>
 #include <vector>
-#include "../../util/stringutil.h"
+#include "../../i18n-check/src/string_util.h"
 
 /// @brief Namespace for code/formula parsing and editing.
 namespace Wisteria::UI

@@ -21,8 +21,8 @@
 #include <wx/filename.h>
 #include <vector>
 #include "memorymappedfile.h"
-#include "stringutil.h"
-#include "donttranslate.h"
+#include "../i18n-check/src/string_util.h"
+#include "../i18n-check/src/donttranslate.h"
 #include "../utfcpp/source/utf8.h"
 #include "../math/mathematics.h"
 #include "../import/html_extract_text.h"
