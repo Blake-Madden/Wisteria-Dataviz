@@ -13,3 +13,6 @@
 [submodule "src/utfcpp"]
 	path = src/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git
+[submodule "src/i18n-check"]
+	path = src/i18n-check
+	url = https://github.com/Blake-Madden/i18n-check.git
