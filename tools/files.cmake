@@ -50,20 +50,35 @@ SET(WISTERIA_SRC
     src/graphs/table.cpp
     src/graphs/wcurveplot.cpp
     src/graphs/wordcloud.cpp
+    src/i18n-check/src/i18n_string_util.cpp
+    src/import/cpp_extract_text.cpp
+    src/import/docx_extract_text.cpp
     src/import/html_extract_text.cpp
+    src/import/odt_odp_extract_text.cpp
     src/import/postscript_extract_text.cpp
+    src/import/rtf_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/app.cpp
     src/ui/controls/codeeditor.cpp
+    src/ui/controls/htmltablewin.cpp
     src/ui/controls/infobarex.cpp
+    src/ui/controls/listctrlex.cpp
+    src/ui/controls/listctrlexdataprovider.cpp
     src/ui/controls/searchpanel.cpp
     src/ui/controls/sidebar.cpp
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/archivedlg.cpp
+    src/ui/dialogs/edittextdlg.cpp
+    src/ui/dialogs/filelistdlg.cpp
+    src/ui/dialogs/functionbrowserdlg.cpp
     src/ui/dialogs/getdirdlg.cpp
     src/ui/dialogs/gridexportdlg.cpp
+    src/ui/dialogs/htmltablepanel.cpp
     src/ui/dialogs/imageexportdlg.cpp
+    src/ui/dialogs/listctrlitemviewdlg.cpp
+    src/ui/dialogs/listctrlsortdlg.cpp
+    src/ui/dialogs/listdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
@@ -71,6 +86,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/warningmessagesdlg.cpp
     src/ui/mainframe.cpp
     src/ui/ribbon/artmetro.cpp
+    src/util/fileutil.cpp
     src/util/formulaformat.cpp
     src/util/idhelpers.cpp
     src/util/logfile.cpp

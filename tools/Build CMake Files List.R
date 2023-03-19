@@ -10,7 +10,7 @@ buildFileTests <- str_glue('{dirname(rstudioapi::getSourceEditorContext()$path)}
 
 files <- str_glue("src/{list.files(path=srcFolder, pattern='(*[.]cpp|cJSON[.]c)', recursive=TRUE)}")
 # remove test and sample files from submodules
-files <- files[!grepl("(demo.cpp|main.cpp|utfcpp/tests/|utfcpp/samples/)", files)]
+files <- files[!grepl("(demo.cpp|main.cpp|i18n-check/tests/|cpp_i18n_review.cpp|i18n_review.cpp|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|cxxopts)", files)]
 write_file(str_glue("# Automatically generated from 'Build CMake Files List.R'
 # DO NOT MODIFY MANUALLY!
 

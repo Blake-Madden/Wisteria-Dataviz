@@ -5,7 +5,9 @@
 SET(TEST_SRC_FILES
     basetests.cpp
     comparedoublestests.cpp
+    cppparsetests.cpp
     datatests.cpp
+    docxparsetests.cpp
     evenoddtests.cpp
     geometrytests.cpp
     hhcimporttests.cpp
@@ -16,18 +18,20 @@ SET(TEST_SRC_FILES
     labeltests.cpp
     listctrlextests.cpp
     mapstests.cpp
+    odtparsetests.cpp
     postscriptimporttests.cpp
+    pptxparsetests.cpp
     roundtest.cpp
     rtfencodetests.cpp
     rtfparsetests.cpp
     safemathtests.cpp
     sidebartests.cpp
     statstests.cpp
-    stringutiltests.cpp
     subsettests.cpp
     tagfiltertests.cpp
     testableframe.cpp
     testingmain.cpp
+    textextracttests.cpp
     textimporttests.cpp
     textstreamtests.cpp
     truncatetests.cpp
