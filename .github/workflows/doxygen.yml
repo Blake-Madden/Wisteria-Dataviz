@@ -1,0 +1,17 @@
+name: doxygen
+on: [push]
+
+jobs:
+  build:
+    name: doxygen-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: install doxygen
+        run: |
+             sudo apt install doxygen
+
+      - name: run doxygen
+        run: |
+             doxygen docs/doxygen/Doxyfile
