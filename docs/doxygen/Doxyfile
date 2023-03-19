@@ -970,6 +970,7 @@ EXCLUDE                = ../../src/easyexif \
                          doxygen-awesome-css \
                          ../../CMakeLists.txt \
                          ../../build \
+                         ../../src/i18n-check \
                          ../../src/wxSimpleJSON \
                          ../../src/CRCpp \
                          ../../src/utfcpp
