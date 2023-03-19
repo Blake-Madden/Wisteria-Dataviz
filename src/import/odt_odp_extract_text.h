@@ -39,7 +39,7 @@ namespace lily_of_the_valley
     public:
         odt_odp_extract_text() noexcept : m_preserve_text_table_layout(false) {}
         /** @brief Specifies how to import tables.
-            @param preserve Set to #c true to not import text cells as separate paragraphs,
+            @param preserve Set to @c true to not import text cells as separate paragraphs,
                 but instead as cells of text with tabs between them.
                 Set to @c false to simply import each cell as a separate paragraph,
                 the tabbed structure of the rows will be lost.*/
