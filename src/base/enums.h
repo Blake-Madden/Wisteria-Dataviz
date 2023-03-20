@@ -453,6 +453,34 @@ namespace Wisteria
         /// @brief Don't rescale the item.
         NoResize
         };
+
+    /// @brief How to display a table cell's content.
+    enum class TableCellFormat
+        {
+        /// @brief Displays a number generically.
+        General,
+        /// @brief Displays a value such as @c 0.25 as @c 25%.
+        Percent,
+        /// @brief Displays a value such as @c 0.25 as @c 25%,
+        ///     but with up or down arrow next to it if positive
+        ///     or negative (respectively).
+        PercentChange,
+        /// @brief Displays numbers in accounting format.
+        /// @details For example, a negative value would appear as `$    (5,000.00)`.
+        Accounting
+        };
+
+    /// @brief How to aggregate a row or column in a table.
+    enum class AggregateType
+        {
+        /// @brief Sums a series of values.
+        Total,
+        /// @brief Calculates the change from one value to another (as a percentage).
+        ChangePercent,
+        /// @brief Calculates the ratio between two values
+        ///     (ratios will be rounded to integers if the cell's precision is zero).
+        Ratio
+        };
     }
 
 /** @}*/

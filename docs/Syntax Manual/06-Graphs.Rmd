@@ -278,7 +278,7 @@ Properties for row or column table positions:
      For example, if `origin` is `"last-row"`: and `"offset"` is `-1`, then this will
      result in the second-to-last row.
 
-A position can also be a number if not needing to use the `"origin"`/`"offset"` features.
+A position can also be a number or string (e.g., `"last-row"`) if not needing to use the `"origin"`/`"offset"` features.
 
 # Base-level Graphs
 
@@ -761,6 +761,21 @@ The remaining properties are executed in the following order:
     - `"right-aligned"`
     - `"centered"`
   - `"stops"`: an array of which columns to skip over when changing the column's content alignment.<br />
+       This is an array of `"position"` items.
+- `"column-formatting"`: an array of column and formatting pairs, which contain the following properties:
+  - `"position"`: which column to reformat.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"start"`: if reformatting a range of columns, this is the starting column.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"end"`: if reformatting a range of columns, this is the end column.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"format"`: the formatting for the column.
+    Available options are:
+    - `"accounting"`
+    - `"general"`
+    - `"percent"`
+    - `"percent-changed"`
+  - `"stops"`: an array of which rows to skip over when changing the column's formatting<br />
        This is an array of `"position"` items.
 - `"column-color"`: an array of column and color pairs, which contain the following properties:
   - `"position"`: which column to apply a background color.<br />

@@ -14,22 +14,28 @@ using namespace Wisteria::Colors;
 namespace Wisteria::Graphs
     {
     //----------------------------------------------------------------
-    void Table::TableCell::SetFormat(const CellFormat cellFormat) noexcept
+    void Table::TableCell::SetFormat(const TableCellFormat cellFormat) noexcept
         {
         m_valueFormat = cellFormat;
-        if (m_valueFormat == CellFormat::General)
+        if (m_valueFormat == TableCellFormat::General)
             {
             m_precision = 0;
             m_prefix.clear();
             m_horizontalCellAlignment = std::nullopt;
             }
-        else if (m_valueFormat == CellFormat::Percent)
+        else if (m_valueFormat == TableCellFormat::Percent)
+            {
+            m_precision = 0;
+            m_prefix.clear();
+            m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
+            }
+        else if (m_valueFormat == TableCellFormat::PercentChange)
             {
             m_precision = 0;
             m_prefix = L"\x25B2"; // up arrow
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
-        else if (m_valueFormat == CellFormat::Accounting)
+        else if (m_valueFormat == TableCellFormat::Accounting)
             {
             m_precision = 2;
             m_prefix = L"$";
@@ -48,18 +54,19 @@ namespace Wisteria::Graphs
             {
             if (std::isnan(*dVal))
                 { return wxEmptyString; }
-            else if (m_valueFormat == CellFormat::Percent)
+            else if (m_valueFormat == TableCellFormat::Percent ||
+                m_valueFormat == TableCellFormat::PercentChange)
                 {
                 return wxNumberFormatter::ToString((*dVal)*100, m_precision,
                     wxNumberFormatter::Style::Style_WithThousandsSep) + L"%";
                 }
-            else if (m_valueFormat == CellFormat::Accounting)
+            else if (m_valueFormat == TableCellFormat::Accounting)
                 {
                 return
-                    ((*dVal < 0) ? L"(" : L"") +
+                    ((*dVal < 0) ? L"(" : wxString{}) +
                     wxNumberFormatter::ToString(*dVal, m_precision,
                         wxNumberFormatter::Style::Style_WithThousandsSep) +
-                    ((*dVal < 0) ? L")" : L"");
+                    ((*dVal < 0) ? L")" : wxString{});
                 }
             else
                 {
@@ -321,7 +328,7 @@ namespace Wisteria::Graphs
                 else
                     {
                     aggCell.m_value = safe_divide(newValue - oldValue, oldValue);
-                    aggCell.SetFormat(CellFormat::Percent);
+                    aggCell.SetFormat(TableCellFormat::PercentChange);
                     aggCell.m_colorCodePrefix = true;
                     }
                 }
@@ -357,7 +364,7 @@ namespace Wisteria::Graphs
                 // first two column appear to be grouping labels
                 GetCell(0, 0).IsText() && GetCell(0, 1).IsText())
                 {
-                InsertAggregateRow(Table::AggregateInfo(Table::AggregateType::Total),
+                InsertAggregateRow(Table::AggregateInfo(AggregateType::Total),
                     _(L"Grand Total"), std::nullopt, bkColor);
                 for (auto rowIter = indexAndRowCounts.crbegin();
                      rowIter != indexAndRowCounts.crend();
@@ -365,7 +372,7 @@ namespace Wisteria::Graphs
                     {
                     const auto lastSubgroupRow{ rowIter->first + rowIter->second - 1 };
                     InsertAggregateRow(
-                        Table::AggregateInfo(Table::AggregateType::Total).
+                        Table::AggregateInfo(AggregateType::Total).
                             FirstCell(rowIter->first).LastCell(lastSubgroupRow),
                         std::nullopt, rowIter->first + rowIter->second, bkColor);
                     // make parent group consume first cell of subtotal row
@@ -376,7 +383,7 @@ namespace Wisteria::Graphs
             // no groups, so just add an overall total row at the bottom
             else
                 {
-                InsertAggregateRow(Table::AggregateInfo(Table::AggregateType::Total),
+                InsertAggregateRow(Table::AggregateInfo(AggregateType::Total),
                                    _(L"Total"), std::nullopt, bkColor);
                 }
             }
@@ -622,7 +629,7 @@ namespace Wisteria::Graphs
                     for (size_t clearCounter = startingCounter + 1;
                         clearCounter < (startingCounter + 1) + (i - startingCounter);
                         ++clearCounter)
-                        { currentRow[clearCounter].SetValue(L""); }
+                        { currentRow[clearCounter].SetValue(wxString{}); }
                     }
                 else
                     { ++i; }
@@ -650,7 +657,7 @@ namespace Wisteria::Graphs
                     for (size_t clearCounter = startingCounter + 1;
                         clearCounter < (startingCounter + 1) + (i - startingCounter);
                         ++clearCounter)
-                        { m_table[clearCounter][column].SetValue(L""); }
+                        { m_table[clearCounter][column].SetValue(wxString{}); }
                     }
                 else
                     { ++i; }
@@ -1075,8 +1082,8 @@ namespace Wisteria::Graphs
                     (cell.m_horizontalCellAlignment == PageHorizontalAlignment::RightAligned ||
                      cell.m_horizontalCellAlignment == PageHorizontalAlignment::Centered ||
                      cell.m_colorCodePrefix ||
-                     cell.m_valueFormat == CellFormat::Percent ||
-                     cell.m_valueFormat == CellFormat::Accounting);
+                     cell.m_valueFormat == TableCellFormat::PercentChange ||
+                     cell.m_valueFormat == TableCellFormat::Accounting);
 
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_shared<Label>(
@@ -1132,7 +1139,7 @@ namespace Wisteria::Graphs
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (cell.GetPrefix().length() && isPrefixSeparateLabel)
                     {
-                    const wxString prefix = (cell.m_valueFormat == CellFormat::Percent) ?
+                    const wxString prefix = (cell.m_valueFormat == TableCellFormat::PercentChange) ?
                         // down and up arrow emojis
                         wxString(cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
                         cell.GetPrefix();

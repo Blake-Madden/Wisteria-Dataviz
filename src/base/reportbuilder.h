@@ -379,6 +379,9 @@ namespace Wisteria
         /// @brief Converts a string value to a @c wxBrushStyle enum value.
         [[nodiscard]] static std::optional<wxBrushStyle>
             ConvertBrushStyle(const wxString& value);
+        /// @brief Converts a string value to a @c TableCellFormat enum value.
+        [[nodiscard]] static std::optional<TableCellFormat>
+            ConvertTableCellFormat(const wxString& value);
         /// @brief Converts a string value to a @c DateInterval enum value.
         [[nodiscard]] static std::optional<DateInterval>
             ConvertDateInterval(const wxString& value);

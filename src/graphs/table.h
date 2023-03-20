@@ -146,7 +146,7 @@ namespace Wisteria::Graphs
          const wxColour aggColumnBkColor =
             ColorBrewer::GetColor(Colors::Color::LightGray,
                                   Settings::GetTranslucencyValue());
-         tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
+         tableGraph->InsertAggregateColumn(Table::AggregateInfo(AggregateType::Ratio),
                                           _(L"Ratio"), std::nullopt, aggColumnBkColor);
          tableGraph->InsertRowTotals(aggColumnBkColor);
 
@@ -194,18 +194,6 @@ namespace Wisteria::Graphs
     class Table final : public Graph2D
         {
     public:
-        /// @brief How to aggregate a row or column.
-        enum class AggregateType
-            {
-            /// @brief Sums a series of values.
-            Total,
-            /// @brief Calculates the change from one value to another (as a percentage).
-            ChangePercent,
-            /// @brief Calculates the ratio between two values
-            ///     (ratios will be rounded to integers if the cell's precision is zero).
-            Ratio
-            };
-
         /// @brief Information about how to build an aggregate column/row.
         struct AggregateInfo
             {
@@ -245,18 +233,6 @@ namespace Wisteria::Graphs
             AggregateType m_type{ AggregateType::Total };
             std::optional<size_t> m_cell1;
             std::optional<size_t> m_cell2;
-            };
-
-        /// @brief How to display a cell's content.
-        enum class CellFormat
-            {
-            /// @brief Displays a number generically.
-            General,
-            /// @brief Displays a value such as @c 0.25 as @c 25%.
-            Percent,
-            /// @brief Displays numbers in accounting format.
-            /// @details For example, a negative value would appear as `$    (5,000.00)`.
-            Accounting
             };
 
         /// @brief Types of values that can be used for a cell.
@@ -422,7 +398,7 @@ namespace Wisteria::Graphs
 
             /// @brief Sets the display format of the cell.
             /// @param cellFormat The format settings to apply.
-            void SetFormat(const CellFormat cellFormat) noexcept;
+            void SetFormat(const TableCellFormat cellFormat) noexcept;
         private:
             /// @brief Returns a double value representing the cell.
             /// @details This is useful for comparing cells (or aggregating them).
@@ -457,7 +433,7 @@ namespace Wisteria::Graphs
                 }
 
             CellValueType m_value{ std::numeric_limits<double>::quiet_NaN() };
-            CellFormat m_valueFormat{ CellFormat::General };
+            TableCellFormat m_valueFormat{ TableCellFormat::General };
             uint8_t m_precision{ 0 };
             wxColour m_bgColor{ *wxWHITE };
             wxFont m_font{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
@@ -974,6 +950,48 @@ namespace Wisteria::Graphs
                         { continue; }
                     auto& cell = m_table[i][column];
                     cell.SetPageHorizontalAlignment(alignment);
+                    }
+                }
+            }
+
+        /** @brief Sets the specified row's cells' display format.
+            @param row The row to edit.
+            @param format The display format to apply.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void SetRowFormat(const size_t row,
+            const TableCellFormat format,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
+            {
+            if (row < GetRowCount())
+                {
+                auto& currentRow = m_table[row];
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.SetFormat(format);
+                    }
+                }
+            }
+        /** @brief Sets the specified column's cells' display format.
+            @param column The column to edit.
+            @param format The display format to apply.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void SetColumnFormat(const size_t column,
+            const TableCellFormat format,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
+            {
+            if (GetColumnCount() > 0 && column < GetColumnCount())
+                {
+                for (size_t i = 0; i < m_table.size(); ++i)
+                    {
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.SetFormat(format);
                     }
                 }
             }

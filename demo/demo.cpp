@@ -1761,7 +1761,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         tableGraph->GroupColumn(0);
 
         // add ratio aggregate column and group row totals
-        tableGraph->InsertAggregateColumn(Table::AggregateInfo(Table::AggregateType::Ratio),
+        tableGraph->InsertAggregateColumn(Table::AggregateInfo(AggregateType::Ratio),
                                           _(L"Ratio"), std::nullopt);
         tableGraph->InsertRowTotals();
 

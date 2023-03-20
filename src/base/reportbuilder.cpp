@@ -526,6 +526,23 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::optional<TableCellFormat> ReportBuilder::ConvertTableCellFormat(const wxString& value)
+        {
+        static const std::map<std::wstring, TableCellFormat> formatValues =
+            {
+            { L"accounting", TableCellFormat::Accounting },
+            { L"general", TableCellFormat::General },
+            { L"percent", TableCellFormat::Percent },
+            { L"percent-changed", TableCellFormat::PercentChange }
+            };
+
+        const auto foundValue = formatValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != formatValues.cend()) ?
+            std::optional<TableCellFormat>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
     std::optional<FiscalYear> ReportBuilder::ConvertFiscalYear(const wxString& value)
         {
         static const std::map<std::wstring, FiscalYear> fyValues =
@@ -3783,6 +3800,42 @@ namespace Wisteria
                 }
             }
 
+        // change columns' cell formatting
+        const auto columnFormattingCommands =
+            graphNode->GetProperty(L"column-formatting")->GetValueArrayObject();
+        if (columnFormattingCommands.size())
+            {
+            for (const auto& columnFormattingCommand : columnFormattingCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(columnFormattingCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> startPosition =
+                    LoadTablePosition(columnFormattingCommand->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> endPosition =
+                    LoadTablePosition(columnFormattingCommand->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount, table);
+                const auto formatValue =
+                    ConvertTableCellFormat(columnFormattingCommand->GetProperty(L"format")->GetValueString());
+
+                const std::set<size_t> rowStops =
+                    loadStops(columnFormattingCommand->GetProperty(L"stops"));
+                if (formatValue.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        { table->SetColumnFormat(position.value(), formatValue.value(), rowStops); }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            { table->SetColumnFormat(i, formatValue.value(), rowStops); }
+                        }
+                    }
+                }
+            }
+
         // color the columns
         const auto colColorCommands = graphNode->GetProperty(L"column-color")->GetValueArrayObject();
         if (colColorCommands.size())
@@ -3941,11 +3994,11 @@ namespace Wisteria
                     { aggInfo.LastCell(endingColumn.value()); }
 
                 if (aggType.CmpNoCase(L"percent-change") == 0)
-                    { aggInfo.Type(Table::AggregateType::ChangePercent); }
+                    { aggInfo.Type(AggregateType::ChangePercent); }
                 else if (aggType.CmpNoCase(L"total") == 0)
-                    { aggInfo.Type(Table::AggregateType::Total); }
+                    { aggInfo.Type(AggregateType::Total); }
                 else if (aggType.CmpNoCase(L"ratio") == 0)
-                    { aggInfo.Type(Table::AggregateType::Ratio); }
+                    { aggInfo.Type(AggregateType::Ratio); }
                 // invalid agg column type
                 else
                     { continue; }
@@ -4301,29 +4354,35 @@ namespace Wisteria
         {
         if (!positionNode->IsOk())
             { return std::nullopt; }
+
         std::optional<size_t> position;
+
+        const auto loadStringToPosition = [&](const auto& originStr)
+            {
+            if (originStr.CmpNoCase(L"last-column") == 0)
+                { position = columnCount-1; }
+            else if (originStr.CmpNoCase(L"last-row") == 0)
+                { position = columnRow-1; }
+            else if (const auto colPos = (table ? table->FindColumnIndex(originStr) : std::nullopt);
+                        colPos.has_value())
+                { position = colPos; }
+            else
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: unknown table position origin value."), originStr).ToUTF8());
+                }
+            };
+        
         const auto origin = positionNode->GetProperty(L"origin");
         if (origin->IsOk())
             {
             if (origin->IsValueString())
-                {
-                const auto originStr{ origin->GetValueString() };
-                if (originStr.CmpNoCase(L"last-column") == 0)
-                    { position = columnCount-1; }
-                else if (originStr.CmpNoCase(L"last-row") == 0)
-                    { position = columnRow-1; }
-                else if (const auto colPos = (table ? table->FindColumnIndex(originStr) : std::nullopt);
-                         colPos.has_value())
-                    { return colPos; }
-                else
-                    {
-                    throw std::runtime_error(
-                        wxString::Format(_(L"%s: unknown table position origin value."), originStr).ToUTF8());
-                    }
-                }
+                { loadStringToPosition(origin->GetValueString()); }
             else if (origin->IsValueNumber())
                 { position = origin->GetValueNumber(); }
             }
+        else if (positionNode->IsValueString())
+                { loadStringToPosition(positionNode->GetValueString()); }
         else if (positionNode->IsValueNumber())
             { position = positionNode->GetValueNumber(); }
         std::optional<double> doubleStartOffset =
