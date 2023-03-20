@@ -273,10 +273,10 @@ namespace lily_of_the_valley
         m_rtf_text(nullptr), m_paragraphCount(0), m_font_size(12),
         m_keyword_command_table(nullptr), m_in_bullet_state(false)
         {
-        std::memset(&m_chp, 0, sizeof(char_prop));
-        std::memset(&m_pap, 0, sizeof(para_prop));
-        std::memset(&m_sep, 0, sizeof(SEP));
-        std::memset(&m_dop, 0, sizeof(DOP));
+        reset_property(m_chp);
+        reset_property(m_pap);
+        reset_property(m_sep);
+        reset_property(m_dop);
         if (extraction_type == rtf_extraction_type::rtf_to_text)
             { m_keyword_command_table = &RTF_TO_TEXT_TABLE; }
         else
@@ -603,7 +603,7 @@ namespace lily_of_the_valley
     void rtf_extract_text::ecPushRtfState()
         {
         SAVE* psaveNew = new SAVE;
-        std::memset(psaveNew, 0, sizeof(SAVE));
+        reset_property(*psaveNew);
 
         psaveNew->pNext = m_psave;
         psaveNew->chp = m_chp;

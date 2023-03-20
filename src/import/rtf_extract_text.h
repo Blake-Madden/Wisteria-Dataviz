@@ -128,6 +128,46 @@ namespace lily_of_the_valley
     enum class KWD{ kwdChar, kwdDest, kwdProp, kwdSpec, kwdString, kwdHighlight, kwdBold,
                     kwdFontColor, kwdStrikeThrough, kwdItalic, kwdUnderline, kwdSectionSkip };
 
+    /// @private
+    void reset_property(para_prop& prop)
+        {
+        prop.xaLeft = prop.xaRight = prop.xaFirst = 0;
+        prop.just = JUST::justL;
+        }
+    
+    /// @private
+    void reset_property(char_prop& prop)
+        {
+        prop.fBold = prop.fItalic = prop.fStrikeThrough = prop.fUnderline = 0;
+        }
+    
+    /// @private
+    void reset_property(SEP& prop)
+        {
+        prop.cCols = prop.xaPgn = prop.yaPgn = 0;
+        prop.sbk = SBK::sbkNon;
+        prop.pgnFormat = PGN::pgDec;
+        }
+    /// @private
+    void reset_property(DOP& prop)
+        {
+        prop.fFacingp = prop.fLandscape = prop.pgnStart = prop.xaLeft =
+        prop.xaPage = prop.xaRight = prop.yaBottom = prop.yaPage =
+        prop.yaTop = 0;
+        }
+    
+    /// @private
+    void reset_property(SAVE& prop)
+        {
+        prop.pNext = nullptr;
+        reset_property(prop.chp);
+        reset_property(prop.pap);
+        reset_property(prop.sep);
+        reset_property(prop.dop);
+        prop.rds = RDS::rdsNorm;
+        prop.ris = RIS::risNorm ;
+        }
+
     // RTF command/value structure.
     /// @private
     struct rtf_symbol
@@ -357,13 +397,13 @@ namespace lily_of_the_valley
             switch (iprop)
                 {
             case IPROP::ipropPard:
-                memset(&m_pap, 0, sizeof(m_pap));
+                reset_property(m_pap);
                 break;
             case IPROP::ipropPlain:
-                memset(&m_chp, 0, sizeof(m_chp));
+                reset_property(m_chp);
                 break;
             case IPROP::ipropSectd:
-                memset(&m_sep, 0, sizeof(m_sep));
+                reset_property(m_sep);
                 break;
             default:
                 throw rtfparse_bad_table();
