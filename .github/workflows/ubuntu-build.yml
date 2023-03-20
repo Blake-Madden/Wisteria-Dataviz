@@ -24,7 +24,6 @@ jobs:
              sudo ldconfig
              cd ..
              cd ..
-             cd Wisteria-Dataviz
              cmake ./
              make -j4
              
