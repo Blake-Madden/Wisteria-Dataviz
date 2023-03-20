@@ -148,6 +148,7 @@ namespace lily_of_the_valley
         prop.sbk = SBK::sbkNon;
         prop.pgnFormat = PGN::pgDec;
         }
+
     /// @private
     void reset_property(DOP& prop)
         {
