@@ -1,0 +1,28 @@
+name: ubuntu build
+on: [push]
+
+jobs:
+  build:
+    name: ubuntu-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      
+      - name: install tools
+        run: |
+             sudo apt install cmake
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets
+             mkdir buildgtk
+             cd buildgtk
+             ../configure --with-gtk
+             make
+             sudo make install
+             sudo ldconfig
+             cd ..
+             cd ..
+             cd Wisteria-Dataviz
+             cmake ./
+             make
