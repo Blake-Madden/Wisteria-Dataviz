@@ -210,7 +210,7 @@ namespace Wisteria
 
     //------------------------------------------------
     bool TextStream::ReadFile(wxString& filePath, wxString& textBuffer,
-                             const wxString& srcCharSet /*= wxEmptyString*/)
+                              const wxString& srcCharSet /*= wxEmptyString*/)
         {
         while (true)
             {

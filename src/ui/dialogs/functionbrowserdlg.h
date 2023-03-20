@@ -172,7 +172,7 @@ private:
 
     struct CategoryInfo
         {
-        CategoryInfo(const std::wstring& name) : m_name(name)
+        explicit CategoryInfo(const std::wstring& name) : m_name(name)
             {}
         CategoryInfo(const std::wstring& name,
                      const NameList& functions,

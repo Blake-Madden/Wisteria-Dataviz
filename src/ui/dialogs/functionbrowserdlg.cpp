@@ -63,7 +63,7 @@ void FunctionBrowserDlg::OnListSelected(wxCommandEvent& event)
     wxWindowUpdateLocker noUpdates(this);
     if (event.GetId() == ID_CATEGORY_LIST)
         {
-        auto pos = m_functionCollection.find(event.GetString().ToStdWstring());
+        auto pos = m_functionCollection.find(CategoryInfo(event.GetString().ToStdWstring()));
         if (pos != m_functionCollection.cend())
             {
             wxArrayString funcNames;
@@ -115,7 +115,8 @@ void FunctionBrowserDlg::OnListSelected(wxCommandEvent& event)
         else
             {
             // keep track of the currently selected item in the function list
-            auto pos = m_functionCollection.find(m_categoryList->GetSelectedLabel().ToStdWstring());
+            auto pos =
+                m_functionCollection.find(CategoryInfo(m_categoryList->GetSelectedLabel().ToStdWstring()));
             if (pos != m_functionCollection.end())
                 {
                 auto nh = m_functionCollection.extract(pos);

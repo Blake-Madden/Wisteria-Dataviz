@@ -79,10 +79,10 @@ namespace Wisteria
                 used when possible client interaction is not expected.
             @param[in,out] filePath The file path to read. This may be altered if the original
                 path didn't exist and the client is prompted to enter a new one.
-            @param[out] fileText The buffer to write the file's content to.
+            @param[out] textBuffer The buffer to write the file's content to.
             @param srcCharSet The (optional) character set to convert the file from.
             @returns @c true if the file was read successfully.*/
-        static bool ReadFile(wxString& filePath, wxString& fileText,
+        static bool ReadFile(wxString& filePath, wxString& textBuffer,
                              const wxString& srcCharSet = wxEmptyString);
         };
     }

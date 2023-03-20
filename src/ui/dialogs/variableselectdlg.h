@@ -134,7 +134,7 @@ namespace Wisteria::UI
         /// @brief Moves the selected variables in one list to another.
         /// @param list The list to move items from.
         /// @param otherList The sub list to move the variables into.
-        static void MoveSelectedVariablesBetweenLists(wxListView* list, wxListView* othotherListerlist);
+        static void MoveSelectedVariablesBetweenLists(wxListView* list, wxListView* otherList);
         /// @returns the list of variables selected a list.
         /// @param list The list to get the selected items from.
         /// @returns A vector of the selected strings.
