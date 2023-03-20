@@ -77,7 +77,7 @@ namespace Wisteria::Graphs
         for (const auto& [labelID, freqAndCount] : groups.get_data())
             {
             m_words.push_back(
-                WordInfo{ wordColumn->GetLabelFromID(labelID).c_str(),
+                WordInfo{ wordColumn->GetLabelFromID(labelID).ToStdWstring(),
                           freqAndCount.second });
             }
         std::sort(m_words.begin(), m_words.end(),
@@ -212,8 +212,6 @@ namespace Wisteria::Graphs
                 GraphItemInfo().Pen(*wxBLUE), polygon));
             }
 
-        auto polyBoundingBox{ Polygon::GetPolygonBoundingBox(polygon) };
-
         std::vector<wxRect> drawnRects;
 
         // random positioning lambda for the last label in the list
@@ -282,6 +280,8 @@ namespace Wisteria::Graphs
             else
                 { return false; }
             };
+
+        auto polyBoundingBox{ Polygon::GetPolygonBoundingBox(polygon) };
 
         std::uniform_int_distribution<> xPosDistro(polyBoundingBox.GetLeft(),
                                                    polyBoundingBox.GetLeft() + polyBoundingBox.GetWidth());
