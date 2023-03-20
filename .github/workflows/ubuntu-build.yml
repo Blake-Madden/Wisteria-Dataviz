@@ -19,11 +19,32 @@ jobs:
              mkdir buildgtk
              cd buildgtk
              ../configure --with-gtk
-             make
+             make -j4
              sudo make install
              sudo ldconfig
              cd ..
              cd ..
              cd Wisteria-Dataviz
              cmake ./
-             make
+             make -j4
+             
+      - name: build & run tests
+        run: |
+             cd ..
+             git clone https://github.com/catchorg/Catch2.git
+             cd Wisteria-Dataviz/tests
+             cmake ./
+             make -j4
+             cd bin
+             ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
+             cat WDV-junit.xml
+             errors=$(cat WDV-junit.xml | grep -Po '(errors)="\K[^"]*')
+             failures=$(cat WDV-junit.xml | grep -Po '(failures)="\K[^"]*')
+             echo "Error count is: ${errors}"
+             echo "Failure count is: ${failures}"
+             if [ "$errors" -gt 0 ]; then
+               exit 1
+             fi
+             if [ "$failures" -gt 0 ]; then
+               exit 1
+             fi
