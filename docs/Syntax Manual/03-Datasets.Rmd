@@ -57,7 +57,7 @@ Properties for the `"datasets"` node:
        a categorical column and fill it with values based on another categorical column. This will use a map of
        regular expression patterns and corresponding replacements, where each value in the source column is compared
        against the regex patterns. When the first match is encounted, then the corresponding replacement will then
-       be applied to the target column.\n
+       be applied to the target column.<br />
        Each set of commands contains the following properties:
     - `"source-column"`: the source categorical column to review.
     - `"target-column"`: the categorical column being mutated. (If it doesn't exist, then it will be added.)
@@ -120,7 +120,7 @@ Properties for the `"datasets"` node:
       - `groupColum`: the group column.
       - `groupId`: the group ID to count.
   
-  Note that formula arguments can either be a string (wrapped in a pair of \`) or an embedded formula
+  Note that formula arguments can either be a string (wrapped in a pair of `\`) or an embedded formula
   (which must be wrapped in a set of `{{`: and `}}`).<br />
   For example, the group ID can be a formula getting the highest label from the grouping column:<br />
 
@@ -203,7 +203,7 @@ Properties for the `"datasets"` node:
   - `"names-from-column"`: a strings representing the 'names from'.
   - `"values-from-columns"`: an array of strings representing the 'values from' columns.
   - `"names-separator"`: if multiple value columns are provided, then this separator will
-       join the label from `namesFromColumn` and the value column name.
+       join the label from `names-from-column` and the value column name.
   - `"names-prefix"`: string to prepend to newly created pivot columns.
   - `"fill-value"`: numeric value to assign to missing data. The default it so leave it as missing data.
 
