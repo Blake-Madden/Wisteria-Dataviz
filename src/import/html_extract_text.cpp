@@ -468,10 +468,10 @@ namespace lily_of_the_valley
                 charsetFound = true;
                 }
             }
-        if (charsetFound)
+        if (start && charsetFound)
             {
             // chop off any quotes and trailing whitespace
-            while (start && start < nextAngle)
+            while (start < nextAngle)
                 {
                 if (start[0] == L' ' || start[0] == '\'')
                     { ++start; }
@@ -479,9 +479,10 @@ namespace lily_of_the_valley
                     { break; }
                 }
             const char* charsetEnd = start;
-            while (charsetEnd && charsetEnd < nextAngle)
+            while (charsetEnd < nextAngle)
                 {
-                if (charsetEnd[0] != L' ' && charsetEnd[0] != '\'' && charsetEnd[0] != '\"' && charsetEnd[0] != '/' && charsetEnd[0] != '>')
+                if (charsetEnd[0] != L' ' && charsetEnd[0] != '\'' &&
+                    charsetEnd[0] != '\"' && charsetEnd[0] != '/' && charsetEnd[0] != '>')
                     { ++charsetEnd; }
                 else
                     { break; }
@@ -1091,7 +1092,8 @@ namespace lily_of_the_valley
             start = std::wcschr(end, L'<');
             if (!start || start >= endSentinel)
                 { break; }
-            const size_t previousLength = get_filtered_text_length();
+            // cache length before reparsing
+            const auto previousLength = get_filtered_text_length();
             // copy over the text between the tags
             parse_raw_text(end, start-end);
             /* Old HTML (or HTML generated from embarrassingly hackneyed WYSIWYG editors) uses the "Symbol" font
@@ -1100,6 +1102,7 @@ namespace lily_of_the_valley
                it to the expected symbol.*/
             if (isSymbolFontSection)
                 {
+                // cppcheck-suppress duplicateExpression
                 const std::wstring copiedOverText =
                     convert_symbol_font_section(std::wstring_view(get_filtered_text() + previousLength,
                                                                   get_filtered_text_length() - previousLength) );
@@ -1482,6 +1485,7 @@ namespace html_utilities
     symbol_font_table::symbol_font_table()
         {
         // Greek alphabet
+        // cppcheck-suppress useInitializationList
         m_symbol_table =
             {
             std::make_pair(static_cast<wchar_t>(L'A'), static_cast<wchar_t>(913)), // uppercase Alpha
@@ -1633,6 +1637,7 @@ namespace html_utilities
     //------------------------------------------------------------------
     html_entity_table::html_entity_table()
         {
+        // cppcheck-suppress useInitializationList
         m_table =
             {
             std::make_pair(std::wstring(L"apos"), static_cast<wchar_t>(L'\'')), // not standard, but common

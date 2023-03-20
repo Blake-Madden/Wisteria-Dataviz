@@ -282,7 +282,7 @@ namespace lily_of_the_valley
                 {
                 const wchar_t* currentStyleEnd =
                     find_closing_element(currentStyleStart, textEnd, L"style:style", 11);
-                if (currentStyleStart && currentStyleEnd && (currentStyleStart < currentStyleEnd))
+                if (currentStyleEnd && (currentStyleStart < currentStyleEnd))
                     {
                     // read in the name of the current style
                     const std::wstring styleName = read_attribute_as_string(currentStyleStart,
