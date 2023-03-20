@@ -84,7 +84,7 @@ namespace lily_of_the_valley
             if (!siElement)
                 {
                 m_html_text += 3; // step over bad "<si" element
-                return std::make_pair(true, L"");
+                return std::make_pair(true, std::wstring{});
                 }
             m_html_text = siElement+1;
             const wchar_t* const endTag = html_extract_text::find_closing_element(m_html_text, m_html_text_end, L"si", 2);
@@ -128,24 +128,27 @@ namespace lily_of_the_valley
         {
         const auto cinfo = get_column_and_row_info(cellNname);
         if (cinfo.second < 1 || cinfo.second > workSheet.size())
-            { return L""; }
+            { return std::wstring{}; }
         const worksheet_row& currentRow = workSheet[cinfo.second-1];
         // out-of-range column index? Do a search for the cell by name.
         if (cinfo.first.m_position < 1 || cinfo.first.m_position > currentRow.size())
             {
-            const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
+            const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(),
+                                                  worksheet_cell(cellNname));
             return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
-                cellPos->get_value() : L"";
+                cellPos->get_value() : std::wstring{};
             }
         if (currentRow.operator[](cinfo.first.m_position-1).get_name() == cellNname)
             { return currentRow.operator[](cinfo.first.m_position-1).get_value(); }
-        // If item at given index doesn't match by name, then there must have been missing cells in the
-        // file (and no dimension info), so our matrix is sparse. So brute force search for the cell by name.
+        // If item at given index doesn't match by name, then there must have been
+        // missing cells in the file (and no dimension info), so our matrix is sparse.
+        // So brute force search for the cell by name.
         else
             {
-            const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(), worksheet_cell(cellNname));
-            return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
-                cellPos->get_value() : L"";
+            const auto cellPos = std::lower_bound(currentRow.cbegin(), currentRow.cend(),
+                                                  worksheet_cell(cellNname));
+            return (cellPos != currentRow.cend() && cellPos->get_name() == cellNname) ?
+                cellPos->get_value() : std::wstring{};
             }
         }
 
@@ -170,7 +173,7 @@ namespace lily_of_the_valley
                         html_extract_text::find_closing_element(worksheet_text, worksheetEnd, L"c", 1);
                     // found the cell, but its cell ending tag is missing? return empty.
                     if (!cellEnd)
-                        { return L""; }
+                        { return std::wstring{}; }
                     const wchar_t* value =
                         html_extract_text::find_element(worksheet_text, cellEnd, L"v", 1);
                     if (value && (value = html_extract_text::find_close_tag(value)) != nullptr)
@@ -187,18 +190,18 @@ namespace lily_of_the_valley
                                 }
                             }
                         // found the cell, but value section is messed up or empty, so return empty
-                        return L"";
+                        return std::wstring{};
                         }
                     // found the cell, but value section is messed up or missing, so return empty
-                    return L"";
+                    return std::wstring{};
                     }
                 // found the cell, but its type isn't text? return empty
                 else
-                    { return L""; }
+                    { return std::wstring{}; }
                 }
             ++worksheet_text;
             }
-        return L"";
+        return std::wstring{};
         }
 
     //------------------------------------------------------------------
@@ -329,7 +332,7 @@ namespace lily_of_the_valley
                 {
                 currentCell.set_name(
                     html_extract_text::read_attribute_as_string(html_text, L"r", 1, false, false));
-                currentCell.set_value(L"");
+                currentCell.set_value(std::wstring{});
                 // read the type ('t') attribute
                 typeTag =
                     html_extract_text::read_attribute(html_text, L"t", 1, false, false);
@@ -414,7 +417,7 @@ namespace lily_of_the_valley
                                     // - 'e' (error): an error message (e.g., "#DIV/0!");
                                     //                treat this as missing data.
                                     else if (typeTag.second == 1 && *typeTag.first == L'e')
-                                        { currentCell.set_value(L""); }
+                                        { currentCell.set_value(std::wstring{}); }
                                     // These other types will just have their values read:
                                     // - 'n' (number): read its value (and maybe convert to date
                                     //                 based on its style [see below])
@@ -698,25 +701,23 @@ namespace lily_of_the_valley
                 {
                 const worksheet_cell currentCell(column_index_to_column_name(columnCounter+1) +
                                                  std::to_wstring(rowCounter+1));
-                const auto cellPos = std::lower_bound(data[rowCounter].begin(),
-                                                      data[rowCounter].end(), currentCell);
+                const auto cellPos = std::lower_bound(data[rowCounter].cbegin(),
+                                                      data[rowCounter].cend(), currentCell);
                 // if cell was already in the row, then move on
-                if (cellPos != data[rowCounter].end() && *cellPos == currentCell)
+                if (cellPos != data[rowCounter].cend() && *cellPos == currentCell)
                     { continue; }
-                else if (cellPos != data[rowCounter].end())
-                    { return std::make_pair(false, currentCell.get_name()); }
                 else
                     { return std::make_pair(false, currentCell.get_name()); }
                 }
             }
-        return std::make_pair(true, L"");
+        return std::make_pair(true, std::wstring{});
         }
 
     //------------------------------------------------------------------
     std::wstring xlsx_extract_text::column_index_to_column_name(size_t col)
         {
         if (column_info::invalid_position == col)
-            { return L""; }
+            { return std::wstring{}; }
         std::wstring columnName;
         constexpr auto alphabetSize{ 26 };
         while (col > 0)
@@ -820,7 +821,7 @@ namespace lily_of_the_valley
                 { return nextString.second; }
             ++i;
             }
-        return L"";
+        return std::wstring{};
         }
 
     //------------------------------------------------------------------

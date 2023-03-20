@@ -33,14 +33,16 @@ namespace lily_of_the_valley
         /** @brief Main function that returns the next string in the file.
             @returns @c true and the string if another item is found,
                 @c false and empty string otherwise.*/
-        [[nodiscard]] const std::pair<bool, std::wstring> operator()();
+        [[nodiscard]]
+        const std::pair<bool, std::wstring> operator()();
     private:
         /// @brief Sets the internal text pointer to null.
         /// @returns @c false and empty string to indicate that the parsing is done.
-        [[nodiscard]] std::pair<bool, std::wstring> return_finished() noexcept
+        [[nodiscard]]
+        std::pair<bool, std::wstring> return_finished() noexcept
             {
             m_html_text = nullptr;
-            return std::make_pair(false, std::wstring(L""));
+            return std::make_pair(false, std::wstring{});
             }
         const wchar_t* m_html_text{ nullptr };
         const wchar_t* const m_html_text_end{ nullptr };
@@ -80,13 +82,14 @@ namespace lily_of_the_valley
                 @param row The (1-based) row index of the cell.
                 @param value The cell's value.*/
             worksheet_cell(const size_t column, const size_t row,
-                           const std::wstring& value = L"") noexcept :
+                           const std::wstring& value = std::wstring{}) noexcept :
                 m_column_position(column), m_row_position(row), m_value(value)
                 {}
             /// @returns @c true if @c that cell's column comes before this cell's column.
             /// @param that The other cell to compare against.\n
             ///     If they are in the same column, then their rows are compared.
-            [[nodiscard]] bool operator<(const worksheet_cell& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position < that.m_column_position) ? true :
                     (m_column_position > that.m_column_position) ? false :
@@ -94,14 +97,16 @@ namespace lily_of_the_valley
                 }
             /// @returns @c true if @c that cell is at the same column and row as this.
             /// @param that The other cell to compare against.
-            [[nodiscard]] bool operator==(const worksheet_cell& that) const noexcept
+            [[nodiscard]]
+            bool operator==(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position ==  that.m_column_position) &&
                        (m_row_position == that.m_row_position);
                 }
             /// @returns @c true if @c that cell is at a different place from this one.
             /// @param that The other cell to compare against.
-            [[nodiscard]] bool operator!=(const worksheet_cell& that) const noexcept
+            [[nodiscard]]
+            bool operator!=(const worksheet_cell& that) const noexcept
                 {
                 return (m_column_position !=  that.m_column_position) ||
                        (m_row_position != that.m_row_position);
@@ -124,7 +129,8 @@ namespace lily_of_the_valley
                 m_row_position = cellInfo.second;
                 }
             /// @returns The name of the cell (e.g., "D7").
-            [[nodiscard]] std::wstring get_name() const
+            [[nodiscard]]
+            std::wstring get_name() const
                 {
                 return column_index_to_column_name(m_column_position) +
                        std::to_wstring(m_row_position);
@@ -134,7 +140,8 @@ namespace lily_of_the_valley
             void set_value(const std::wstring& value) noexcept
                 { m_value = value; }
             /// @returns The cell's value.
-            [[nodiscard]] const std::wstring& get_value() const noexcept
+            [[nodiscard]]
+            const std::wstring& get_value() const noexcept
                 { return m_value; }
         private:
             // 1-indexed, 'A' is column 1
@@ -168,8 +175,9 @@ namespace lily_of_the_valley
             @param cellNname The cell to retrieve the text from (e.g., "A13").
             @param workSheet The worksheet to read the text from.
             @returns The cell's textual content.*/
-        [[nodiscard]] std::wstring get_cell_text(const wchar_t* cellNname,
-                                                 const worksheet& workSheet);
+        [[nodiscard]]
+        static std::wstring get_cell_text(const wchar_t* cellNname,
+                                          const worksheet& workSheet);
 
         /** @brief Retrieves the text from a given cell, given the specified shared strings
                 file and worksheet.
@@ -181,7 +189,8 @@ namespace lily_of_the_valley
             @param worksheet_text The content of sheet[n].xml.
             @param worksheet_length The length of sheet[n].xml.
             @returns The cell's textual content.*/
-        [[nodiscard]] static std::wstring get_cell_text(const wchar_t* cell_name,
+        [[nodiscard]]
+        static std::wstring get_cell_text(const wchar_t* cell_name,
                                           const wchar_t* shared_strings,
                                           const size_t shared_strings_length,
                                           const wchar_t* worksheet_text,
@@ -195,7 +204,8 @@ namespace lily_of_the_valley
         /** @brief Gets the number of cells in a worksheet.
             @param wrk The worksheet to review.
             @returns The number of cells in the worksheet.*/
-        [[nodiscard]] static size_t get_cell_count(const worksheet& wrk)
+        [[nodiscard]]
+        static size_t get_cell_count(const worksheet& wrk)
             {
             return (wrk.size() > 0) ?
                 wrk.size() /* row count*/ * wrk[0].size() /* column count of first row*/ :
@@ -206,9 +216,9 @@ namespace lily_of_the_valley
             @param wrk The worksheet to format.
             @param delim The delimiter to separate the columns with.
             @returns The worksheet as delimited text.*/
-        [[nodiscard]] static std::wstring get_worksheet_text(
-            const worksheet& wrk,
-            const wchar_t delim = L'\t');
+        [[nodiscard]]
+        static std::wstring get_worksheet_text(const worksheet& wrk,
+                                               const wchar_t delim = L'\t');
 
         /** @brief Main interface for extracting plain text from an Excel worksheet.
             @note Call read_shared_strings() and read_styles() beforehand so that the
@@ -243,7 +253,8 @@ namespace lily_of_the_valley
 
         /** @returns The list of worksheet names in the Excel file.
             @note You must call read_worksheet_names() first to load these names.*/
-        [[nodiscard]] const std::vector<std::wstring>& get_worksheet_names() const noexcept
+        [[nodiscard]]
+        const std::vector<std::wstring>& get_worksheet_names() const noexcept
             { return m_worksheet_names; }
 
         /** @brief Converts an Excel serial date to day, month, and year values.
@@ -265,14 +276,16 @@ namespace lily_of_the_valley
             @details Source:
             https://www.codeproject.com/Articles/2750/Excel-Serial-Date-to-Day-Month-Year-and-Vice-Versa
             @todo Add unit test.*/
-        [[nodiscard]] static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
+        [[nodiscard]]
+        static int dmy_to_excel_serial_date(int nDay, int nMonth, int nYear);
 
         /** @brief Verifies that a worksheet isn't jagged and the cells are in the proper order.
             @note This is expensive and should only be used for debugging purposes.
             @param data The worksheet to verify.
             @returns a boolean indicating whether the sheet is OK and upon failure the name of
                 the first cell that was missing or out of order.*/
-        [[nodiscard]] static std::pair<bool,std::wstring> verify_sheet(const worksheet& data);
+        [[nodiscard]]
+        static std::pair<bool,std::wstring> verify_sheet(const worksheet& data);
 #ifndef __UNITTEST
     private:
 #endif
@@ -280,7 +293,8 @@ namespace lily_of_the_valley
             @warning This assumes that the string table has already been
                 loaded via read_shared_strings().
             @param index The (zero-based) index into the string table.*/
-        [[nodiscard]] std::wstring get_shared_string(const size_t index) const noexcept
+        [[nodiscard]]
+        std::wstring get_shared_string(const size_t index) const noexcept
             {
             return (index < get_shared_strings().size()) ?
                 get_shared_strings()[index] : std::wstring();
@@ -288,14 +302,16 @@ namespace lily_of_the_valley
         /** @returns The column name from a column index (1-indexed).
             @param col The column number.
             @returns The name of the column. For example, @c 30 will return "AD").*/
-        [[nodiscard]] static std::wstring column_index_to_column_name(size_t col);
+        [[nodiscard]]
+        static std::wstring column_index_to_column_name(size_t col);
         /** @brief Parses a cell reference and returns the column name,
                 column number (1-indexed), and row number (1-indexed).
             @param cell_name The name of the cell to parse (e.g., "AA23").
             @returns The column name, column number (1-indexed), and row number (1-indexed).
                 Row and/or column numbers will be -1 if name format is wrong.
                 For example, "A7" will return "A", 1 (column 1), and 7 (row 7).*/
-        [[nodiscard]] static std::pair<column_info,size_t>
+        [[nodiscard]]
+        static std::pair<column_info,size_t>
             get_column_and_row_info(const wchar_t* cell_name);
 
         /** Adds cells to rows with missing cells. This may happen with files missing its
@@ -313,19 +329,22 @@ namespace lily_of_the_valley
             @param text_length The length of the text.
             @returns The string at the given index of the string table,
                 or empty string if not found.*/
-        [[nodiscard]] static std::wstring get_shared_string(const size_t index,
-                                                            const wchar_t* text,
-                                                            const size_t text_length);
+        [[nodiscard]]
+        static std::wstring get_shared_string(const size_t index,
+                                              const wchar_t* text,
+                                              const size_t text_length);
 
         /** @brief Splits a cell name into the column name and row number.
             @param cell_name The cell name (e.g., "A2").
             @returns a pair representing where the row number begins in the string
                 (parsing from the start of the cell name up to this index yields the column name)
                 and the row number. The first index will be set to @c -1 upon failure.*/
-        [[nodiscard]] static std::pair<size_t,size_t> split_column_info(const wchar_t* cell_name);
+        [[nodiscard]]
+        static std::pair<size_t,size_t> split_column_info(const wchar_t* cell_name);
 
         /// @returns The string table.
-        [[nodiscard]] const string_table& get_shared_strings() const noexcept
+        [[nodiscard]]
+        const string_table& get_shared_strings() const noexcept
             { return m_shared_strings; }
 
         std::vector<std::wstring> m_worksheet_names;
