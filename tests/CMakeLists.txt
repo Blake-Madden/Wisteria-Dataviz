@@ -116,6 +116,7 @@ ENDIF()
 MESSAGE(STATUS "Preparing the test runner...")
 SET(TEST_APP WisteriaTestRunner)
 INCLUDE(${CMAKE_SOURCE_DIR}/../tools/testfiles.cmake)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${TEST_SRC_FILES})
 
 # Link required libraries to the executable
