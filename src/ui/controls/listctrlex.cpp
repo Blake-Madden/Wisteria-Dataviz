@@ -440,7 +440,7 @@ class ListCtrlExPrintout : public wxPrintout
     {
 public:
     ListCtrlExPrintout(const ListCtrlEx* list, const wxString& title) : wxPrintout(title),
-        m_list(list), m_currentPage(0), m_lastRow(list ? list->GetItemCount()-1 : -1),
+        m_list(list), m_lastRow(list ? list->GetItemCount()-1 : -1),
         m_lastColumn(list ? list->GetColumnCount()-1 : -1)
         {}
     /// @brief Column details.
@@ -524,7 +524,7 @@ public:
                 drawingHeight -= (topMargin+bottomMargin);
 
                 const auto drawTables = [this, page, marginX, &bodyStart]
-                                        (wxDC& dc)
+                                        (wxDC& drawDC)
                     {
                     // start drawing the table(s) on the page.
                     // if the list only has a few, narrow columns and the paper is wide, then
@@ -534,22 +534,22 @@ public:
                     // draw table caption (title) if requested
                     if (IsIncludingTableCaption() && page == 1)
                         {
-                        wxFont captionFont(dc.GetFont());
+                        wxFont captionFont(drawDC.GetFont());
                         captionFont.SetPointSize(captionFont.GetPointSize()*2);
 
                         GraphItems::Label caption(GraphItems::GraphItemInfo(GetTitle()).
                             Pen(wxNullPen).DPIScaling(m_list->GetDPIScaleFactor()).Font(captionFont).
                             AnchorPoint(wxPoint(marginX, bodyStart+GetCellTopPadding())) );
                         caption.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
-                        caption.Draw(dc);
-                        bodyStart += caption.GetBoundingBox(dc).GetHeight()+(GetCellTopPadding()*2);
+                        caption.Draw(drawDC);
+                        bodyStart += caption.GetBoundingBox(drawDC).GetHeight()+(GetCellTopPadding()*2);
                         }
                     for (const auto currentPageTableRowStart : currentPage.m_rowStarts)
                         {
                         wxCoord currentX = marginX+currentTableOffset;
                         // draw the column headers' background
-                        dc.SetBrush(wxColour(wxT("#337BC4")));
-                        dc.DrawRectangle(currentX, bodyStart, GetTableWidth(), GetCoulmnHeight());
+                        drawDC.SetBrush(wxColour(wxT("#337BC4")));
+                        drawDC.DrawRectangle(currentX, bodyStart, GetTableWidth(), GetCoulmnHeight());
                         // draw the cell borders
                         //-----------------
                         // horizontal lines
@@ -571,37 +571,37 @@ public:
                                 // fill cell background color
                                 if (rowAttributes.GetBackgroundColour().IsOk())
                                     {
-                                    wxDCBrushChanger cellBCH(dc, rowAttributes.GetBackgroundColour());
-                                    dc.DrawRectangle(currentX, currentY, GetTableWidth(), GetLineHeight());
+                                    wxDCBrushChanger cellBCH(drawDC, rowAttributes.GetBackgroundColour());
+                                    drawDC.DrawRectangle(currentX, currentY, GetTableWidth(), GetLineHeight());
                                     }
                                 }
 
-                            dc.DrawLine(currentX, currentY, currentX+GetTableWidth(), currentY);
+                            drawDC.DrawLine(currentX, currentY, currentX+GetTableWidth(), currentY);
                             currentY += GetLineHeight();
                             }
                         // vertical lines
-                        dc.DrawLine(currentX, bodyStart, currentX, (currentY-GetLineHeight()));
+                        drawDC.DrawLine(currentX, bodyStart, currentX, (currentY-GetLineHeight()));
                         for (auto j = 0; j < m_list->GetColumnCount(); ++j)
                             {
                             if (GetColumnsInfo()[j].m_included)
                                 {
-                                dc.DrawLine(currentX+GetColumnsInfo()[j].m_width, bodyStart,
+                                drawDC.DrawLine(currentX+GetColumnsInfo()[j].m_width, bodyStart,
                                     currentX+GetColumnsInfo()[j].m_width, (currentY-GetLineHeight()));
                                 currentX += GetColumnsInfo()[j].m_width;
                                 }
                             }
                         // draw the column header text
-                        dc.SetTextForeground(*wxWHITE);
+                        drawDC.SetTextForeground(*wxWHITE);
                         currentX = marginX+GetCellSidePadding()+currentTableOffset;
                         for (auto columnCounter = 0; columnCounter < m_list->GetColumnCount(); ++columnCounter)
                             {
                             if (GetColumnsInfo()[columnCounter].m_included)
                                 {
-                                dc.DrawText(m_list->GetColumnName(columnCounter), currentX, bodyStart + GetCellTopPadding());
+                                drawDC.DrawText(m_list->GetColumnName(columnCounter), currentX, bodyStart + GetCellTopPadding());
                                 currentX += GetColumnsInfo()[columnCounter].m_width;
                                 }
                             }
-                        dc.SetTextForeground(*wxBLACK);
+                        drawDC.SetTextForeground(*wxBLACK);
                         // draw the data
                         for (auto i = currentPageTableRowStart;
                             i < currentPageTableRowStart+currentPage.GetRowsPerPage() && i <= GetLastRow();
@@ -633,7 +633,7 @@ public:
                                                 const auto bmp = m_list->GetImageList(wxIMAGE_LIST_SMALL)->GetBitmap(Item.GetImage());
                                                 if (bmp.IsOk())
                                                     {
-                                                    dc.DrawBitmap(bmp, wxPoint(currentX, yCoord), true);
+                                                    drawDC.DrawBitmap(bmp, wxPoint(currentX, yCoord), true);
                                                     currentX += bmp.GetWidth() + GetCellSidePadding();
                                                     }
                                                 }
@@ -658,7 +658,7 @@ public:
                                             *wxWHITE : *wxBLACK;
                                         }
 
-                                    wxDCTextColourChanger cellTextCCH(dc, cellTextColor);
+                                    wxDCTextColourChanger cellTextCCH(drawDC, cellTextColor);
 
                                     if (GetColumnsInfo()[j].m_multiline)
                                         {
@@ -666,16 +666,16 @@ public:
                                         GraphItems::Label label(
                                             GraphItems::GraphItemInfo(m_list->GetItemTextFormatted(i, j)).
                                             Pen(wxNullPen).DPIScaling(m_list->GetDPIScaleFactor()).
-                                            Font(dc.GetFont()).
+                                            Font(drawDC.GetFont()).
                                             AnchorPoint(wxPoint(currentX, yCoord)) );
                                         label.SetLineSpacing(1*m_list->GetDPIScaleFactor());
-                                        label.SplitTextToFitBoundingBox(dc, cellTextDrawingRect.GetSize());
+                                        label.SplitTextToFitBoundingBox(drawDC, cellTextDrawingRect.GetSize());
                                         label.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                                         label.SetTextAlignment(TextAlignment::FlushLeft);
-                                        label.Draw(dc);
+                                        label.Draw(drawDC);
                                         }
                                     else
-                                        { dc.DrawText(m_list->GetItemTextFormatted(i,j), currentX, yCoord ); }
+                                        { drawDC.DrawText(m_list->GetItemTextFormatted(i,j), currentX, yCoord ); }
                                     currentX += GetColumnsInfo()[j].m_width;
                                     }
                                 }
@@ -684,32 +684,33 @@ public:
                         }
                     };
 
-                const auto drawHeadersAndFooters = [this, marginX, marginY, drawingWidth, drawingHeight, topMargin, &textWidth, &textHeight]
-                                                  (wxDC& dc)
+                const auto drawHeadersAndFooters =
+                    [this, marginX, marginY, drawingWidth, drawingHeight, topMargin, &textWidth, &textHeight]
+                    (wxDC& drawDC)
                     {
                     // draw the headers
-                    dc.SetDeviceOrigin(0,0);
+                    drawDC.SetDeviceOrigin(0,0);
                     if (m_list->GetLeftPrinterHeader().length() ||
                         m_list->GetCenterPrinterHeader().length() ||
                         m_list->GetRightPrinterHeader().length())
                         {
                         if (m_list->GetLeftPrinterHeader().length())
                             {
-                            dc.DrawText(ExpandPrintString(m_list->GetLeftPrinterHeader()),
+                            drawDC.DrawText(ExpandPrintString(m_list->GetLeftPrinterHeader()),
                                 static_cast<wxCoord>(marginX),
                                 static_cast<wxCoord>(marginY/2));
                             }
                         if (m_list->GetCenterPrinterHeader().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(m_list->GetCenterPrinterHeader()), &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(m_list->GetCenterPrinterHeader()),
+                            drawDC.GetTextExtent(ExpandPrintString(m_list->GetCenterPrinterHeader()), &textWidth, &textHeight);
+                            drawDC.DrawText(ExpandPrintString(m_list->GetCenterPrinterHeader()),
                                 static_cast<wxCoord>(safe_divide<double>(drawingWidth,2) - safe_divide<double>(textWidth,2)),
                                 static_cast<wxCoord>(marginY/2));
                             }
                         if (m_list->GetRightPrinterHeader().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(m_list->GetRightPrinterHeader()), &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(m_list->GetRightPrinterHeader()),
+                            drawDC.GetTextExtent(ExpandPrintString(m_list->GetRightPrinterHeader()), &textWidth, &textHeight);
+                            drawDC.DrawText(ExpandPrintString(m_list->GetRightPrinterHeader()),
                                 static_cast<wxCoord>(drawingWidth - (marginX+textWidth)),
                                 static_cast<wxCoord>(marginY/2));
                             }
@@ -719,26 +720,26 @@ public:
                         m_list->GetCenterPrinterFooter().length() ||
                         m_list->GetRightPrinterFooter().length())
                         {
-                        dc.GetTextExtent(wxT("MeasurementTestString"), &textWidth, &textHeight);
+                        drawDC.GetTextExtent(wxT("MeasurementTestString"), &textWidth, &textHeight);
                         // move down past the print header area, drawing (tables) area, and half the bottom margin (to center the footer vertically)
                         const wxCoord yPos = topMargin+drawingHeight+(marginY/2);
                         if (m_list->GetLeftPrinterFooter().length())
                             {
-                            dc.DrawText(ExpandPrintString(m_list->GetLeftPrinterFooter()),
+                            drawDC.DrawText(ExpandPrintString(m_list->GetLeftPrinterFooter()),
                                 static_cast<wxCoord>(marginX),
                                 yPos);
                             }
                         if (m_list->GetCenterPrinterFooter().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(m_list->GetCenterPrinterFooter()), &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(m_list->GetCenterPrinterFooter()),
+                            drawDC.GetTextExtent(ExpandPrintString(m_list->GetCenterPrinterFooter()), &textWidth, &textHeight);
+                            drawDC.DrawText(ExpandPrintString(m_list->GetCenterPrinterFooter()),
                                 static_cast<wxCoord>(safe_divide<double>(drawingWidth,2) - safe_divide<double>(textWidth,2)),
                                 yPos);
                             }
                         if (m_list->GetRightPrinterFooter().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(m_list->GetRightPrinterFooter()), &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(m_list->GetRightPrinterFooter()),
+                            drawDC.GetTextExtent(ExpandPrintString(m_list->GetRightPrinterFooter()), &textWidth, &textHeight);
+                            drawDC.DrawText(ExpandPrintString(m_list->GetRightPrinterFooter()),
                                 static_cast<wxCoord>((drawingWidth - (marginX+textWidth))),
                                 yPos);
                             }

@@ -24,7 +24,7 @@ public:
         {}
     void AddTable(const wxString& table)
         {
-        std::wstring strippedTable = table;
+        std::wstring strippedTable{ table.wc_str() };
         lily_of_the_valley::html_format::strip_hyperlinks(strippedTable, false);
         m_htmlTables.push_back(strippedTable);
         }
@@ -50,8 +50,8 @@ public:
                 GetScreenToPageScaling(scaleX, scaleY);
 
                 // set a suitable scaling factor
-                const float scaleXReciprical = safe_divide<float>(1.0f,scaleX);
-                const float scaleYReciprical = safe_divide<float>(1.0f,scaleY);
+                const float scaleXReciprocal = safe_divide<float>(1.0f,scaleX);
+                const float scaleYReciprocal = safe_divide<float>(1.0f,scaleY);
                 dc->SetUserScale(scaleX, scaleY);
 
                 // get the size of the DC's drawing area in pixels
@@ -59,8 +59,8 @@ public:
                 int dcWidth, dcHeight;
                 dc->GetSize(&drawingWidth, &drawingHeight);
                 dc->GetSize(&dcWidth, &dcHeight);
-                drawingWidth *= scaleXReciprical;
-                drawingHeight *= scaleYReciprical;
+                drawingWidth *= scaleXReciprocal;
+                drawingHeight *= scaleYReciprocal;
 
                 // let's have at least 10 device units margin
                 const float marginX = GetMarginPadding();
@@ -88,11 +88,12 @@ public:
                 drawingHeight -= (topMargin+bottomMargin);
 
                 const auto drawTables =
-                    [this, page, marginX, bodyStart, drawingWidth, drawingHeight](wxDC& dc)
+                    [this, page, marginX, bodyStart, drawingWidth, drawingHeight]
+                    (wxDC& drawDC)
                     {
                     // draw the tables
                     wxHtmlDCRenderer htmlRenderer;
-                    htmlRenderer.SetDC(&dc);
+                    htmlRenderer.SetDC(&drawDC);
                     htmlRenderer.SetSize(drawingWidth, drawingHeight);
                     int currentPageHeight = 0;
                     for (int i = m_pageStarts[page-1].first; i <= m_pageStarts[page-1].second; ++i)
@@ -107,34 +108,34 @@ public:
                 const auto drawHeadersAndFooters =
                     [this, marginX, marginY, drawingWidth, drawingHeight, topMargin,
                      &textWidth, &textHeight]
-                    (wxDC& dc)
+                    (wxDC& drawDC)
                     {
                     // draw the headers
-                    dc.SetDeviceOrigin(0,0);
+                    drawDC.SetDeviceOrigin(0,0);
                     if (GetLeftPrinterHeader().length() ||
                         GetCenterPrinterHeader().length() ||
                         GetRightPrinterHeader().length())
                         {
                         if (GetLeftPrinterHeader().length())
                             {
-                            dc.DrawText(ExpandPrintString(GetLeftPrinterHeader()),
+                            drawDC.DrawText(ExpandPrintString(GetLeftPrinterHeader()),
                                 static_cast<wxCoord>(marginX),
                                 static_cast<wxCoord>(marginY/2));
                             }
                         if (GetCenterPrinterHeader().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(GetCenterPrinterHeader()),
+                            drawDC.GetTextExtent(ExpandPrintString(GetCenterPrinterHeader()),
                                                                &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(GetCenterPrinterHeader()),
+                            drawDC.DrawText(ExpandPrintString(GetCenterPrinterHeader()),
                                 static_cast<wxCoord>(safe_divide<float>((drawingWidth),2) -
                                                      safe_divide<float>(textWidth,2)),
                                 static_cast<wxCoord>(marginY/2));
                             }
                         if (GetRightPrinterHeader().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(GetRightPrinterHeader()),
+                            drawDC.GetTextExtent(ExpandPrintString(GetRightPrinterHeader()),
                                                                &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(GetRightPrinterHeader()),
+                            drawDC.DrawText(ExpandPrintString(GetRightPrinterHeader()),
                                 static_cast<wxCoord>((drawingWidth) - (marginX+textWidth)),
                                 static_cast<wxCoord>(marginY/2));
                             }
@@ -144,30 +145,30 @@ public:
                         GetCenterPrinterFooter().length() ||
                         GetRightPrinterFooter().length())
                         {
-                        dc.GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
+                        drawDC.GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
                         // move down past the print header area, drawing (tables) area,
                         // and half the bottom margin (to center the footer vertically)
                         const wxCoord yPos = topMargin+drawingHeight+(marginY/2);
                         if (GetLeftPrinterFooter().length())
                             {
-                            dc.DrawText(ExpandPrintString(GetLeftPrinterFooter()),
+                            drawDC.DrawText(ExpandPrintString(GetLeftPrinterFooter()),
                                 static_cast<wxCoord>(marginX),
                                 yPos);
                             }
                         if (GetCenterPrinterFooter().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(GetCenterPrinterFooter()),
+                            drawDC.GetTextExtent(ExpandPrintString(GetCenterPrinterFooter()),
                                                                &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(GetCenterPrinterFooter()),
+                            drawDC.DrawText(ExpandPrintString(GetCenterPrinterFooter()),
                                 static_cast<wxCoord>(safe_divide<float>(drawingWidth,2) -
                                                      safe_divide<float>(textWidth,2)),
                                 yPos);
                             }
                         if (GetRightPrinterFooter().length())
                             {
-                            dc.GetTextExtent(ExpandPrintString(GetRightPrinterFooter()),
+                            drawDC.GetTextExtent(ExpandPrintString(GetRightPrinterFooter()),
                                                                &textWidth, &textHeight);
-                            dc.DrawText(ExpandPrintString(GetRightPrinterFooter()),
+                            drawDC.DrawText(ExpandPrintString(GetRightPrinterFooter()),
                                 static_cast<wxCoord>((drawingWidth - (marginX+textWidth))),
                                 yPos);
                             }
@@ -208,14 +209,14 @@ public:
             //adjust user scaling
             float scaleX ,scaleY;
             GetScreenToPageScaling(scaleX, scaleY);
-            const float scaleXReciprical = safe_divide<float>(1.0f, scaleX);
-            const float scaleYReciprical = safe_divide<float>(1.0f, scaleY);
+            const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
+            const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
             dc->SetUserScale(scaleX, scaleY);
 
             // Get the size of the DC's drawing area in pixels
             wxCoord dcWidth, dcHeight;
             dc->GetSize(&dcWidth, &dcHeight);
-            const wxCoord drawingWidth = (dcWidth*scaleXReciprical) -
+            const wxCoord drawingWidth = (dcWidth*scaleXReciprocal) -
                                          (GetMarginPadding()*2)/*side margins*/;
 
             // Measure a standard line of text
@@ -233,7 +234,7 @@ public:
                 GetCenterPrinterFooter().length() ||
                 GetRightPrinterFooter().length())
                 { heightMargin += textHeight+GetMarginPadding(); }
-            const wxCoord drawingHeight = (dcHeight*scaleYReciprical)-heightMargin;
+            const wxCoord drawingHeight = (dcHeight*scaleYReciprocal)-heightMargin;
 
             // paginate by measuring each table and storing which tables
             // should be on which page
