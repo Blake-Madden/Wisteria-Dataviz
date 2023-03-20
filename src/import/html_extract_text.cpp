@@ -413,7 +413,7 @@ namespace lily_of_the_valley
                 }
             return charset;
             }
-        while (start && start < end)
+        while (start < end)
             {
             const char* nextAngleSymbol = string_util::strnchr(start, '>', (end-start));
             const char* contentType = string_util::strnistr(start, "content-type", (end-start));
@@ -1102,9 +1102,9 @@ namespace lily_of_the_valley
                it to the expected symbol.*/
             if (isSymbolFontSection)
                 {
-                // cppcheck-suppress duplicateExpression
                 const std::wstring copiedOverText =
                     convert_symbol_font_section(std::wstring_view(get_filtered_text() + previousLength,
+                                                                  // cppcheck-suppress duplicateExpression
                                                                   get_filtered_text_length() - previousLength) );
                 set_filtered_text_length(previousLength);
                 add_characters(copiedOverText.c_str(), copiedOverText.length());
