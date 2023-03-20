@@ -23,7 +23,7 @@ class frequency_set
     {
 public:
     /// @private
-    using map_type = typename std::map<T, size_t, Compare>;
+    using map_type = std::map<T, size_t, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @brief Constructor.
@@ -74,7 +74,7 @@ class double_frequency_set
     {
 public:
     /// @private
-    using map_type = typename std::map<T, std::pair<size_t,size_t>, TCompare>;
+    using map_type = std::map<T, std::pair<size_t,size_t>, TCompare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts an item into the set.
@@ -178,7 +178,7 @@ class aggregate_frequency_set
     {
 public:
     /// @private
-    using map_type = typename std::map<T, std::pair<size_t, double>, Compare>;
+    using map_type = std::map<T, std::pair<size_t, double>, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts an item into the set.
@@ -236,7 +236,7 @@ class frequency_map
 public:
     /// Key/(value & count)
     /// @private
-    using map_type = typename std::map<T1, std::pair<T2,size_t>, Compare>;
+    using map_type = std::map<T1, std::pair<T2,size_t>, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts a pair of items into the map.
@@ -284,17 +284,17 @@ class multi_value_aggregate_map
     {
 public:
     /// @private
-    using values_set = typename std::set<T2, CompareSecondaryValues>;
+    using values_set = std::set<T2, CompareSecondaryValues>;
     /// @private
-    using values_and_aggregate_pair_type = typename std::pair<values_set, double>;
+    using values_and_aggregate_pair_type = std::pair<values_set, double>;
     /// @private
-    using map_type = typename std::map<T1, values_and_aggregate_pair_type, Compare>;
+    using map_type = std::map<T1, values_and_aggregate_pair_type, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @private
     using iterator = typename map_type::iterator;
     /// @private
-    using value_type = typename std::pair<T1, values_and_aggregate_pair_type>;
+    using value_type = std::pair<T1, values_and_aggregate_pair_type>;
     /// @private
     multi_value_aggregate_map() = default;
     /** @brief Inserts a pair of items into the map.
@@ -416,17 +416,17 @@ class multi_value_frequency_aggregate_map
     {
 public:
     /// @private
-    using values_set = typename frequency_set<T2, CompareSecondaryValues>;
+    using values_set = frequency_set<T2, CompareSecondaryValues>;
     /// @private
-    using values_and_aggregate_pair_type = typename std::pair<values_set, double>;
+    using values_and_aggregate_pair_type = std::pair<values_set, double>;
     /// @private
-    using map_type = typename std::map<T1, values_and_aggregate_pair_type, Compare>;
+    using map_type = std::map<T1, values_and_aggregate_pair_type, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @private
     using iterator = typename map_type::iterator;
     /// @private
-    using value_type = typename std::pair<T1, values_and_aggregate_pair_type>;
+    using value_type = std::pair<T1, values_and_aggregate_pair_type>;
     /// @private
     multi_value_frequency_aggregate_map() = default;
     /** @brief Inserts a pair of items into the map.
