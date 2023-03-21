@@ -65,45 +65,56 @@ namespace Wisteria::Data
             {
             for (const auto& value : subsetCriterion.m_values)
                 {
-                if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
-                    IdVal != nullptr)
+                // use group IDs if using == or !=, as this is efficient comparison
+                if (m_comparisonType == Comparison::Equals ||
+                    m_comparisonType == Comparison::NotEquals)
                     {
-                    m_groupIdValues.push_back(*IdVal);
-                    if (m_categoricalColumn->GetStringTable().find(*IdVal) ==
-                        m_categoricalColumn->GetStringTable().cend())
+                    if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
+                        IdVal != nullptr)
                         {
-                        throw std::runtime_error(
-                            wxString::Format(_(L"Group ID not found for '%s' column filter."),
-                                             m_categoricalColumn->GetName()) );
+                        m_groupIdValues.push_back(*IdVal);
+                        if (m_categoricalColumn->GetStringTable().find(*IdVal) ==
+                            m_categoricalColumn->GetStringTable().cend())
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"Group ID not found for '%s' column filter."),
+                                                 m_categoricalColumn->GetName()) );
+                            }
                         }
-                    }
-                else if (const auto strVal{ std::get_if<wxString>(&value) };
-                    strVal != nullptr)
-                    {
-                    const auto code = m_categoricalColumn->GetIDFromLabel(*strVal);
-                    if (code.has_value())
-                        { m_groupIdValues.push_back(code.value()); }
+                    else if (const auto strVal{ std::get_if<wxString>(&value) };
+                        strVal != nullptr)
+                        {
+                        const auto code = m_categoricalColumn->GetIDFromLabel(*strVal);
+                        if (code.has_value())
+                            { m_groupIdValues.push_back(code.value()); }
+                        else
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"'%s': string value not found for "
+                                                    "'%s' column filter."), *strVal,
+                                                 m_categoricalColumn->GetName()));
+                            }
+                        }
                     else
                         {
-                        throw std::runtime_error(
-                            wxString::Format(_(L"'%s': string value not found for "
-                                                "'%s' column filter."), *strVal,
-                                             m_categoricalColumn->GetName()));
+                        throw std::runtime_error(_(L"Categorical column filter requires either "
+                            "a group ID or string value for filtering."));
                         }
                     }
+                // if using other operators, then we need to use string comparisons later
                 else
                     {
-                    throw std::runtime_error(_(L"Categorical column filter requires either "
-                        "a groud ID or string value for filtering."));
-                    }
-
-                // group ID is set, but that will only work for == or !=.
-                // if using other operators, then we need to use string comparisons later.
-                if (m_comparisonType != Comparison::Equals &&
-                    m_comparisonType != Comparison::NotEquals)
-                    {
-                    wxASSERT_MSG(m_groupIdValues.size(), L"No items in group IDs when building subset?!");
-                    m_stringValues.push_back(m_categoricalColumn->GetLabelFromID(m_groupIdValues.back()));
+                    if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
+                        IdVal != nullptr)
+                        { m_stringValues.push_back(m_categoricalColumn->GetLabelFromID(*IdVal)); }
+                    else if (const auto strVal{ std::get_if<wxString>(&value) };
+                        strVal != nullptr)
+                        { m_stringValues.push_back(*strVal); }
+                    else
+                        {
+                        throw std::runtime_error(_(L"Categorical column filter requires either "
+                            "a group ID or string value for filtering."));
+                        }
                     }
                 }
             }
