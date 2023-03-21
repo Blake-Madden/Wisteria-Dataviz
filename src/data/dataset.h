@@ -714,8 +714,8 @@ namespace Wisteria::Data
                 during import. (The default value is NaN.)
             @details Missing data can be either empty cells or text values in a
                 numeric column that can't be converted to a number.\n
-                This can be useful for replacing MD with zero or even and extreme value
-                (e.g., -9999) to draw attention to missing data.
+                This can be useful for replacing MD with zero or even an extreme value
+                (e.g., `-9999`) to draw attention to missing data.
             @param recodeVal The value to replace missing data with.
             @sa ReplacementStrings() for recoding missing data in categorical columns.
             @returns A self reference.*/
