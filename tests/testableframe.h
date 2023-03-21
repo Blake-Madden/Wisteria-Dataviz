@@ -3,7 +3,7 @@
 // Purpose:     An improved wxFrame for unit-testing
 // Author:      Steven Lamerton
 // Copyright:   (c) 2010 Steven Lamerton
-// Licence:     wxWindows licence
+// License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wx/frame.h"

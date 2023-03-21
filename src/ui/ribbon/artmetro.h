@@ -5,7 +5,7 @@
     @authors Peter Cawley (wxRibbon), "iwbnwif" (wxRibbonMetroArtProvider),
      Blake Madden (modernized code)
     @details This program is free software; you can redistribute it and/or modify
-     it under the terms of the wxWindows licence.
+     it under the terms of the wxWindows license.
 @{*/
 
 /*
@@ -24,7 +24,7 @@ https://forums.wxwidgets.org/viewtopic.php?f=21&t=37348&p=152217&hilit=art_metro
 // Created:     2009-05-25
 // RCS-ID:      $Id$
 // Copyright:   (C) Peter Cawley
-// Licence:     wxWindows licence
+// License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __RIBBON_METRO_ART_H__

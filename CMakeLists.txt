@@ -4,7 +4,7 @@
 # Author:      Blake Madden
 # Created:     2022-01-17
 # Copyright:   (c) 2005-2022 Blake Madden
-# Licence:     3-Clause BSD licence
+# License:     3-Clause BSD license
 #############################################################################
 
 # Declare the minimum required CMake version

@@ -7,7 +7,7 @@
 // Created:     2009-05-25
 // RCS-ID:      $Id$
 // Copyright:   (C) Peter Cawley, "iwbnwif", Blake Madden
-// Licence:     wxWindows licence
+// License:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
