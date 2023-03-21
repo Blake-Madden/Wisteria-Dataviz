@@ -1584,15 +1584,30 @@ namespace Wisteria::Graphs
             { 9, L"\x2079" }
             };
 
-        const auto ftChar = footnoteChars.find(m_footnotes.size());
+        const auto ftChar = footnoteChars.find(m_footnotes.size() + 1);
         if (ftChar != footnoteChars.cend())
             {
             auto foundCell = FindCell(cellValue);
             if (foundCell)
                 {
+                // if changing format to text, then preserve its original alignment
+                if (foundCell->IsDate() || foundCell->IsNumeric())
+                    {
+                    foundCell->SetPageHorizontalAlignment(PageHorizontalAlignment::RightAligned);
+                    }
+                else if (foundCell->IsRatio())
+                    {
+                    foundCell->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                    }
                 foundCell->SetValue(foundCell->GetDisplayValue() + ftChar->second);
                 }
+            else
+                { return; }
             }
+        else
+            { return; }
+
+        m_footnotes.push_back(footnote);
 
         // build the caption
         wxString footnoteCaption;
