@@ -713,7 +713,7 @@ namespace lily_of_the_valley
                     { break; }
                 end += HTML_COMMENT_END.length();
                 }
-            // if it's a script (e.g., javascript), then skip it
+            // if it's a script (e.g., JavaScript), then skip it
             else if (currentElement == L"script")
                 {
                 end = string_util::stristr<wchar_t>(start, HTML_SCRIPT_END.c_str());

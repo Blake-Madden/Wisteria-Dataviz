@@ -172,11 +172,11 @@ namespace lily_of_the_valley
         using string_table = std::vector<std::wstring>;
 
         /** @brief Retrieves the text from a given cell.
-            @param cellNname The cell to retrieve the text from (e.g., "A13").
+            @param cellName The cell to retrieve the text from (e.g., "A13").
             @param workSheet The worksheet to read the text from.
             @returns The cell's textual content.*/
         [[nodiscard]]
-        static std::wstring get_cell_text(const wchar_t* cellNname,
+        static std::wstring get_cell_text(const wchar_t* cellName,
                                           const worksheet& workSheet);
 
         /** @brief Retrieves the text from a given cell, given the specified shared strings
@@ -348,7 +348,7 @@ namespace lily_of_the_valley
             { return m_shared_strings; }
 
         std::vector<std::wstring> m_worksheet_names;
-        // sytle indices that use a date format
+        // style indices that use a date format
         std::set<size_t> m_date_format_indices;
         string_table m_shared_strings;
         };

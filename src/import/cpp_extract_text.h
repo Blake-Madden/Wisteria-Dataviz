@@ -41,7 +41,7 @@ namespace lily_of_the_valley
             { return m_author; }
     protected:
         /// @returns True if a character is an English letter, number, or underscore.
-        /// @param ch The chacacter to review.
+        /// @param ch The character to review.
         [[nodiscard]] static constexpr bool is_valid_char(const wchar_t ch) noexcept
             { return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || (ch >= L'0' && ch <= L'9') || (ch == L'_'); }
         /** @brief Replaces \\n \\t \\r characters with respective spaces while calling add_characters().

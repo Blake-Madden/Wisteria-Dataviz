@@ -23,34 +23,34 @@ namespace lily_of_the_valley
         const std::wstring AUTHOR(L"meta:initial-creator");
         const wchar_t* const textEnd = html_text+text_length;
 
-        const wchar_t* const officMetaStart =
+        const wchar_t* const officeMetaStart =
             find_element(html_text, textEnd, OFFICE_META.c_str(), OFFICE_META.length());
-        if (!officMetaStart)
+        if (!officeMetaStart)
             { return; }
 
         html_extract_text parseHtml;
 
-        m_title = read_element_as_string(officMetaStart, textEnd, TITLE.c_str(), TITLE.length());
+        m_title = read_element_as_string(officeMetaStart, textEnd, TITLE.c_str(), TITLE.length());
         auto metaVal = parseHtml(m_title.c_str(), m_title.length(), true, false);
         if (metaVal)
             { m_title.assign(metaVal); }
 
-        m_subject = read_element_as_string(officMetaStart, textEnd, SUBJECT.c_str(), SUBJECT.length());
+        m_subject = read_element_as_string(officeMetaStart, textEnd, SUBJECT.c_str(), SUBJECT.length());
         metaVal = parseHtml(m_subject.c_str(), m_subject.length(), true, false);
         if (metaVal)
             { m_subject.assign(metaVal); }
 
-        m_description = read_element_as_string(officMetaStart, textEnd, DESCRIPTION.c_str(), DESCRIPTION.length());
+        m_description = read_element_as_string(officeMetaStart, textEnd, DESCRIPTION.c_str(), DESCRIPTION.length());
         metaVal = parseHtml(m_description.c_str(), m_description.length(), true, false);
         if (metaVal)
             { m_description.assign(metaVal); }
 
-        m_keywords = read_element_as_string(officMetaStart, textEnd, KEYWORDS.c_str(), KEYWORDS.length());
+        m_keywords = read_element_as_string(officeMetaStart, textEnd, KEYWORDS.c_str(), KEYWORDS.length());
         metaVal = parseHtml(m_keywords.c_str(), m_keywords.length(), true, false);
         if (metaVal)
             { m_keywords.assign(metaVal); }
 
-        m_author = read_element_as_string(officMetaStart, textEnd, AUTHOR.c_str(), AUTHOR.length());
+        m_author = read_element_as_string(officeMetaStart, textEnd, AUTHOR.c_str(), AUTHOR.length());
         metaVal = parseHtml(m_author.c_str(), m_author.length(), true, false);
         if (metaVal)
             { m_author.assign(metaVal); }

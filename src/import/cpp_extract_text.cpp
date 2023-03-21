@@ -144,7 +144,7 @@ void cpp_extract_text::add_characters_strip_escapes(const wchar_t* characters, c
                 currentBlockSize = 0;
                 continue;
                 }
-            // copy over what is being espaced
+            // copy over what is being escaped
             else
                 {
                 // if escaping an escape character, then copy that over now

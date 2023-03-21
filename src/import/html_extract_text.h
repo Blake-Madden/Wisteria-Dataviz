@@ -77,13 +77,13 @@ namespace html_utilities
         /// @private
         javascript_hyperlink_parse() = default;
         /** @brief Constructor.
-            @param js_text The Javascript to analyze.
+            @param js_text The JavaScript to analyze.
             @param length The length of js_text.*/
         javascript_hyperlink_parse(const wchar_t* js_text, const size_t length) noexcept :
           m_js_text_start(js_text), m_js_text_end(js_text+length)
             {}
-        /** @brief Sets the Javascript to analyze.
-            @param js_text The Javascript to analyze.
+        /** @brief Sets the JavaScript to analyze.
+            @param js_text The JavaScript to analyze.
             @param length The length of js_text.*/
         void set(const wchar_t* js_text, const size_t length) noexcept
             {
@@ -133,7 +133,7 @@ namespace html_utilities
     /** @brief Functor that accepts a block of HTML text and
             returns the links in it, one-by-one.
         @details Links will include base hrefs, link hrefs, anchor hrefs,
-            image map hrefs, image links, javascript links, and HTTP redirects.*/
+            image map hrefs, image links, JavaScript links, and HTTP redirects.*/
     class html_hyperlink_parse
         {
     public:
@@ -165,7 +165,7 @@ namespace html_utilities
         [[nodiscard]]
         inline bool is_current_link_an_image() const noexcept
             { return m_current_link_is_image; }
-        /** @returns @c true if the current hyperlink is pointing to a javascript.*/
+        /** @returns @c true if the current hyperlink is pointing to a JavaScript.*/
         [[nodiscard]]
         inline bool is_current_link_a_javascript() const noexcept
             { return m_current_link_is_javascript; }
@@ -216,7 +216,7 @@ namespace html_utilities
         };
 
     /** @brief Wrapper class to generically handle hyperlink parsing for either
-            javascript or HTML files.*/
+            JavaScript or HTML files.*/
     class hyperlink_parse
         {
     public:
@@ -250,7 +250,7 @@ namespace html_utilities
         [[nodiscard]]
         html_hyperlink_parse get_html_parser() const noexcept
             { return m_html_hyperlink_parse; }
-        /** @returns The Javascript parser.*/
+        /** @returns The JavaScript parser.*/
         [[nodiscard]]
         javascript_hyperlink_parse get_script_parser() const noexcept
             { return m_javascript_hyperlink_parse; }
