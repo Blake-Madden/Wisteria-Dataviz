@@ -348,6 +348,28 @@ namespace Wisteria::Graphs
             ///     managed by the cell.
             void SetPrefix(const wxString& prefix)
                 { m_prefix = prefix; }
+
+            /// @returns The label shown in a cell that is less than the suppression threshold.
+            [[nodiscard]]
+            const wxString& GetSuppressionLabel() const noexcept
+                { return m_suppressionLabel; }
+            /// @brief Sets the label shown in a cell that is less than the suppression threshold.
+            /// @param label The label to display.
+            /// @note Suppression is only applicable to cell with General or Accounting format.
+            /// @sa SetSuppressionThreshold().
+            void SetSuppressionLabel(const wxString& label)
+                { m_suppressionLabel = label; }
+
+            /// @returns The minimum value that a cell must be before it is suppressed.
+            [[nodiscard]]
+            const std::optional<double> GetSuppressionThreshold() const noexcept
+                { return m_suppressionThreshold; }
+            /// @brief The minimum value that a cell must be before it is suppressed.
+            /// @param threshold The threshold to use.
+            /// @sa SetSuppressionLabel().
+            void SetSuppressionThreshold(const std::optional<double> threshold) noexcept
+                { m_suppressionThreshold = threshold; }
+
             /// @brief Sets an image to appear to the left of the cell's text.
             /// @param bmp The image to use.\n
             ///     Note that this image will be scaled down to the cell's height.
@@ -460,6 +482,8 @@ namespace Wisteria::Graphs
             bool m_showLeftBorder{ true };
 
             bool m_isHighlighted{ false };
+            std::optional<double> m_suppressionThreshold{ std::nullopt };
+            wxString m_suppressionLabel{ _(L"---") };
             };
 
         /// @brief Constructor.
@@ -531,7 +555,7 @@ namespace Wisteria::Graphs
         /// @returns The minimum percent of the drawing area's width that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).\n
         ///     Returning @c std::nullopt indicates that the table is autofitting its width.
-        std::optional<double> GetMinWidthProportion() const noexcept
+        const std::optional<double>& GetMinWidthProportion() const noexcept
             { return m_minWidthProportion; }
         /// @brief Sets the minimum percent of the drawing area's width that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
@@ -552,7 +576,7 @@ namespace Wisteria::Graphs
         /// @returns The minimum percent of the drawing area's height that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).\n
         ///     Returning @c std::nullopt indicates that the table is autofitting its height.
-        std::optional<double> GetMinHeightProportion() const noexcept
+        const std::optional<double>& GetMinHeightProportion() const noexcept
             { return m_minHeightProportion; }
         /// @brief Sets the minimum percent of the drawing area's height that the
         ///     table should consume (between @c 0.0 to @c 1.0, representing 0% to 100%).
@@ -955,6 +979,56 @@ namespace Wisteria::Graphs
                         { continue; }
                     auto& cell = m_table[i][column];
                     cell.SetPageHorizontalAlignment(alignment);
+                    }
+                }
+            }
+
+        /** @brief Sets how suppression is used for a row.
+            @param row The row to edit.
+            @param threshold The minimum value that a cell must be before it is suppressed.
+            @param suppressionLabel The label shown in a cell that is less than the suppression threshold.
+            @param columnStops An optional list of columns within the row to skip.*/
+        void SetRowSuppression(const size_t row,
+            const std::optional<double> threshold,
+            const std::optional<wxString>& suppressionLabel,
+            std::optional<std::set<size_t>> columnStops = std::nullopt)
+            {
+            if (row < GetRowCount())
+                {
+                auto& currentRow = m_table[row];
+                for (size_t i = 0; i < currentRow.size(); ++i)
+                    {
+                    if (columnStops.has_value() &&
+                        columnStops.value().find(i) != columnStops.value().cend())
+                        { continue; }
+                    auto& cell = currentRow[i];
+                    cell.SetSuppressionThreshold(threshold);
+                    if (suppressionLabel.has_value())
+                        { cell.SetSuppressionLabel(suppressionLabel.value()); }
+                    }
+                }
+            }
+        /** @brief Sets how suppression is used for a column.
+            @param column The column to edit.
+            @param threshold The minimum value that a cell must be before it is suppressed.
+            @param suppressionLabel The label shown in a cell that is less than the suppression threshold.
+            @param rowStops An optional list of rows within the column to skip.*/
+        void SetColumnSuppression(const size_t column,
+            const std::optional<double> threshold,
+            const std::optional<wxString>& suppressionLabel,
+            std::optional<std::set<size_t>> rowStops = std::nullopt)
+            {
+            if (GetColumnCount() > 0 && column < GetColumnCount())
+                {
+                for (size_t i = 0; i < m_table.size(); ++i)
+                    {
+                    if (rowStops.has_value() &&
+                        rowStops.value().find(i) != rowStops.value().cend())
+                        { continue; }
+                    auto& cell = m_table[i][column];
+                    cell.SetSuppressionThreshold(threshold);
+                    if (suppressionLabel.has_value())
+                        { cell.SetSuppressionLabel(suppressionLabel.value()); }
                     }
                 }
             }

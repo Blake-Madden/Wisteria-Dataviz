@@ -62,6 +62,9 @@ namespace Wisteria::Graphs
                 }
             else if (m_valueFormat == TableCellFormat::Accounting)
                 {
+                if (GetSuppressionThreshold().has_value() &&
+                    *dVal < GetSuppressionThreshold().value())
+                    { return GetSuppressionLabel(); }
                 return
                     ((*dVal < 0) ? L"(" : wxString{}) +
                     wxNumberFormatter::ToString(*dVal, m_precision,
@@ -70,6 +73,9 @@ namespace Wisteria::Graphs
                 }
             else
                 {
+                if (GetSuppressionThreshold().has_value() &&
+                    *dVal < GetSuppressionThreshold().value())
+                    { return GetSuppressionLabel(); }
                 return wxNumberFormatter::ToString(*dVal, m_precision,
                     wxNumberFormatter::Style::Style_WithThousandsSep);
                 }
@@ -104,7 +110,7 @@ namespace Wisteria::Graphs
             return doubleVal2->FormatDate();
             }
         else
-            { return wxEmptyString; }
+            { return wxString{}; }
         }
 
     //----------------------------------------------------------------
@@ -1540,8 +1546,7 @@ namespace Wisteria::Graphs
             {
             for (auto& cell : row)
                 {
-                if (cell.IsText() &&
-                    cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
+                if (cell.GetDisplayValue().CmpNoCase(textToFind) == 0)
                     { return &cell; }
                 }
             }
@@ -1557,8 +1562,7 @@ namespace Wisteria::Graphs
         auto row{ m_table[0]};
         for (size_t i = 0; i < row.size(); ++i)
             {
-            if (row[i].IsText() &&
-                row[i].GetDisplayValue().CmpNoCase(textToFind) == 0)
+            if (row[i].GetDisplayValue().CmpNoCase(textToFind) == 0)
                 { return i; }
             }
 
@@ -1568,8 +1572,6 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::AddFootnote(const wxString& cellValue, const wxString& footnote)
         {
-        m_footnotes.push_back(footnote);
-
         static const std::map<uint8_t, std::wstring> footnoteChars =
             {
             { 0, L"\x2070" },
