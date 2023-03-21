@@ -163,14 +163,14 @@ Properties for the `"datasets"` node:
       - `">="` great than or equal to
     - `"values"`: an array of values to filter the column on. These can be numbers, strings, or dates
          (depending on the column's data type).<br />
-         Multiple values will be an OR operation, where if a value in the data matches *any* of these
+         Multiple values will be an `OR` operation, where if a value in the data matches *any* of these
          values, then it's a match.
          Note that string values can reference constants loaded from the [constants](#constants-properties) section
          or `"formulas"` section of the parent dataset.
   - `"filter-or"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
     are ORed together, meaning that if any condition for a row is true, then it will be included in the subset.
   - `"filter-and"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
-    are ANDed together, meaning that all conditions for a row must be met for it to be included in the subset.
+    are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
 
   Next, the `"merges"` section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:

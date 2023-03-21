@@ -3662,6 +3662,86 @@ namespace Wisteria
                 }
             }
 
+        // change the rows' suppression
+        const auto rowSuppressionCommands = graphNode->GetProperty(L"row-suppression")->GetValueArrayObject();
+        if (rowSuppressionCommands.size())
+            {
+            for (const auto& rowSuppressionCommand : rowSuppressionCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> startPosition =
+                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> endPosition =
+                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount, table);
+                const auto threshold =
+                    ConvertNumber(rowSuppressionCommand->GetProperty(L"threshold"));
+                const auto suppressionLabel =
+                    ExpandConstants(rowSuppressionCommand->GetProperty(L"label")->GetValueString());
+
+                const std::set<size_t> colStops =
+                    loadStops(rowSuppressionCommand->GetProperty(L"stops"));
+                if (threshold.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        {
+                        table->SetRowSuppression(position.value(), threshold.value(),
+                            suppressionLabel.length() ? std::optional<wxString>(suppressionLabel) : std::nullopt,
+                            colStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowSuppression(i, threshold.value(),
+                                suppressionLabel.length() ? std::optional<wxString>(suppressionLabel) : std::nullopt,
+                                colStops);
+                            }
+                        }
+                    }
+                }
+            }
+
+        // change the rows' formatting
+        const auto rowFormattingCommands = graphNode->GetProperty(L"row-formatting")->GetValueArrayObject();
+        if (rowFormattingCommands.size())
+            {
+            for (const auto& rowFormattingCommand : rowFormattingCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(rowFormattingCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> startPosition =
+                    LoadTablePosition(rowFormattingCommand->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> endPosition =
+                    LoadTablePosition(rowFormattingCommand->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount, table);
+                const auto formatValue =
+                    ConvertTableCellFormat(rowFormattingCommand->GetProperty(L"format")->GetValueString());
+
+                const std::set<size_t> colStops =
+                    loadStops(rowFormattingCommand->GetProperty(L"stops"));
+                if (formatValue.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        { table->SetRowFormat(position.value(), formatValue.value(), colStops); }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            { table->SetRowFormat(i, formatValue.value(), colStops); }
+                        }
+                    }
+                }
+            }
+
         // color the rows
         const auto rowColorCommands = graphNode->GetProperty(L"row-color")->GetValueArrayObject();
         if (rowColorCommands.size())
@@ -3796,6 +3876,51 @@ namespace Wisteria
                     {
                     table->SetRowHorizontalPageAlignment(position.value(),
                         PageHorizontalAlignment::Centered, colStops);
+                    }
+                }
+            }
+
+        // change the columns' suppression
+        const auto columnSuppressionCommands = graphNode->GetProperty(L"column-suppression")->GetValueArrayObject();
+        if (columnSuppressionCommands.size())
+            {
+            for (const auto& columnSuppressionCommand : columnSuppressionCommands)
+                {
+                const std::optional<size_t> position =
+                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"position"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> startPosition =
+                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"start"),
+                        originalColumnCount, originalRowCount, table);
+                const std::optional<size_t> endPosition =
+                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"end"),
+                        originalColumnCount, originalRowCount, table);
+                const auto threshold =
+                    ConvertNumber(columnSuppressionCommand->GetProperty(L"threshold"));
+                const auto suppressionLabel =
+                    ExpandConstants(columnSuppressionCommand->GetProperty(L"label")->GetValueString());
+
+                const std::set<size_t> rowStops =
+                    loadStops(columnSuppressionCommand->GetProperty(L"stops"));
+                if (threshold.has_value())
+                    {
+                    // single column
+                    if (position.has_value())
+                        {
+                        table->SetColumnSuppression(position.value(), threshold.value(),
+                            suppressionLabel.length() ? std::optional<wxString>(suppressionLabel) : std::nullopt,
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnSuppression(i, threshold.value(),
+                                suppressionLabel.length() ? std::optional<wxString>(suppressionLabel) : std::nullopt,
+                                rowStops);
+                            }
+                        }
                     }
                 }
             }
@@ -4693,6 +4818,11 @@ namespace Wisteria
             path = NormalizeFilePath(path);
             bmps.push_back(Image::LoadFile(path));
             }
+
+        // single image
+        const auto path = bmpNode->GetProperty(L"path")->GetValueString();
+        if (path.length())
+            { bmps.push_back(Image::LoadFile(NormalizeFilePath(path))); }
         
         if (bmps.empty())
             { return wxNullBitmap; }

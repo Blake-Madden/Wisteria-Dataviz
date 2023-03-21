@@ -182,12 +182,14 @@ Also, instead of properties, a single string can be specified indicating color f
 
 Properties for image import specifications:
 
+- `"path"`: a sinlge file path to import for the image.
 - `"paths"`: an array of file paths to import for the image.
 - `"color-filter"`: a string specifying a color to translucently apply across the image.
 - `"opacity"`: a number between `0-255` specifying how opaque the image is.<br />
   Note that when loading an image for a page's background, this value will be overridden
   by the page's background opacity setting.
-- `"stitch"`: string specifying how to stitch multiple images together.<br />
+- `"stitch"`: string specifying how to stitch multiple images together.
+  (You must use `"paths"` to import multiple images.)<br />
   Available options are:
   - `"vertical"`
   - `"horizontal"` (the default)
@@ -730,6 +732,21 @@ The remaining properties are executed in the following order:
        Refer to the [position](#position-properties) properties that are available.
   - `"constants"`: an array of strings to fill the row with (left-to-right).
   - `"background"`: the background color of the row.
+- `"row-formatting"`: an array of row and formatting pairs, which contain the following properties:
+  - `"position"`: which row to reformat.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"start"`: if reformatting a range of rows, this is the starting column.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"end"`: if reformatting a range of rows, this is the end column.<br />
+       Refer to the [position](#position-properties) properties that are available.
+  - `"format"`: the formatting for the column.
+    Available options are:
+    - `"accounting"`
+    - `"general"`
+    - `"percent"`
+    - `"percent-changed"`
+  - `"stops"`: an array of which rows columns to skip over when changing the row's formatting<br />
+       This is an array of `"position"` items.
 - `"row-color"`: an array of row and color pairs, which contain the following properties:
   - `"position"`: which row to apply a background color.<br />
        Refer to the [position](#position-properties) properties that are available.

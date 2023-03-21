@@ -418,6 +418,16 @@ namespace Wisteria
         [[nodiscard]] std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
             const wxSimpleJSON::Ptr_t& positionNode) const;
 
+        [[nodiscard]]
+        std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node)
+            {
+            if (node->IsValueNumber())
+                { return node->GetValueNumber(); }
+            else if (node->IsValueString())
+                { return ExpandNumericConstant(node->GetValueString()); }
+            else
+                { return std::nullopt; }
+            }
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced
