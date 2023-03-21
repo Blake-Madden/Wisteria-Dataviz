@@ -4,7 +4,7 @@
 // Author:      Blake Madden
 // Created:     01/23/2022
 // Copyright:   (c) Blake Madden
-// Licence:     3-Clause BSD licence
+// License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 /////////////////////////////////////////////////////////////////////////////
 

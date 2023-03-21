@@ -2,7 +2,7 @@
 // Name:        ganttchart.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2022 Blake Madden
-// Licence:     3-Clause BSD licence
+// License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
