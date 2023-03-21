@@ -467,7 +467,7 @@ TEST_CASE("Subset Simple Datetime", "[data][subset]")
     auto ds = std::make_shared<Data::Dataset>();
     ds->ImportCSV(appDir + L"/datasets/Economics/Silver Futures.csv",
         ImportInfo().ContinuousColumns({ L"Close/Last" }).
-        DateColumns({ { L"Date" } }));
+        DateColumns({ { L"Date", DateImportMethod::Automatic, wxString{} } }));
 
     Subset dsSubset;
 
