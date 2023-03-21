@@ -168,8 +168,8 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path)
 bool FilePathResolverBase::HasWindowsPrefix(const wxString& str)
     {
     return (str.length() >= 3 &&
-            (str[0] >= L'a' && str[0] <= L'z' ||
-             str[0] >= L'A' && str[0] <= L'Z') &&
+            ((str[0] >= L'a' && str[0] <= L'z') ||
+             (str[0] >= L'A' && str[0] <= L'Z')) &&
             str[1] == L':' &&
             string_util::is_either<wchar_t>(str[2], L'\\', L'/') );
     }
@@ -179,8 +179,8 @@ bool FilePathResolverBase::HasUnixPrefix(const wxString& str)
     {
     return (str.length() >= 2 &&
             str[0] == wxT('/') &&
-            (str[1] >= L'a' && str[1] <= L'z' ||
-             str[1] >= L'A' && str[1] <= L'Z'));
+            ((str[1] >= L'a' && str[1] <= L'z') ||
+             (str[1] >= L'A' && str[1] <= L'Z')));
     }
 
 //------------------------------------------------
@@ -199,7 +199,7 @@ wxString ParseTitleFromFileName(wxString filename)
         { filename = wxFileName(filename).GetPath(); }
     //sometimes webpage paths end with a '/', so chop that off when getting the title
     if (filename.EndsWith(wxT("/")) )
-        { filename = filename.Mid(0,filename.length()-1); }
+        { filename = filename.substr(0, filename.length()-1); }
     FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
     //paths to worksheet/cell inside of Excel file should keep the spreadsheet file extension
@@ -306,18 +306,18 @@ wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /
         else if (resolver.IsHTTPFile() || resolver.IsHTTPSFile())
             {
             size_t slash = filePath.find(wxT('/'));
-            if (slash == wxNOT_FOUND || slash == filePath.length()-1)
+            if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }
             if (filePath[slash+1] == wxT('/'))//skip the "http://"
                 { slash = filePath.find(wxT('/'), slash+2); }
-            if (slash == wxNOT_FOUND || slash == filePath.length()-1)
+            if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }
             const size_t lastSlash = filePath.find_last_of(wxT('/'));
-            if (lastSlash == wxNOT_FOUND || lastSlash <= slash || lastSlash == filePath.length()-1)
+            if (lastSlash == wxString::npos || lastSlash <= slash || lastSlash == filePath.length()-1)
                 { return filePath; }
-            wxString domain = filePath.Mid(0, slash);
-            wxString fileName = filePath.Mid(lastSlash+1);
-            wxString foldersString = filePath.Mid(slash+1, (lastSlash-slash)-1);
+            wxString domain = filePath.substr(0, slash);
+            wxString fileName = filePath.substr(lastSlash+1);
+            wxString foldersString = filePath.substr(slash+1, (lastSlash-slash)-1);
 
             wxArrayString folders;
             wxStringTokenizer tkz(foldersString, wxT('/'));
@@ -425,10 +425,10 @@ wxString ExtractExtensionsFromFileFilter(const wxString& fileFilter)
     wxString retVal = fileFilter;
     // get the actual filter inside of the "()" section of the string
     auto index = retVal.find(L'(');
-    if (index != wxNOT_FOUND)
+    if (index != wxString::npos)
         { retVal.erase(0, index + 1); }
     index = retVal.find(L')', true);
-    if (index != wxNOT_FOUND)
+    if (index != wxString::npos)
         { retVal.Truncate(index); }
     if (retVal == L"*.*")
         { retVal = wxFileSelectorDefaultWildcardStr; }
@@ -537,7 +537,7 @@ bool PathCombine(const wxString& directoryToCombineWith,
         if (fileOrFolderToCombineName.GetVolume().CmpNoCase(directoryToCombineWithName.GetVolume()) != 0)
             {
             newPath = directoryToCombineWith;
-            newPath += fileOrFolderToCombineName.GetFullName().Mid(fullVolumeName.length());
+            newPath += fileOrFolderToCombineName.GetFullName().substr(fullVolumeName.length());
             }
         }
 

@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/import/cpp_i18n_review.h"
+#include "../src/import/cpp_extract_text.h"
 
 using namespace lily_of_the_valley;
 using namespace Catch::Matchers;
@@ -30,7 +30,7 @@ TEST_CASE("Check CPP", "[cpp]")
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"author: blake@mail.com") == 0);
-        CHECK(ext.get_filtered_text_length() = 22);
+        CHECK(ext.get_filtered_text_length() == 22);
         }
     SECTION("Read Author")
         {
@@ -127,7 +127,7 @@ TEST_CASE("Check CPP", "[cpp]")
         const wchar_t* text = L"/*!Some \ncomment*/\n\nSome code\n/**A doxygen comment.*/";
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
-        CHECK(0, std::wcscmp(output, L"Some \ncomment\n\nA doxygen comment."));
+        CHECK(std::wcscmp(output, L"Some \ncomment\n\nA doxygen comment.") == 0);
         CHECK(ext.get_filtered_text_length() == 33);
         }
     SECTION("Regular Block Comment")

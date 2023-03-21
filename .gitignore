@@ -58,4 +58,5 @@ cpp.hint
 /docs/Syntax Manual/_book
 /tests/.vs
 /tests/out
+/tests/bin
 /docs/Syntax Manual/_main.log

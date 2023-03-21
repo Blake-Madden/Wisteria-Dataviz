@@ -53,7 +53,7 @@ TEST_CASE("OpenDocument Parser", "[odt import]")
         odt_odp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"\n\nA linebreak\nhere.") == 0);
-        CHECK_EQUAL((size_t)19, ext.get_filtered_text_length());
+        CHECK(ext.get_filtered_text_length() == 19);
         }
     SECTION("Page Break")
         {
@@ -61,7 +61,7 @@ TEST_CASE("OpenDocument Parser", "[odt import]")
         odt_odp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"\n\nHello.\n\n\f\n\nHere is page 2.") == 0);
-        CHECK_EQUAL((size_t)28, ext.get_filtered_text_length());
+        CHECK(ext.get_filtered_text_length() == 28);
         }
     SECTION("Spaces")
         {

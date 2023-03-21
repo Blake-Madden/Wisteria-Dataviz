@@ -114,7 +114,7 @@ public:
             @c -1 means no icon.*/
     void AddCategory(const std::wstring& category,
                      const std::set<std::wstring, string_util::string_no_case_less>& functions,
-                     const wxWindowID parentId = wxID_ANY, const long iconIndex = -1)
+                     const wxWindowID parentId = wxID_ANY, const int iconIndex = -1)
         { m_functionCollection.insert({ category, functions, parentId, iconIndex }); }
     /** @brief Organizes all of the categories and subcategories.
         @details Call this after the final call to AddCategory().*/
@@ -144,21 +144,21 @@ private:
     [[nodiscard]]
     static wxString GetFunctionName(const wxString& signature)
         {
-        const size_t firstParam = signature.find(wxT('('));
-        return (firstParam == wxNOT_FOUND) ?
-            signature : signature.Mid(0,firstParam);
+        const auto firstParam = signature.find(wxT('('));
+        return (firstParam == wxString::npos) ?
+            signature : signature.substr(0, firstParam);
         }
     [[nodiscard]]
     bool SplitFunctionAndParams(wxString& function, wxString& params)
         {
-        const int parenthesisStart = function.find(L'(');
-        if (parenthesisStart != wxNOT_FOUND)
+        const auto parenthesisStart = function.find(L'(');
+        if (parenthesisStart != wxString::npos)
             {
-            const int parenthesisEnd = function.find(L')', true);
+            const auto parenthesisEnd = function.find(L')', true);
             // if empty parameter list then don't bother splitting this up
             if (parenthesisEnd == parenthesisStart + 1)
                 { return false; }
-            params = function.Mid(parenthesisStart + 1,(parenthesisEnd-1)-parenthesisStart);
+            params = function.substr(parenthesisStart + 1, (parenthesisEnd-1)-parenthesisStart);
             function.Truncate(parenthesisStart);
             return true;
             }

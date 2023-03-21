@@ -129,20 +129,20 @@ namespace lily_of_the_valley
                     kwdFontColor, kwdStrikeThrough, kwdItalic, kwdUnderline, kwdSectionSkip };
 
     /// @private
-    void reset_property(para_prop& prop)
+    inline void reset_property(para_prop& prop)
         {
         prop.xaLeft = prop.xaRight = prop.xaFirst = 0;
         prop.just = JUST::justL;
         }
     
     /// @private
-    void reset_property(char_prop& prop)
+    inline void reset_property(char_prop& prop)
         {
         prop.fBold = prop.fItalic = prop.fStrikeThrough = prop.fUnderline = 0;
         }
     
     /// @private
-    void reset_property(SEP& prop)
+    inline void reset_property(SEP& prop)
         {
         prop.cCols = prop.xaPgn = prop.yaPgn = 0;
         prop.sbk = SBK::sbkNon;
@@ -150,7 +150,7 @@ namespace lily_of_the_valley
         }
 
     /// @private
-    void reset_property(DOP& prop)
+    inline void reset_property(DOP& prop)
         {
         prop.fFacingp = prop.fLandscape = prop.pgnStart = prop.xaLeft =
         prop.xaPage = prop.xaRight = prop.yaBottom = prop.yaPage =
@@ -158,7 +158,7 @@ namespace lily_of_the_valley
         }
     
     /// @private
-    void reset_property(SAVE& prop)
+    inline void reset_property(SAVE& prop)
         {
         prop.pNext = nullptr;
         reset_property(prop.chp);
