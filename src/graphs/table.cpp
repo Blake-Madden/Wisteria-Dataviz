@@ -53,7 +53,7 @@ namespace Wisteria::Graphs
                  dVal != nullptr)
             {
             if (std::isnan(*dVal))
-                { return wxEmptyString; }
+                { return wxString{}; }
             else if (m_valueFormat == TableCellFormat::Percent ||
                 m_valueFormat == TableCellFormat::PercentChange)
                 {
@@ -78,7 +78,7 @@ namespace Wisteria::Graphs
                  doubleVal != nullptr)
             {
             if (std::isnan(doubleVal->first) || std::isnan(doubleVal->second))
-                { return wxEmptyString; }
+                { return wxString{}; }
             if (doubleVal->first > doubleVal->second)
                 {
                 return wxString::Format(L"%s : 1",
@@ -100,7 +100,7 @@ namespace Wisteria::Graphs
                  doubleVal2 != nullptr)
             {
             if (!doubleVal2->IsValid())
-                { return wxEmptyString; }
+                { return wxString{}; }
             return doubleVal2->FormatDate();
             }
         else
@@ -897,8 +897,8 @@ namespace Wisteria::Graphs
 
         // if requesting minimum width, then stretch it out if needed
         // (note that row heights are preserved)
-        if (m_minWidthProportion.has_value() &&
-            tableWidth < (drawArea.GetWidth() * m_minWidthProportion.value()))
+        if (GetMinWidthProportion().has_value() &&
+            tableWidth < (drawArea.GetWidth() * GetMinWidthProportion().value()))
             {
             const auto widthIncreaseProportion = safe_divide<double>(drawArea.GetWidth(), tableWidth);
             for (auto& col : columnWidths)
@@ -912,8 +912,8 @@ namespace Wisteria::Graphs
 
         // if requesting minimum height, then stretch it out if needed
         // (note that column widths are preserved)
-        if (m_minHeightProportion.has_value() &&
-            tableHeight < (drawArea.GetHeight() * m_minHeightProportion.value()))
+        if (GetMinHeightProportion().has_value() &&
+            tableHeight < (drawArea.GetHeight() * GetMinHeightProportion().value()))
             {
             const auto heightIncreaseProportion = safe_divide<double>(drawArea.GetHeight(),
                                                                       tableHeight);
@@ -949,8 +949,8 @@ namespace Wisteria::Graphs
         const auto AddPaddingToRect = [&, this](const wxRect& rect)
             {
             wxRect adjustedRect = rect;
-            if (!m_minWidthProportion.has_value() &&
-                !m_minHeightProportion.has_value())
+            if (!GetMinWidthProportion().has_value() &&
+                !GetMinHeightProportion().has_value())
                 { adjustedRect.Inflate(ScaleToScreenAndCanvas(5)); }
             return adjustedRect;
             };
@@ -1088,7 +1088,7 @@ namespace Wisteria::Graphs
                 const auto cellText = cell.GetDisplayValue();
                 auto cellLabel = std::make_shared<Label>(
                     GraphItemInfo(
-                        (isPrefixSeparateLabel ? wxString(wxEmptyString) : cell.GetPrefix()) +
+                        (isPrefixSeparateLabel ? wxString{} : cell.GetPrefix()) +
                         (cellText.length() ? cellText : wxString(L" "))).
                     Pen(wxNullPen).Padding(5, 5, 5, 5).
                     Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
