@@ -142,7 +142,7 @@ wxString FunctionBrowserDlg::FormatFunctionSignature(wxString signature)
 
     size_t firstParanPos = signature.find(L'(');
     const size_t lastParanPos = signature.find_last_of(L')');
-    if (firstParanPos == wxNOT_FOUND || lastParanPos == wxNOT_FOUND ||
+    if (firstParanPos == wxString::npos || lastParanPos == wxString::npos ||
         lastParanPos == firstParanPos + 1)
         { return L"<tt><span style='font-weight:bold;'>" + signature + L"</span></tt>"; }
 
