@@ -37,7 +37,7 @@ jobs:
              cmake ./
              make -j4
              cd bin
-             ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
+             vfb-run -a ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
              cat WDV-junit.xml
              errors=$(cat WDV-junit.xml | grep -Po '(errors)="\K[^"]*')
              failures=$(cat WDV-junit.xml | grep -Po '(failures)="\K[^"]*')
