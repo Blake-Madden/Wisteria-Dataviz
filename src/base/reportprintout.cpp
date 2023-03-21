@@ -56,10 +56,10 @@ bool ReportPrintout::OnPrintPage(int page)
         // calculate a suitable scaling factor
         const float scaleX = safe_divide<float>(dcWidth, maxX);
         const float scaleY = safe_divide<float>(dcHeight, maxY);
-        const float scaleXReciprical = safe_divide<float>(1.0f, scaleX);
-        const float scaleYReciprical = safe_divide<float>(1.0f, scaleY);
+        const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);
+        const float scaleYReciprocal = safe_divide<float>(1.0f, scaleY);
 
-        // calculate the position on the DC for centring the graphic
+        // calculate the position on the DC for centering the graphic
         const float posX = safe_divide<float>(
             (dcWidth -((maxX-(2*marginX))* std::min(scaleX,scaleY))), 2);
         const float posY = safe_divide<float>(
@@ -137,7 +137,7 @@ bool ReportPrintout::OnPrintPage(int page)
                 dc->GetTextExtent(ExpandPrintString(
                     canvas->GetCenterPrinterHeader(), page), &width, &height);
                 dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterHeader(), page),
-                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
+                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprocal),2) -
                                             safe_divide<float>(width,2)),
                     static_cast<wxCoord>(marginY));
                 }
@@ -146,7 +146,7 @@ bool ReportPrintout::OnPrintPage(int page)
                 dc->GetTextExtent(ExpandPrintString(
                     canvas->GetRightPrinterHeader(), page), &width, &height);
                 dc->DrawText(ExpandPrintString(canvas->GetRightPrinterHeader(), page),
-                    static_cast<wxCoord>((dcWidth*scaleXReciprical) - (marginX+width)),
+                    static_cast<wxCoord>((dcWidth*scaleXReciprocal) - (marginX+width)),
                     static_cast<wxCoord>(marginY));
                 }
             }
@@ -156,7 +156,7 @@ bool ReportPrintout::OnPrintPage(int page)
             canvas->GetRightPrinterFooter().length())
             {
             dc->GetTextExtent(L"MeasurementTestString", &width, &height);
-            const long yPos = (dcHeight*scaleYReciprical)-(marginY+height);
+            const long yPos = (dcHeight*scaleYReciprocal)-(marginY+height);
             if (canvas->GetLeftPrinterFooter().length())
                 {
                 dc->DrawText(ExpandPrintString(canvas->GetLeftPrinterFooter(), page),
@@ -168,7 +168,7 @@ bool ReportPrintout::OnPrintPage(int page)
                 dc->GetTextExtent(ExpandPrintString(
                     canvas->GetCenterPrinterFooter(), page), &width, &height);
                 dc->DrawText(ExpandPrintString(canvas->GetCenterPrinterFooter(), page),
-                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprical),2) -
+                    static_cast<wxCoord>(safe_divide<float>((dcWidth*scaleXReciprocal),2) -
                         safe_divide<float>(width,2)),
                     yPos);
                 }
@@ -177,7 +177,7 @@ bool ReportPrintout::OnPrintPage(int page)
                 dc->GetTextExtent(ExpandPrintString(
                     canvas->GetRightPrinterFooter(), page), &width, &height);
                 dc->DrawText(ExpandPrintString(canvas->GetRightPrinterFooter(), page),
-                    static_cast<wxCoord>(((dcWidth*scaleXReciprical) - (marginX+width))),
+                    static_cast<wxCoord>(((dcWidth*scaleXReciprocal) - (marginX+width))),
                     yPos);
                 }
             }

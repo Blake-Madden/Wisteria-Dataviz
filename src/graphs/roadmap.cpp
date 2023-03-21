@@ -22,7 +22,7 @@ namespace Wisteria::Graphs
         {
         // Axes aren't actually shown, just used for placing the objects.
         // But client might want to add axis titles or brackets, so hide
-        // the lines and labels explicilty instead of entirely hiding the axes.
+        // the lines and labels explicitly instead of entirely hiding the axes.
         GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
         GetBottomXAxis().GetAxisLinePen() = wxNullPen;
         GetBottomXAxis().GetGridlinePen() = wxNullPen;
@@ -108,12 +108,12 @@ namespace Wisteria::Graphs
             locations.push_back(pt);
 
             const wxString markerText =
-                (m_markerLableDisplay == MarkerLabelDisplay::NameAndValue) ?
+                (m_markerLabelDisplay == MarkerLabelDisplay::NameAndValue) ?
                      wxString::Format(L"%s (%s)",
                         GetRoadStops()[i].GetName(),
                             wxNumberFormatter::ToString(GetRoadStops()[i].GetValue(), 3,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes)) : 
-                (m_markerLableDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
+                (m_markerLabelDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
                     wxString::Format(L"%s (%s)",
                         GetRoadStops()[i].GetName(),
                             wxNumberFormatter::ToString(std::abs(GetRoadStops()[i].GetValue()), 3,
@@ -178,7 +178,7 @@ namespace Wisteria::Graphs
             {
             m_laneSeparatorPen.SetWidth(
                 pavement->GetPen().GetWidth() /
-                (m_laneSepatatorStyle == LaneSeparatorStyle::DoubleLine ? 5 : 10));
+                (m_laneSeparatorStyle == LaneSeparatorStyle::DoubleLine ? 5 : 10));
             auto laneSep = std::make_shared<GraphItems::Points2D>(m_laneSeparatorPen);
             laneSep->SetDPIScaleFactor(GetDPIScaleFactor());
             laneSep->GetClippingRect() = GetPlotAreaBoundingBox();
@@ -194,7 +194,7 @@ namespace Wisteria::Graphs
             AddObject(laneSep);
             // if a double line, then draw a road colored line down the middle
             // of the lane separator to make it look like two lines
-            if (m_laneSepatatorStyle == LaneSeparatorStyle::DoubleLine)
+            if (m_laneSeparatorStyle == LaneSeparatorStyle::DoubleLine)
                 {
                 wxPen lineSepPen = wxPen(m_roadPen.GetColour(),
                                          m_laneSeparatorPen.GetWidth() * math_constants::third);

@@ -109,7 +109,7 @@ namespace Wisteria::GraphItems
             {
             shapeTopLeftCorner.x += GetBoundingBox(dc).GetWidth() - drawRect.GetWidth();
             }
-        // vertical page aligment
+        // vertical page alignment
         if (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned)
             { /*noop*/ }
         else if (GetPageVerticalAlignment() == PageVerticalAlignment::Centered)
@@ -676,7 +676,7 @@ namespace Wisteria::GraphItems
             gc->SetPen(scaledPen);
             gc->SetBrush(GetGraphItemInfo().GetBrush());
             auto marker = gc->CreatePath();
-            // bottom middle, strecthed out to both top corners
+            // bottom middle, stretched out to both top corners
             marker.MoveToPoint(GetXPosFromLeft(dcRect, math_constants::half),
                                GetYPosFromTop(dcRect, 1));
             marker.AddCurveToPoint(
@@ -1170,7 +1170,7 @@ namespace Wisteria::GraphItems
                 std::max<size_t>(safe_divide<size_t>(rect.GetHeight(),
                     ScaleToScreenAndCanvas(100)), 1);
 
-            // get the min percect of the height needed, which is the lesser of 3 DIPs or 33%
+            // get the min percent of the height needed, which is the lesser of 3 DIPs or 33%
             const auto heightMinDIPsPercent = std::min(
                 safe_divide<double>(ScaleToScreenAndCanvas(3), rect.GetHeight()),
                                     math_constants::third);

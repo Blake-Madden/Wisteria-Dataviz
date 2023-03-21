@@ -127,7 +127,7 @@ namespace Wisteria::GraphItems
 
             scaledPieLabel = fitLabelToSlice(pieLabel);
             // if auto splitting still wasn't enough to fit, then try
-            // splitting into multiple lines (if a commoa-separated list)
+            // splitting into multiple lines (if a comma-separated list)
             if (scaledPieLabel == nullptr)
                 {
                 pieLabel->GetFont().SetFractionalPointSize(originalFontSize);
@@ -306,7 +306,7 @@ namespace Wisteria::GraphItems
 
         // Outer arc
         // Note that if the start and end angles are the same, then an entire pie
-        // is drawn with the current brush (per wx's docs), which is not what we want;
+        // is drawn with the current brush (per wxWidgets's docs), which is not what we want;
         // in that case, don't draw the outer arc (which would be zero length anyway).
         if (!compare_doubles(m_startAngle, m_endAngle))
             {
@@ -463,7 +463,7 @@ namespace Wisteria::Graphs
             totalValue += (useAggregateColumn ? aggregateColumn->GetValue(i) : 1);
             }
 
-        // create slices with their percents of the overall total
+        // create slices with their percentages of the overall total
         for (const auto& group : outerGroups)
             {
             GetOuterPie().emplace_back(
@@ -975,7 +975,7 @@ namespace Wisteria::Graphs
             startAngle += GetInnerPie().at(i).m_percent * 360;
             }
 
-        // sort top quandrant labels (top-to-bottom)
+        // sort top quadrant labels (top-to-bottom)
         std::sort(outerTopLeftLabelAndLines.begin(), outerTopLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
@@ -983,7 +983,7 @@ namespace Wisteria::Graphs
             wxASSERT_MSG(rhv.first, L"Invalid pie label when sorting!");
             return lhv.first->GetAnchorPoint().y < rhv.first->GetAnchorPoint().y;
             });
-        // reverse bottom quandrant sort labels (bottom-to-top)
+        // reverse bottom quadrant sort labels (bottom-to-top)
         std::sort(outerBottomLeftLabelAndLines.begin(), outerBottomLeftLabelAndLines.end(),
             [](const auto& lhv, const auto& rhv) noexcept
             {
@@ -1428,7 +1428,7 @@ namespace Wisteria::Graphs
                 outerBottomLeftLabelAndLines.empty() &&
                 outerTopRightLabelAndLines.empty() &&
                 outerBottomRightLabelAndLines.empty())
-                { /*noop*/ }
+                { /*no-op*/ }
             // empty left gutter
             if (outerTopLeftLabelAndLines.empty() &&
                 outerBottomLeftLabelAndLines.empty())

@@ -326,15 +326,15 @@ namespace Wisteria::Graphs
             if (box.GetDataset()->GetRowCount() == 0)
                 { return; }
 
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetLowerControlLimit(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetLowerControlLimit(),
                                    box. m_lowerQuartileCoordinate);
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetUpperControlLimit(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetUpperControlLimit(),
                                    box.m_upperQuartileCoordinate);
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetLowerWhisker(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetLowerWhisker(),
                                    box.m_lowerOutlierRangeCoordinate);
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetUpperWhisker(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetUpperWhisker(),
                                    box.m_upperOutlierRangeCoordinate);
 
             // calculate the box (interquartile range)
@@ -403,7 +403,7 @@ namespace Wisteria::Graphs
                     boxRectAdjustedToPlotArea.SetLeft(box.m_boxRect.GetLeft() - boxesLeft);
                     boxRectAdjustedToPlotArea.SetTop(box.m_boxRect.GetTop() - highestBoxHeight);
                     auto boxImage = std::make_shared<Image>(
-                        GraphItemInfo(boxLabel).Pen(GetImageOulineColor()).
+                        GraphItemInfo(boxLabel).Pen(GetImageOutlineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
                         scaledCommonImg.GetSubImage(boxRectAdjustedToPlotArea));
                     boxImage->SetOpacity(box.GetOpacity());
@@ -417,7 +417,7 @@ namespace Wisteria::Graphs
                     const auto& barScaledImage = GetImageScheme()->GetImage(boxIndex);
                     auto boxImage = std::make_shared<Image>(
                         GraphItemInfo(boxLabel).
-                        Pen(GetImageOulineColor()).
+                        Pen(GetImageOutlineColor()).
                         AnchorPoint(box.m_boxRect.GetLeftTop()),
                         Image::CropImageToRect(
                             barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
@@ -544,7 +544,7 @@ namespace Wisteria::Graphs
                 }
 
             // draw the middle point line
-            GetPhyscialCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
+            GetPhysicalCoordinates(box.GetXAxisPosition(), box.GetMiddlePoint(),
                                    box.m_middleCoordinate);
             wxPoint boxLinePts[2] = { wxPoint(box.m_boxRect.GetX(), box.m_middleCoordinate.y),
                                       wxPoint(box.m_boxRect.GetX() + box.m_boxRect.GetWidth(),
@@ -582,7 +582,7 @@ namespace Wisteria::Graphs
                     box.m_continuousColumn->GetValue(i) <= box.GetUpperWhisker() &&
                     box.m_continuousColumn->GetValue(i) >= box.GetLowerWhisker())
                     { continue; }
-                if (GetPhyscialCoordinates(box.GetXAxisPosition(),
+                if (GetPhysicalCoordinates(box.GetXAxisPosition(),
                                            box.m_continuousColumn->GetValue(i), pt))
                     {
                     box.m_jitter.JitterPoint(pt);

@@ -170,7 +170,7 @@ namespace Wisteria::Graphs
                 GetBrushScheme()->GetBrush(0));
 
             wxString blockLabelText = (m_useValueColumn ?
-                wxString::Format(_(L"%s item(s), totalling %s"),
+                wxString::Format(_(L"%s item(s), totaling %s"),
                     wxNumberFormatter::ToString(blockTable.second.first, 0,
                         Settings::GetDefaultNumberFormat()),
                     wxNumberFormatter::ToString(blockTable.second.second, 2,

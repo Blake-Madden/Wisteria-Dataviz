@@ -21,7 +21,7 @@ namespace Wisteria::Data
             GetStringTable().insert(std::make_pair(GetNextKey(), wxEmptyString));
             mdCode = FindMissingDataCode();
             }
-        wxASSERT_MSG(mdCode, L"Error creating MD code for caterical column!");
+        wxASSERT_MSG(mdCode, L"Error creating MD code for categorical column!");
         if (mdCode.has_value())
             { Fill(mdCode.value()); }
         else
@@ -69,7 +69,7 @@ namespace Wisteria::Data
             }
        
         // get target iterator first as this may need to add a new column and invalid
-        // other colum iterators
+        // other column iterators
         auto targetVar = GetCategoricalColumn(targetColumnName);
         if (targetVar == GetCategoricalColumns().end())
             {
@@ -1157,7 +1157,7 @@ namespace Wisteria::Data
         m_continuousColumns.clear();
         m_name.clear();
 
-        SetImportContinuousMDRecodeValue(info.m_continousMDRecodeValue);
+        SetImportContinuousMDRecodeValue(info.m_continuousMDRecodeValue);
 
         std::vector<std::vector<std::wstring>> dataStrings;
 
@@ -1391,7 +1391,7 @@ namespace Wisteria::Data
                     continuousValues.emplace_back(
                         ConvertToDouble(
                             currentRow.at(continuousColumnIndices.at(i).value()),
-                            m_importContinousMDRecodeValue));
+                            m_importContinuousMDRecodeValue));
                     }
                 }
             currentItem.Continuous(continuousValues);

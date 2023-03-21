@@ -76,7 +76,7 @@ namespace Wisteria
     //------------------------------------------------------
     void Canvas::OnPreview([[maybe_unused]] wxCommandEvent& event)
         {
-        // From wx's docs:
+        // From wxWidgets's docs:
         // Do not explicitly delete the printout objects once this constructor has been called,
         // since they will be deleted in the wxPrintPreview destructor.
         // The same does not apply to the (printer) data argument.
@@ -1062,7 +1062,7 @@ namespace Wisteria
                     }
                 }
             }
-        // divide the remaining space amonst the rows being auto fit
+        // divide the remaining space amongst the rows being auto fit
         // (i.e., the rows with items whose heights don't need to be a particular value).
         const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
         const auto avgAutoFitRowHeight = safe_divide<double>(overallScaling, autoFitRows);
@@ -1225,7 +1225,7 @@ namespace Wisteria
     void Canvas::SetFixedObject(const size_t row, const size_t column,
                                 std::shared_ptr<GraphItems::GraphItemBase> object)
         {
-        // cache the orginal scaling in case when need to recalulcate
+        // cache the original scaling in case when need to recalculate
         // new canvas dimensions later
         if (object != nullptr)
             {

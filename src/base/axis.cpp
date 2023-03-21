@@ -3469,7 +3469,7 @@ namespace Wisteria::GraphItems
             // add apostrophe in front of the first truncated number
             else
                 { label.insert(0, 1, L'\''); }
-            // if using hypthens, replace with en dashes to be fancier
+            // if using hyphens, replace with en dashes to be fancier
             label.Replace(L"-", L"\x2013");
             GetBrackets()[i].GetLabel().SetText(label);
             }

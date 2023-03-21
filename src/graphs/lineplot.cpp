@@ -242,7 +242,7 @@ namespace Wisteria::Graphs
                         GraphItemInfo().AnchorPoint(wxPoint(wxDefaultCoord, wxDefaultCoord)), 1), dc);
                     continue;
                     }
-                if (!GetPhyscialCoordinates(GetXValue(i),
+                if (!GetPhysicalCoordinates(GetXValue(i),
                                         m_yColumn->GetValue(i),
                                         pt))
                     { continue; }

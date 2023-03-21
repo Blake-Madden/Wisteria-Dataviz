@@ -1021,7 +1021,7 @@ namespace Wisteria
                 else
                     {
                     throw std::runtime_error(
-                        _(L"No dataset provided for axis bracktets. "
+                        _(L"No dataset provided for axis brackets. "
                            "Did you intend to define the brackets as an array of "
                            "start and end points instead?").ToUTF8());
                     }
@@ -1433,7 +1433,7 @@ namespace Wisteria
             }
         const wxRegEx re(FunctionStartRegEx() +
                                  L"(groupcount)" + OpeningParenthesisRegEx() +
-                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
                                  ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -1484,7 +1484,7 @@ namespace Wisteria
         
         const wxRegEx re(FunctionStartRegEx() +
                          L"(grouppercentdecimal)" + OpeningParenthesisRegEx() +
-                         ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                         ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
                          ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
 
         if (re.Matches(formula))
@@ -1518,7 +1518,7 @@ namespace Wisteria
         
         const wxRegEx re(FunctionStartRegEx() +
                          L"(grouppercent)" + OpeningParenthesisRegEx() +
-                         ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                         ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
                          ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
 
         if (re.Matches(formula))
@@ -1555,8 +1555,8 @@ namespace Wisteria
                                ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
         const wxRegEx reExtended(FunctionStartRegEx() +
                                  L"(n)" + OpeningParenthesisRegEx() +
-                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
-                                 ColumnNameOrFormulaRegEx() + ParamSepatatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
+                                 ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
                                  ColumnNameOrFormulaRegEx() + ClosingParenthesisRegEx());
         if (reSimple.Matches(formula))
             {
@@ -1666,7 +1666,7 @@ namespace Wisteria
             const auto paramPartsCount = re.GetMatchCount();
             if (paramPartsCount >= 2)
                 {
-                // only continuous can be totalled
+                // only continuous can be totaled
                 double total{ 0 };
                 for (size_t i = 0; i < dataset->GetContinuousColumns().size(); ++i)
                     { total += dataset->GetContinuousTotal(i); }
@@ -1699,7 +1699,7 @@ namespace Wisteria
                 {
                 const wxString columnName = ConvertColumnOrGroupParameter(
                                                 re.GetMatch(formula, 2), dataset);
-                // only continuous can be totalled
+                // only continuous can be totaled
                 if (dataset->GetContinuousColumn(columnName) !=
                     dataset->GetContinuousColumns().cend())
                     {
@@ -1709,7 +1709,7 @@ namespace Wisteria
                     {
                     throw std::runtime_error(
                         wxString::Format(
-                        _(L"%s: column must be continuous when totalling."), columnName).ToUTF8());
+                        _(L"%s: column must be continuous when totaling."), columnName).ToUTF8());
                     }
                 }
             // dataset or column name missing
@@ -2312,7 +2312,7 @@ namespace Wisteria
                         }
                     else
                         {
-                        importDefines.ContinousMDRecodeValue(
+                        importDefines.ContinuousMDRecodeValue(
                                 datasetNode->GetProperty(L"continuous-md-recode-value")->
                                     GetValueNumber(std::numeric_limits<double>::quiet_NaN())).
                             IdColumn(idColumn).
@@ -2439,7 +2439,7 @@ namespace Wisteria
             foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for gannt chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for Gannt chart."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
@@ -2481,7 +2481,7 @@ namespace Wisteria
         else
             {
             throw std::runtime_error(
-                _(L"Variables not defined for gannt chart.").ToUTF8());
+                _(L"Variables not defined for Gannt chart.").ToUTF8());
             }
         }
 
@@ -3846,7 +3846,7 @@ namespace Wisteria
                 }
             }
 
-        // change rows' content alignent
+        // change rows' content alignment
         const auto rowContentCommands =
             graphNode->GetProperty(L"row-content-align")->GetValueArrayObject();
         if (rowContentCommands.size())

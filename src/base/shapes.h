@@ -263,7 +263,7 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw within.
         /// @param dc The DC to draw to.
         /// @note The color will more than likely go outside of the provided rectangle,
-        ///     as that is the asthetic that we are going for.\n
+        ///     as that is the aesthetic that we are going for.\n
         ///     This can be negated, however, by calling `SetClippingRect()` for the Shape
         ///     object using this renderer.
         void DrawWaterColorRectangle(wxRect rect, wxDC& dc) const;
@@ -283,7 +283,7 @@ namespace Wisteria::GraphItems
                                             const double percentFromTop) const
             { return rect.GetTop() + (rect.GetHeight() * percentFromTop); };
 
-        /// @brief Mirrors percents passed to GetXPosFromLeft() or GetYPosFromTop().
+        /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
         [[nodiscard]] constexpr double Mirror(const double percent) const noexcept
             { return 1.0 - percent; }
 

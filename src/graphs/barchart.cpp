@@ -577,7 +577,7 @@ namespace Wisteria::Graphs
             GetBarAxis().IsReversed())
             { return; }
 
-        // bar grpoups connected to bars' positions will need to be removed
+        // bar groups connected to bars' positions will need to be removed
         m_barGroups.clear();
 
         const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
@@ -697,10 +697,10 @@ namespace Wisteria::Graphs
                     if (barBlock.GetCustomWidth().has_value())
                         {
                         wxPoint topRightPointOfBar, bottomRightPointOfBar;
-                        GetPhyscialCoordinates(barBlock.GetLength()/*offset doesn't matter here*/,
+                        GetPhysicalCoordinates(barBlock.GetLength()/*offset doesn't matter here*/,
                             bar.GetAxisPosition() -
                             safe_divide<double>(barBlock.GetCustomWidth().value(),2), topRightPointOfBar);
-                        GetPhyscialCoordinates(barBlock.GetLength(),
+                        GetPhysicalCoordinates(barBlock.GetLength(),
                             bar.GetAxisPosition() +
                             safe_divide<double>(barBlock.GetCustomWidth().value(),2), bottomRightPointOfBar);
                         barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
@@ -708,10 +708,10 @@ namespace Wisteria::Graphs
                     else if (bar.GetCustomWidth().has_value())
                         {
                         wxPoint topRightPointOfBar, bottomRightPointOfBar;
-                        GetPhyscialCoordinates(barBlock.GetLength()/*offset doesn't matter here*/,
+                        GetPhysicalCoordinates(barBlock.GetLength()/*offset doesn't matter here*/,
                             bar.GetAxisPosition() -
                             safe_divide<double>(bar.GetCustomWidth().value(),2), topRightPointOfBar);
-                        GetPhyscialCoordinates(barBlock.GetLength(),
+                        GetPhysicalCoordinates(barBlock.GetLength(),
                             bar.GetAxisPosition() +
                             safe_divide<double>(bar.GetCustomWidth().value(),2), bottomRightPointOfBar);
                         barWidth = (topRightPointOfBar.y - bottomRightPointOfBar.y);
@@ -729,21 +729,21 @@ namespace Wisteria::Graphs
                     wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
                     if (bar.GetCustomScalingAxisStartPosition().has_value())
                         {
-                        GetPhyscialCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                        GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
                             axisOffset + barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBarEnd);
                         wxPoint customStartPt;
-                        GetPhyscialCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
+                        GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
                             axisOffset, bar.GetAxisPosition(), customStartPt);
                         lineXStart = customStartPt.x + (axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
                         }
                     else
                         {
                         // right side of the block
-                        GetPhyscialCoordinates(GetScalingAxis().GetRange().first + axisOffset +
+                        GetPhysicalCoordinates(GetScalingAxis().GetRange().first + axisOffset +
                             barBlock.GetLength(), bar.GetAxisPosition(), middlePointOfBarEnd);
                         // left side of the block
                         wxPoint pt;
-                        GetPhyscialCoordinates(GetScalingAxis().GetRange().first +
+                        GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
                             axisOffset, bar.GetAxisPosition(), pt);
                         // if the first block, push it over 1 pixel so that it doesn't overlap the bar axis
                         lineXStart = pt.x + (axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
@@ -783,7 +783,7 @@ namespace Wisteria::Graphs
                                      safe_divide(GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight(), 2)) );
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(GetImageOulineColor()).
+                                Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
@@ -798,7 +798,7 @@ namespace Wisteria::Graphs
                             const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(GetImageOulineColor()).
+                                Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYStart)),
                                      Image::CropImageToRect(
                                          barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
@@ -1075,18 +1075,18 @@ namespace Wisteria::Graphs
                     if (barBlock.GetCustomWidth().has_value())
                         {
                         wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhyscialCoordinates(bar.GetAxisPosition()-safe_divide<double>(barBlock.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition()-safe_divide<double>(barBlock.GetCustomWidth().value(),2),
                             barBlock.GetLength()/*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhyscialCoordinates(bar.GetAxisPosition()+safe_divide<double>(barBlock.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition()+safe_divide<double>(barBlock.GetCustomWidth().value(),2),
                             barBlock.GetLength(), rightPointOfBar);
                         barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
                         }
                     else if (bar.GetCustomWidth().has_value())
                         {
                         wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhyscialCoordinates(bar.GetAxisPosition()-safe_divide<double>(bar.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition()-safe_divide<double>(bar.GetCustomWidth().value(),2),
                             barBlock.GetLength()/*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhyscialCoordinates(bar.GetAxisPosition()+safe_divide<double>(bar.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition()+safe_divide<double>(bar.GetCustomWidth().value(),2),
                             barBlock.GetLength(), rightPointOfBar);
                         barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
                         }
@@ -1108,22 +1108,22 @@ namespace Wisteria::Graphs
                     if (bar.GetCustomScalingAxisStartPosition().has_value())
                         {
                         // top of block
-                        GetPhyscialCoordinates(bar.GetAxisPosition(),
+                        GetPhysicalCoordinates(bar.GetAxisPosition(),
                             bar.GetCustomScalingAxisStartPosition().value() + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
                         // bottom of block
                         wxPoint customStartPt;
-                        GetPhyscialCoordinates(bar.GetAxisPosition(),
+                        GetPhysicalCoordinates(bar.GetAxisPosition(),
                             bar.GetCustomScalingAxisStartPosition().value() + axisOffset, customStartPt);
                         lineYStart = customStartPt.y;
                         }
                     else
                         {
                         // top of block
-                        GetPhyscialCoordinates(bar.GetAxisPosition(),
+                        GetPhysicalCoordinates(bar.GetAxisPosition(),
                             GetScalingAxis().GetRange().first + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
                         // bottom of block
                         wxPoint pt;
-                        GetPhyscialCoordinates(bar.GetAxisPosition(),
+                        GetPhysicalCoordinates(bar.GetAxisPosition(),
                             GetScalingAxis().GetRange().first + axisOffset, pt);
                         lineYStart = pt.y;
                         }
@@ -1164,7 +1164,7 @@ namespace Wisteria::Graphs
                                     GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight()));
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(GetImageOulineColor()).
+                                Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                 scaledCommonImg.GetSubImage(barRectAdjustedToPlotArea));
                             barImage->SetOpacity(bar.GetOpacity());
@@ -1179,7 +1179,7 @@ namespace Wisteria::Graphs
                             const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
-                                Pen(GetImageOulineColor()).
+                                Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                      Image::CropImageToRect(
                                          barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
@@ -1413,25 +1413,25 @@ namespace Wisteria::Graphs
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
-                        const wxRect labelBouningBox = decalLabel->GetBoundingBox(dc);
+                        const wxRect labelBoundingBox = decalLabel->GetBoundingBox(dc);
                         if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushBottom)
                             {
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
-                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
+                                safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
                                 (barNeckRect.GetBottom() - leftPadding)));
                             }
                         else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
                             {
                             decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
-                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
-                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() - labelBouningBox.GetHeight(), 2))));
+                                safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
+                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() - labelBoundingBox.GetHeight(), 2))));
                             }
                         else // flush top
                             {
                             decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
-                                safe_divide(barNeckRect.GetWidth() - labelBouningBox.GetWidth(), 2)),
+                                safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
                                 (barNeckRect.GetTop() + leftPadding)));
                             }
                         // if drawing a color and hatch pattern, then show the decal with an outline

@@ -83,7 +83,7 @@ namespace Wisteria::Data
                     std::make_pair(categoryCol->GetValue(i),
                         (subCategoryColumnName ? subCategoryCol->GetValue(i) : subCatMDCode.value())),
                     std::make_pair(std::make_shared<wxRegEx>(reValue),
-                        // empty string can be seen as valid, so an unitialized wxRegEx
+                        // empty string can be seen as valid, so an uninitialized wxRegEx
                         // if there is no string
                         negatingReValue.length() ?
                         std::make_shared<wxRegEx>(negatingReValue) :
@@ -133,7 +133,7 @@ namespace Wisteria::Data
         for (size_t i = 0; i < contentData->GetRowCount(); ++i)
             {
             bool matchedAnyCategory{ false };
-            // compare each comment from the data against each catetory...
+            // compare each comment from the data against each category...
             for (const auto& [id, regexes] : m_categoryPatternsMap.get_data())
                 {
                 // ...by comparing it against each regex in every category

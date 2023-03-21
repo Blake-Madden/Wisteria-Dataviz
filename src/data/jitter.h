@@ -62,7 +62,7 @@ namespace Wisteria::Data
 
         // as you iterate through the data and determine their physical positions,
         // jitter them to avoid points obscuring other points.
-        if (GetPhyscialCoordinates(box.GetXAxisPosition(),
+        if (GetPhysicalCoordinates(box.GetXAxisPosition(),
                                    box.GetData()->GetYColumn().GetValue(i), pt))
             {
             jitter.JitterPoint(pt);

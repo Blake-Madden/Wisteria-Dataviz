@@ -28,7 +28,7 @@ namespace Wisteria
             - A new axis will be copied from the first graph's left axis
             - The first graph's left axis settings and scale will be applied to the
                 other graphs in the list
-            - The graphs will then have their left axes's labels turned off
+            - The graphs will then have their left axes' labels turned off
                 (since the common axis will be serving this purpose)
             - Finally, the newly constructed axis will be returned, where the caller
                 should add it onto the canvas, to the right or left of the graphs
@@ -63,7 +63,7 @@ namespace Wisteria
             - A new axis will be copied from the first graph's bottom axis
             - The first graph's bottom axis settings and scale will be applied to the
                 other graphs in the list
-            - The graphs will then have their bottom axes's labels turned off
+            - The graphs will then have their bottom axes' labels turned off
                 (since the common axis will be serving this purpose)
             - Finally, the newly constructed axis will be returned, where the caller
                 should add it onto the canvas, below or above the graphs

@@ -58,7 +58,7 @@ namespace Wisteria::Graphs
                 (e.g., color scheme).\n
                 The ordering of this map can also be used to build a legend, where the
                 group IDs are sorted in their respective label's alphabetical order.
-            @warning Ensure that SetGroupColumn() has been passed a valid colum before calling this
+            @warning Ensure that SetGroupColumn() has been passed a valid column before calling this
                 and call `UseGrouping(true)` This should normally be done in a call to
                 `SetData()` in derived classes.*/
         void BuildGroupIdMap();

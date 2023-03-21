@@ -435,7 +435,7 @@ namespace Wisteria::Graphs
                 { return m_emptyImage; }
             }
         /// @returns The color used to outline images used for bars/boxes.
-        [[nodiscard]] wxColour GetImageOulineColor() const noexcept
+        [[nodiscard]] wxColour GetImageOutlineColor() const noexcept
             { return m_imageOutlineColor; }
         /** @brief Updates the settings for a legend based on the provided hints.
                 This should be called on a legend after it is constructed by
@@ -509,7 +509,7 @@ namespace Wisteria::Graphs
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
                 within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
             @returns @c true if the point could be found within the plot.*/
-        bool GetPhyscialCoordinates(const double xValue, const double yValue, wxPoint& resultPt) const
+        bool GetPhysicalCoordinates(const double xValue, const double yValue, wxPoint& resultPt) const
             {
             if (GetBottomXAxis().GetPhysicalCoordinate(xValue, resultPt.x) &&
                 GetLeftYAxis().GetPhysicalCoordinate(yValue, resultPt.y))
@@ -526,8 +526,8 @@ namespace Wisteria::Graphs
             @param[out] resultPt The coordinate on the canvas where the point is at. If the point is not
                 within the plot (i.e., the x or y value is outside of the axes), then this will be (-1,-1).
             @returns @c true if the point could be found within the plot.*/
-        bool GetPhyscialCoordinates(const wxPoint& point, wxPoint& resultPt) const
-            { return GetPhyscialCoordinates(point.x, point.y, resultPt); };
+        bool GetPhysicalCoordinates(const wxPoint& point, wxPoint& resultPt) const
+            { return GetPhysicalCoordinates(point.x, point.y, resultPt); };
 
         /** @brief Override this to perform plotting logic.
             @details The is the main interface for constructing the layout and object positioning

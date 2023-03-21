@@ -97,15 +97,15 @@ namespace Wisteria::Graphs
         /** @brief Sets how to display the labels next to the road stops.
             @param mlDisplay The display method to use.*/
         void SetMarkerLabelDisplay(const MarkerLabelDisplay mlDisplay) noexcept
-            { m_markerLableDisplay = mlDisplay; }
+            { m_markerLabelDisplay = mlDisplay; }
 
         /// @returns The lane separator style.
         [[nodiscard]] LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
-            { return m_laneSepatatorStyle; }
+            { return m_laneSeparatorStyle; }
         /// @brief Sets the lane separator style.
         /// @param lStyle The style to use.
         void SetLaneSeparatorStyle(const LaneSeparatorStyle lStyle) noexcept
-            { m_laneSepatatorStyle = lStyle; }
+            { m_laneSeparatorStyle = lStyle; }
 
         /// @brief Adds a caption explaining how to interpret the graph.
         virtual void AddDefaultCaption() = 0;
@@ -206,7 +206,7 @@ namespace Wisteria::Graphs
         wxPen m_laneSeparatorPen{
             wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::SchoolBusYellow),
                                 1, wxPenStyle::wxPENSTYLE_LONG_DASH) };
-        LaneSeparatorStyle m_laneSepatatorStyle{ LaneSeparatorStyle::SingleLine };
+        LaneSeparatorStyle m_laneSeparatorStyle{ LaneSeparatorStyle::SingleLine };
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
         /// @returns The icon used for negative sentiments, based on current theme.
@@ -230,7 +230,7 @@ namespace Wisteria::Graphs
             }
 
         LabelPlacement m_labelPlacement{ LabelPlacement::Flush };
-        MarkerLabelDisplay m_markerLableDisplay{ MarkerLabelDisplay::NameAndValue };
+        MarkerLabelDisplay m_markerLabelDisplay{ MarkerLabelDisplay::NameAndValue };
         };
     }
 

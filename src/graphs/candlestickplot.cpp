@@ -170,8 +170,8 @@ namespace Wisteria::Graphs
             wxPoint lowPt, hiPt;
             const auto datePos = GetBottomXAxis().FindDatePosition(ohlc.m_date);
             if (!datePos.has_value() ||
-                !GetPhyscialCoordinates(datePos.value(), ohlc.m_low, lowPt) ||
-                !GetPhyscialCoordinates(datePos.value(), ohlc.m_high, hiPt))
+                !GetPhysicalCoordinates(datePos.value(), ohlc.m_low, lowPt) ||
+                !GetPhysicalCoordinates(datePos.value(), ohlc.m_high, hiPt))
                 { continue; }
             const auto wickX = lowPt.x;
             auto wick = std::make_shared<GraphItems::Lines>(
@@ -181,8 +181,8 @@ namespace Wisteria::Graphs
                     GetScaling());
             wick->AddLine(lowPt, hiPt);
             if (!datePos.has_value() ||
-                !GetPhyscialCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
-                !GetPhyscialCoordinates(datePos.value(), ohlc.m_close, hiPt))
+                !GetPhysicalCoordinates(datePos.value(), ohlc.m_open, lowPt) ||
+                !GetPhysicalCoordinates(datePos.value(), ohlc.m_close, hiPt))
                 { continue; }
 
             // make candles as wide as possible with the given area, with

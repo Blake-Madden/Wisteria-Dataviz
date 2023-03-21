@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #include "pivot.h"
 
 namespace Wisteria::Data
@@ -309,12 +308,12 @@ namespace Wisteria::Data
                 }
             }
 
-        auto pivottedData = std::make_shared<Dataset>();
-        pivottedData->GetContinuousColumns().reserve(dataset->GetCategoricalColumns().size());
-        pivottedData->GetCategoricalColumns().reserve(dataset->GetCategoricalColumns().size());
-        pivottedData->GetDateColumns().reserve(dataset->GetDateColumns().size());
+        auto pivotedData = std::make_shared<Dataset>();
+        pivotedData->GetContinuousColumns().reserve(dataset->GetCategoricalColumns().size());
+        pivotedData->GetCategoricalColumns().reserve(dataset->GetCategoricalColumns().size());
+        pivotedData->GetDateColumns().reserve(dataset->GetDateColumns().size());
 
-        // map of columns between original dataset and pivotted one (of what's being kept)
+        // map of columns between original dataset and pivoted one (of what's being kept)
         std::vector<std::pair<ColumnConstIterator, ColumnIterator>> columnsToKeepMap;
         // the pivot columns, where the data and label(s) comes from
         std::vector<ColumnConstIterator> fromNamesList;
@@ -328,26 +327,26 @@ namespace Wisteria::Data
             {
             if (dataset->GetIdColumn().GetName().CmpNoCase(columnToKeep) == 0)
                 {
-                pivottedData->GetIdColumn().SetName(columnToKeep);
+                pivotedData->GetIdColumn().SetName(columnToKeep);
                 columnsToKeepMap.push_back(std::make_pair(&dataset->GetIdColumn(),
-                                                          &pivottedData->GetIdColumn()));
+                                                          &pivotedData->GetIdColumn()));
                 }
             else if (const auto foundCatVar = dataset->GetCategoricalColumn(columnToKeep);
                 foundCatVar != dataset->GetCategoricalColumns().cend())
                 {
-                pivottedData->AddCategoricalColumn(columnToKeep, foundCatVar->GetStringTable());
+                pivotedData->AddCategoricalColumn(columnToKeep, foundCatVar->GetStringTable());
                 columnsToKeepMap.push_back(std::make_pair(foundCatVar, nullptr));
                 }
-            else if (const auto foundContinousVar = dataset->GetContinuousColumn(columnToKeep);
-                foundContinousVar != dataset->GetContinuousColumns().cend())
+            else if (const auto foundContinuousVar = dataset->GetContinuousColumn(columnToKeep);
+                foundContinuousVar != dataset->GetContinuousColumns().cend())
                 {
-                pivottedData->AddContinuousColumn(columnToKeep);
-                columnsToKeepMap.push_back(std::make_pair(foundContinousVar, nullptr));
+                pivotedData->AddContinuousColumn(columnToKeep);
+                columnsToKeepMap.push_back(std::make_pair(foundContinuousVar, nullptr));
                 }
             else if (const auto foundDateVar = dataset->GetDateColumn(columnToKeep);
                 foundDateVar != dataset->GetDateColumns().cend())
                 {
-                pivottedData->AddDateColumn(columnToKeep);
+                pivotedData->AddDateColumn(columnToKeep);
                 columnsToKeepMap.push_back(std::make_pair(foundDateVar, nullptr));
                 }
             else
@@ -366,10 +365,10 @@ namespace Wisteria::Data
             else
                 {
                 throw std::runtime_error(
-                    wxString::Format( _(L"%s: continous column not found."), fromColumn).ToUTF8());
+                    wxString::Format( _(L"%s: continuous column not found."), fromColumn).ToUTF8());
                 }
             }
-        // add target column(s) for the pivotted column name (which will become group labels)
+        // add target column(s) for the pivoted column name (which will become group labels)
         for (const auto& nameTo : namesTo)
             {
             if (nameTo.empty())
@@ -377,7 +376,7 @@ namespace Wisteria::Data
                 throw std::runtime_error(
                     _(L"'Names to' column name cannot be empty.").ToUTF8());
                 }
-            pivottedData->AddCategoricalColumn(nameTo);
+            pivotedData->AddCategoricalColumn(nameTo);
             }
         // add target column for continuous values
         if (valuesTo.empty())
@@ -385,15 +384,15 @@ namespace Wisteria::Data
                 throw std::runtime_error(
                     _(L"'Values to' column name cannot be empty.").ToUTF8());
                 }
-        pivottedData->AddContinuousColumn(valuesTo);
-        auto valueToTarget = pivottedData->GetContinuousColumn(valuesTo);
+        pivotedData->AddContinuousColumn(valuesTo);
+        auto valueToTarget = pivotedData->GetContinuousColumn(valuesTo);
 
-        pivottedData->Resize(fromColumns.size() * dataset->GetRowCount());
+        pivotedData->Resize(fromColumns.size() * dataset->GetRowCount());
 
         // map the columns to keep
         for (size_t i = 0; i < columnsToKeep.size(); ++i)
             {
-            auto foundCol = pivottedData->FindColumn(columnsToKeep[i]);
+            auto foundCol = pivotedData->FindColumn(columnsToKeep[i]);
             if (!foundCol.has_value())
                 {
                 throw std::runtime_error(
@@ -404,8 +403,8 @@ namespace Wisteria::Data
         // map the target name column(s)
         for (size_t i = 0; i < namesTo.size(); ++i)
             {
-            auto foundCol = pivottedData->GetCategoricalColumn(namesTo[i]);
-            if (foundCol == pivottedData->GetCategoricalColumns().end())
+            auto foundCol = pivotedData->GetCategoricalColumn(namesTo[i]);
+            if (foundCol == pivotedData->GetCategoricalColumns().end())
                 {
                 throw std::runtime_error(
                     _(L"Internal error building target column map.").ToUTF8());
@@ -427,40 +426,40 @@ namespace Wisteria::Data
                     // ID columns
                         {
                         auto srcCol = std::get_if<const Column<wxString>*>(&keepCol.first);
-                        auto targetlCol = std::get_if<Column<wxString>*>(&keepCol.second);
-                        if (srcCol != nullptr && targetlCol != nullptr)
+                        auto targetCol = std::get_if<Column<wxString>*>(&keepCol.second);
+                        if (srcCol != nullptr && targetCol != nullptr)
                             {
-                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            (*targetCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
                             continue;
                             }
                         }
                     // categorical
                         {
                         auto srcCol = std::get_if<CategoricalColumnConstIterator>(&keepCol.first);
-                        auto targetlCol = std::get_if<CategoricalColumnIterator>(&keepCol.second);
-                        if (srcCol != nullptr && targetlCol != nullptr)
+                        auto targetCol = std::get_if<CategoricalColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetCol != nullptr)
                             {
-                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            (*targetCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
                             continue;
                             }
                         }
                     // continuous
                         {
                         auto srcCol = std::get_if<ContinuousColumnConstIterator>(&keepCol.first);
-                        auto targetlCol = std::get_if<ContinuousColumnIterator>(&keepCol.second);
-                        if (srcCol != nullptr && targetlCol != nullptr)
+                        auto targetCol = std::get_if<ContinuousColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetCol != nullptr)
                             {
-                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            (*targetCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
                             continue;
                             }
                         }
                     // date
                         {
                         auto srcCol = std::get_if<DateColumnConstIterator>(&keepCol.first);
-                        auto targetlCol = std::get_if<DateColumnIterator>(&keepCol.second);
-                        if (srcCol != nullptr && targetlCol != nullptr)
+                        auto targetCol = std::get_if<DateColumnIterator>(&keepCol.second);
+                        if (srcCol != nullptr && targetCol != nullptr)
                             {
-                            (*targetlCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
+                            (*targetCol)->SetValue(pivotDataRow, (*srcCol)->GetValue(i));
                             continue;
                             }
                         }
@@ -481,6 +480,6 @@ namespace Wisteria::Data
                 }
             }
 
-        return pivottedData;
+        return pivotedData;
         }
     }

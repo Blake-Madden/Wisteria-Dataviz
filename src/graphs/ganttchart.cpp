@@ -61,21 +61,21 @@ namespace Wisteria::Graphs
         if (taskColumn == GetDataset()->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': task name column not found for gantt chart."),
+                _(L"'%s': task name column not found for Gantt chart."),
                 taskColumnName).ToUTF8());
             }
         auto startColumn = GetDataset()->GetDateColumn(startDateColumnName);
         if (startColumn == GetDataset()->GetDateColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': start date column not found for gantt chart."),
+                _(L"'%s': start date column not found for Gantt chart."),
                 startDateColumnName).ToUTF8());
             }
         auto endColumn = GetDataset()->GetDateColumn(endDateColumnName);
         if (endColumn == GetDataset()->GetDateColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': end date column not found for gantt chart."),
+                _(L"'%s': end date column not found for Gantt chart."),
                 endDateColumnName).ToUTF8());
             }
         // these columns are optional

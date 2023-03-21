@@ -242,7 +242,7 @@ Note that instead of properties, a single string can be specified indicating a f
        `"value"` variable should have the same scale as the child graph.
   - `"variables"`: which include the following properties:
     - `"label"`: the labels column.
-    - `"value"`: the values column. (This can be either a continous, categorical, or date column.)
+    - `"value"`: the values column. (This can be either a continuous, categorical, or date column.)
   - `"pen"`: the bracket line, which includes [pen](#pen-properties) properties.
   - `"style"`: the style of the braces.<br />
     Available options are:

@@ -258,7 +258,7 @@ namespace Wisteria::GraphItems
                     L"Invalid buffer index in oil painting effect!");
                 wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
                     (image.GetWidth() * image.GetHeight() * 3),
-                    L"Invalid image data inde in oil painting effect!");
+                    L"Invalid image data index in oil painting effect!");
 
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow] = nSumR[nMaxIndex] / nCurMax;
                 imgOutData[(nX) * 3 + (nY)*nBytesInARow + 1] = nSumG[nMaxIndex] / nCurMax;
@@ -976,7 +976,7 @@ namespace Wisteria::GraphItems
             imgTopLeftCorner.x += GetBoundingBox(dc).GetWidth() -
                GetImageSize().GetWidth() * GetScaling();
             }
-        // vertical page aligment
+        // vertical page alignment
         if ((GetFrameSize() == GetImageSize()) ||
             (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned))
             { /*noop*/ }

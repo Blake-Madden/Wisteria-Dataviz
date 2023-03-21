@@ -84,7 +84,7 @@ namespace Wisteria
         /// @param datasetToMerge The dataset connected to the current dataset node.
         void LoadMerges(const wxSimpleJSON::Ptr_t& mergesNode,
                         const std::shared_ptr<const Data::Dataset>& datasetToMerge);
-        /// @brief Loads a common axis node into @c m_commonAxesPostions.
+        /// @brief Loads a common axis node into @c m_commonAxesPositions.
         /// @details Will not construct it into the grid, but will cache information
         ///     about the common axis until everything is constructed. This is then
         ///     used to actually create the common axis then.
@@ -176,7 +176,7 @@ namespace Wisteria
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadWordCloud(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
-        /// @brief Loads a gantt chart node into the canvas.
+        /// @brief Loads a Gantt chart node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
         /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
@@ -340,7 +340,7 @@ namespace Wisteria
         /// @brief Converts a string value to a @c wxPaperSize enum value.
         [[nodiscard]] static std::optional<wxPaperSize>
             ConvertPaperSize(const wxString& value);
-        /// @brief Converts a string value to a LabelPlaceent enum value.
+        /// @brief Converts a string value to a LabelPlacement enum value.
         [[nodiscard]] static std::optional<LabelPlacement>
             ConvertLabelPlacement(const wxString& value);
         /// @brief Converts a string value to an AxisType enum value.
@@ -439,7 +439,7 @@ namespace Wisteria
                           const std::shared_ptr<const Data::Dataset>& dataset);
         [[nodiscard]] ValuesType CalcFormula(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset) const;
-        // can be a continous min/max or string (case insensitive)
+        // can be a continuous min/max or string (case insensitive)
         [[nodiscard]] ValuesType CalcMinMax(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] std::optional<double> CalcValidN(const wxString& formula,
@@ -457,7 +457,7 @@ namespace Wisteria
         [[nodiscard]] wxString CalcNow(const wxString& formula) const;
         [[nodiscard]] wxString FormatPageNumber(const wxString& formula) const;
         
-        // helpers for builing formula regexes
+        // helpers for building formula regexes
         //------------------------------------
         [[nodiscard]] static wxString FunctionStartRegEx()
             { return L"(?i)^[ ]*"; }
@@ -466,12 +466,12 @@ namespace Wisteria
         [[nodiscard]] static wxString ClosingParenthesisRegEx()
             { return L"[ ]*\\)"; }
         // a parameter that is either wrapped in tickmarks (usually a var name),
-        // double curly braces (a subformula), or empty string (no parameter)
+        // double curly braces (a sub-formula), or empty string (no parameter)
         [[nodiscard]] static wxString ColumnNameOrFormulaRegEx()
             { return L"(`[^`]+`|{{[^}]*}}|[[:space:]]*)"; }
         [[nodiscard]] static wxString NumberOrStringRegEx()
             { return L"(`[^`]+`|[[:digit:]]+)"; }
-        [[nodiscard]] static wxString ParamSepatatorRegEx()
+        [[nodiscard]] static wxString ParamSeparatorRegEx()
             { return L"[ ]*,[ ]*"; }
         // a parameter that is either wrapped in tickmarks or empty string (no parameter)
         [[nodiscard]] static wxString StringOrEmptyRegEx()

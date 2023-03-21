@@ -430,7 +430,8 @@ namespace Wisteria::Data
     using CategoricalColumnIterator =
         std::vector<Wisteria::Data::ColumnWithStringTable>::iterator;
 
-    /// @brief Const iterator to date, continuous, or categorical column, or a const pointer to the ID column.
+    /// @brief Const iterator to date, continuous, or categorical column,
+    ///     or a const pointer to the ID column.
     using ColumnConstIterator = std::variant<const Column<wxString>*, CategoricalColumnConstIterator,
                                              ContinuousColumnConstIterator, DateColumnConstIterator>;
     /// @brief Iterator to date, continuous, or categorical column, or a pointer to the ID column.
@@ -718,9 +719,9 @@ namespace Wisteria::Data
             @param recodeVal The value to replace missing data with.
             @sa ReplacementStrings() for recoding missing data in categorical columns.
             @returns A self reference.*/
-        ImportInfo& ContinousMDRecodeValue(const double recodeVal)
+        ImportInfo& ContinuousMDRecodeValue(const double recodeVal)
             {
-            m_continousMDRecodeValue = recodeVal;
+            m_continuousMDRecodeValue = recodeVal;
             return *this;
             }
         /** @brief Set the number of rows to skip before reading the text.
@@ -753,7 +754,7 @@ namespace Wisteria::Data
             @param replaceStrings The map of regular expressions to match against
                 and what to replace them with.
             @returns A self reference.
-            @sa ContinousMDRecodeValue() for recoding missing data in continuous columns.*/
+            @sa ContinuousMDRecodeValue() for recoding missing data in continuous columns.*/
         ImportInfo& ReplacementStrings(const RegExMap& replaceStrings)
             {
             m_textImportReplacements = replaceStrings;
@@ -790,7 +791,7 @@ namespace Wisteria::Data
         std::vector<wxString> m_continuousColumns;
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
-        double m_continousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
+        double m_continuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
         size_t m_skipRows{ 0 };
         };
 
@@ -1208,7 +1209,7 @@ namespace Wisteria::Data
             @param column The name or index of the continuous column.
             @param groupColumn The (optional) group column to filter with.
             @param groupId The grouping ID to filter on (if a grouping column is being used).\n
-                If there is no grouping being used, then the full continuous column is totalled.
+                If there is no grouping being used, then the full continuous column is totaled.
             @returns The total, or NaN if no valid observations.
             @note If there are no valid values, then will return a pair of NaNs.
             @throws std::runtime_error If provided columns cannot be found or if a grouping
@@ -1334,7 +1335,7 @@ namespace Wisteria::Data
                 numeric column that can't be converted to a number.
             @param recodeVal The value to replace missing data with.*/
         void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
-            { m_importContinousMDRecodeValue = recodeVal; }
+            { m_importContinuousMDRecodeValue = recodeVal; }
 
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
@@ -1513,15 +1514,15 @@ namespace Wisteria::Data
         static double ConvertToDouble(const std::wstring& input, double MDRecodeValue);
         [[nodiscard]]
         static GroupIdType ConvertToGroupId(const std::wstring& input,
-                                                   const GroupIdType mdCode);
+                                            const GroupIdType mdCode);
         [[nodiscard]]
         static wxDateTime ConvertToDate(const wxString& input,
-                                               const DateImportMethod method,
-                                               const wxString& formatStr);
+                                        const DateImportMethod method,
+                                        const wxString& formatStr);
 
         std::wstring m_name;
 
-        double m_importContinousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
+        double m_importContinuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
 
         // actual data
         Column<wxString> m_idColumn;

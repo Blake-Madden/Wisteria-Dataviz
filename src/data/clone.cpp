@@ -45,7 +45,7 @@ namespace Wisteria::Data
             if (newColumn != m_toDataset->GetDateColumns().cend())
                 { newColumn->Reserve(srcColumn.GetRowCount()); }
             }
-        // continous columns
+        // continuous columns
         m_toDataset->GetContinuousColumns().reserve(
             m_fromDataset->GetContinuousColumns().size());
         for (const auto& srcColumn : m_fromDataset->GetContinuousColumns())

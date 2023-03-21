@@ -380,14 +380,14 @@ namespace Wisteria::GraphItems
         [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Draws a vertical multi-line text string at the specified point,
-             using the current text font, and the current text foreground and background colours.
+             using the current text font, and the current text foreground and background colors.
             @param dc The device context to draw to.
             @param pt The point to draw the text.\n
                 This coordinate refers to the bottom-left corner of the rectangle
                 bounding the string.*/
         void DrawVerticalMultiLineText(wxDC& dc, wxPoint pt) const;
         /** @brief Draws a multi-line text string at the specified point, using the current
-                 text font, and the current text foreground and background colours.
+                 text font, and the current text foreground and background colors.
             @param dc The device context that the text is being drawn on.
             @param pt The point to draw the text.\n
                 This coordinate refers to the top-left corner of the rectangle bounding the string.*/
