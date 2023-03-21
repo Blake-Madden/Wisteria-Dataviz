@@ -51,11 +51,14 @@ namespace Wisteria::Graphs
             Any missing data from the dataset will be displayed as an empty cell.
 
         @par Table Positioning:
-            By default, the table will be draw with a text scaling of @c 1.0 and be scaled down to
-            fit within the provided graph area is necessary. The table will then be placed in the top-left
+            By default, the table will be drawn with a text scaling of @c 1.0 and be scaled down to
+            fit within the provided graph area as necessary. The table will then be placed in the top-left
             corner of the graph area, and any extra space remaining will be below and to the right of
             the table. To change this behavior, you can call SetPageHorizontalAlignment() and
             SetPageVerticalAlignment() to position the table in a different place within its graph area.
+
+            Note that the table's title and caption will affect its calculated width,
+            along with its content.
 
             A table can also be stretched to fit its entire graph area by calling SetMinWidthProportion()
             or SetMinHeightProportion().
@@ -334,7 +337,8 @@ namespace Wisteria::Graphs
             void Highlight(const bool highlight) noexcept
                 { m_isHighlighted = highlight; }
             /// @returns The character shown on the left edge of the cell.
-            [[nodiscard]] const wxString& GetPrefix() const noexcept
+            [[nodiscard]]
+            const wxString& GetPrefix() const noexcept
                 { return m_prefix; }
             /// @brief Adds a character to be shown on the left edge of the cell.
             /// @details This is usually something like a '$' (when using accounting formatting),
@@ -406,7 +410,8 @@ namespace Wisteria::Graphs
             ///     If a ratio, returns the magnitude of larger value compared to
             ///     the smaller one.\n
             ///     Otherwise, returns NaN.
-            [[nodiscard]] double GetDoubleValue() const noexcept
+            [[nodiscard]]
+            double GetDoubleValue() const noexcept
                 {
                 if (IsNumeric())
                     {
@@ -1091,7 +1096,8 @@ namespace Wisteria::Graphs
             @param cellValue The value (as a displayed string) to look for in the table,
                 which will have a citation number added after it.
             @param footnote The respective footnote to add to the caption.
-            @note Up to nine footnotes are supported.
+            @note Up to nine footnotes are supported. Also, if the provided @c cellValue
+                is not found in the table, then the footnote will not be added.
             @warning Adding a footnote will overwrite the existing caption.*/
         void AddFootnote(const wxString& cellValue, const wxString& footnote);
 
