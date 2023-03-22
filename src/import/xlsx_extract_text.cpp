@@ -123,10 +123,10 @@ namespace lily_of_the_valley
         }
 
     //------------------------------------------------------------------
-    std::wstring xlsx_extract_text::get_cell_text(const wchar_t* cellNname,
+    std::wstring xlsx_extract_text::get_cell_text(const wchar_t* cellName,
                                                   const worksheet& workSheet)
         {
-        const auto cinfo = get_column_and_row_info(cellNname);
+        const auto cinfo = get_column_and_row_info(cellName);
         if (cinfo.second < 1 || cinfo.second > workSheet.size())
             { return std::wstring{}; }
         const worksheet_row& currentRow = workSheet[cinfo.second-1];
@@ -134,11 +134,11 @@ namespace lily_of_the_valley
         if (cinfo.first.m_position < 1 || cinfo.first.m_position > currentRow.size())
             {
             const auto cellPos = std::lower_bound(currentRow.begin(), currentRow.end(),
-                                                  worksheet_cell(cellNname));
-            return (cellPos != currentRow.end() && cellPos->get_name() == cellNname) ?
+                                                  worksheet_cell(cellName));
+            return (cellPos != currentRow.end() && cellPos->get_name() == cellName) ?
                 cellPos->get_value() : std::wstring{};
             }
-        if (currentRow.operator[](cinfo.first.m_position-1).get_name() == cellNname)
+        if (currentRow.operator[](cinfo.first.m_position-1).get_name() == cellName)
             { return currentRow.operator[](cinfo.first.m_position-1).get_value(); }
         // If item at given index doesn't match by name, then there must have been
         // missing cells in the file (and no dimension info), so our matrix is sparse.
@@ -146,8 +146,8 @@ namespace lily_of_the_valley
         else
             {
             const auto cellPos = std::lower_bound(currentRow.cbegin(), currentRow.cend(),
-                                                  worksheet_cell(cellNname));
-            return (cellPos != currentRow.cend() && cellPos->get_name() == cellNname) ?
+                                                  worksheet_cell(cellName));
+            return (cellPos != currentRow.cend() && cellPos->get_name() == cellName) ?
                 cellPos->get_value() : std::wstring{};
             }
         }
