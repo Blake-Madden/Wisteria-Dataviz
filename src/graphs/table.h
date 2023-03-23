@@ -572,6 +572,8 @@ namespace Wisteria::Graphs
             m_table.clear();
             m_aggregateColumns.clear();
             m_aggregateRows.clear();
+            m_cellAnnotations.clear();
+            m_footnotes.clear();
             }
 
         /** @brief Sets the font for the entire table.
