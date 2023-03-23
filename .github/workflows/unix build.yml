@@ -1,0 +1,36 @@
+name: unit tests
+on: [push]
+
+jobs:
+  build:
+    name: ubuntu-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      
+      - name: install wxwidgets
+        run: |
+             export DISPLAY=:0.0
+             sudo apt install xvfb libgtk-3-dev cmake libtbb-dev
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets
+             mkdir buildgtk
+             cd buildgtk
+             ../configure --with-gtk
+             make -j4
+             sudo make install
+             sudo ldconfig
+             cd ..
+             cd ..
+             cmake ./
+             make -j4
+             
+      - name: build
+        run: |
+             cd ..
+             git clone https://github.com/catchorg/Catch2.git
+             cd Wisteria-Dataviz
+             cmake ./
+             make -j4
