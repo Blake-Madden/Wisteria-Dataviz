@@ -1016,7 +1016,7 @@ namespace Wisteria
         double overallScaling{ 1.0 };
         for (auto& row : GetFixedObjects())
             {
-            // Go through the items in the row and see if any having the row fit their content.
+            // Go through the items in the row and see if there are any having the row fit their content.
             // If so, use the tallest one in the row when we are done.
             std::optional<double> rowHeightProportion;
             size_t currentColumn{ 0 };
@@ -1255,7 +1255,9 @@ namespace Wisteria
             GetFixedObjects().at(row).cend(), 0,
             [](const auto& initVal, const auto& item) noexcept
             { return initVal + (item == nullptr ? 0 : 1); });
-        if (validItemsInRow > 0)
+        // once all slots in the row have been filled with objects,
+        // then re-calibrate the item's proportional widths
+        if (validItemsInRow == GetFixedObjects().at(row).size())
             { CalcColumnWidths(row); }
         }
 
