@@ -462,9 +462,13 @@ namespace Wisteria
         /// @brief Displays a value such as @c 0.25 as @c 25%.
         Percent,
         /// @brief Displays a value such as @c 0.25 as @c 25%,
-        ///     but with up or down arrow next to it if positive
+        ///     but with an up or down arrow next to it if positive
         ///     or negative (respectively).
         PercentChange,
+        /// @brief Displays a number generically,
+        ///     but with an up or down arrow next to it if positive
+        ///     or negative (respectively).
+        GeneralChange,
         /// @brief Displays numbers in accounting format.
         /// @details For example, a negative value would appear as `$    (5,000.00)`.
         Accounting
@@ -479,7 +483,9 @@ namespace Wisteria
         ChangePercent,
         /// @brief Calculates the ratio between two values
         ///     (ratios will be rounded to integers if the cell's precision is zero).
-        Ratio
+        Ratio,
+        /// @brief Calculates the change (i.e., difference) from one value to another.
+        Change
         };
     }
 

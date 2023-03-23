@@ -29,7 +29,8 @@ namespace Wisteria::Graphs
             m_prefix.clear();
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
-        else if (m_valueFormat == TableCellFormat::PercentChange)
+        else if (m_valueFormat == TableCellFormat::PercentChange ||
+            m_valueFormat == TableCellFormat::GeneralChange)
             {
             m_precision = 0;
             m_prefix = L"\x25B2"; // up arrow
@@ -338,6 +339,15 @@ namespace Wisteria::Graphs
                     aggCell.m_colorCodePrefix = true;
                     }
                 }
+            else if (aggInfo.m_type == AggregateType::Change &&
+                values.size() > 1)
+                {
+                const auto firstValue = values.front();
+                const auto secondValue = values.back();
+                aggCell.m_value = secondValue - firstValue;
+                aggCell.SetFormat(TableCellFormat::GeneralChange);
+                aggCell.m_colorCodePrefix = true;
+                }
             else if (aggInfo.m_type == AggregateType::Ratio &&
                 values.size() > 1)
                 {
@@ -435,7 +445,22 @@ namespace Wisteria::Graphs
                     {
                     const auto& cell = GetCell(currentRow, currentCol);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
-                        { colValues.push_back(cell.GetDoubleValue()); }
+                        {
+                        // throw out unused precision
+                        if (cell.GetFormat() == TableCellFormat::Percent ||
+                            cell.GetFormat() == TableCellFormat::PercentChange)
+                            {
+                            colValues.push_back(
+                                round_decimal_place(cell.GetDoubleValue()*100,
+                                                    std::pow(10, cell.GetPrecision())));
+                            }
+                        else
+                            {
+                            colValues.push_back(
+                                round_decimal_place(cell.GetDoubleValue(),
+                                                    std::pow(10, cell.GetPrecision())));
+                            }
+                        }
                     CalculateAggregate(aggInfo, GetCell(rIndex, currentCol), colValues);
                     }
                 }
@@ -502,7 +527,22 @@ namespace Wisteria::Graphs
                     {
                     const auto& cell = GetCell(currentRow, i);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
-                        { rowValues.push_back(cell.GetDoubleValue()); }
+                        {
+                        // throw out unused precision
+                        if (cell.GetFormat() == TableCellFormat::Percent ||
+                            cell.GetFormat() == TableCellFormat::PercentChange)
+                            {
+                            rowValues.push_back(
+                                round_decimal_place(cell.GetDoubleValue()*100,
+                                                    std::pow(10, cell.GetPrecision())));
+                    }
+                        else
+                            {
+                            rowValues.push_back(
+                                round_decimal_place(cell.GetDoubleValue(),
+                                                    std::pow(10, cell.GetPrecision())));
+                            }
+                        }
                     }
                 CalculateAggregate(aggInfo, GetCell(currentRow, columnIndex), rowValues);
                 ++currentRow;
@@ -778,7 +818,7 @@ namespace Wisteria::Graphs
                 if (cell.m_leftImage.IsOk())
                     { measuringLabel.SetLeftImage(cell.m_leftImage); }
                 auto bBox = measuringLabel.GetBoundingBox(dc);
-                // prefix will need 5 DPIs added to each side
+                // prefix will need 5 DIPs added to each side
                 if (cell.GetPrefix().length())
                     { bBox.Inflate(wxSize(ScaleToScreenAndCanvas(10), 0)); }
                 // if cell consumes multiple rows, then divides its height across them
@@ -830,7 +870,8 @@ namespace Wisteria::Graphs
         {
         Label measuringLabel(GraphItemInfo().Pen(*wxBLACK_PEN).
             Padding(5, 5, 5, 5).
-            Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()));
+            Scaling(GetScaling()).
+            DPIScaling(GetDPIScaleFactor()));
 
         // if there are annotations, add gutters for them
         wxCoord widestLeftNote{ 0 }, widestRightNote{ 0 };
@@ -1089,6 +1130,7 @@ namespace Wisteria::Graphs
                      cell.m_horizontalCellAlignment == PageHorizontalAlignment::Centered ||
                      cell.m_colorCodePrefix ||
                      cell.m_valueFormat == TableCellFormat::PercentChange ||
+                     cell.m_valueFormat == TableCellFormat::GeneralChange ||
                      cell.m_valueFormat == TableCellFormat::Accounting);
 
                 const auto cellText = cell.GetDisplayValue();
@@ -1145,7 +1187,8 @@ namespace Wisteria::Graphs
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (cell.GetPrefix().length() && isPrefixSeparateLabel)
                     {
-                    const wxString prefix = (cell.m_valueFormat == TableCellFormat::PercentChange) ?
+                    const wxString prefix = (cell.m_valueFormat == TableCellFormat::PercentChange ||
+                                             cell.m_valueFormat == TableCellFormat::GeneralChange) ?
                         // down and up arrow emojis
                         wxString(cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
                         cell.GetPrefix();

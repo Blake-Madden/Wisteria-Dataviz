@@ -16,6 +16,7 @@
 #include <variant>
 #include <vector>
 #include "graph2d.h"
+#include "../math/mathematics.h"
 
 namespace Wisteria::Graphs
     {
@@ -313,6 +314,14 @@ namespace Wisteria::Graphs
             [[nodiscard]] bool IsRatio() const noexcept
                 { return (std::get_if<std::pair<double, double>>(&m_value) != nullptr); }
 
+            /// @returns The display format of the cell.
+            [[nodiscard]]
+            TableCellFormat GetFormat() const noexcept
+                { return m_valueFormat; }
+            [[nodiscard]]
+            uint8_t GetPrecision() const noexcept
+                { return m_precision; }
+
             /// @brief Sets the value.
             /// @param value The value to set for the cell.
             void SetValue(const CellValueType& value)
@@ -538,6 +547,7 @@ namespace Wisteria::Graphs
             m_aggregateColumns.clear();
             m_aggregateRows.clear();
             }
+
         /** @brief Sets the font for the entire table.
             @param ft The font to apply.*/
         void SetTableFont(const wxFont& ft)
