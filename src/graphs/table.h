@@ -521,7 +521,13 @@ namespace Wisteria::Graphs
         /// @brief Sets the size of the table.
         /// @details This should only be used if building a table from scratch.
         ///     Prefer using SetData() instead, unless you plan to manually fill
-        ///     the data cell-by-cell.
+        ///     the data cell-by-cell.\n
+        ///     Another use is to call this after setting the data to increase
+        ///     the row and/or column counts so that this table has the same
+        ///     dimensions as another table. This is useful if you want tables
+        ///     next to each other to have a similar appearance (e.g., text scaling)
+        ///     and have their rows line up together.
+        /// @sa ClearTrailingRowFormatting().
         /// @param rows The number of rows.
         /// @param cols The number of columns.
         /// @note If the table is being made smaller, then existing content
@@ -540,7 +546,27 @@ namespace Wisteria::Graphs
                         m_showBottomBorder, m_showLeftBorder));
                 }
             }
-        /// @brief Empties the contents of the table.
+        /// @returns The dimensions of the table (row x column).
+        /// @note This includes the column header, so 10 rows of data would
+        ///     be returned as 11 rows for the table size.
+        std::pair<size_t, size_t> GetTableSize() const noexcept
+            {
+            if (m_table.size() == 0)
+                { return std::make_pair(0, 0); }
+            return std::make_pair(m_table.size(), m_table[0].size() );
+            }
+
+        /// @brief Hides formatting for any rows beyond the data boundary.
+        /// @details Formatting includes cell borders and alternating row colors.
+        /// @param clearFormatting @c true to hide the formatting for any trailing, empty rows.
+        /// @note This will only be relevant if the table was resized (to a larger size) after
+        ///     setting the data.
+        /// @sa SetTableSize().
+        /// @todo Need to remove custom cell background colors also.
+        void ClearTrailingRowFormatting(const bool clearFormatting) noexcept
+            { m_clearTrailingRowFormatting = clearFormatting; }
+
+        /// @brief Resets the table, emptying its contents, aggregates, notes, and footnotes.
         void ClearTable() noexcept
             {
             m_table.clear();
@@ -1258,6 +1284,10 @@ namespace Wisteria::Graphs
             @param values The values for the calculation.*/
         void CalculateAggregate(const AggregateInfo& aggInfo, TableCell& aggCell,
                                 const std::vector<double>& values);
+
+        // row x column
+        std::pair<size_t, size_t> m_dataSize{ std::make_pair(0, 0) };
+        bool m_clearTrailingRowFormatting{ false };
 
         std::map<size_t, AggregateType> m_aggregateColumns;
         std::map<size_t, AggregateType> m_aggregateRows;

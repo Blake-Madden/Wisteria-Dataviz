@@ -221,6 +221,9 @@ namespace Wisteria::Graphs
         {
         ClearTable();
 
+        m_dataSize = std::make_pair(data->GetRowCount() + 1, // include the column name
+                                    columns.size());
+
         if (transpose)
             {
             SetTableSize(columns.size(), data->GetRowCount()+1);
@@ -535,7 +538,7 @@ namespace Wisteria::Graphs
                             rowValues.push_back(
                                 round_decimal_place(cell.GetDoubleValue()*100,
                                                     std::pow(10, cell.GetPrecision())));
-                    }
+                            }
                         else
                             {
                             rowValues.push_back(
@@ -606,7 +609,10 @@ namespace Wisteria::Graphs
         // start with base color
         SetRowBackgroundColor(startRow, baseColor, columnStops);
         // start alternating
-        for (size_t row = startRow+1; row < GetRowCount(); ++row)
+        const auto rowStop = (m_clearTrailingRowFormatting ?
+                                std::min(m_dataSize.first, GetRowCount()) :
+                                GetRowCount());
+        for (size_t row = startRow+1; row < rowStop; ++row)
             {
             auto& currentRow = m_table[row];
             for (size_t col = 0; col < currentRow.size(); ++col)
@@ -1267,6 +1273,11 @@ namespace Wisteria::Graphs
         currentXPos = drawArea.GetX();
         currentYPos = drawArea.GetY();
         columnsToOverwrite = 0;
+        if (m_clearTrailingRowFormatting &&
+            m_dataSize.first < rowHeights.size())
+            {
+            rowHeights.erase(rowHeights.begin() + m_dataSize.first, rowHeights.end());
+            }
         for (const auto& rowHeight : rowHeights)
             {
             bool isPreviousColumnHighlighted{ false };
