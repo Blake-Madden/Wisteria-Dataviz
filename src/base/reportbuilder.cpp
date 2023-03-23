@@ -130,7 +130,6 @@ namespace Wisteria
                                 {
                                 currentColumn = 0;
                                 auto items = itemsProperty->GetValueArrayObject();
-                                for (const auto& item : items)
                                 if (const auto gridSize = canvas->GetFixedObjectsGridSize();
                                     gridSize.second < items.size())
                                     {
@@ -3598,11 +3597,11 @@ namespace Wisteria
         if (graphNode->HasProperty(L"link-id"))
             {
             const size_t linkId = graphNode->GetProperty(L"link-id")->GetValueNumber();
-            auto& foundPos = std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
+            auto foundPosTLink = std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
                 [linkId](const auto& tLink)
                 { return tLink.GetId() == linkId; });
-            if (foundPos != m_tableLinks.end())
-                { foundPos->AddTable(table); }
+            if (foundPosTLink != m_tableLinks.end())
+                { foundPosTLink->AddTable(table); }
             else
                 {
                 TableLink tLink{ linkId };
