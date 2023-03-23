@@ -16,6 +16,7 @@
 #include "commonaxisbuilder.h"
 #include "colorbrewer.h"
 #include "fillableshape.h"
+#include "../base/tablelink.h"
 #include "../data/subset.h"
 #include "../data/pivot.h"
 #include "../data/join.h"
@@ -36,6 +37,7 @@
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
+#include <tuple>
 
 namespace Wisteria
     {
@@ -515,6 +517,8 @@ namespace Wisteria
             };
         std::vector<CommonAxisPlaceholder> m_commonAxesPlaceholders;
         double m_dpiScaleFactor{ 1.0 };
+
+        std::vector<Wisteria::TableLink> m_tableLinks;
 
         wxString m_configFilePath;
         };

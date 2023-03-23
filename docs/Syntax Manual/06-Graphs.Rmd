@@ -701,14 +701,18 @@ Properties for `"table"` nodes:
       regular expression pattern `value`. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
 - `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
-     the rows and vice versa.<br />
+      the rows and vice versa.<br />
 - `"min-width-proportion"`: the minimum percent of the drawing area's width that the table should consume
-     (between `0.0` to `1.0`, representing 0% to 100%).
+      (between `0.0` to `1.0`, representing 0% to 100%).
 - `"min-height-proportion"`: the minimum percent of the drawing area's height that the table should consume
-     (between `0.0` to `1.0`, representing 0% to 100%).
+      (between `0.0` to `1.0`, representing 0% to 100%).
 - `"highlight-pen"`: the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
 - `"default-borders"`: an array of boolean values, representing whether the default borders of the
       cell should be drawn. These values go clockwise, starting at 12 o'clock.
+- `"clear-trailing-row-formatting"`: a boolean specifying whether to clear the formatting for any trailing, empty rows.
+- `"link-id"`: a numeric ID to link with other tables. All tables with the same ID will have their dimensions
+      set to a common number of rows and columns. This is useful for aligning tables next to each other and
+      ensuring that they have a common scaling.
 - Some base properties available to [graphs](#graph-properties).
 
 Note that it is recommended to set `"fit-row-to-content"` to `true` for shorter tables to better fit them to the page.
@@ -729,16 +733,14 @@ The remaining properties are executed in the following order:
        This is an array of `"position"` items.
 - `"row-add"`: commands a series of rows to be added, which is an array of row properties containing the following:
   - `"position"`: where to insert the row.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"constants"`: an array of strings to fill the row with (left-to-right).
   - `"background"`: the background color of the row.
 - `"row-formatting"`: an array of row and formatting pairs, which contain the following properties:
   - `"position"`: which row to reformat.<br />
-       Refer to the [position](#position-properties) properties that are available.
-  - `"start"`: if reformatting a range of rows, this is the starting column.<br />
-       Refer to the [position](#position-properties) properties that are available.
-  - `"end"`: if reformatting a range of rows, this is the end column.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"format"`: the formatting for the column.
     Available options are:
     - `"accounting"`
@@ -749,18 +751,24 @@ The remaining properties are executed in the following order:
        This is an array of `"position"` items.
 - `"row-color"`: an array of row and color pairs, which contain the following properties:
   - `"position"`: which row to apply a background color.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"background"`: the background color of the row.
   - `"stops"`: an array of which columns to skip over when changing the row's color.<br />
        This is an array of `"position"` items.
 - `"row-bold"`: an array of rows, which contain the following properties:
   - `"position"`: which row to make bold.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"stops"`: an array of which columns to skip over when bolding the row.<br />
        This is an array of `"position"` items.
 - `"row-borders"`: an array of row border specifications, which contain the following:
   - `"position"`: which row to edit.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"borders"`: an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - `"right-border"`: boolean specifying whether to show the cell's right border.
@@ -771,7 +779,9 @@ The remaining properties are executed in the following order:
        This is an array of `"position"` items.
 - `"row-content-align"`: an array of commands to align the content inside of the cells across a row.
   - `"position"`: which row to change the content alignment in.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"horizontal-page-alignment"`: how to horizontally align the cells' content.<br />
     Available options are:
     - `"left-aligned"`
@@ -781,11 +791,11 @@ The remaining properties are executed in the following order:
        This is an array of `"position"` items.
 - `"column-formatting"`: an array of column and formatting pairs, which contain the following properties:
   - `"position"`: which column to reformat.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"start"`: if reformatting a range of columns, this is the starting column.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"end"`: if reformatting a range of columns, this is the end column.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"format"`: the formatting for the column.
     Available options are:
     - `"accounting"`
@@ -796,18 +806,24 @@ The remaining properties are executed in the following order:
        This is an array of `"position"` items.
 - `"column-color"`: an array of column and color pairs, which contain the following properties:
   - `"position"`: which column to apply a background color.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"background"`: the background color of the column.
   - `"stops"`: an array of which rows to skip over when changing the column's color.<br />
        This is an array of `"position"` items.
 - `"column-bold"`: an array of columns, which contain the following properties:
   - `"position"`: which column to make bold.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"stops"`: an array of which rows to skip over when making the column bold.<br />
        This is an array of `"position"` items.
 - `"column-borders"`: an array of column border specifications, which contain the following:
   - `"position"`: which column to edit.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"borders"`: an array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
   - `"right-border"`: boolean specifying whether to show the cell's right border.
@@ -817,8 +833,8 @@ The remaining properties are executed in the following order:
   - `"stops"`: an array of which rows to skip over when changing the column's borders.<br />
        This is an array of `"position"` items.
 - `"column-highlight"`: an array of column highlight specifications, which contain the following:
-  - `"position"`: which column to edit.<br />
-       Refer to the [position](#position-properties) properties that are available.
+  - `"start"`: if specifying a range of rows, this is the starting column.<br />
+  - `"end"`: if specifying a range of rows, this is the end column.<br />
   - `"stops"`: an array of which rows to skip over when changing the column's cell highlighting.<br />
        This is an array of `"position"` items.
 - `"aggregates"`: an array of aggregate definitions that will be added to the table.<br />
@@ -830,6 +846,7 @@ The remaining properties are executed in the following order:
   - `"aggregate-type"`: the type of aggregate to add.<br />
     Available options are:
     - `"percent-change"`
+    - `"change"`
     - `"total"`
   - `"background"`: the background color for the column/row. This can be either a color name or hex-encoded value.
   - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
@@ -837,7 +854,7 @@ The remaining properties are executed in the following order:
   - `"name"`: the name for the newly added aggregate column/row.
   - `"start"`: the first column/row that the aggregate column/row should use.<br />
        This property is optional, and if not included the first numeric column/row encountered will be used.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"end"`: the last column/row that the aggregate column/row should use.<br />
        This property is optional, and if not included the last numeric column/row encountered will be used.
        Like `"start"`, this is optional and has the same properties.
@@ -850,9 +867,9 @@ The remaining properties are executed in the following order:
   - `"background"`: the background color for the row(s).
 - `"cell-update"`: an array of cell updating commands, which contain the following properties:
   - `"column"`: the column position of the cell to update.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"row"`: the row position of the cell to update.<br />
-       Refer to the [position](#position-properties) properties that are available.
+       Refer to [position](#position-properties) for available properties.
   - `"value-to-find"`: if `"row"/"column"`: are not provided, this is a cell value to search for.
        The first cell that matches this text will be returned and that is the cell that will be updated.
   - `"column-count"`: the number of columns that this cell should consume.<br />

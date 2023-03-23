@@ -15,6 +15,7 @@ namespace Wisteria
         {
         // reset from previous calls
         m_commonAxesPlaceholders.clear();
+        m_tableLinks.clear();
         m_name.clear();
         m_datasets.clear();
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
@@ -129,6 +130,12 @@ namespace Wisteria
                                 {
                                 currentColumn = 0;
                                 auto items = itemsProperty->GetValueArrayObject();
+                                for (const auto& item : items)
+                                if (const auto gridSize = canvas->GetFixedObjectsGridSize();
+                                    gridSize.second < items.size())
+                                    {
+                                    canvas->SetFixedObjectsGridSize(gridSize.first, items.size());
+                                    }
                                 for (const auto& item : items)
                                     {
                                     const auto typeProperty = item->GetProperty(L"type");
@@ -316,6 +323,9 @@ namespace Wisteria
                     }
                 }
             }
+
+        for (auto& tlink : m_tableLinks)
+            { tlink.SyncTableSizes(); }
 
         return reportPages;
         }
@@ -3585,6 +3595,24 @@ namespace Wisteria
         table->SetData(foundPos->second, variables,
             graphNode->GetProperty(L"transpose")->GetValueBool());
 
+        if (graphNode->HasProperty(L"link-id"))
+            {
+            const size_t linkId = graphNode->GetProperty(L"link-id")->GetValueNumber();
+            auto& foundPos = std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
+                [linkId](const auto& tLink)
+                { return tLink.GetId() == linkId; });
+            if (foundPos != m_tableLinks.end())
+                { foundPos->AddTable(table); }
+            else
+                {
+                TableLink tLink{ linkId };
+                tLink.AddTable(table);
+                m_tableLinks.push_back(tLink);
+                }
+            }
+
+        table->ClearTrailingRowFormatting(graphNode->GetProperty(L"clear-trailing-row-formatting")->GetValueBool());
+
         const auto minWidthProp = graphNode->GetProperty(L"min-width-proportion");
         if (minWidthProp->IsOk())
             { table->SetMinWidthProportion(minWidthProp->GetValueNumber()); }
@@ -3596,6 +3624,23 @@ namespace Wisteria
 
         const size_t originalColumnCount = table->GetColumnCount();
         const size_t originalRowCount = table->GetRowCount();
+
+        // reads a single position and range of positions (start and end)
+        const auto readPositions =
+            [&originalColumnCount, &originalRowCount, &table, this]
+            (const wxSimpleJSON::Ptr_t& theNode)
+            {
+            const std::optional<size_t> position =
+                LoadTablePosition(theNode->GetProperty(L"position"),
+                    originalColumnCount, originalRowCount, table);
+            const std::optional<size_t> startPosition =
+                LoadTablePosition(theNode->GetProperty(L"start"),
+                    originalColumnCount, originalRowCount, table);
+            const std::optional<size_t> endPosition =
+                LoadTablePosition(theNode->GetProperty(L"end"),
+                    originalColumnCount, originalRowCount, table);
+            return std::tuple(position, startPosition, endPosition);
+            };
 
         // loads the positions from a row or column stops array
         const auto loadStops = [this, &originalColumnCount, &originalRowCount, &table](const auto& stopsNode)
@@ -3633,7 +3678,7 @@ namespace Wisteria
             const auto altRowColorNode = graphNode->GetProperty(L"alternate-row-color");
             const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"),
                 originalColumnCount, originalRowCount, table);
-            std::set<size_t> colStops =
+            const std::set<size_t> colStops =
                 loadStops(altRowColorNode->GetProperty(L"stops"));
             table->ApplyAlternateRowColors(ConvertColor(altRowColorNode->GetProperty(L"color")),
                 startRow.value_or(0), colStops);
@@ -3668,15 +3713,7 @@ namespace Wisteria
             {
             for (const auto& rowSuppressionCommand : rowSuppressionCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> startPosition =
-                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> endPosition =
-                    LoadTablePosition(rowSuppressionCommand->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(rowSuppressionCommand);
                 const auto threshold =
                     ConvertNumber(rowSuppressionCommand->GetProperty(L"threshold"));
                 const auto suppressionLabel =
@@ -3713,15 +3750,7 @@ namespace Wisteria
             {
             for (const auto& rowFormattingCommand : rowFormattingCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowFormattingCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> startPosition =
-                    LoadTablePosition(rowFormattingCommand->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> endPosition =
-                    LoadTablePosition(rowFormattingCommand->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(rowFormattingCommand);
                 const auto formatValue =
                     ConvertTableCellFormat(rowFormattingCommand->GetProperty(L"format")->GetValueString());
 
@@ -3748,16 +3777,22 @@ namespace Wisteria
             {
             for (const auto& rowColorCommand : rowColorCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowColorCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(rowColorCommand);
                 const wxColour bgcolor(
                     ConvertColor(rowColorCommand->GetProperty(L"background")));
                 const std::set<size_t> colStops =
                     loadStops(rowColorCommand->GetProperty(L"stops"));
-                if (position.has_value() && bgcolor.IsOk())
+                if (bgcolor.IsOk())
                     {
-                    table->SetRowBackgroundColor(position.value(), bgcolor, colStops);
+                    // single column
+                    if (position.has_value())
+                        { table->SetRowBackgroundColor(position.value(), bgcolor, colStops); }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            { table->SetRowBackgroundColor(i, bgcolor, colStops); }
+                        }
                     }
                 }
             }
@@ -3768,13 +3803,17 @@ namespace Wisteria
             {
             for (const auto& rowBoldCommand : rowBoldCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowBoldCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(rowBoldCommand);
                 const std::set<size_t> colStops =
                     loadStops(rowBoldCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     { table->BoldRow(position.value(), colStops); }
+                // range
+                if (startPosition.has_value() && endPosition.has_value())
+                    {
+                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                        { table->BoldRow(i, colStops); }
+                    }
                 }
             }
 
@@ -3785,63 +3824,144 @@ namespace Wisteria
             {
             for (const auto& rowBordersCommand : rowBordersCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowBordersCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(rowBordersCommand);
                 const auto borderFlags =
                     rowBordersCommand->GetProperty(L"borders")->GetValueArrayBool();
 
                 const std::set<size_t> rowStops =
                     loadStops(rowBordersCommand->GetProperty(L"stops"));
-                if (position.has_value() && borderFlags.size() > 0)
+                if (borderFlags.size() > 0)
                     {
-                    table->SetRowBorders(position.value(),
-                        (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
-                        (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
-                        (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
-                        (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowBorders(position.value(),
+                            (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                            (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                            (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                            (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowBorders(i,
+                                (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                                (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                                (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                                (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                                rowStops);
+                            }
+                        }
                     }
 
                 // borders specified individually
                 if (rowBordersCommand->HasProperty(L"top-border"))
                     {
-                    table->SetRowBorders(position.value(),
-                        rowBordersCommand->GetProperty(L"top-border")->
-                            GetValueBool(table->IsShowingTopBorder()),
-                        std::nullopt,
-                        std::nullopt,
-                        std::nullopt,
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowBorders(position.value(),
+                            rowBordersCommand->GetProperty(L"top-border")->
+                                GetValueBool(table->IsShowingTopBorder()),
+                            std::nullopt,
+                            std::nullopt,
+                            std::nullopt,
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowBorders(i,
+                                rowBordersCommand->GetProperty(L"top-border")->
+                                GetValueBool(table->IsShowingTopBorder()),
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                rowStops);
+                            }
+                        }
                     }
                 if (rowBordersCommand->HasProperty(L"right-border"))
                     {
-                    table->SetRowBorders(position.value(),
-                        std::nullopt,
-                        rowBordersCommand->GetProperty(L"right-border")->
-                            GetValueBool(table->IsShowingRightBorder()),
-                        std::nullopt,
-                        std::nullopt,
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowBorders(position.value(),
+                            std::nullopt,
+                            rowBordersCommand->GetProperty(L"right-border")->
+                                GetValueBool(table->IsShowingRightBorder()),
+                            std::nullopt,
+                            std::nullopt,
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowBorders(i,
+                                std::nullopt,
+                                rowBordersCommand->GetProperty(L"right-border")->
+                                GetValueBool(table->IsShowingRightBorder()),
+                                std::nullopt,
+                                std::nullopt,
+                                rowStops);
+                            }
+                        }
                     }
                 if (rowBordersCommand->HasProperty(L"bottom-border"))
                     {
-                    table->SetRowBorders(position.value(),
-                        std::nullopt,
-                        std::nullopt,
-                        rowBordersCommand->GetProperty(L"bottom-border")->
-                            GetValueBool(table->IsShowingBottomBorder()),
-                        std::nullopt);
+                    if (position.has_value())
+                        {
+                        table->SetRowBorders(position.value(),
+                            std::nullopt,
+                            std::nullopt,
+                            rowBordersCommand->GetProperty(L"bottom-border")->
+                                GetValueBool(table->IsShowingBottomBorder()),
+                            std::nullopt);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowBorders(i,
+                                std::nullopt,
+                                std::nullopt,
+                                rowBordersCommand->GetProperty(L"bottom-border")->
+                                GetValueBool(table->IsShowingBottomBorder()),
+                                std::nullopt);
+                            }
+                        }
                     }
                 if (rowBordersCommand->HasProperty(L"left-border"))
                     {
-                    table->SetRowBorders(position.value(),
-                        std::nullopt,
-                        std::nullopt,
-                        std::nullopt,
-                        rowBordersCommand->GetProperty(L"left-border")->
-                            GetValueBool(table->IsShowingLeftBorder()),
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowBorders(position.value(),
+                            std::nullopt,
+                            std::nullopt,
+                            std::nullopt,
+                            rowBordersCommand->GetProperty(L"left-border")->
+                                GetValueBool(table->IsShowingLeftBorder()),
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowBorders(i,
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                rowBordersCommand->GetProperty(L"left-border")->
+                                GetValueBool(table->IsShowingLeftBorder()),
+                                rowStops);
+                            }
+                        }
                     }
                 }
             }
@@ -3853,29 +3973,61 @@ namespace Wisteria
             {
             for (const auto& rowContentCommand : rowContentCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(rowContentCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
-                if (!position.has_value())
-                    { continue; }
+                const auto [position, startPosition, endPosition] = readPositions(rowContentCommand);
                 const auto hPageAlignment =
                     rowContentCommand->GetProperty(L"horizontal-page-alignment")->GetValueString();
                 const std::set<size_t> colStops =
                     loadStops(rowContentCommand->GetProperty(L"stops"));
                 if (hPageAlignment.CmpNoCase(L"left-aligned") == 0)
                     {
-                    table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::LeftAligned, colStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::LeftAligned, colStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowHorizontalPageAlignment(i,
+                                PageHorizontalAlignment::LeftAligned, colStops);
+                            }
+                        }
                     }
                 else if (hPageAlignment.CmpNoCase(L"right-aligned") == 0)
                     {
-                    table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::RightAligned, colStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::RightAligned, colStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowHorizontalPageAlignment(i,
+                                PageHorizontalAlignment::RightAligned, colStops);
+                            }
+                        }
                     }
                 else if (hPageAlignment.CmpNoCase(L"centered") == 0)
                     {
-                    table->SetRowHorizontalPageAlignment(position.value(),
-                        PageHorizontalAlignment::Centered, colStops);
+                    if (position.has_value())
+                        {
+                        table->SetRowHorizontalPageAlignment(position.value(),
+                            PageHorizontalAlignment::Centered, colStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetRowHorizontalPageAlignment(i,
+                                PageHorizontalAlignment::Centered, colStops);
+                            }
+                        }
                     }
                 }
             }
@@ -3886,15 +4038,7 @@ namespace Wisteria
             {
             for (const auto& columnSuppressionCommand : columnSuppressionCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> startPosition =
-                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> endPosition =
-                    LoadTablePosition(columnSuppressionCommand->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(columnSuppressionCommand);
                 const auto threshold =
                     ConvertNumber(columnSuppressionCommand->GetProperty(L"threshold"));
                 const auto suppressionLabel =
@@ -3932,15 +4076,7 @@ namespace Wisteria
             {
             for (const auto& columnFormattingCommand : columnFormattingCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(columnFormattingCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> startPosition =
-                    LoadTablePosition(columnFormattingCommand->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount, table);
-                const std::optional<size_t> endPosition =
-                    LoadTablePosition(columnFormattingCommand->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(columnFormattingCommand);
                 const auto formatValue =
                     ConvertTableCellFormat(columnFormattingCommand->GetProperty(L"format")->GetValueString());
 
@@ -3967,15 +4103,22 @@ namespace Wisteria
             {
             for (const auto& colColorCommand : colColorCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(colColorCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(colColorCommand);
                 const wxColour bgcolor(
                     ConvertColor(colColorCommand->GetProperty(L"background")));
                 const std::set<size_t> rowStops =
                     loadStops(colColorCommand->GetProperty(L"stops"));
-                if (position.has_value() && bgcolor.IsOk())
-                    { table->SetColumnBackgroundColor(position.value(), bgcolor, rowStops); }
+                if (bgcolor.IsOk())
+                    {
+                    if (position.has_value())
+                        { table->SetColumnBackgroundColor(position.value(), bgcolor, rowStops); }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            { table->SetColumnBackgroundColor(i, bgcolor, rowStops); }
+                        }
+                    }
                 }
             }
 
@@ -3985,13 +4128,17 @@ namespace Wisteria
             {
             for (const auto& colBoldCommand : colBoldCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(colBoldCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(colBoldCommand);
                 const std::set<size_t> rowStops =
                     loadStops(colBoldCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     { table->BoldColumn(position.value(), rowStops); }
+                // range
+                if (startPosition.has_value() && endPosition.has_value())
+                    {
+                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                        { table->BoldColumn(i, rowStops); }
+                    }
                 }
             }
 
@@ -4002,63 +4149,144 @@ namespace Wisteria
             {
             for (const auto& columnBordersCommand : columnBordersCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(columnBordersCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(columnBordersCommand);
                 const auto borderFlags =
                     columnBordersCommand->GetProperty(L"borders")->GetValueArrayBool();
 
                 const std::set<size_t> rowStops =
                     loadStops(columnBordersCommand->GetProperty(L"stops"));
-                if (position.has_value() && borderFlags.size() > 0)
+                if (borderFlags.size() > 0)
                     {
-                    table->SetColumnBorders(position.value(),
-                        (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
-                        (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
-                        (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
-                        (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetColumnBorders(position.value(),
+                            (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                            (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                            (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                            (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnBorders(i,
+                                (borderFlags.size() > 0 ? borderFlags[0] : table->IsShowingTopBorder()),
+                                (borderFlags.size() > 1 ? borderFlags[1] : table->IsShowingRightBorder()),
+                                (borderFlags.size() > 2 ? borderFlags[2] : table->IsShowingBottomBorder()),
+                                (borderFlags.size() > 3 ? borderFlags[3] : table->IsShowingLeftBorder()),
+                                rowStops);
+                            }
+                        }
                     }
 
                 // borders specified individually
                 if (columnBordersCommand->HasProperty(L"top-border"))
                     {
-                    table->SetColumnBorders(position.value(),
-                        columnBordersCommand->GetProperty(L"top-border")->
-                            GetValueBool(table->IsShowingTopBorder()),
-                        std::nullopt,
-                        std::nullopt,
-                        std::nullopt,
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetColumnBorders(position.value(),
+                            columnBordersCommand->GetProperty(L"top-border")->
+                                GetValueBool(table->IsShowingTopBorder()),
+                            std::nullopt,
+                            std::nullopt,
+                            std::nullopt,
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnBorders(i,
+                                columnBordersCommand->GetProperty(L"top-border")->
+                                GetValueBool(table->IsShowingTopBorder()),
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                rowStops);
+                            }
+                        }
                     }
                 if (columnBordersCommand->HasProperty(L"right-border"))
                     {
-                    table->SetColumnBorders(position.value(),
-                        std::nullopt,
-                        columnBordersCommand->GetProperty(L"right-border")->
-                            GetValueBool(table->IsShowingRightBorder()),
-                        std::nullopt,
-                        std::nullopt,
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetColumnBorders(position.value(),
+                            std::nullopt,
+                            columnBordersCommand->GetProperty(L"right-border")->
+                                GetValueBool(table->IsShowingRightBorder()),
+                            std::nullopt,
+                            std::nullopt,
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnBorders(i,
+                                std::nullopt,
+                                columnBordersCommand->GetProperty(L"right-border")->
+                                GetValueBool(table->IsShowingRightBorder()),
+                                std::nullopt,
+                                std::nullopt,
+                                rowStops);
+                            }
+                        }
                     }
                 if (columnBordersCommand->HasProperty(L"bottom-border"))
                     {
-                    table->SetColumnBorders(position.value(),
-                        std::nullopt,
-                        std::nullopt,
-                        columnBordersCommand->GetProperty(L"bottom-border")->
-                            GetValueBool(table->IsShowingBottomBorder()),
-                        std::nullopt);
+                    if (position.has_value())
+                        {
+                        table->SetColumnBorders(position.value(),
+                            std::nullopt,
+                            std::nullopt,
+                            columnBordersCommand->GetProperty(L"bottom-border")->
+                                GetValueBool(table->IsShowingBottomBorder()),
+                            std::nullopt);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnBorders(i,
+                                std::nullopt,
+                                std::nullopt,
+                                columnBordersCommand->GetProperty(L"bottom-border")->
+                                GetValueBool(table->IsShowingBottomBorder()),
+                                std::nullopt);
+                            }
+                        }
                     }
                 if (columnBordersCommand->HasProperty(L"left-border"))
                     {
-                    table->SetColumnBorders(position.value(),
-                        std::nullopt,
-                        std::nullopt,
-                        std::nullopt,
-                        columnBordersCommand->GetProperty(L"left-border")->
-                            GetValueBool(table->IsShowingLeftBorder()),
-                        rowStops);
+                    if (position.has_value())
+                        {
+                        table->SetColumnBorders(position.value(),
+                            std::nullopt,
+                            std::nullopt,
+                            std::nullopt,
+                            columnBordersCommand->GetProperty(L"left-border")->
+                                GetValueBool(table->IsShowingLeftBorder()),
+                            rowStops);
+                        }
+                    // range
+                    if (startPosition.has_value() && endPosition.has_value())
+                        {
+                        for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                            {
+                            table->SetColumnBorders(i,
+                                std::nullopt,
+                                std::nullopt,
+                                std::nullopt,
+                                columnBordersCommand->GetProperty(L"left-border")->
+                                GetValueBool(table->IsShowingLeftBorder()),
+                                rowStops);
+                            }
+                        }
                     }
                 }
             }
@@ -4070,14 +4298,18 @@ namespace Wisteria
             {
             for (const auto& columnHighlightsCommand : columnHighlightsCommands)
                 {
-                const std::optional<size_t> position =
-                    LoadTablePosition(columnHighlightsCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                const auto [position, startPosition, endPosition] = readPositions(columnHighlightsCommand);
 
                 std::set<size_t> rowStops =
                     loadStops(columnHighlightsCommand->GetProperty(L"stops"));
                 if (position.has_value())
                     { table->HighlightColumn(position.value(), rowStops); }
+                // range
+                if (startPosition.has_value() && endPosition.has_value())
+                    {
+                    for (auto i = startPosition.value(); i <= endPosition.value(); ++i)
+                        { table->HighlightColumn(i, rowStops); }
+                    }
                 }
             }
 
@@ -4120,6 +4352,8 @@ namespace Wisteria
 
                 if (aggType.CmpNoCase(L"percent-change") == 0)
                     { aggInfo.Type(AggregateType::ChangePercent); }
+                else if (aggType.CmpNoCase(L"change") == 0)
+                    { aggInfo.Type(AggregateType::Change); }
                 else if (aggType.CmpNoCase(L"total") == 0)
                     { aggInfo.Type(AggregateType::Total); }
                 else if (aggType.CmpNoCase(L"ratio") == 0)
