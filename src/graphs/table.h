@@ -318,6 +318,7 @@ namespace Wisteria::Graphs
             [[nodiscard]]
             TableCellFormat GetFormat() const noexcept
                 { return m_valueFormat; }
+            /// @returns The numeric precision being displayed.
             [[nodiscard]]
             uint8_t GetPrecision() const noexcept
                 { return m_precision; }
