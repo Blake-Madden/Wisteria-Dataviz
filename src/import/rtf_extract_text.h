@@ -152,7 +152,8 @@ namespace lily_of_the_valley
     /// @private
     inline void reset_property(DOP& prop)
         {
-        prop.fFacingp = prop.fLandscape = prop.pgnStart = prop.xaLeft =
+        prop.fFacingp = prop.fLandscape = 0;
+        prop.pgnStart = prop.xaLeft =
         prop.xaPage = prop.xaRight = prop.yaBottom = prop.yaPage =
         prop.yaTop = 0;
         }
