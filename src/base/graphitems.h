@@ -1381,7 +1381,7 @@ namespace Wisteria
             void SetCanvasWidthProportion(const double widthProportion) noexcept
                 {
                 InvalidateCachedBoundingBox();
-                m_itemInfo.m_canvasWidthProportion = widthProportion;
+                m_itemInfo.m_canvasWidthProportion = std::min(1.0, widthProportion);
                 }
             /// @returns The percent of the canvas height that this object should consume.
             [[nodiscard]] std::optional<double> GetCanvasHeightProportion() const noexcept

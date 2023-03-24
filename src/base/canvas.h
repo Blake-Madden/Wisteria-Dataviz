@@ -307,7 +307,7 @@ namespace Wisteria
                 object prior to calling this because those are factored into this calculation.
             @note This is a low-level function. Prefer using CalcRowDimensions() instead.*/
         [[nodiscard]]
-        double CalcMinWidthProportion( std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
+        double CalcMinWidthProportion(std::shared_ptr<Wisteria::GraphItems::GraphItemBase> item)
             {
             wxGCDC gdc(this);
             // switch the object to (temporarily) use its original scaling from the client
@@ -318,13 +318,13 @@ namespace Wisteria
             // SetBoundingBox(), as we will be resizing this item from scratch
             item->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             item->RecalcSizes(gdc);
-            return safe_divide<double>(
+            return std::min(1.0, safe_divide<double>(
                 item->GetBoundingBox(gdc).GetWidth() +
                     // canvas margins are not part of the bounding box calculation,
                     // so those need to be factored in here
                     gdc.FromDIP(item->GetLeftCanvasMargin()) +
                     gdc.FromDIP(item->GetRightCanvasMargin()),
-                gdc.FromDIP(GetCanvasMinWidthDIPs()));
+                gdc.FromDIP(GetCanvasMinWidthDIPs())));
             }
         /** @brief Calculates the minimum percent of the canvas an item should consume
                 when at @c 1.0 scaling.
