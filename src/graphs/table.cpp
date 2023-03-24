@@ -33,7 +33,7 @@ namespace Wisteria::Graphs
             m_valueFormat == TableCellFormat::GeneralChange)
             {
             m_precision = 0;
-            m_prefix = L"\x25B2"; // up arrow
+            m_prefix = L"\x2014"; // emdash, will be changed dynamically later based on value
             m_horizontalCellAlignment = PageHorizontalAlignment::RightAligned;
             }
         else if (m_valueFormat == TableCellFormat::Accounting)
@@ -438,7 +438,7 @@ namespace Wisteria::Graphs
                 }
 
             std::vector<double> colValues;
-            for (size_t currentCol = 0; currentCol < GetColumnCount(); ++currentCol)
+            for (size_t currentCol = (rowName.has_value() ? 1 : 0); currentCol < GetColumnCount(); ++currentCol)
                 {
                 colValues.clear();
                 // tally values from the whole row, unless a custom range was defined
@@ -464,6 +464,13 @@ namespace Wisteria::Graphs
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         }
+                    // if custom start and/or end column requested and it is not a valid number,
+                    // then insert NaN
+                    const bool onCustomStartRow{ aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == currentRow };
+                    const bool onCustomEndRow{ aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == currentRow };
+                    if ((onCustomStartRow || onCustomEndRow) &&
+                        (!cell.IsNumeric() || std::isnan(cell.GetDoubleValue())))
+                        { colValues.push_back(cell.GetDoubleValue()); }
                     CalculateAggregate(aggInfo, GetCell(rIndex, currentCol), colValues);
                     }
                 }
@@ -518,9 +525,8 @@ namespace Wisteria::Graphs
                                  borders.value().test(2), borders.value().test(3));
                 }
 
-            size_t currentRow{ 0 };
             std::vector<double> rowValues;
-            for (size_t rowCounter = 0; rowCounter < m_table.size(); ++rowCounter)
+            for (size_t rowCounter = (colName.has_value() ? 1 : 0); rowCounter < m_table.size(); ++rowCounter)
                 {
                 rowValues.clear();
                 // tally values from the whole row, unless a custom range was defined
@@ -528,7 +534,7 @@ namespace Wisteria::Graphs
                      i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : columnIndex);
                      ++i)
                     {
-                    const auto& cell = GetCell(currentRow, i);
+                    const auto& cell = GetCell(rowCounter, i);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
                         {
                         // throw out unused precision
@@ -546,9 +552,15 @@ namespace Wisteria::Graphs
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         }
+                    // if custom start and/or end column requested and it is not a valid number,
+                    // then insert NaN
+                    const bool onCustomStartColumn{ aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == i };
+                    const bool onCustomEndColumn{ aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == i };
+                    if ((onCustomStartColumn || onCustomEndColumn) &&
+                        (!cell.IsNumeric() || std::isnan(cell.GetDoubleValue())))
+                        { rowValues.push_back(cell.GetDoubleValue()); }
                     }
-                CalculateAggregate(aggInfo, GetCell(currentRow, columnIndex), rowValues);
-                ++currentRow;
+                CalculateAggregate(aggInfo, GetCell(rowCounter, columnIndex), rowValues);
                 }
             }
         }
@@ -1193,10 +1205,11 @@ namespace Wisteria::Graphs
                 // special character at the far-left edge (e.g., '$' in accounting formatting)
                 if (cell.GetPrefix().length() && isPrefixSeparateLabel)
                     {
-                    const wxString prefix = (cell.m_valueFormat == TableCellFormat::PercentChange ||
-                                             cell.m_valueFormat == TableCellFormat::GeneralChange) ?
+                    const wxString prefix = ((cell.m_valueFormat == TableCellFormat::PercentChange ||
+                                              cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
                         // down and up arrow emojis
-                        wxString(cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2") :
+                        wxString((std::isnan(cell.GetDoubleValue()) ? L"\x2014" :
+                                  cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2")) :
                         cell.GetPrefix();
                     auto cellPrefixLabel = std::make_shared<Label>(
                     GraphItemInfo(prefix).
