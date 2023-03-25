@@ -17,3 +17,6 @@
 	path = src/i18n-check
 	url = https://github.com/Blake-Madden/i18n-check.git
 	branch = main
+[submodule "src/wxStartPage"]
+	path = src/wxStartPage
+	url = https://github.com/Blake-Madden/wxStartPage.git
