@@ -972,6 +972,7 @@ EXCLUDE                = ../../src/easyexif \
                          ../../build \
                          ../../src/i18n-check \
                          ../../src/wxSimpleJSON \
+                         ../../src/wxStartPage \
                          ../../src/CRCpp \
                          ../../src/utfcpp
 
