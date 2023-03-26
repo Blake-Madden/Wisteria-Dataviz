@@ -29,6 +29,7 @@
 #include "icons.h"
 #include "enums.h"
 #include "../math/mathematics.h"
+#include "../i18n-check/src/donttranslate.h"
 
 // forward declares
 namespace Wisteria

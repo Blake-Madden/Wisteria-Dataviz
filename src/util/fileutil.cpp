@@ -25,57 +25,57 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path)
     if (string_util::strnicmp(m_path.wc_str(), _DT(L"http:"), 5) == 0)
         {
         // fix Windows forwards slashes (which is wrong in an URL)
-        m_path.Replace(wxT("\\"), wxT("/"));
-        m_path.Replace(wxT(" "), wxT("%20"));
+        m_path.Replace(L"\\", L"/");
+        m_path.Replace(L" ", L"%20");
 
         m_fileType = FilePathType::HTTP;
         return m_path;
         }
     else if (string_util::strnicmp(m_path.wc_str(), _DT(L"https:"), 6) == 0)
         {
-        m_path.Replace(wxT("\\"), wxT("/"));
-        m_path.Replace(wxT(" "), wxT("%20"));
+        m_path.Replace(L"\\", L"/");
+        m_path.Replace(L" ", L"%20");
 
         m_fileType = FilePathType::HTTPS;
         return m_path;
         }
     else if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftp:"), 4) == 0)
         {
-        m_path.Replace(wxT("\\"), wxT("/"));
+        m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::FTP;
         return m_path;
         }
     else if (string_util::strnicmp(m_path.wc_str(), _DT(L"ftps:"), 5) == 0)
         {
-        m_path.Replace(wxT("\\"), wxT("/"));
+        m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::FTPS;
         return m_path;
         }
     else if (string_util::strnicmp(m_path.wc_str(), _DT(L"gopher:"), 7) == 0)
         {
-        m_path.Replace(wxT("\\"), wxT("/"));
+        m_path.Replace(L"\\", L"/");
         m_fileType = FilePathType::Gopher;
         return m_path;
         }
     // not a protocol, but just in case the protocol was forgotten
     else if (string_util::strnicmp(m_path.wc_str(), _DT(L"www."), 4) == 0)
         {
-        m_path.Replace(wxT("\\"), wxT("/"));
-        m_path.Replace(wxT(" "), wxT("%20"));
-        m_path.insert(0, wxT("http://")); // safe assumption to fallback to
+        m_path.Replace(L"\\", L"/");
+        m_path.Replace(L" ", L"%20");
+        m_path.insert(0, L"http://"); // safe assumption to fallback to
 
         m_fileType = FilePathType::HTTP;
         return m_path;
         }
     // else, if a file path using the file protocol then strip off the protocol
-    else if (string_util::strnicmp(m_path.wc_str(), wxT("file:"), 5) == 0)
+    else if (string_util::strnicmp(m_path.wc_str(), L"file:", 5) == 0)
         {
-        if (string_util::strnicmp(m_path.wc_str(), wxT("file://localhost/"), 17) == 0)
+        if (string_util::strnicmp(m_path.wc_str(), L"file://localhost/", 17) == 0)
             { m_path = m_path.substr(17); }
-        else if (string_util::strnicmp(m_path.wc_str(), wxT("file:///"), 8) == 0)
+        else if (string_util::strnicmp(m_path.wc_str(), L"file:///", 8) == 0)
             {
             m_path = m_path.substr(8);
-            m_path.Replace(wxT("%20"), wxT(" "));
+            m_path.Replace(L"%20", L" ");
             }
         m_fileType = FilePathType::LocalOrNetwork;
         return m_path;
@@ -144,7 +144,7 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path)
             // on UNIX, just assume file path is legit if the prefix checked out
             m_fileType = specificLocalType;
             // but do fix any forward slashes (Windows format)
-            m_path.Replace(wxT("\\"), wxT("/"), true);
+            m_path.Replace(L"\\", L"/", true);
             // chop off Windows drive letter
             if (HasWindowsPrefix(GetResolvedPath()) )
                 { m_path.erase(0,2); }
@@ -178,7 +178,7 @@ bool FilePathResolverBase::HasWindowsPrefix(const wxString& str)
 bool FilePathResolverBase::HasUnixPrefix(const wxString& str)
     {
     return (str.length() >= 2 &&
-            str[0] == wxT('/') &&
+            str[0] == L'/' &&
             ((str[1] >= L'a' && str[1] <= L'z') ||
              (str[1] >= L'A' && str[1] <= L'Z')));
     }
@@ -187,26 +187,26 @@ bool FilePathResolverBase::HasUnixPrefix(const wxString& str)
 bool FilePathResolverBase::HasNetworkPrefix(const wxString& str)
     {
     return (str.length() >= 2 &&
-            str[0] == wxT('\\') &&
-            str[1] == wxT('\\'));
+            str[0] == L'\\' &&
+            str[1] == L'\\');
     }
 
 //------------------------------------------------
 wxString ParseTitleFromFileName(wxString filename)
     {
     //if page is just a PHP query, then use the name of the folder
-    if (wxFileName(filename).GetName().StartsWith(wxT("?")) )
+    if (wxFileName(filename).GetName().StartsWith(L"?") )
         { filename = wxFileName(filename).GetPath(); }
     //sometimes webpage paths end with a '/', so chop that off when getting the title
-    if (filename.EndsWith(wxT("/")) )
+    if (filename.EndsWith(L"/") )
         { filename = filename.substr(0, filename.length()-1); }
     FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
     //paths to worksheet/cell inside of Excel file should keep the spreadsheet file extension
     if (resolvePath.IsExcelCell())
-        { filename.Replace(wxT("."), wxString{}, true); }
+        { filename.Replace(L".", wxString{}, true); }
     wxString retVal = StripIllegalFileCharacters(wxFileName(filename).GetName());
-    retVal.Replace(wxT("."), wxString{}, true);
+    retVal.Replace(L".", wxString{}, true);
     return retVal;
     }
 
@@ -262,7 +262,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
                 wxFileName(currentDir).GetVolume() + wxFileName::GetVolumeSeparator() + 
                 wxFileName::GetPathSeparator() +
         #else
-                wxT("/") +
+                L"/" +
         #endif
             JoinDirs(originalDirSystem) + filePath.GetFullName();
             if (wxFileName::FileExists(currentNewPath))
@@ -305,14 +305,14 @@ wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /
             }
         else if (resolver.IsHTTPFile() || resolver.IsHTTPSFile())
             {
-            size_t slash = filePath.find(wxT('/'));
+            size_t slash = filePath.find(L'/');
             if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }
-            if (filePath[slash+1] == wxT('/'))//skip the "http://"
-                { slash = filePath.find(wxT('/'), slash+2); }
+            if (filePath[slash+1] == L'/')//skip the "http://"
+                { slash = filePath.find(L'/', slash+2); }
             if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }
-            const size_t lastSlash = filePath.find_last_of(wxT('/'));
+            const size_t lastSlash = filePath.find_last_of(L'/');
             if (lastSlash == wxString::npos || lastSlash <= slash || lastSlash == filePath.length()-1)
                 { return filePath; }
             wxString domain = filePath.substr(0, slash);
@@ -320,7 +320,7 @@ wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /
             wxString foldersString = filePath.substr(slash+1, (lastSlash-slash)-1);
 
             wxArrayString folders;
-            wxStringTokenizer tkz(foldersString, wxT('/'));
+            wxStringTokenizer tkz(foldersString, L'/');
             wxString nextFileExt;
             while ( tkz.HasMoreTokens() )
                 { folders.Add(tkz.GetNextToken()); }
@@ -335,7 +335,7 @@ wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /
                     { folders[i] = wxString(1,wchar_t(8230)); }
                 }
 
-            return domain + wxT('/') + JoinWebDirs(folders) + fileName;
+            return domain + L'/' + JoinWebDirs(folders) + fileName;
             }
         else
             { return filePath; }

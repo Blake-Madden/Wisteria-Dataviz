@@ -31,7 +31,10 @@ wxColour ColorBrewer::BrewColor(const double value) const
     // verify that we have a valid spectrum initialized
     NON_UNIT_TEST_ASSERT(m_colorSpectrum.size() > 1);
     if (m_colorSpectrum.size() < 2)
-        { throw std::length_error("Color scale has not been initialized in color brewer."); }
+        {
+        throw std::length_error(
+            _(L"Color scale has not been initialized in color brewer.").ToUTF8());
+        }
     double normalizedValue = statistics::normalize<double>(m_range.first, m_range.second, value);
 
     // |-- Our desired color will be between these two indexes in "colorSpectrum".

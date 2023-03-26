@@ -925,7 +925,7 @@ public:
             const wxString percentageLabel =
                 (cell.GetNumberFormatType().m_type ==
                  Wisteria::NumberFormatInfo::NumberFormatType::PercentageFormatting) ?
-                    wxT("%") : wxString{};
+                    wxString(L"%") : wxString{};
             if (cell.IsDisplayingLabel())
                 {
                 return GetLabel(cell.m_labelCode) + percentageLabel;

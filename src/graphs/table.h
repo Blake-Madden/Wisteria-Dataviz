@@ -493,7 +493,7 @@ namespace Wisteria::Graphs
 
             bool m_isHighlighted{ false };
             std::optional<double> m_suppressionThreshold{ std::nullopt };
-            wxString m_suppressionLabel{ _(L"---") };
+            wxString m_suppressionLabel{ L"---" };
             };
 
         /// @brief Constructor.

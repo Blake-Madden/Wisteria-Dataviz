@@ -983,7 +983,7 @@ namespace Wisteria::Graphs
                         dc.DrawLine(wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(20)),
                             wxPoint(i, GetBoundingBox(dc).GetTop()+ScaleToScreenAndCanvas(40)) );
                         }
-                    Label rulerLabel(GraphItemInfo(L"\u21E6 100 pixels").
+                    Label rulerLabel(GraphItemInfo(_DT(L"\u21E6 100 pixels")).
                         AnchorPoint(wxPoint(GetBoundingBox(dc).GetTopRight().x - ScaleToScreenAndCanvas(5),
                                             GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(25))).
                         Anchoring(Anchoring::TopRightCorner).FontColor(*wxBLUE).
@@ -992,7 +992,7 @@ namespace Wisteria::Graphs
                     rulerLabel.SetMinimumUserSizeDIPs(90, std::nullopt);
                     rulerLabel.Draw(dc);
                     rulerLabel.SetAnchoring(Anchoring::TopLeftCorner);
-                    rulerLabel.SetText(L"100 pixels \u21E8");
+                    rulerLabel.SetText(_DT(L"100 pixels \u21E8"));
                     rulerLabel.SetAnchorPoint(
                         (wxPoint(GetBoundingBox(dc).GetTopLeft().x + ScaleToScreenAndCanvas(5),
                          GetBoundingBox(dc).GetTop() + ScaleToScreenAndCanvas(5))) );
@@ -1013,7 +1013,7 @@ namespace Wisteria::Graphs
                     }
                 const auto bBox = GetBoundingBox(dc);
                 Label infoLabel(GraphItemInfo(
-                        wxString::Format(L"Scaling: %s\n"
+                        wxString::Format(_DT(L"Scaling: %s\n"
                             "Vertical Axes Top (x, y): %d, %d\n"
                             "Vertical Axes Bottom (x, y): %d, %d\n"
                             "Horizontal Axes Left (x, y): %d, %d\n"
@@ -1021,7 +1021,7 @@ namespace Wisteria::Graphs
                             "Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
                             "Content Area (x,y,width,height): %d, %d, %d, %d\n"
                             "Plot Decoration Padding (t,r,b,l): %ld, %ld, %ld, %ld\n"
-                            "%s",
+                            "%s"),
                             wxNumberFormatter::ToString(GetScaling(), 1,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             GetLeftYAxis().GetTopPoint().x, GetLeftYAxis().GetTopPoint().y,

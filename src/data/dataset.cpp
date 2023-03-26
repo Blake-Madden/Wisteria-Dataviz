@@ -1209,7 +1209,7 @@ namespace Wisteria::Data
             if (foundIterator == preview.get_header_names().cend())
                 {
                 throw std::runtime_error(
-                    wxString::Format(L"'%s': column not found!", columnName.c_str()).ToUTF8());
+                    wxString::Format(_(L"'%s': column not found!"), columnName.c_str()).ToUTF8());
                 }
             };
 

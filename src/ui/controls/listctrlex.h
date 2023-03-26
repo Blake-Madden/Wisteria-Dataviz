@@ -60,7 +60,7 @@ public:
                        wxWindowID id = wxID_ANY, const wxString& value = wxString{},
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxCB_DROPDOWN, const wxValidator& validator = wxDefaultValidator,
-                       const wxString& name = wxT("ListEditComboBox")) :
+                       const wxString& name = L"ListEditComboBox") :
                             wxComboBox(parent, id, value, pos, size, choices, style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {}
@@ -100,7 +100,7 @@ public:
     ListEditSpinCtrl(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY, const wxString& value = wxString{},
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxSP_ARROW_KEYS, int Min = 1, int Max = 100, int initial = 1,
-                       const wxString& name = wxT("ListEditSpinCtrl")) :
+                       const wxString& name = L"ListEditSpinCtrl") :
                             wxSpinCtrl(parent, id, value, pos, size, style, Min, Max, initial, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
         {
@@ -136,7 +136,7 @@ public:
     ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY, const wxString& value = wxString{},
         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
         long style = wxSP_ARROW_KEYS, double Min = 1.0, double Max = 100.0, double initial = 1.0,
-        const wxString& name = wxT("ListEditSpinCtrlDouble"));
+        const wxString& name = L"ListEditSpinCtrlDouble");
     void OnEndEditKillFocus(wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
         {
@@ -167,7 +167,7 @@ public:
                        const wxPoint& pos = wxDefaultPosition,
                        const wxSize& size = wxDefaultSize, long style = 0,
                        const wxValidator& validator = wxDefaultValidator,
-                       const wxString& name = wxT("ListEditTextCtrl")) :
+                       const wxString& name = L"ListEditTextCtrl") :
                             wxTextCtrl(parent, id, value, pos, size,
                                 style, validator, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
@@ -311,7 +311,7 @@ public:
         if (m_enableFileDelete)
             {
             m_enableItemDelete = true;
-            m_deletePrompt = _("Do you wish to delete the selected file(s)?");
+            m_deletePrompt = _(L"Do you wish to delete the selected file(s)?");
             }
         }
 

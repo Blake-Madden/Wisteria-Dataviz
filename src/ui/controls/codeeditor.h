@@ -20,6 +20,7 @@
 #include <set>
 #include <vector>
 #include "../../i18n-check/src/string_util.h"
+#include "../../i18n-check/src/donttranslate.h"
 
 /// @brief Namespace for code/formula parsing and editing.
 namespace Wisteria::UI

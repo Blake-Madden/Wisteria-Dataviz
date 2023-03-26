@@ -1022,11 +1022,11 @@ namespace Wisteria::GraphItems
                     {
                     const auto bBox = GetBoundingBox(dc);
                     Label infoLabel(GraphItemInfo(
-                        wxString::Format(L"Scaling: %s\n"
-                                          "Width: %s\n"
-                                          "Height: %s\n"
-                                          "Default font size: %d\n"
-                                          "Font size: %d",
+                        wxString::Format(_DT(L"Scaling: %s\n"
+                                              "Width: %s\n"
+                                              "Height: %s\n"
+                                              "Default font size: %d\n"
+                                              "Font size: %d"),
                             wxNumberFormatter::ToString(GetScaling(), 1,
                                 wxNumberFormatter::Style::Style_NoTrailingZeroes),
                             wxNumberFormatter::ToString(bBox.GetWidth(), 0,

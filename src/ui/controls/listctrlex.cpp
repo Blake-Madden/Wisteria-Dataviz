@@ -158,7 +158,7 @@ void ListEditSpinCtrl::OnEndEditKillFocus(wxFocusEvent& event)
 ListEditSpinCtrlDouble::ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner, wxWindowID id /*= wxID_ANY*/, const wxString& value /*= wxString{}*/,
                        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
                        long style /*= wxSP_ARROW_KEYS*/, double Min/* = 1.0*/, double Max /*= 100.0*/, double initial /*= 1.0*/,
-                       const wxString& name /*= wxT("ListEditSpinCtrlDouble")*/) :
+                       const wxString& name /*= L"ListEditSpinCtrlDouble"*/) :
                             wxSpinCtrlDouble(parent, id, value, pos, size, style, Min, Max, initial, 1.0, name),
                             m_owner(owner), m_editedRow(wxNOT_FOUND), m_editedColumn(wxNOT_FOUND)
     {
@@ -288,8 +288,8 @@ void ListCtrlEx::ViewItem(const long selectedRow)
         {
         if (selectedRow == wxNOT_FOUND)
             {
-            wxMessageBox(_("Please select an item in the list to view."),
-                         _("View Item"), wxOK|wxICON_INFORMATION);
+            wxMessageBox(_(L"Please select an item in the list to view."),
+                         _(L"View Item"), wxOK|wxICON_INFORMATION);
             return;
             }
         ListCtrlItemViewDlg dlg;
@@ -407,11 +407,11 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
     //If the listctrl is editable and the user is doing a CTRL+V on the list then paste in
     //text from the clipboard as a new item
     if ((GetWindowStyle() & wxLC_EDIT_LABELS) &&
-        event.ControlDown() && event.GetKeyCode() == wxT('V'))
+        event.ControlDown() && event.GetKeyCode() == L'V')
         { Paste(); }
-    else if (event.ControlDown() && event.GetKeyCode() == wxT('C'))
+    else if (event.ControlDown() && event.GetKeyCode() == L'C')
         { Copy(true, false); }
-    else if (event.ControlDown() && event.GetKeyCode() == wxT('A'))
+    else if (event.ControlDown() && event.GetKeyCode() == L'A')
         { SelectAll(); }
     else if (event.ControlDown() && event.GetKeyCode() == WXK_INSERT && IsItemAddingEnabled())
         { EditItem(AddRow(), 0); }
@@ -422,7 +422,7 @@ void ListCtrlEx::OnKeyDown(wxKeyEvent& event)
         {
         if (m_deletePrompt.length())
             {
-            if (wxMessageBox(m_deletePrompt, _("Delete Item"), wxYES_NO|wxICON_WARNING) == wxNO)
+            if (wxMessageBox(m_deletePrompt, _(L"Delete Item"), wxYES_NO|wxICON_WARNING) == wxNO)
                 { return; }
             }
         DeleteSelectedItems();
@@ -509,7 +509,7 @@ public:
                 // remove space for the headers and footers (if being used)
                 wxCoord textWidth(0), textHeight(0);
                 wxCoord bodyStart = marginY;
-                dc->GetTextExtent(wxT("MeasurementTestString"), &textWidth, &textHeight);
+                dc->GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
                 if (m_list->GetLeftPrinterHeader().length() ||
                     m_list->GetCenterPrinterHeader().length() ||
                     m_list->GetRightPrinterHeader().length())
@@ -548,7 +548,7 @@ public:
                         {
                         wxCoord currentX = marginX+currentTableOffset;
                         // draw the column headers' background
-                        drawDC.SetBrush(wxColour(wxT("#337BC4")));
+                        drawDC.SetBrush(wxColour(L"#337BC4"));
                         drawDC.DrawRectangle(currentX, bodyStart, GetTableWidth(), GetCoulmnHeight());
                         // draw the cell borders
                         //-----------------
@@ -720,7 +720,7 @@ public:
                         m_list->GetCenterPrinterFooter().length() ||
                         m_list->GetRightPrinterFooter().length())
                         {
-                        drawDC.GetTextExtent(wxT("MeasurementTestString"), &textWidth, &textHeight);
+                        drawDC.GetTextExtent(L"MeasurementTestString", &textWidth, &textHeight);
                         // move down past the print header area, drawing (tables) area, and half the bottom margin (to center the footer vertically)
                         const wxCoord yPos = topMargin+drawingHeight+(marginY/2);
                         if (m_list->GetLeftPrinterFooter().length())
@@ -799,7 +799,7 @@ public:
 
             // measure a standard line of text
             wxCoord textWidth, textHeight;
-            dc->GetTextExtent(wxT("A"), &textWidth, &textHeight);
+            dc->GetTextExtent(L"A", &textWidth, &textHeight);
 
             // remove the margins from the drawing area size
             wxCoord heightMargin = GetMarginPadding()*2;
@@ -1029,12 +1029,12 @@ private:
         {
         wxString expandedString = printString;
 
-        expandedString.Replace(wxT("@PAGENUM@"), wxString::Format(wxT("%d"), m_currentPage), true);
-        expandedString.Replace(wxT("@PAGESCNT@"), wxString::Format(wxT("%u"), GetPageCount()), true);
-        expandedString.Replace(wxT("@TITLE@"), m_list->GetLabel(), true);
+        expandedString.Replace(L"@PAGENUM@", wxString::Format(wxT("%d"), m_currentPage), true);
+        expandedString.Replace(L"@PAGESCNT@", wxString::Format(wxT("%u"), GetPageCount()), true);
+        expandedString.Replace(L"@TITLE@", m_list->GetLabel(), true);
         const wxDateTime now = wxDateTime::Now();
-        expandedString.Replace(wxT("@DATE@"), now.FormatDate(), true);
-        expandedString.Replace(wxT("@TIME@"), now.FormatTime(), true);
+        expandedString.Replace(L"@DATE@", now.FormatDate(), true);
+        expandedString.Replace(L"@TIME@", now.FormatTime(), true);
 
         return expandedString;
         }
@@ -1101,8 +1101,8 @@ void ListCtrlEx::OnPrint([[maybe_unused]] wxCommandEvent& event)
         // just show a message if a real error occurred. They may have just cancelled.
         if (printer.GetLastError() == wxPRINTER_ERROR)
             {
-            wxMessageBox(_("An error occurred while printing.\nYour default printer may not be set correctly."),
-                        _("Print"), wxOK|wxICON_WARNING);
+            wxMessageBox(_(L"An error occurred while printing.\nYour default printer may not be set correctly."),
+                        _(L"Print"), wxOK|wxICON_WARNING);
             }
         }
     if (m_printData)
@@ -1153,14 +1153,14 @@ void ListCtrlEx::OnPreview([[maybe_unused]] wxCommandEvent& event)
     if (!preview->IsOk())
         {
         wxDELETE(preview); wxDELETE(dc); wxDELETE(dc2);
-        wxMessageBox(_("An error occurred while previewing.\nYour default printer may not be set correctly."),
-                     _("Print Preview"), wxOK|wxICON_WARNING);
+        wxMessageBox(_(L"An error occurred while previewing.\nYour default printer may not be set correctly."),
+                     _(L"Print Preview"), wxOK|wxICON_WARNING);
         return;
         }
 
     int x{0}, y{0}, width{0}, height{0};
     wxClientDisplayRect(&x, &y, &width, &height);
-    wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _("Print Preview"),
+    wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
                                                wxDefaultPosition, wxSize(width, height));
 
     frame->Centre(wxBOTH);
@@ -1193,7 +1193,7 @@ void ListCtrlEx::Paste()
             wxTextDataObject data;
             wxTheClipboard->GetData(data);
             //split the string into separate lines if it has CRLFs in it
-            wxStringTokenizer tkz(data.GetText(), wxT("\r\n"), wxTOKEN_STRTOK);
+            wxStringTokenizer tkz(data.GetText(), L"\r\n", wxTOKEN_STRTOK);
             while (tkz.HasMoreTokens() )
                 { AddRow(tkz.GetNextToken() ); }
 
@@ -1451,8 +1451,8 @@ void ListCtrlEx::OnFind(wxFindDialogEvent &event)
 
     if (result == wxNOT_FOUND)
         wxMessageDialog(this,
-        (type == wxEVT_COMMAND_FIND_NEXT) ? _("No further occurrences found.") : _("The text could not be found."),
-            _("Text Not Found")).ShowModal();
+        (type == wxEVT_COMMAND_FIND_NEXT) ? _(L"No further occurrences found.") : _(L"The text could not be found."),
+            _(L"Text Not Found")).ShowModal();
     }
 
 ///resize the columns so that they fit the entire window evenly
@@ -1893,10 +1893,14 @@ wxString ListCtrlEx::GetItemTextFormatted(const long item, const long column) co
 void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
     {
     wxArrayString choices, descriptions;
-    choices.Add(_DT(L"HTML")); descriptions.Add(_DT(L"<span style='font-weight:bold;'>Hyper Text Markup Language</span><br />") + _("This format will include formatting and can be displayed in Internet browsers or most word-processing programs."));
-    choices.Add(_DT(L"TXT")); descriptions.Add(wxString::Format(wxT("<span style='font-weight:bold;'>%s</span><br />%s"), _("Text"), _("This format will write the lists as a tab-delimited file with no formatting.")));
+    choices.Add(_DT(L"HTML")); descriptions.Add(
+        _DT(L"<span style='font-weight:bold;'>Hyper Text Markup Language</span><br />") +
+        _(L"This format will include formatting and can be displayed in Internet browsers or most word-processing programs."));
+    choices.Add(_DT(L"TXT")); descriptions.Add(
+        wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _(L"Text"),
+            _(L"This format will write the lists as a tab-delimited file with no formatting.")));
     RadioBoxDlg exportTypesDlg(this,
-        _("Select List Format"), wxString{}, _("List formats:"), _("Export List"),
+        _(L"Select List Format"), wxString{}, _(L"List formats:"), _(L"Export List"),
         choices, descriptions);
     if (exportTypesDlg.ShowModal() != wxID_OK)
         { return; }
@@ -1907,13 +1911,13 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
         fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
         break;
     case 1:
-        fileFilter = _("Text") + _DT(L" (*.txt)|*.txt");
+        fileFilter = _(L"Text") + _DT(L" (*.txt)|*.txt");
         break;
     default:
         fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
         };
     wxFileDialog dialog
-            (this, _("Save As"), wxString{}, GetLabel(), fileFilter,
+            (this, _(L"Save As"), wxString{}, GetLabel(), fileFilter,
             wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
 
     if (dialog.ShowModal() != wxID_OK)
@@ -1926,18 +1930,18 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
         switch (exportTypesDlg.GetSelection())
             {
         case 0:
-            filePath.SetExt(wxT("htm"));
+            filePath.SetExt(L"htm");
             break;
         case 1:
-            filePath.SetExt(wxT("txt"));
+            filePath.SetExt(L"txt");
             break;
         default:
-            filePath.SetExt(wxT("htm"));
+            filePath.SetExt(L"htm");
             };
         }
 
     const GridExportFormat exportFormat = 
-        (filePath.GetExt().CmpNoCase(wxT("HTM")) == 0 || filePath.GetExt().CmpNoCase(wxT("HTML")) == 0) ?
+        (filePath.GetExt().CmpNoCase(L"HTM") == 0 || filePath.GetExt().CmpNoCase(L"HTML") == 0) ?
         GridExportFormat::ExportHtml : GridExportFormat::ExportText;
     GridExportDlg exportOptionsDlg(GetParent(), GetItemCount(), GetColumnCount(), exportFormat);
     exportOptionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
@@ -2000,7 +2004,7 @@ void ListCtrlEx::FormatToText(wxString& outputText,
             GetColumn(i, Item);
             outputText += Item.GetText();
             if (i < lastColumn)
-                { outputText += wxT("\t"); }
+                { outputText += L"\t"; }
             }
         outputText += L"\n";
         }
@@ -2013,7 +2017,7 @@ void ListCtrlEx::FormatToText(wxString& outputText,
             {
             outputText += GetItemTextFormatted(i, j);
             if (j < lastColumn)
-                { outputText += wxT("\t"); }
+                { outputText += L"\t"; }
             }
         outputText += L"\n";
         }
@@ -2112,8 +2116,9 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
             GetLabel());
         }
 
-    const wxString tableStart = wxString::Format(wxT("\n<table border='1' style='font-family:%s; font-size:%dpt; border-collapse:collapse;'>"),
-                                    listFont.GetFaceName(), listFont.GetPointSize());
+    const wxString tableStart = wxString::Format(
+        L"\n<table border='1' style='font-family:%s; font-size:%dpt; border-collapse:collapse;'>",
+        listFont.GetFaceName(), listFont.GetPointSize());
     const wxString tableEnd = L"\n</table>";
 
     lily_of_the_valley::html_encode_text encode;
@@ -2143,7 +2148,7 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
             wxString itemText = Item.GetText();
             if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
                 { itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str(); }
-            columnHeader += wxString::Format(wxT("<td>%s</td>"), itemText);
+            columnHeader += wxString::Format(L"<td>%s</td>", itemText);
             }
         columnHeader += L"</tr></thead>";
         }
@@ -2174,9 +2179,9 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
                 { rowStyle += L"font-style:italic;"; }
             }
         if (rowStyle.length())
-            { rowStyle = L" style='" + rowStyle + wxT("'>"); }
+            { rowStyle = L" style='" + rowStyle + L"'>"; }
         else
-            { rowStyle = wxT(">"); }
+            { rowStyle = L">"; }
         outputText += rowStyle;
 
         for (long j = firstColumn; j <= lastColumn; ++j)
@@ -2202,10 +2207,10 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
             // Set the text color for the cell if customized and not the (browser) default black.
             // This has to be done at the cell level because color at the row level changes the
             // border color as well--we just want to change the text color.
-            outputText += wxT("<td>");
+            outputText += L"<td>";
             if (rowAttributes.GetTextColour().IsOk() && rowAttributes.GetTextColour() != *wxBLACK)
                 {
-                outputText += wxString::Format(wxT("<span style='color:%s;'>%s</span>"),
+                outputText += wxString::Format(L"<span style='color:%s;'>%s</span>",
                     rowAttributes.GetTextColour().GetAsString(wxC2S_HTML_SYNTAX),
                     itemText);
                 }
@@ -2217,15 +2222,15 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
                 {
                 const auto cellTextColor = (rowAttributes.GetBackgroundColour().GetLuminance() < .5f) ?
                     *wxWHITE : *wxBLACK;
-                outputText += wxString::Format(wxT("<span style='color:%s;'>%s</span>"),
+                outputText += wxString::Format(L"<span style='color:%s;'>%s</span>",
                     cellTextColor.GetAsString(wxC2S_HTML_SYNTAX),
                     itemText);
                 }
             else
                 { outputText += itemText; }
-            outputText += wxT("</td>");
+            outputText += L"</td>";
             }
-        outputText += wxT("</tr>");
+        outputText += L"</tr>";
         };
 
     if (tableCaption.length())
@@ -2297,15 +2302,15 @@ bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
     {
     if (exportOptions.m_exportSelected && GetSelectedItemCount() == 0)
         {
-        wxMessageBox(_("You requested to export only selected items, but no items are selected in the list."),
-            _("Export Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(_(L"You requested to export only selected items, but no items are selected in the list."),
+            _(L"Export Error"), wxOK|wxICON_EXCLAMATION);
         return false;
         }
     //create the folder to the filepath, if necessary
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
     const GridExportFormat exportFormat = 
-     (path.GetExt().CmpNoCase(wxT("HTM")) == 0 || path.GetExt().CmpNoCase(wxT("HTML")) == 0) ?
+     (path.GetExt().CmpNoCase(L"HTM") == 0 || path.GetExt().CmpNoCase(L"HTML") == 0) ?
         GridExportFormat::ExportHtml : GridExportFormat::ExportText;
 
     if (exportOptions.m_toRow == -1)
@@ -2332,8 +2337,8 @@ bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
     const bool retval = file.Write(outputText, wxConvUTF8);
     if (!retval)
         {
-        wxMessageBox(wxString::Format(_("Failed to save list\n(%s)."), path.GetFullPath()),
-            _("Export Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(wxString::Format(_(L"Failed to save list\n(%s)."), path.GetFullPath()),
+            _(L"Export Error"), wxOK|wxICON_EXCLAMATION);
         }
     return retval;
     }

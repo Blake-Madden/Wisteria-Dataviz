@@ -663,8 +663,9 @@ namespace Wisteria
         
         if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
-            m_debugInfo = wxString::Format(L"Canvas scaling: %s\n"
-                "Area height: %s\nGrid height: %s\n",
+            m_debugInfo = wxString::Format(
+                _DT(L"Canvas scaling: %s\n"
+                     "Area height: %s\nGrid height: %s\n"),
                 wxNumberFormatter::ToString(GetScaling(), 3,
                     wxNumberFormatter::Style::Style_NoTrailingZeroes),
                 wxNumberFormatter::ToString(GetCanvasRect(dc).GetHeight(), 0,
@@ -731,7 +732,7 @@ namespace Wisteria
 
             if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
                 {
-                m_debugInfo += wxString::Format(L"Row %s: height %s, proportion %s\n",
+                m_debugInfo += wxString::Format(_DT(L"Row %s: height %s, proportion %s\n"),
                                 wxNumberFormatter::ToString(currentRowIndex, 0,
                                                             wxNumberFormatter::Style::Style_None),
                                 wxNumberFormatter::ToString(rowHeight, 0,

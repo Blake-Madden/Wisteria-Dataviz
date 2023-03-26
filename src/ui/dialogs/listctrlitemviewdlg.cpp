@@ -46,25 +46,25 @@ void ListCtrlItemViewDlg::CreateControls()
         L"<body style=\"background:#E9F2FA\"><table border=\"1\" width=\"100%\">";
     for (const auto& value : m_values)
         {
-        htmlText += wxT("<tr>");
+        htmlText += L"<tr>";
         if (value.m_column.length() > 0)
-            { htmlText += wxT("<td>") + value.m_column + wxT("</td>"); }
+            { htmlText += L"<td>" + value.m_column + L"</td>"; }
 
         lily_of_the_valley::html_encode_text encode;
         if (value.m_isUrl)
             {
-            htmlText += wxString::Format(wxT("<td><a href=\"%s\">"), value.m_value) +
+            htmlText += wxString::Format(L"<td><a href=\"%s\">", value.m_value) +
                 encode({ value.m_value.wc_str(), value.m_value.length() }, true).c_str() +
-                wxString(wxT("</a></td></tr>"));
+                wxString(L"</a></td></tr>");
             }
         else
             {
-            htmlText += wxString(wxT("<td>")) +
+            htmlText += wxString(L"<td>") +
                 encode({ value.m_value.wc_str(), value.m_value.length() }, true).c_str() +
-                wxString(wxT("</td></tr>"));
+                wxString(L"</td></tr>");
             }
         }
-    htmlText += wxT("</table></body>");
+    htmlText += L"</table></body>";
 
     m_htmlWindow = new HtmlTableWindow(this, wxID_ANY, wxDefaultPosition,
                                        wxDefaultSize, wxHW_SCROLLBAR_NEVER);

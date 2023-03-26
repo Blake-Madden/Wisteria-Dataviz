@@ -101,10 +101,10 @@ void CodeEditor::SetLanguage(const int lang)
         // core language keywords
         SetLexer(lang);
         SetKeyWords(0,
-            "and break do else elseif end false for function if in local "
-            "nil not or repeat return then true until while");
+            _DT(L"and break do else elseif end false for function if in local "
+                 "nil not or repeat return then true until while"));
         // other language settings
-        SetFileFilter(_("Lua Script (*.lua)|*.lua"));
+        SetFileFilter(_(L"Lua Script (*.lua)|*.lua"));
         SetLibraryAccessor(L'.');
         SetObjectAccessor(L':');
         }
@@ -126,8 +126,8 @@ void CodeEditor::New()
     {
     if (GetModify())
         {
-        if (wxMessageBox(_("Do you wish to save your unsaved changes?"),
-                _("Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
+        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
+                _(L"Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
             { Save(); }
         }
     SetText(m_defaultHeader);
@@ -143,12 +143,12 @@ bool CodeEditor::Open()
     {
     if (GetModify())
         {
-        if (wxMessageBox(_("Do you wish to save your unsaved changes?"),
-                _("Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
+        if (wxMessageBox(_(L"Do you wish to save your unsaved changes?"),
+                _(L"Save Script"), wxYES_NO|wxICON_QUESTION) == wxYES)
             { Save(); }
         }
     wxFileDialog dialogOpen
-            (this, _("Select Script to Open"),
+            (this, _(L"Select Script to Open"),
             wxEmptyString, wxEmptyString,
             GetFileFilter(),
             wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_PREVIEW);
@@ -171,7 +171,7 @@ bool CodeEditor::Save()
     if (GetScriptFilePath().empty())
         {
         wxFileDialog dialogSave
-                (this, _("Save Script As"),
+                (this, _(L"Save Script As"),
                 wxEmptyString, wxEmptyString,
                 GetFileFilter(),
                 wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
@@ -182,8 +182,8 @@ bool CodeEditor::Save()
         }
     if (!SaveFile(GetScriptFilePath()) )
         {
-        wxMessageBox(wxString::Format(_("Unable to save file \"%s\"."), GetScriptFilePath()), 
-            _("Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(wxString::Format(_(L"Unable to save file \"%s\"."), GetScriptFilePath()), 
+            _(L"Error"), wxOK|wxICON_EXCLAMATION);
         return false;
         }
     return true;
@@ -246,8 +246,8 @@ void CodeEditor::FindPrevious(const wxString& textToFind, const int searchFlags 
     // not found going forward, so start from beginning and try from there
     else
         {
-        wxMessageBox(_("No occurrences found."),
-                _("Item Not Found"), wxOK|wxICON_INFORMATION);
+        wxMessageBox(_(L"No occurrences found."),
+                _(L"Item Not Found"), wxOK|wxICON_INFORMATION);
         }
     }
 
@@ -287,8 +287,8 @@ void CodeEditor::FindNext(const wxString& textToFind, const int searchFlags /*= 
             }
         else
             {
-            wxMessageBox(_("No occurrences found."),
-                    _("Item Not Found"), wxOK|wxICON_INFORMATION);
+            wxMessageBox(_(L"No occurrences found."),
+                    _(L"Item Not Found"), wxOK|wxICON_INFORMATION);
             }
         }
     }

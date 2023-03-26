@@ -162,7 +162,7 @@ void FileListDlg::BindEvents()
                     { break; }
                 wxFileName fn(m_listCtrl->GetItemFilePath(item));
                 if (wxDir::Exists(fn.GetPath()))
-                    { ShellExecute(NULL, wxT("open"), fn.GetPath(), NULL, NULL, SW_SHOWNORMAL); }
+                    { ShellExecute(NULL, _DT(L"open"), fn.GetPath(), NULL, NULL, SW_SHOWNORMAL); }
                 }
             },
         ID_FOLDER_OPEN);

@@ -2244,10 +2244,10 @@ namespace Wisteria::GraphItems
                 {
                 const auto bBox = GetBoundingBox(dc);
                 Label infoLabel(GraphItemInfo(
-                    wxString::Format(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
-                                      "Axis Line Points: (%d, %d), (%d, %d)\n"
-                                      "Scaling: %s\n"
-                                      "Axis Label Scaling: %s",
+                    wxString::Format(_DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
+                                          "Axis Line Points: (%d, %d), (%d, %d)\n"
+                                          "Scaling: %s\n"
+                                          "Axis Label Scaling: %s"),
                         bBox.x, bBox.y, bBox.width, bBox.height,
                         GetBottomPoint().x, GetBottomPoint().y,
                         GetTopPoint().x, GetTopPoint().y,

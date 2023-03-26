@@ -87,11 +87,11 @@ void ArchiveDlg::CreateControls()
     fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _("File types to include:")), 0,
         wxALIGN_CENTER_VERTICAL|wxLEFT, wxSizerFlags::GetDefaultBorder());
     wxArrayString choiceStrings;
-    wxStringTokenizer tkz(m_fullFileFilter, wxT("|"), wxTOKEN_STRTOK);
+    wxStringTokenizer tkz(m_fullFileFilter, L"|", wxTOKEN_STRTOK);
     while (tkz.HasMoreTokens() )
         {
         wxString currentFilter = tkz.GetNextToken();
-        if (currentFilter.length() && currentFilter[0] != wxT('*'))
+        if (currentFilter.length() && currentFilter[0] != L'*')
             { choiceStrings.Add(currentFilter); }
         }
     m_fileFilterCombo = new wxChoice(this, wxID_ANY, wxDefaultPosition,

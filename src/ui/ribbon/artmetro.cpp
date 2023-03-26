@@ -515,7 +515,7 @@ void RibbonMetroArtProvider::DrawPanelBackground(
         if(label_size.GetWidth() > label_rect.GetWidth())
         {
             // Test if there is enough length for 3 letters and ...
-            wxString new_label = label.Mid(0, 3) + wxT("...");
+            wxString new_label = label.substr(0, 3) + L"...";
             label_size = dc.GetTextExtent(new_label);
             if(label_size.GetWidth() > label_rect.GetWidth())
             {
@@ -529,7 +529,7 @@ void RibbonMetroArtProvider::DrawPanelBackground(
                 // Display as many characters as possible and append ...
                 for(size_t len = label.Len() - 1; len >= 3; --len)
                 {
-                    new_label = label.Mid(0, len) + wxT("...");
+                    new_label = label.substr(0, len) + L"...";
                     label_size = dc.GetTextExtent(new_label);
                     if(label_size.GetWidth() <= label_rect.GetWidth())
                     {
@@ -926,14 +926,14 @@ void RibbonMetroArtProvider::DrawButtonBarButtonForeground(
                     --breaki;
                     if(wxRibbonCanLabelBreakAtPosition(label, breaki))
                     {
-                        const wxString label_top = label.Mid(0, breaki);
+                        const wxString label_top = label.substr(0, breaki);
                         dc.GetTextExtent(label_top, &label_w, &label_h);
                         if(label_w + 2 * padding <= rect.width)
                         {
                             dc.DrawText(label_top,
                                 rect.x + (rect.width - label_w) / 2, ypos);
                             ypos += label_h;
-                            const wxString label_bottom = label.Mid(breaki + 1);
+                            const wxString label_bottom = label.substr(breaki + 1);
                             dc.GetTextExtent(label_bottom, &label_w, &label_h);
                             label_w += arrow_width;
                             const int iX = rect.x + (rect.width - label_w) / 2;
