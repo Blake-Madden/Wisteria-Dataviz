@@ -290,9 +290,9 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
     if (wxDebugReportPreviewStd().Show(*report) )
         {
         report->Process();
-        wxString newReportPath = wxStandardPaths::Get().GetDocumentsDir() +
+        const wxString newReportPath = wxStandardPaths::Get().GetDocumentsDir() +
                                  wxFileName::GetPathSeparator() + GetAppName() +
-                                 L" Crash Report.zip";
+                                 L"CrashReport.zip";
         if (wxCopyFile(report->GetCompressedFileName(), newReportPath, true))
             {
             wxMessageBox(wxString::Format(_(L"An error report has been saved to:\n\"%s\".\n\n"
