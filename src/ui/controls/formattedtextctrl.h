@@ -44,7 +44,7 @@
 static constexpr int TWIPS_PER_INCH = 1440;
 
 /// @brief A text control that shows formatted (RTF or Pango) content.
-/// @default Native RTF/Pango markup can be fed directly into the control, as well
+/// @details Native RTF/Pango markup can be fed directly into the control, as well
 ///     as retrieved for easy exporting. Native printing support is also built in.
 class FormattedTextCtrl final : public wxTextCtrl
     {
@@ -101,6 +101,7 @@ public:
     [[nodiscard]]
     wxString GetUnthemedFormattedTextRtf(const bool fixHighlightingTags = true) const;
     /// @brief Inserts formatted text into the control.
+    /// @param formattedText The formatted text.
     /// @details On Windows and Mac this is RTF text, on Linux, it is Pango markup.
     void SetFormattedText(const wchar_t* formattedText);
     /// @returns The window's content as RTF.
@@ -180,9 +181,9 @@ public:
     bool SaveAsRtf(const wxFileName& path) const;
     /// @}
 
-    /* @brief Sets the title for the document.
-       @param title The title to display for the document.
-       @note GetLabel() acts on the entire contents of control,
+    /** @brief Sets the title for the document.
+        @param title The title to display for the document.
+        @note GetLabel() acts on the entire contents of control,
             so this is just a way to really set a title to the control
             (useful for printing and saving)*/
     void SetTitleName(const wxString& title)
@@ -211,7 +212,8 @@ public:
             { m_paperSize = size; }
         }
     /// @brief Sets the paper size in inches.
-    /// @param size The size to use.
+    /// @param x The width to use.
+    /// @param y The height to use.
     void SetPaperSizeInInches(const double x, const double y)
         {
         SetPaperSizeInTwips(wxSize(static_cast<int>(x*TWIPS_PER_INCH),
@@ -234,7 +236,7 @@ public:
     [[nodiscard]]
     int GetPrintWidth() const
         { return m_paperSize.x - m_rectMargin.GetLeft() - m_rectMargin.GetRight();}
-    // @returns The actual area being printed (page minus the margins).
+    /// @returns The actual area being printed (page minus the margins).
     [[nodiscard]]
     wxRect GetPrintRect() const
         {
