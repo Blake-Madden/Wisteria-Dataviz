@@ -236,7 +236,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
             Wisteria::GraphItems::GraphItemInfo(
             wxString::Format(L"\x00A9%d %s. %s",
                 buildDate.GetYear(), vendorName,
-                _("All rights reserved."))).
+                _(L"All rights reserved."))).
             Pen(wxNullPen).
             Font(wxFont(ftSize, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
                         wxFONTWEIGHT_NORMAL, false,
