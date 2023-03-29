@@ -199,10 +199,10 @@ namespace Wisteria::Graphs
         auto legend = std::make_shared<GraphItems::Label>(
                 GraphItemInfo(_(L"HOW TO USE THIS CHART\n"
                     "       Take a pencil or ruler and connect your\n"
-                    "“Words per Sentence” figure (left) with your\n"
-                    "“Syllables per 100 Words” figure (right).  The\n"
+                    "\U0000201CWords per Sentence\U0000201D figure (left) with your\n"
+                    "\U0000201CSyllables per 100 Words\U0000201D figure (right).  The\n"
                     "intersection of the pencil or ruler with the\n"
-                    "center line shows your “Reading Ease” score.")).
+                    "center line shows your \U0000201CReading Ease\U0000201D score.")).
                 Pen(*wxBLACK_PEN).FontBackgroundColor(*wxWHITE).
                 Scaling(GetScaling()).
                 Font(wxFont(GetBottomXAxis().GetFont()).MakeSmaller()).

@@ -168,7 +168,7 @@ namespace Wisteria::Graphs
             rightRuler.AddBracket(Axis::AxisBracket(30, 30, 30,
                 IsUsingEnglishLabels() ?
                 _("children and youth\nliterature (for ages 8-16)") :
-                wxString(DONTTRANSLATE(L"Kinder- und Jugendbücher", DTExplanation::DirectQuote)),
+                wxString(DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher", DTExplanation::DirectQuote)),
                 wxColour(138,163,249)));
             rightRuler.AddBracket(Axis::AxisBracket(40, 40, 40,
                 IsUsingEnglishLabels() ?
