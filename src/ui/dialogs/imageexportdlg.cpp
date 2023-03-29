@@ -94,7 +94,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
     wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
-        wxString::Format(L"%d", m_options.m_imageSize.GetWidth()),
+        std::to_wstring(m_options.m_imageSize.GetWidth()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 
         Wisteria::Canvas::GetDefaultCanvasWidthDIPs(), 10'000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
@@ -104,7 +104,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(heightLabel, 0, wxALIGN_CENTER_VERTICAL);
     wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_HEIGHT_ID,
-        wxString::Format(L"%d", m_options.m_imageSize.GetHeight()),
+        std::to_wstring(m_options.m_imageSize.GetHeight()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         Wisteria::Canvas::GetDefaultCanvasHeightDIPs(), 10'000);
     heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));

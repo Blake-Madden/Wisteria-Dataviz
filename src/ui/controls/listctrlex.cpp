@@ -1029,8 +1029,8 @@ private:
         {
         wxString expandedString = printString;
 
-        expandedString.Replace(L"@PAGENUM@", wxString::Format(wxT("%d"), m_currentPage), true);
-        expandedString.Replace(L"@PAGESCNT@", wxString::Format(wxT("%u"), GetPageCount()), true);
+        expandedString.Replace(L"@PAGENUM@", std::to_wstring(m_currentPage), true);
+        expandedString.Replace(L"@PAGESCNT@", std::to_wstring(GetPageCount()), true);
         expandedString.Replace(L"@TITLE@", m_list->GetLabel(), true);
         const wxDateTime now = wxDateTime::Now();
         expandedString.Replace(L"@DATE@", now.FormatDate(), true);

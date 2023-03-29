@@ -99,8 +99,8 @@ private:
         {
         wxString expandedString = printString;
 
-        expandedString.Replace(L"@PAGENUM@", wxString::Format(L"%d", m_currentPage), true);
-        expandedString.Replace(L"@PAGESCNT@", wxString::Format(L"%u", GetPageCount()), true);
+        expandedString.Replace(L"@PAGENUM@", std::to_wstring(m_currentPage), true);
+        expandedString.Replace(L"@PAGESCNT@", std::to_wstring(GetPageCount()), true);
         const wxDateTime now = wxDateTime::Now();
         expandedString.Replace(L"@TITLE@", m_control->GetTitleName(), true);
         expandedString.Replace(L"@DATE@", now.FormatDate(), true);
@@ -389,12 +389,12 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         GetCenterPrinterHeader().length() ||
         GetRightPrinterHeader().length())
         {
-        headerText = wxT("<table style=\"width:100%;\"><tr><td width=\"33%\">") +
-            GetLeftPrinterHeader() + wxT("</td>");
-        headerText += wxT("<td width=\"33%\" align=\"center\">") +
-            GetCenterPrinterHeader() + wxT("</td>");
-        headerText += wxT("<td width=\"33%\" align=\"right\">") +
-            GetRightPrinterHeader() + wxT("</td></tr></table>");
+        headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+            GetLeftPrinterHeader() + L"</td>";
+        headerText += L"<td width=\"33%\" align=\"center\">" +
+            GetCenterPrinterHeader() + L"</td>";
+        headerText += L"<td width=\"33%\" align=\"right\">" +
+            GetRightPrinterHeader() + L"</td></tr></table>";
         }
     //format the footer
     wxString footerText;
@@ -402,12 +402,12 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         GetCenterPrinterFooter().length() ||
         GetRightPrinterFooter().length())
         {
-        footerText = wxT("<table style=\"width:100%;\"><tr><td width=\"33%\">") +
-            GetLeftPrinterFooter() + wxT("</td>");
-        footerText += wxT("<td width=\"33%\" align=\"center\">") +
-            GetCenterPrinterFooter() + wxT("</td>");
-        footerText += wxT("<td width=\"33%\" align=\"right\">") +
-            GetRightPrinterFooter() + wxT("</td></tr></table>");
+        footerText = "<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+            GetLeftPrinterFooter() + L"</td>";
+        footerText += "<td width=\"33%\" align=\"center\">" +
+            GetCenterPrinterFooter() + L"</td>";
+        footerText += "<td width=\"33%\" align=\"right\">" +
+            GetRightPrinterFooter() + "</td></tr></table>";
         }
 
     wxString outputText = GetFormattedTextHtml();
@@ -579,12 +579,12 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
         GetCenterPrinterHeader().length() ||
         GetRightPrinterHeader().length())
         {
-        headerText = wxT("<table style=\"width:100%;\"><tr><td width=\"33%\">") +
-            GetLeftPrinterHeader() + wxT("</td>");
-        headerText += wxT("<td width=\"33%\" align=\"center\">") +
-            GetCenterPrinterHeader() + wxT("</td>");
-        headerText += wxT("<td width=\"33%\" align=\"right\">") +
-            GetRightPrinterHeader() + wxT("</td></tr></table>");
+        headerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+            GetLeftPrinterHeader() + L"</td>";
+        headerText += L"<td width=\"33%\" align=\"center\">" +
+            GetCenterPrinterHeader() + L"</td>";
+        headerText += L"<td width=\"33%\" align=\"right\">" +
+            GetRightPrinterHeader() + L"</td></tr></table>";
         }
     // format the footer
     wxString footerText;
@@ -592,12 +592,12 @@ void FormattedTextCtrl::OnPreview([[maybe_unused]] wxCommandEvent& event)
         GetCenterPrinterFooter().length() ||
         GetRightPrinterFooter().length())
         {
-        footerText = wxT("<table style=\"width:100%;\"><tr><td width=\"33%\">") +
-            GetLeftPrinterFooter() + wxT("</td>");
-        footerText += wxT("<td width=\"33%\" align=\"center\">") +
-            GetCenterPrinterFooter() + wxT("</td>");
-        footerText += wxT("<td width=\"33%\" align=\"right\">") +
-            GetRightPrinterFooter() + wxT("</td></tr></table>");
+        footerText = L"<table style=\"width:100%;\"><tr><td width=\"33%\">" +
+            GetLeftPrinterFooter() + L"</td>";
+        footerText += L"<td width=\"33%\" align=\"center\">" +
+            GetCenterPrinterFooter() + L"</td>";
+        footerText += L"<td width=\"33%\" align=\"right\">" +
+            GetRightPrinterFooter() + L"</td></tr></table>";
         }
 
     wxString outputText;
@@ -881,20 +881,20 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
         switch (exportTypesDlg.GetSelection())
             {
         case 0:
-            filePath.SetExt(wxT("htm"));
+            filePath.SetExt(L"htm");
             break;
         case 1:
-            filePath.SetExt(wxT("rtf"));
+            filePath.SetExt(L"rtf");
             break;
         default:
-            filePath.SetExt(wxT("htm"));
+            filePath.SetExt(L"htm");
             };
         }
 
-    if (filePath.GetExt().CmpNoCase(wxT("rtf")) == 0)
+    if (filePath.GetExt().CmpNoCase(L"rtf") == 0)
         { SaveAsRtf(filePath); }
-    else if (filePath.GetExt().CmpNoCase(wxT("htm")) == 0 ||
-             filePath.GetExt().CmpNoCase(wxT("html")) == 0)
+    else if (filePath.GetExt().CmpNoCase(L"htm") == 0 ||
+             filePath.GetExt().CmpNoCase(L"html") == 0)
         { SaveAsHtml(filePath); }
     }
 
@@ -904,7 +904,7 @@ bool FormattedTextCtrl::Save(const wxFileName& path) const
     // create the folder to the filepath, if necessary
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
-    if (path.GetExt().CmpNoCase(wxT("RTF")) == 0)
+    if (path.GetExt().CmpNoCase(L"RTF") == 0)
         { return SaveAsRtf(path); }
     else
         { return SaveAsHtml(path); }
@@ -1265,9 +1265,9 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
         previousPos = (highlightTag+HIGHLIGHT_TAG.length());
         // verify that it's a tag and not actually the word "\highlight"
         if (highlightTag == 0 ||
-            (highlightTag > 0 && text[highlightTag-1] != wxT('\\')) )
+            (highlightTag > 0 && text[highlightTag-1] != L'\\') )
             {
-            const long nextSpace = text.find_first_of(wxT(" \n\r\t\\"),
+            const long nextSpace = text.find_first_of(L" \n\r\t\\",
                                         highlightTag+HIGHLIGHT_TAG.length());
             if (nextSpace != wxNOT_FOUND)
                 {
@@ -1283,8 +1283,8 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
     correctedText.Append(text.substr(previousPos));
     return correctedText;
 #elif defined(__WXOSX__)
-    const wxString BACKGROUND_COLOR_TAG = wxT("\\chcbpat");
-    const wxString BACKGROUND_COLOR_TAG2 = wxT("\\highlight");
+    const wxString BACKGROUND_COLOR_TAG = _DT(L"\\chcbpat");
+    const wxString BACKGROUND_COLOR_TAG2 = _DT(L"\\highlight");
     const wxString HIGHLIGHT_TAG{ _DT(L"\\cb") };
     wxString highlightNumber;
     wxString correctedText; correctedText.reserve(text.length() * 1.5);
@@ -1298,9 +1298,9 @@ wxString FormattedTextCtrl::FixHighlightingTags(const wxString& text)
         previousPos = (highlightTag+HIGHLIGHT_TAG.length());
         // verify that it's a tag and not actually the word "\cb"
         if (highlightTag == 0 ||
-            (highlightTag > 0 && text[highlightTag-1] != wxT('\\')) )
+            (highlightTag > 0 && text[highlightTag-1] != L'\\') )
             {
-            const long nextSpace = text.find_first_of(wxT(" \n\r\t\\"),
+            const long nextSpace = text.find_first_of(L" \n\r\t\\",
                                    highlightTag+HIGHLIGHT_TAG.length());
             if (nextSpace != wxNOT_FOUND)
                 {
@@ -1407,7 +1407,7 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
                 else
                     {
                     currentTagText +=
-                        wxString::Format(wxT(" \\cf0\\ulnone\\b0\\i0\\f0\\fs%u "),
+                        wxString::Format(L" \\cf0\\ulnone\\b0\\i0\\f0\\fs%u ",
                                          static_cast<guint>(defaultFontSize)*2).wc_str();
                     }
                 }
@@ -1430,7 +1430,7 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
 
     if (format == HtmlFormat)
         {
-        text += wxT("</span>");
+        text += L"</span>";
         }
     else if (format == RtfFormat)
         {
@@ -1438,24 +1438,24 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
         g_free(family);
         wxString headerText =
             wxString::Format(
-                wxT("{\\rtf1\\ansi\\deff0\\deflang1033{\\fonttbl{\\f0\\%s\\fcharset0 %s;}}\n"),
+                L"{\\rtf1\\ansi\\deff0\\deflang1033{\\fonttbl{\\f0\\%s\\fcharset0 %s;}}\n",
             defaultFontFamily, defaultFontFamily);
         // add the color table
         if (colorTable.size() > 0)
             {
-            headerText += wxT("{\\colortbl ;");
+            headerText += L"{\\colortbl ;";
             for (std::vector<wxColour>::const_iterator colorPos = colorTable.begin();
                  colorPos != colorTable.end();
                  ++colorPos)
                 {
                 headerText +=
-                    wxString::Format(wxT("\\red%u\\green%u\\blue%u;"),
+                    wxString::Format(L"\\red%u\\green%u\\blue%u;",
                                      colorPos->Red(), colorPos->Green(), colorPos->Blue());
                 }
-            headerText += wxT("}\n");
+            headerText += L"}\n";
             }
         text.Prepend(headerText);
-        text += wxT("\\par\n}");
+        text += L"\\par\n}";
         }
     }
 #endif
