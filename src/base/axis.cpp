@@ -3056,8 +3056,9 @@ namespace Wisteria::GraphItems
                     }
                 }
             }
-        m_tallestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+
         m_tallestLabel = tallestAxisLabel;
+        m_tallestLabel.SetDPIScaleFactor(GetDPIScaleFactor());
         return m_tallestLabel;
         }
 
