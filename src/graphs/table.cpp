@@ -1050,16 +1050,17 @@ namespace Wisteria::Graphs
         // offset the table later if being page aligned within its parent drawing area
         const wxCoord horizontalAlignmentOffset =
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::RightAligned) ?
-             (drawArea.GetWidth() - tableWidth) :
+             ((originalFullGraphArea.GetWidth() - tableWidth) - (drawArea.x - originalFullGraphArea.x)) :
             (GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered) ?
-             safe_divide(drawArea.GetWidth() - tableWidth, 2) :
+             safe_divide((originalFullGraphArea.GetWidth() - tableWidth) -
+                         (drawArea.x - originalFullGraphArea.x), 2) :
             0;
 
         const wxCoord verticalAlignmentOffset =
             (GetPageVerticalAlignment() == PageVerticalAlignment::BottomAligned) ?
-             (drawArea.GetHeight() - tableHeight) :
+             (originalFullGraphArea.GetHeight() - tableHeight) :
             (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-             safe_divide(drawArea.GetHeight() - tableHeight, 2) :
+             safe_divide(originalFullGraphArea.GetHeight() - tableHeight, 2) :
             0;
 
         // measure the text
@@ -1682,7 +1683,8 @@ namespace Wisteria::Graphs
         wxString footnoteCaption;
         for (size_t i = 0; i < m_footnotes.size(); ++i)
             {
-            footnoteCaption += wxString::Format(L"%zu. %s\n", i+1, m_footnotes[i]);
+            if (m_footnotes[i].length())
+                { footnoteCaption += wxString::Format(L"%zu. %s\n", i+1, m_footnotes[i]); }
             }
         footnoteCaption.Trim();
         GetCaption().SetText(footnoteCaption);
