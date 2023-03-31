@@ -309,6 +309,13 @@ namespace Wisteria::GraphItems
         contentRect.y += CalcPageVerticalOffset(dc);
         contentRect.x += CalcPageHorizontalOffset(dc);
         SetCachedContentBoundingBox(contentRect);
+        // wxRect will be 1x1 if created with empty dimensions, so reset that
+        // if this label is empty
+        if (boundingBox.GetWidth() == 1 && boundingBox.GetHeight() == 1)
+            {
+            boundingBox.SetWidth(0);
+            boundingBox.SetHeight(0);
+            }
         return boundingBox;
         }
 
