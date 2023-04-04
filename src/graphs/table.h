@@ -299,19 +299,24 @@ namespace Wisteria::Graphs
                 {}
             /// @brief Gets the value as it is displayed in the cell.
             /// @returns The displayable string for the cell.
-            [[nodiscard]] wxString GetDisplayValue() const;
+            [[nodiscard]]
+            wxString GetDisplayValue() const;
 
             /// @returns @c true if the cell is text.
-            [[nodiscard]] bool IsText() const noexcept
+            [[nodiscard]]
+            bool IsText() const noexcept
                 { return (std::get_if<wxString>(&m_value) != nullptr); }
             /// @returns @c true if the cell is a number.
-            [[nodiscard]] bool IsNumeric() const noexcept
+            [[nodiscard]]
+            bool IsNumeric() const noexcept
                 { return (std::get_if<double>(&m_value) != nullptr); }
             /// @returns @c true if the cell is a date.
-            [[nodiscard]] bool IsDate() const noexcept
+            [[nodiscard]]
+            bool IsDate() const noexcept
                 { return (std::get_if<wxDateTime>(&m_value) != nullptr); }
             /// @returns @c true if the cell is a ratio.
-            [[nodiscard]] bool IsRatio() const noexcept
+            [[nodiscard]]
+            bool IsRatio() const noexcept
                 { return (std::get_if<std::pair<double, double>>(&m_value) != nullptr); }
 
             /// @returns The display format of the cell.
@@ -333,14 +338,16 @@ namespace Wisteria::Graphs
                 { m_bgColor = color; }
             /// @returns Access to the cell's font. This can be useful for changing
             ///     an attribute of the font, rather than entirely setting a new font.
-            [[nodiscard]] wxFont& GetFont() noexcept
+            [[nodiscard]]
+            wxFont& GetFont() noexcept
                 { return m_font; }
             /// @brief Sets the cell's font.
             /// @param font The font to use.
             void SetFont(const wxFont& font)
                 { m_font = font; }
             /// @returns @c true if cell is being highlighted.
-            [[nodiscard]] bool IsHighlighted() const noexcept
+            [[nodiscard]]
+            bool IsHighlighted() const noexcept
                 { return m_isHighlighted; }
             /// @brief Draw a highlighted border around the cell.
             /// @param highlight @c true to highlight the cell.
@@ -481,7 +488,8 @@ namespace Wisteria::Graphs
 
             std::optional<PageHorizontalAlignment> m_horizontalCellAlignment;
             std::optional<TextAlignment> m_textAlignment;
-            std::optional<size_t> m_suggestedLineLength;
+            // default to 100, but client can turn this off with std::nullopt
+            std::optional<size_t> m_suggestedLineLength{ 100 };
 
             int m_columnCount{ 1 };
             int m_rowCount{ 1 };
@@ -633,7 +641,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The pen used to highlight specific cells (e.g., outliers).
-        [[nodiscard]] wxPen& GetHighlightPen() noexcept
+        [[nodiscard]]
+        wxPen& GetHighlightPen() noexcept
             { return m_highlightPen; }
         /// @}
 
@@ -644,12 +653,14 @@ namespace Wisteria::Graphs
         /// @returns The number of rows.
         /// @warning This will include the first row which contains the original dataset's
         ///     column names (unless it was transposed in the call to SetData()).
-        [[nodiscard]] size_t GetRowCount() const noexcept
+        [[nodiscard]]
+        size_t GetRowCount() const noexcept
             { return m_table.size(); }
         /// @returns The number of columns.
         /// @warning If the imported file was transposed, then this will also include
         ///     the first column which contains the dataset's original column names.
-        [[nodiscard]] size_t GetColumnCount() const noexcept
+        [[nodiscard]]
+        size_t GetColumnCount() const noexcept
             { return (GetRowCount() == 0) ? 0 : m_table[0].size(); }
 
         /// @brief Inserts an empty row at the given index.
@@ -699,12 +710,14 @@ namespace Wisteria::Graphs
             @param rowName An optional value for the first column of the new
                 row, representing a name for the row.\n
                 This will be overwritten by a calculated value if the left-most column is not text.
-            @param rowIndex Where to (optionally) insert the row. The default
-                is to insert as the last row.
+            @param rowIndex Where to (optionally) insert the row.\n
+                The default is to insert as the last row.
             @param bkColor An optional background for the row.
             @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
-                the aggregation values are calculated as this function is called.
+                the aggregation values are calculated as this function is called.\n
+                Also, if suppression is enabled, then suppressed values will be treated as NaN
+                and may affect the aggregate accordingly.
             @sa InsertRowTotals() for a simplified way to insert a total row
                 (as well as subtotal rows).*/
         void InsertAggregateRow(const AggregateInfo& aggInfo,
@@ -727,7 +740,9 @@ namespace Wisteria::Graphs
                 Note that this is ignored if @c useAdjacentColors is @c true.
             @param borders An optional override of the default borders for the cells in this column.
             @note This should be called after all data has been set because the
-                aggregation values are calculated as this function is called.*/
+                aggregation values are calculated as this function is called.\n
+                Also, if suppression is enabled, then suppressed values will be treated as NaN
+                and may affect the aggregate accordingly.*/
         void InsertAggregateColumn(const AggregateInfo& aggInfo,
                                    std::optional<wxString> colName = std::nullopt,
                                    std::optional<size_t> colIndex = std::nullopt,
@@ -849,16 +864,20 @@ namespace Wisteria::Graphs
                 }
             }
         /// @returns @c true if the top border for cells is shown by default.
-        [[nodiscard]] bool IsShowingTopBorder() const noexcept
+        [[nodiscard]]
+        bool IsShowingTopBorder() const noexcept
             { return m_showTopBorder; }
         /// @returns @c true if the right border for cells is shown by default.
-        [[nodiscard]] bool IsShowingRightBorder() const noexcept
+        [[nodiscard]]
+        bool IsShowingRightBorder() const noexcept
             { return m_showRightBorder; }
         /// @returns @c true if the bottom border for cells is shown by default.
-        [[nodiscard]] bool IsShowingBottomBorder() const noexcept
+        [[nodiscard]]
+        bool IsShowingBottomBorder() const noexcept
             { return m_showBottomBorder; }
         /// @returns @c true if the left border for cells is shown by default.
-        [[nodiscard]] bool IsShowingLeftBorder() const noexcept
+        [[nodiscard]]
+        bool IsShowingLeftBorder() const noexcept
             { return m_showLeftBorder; }
         /** @brief Sets the borders for all future cells.
             @note Call this prior to adding any rows or columns for this to take effect.
@@ -1143,7 +1162,7 @@ namespace Wisteria::Graphs
             @warning Any changes to the structure of the table (inserting more rows or columns)
                 will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
-                (including the additions of aggregates).*/
+                (including the addition of aggregates).*/
         std::vector<CellPosition> GetOutliers(const size_t column,
                                               const double outlierThreshold = 3.0);
 
@@ -1157,7 +1176,7 @@ namespace Wisteria::Graphs
             @warning Any changes to the structure of the table (inserting more rows or columns)
                 will make the returned positions incorrect. This should be
                 called after all structural changes to the table have been made
-                (including the additions of aggregates).*/
+                (including the addition of aggregates).*/
         std::vector<CellPosition> GetTopN(const size_t column, const size_t N = 1);
 
         /// @brief Applies rows of alternating colors ("zebra stripes") to the table.
@@ -1185,7 +1204,8 @@ namespace Wisteria::Graphs
         /// @throws std::runtime_error If row or column index is out of range, throws an exception.\n
         ///     The exception's @c what() message is UTF-8 encoded, so pass it to
         ///     @c wxString::FromUTF8() when formatting it for an error message.
-        [[nodiscard]] TableCell& GetCell(const size_t row, const size_t column);
+        [[nodiscard]]
+        TableCell& GetCell(const size_t row, const size_t column);
 
         /// @brief Highlights the specified cell(s) and adds a note pointing to them.
         /// @param cellNote Information about the cell(s) to highlight,
@@ -1197,12 +1217,14 @@ namespace Wisteria::Graphs
         /** @brief Searches for the first cell whose content matches the provided text.
             @param textToFind The text to search for.
             @returns A pointer to the first cell that matches the text, or null if not found.*/
-        [[nodiscard]] TableCell* FindCell(const wxString& textToFind);
+        [[nodiscard]]
+        TableCell* FindCell(const wxString& textToFind);
 
         /** @brief Searches for the first cell whose content matches the provided text in the first row.
             @param textToFind The text to search for.
             @returns The index of the column, or @c std::nullopt if not found.*/
-        [[nodiscard]] std::optional<size_t> FindColumnIndex(const wxString& textToFind);
+        [[nodiscard]]
+        std::optional<size_t> FindColumnIndex(const wxString& textToFind);
         /// @}
 
         /** @brief Adds a footnote to the table.
@@ -1230,9 +1252,13 @@ namespace Wisteria::Graphs
                                GraphItems::Label& measuringLabel,
                                wxDC& dc) const;
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetContentRect() const noexcept final
+        [[nodiscard]]
+        wxRect GetContentRect() const noexcept final
             { return wxRect(); }
         void RecalcSizes(wxDC& dc) final;
+
+        void AdjustTextLabelToCell(const TableCell& cell,
+                                   Wisteria::GraphItems::Label& cellLabel) const;
 
         /** @brief Determines which gutter a note should go into.
             @details Notes will have its gutter specified, but the tables page
@@ -1240,7 +1266,8 @@ namespace Wisteria::Graphs
                 if there is such a conflict and return the appropriate gutter.
             @param note The annotation to review.
             @returns The gutter that the note should go into.*/
-        [[nodiscard]] Side DeduceGutterSide(const CellAnnotation& note) const noexcept
+        [[nodiscard]]
+        Side DeduceGutterSide(const CellAnnotation& note) const noexcept
             {
             return ((note.m_side == Side::Right &&
                      GetPageHorizontalAlignment() != PageHorizontalAlignment::RightAligned) ||
@@ -1260,28 +1287,32 @@ namespace Wisteria::Graphs
             @returns The size of the table proper (i.e., the cells, but not outer annotations).\n
                 Note that the size of @c drawArea may be larger if the table includes
                 annotations along the gutters.*/
-        [[nodiscard]] wxSize CalculateTableSize(std::vector<wxCoord>& columnWidths,
-                                                std::vector<wxCoord>& rowHeights,
-                                                wxRect& drawArea, wxDC& dc) const;
+        [[nodiscard]]
+        wxSize CalculateTableSize(std::vector<wxCoord>& columnWidths,
+                                  std::vector<wxCoord>& rowHeights,
+                                  wxRect& drawArea, wxDC& dc) const;
 
         /// @returns The area of a given cell if found; otherwise, an invalid rect.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
         /// @warning This should only be called during or after a call to RecalcSizes().
-        [[nodiscard]] wxRect GetCachedCellRect(const size_t row, const size_t column);
+        [[nodiscard]]
+        wxRect GetCachedCellRect(const size_t row, const size_t column);
 
         /// @returns If a cell is being eclipsed vertically by the cell above it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
-        [[nodiscard]] std::optional<TableCell> GetParentRowWiseCell(const size_t row,
-                                                                    const size_t column);
+        [[nodiscard]]
+        std::optional<TableCell> GetEclipsingRowWiseCell(const size_t row,
+                                                         const size_t column);
         /// @returns If a cell is being eclipsed horizontally by the cell left of it,
         ///     then return that cell. Otherwise, return @c std::nullopt.
         /// @param row The row index of the cell.
         /// @param column The column index of the cell.
-        [[nodiscard]] std::optional<TableCell> GetParentColumnWiseCell(const size_t row,
-                                                                       const size_t column);
+        [[nodiscard]]
+        std::optional<TableCell> GetEclipsingColumnWiseCell(const size_t row,
+                                                            const size_t column);
 
         /** @brief Calculates an aggregation from a series of values.
             @param aggInfo Which type of aggregate calculation to perform.

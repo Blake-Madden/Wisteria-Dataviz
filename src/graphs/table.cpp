@@ -131,7 +131,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::optional<Table::TableCell> Table::GetParentRowWiseCell(const size_t row,
+    std::optional<Table::TableCell> Table::GetEclipsingRowWiseCell(const size_t row,
         const size_t column)
         {
         if (row > 0 && // first row can't have a row-wise parent
@@ -158,7 +158,7 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
-    std::optional<Table::TableCell> Table::GetParentColumnWiseCell(const size_t row,
+    std::optional<Table::TableCell> Table::GetEclipsingColumnWiseCell(const size_t row,
         const size_t column)
         {
         if (column > 0 && // first column can't have a column-wise parent
@@ -338,9 +338,9 @@ namespace Wisteria::Graphs
                 else
                     {
                     aggCell.m_value = safe_divide(newValue - oldValue, oldValue);
-                    aggCell.SetFormat(TableCellFormat::PercentChange);
                     aggCell.m_colorCodePrefix = true;
                     }
+                aggCell.SetFormat(TableCellFormat::PercentChange);
                 }
             else if (aggInfo.m_type == AggregateType::Change &&
                 values.size() > 1)
@@ -449,18 +449,22 @@ namespace Wisteria::Graphs
                     const auto& cell = GetCell(currentRow, currentCol);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
                         {
+                        const double valueOrSuppressed =
+                            (cell.GetSuppressionThreshold().has_value() &&
+                                cell.GetDoubleValue() < cell.GetSuppressionThreshold()) ?
+                            std::numeric_limits<double>::quiet_NaN() : cell.GetDoubleValue();
                         // throw out unused precision
                         if (cell.GetFormat() == TableCellFormat::Percent ||
                             cell.GetFormat() == TableCellFormat::PercentChange)
                             {
                             colValues.push_back(
-                                round_decimal_place(cell.GetDoubleValue()*100,
+                                round_decimal_place(valueOrSuppressed*100,
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         else
                             {
                             colValues.push_back(
-                                round_decimal_place(cell.GetDoubleValue(),
+                                round_decimal_place(valueOrSuppressed,
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         }
@@ -526,29 +530,36 @@ namespace Wisteria::Graphs
                 }
 
             std::vector<double> rowValues;
-            for (size_t rowCounter = (colName.has_value() ? 1 : 0); rowCounter < m_table.size(); ++rowCounter)
+            for (size_t rowCounter = (colName.has_value() ? 1 : 0);
+                 rowCounter < m_table.size();
+                 ++rowCounter)
                 {
                 rowValues.clear();
+                std::pair<size_t, wxString> numOfSuppressedValues{ 0, wxString{} };
                 // tally values from the whole row, unless a custom range was defined
                 for (size_t i = (aggInfo.m_cell1.has_value() ? aggInfo.m_cell1.value() : 0);
-                     i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : columnIndex);
+                     i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value() + 1 : columnIndex);
                      ++i)
                     {
                     const auto& cell = GetCell(rowCounter, i);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
                         {
+                        const double valueOrSuppressed =
+                            (cell.GetSuppressionThreshold().has_value() &&
+                                cell.GetDoubleValue() < cell.GetSuppressionThreshold()) ?
+                            std::numeric_limits<double>::quiet_NaN() : cell.GetDoubleValue();
                         // throw out unused precision
                         if (cell.GetFormat() == TableCellFormat::Percent ||
                             cell.GetFormat() == TableCellFormat::PercentChange)
                             {
                             rowValues.push_back(
-                                round_decimal_place(cell.GetDoubleValue()*100,
+                                round_decimal_place(valueOrSuppressed*100,
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         else
                             {
                             rowValues.push_back(
-                                round_decimal_place(cell.GetDoubleValue(),
+                                round_decimal_place(valueOrSuppressed,
                                                     std::pow(10, cell.GetPrecision())));
                             }
                         }
@@ -634,7 +645,7 @@ namespace Wisteria::Graphs
                     columnStops.value().find(col) != columnStops.value().cend())
                     { continue; }
                 // If this cell eclipsed by the cell above it? Skip if so.
-                else if (const auto parentCell = GetParentRowWiseCell(row, col);
+                else if (const auto parentCell = GetEclipsingRowWiseCell(row, col);
                     parentCell.has_value())
                     { continue; }
                 else
@@ -643,7 +654,7 @@ namespace Wisteria::Graphs
                     // this one. If the cell above is eclipsed by a multi-row cell,
                     // then use the cell eclipsing that one.
                     const auto& cellAbove = m_table[row-1][col];
-                    const auto cellAboveParent = GetParentRowWiseCell(row-1, col);
+                    const auto cellAboveParent = GetEclipsingRowWiseCell(row-1, col);
                     const wxColour colorAbove = cellAboveParent.has_value() ?
                         cellAboveParent.value().m_bgColor : cellAbove.m_bgColor;
                     currentRow[col].m_bgColor =
@@ -830,16 +841,13 @@ namespace Wisteria::Graphs
                 const auto cellText = cell.GetDisplayValue();
                 measuringLabel.SetText((cellText.length() ? cellText : wxString(L" ")) +
                     cell.GetPrefix());
-                if (cell.m_suggestedLineLength.has_value())
-                    { measuringLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
-                measuringLabel.SetFont(cell.m_font);
-                if (cell.m_leftImage.IsOk())
-                    { measuringLabel.SetLeftImage(cell.m_leftImage); }
+
+                AdjustTextLabelToCell(cell, measuringLabel);
                 auto bBox = measuringLabel.GetBoundingBox(dc);
                 // prefix will need 5 DIPs added to each side
                 if (cell.GetPrefix().length())
                     { bBox.Inflate(wxSize(ScaleToScreenAndCanvas(10), 0)); }
-                // if cell consumes multiple rows, then divides its height across them
+                // if cell consumes multiple rows, then divide its height across them
                 // and set the cells in the rows beneath to the remaining height
                 rowHeights[currentRow] =
                     std::max(safe_divide(bBox.GetHeight(), cell.m_rowCount),
@@ -857,7 +865,7 @@ namespace Wisteria::Graphs
                         --remainingRows;
                         }
                     }
-                // if cell consumes multiple columns, then divides its width across them
+                // if cell consumes multiple columns, then divide its width across them
                 // and set the proceeding columns to the remaining width
                 columnWidths[currentColumn] =
                     std::max(safe_divide(bBox.GetWidth(), cell.m_columnCount),
@@ -1166,40 +1174,15 @@ namespace Wisteria::Graphs
                     FontBackgroundColor(cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE).
                     Anchoring(Anchoring::TopLeftCorner).
                     AnchorPoint(boxRect.GetTopLeft()));
-                if (cell.m_leftImage.IsOk())
-                    { cellLabel->SetLeftImage(cell.m_leftImage); }
-                if (cell.m_suggestedLineLength.has_value())
-                    { cellLabel->SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
-                cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
+
                 // cache it for annotations and highlights
                 m_cachedCellRects[currentRow][currentColumn] = boxRect;
-                cellLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);
-                // if an overriding horizontal alignment is in use, then use that
-                if (cell.m_horizontalCellAlignment.has_value())
-                    {
-                    cellLabel->SetPageHorizontalAlignment(cell.m_horizontalCellAlignment.value());
-                    }
-                // otherwise, deduce the best alignment
-                else
-                    {
-                    cellLabel->SetPageHorizontalAlignment(
-                        ((cell.IsNumeric() || cell.IsDate()) ?
-                         PageHorizontalAlignment::RightAligned :
-                         cell.IsRatio() ? PageHorizontalAlignment::Centered :
-                         // if text, center it if multi-column; otherwise, left align
-                         cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
-                         PageHorizontalAlignment::LeftAligned));
-                    }
-                // if centered in cell, then center the text also (if multi-line)
-                if (cellLabel->GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered &&
-                    !cell.m_textAlignment.has_value())
-                    { cellLabel->SetTextAlignment(TextAlignment::Centered); }
+                
+                AdjustTextLabelToCell(cell, *cellLabel);
+                cellLabel->SetLineSpacing(0);
 
-                // user-defined text alignment
-                if (cell.m_textAlignment.has_value())
-                    { cellLabel->SetTextAlignment(cell.m_textAlignment.value()); }
-
-                smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
+                cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
+                smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);         
 
                 cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
 
@@ -1209,7 +1192,10 @@ namespace Wisteria::Graphs
                     const wxString prefix = ((cell.m_valueFormat == TableCellFormat::PercentChange ||
                                               cell.m_valueFormat == TableCellFormat::GeneralChange)) ?
                         // down and up arrow emojis
-                        wxString((std::isnan(cell.GetDoubleValue()) ? L"\x2014" :
+                        wxString((std::isnan(cell.GetDoubleValue()) ?
+                                  L" " :
+                                  (cell.GetDoubleValue() == 0) ?
+                                  L"\x2014" :
                                   cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2")) :
                         cell.GetPrefix();
                     auto cellPrefixLabel = std::make_shared<Label>(
@@ -1300,7 +1286,7 @@ namespace Wisteria::Graphs
             for (const auto& colWidth : columnWidths)
                 {
                 const auto& cell = GetCell(currentRow, currentColumn);
-                auto parentColumnCell = GetParentColumnWiseCell(currentRow, currentColumn);
+                auto parentColumnCell = GetEclipsingColumnWiseCell(currentRow, currentColumn);
                 // see if the above cell (or a cell above that which is eclipsing it)
                 // is highlighted
                 auto aboveCellHighlighted = (currentRow > 0) ?
@@ -1309,7 +1295,7 @@ namespace Wisteria::Graphs
                     false;
                 if (currentRow > 0 && !aboveCellHighlighted)
                     {
-                    auto aboveCellsParent = GetParentRowWiseCell(currentRow - 1, currentColumn);
+                    auto aboveCellsParent = GetEclipsingRowWiseCell(currentRow - 1, currentColumn);
                     if (aboveCellsParent.has_value())
                         {
                         aboveCellHighlighted = aboveCellsParent.value().IsHighlighted();
@@ -1353,7 +1339,7 @@ namespace Wisteria::Graphs
                     !(currentColumn > 0 && !cell.m_showLeftBorder &&
                       !GetCell(currentRow, currentColumn - 1).m_showRightBorder))
                     {
-                    auto parentCell = GetParentRowWiseCell(currentRow, currentColumn);
+                    auto parentCell = GetEclipsingRowWiseCell(currentRow, currentColumn);
                     if (cell.IsHighlighted())
                         {
                         if (cell.m_showLeftBorder || isPreviousColumnHighlighted)
@@ -1395,8 +1381,8 @@ namespace Wisteria::Graphs
         for (const auto& rowHeight : rowHeights)
             {
             const auto& cell = GetCell(currentRow, GetColumnCount() - 1);
-            const auto& parentRowCell = GetParentRowWiseCell(currentRow, GetColumnCount() - 1);
-            const auto& parentColumnCell = GetParentColumnWiseCell(currentRow, GetColumnCount() - 1);
+            const auto& parentRowCell = GetEclipsingRowWiseCell(currentRow, GetColumnCount() - 1);
+            const auto& parentColumnCell = GetEclipsingColumnWiseCell(currentRow, GetColumnCount() - 1);
             if (cell.m_showRightBorder)
                 {
                 if (cell.IsHighlighted() ||
@@ -1422,7 +1408,7 @@ namespace Wisteria::Graphs
         for (const auto& colWidth : columnWidths)
             {
             const auto& cell = GetCell(GetRowCount()-1, currentColumn);
-            const auto& parentColumnCell = GetParentColumnWiseCell(GetRowCount() - 1, currentColumn);
+            const auto& parentColumnCell = GetEclipsingColumnWiseCell(GetRowCount() - 1, currentColumn);
             if (cell.m_showBottomBorder)
                 {
                 if (cell.IsHighlighted() ||
@@ -1606,6 +1592,44 @@ namespace Wisteria::Graphs
                  std::max(1.0, smallestTextScaling));
             }
         }
+
+    //----------------------------------------------------------------
+    void Table::AdjustTextLabelToCell(const TableCell& cell,
+                                      GraphItems::Label& cellLabel) const
+        {
+        cellLabel.SetScaling(GetScaling());
+        if (cell.m_suggestedLineLength.has_value())
+            { cellLabel.SplitTextToFitLength(cell.m_suggestedLineLength.value()); }
+        cellLabel.SetFont(cell.m_font);
+        if (cell.m_leftImage.IsOk())
+            { cellLabel.SetLeftImage(cell.m_leftImage); }
+
+        cellLabel.SetPageVerticalAlignment(PageVerticalAlignment::Centered);
+        // if an overriding horizontal alignment is in use, then use that
+        if (cell.m_horizontalCellAlignment.has_value())
+            {
+            cellLabel.SetPageHorizontalAlignment(cell.m_horizontalCellAlignment.value());
+            }
+        // otherwise, deduce the best alignment
+        else
+            {
+            cellLabel.SetPageHorizontalAlignment(
+                ((cell.IsNumeric() || cell.IsDate()) ?
+                    PageHorizontalAlignment::RightAligned :
+                    cell.IsRatio() ? PageHorizontalAlignment::Centered :
+                    // if text, center it if multi-column; otherwise, left align
+                    cell.m_columnCount > 1 ? PageHorizontalAlignment::Centered :
+                    PageHorizontalAlignment::LeftAligned));
+            }
+        // if centered in cell, then center the text also (if multi-line)
+        if (cellLabel.GetPageHorizontalAlignment() == PageHorizontalAlignment::Centered &&
+            !cell.m_textAlignment.has_value())
+            { cellLabel.SetTextAlignment(TextAlignment::Centered); }
+
+        // user-defined text alignment
+        if (cell.m_textAlignment.has_value())
+            { cellLabel.SetTextAlignment(cell.m_textAlignment.value()); }
+}
 
     //----------------------------------------------------------------
     Table::TableCell* Table::FindCell(const wxString& textToFind)
