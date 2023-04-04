@@ -1953,7 +1953,7 @@ namespace Wisteria
             { L">=", Comparison::GreaterThanOrEqualTo }
             };
 
-        const auto loadColumnFilter = [this](const auto& filterNode)
+        const auto loadColumnFilter = [this, &parentToSubset](const auto& filterNode)
             {
             const auto foundPos = cmpOperators.find(std::wstring_view(
                 filterNode->GetProperty(L"operator")->
@@ -1971,6 +1971,12 @@ namespace Wisteria
                     cmp,
                     std::vector<DatasetValueType>()
                     };
+                if (!parentToSubset->ContainsColumn(cFilter.m_columnName) &&
+                    parentToSubset->GetContinuousColumns().size() > 0 &&
+                    cFilter.m_columnName.CmpNoCase(L"last-continuous-column") == 0)
+                    {
+                    cFilter.m_columnName = parentToSubset->GetContinuousColumnNames().back();
+                    }
                 const auto filterValues = valuesNode->GetValueArrayObject();
                 if (filterValues.empty())
                     {
@@ -3596,17 +3602,20 @@ namespace Wisteria
 
         if (graphNode->HasProperty(L"link-id"))
             {
-            const size_t linkId = graphNode->GetProperty(L"link-id")->GetValueNumber();
-            auto foundPosTLink = std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
-                [linkId](const auto& tLink)
-                { return tLink.GetId() == linkId; });
-            if (foundPosTLink != m_tableLinks.end())
-                { foundPosTLink->AddTable(table); }
-            else
+            const auto linkId = ConvertNumber(graphNode->GetProperty(L"link-id"));
+            if (linkId)
                 {
-                TableLink tLink{ linkId };
-                tLink.AddTable(table);
-                m_tableLinks.push_back(tLink);
+                auto foundPosTLink = std::find_if(m_tableLinks.begin(), m_tableLinks.end(),
+                    [&linkId](const auto& tLink)
+                    { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
+                if (foundPosTLink != m_tableLinks.end())
+                    { foundPosTLink->AddTable(table); }
+                else
+                    {
+                    TableLink tLink{ static_cast<size_t>(linkId.value()) };
+                    tLink.AddTable(table);
+                    m_tableLinks.push_back(tLink);
+                    }
                 }
             }
 

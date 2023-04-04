@@ -712,7 +712,8 @@ Properties for `"table"` nodes:
 - `"clear-trailing-row-formatting"`: a boolean specifying whether to clear the formatting for any trailing, empty rows.
 - `"link-id"`: a numeric ID to link with other tables. All tables with the same ID will have their dimensions
       set to a common number of rows and columns. This is useful for aligning tables next to each other and
-      ensuring that they have a common scaling.
+      ensuring that they have a common scaling. Note that string constants can also be used (e.g., `"{{PageNumber()}}"`
+      can link tables on the current page).
 - Some base properties available to [graphs](#graph-properties).
 
 Note that it is recommended to set `"fit-row-to-content"` to `true` for shorter tables to better fit them to the page.

@@ -152,7 +152,8 @@ Properties for the `"datasets"` node:
     otherwise, it will overwrite it.)<br />
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"filter"`: the subset filtering definition, which will contain the following:
-    - `"column"`: the column from the dataset to filter on.
+    - `"column"`: the column from the dataset to filter on. The following values can also be used:
+      - `"last-continuous-column"`
     - `"operator"`: how to compare the values from the column with the filter's value.
       Available options are:
       - `"="` or `"=="` equals (the default)
