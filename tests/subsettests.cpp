@@ -177,10 +177,21 @@ TEST_CASE("Subset Simple Categorical", "[data][subset]")
         {
         std::shared_ptr<Data::Dataset> subset{ nullptr };
         // dataset with failed criterion will be null and exception is thrown
-        CHECK_THROWS(subset =
+        REQUIRE_THROWS(subset =
             dsSubset.SubsetSimple(ds,
-                ColumnFilterInfo{ L"Gender", Comparison::GreaterThan, { L"UNKNOWN" } }));
+                ColumnFilterInfo{ L"Gender", Comparison::Equals, { L"UNKNOWN" } }));
         CHECK(subset == nullptr);
+
+        // will return empty dataset
+        subset =
+            dsSubset.SubsetSimple(ds,
+                ColumnFilterInfo{ L"Gender", Comparison::GreaterThan, { L"UNKNOWN" } });
+        CHECK(subset->GetRowCount() == 0);
+
+        subset =
+            dsSubset.SubsetSimple(ds,
+                ColumnFilterInfo{ L"Gender", Comparison::GreaterThanOrEqualTo, { L"UNKNOWN" } });
+        CHECK(subset->GetRowCount() == 0);
         }
     }
 
