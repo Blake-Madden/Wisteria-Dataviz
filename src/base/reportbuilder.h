@@ -458,7 +458,7 @@ namespace Wisteria
             const std::shared_ptr<const Data::Dataset>& dataset) const;
         [[nodiscard]] wxString CalcNow(const wxString& formula) const;
         [[nodiscard]] wxString FormatPageNumber(const wxString& formula) const;
-        
+
         // helpers for building formula regexes
         //------------------------------------
         [[nodiscard]] static wxString FunctionStartRegEx()
@@ -484,17 +484,20 @@ namespace Wisteria
         // or another formula (enclosed in {{}}). If the latter, this will calculate
         // that formula (which can be a column selection function, column aggregate function,
         // or group value).
-        [[nodiscard]] wxString ConvertColumnOrGroupParameter(wxString columnStr,
+        [[nodiscard]]
+        wxString ConvertColumnOrGroupParameter(wxString columnStr,
             const std::shared_ptr<const Data::Dataset>& dataset) const;
 
         // variable selection functions
         //-----------------------------
 
         /// @brief Converts a multiple column selection function into a vector of column names.
-        [[nodiscard]] std::optional<std::vector<wxString>> ExpandColumnSelections(wxString var,
+        [[nodiscard]]
+        std::optional<std::vector<wxString>> ExpandColumnSelections(wxString var,
             const std::shared_ptr<const Data::Dataset>& dataset);
         /// @brief Converts a single column selection function into a column name.
-        [[nodiscard]] wxString ExpandColumnSelection(const wxString& formula,
+        [[nodiscard]]
+        wxString ExpandColumnSelection(const wxString& formula,
             const std::shared_ptr<const Data::Dataset>& dataset) const;
 
         // the datasets used by all subitems in the report

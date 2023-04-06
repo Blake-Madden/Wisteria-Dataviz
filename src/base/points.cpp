@@ -20,7 +20,7 @@ namespace Wisteria::GraphItems
     void Points2D::SetSelected(const bool selected)
         {
         GraphItemBase::SetSelected(selected);
-        
+
         if (m_singlePointSelection)
             {
             // update previous selections

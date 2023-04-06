@@ -1316,7 +1316,7 @@ namespace Wisteria::GraphItems
                 auto labelWidth = !IsShowingLabels() ?
                     0 : GetWidestTextLabel(dc).GetBoundingBox(dc).GetWidth();
                 labelWidth = IsStackingLabels() ? labelWidth*2 : labelWidth;
-                
+
                 connectionX -= (labelWidth + CalcTickMarkOuterWidth() +
                     (ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine())*spaceAreasNeeded));
                 connectionXDoubleSided += (labelWidth + CalcTickMarkOuterWidth() +
@@ -1356,7 +1356,7 @@ namespace Wisteria::GraphItems
                                             ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                         position1),
                                 wxPoint(connectionX, position3));
-                                
+
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
@@ -1406,7 +1406,7 @@ namespace Wisteria::GraphItems
                                     wxPoint(connectionXDoubleSided +
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
-                                
+
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
@@ -1473,7 +1473,7 @@ namespace Wisteria::GraphItems
                                             ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                         position1),
                                 wxPoint(connectionX, position3));
-                                
+
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
@@ -1523,7 +1523,7 @@ namespace Wisteria::GraphItems
                                     wxPoint(connectionXDoubleSided -
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),
                                             position3));
-                                
+
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
@@ -1590,7 +1590,7 @@ namespace Wisteria::GraphItems
                                 wxPoint(position1,connectionY),
                                 wxPoint(position3,
                                         connectionY+ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                
+
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
@@ -1639,7 +1639,7 @@ namespace Wisteria::GraphItems
                                     wxPoint(position3,
                                             connectionYDoubleSided -
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                
+
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
@@ -1703,7 +1703,7 @@ namespace Wisteria::GraphItems
                                             ScaleToScreenAndCanvas(bracket.GetTickmarkLength())),
                                 wxPoint(position3,
                                         connectionY));
-                                
+
                             ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                 Scaling(GetScaling()).
                                 DPIScaling(GetDPIScaleFactor()));
@@ -1753,7 +1753,7 @@ namespace Wisteria::GraphItems
                                     wxPoint(position3,
                                             connectionYDoubleSided +
                                                 ScaleToScreenAndCanvas(bracket.GetTickmarkLength())));
-                                
+
                                 ShapeRenderer sh(GraphItemInfo().Pen(bracket.GetLinePen()).
                                     Scaling(GetScaling()).
                                     DPIScaling(GetDPIScaleFactor()));
@@ -2716,7 +2716,7 @@ namespace Wisteria::GraphItems
             { rangeDivisionFactor = 10; }
         else
             { rangeDivisionFactor = 1; }
-        
+
         // can't do anything with any empty range, so just leave the axis as is
         if (rangeSize <= 0)
             { return; }
@@ -3522,7 +3522,7 @@ namespace Wisteria::GraphItems
         {
         if (!point.IsShown())
             { return false; }
-        
+
         // not showing any labels?
         if (GetLabelDisplay() == AxisLabelDisplay::NoDisplay)
             { return false; }

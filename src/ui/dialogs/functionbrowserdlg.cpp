@@ -187,7 +187,7 @@ void FunctionBrowserDlg::InsertFunction()
     if (m_functionList->GetSelection() == wxNOT_FOUND ||
         m_functionList->GetSelection() >= static_cast<long>(m_currentFunctionsAndDescriptions.size()))
         {
-        wxMessageBox(_("Please select an item in the function list to insert."), 
+        wxMessageBox(_("Please select an item in the function list to insert."),
                 _("Invalid Selection"), wxOK|wxICON_INFORMATION);
         return;
         }

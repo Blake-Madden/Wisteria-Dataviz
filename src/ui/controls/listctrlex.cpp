@@ -851,7 +851,7 @@ public:
                 {
                 // have we already adjusted all columns and the table is still too wide?
                 // we will need to just make everything fit evenly then
-                const size_t multilineColCount = 
+                const size_t multilineColCount =
                     std::accumulate(m_columnWidths.cbegin(), m_columnWidths.cend(), 0,
                     [](const wxCoord init, const auto& column)
                     { return init + (column.m_multiline ? 1 : 0); });
@@ -1045,9 +1045,9 @@ private:
             [](const wxCoord init, const auto& column)
             { return init + column.m_width; });
         }
- 
+
     const ListCtrlEx* m_list{ nullptr };
-    
+
     std::vector<PrintColumnInfo> m_columnWidths;
     long m_lineHeight{ 0 };
     long m_columnHeight{ 0 };
@@ -1058,7 +1058,7 @@ private:
 
     bool m_includeTableCaption{ false };
     wxBitmap m_printCanvas;
-    
+
     std::vector<PrintPageInfo> m_pageStarts;
     size_t m_currentPage{ 0 };
     };
@@ -1321,7 +1321,7 @@ void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
 void ListCtrlEx::OnFind(wxFindDialogEvent &event)
     {
     const wxEventType type = event.GetEventType();
-    long result = wxNOT_FOUND; 
+    long result = wxNOT_FOUND;
 
     bool matchCase = false;
     bool matchWholeWord = false;
@@ -1940,7 +1940,7 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
             };
         }
 
-    const GridExportFormat exportFormat = 
+    const GridExportFormat exportFormat =
         (filePath.GetExt().CmpNoCase(L"HTM") == 0 || filePath.GetExt().CmpNoCase(L"HTML") == 0) ?
         GridExportFormat::ExportHtml : GridExportFormat::ExportText;
     GridExportDlg exportOptionsDlg(GetParent(), GetItemCount(), GetColumnCount(), exportFormat);
@@ -2203,7 +2203,7 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
                         { itemText.Prepend(m_encodedImages[Item.GetImage()] + L"&nbsp;"); }
                     }
                 }
-            
+
             // Set the text color for the cell if customized and not the (browser) default black.
             // This has to be done at the cell level because color at the row level changes the
             // border color as well--we just want to change the text color.
@@ -2309,7 +2309,7 @@ bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
     //create the folder to the filepath, if necessary
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
-    const GridExportFormat exportFormat = 
+    const GridExportFormat exportFormat =
      (path.GetExt().CmpNoCase(L"HTM") == 0 || path.GetExt().CmpNoCase(L"HTML") == 0) ?
         GridExportFormat::ExportHtml : GridExportFormat::ExportText;
 

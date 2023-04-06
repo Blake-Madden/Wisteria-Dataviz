@@ -37,7 +37,7 @@ void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
         }
     catch (...)
         {
-        wxMessageBox(_("Cannot open resource collection file."), 
+        wxMessageBox(_("Cannot open resource collection file."),
             _("Error"), wxOK|wxICON_EXCLAMATION);
         m_resourceFile.Clear();
         return;
@@ -71,7 +71,7 @@ wxBitmap ResourceManager::GetBitmap(const wxString& filePath, const wxBitmapType
             {
             wxBitmap bmp = ExtractBitmap(filePath, bitmapType);
             wxASSERT_LEVEL_2_MSG(bmp.IsOk(),
-                wxString::Format(L"%s: failed to load image from resoures.",
+                wxString::Format(L"%s: failed to load image from resources.",
                                  filePath));
             wxLogVerbose(wxString::Format(L"%s extracted from resource file. Width=%d, Height=%d",
                                           filePath, bmp.GetWidth(), bmp.GetHeight()));

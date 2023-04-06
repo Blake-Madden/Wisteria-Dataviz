@@ -214,7 +214,7 @@ namespace Wisteria::Graphs
         const auto middleRuler{ GetCustomAxes()[1] };
         const double ptLeft{ GetCustomAxes()[0].GetPhysicalCustomXPosition() };
         const double ptRight{ GetCustomAxes()[2].GetPhysicalCustomXPosition() };
-            
+
         m_jitter.SetJitterWidth(static_cast<size_t>(ptRight-ptLeft));
 
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);

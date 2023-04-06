@@ -729,7 +729,7 @@ void SideBar::OnMouseChange(wxMouseEvent& event)
             }
         }
 
-    // if nothing highlighted and nothing was highlighed before, then don't repaint
+    // if nothing highlighted and nothing was highlighted before, then don't repaint
     if (!previouslyHighlightedRect && !m_highlightedRect)
         { return; }
 
@@ -862,7 +862,7 @@ size_t SideBar::CalculateItemRects()
     for (auto& folder : m_folders)
         {
         folder.m_Rect = wxRect(0,
-            (GetItemHeight() * currentFolderIndex) + subItemHeight, 
+            (GetItemHeight() * currentFolderIndex) + subItemHeight,
             GetClientSize().GetWidth(), GetItemHeight());
         // update subitems' areas and factor them into the overall height
         for (auto& subitem : folder.m_subItems)
@@ -917,7 +917,7 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     {
     if (item >= GetFolderCount())
         { return; }
-    
+
     EnsureFolderVisible(item);
 
     int x{ 0 }, y{ 0 };
@@ -928,8 +928,8 @@ void SideBar::SelectFolder(const size_t item, const bool setFocus /*= true*/,
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
 
     // If changing from expanded to collapsed, then just collapse it;
-    // nothing is being seleced or de-selected, just closing the folder.
-    // Because of this, we won't be firing a selction event.
+    // nothing is being selected or de-selected, just closing the folder.
+    // Because of this, we won't be firing a selection event.
     if (collapseIfExpanded && m_folders[item].m_isExpanded)
         {
         m_folders[item].Collapse();
@@ -1034,7 +1034,7 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
          GetClientRect() :
          previosuslySelectedRect.Union(currentlySelectedRect));
     refreshRect.Offset(0, -std::min(y, refreshRect.y));
-    
+
     Refresh(true, &refreshRect);
     Update();
     if (setFocus)

@@ -146,7 +146,7 @@ namespace Wisteria::Graphs
         {
         SetDPIScaleFactor(canvas != nullptr ? canvas->GetDPIScaleFactor() : 1);
         SetCanvas(canvas);
- 
+
         GetTitle().SetRelativeAlignment(RelativeAlignment::FlushLeft);
 
         // Use smaller fonts for the subtitle and caption by default.
@@ -468,7 +468,7 @@ namespace Wisteria::Graphs
         // If bounding box hasn't been set yet, then set it to the parent
         // canvas's size. This would only happen if trying to measure the graph
         // before the window has a size event or is presented.
-        // The normal case for this is when a graph is being meaured for a canvas
+        // The normal case for this is when a graph is being measured for a canvas
         // to a specific content scaling (e.g., Table).
         if (GetBoundingBox(dc).IsEmpty())
             {
@@ -895,7 +895,7 @@ namespace Wisteria::Graphs
                 }
             }
 
-        // embed client object once the axes's physical coordinates have been recalculated
+        // embed client object once the axes' physical coordinates have been recalculated
         for (auto& object : m_embeddedObjects)
             {
             wxCoord x{ 0 }, y{ 0 };
@@ -1081,7 +1081,7 @@ namespace Wisteria::Graphs
                 return true;
                 }
             }
-        // the standard graph objects (addded via AddObject())
+        // the standard graph objects (added via AddObject())
         for (auto plotObject = m_plotObjects.rbegin();
              plotObject != m_plotObjects.rend();
              ++plotObject)
@@ -1108,7 +1108,7 @@ namespace Wisteria::Graphs
                     }
                 else
                     {
-                    // update our selection info if the object (an possibly, its subobjects)
+                    // update our selection info if the object (an possibly, its sub-objects)
                     // were deselected
                     const auto unselectedItem = GetSelectedIds().find((*plotObject)->GetId());
                     if (unselectedItem != GetSelectedIds().end())

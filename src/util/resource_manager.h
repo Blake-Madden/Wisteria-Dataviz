@@ -55,7 +55,7 @@ public:
         @param resourceArchivePath The path to the ZIP file containing the resources
             to use for the application.
         @note Only one archive can be loaded at a time; calling this will unload
-            any previoulys loaded ZIP file.*/
+            any previously loaded ZIP file.*/
     void LoadArchive(const wxString& resourceArchivePath);
 
     /** @returns The @c wxWidgets file-system path to a file in the loaded archive.
@@ -79,7 +79,7 @@ public:
     /// @returns A bitmap bundle from the provided path.
     /// @param path The path to the image.\n
     ///     Can be relative to the ZIP file loaded by this class, or a local file.
-    /// @note The returned bundle will ccontain 16x16, 32x32, 64x64, and 128x128
+    /// @note The returned bundle will contain 16x16, 32x32, 64x64, and 128x128
     ///     copies of the image.
     [[nodiscard]]
     wxBitmapBundle GetSVG(const wxString& path);

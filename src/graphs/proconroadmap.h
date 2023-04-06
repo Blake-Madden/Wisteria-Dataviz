@@ -206,12 +206,14 @@ namespace Wisteria::Graphs
             { m_negativeLabel = label; }
     private:
         /// @returns The positive label used for the legend.
-        [[nodiscard]] wxString GetPositiveLegendLabel() const final
+        [[nodiscard]]
+        wxString GetPositiveLegendLabel() const final
             { return m_positiveLabel; }
         /// @returns The negative label used for the legend.
-        [[nodiscard]] wxString GetNegativeLegendLabel() const final
+        [[nodiscard]]
+        wxString GetNegativeLegendLabel() const final
             { return m_negativeLabel; }
-        
+
         wxString m_positiveLabel{ _(L"Pro") };
         wxString m_negativeLabel{ _(L"Con") };
         };

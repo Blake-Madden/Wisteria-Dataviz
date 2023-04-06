@@ -123,7 +123,7 @@ namespace Wisteria::UI
         /// @brief Sets the application's document version number.
         /// @param versionNumber The version number.
         void SetDocumentVersionNumber(const wxString& versionNumber)
-            { m_documentVersionNumber = versionNumber; }        
+            { m_documentVersionNumber = versionNumber; }
 
         /// @returns The application's subname.
         [[nodiscard]]
@@ -155,7 +155,7 @@ namespace Wisteria::UI
         wxPrintData* GetPrintData()
             {
             if (GetMainFrame())
-                { 
+                {
                 return &GetMainFrame()->GetDocumentManager()->
                     GetPageSetupDialogData().GetPrintData();
                 }
@@ -201,10 +201,10 @@ namespace Wisteria::UI
             const wxString& appSubName, const wxString& vendorName,
             const bool includeCopyright);
     private:
-        [[nodiscard]] 
+        [[nodiscard]]
         wxString FindResourceFileWithAppInfo(const wxString& folder,
                                              const wxString& subFile) const;
-        [[nodiscard]] 
+        [[nodiscard]]
         wxString FindResourceDirectoryWithAppInfo(const wxString& folder,
                                                   const wxString& subFile) const;
 

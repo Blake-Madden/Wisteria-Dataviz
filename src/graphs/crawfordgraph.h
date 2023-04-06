@@ -53,7 +53,7 @@ namespace Wisteria::Graphs
         explicit CrawfordGraph(Wisteria::Canvas* canvas,
             std::shared_ptr<Wisteria::Colors::Schemes::ColorScheme> colors = nullptr,
             std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> shapes = nullptr);
-        
+
         /** @brief Sets the data.
             @param data The data to use.
             @param scoreColumnName The column containing the documents' scores

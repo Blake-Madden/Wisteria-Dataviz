@@ -28,7 +28,7 @@ namespace Wisteria::Data
 
         // set the comparison method
         m_comparisonType = subsetCriterion.m_comparisonType;
-            
+
         // find the variable that we are filtering with
         if (fromDataset->GetIdColumn().GetName().CmpNoCase(subsetCriterion.m_columnName) == 0)
             {

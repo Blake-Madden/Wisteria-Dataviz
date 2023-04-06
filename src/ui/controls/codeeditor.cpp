@@ -182,7 +182,7 @@ bool CodeEditor::Save()
         }
     if (!SaveFile(GetScriptFilePath()) )
         {
-        wxMessageBox(wxString::Format(_(L"Unable to save file \"%s\"."), GetScriptFilePath()), 
+        wxMessageBox(wxString::Format(_(L"Unable to save file \"%s\"."), GetScriptFilePath()),
             _(L"Error"), wxOK|wxICON_EXCLAMATION);
         return false;
         }

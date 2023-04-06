@@ -203,7 +203,7 @@ namespace Wisteria
         const size_t destLength = (length*1.5) + 1;
         auto dest = std::make_unique<wchar_t[]>(destLength);
 
-        return (CharStreamToUnicode(dest.get(), destLength, text, length, srcCharSet)) ? 
+        return (CharStreamToUnicode(dest.get(), destLength, text, length, srcCharSet)) ?
             wxString(dest.get()) :
             wxString(wxEmptyString);
         }
@@ -219,7 +219,7 @@ namespace Wisteria
             if (!wxFile::Exists(filePath))
                 {
                 if (wxMessageBox(wxString::Format(
-                    _("%s: file not found.\nDo you wish to search for it?"), filePath), 
+                    _("%s: file not found.\nDo you wish to search for it?"), filePath),
                     _("File Not Found"), wxYES_NO|wxICON_WARNING) == wxNO)
                     { return false; }
                 wxFileName fn(filePath);
@@ -251,7 +251,7 @@ namespace Wisteria
                 if (file.GetMapSize() == sizeof(utf8::bom) &&
                     std::memcmp(file.GetStream(),utf8::bom,sizeof(utf8::bom)) == 0)
                     { return true; }
-                wxMessageBox(_("Unable to read file."), 
+                wxMessageBox(_("Unable to read file."),
                     _("Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }
@@ -261,7 +261,7 @@ namespace Wisteria
             wxFile theFile;
             if (!theFile.Open(filePath, wxFile::read) )
                 {
-                wxMessageBox(_("Unable to open file."), 
+                wxMessageBox(_("Unable to open file."),
                     _("Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }

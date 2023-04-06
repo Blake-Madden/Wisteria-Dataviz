@@ -95,7 +95,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
     wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
         std::to_wstring(m_options.m_imageSize.GetWidth()),
-        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 
+        wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         Wisteria::Canvas::GetDefaultCanvasWidthDIPs(), 10'000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
     imageSizeInfoSizer->Add(widthCtrl, 0);

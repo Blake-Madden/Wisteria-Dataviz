@@ -196,7 +196,7 @@ namespace Wisteria::Data
                 { Fill(wxInvalidDateTime); }
             }
         /// @}
-        
+
         /// @returns The number of rows.
         [[nodiscard]]
         size_t GetRowCount() const noexcept
@@ -971,7 +971,7 @@ namespace Wisteria::Data
                 with more generic names.*/
         void AddCategoricalColumn(const wxString& columnName,
             const ColumnWithStringTable::StringTableType& stringTable);
-        
+
         /** @brief Adds a new date column (if not already in the dataset).
             @param columnName The name of the column.
             @note It is recommended to call this prior to AddRow();

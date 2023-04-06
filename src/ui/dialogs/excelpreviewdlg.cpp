@@ -54,7 +54,7 @@ void ExcelPreviewDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     if (IsImportingOnlySelectedCells() && m_selectedCells.empty() &&
         m_selectedRows.empty() && m_selectedColumns.empty() && m_selectedBlocks.empty())
         {
-        wxMessageBox(_("Please highlight cells to import."), 
+        wxMessageBox(_("Please highlight cells to import."),
             _("Error"), wxOK|wxICON_EXCLAMATION);
         return;
         }

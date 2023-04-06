@@ -175,16 +175,16 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
     Wisteria::GraphItems::Label appLabel(
             Wisteria::GraphItems::GraphItemInfo(appName).
             Pen(wxNullPen).
-            Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL, 
+            Font(wxFont(ftSize, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_NORMAL,
                         wxFONTWEIGHT_BOLD, false,
                         DONTTRANSLATE(L"Georgia"))).
             FontColor(wxColour(L"#315184")).DPIScaling(1.0).
             Anchoring(Anchoring::TopLeftCorner).AnchorPoint({ 0, 0 }).
             Padding(4, 0, 4, 4));
     auto boundingBox = appLabel.GetBoundingBox(gcdc);
-    const auto fontUpcaling = safe_divide<double>(backscreenHeight, boundingBox.GetHeight()) *
+    const auto fontUpscaling = safe_divide<double>(backscreenHeight, boundingBox.GetHeight()) *
         math_constants::half;
-    appLabel.SetScaling(fontUpcaling);
+    appLabel.SetScaling(fontUpscaling);
 
     // draw translucent backscreens on image so that text written on it can be read
         {
@@ -244,7 +244,7 @@ wxBitmap Wisteria::UI::BaseApp::CreateSplashscreen(const wxBitmap& bitmap, const
             FontColor(*wxBLACK).Padding(4, 4, 4, 4).DPIScaling(1.0).
             Anchoring(Anchoring::BottomRightCorner).
             AnchorPoint(wxRect{ gcdc.GetSize() }.GetBottomRight()));
-        copyrightInfo.SetScaling(fontUpcaling * math_constants::third);
+        copyrightInfo.SetScaling(fontUpscaling * math_constants::third);
 
         copyrightInfo.Draw(gcdc);
         }

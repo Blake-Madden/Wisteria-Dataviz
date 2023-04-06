@@ -46,18 +46,23 @@ namespace Wisteria::Data
         auto mergedData = std::make_shared<Dataset>(*leftDataset);
 
         // mapped 'by' columns between datasets (src -> output)
-        std::pair<const Column<wxString>*, const Column<wxString>*> byIdColumnsMap{ std::make_pair(nullptr, nullptr) };
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnConstIterator>> byCatColsMap;
+        std::pair<const Column<wxString>*, const Column<wxString>*>
+            byIdColumnsMap{ std::make_pair(nullptr, nullptr) };
+        std::vector<std::pair<CategoricalColumnConstIterator,
+                              CategoricalColumnConstIterator>> byCatColsMap;
 
         // mapped input (right dataset) and output columns
-        std::pair<const Column<wxString>*, Column<wxString>*> outIdColumnsMap{ std::make_pair(nullptr, nullptr) };
+        std::pair<const Column<wxString>*, Column<wxString>*>
+            outIdColumnsMap{ std::make_pair(nullptr, nullptr) };
         std::vector<std::pair<wxString, wxString>> outCatColNamesMap;
-        std::vector<std::pair<CategoricalColumnConstIterator, CategoricalColumnIterator>> outCatColsMap;
+        std::vector<std::pair<CategoricalColumnConstIterator,
+                              CategoricalColumnIterator>> outCatColsMap;
         std::vector<std::pair<wxString, wxString>> outContinuousColNamesMap;
-        std::vector<std::pair<ContinuousColumnConstIterator, ContinuousColumnIterator>> outContinuousColsMap;
+        std::vector<std::pair<ContinuousColumnConstIterator,
+                              ContinuousColumnIterator>> outContinuousColsMap;
         std::vector<std::pair<wxString, wxString>> outDateColNamesMap;
         std::vector<std::pair<DateColumnConstIterator, DateColumnIterator>> outDateColsMap;
-        
+
         // verify that 'by' columns are in both datasets
         for (const auto& byColumn : byColumns)
             {

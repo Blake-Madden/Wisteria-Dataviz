@@ -490,7 +490,7 @@ namespace Wisteria
             { L"justified-at-character", TextAlignment::JustifiedAtCharacter },
             { L"justified-at-word", TextAlignment::JustifiedAtWord }
             };
-        
+
         const auto foundValue = textAlignValues.find(value.Lower().ToStdWstring());
         return ((foundValue != textAlignValues.cend()) ?
             std::optional<TextAlignment>(foundValue->second) :
@@ -565,7 +565,7 @@ namespace Wisteria
             std::optional<FiscalYear>(foundValue->second) :
             std::nullopt);
         }
-    
+
     //---------------------------------------------------
     std::optional<GanttChart::TaskLabelDisplay> ReportBuilder::ConvertTaskLabelDisplay(const wxString& value)
         {
@@ -586,7 +586,7 @@ namespace Wisteria
             std::optional<GanttChart::TaskLabelDisplay>(foundValue->second) :
             std::nullopt);
         }
-    
+
     //---------------------------------------------------
     std::optional<CandlestickPlot::PlotType> ReportBuilder::ConvertCandlestickPlotType(
         const wxString& value)
@@ -767,7 +767,7 @@ namespace Wisteria
             std::optional<Roadmap::LaneSeparatorStyle>(foundValue->second) :
             std::nullopt);
         }
-    
+
     //---------------------------------------------------
     std::optional<Roadmap::RoadStopTheme> ReportBuilder::ConvertRoadStopTheme(const wxString& value)
         {
@@ -783,7 +783,7 @@ namespace Wisteria
             std::optional<Roadmap::RoadStopTheme>(foundValue->second) :
             std::nullopt);
         }
-    
+
     //---------------------------------------------------
     std::optional<Roadmap::MarkerLabelDisplay> ReportBuilder::ConvertMarkerLabelDisplay(const wxString& value)
         {
@@ -1220,7 +1220,7 @@ namespace Wisteria
                 {
                 const wxString columnPattern =
                     ConvertColumnOrGroupParameter(re.GetMatch(var, 2), dataset);
-                
+
                 if (funcName.CmpNoCase(L"matches") == 0)
                     {
                     const wxRegEx columnRE(columnPattern);
@@ -1490,7 +1490,7 @@ namespace Wisteria
                     wxString::Format(
                         _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
             }
-        
+
         const wxRegEx re(FunctionStartRegEx() +
                          L"(grouppercentdecimal)" + OpeningParenthesisRegEx() +
                          ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
@@ -1524,7 +1524,7 @@ namespace Wisteria
                     wxString::Format(
                         _(L"%s: invalid dataset when calculating formula."), formula).ToUTF8());
             }
-        
+
         const wxRegEx re(FunctionStartRegEx() +
                          L"(grouppercent)" + OpeningParenthesisRegEx() +
                          ColumnNameOrFormulaRegEx() + ParamSeparatorRegEx() +
@@ -1783,7 +1783,7 @@ namespace Wisteria
                 wxNumberFormatter::Style::Style_WithThousandsSep) :
             wxString(wxEmptyString);
         }
-     
+
     //---------------------------------------------------
     wxString ReportBuilder::CalcNow(const wxString& formula) const
         {
@@ -1960,9 +1960,9 @@ namespace Wisteria
                 GetValueString().MakeLower().wc_str()));
             Comparison cmp = (foundPos != cmpOperators.cend() ?
                 foundPos->second : Comparison::Equals);
-                            
+
             const auto valuesNode = filterNode->GetProperty(L"values");
-                            
+
             if (valuesNode->IsOk())
                 {
                 ColumnFilterInfo cFilter
@@ -1996,7 +1996,7 @@ namespace Wisteria
                         DatasetValueType(ExpandConstants(filterValue->GetValueString())) :
                         DatasetValueType(filterValue->GetValueNumber()));
                     }
-                    
+
                 return cFilter;
                 }
             else
@@ -2051,7 +2051,7 @@ namespace Wisteria
                             }
                         for (const auto& filternode : filterAndNodes)
                             { cf.emplace_back(loadColumnFilter(filternode)); }
-                            
+
                         subsettedDataset = dataSubsetter.SubsetAnd(parentToSubset, cf);
                         }
                     // ORed filters
@@ -2170,7 +2170,7 @@ namespace Wisteria
                     {
                     wxFileName fn(exportPath);
                     if (fn.GetPath().empty())
-                        { fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath; }                     
+                        { fn = wxFileName(m_configFilePath).GetPathWithSep() + exportPath; }
                     if (fn.GetExt().CmpNoCase(L"csv") == 0)
                         { dataset->ExportCSV(fn.GetFullPath()); }
                     else
@@ -2337,7 +2337,7 @@ namespace Wisteria
                         }
 
                     // import using the user-provided parser or deduce from the file extension
-                    const auto fileExt(wxFileName(path).GetExt());                        
+                    const auto fileExt(wxFileName(path).GetExt());
                     if (importer.CmpNoCase(L"csv") == 0 ||
                         fileExt.CmpNoCase(L"csv") == 0)
                         { dataset->ImportCSV(path, importDefines); }
@@ -2356,7 +2356,7 @@ namespace Wisteria
                             wxString(_(L"Dataset must have a valid importer specified.")).
                                     ToUTF8());
                         }
-                    
+
                     m_datasets.insert_or_assign(dsName, dataset);
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
@@ -2415,17 +2415,17 @@ namespace Wisteria
                 ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { pcRoadmap->SetLabelPlacement(labelPlacement.value()); }
-            
+
             const auto laneSepStyle =
                 ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { pcRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
-            
+
             const auto roadStopTheme =
                 ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { pcRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
-            
+
             const auto markerLabelDisplay =
                 ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
@@ -2442,7 +2442,7 @@ namespace Wisteria
                 _(L"Variables not defined for Pro & Con Roadmap.").ToUTF8());
             }
         }
-        
+
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGanttChart(
         const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
@@ -2488,7 +2488,7 @@ namespace Wisteria
             const auto taskLabelDisplay =
                 ConvertTaskLabelDisplay(graphNode->GetProperty(L"task-label-display")->GetValueString());
             if (taskLabelDisplay.has_value())
-                { ganttChart->SetLabelDisplay(taskLabelDisplay.value()); }            
+                { ganttChart->SetLabelDisplay(taskLabelDisplay.value()); }
 
             LoadGraph(graphNode, canvas, currentRow, currentColumn, ganttChart);
             return ganttChart;
@@ -2558,17 +2558,17 @@ namespace Wisteria
                 ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { lrRoadmap->SetLabelPlacement(labelPlacement.value()); }
-            
+
             const auto laneSepStyle =
                 ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { lrRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
-            
+
             const auto roadStopTheme =
                 ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { lrRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
-            
+
             const auto markerLabelDisplay =
                 ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
@@ -2980,7 +2980,7 @@ namespace Wisteria
                                 barGroup->GetProperty(L"end")->GetValueString()).ToUTF8());
                             }
                         }
-                    
+
                     barChart->AddBarGroup(bGroup);
                     }
                 }
@@ -3086,7 +3086,7 @@ namespace Wisteria
                 wxString::Format(_(L"%s: unknown icon for fillable shape."),
                     shapeNode->GetProperty(L"icon")->GetValueString()).ToUTF8());
             }
-        
+
         wxSize sz(32, 32);
         const auto sizeNode = shapeNode->GetProperty(L"size");
         if (sizeNode->IsOk())
@@ -3144,7 +3144,7 @@ namespace Wisteria
                 wxString::Format(_(L"%s: unknown icon for shape."),
                     shapeNode->GetProperty(L"icon")->GetValueString()).ToUTF8());
             }
-        
+
         wxSize sz(32, 32);
         const auto sizeNode = shapeNode->GetProperty(L"size");
         if (sizeNode->IsOk())
@@ -3228,7 +3228,7 @@ namespace Wisteria
                 { histo->SetBarOrientation(Orientation::Horizontal); }
             else if (bOrientation.CmpNoCase(L"vertical") == 0)
                 { histo->SetBarOrientation(Orientation::Vertical); }
-                
+
             histo->SetData(foundPos->second, contVarName,
                 (groupName.length() ? std::optional<wxString>(groupName) : std::nullopt),
                 binMethod.value_or(Histogram::BinningMethod::BinByIntegerRange),
@@ -4373,7 +4373,7 @@ namespace Wisteria
                 if (whereType.CmpNoCase(L"column") == 0)
                     {
                     table->InsertAggregateColumn(aggInfo, aggName,
-                        std::nullopt, 
+                        std::nullopt,
                         columnAggregate->GetProperty(L"use-adjacent-color")->GetValueBool(),
                         (bkColor.IsOk() ?
                             std::optional<wxColour>(bkColor) : std::nullopt),
@@ -4567,7 +4567,7 @@ namespace Wisteria
                 cellAnnotation.m_connectionLinePen = table->GetHighlightPen();
                 LoadPen(annotation->GetProperty(L"pen"), cellAnnotation.m_connectionLinePen.value());
                 cellAnnotation.m_bgColor = ConvertColor(annotation->GetProperty(L"background"));
-                
+
                 const auto cellsNode = annotation->GetProperty(L"cells");
                 if (cellsNode->IsOk() && cellsNode->IsValueObject())
                     {
@@ -4739,7 +4739,7 @@ namespace Wisteria
                     wxString::Format(_(L"%s: unknown table position origin value."), originStr).ToUTF8());
                 }
             };
-        
+
         const auto origin = positionNode->GetProperty(L"origin");
         if (origin->IsOk())
             {
@@ -4834,7 +4834,7 @@ namespace Wisteria
             { L"seasons", std::make_shared<Colors::Schemes::Seasons>() },
             { L"meadowsunset", std::make_shared<Colors::Schemes::MeadowSunset>() }
             };
-        
+
         if (!colorSchemeNode->IsOk())
             { return nullptr; }
         else if (colorSchemeNode->IsValueArray())
@@ -5065,7 +5065,7 @@ namespace Wisteria
         const auto path = bmpNode->GetProperty(L"path")->GetValueString();
         if (path.length())
             { bmps.push_back(Image::LoadFile(NormalizeFilePath(path))); }
-        
+
         if (bmps.empty())
             { return wxNullBitmap; }
 
@@ -5294,7 +5294,7 @@ namespace Wisteria
             }
 
         // stipple brush used for bar charts/box plots
-        if (const auto stippleImgNode = graphNode->GetProperty(L"stipple-image"); 
+        if (const auto stippleImgNode = graphNode->GetProperty(L"stipple-image");
             stippleImgNode->IsOk())
             { graph->SetStippleBrush(LoadImageFile(stippleImgNode)); }
 
@@ -5488,7 +5488,7 @@ namespace Wisteria
                     }
                 }
             }
-        
+
         // is there a legend?
         const auto legendNode = graphNode->GetProperty(L"legend");
         if (legendNode->IsOk())

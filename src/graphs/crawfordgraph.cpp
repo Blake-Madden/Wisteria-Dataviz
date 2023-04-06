@@ -420,7 +420,7 @@ namespace Wisteria::Graphs
             { AddObject(std::make_shared<GraphItems::Label>(GraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Text(wxNumberFormatter::ToString(1.4, 1, wxNumberFormatter::Style::Style_None)).AnchorPoint(pt))); }
         if (GetPhysicalCoordinates(6.5, 206, pt) )
             { AddObject(std::make_shared<GraphItems::Label>(GraphItemInfo().Scaling(GetScaling()).Pen(wxNullPen).Text(wxNumberFormatter::ToString(1.0, 1, wxNumberFormatter::Style::Style_None)).AnchorPoint(pt))); }
-    
+
         // plot the data
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
         points->SetScaling(GetScaling());

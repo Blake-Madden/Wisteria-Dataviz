@@ -52,7 +52,7 @@ namespace Wisteria::Graphs
                 _(L"'%s': word column not found for word cloud."),
                 wordColumnName).ToUTF8());
             }
-        
+
         const auto freqColumn = (valueColumnName ?
             GetDataset()->GetContinuousColumn(valueColumnName.value()) :
             GetDataset()->GetContinuousColumns().cend());

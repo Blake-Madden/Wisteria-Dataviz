@@ -797,7 +797,7 @@ public:
         { m_printData = printData; }
     /// @brief Sets the left printer header.
     /// @param header The string to use for the left header.
-    void SetLeftPrinterHeader(const wxString& header) 
+    void SetLeftPrinterHeader(const wxString& header)
         { m_leftPrinterHeader = header; }
     /// @returns The left printer header.
     [[nodiscard]]

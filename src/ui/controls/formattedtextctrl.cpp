@@ -1034,7 +1034,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
 
     FINDTEXTW findText;
     SendMessage(GetHwnd(), EM_EXGETSEL, 0, (LPARAM)&findText.chrg);
-    const long startOfSelection = findText.chrg.cpMin; 
+    const long startOfSelection = findText.chrg.cpMin;
     if (searchDown)
         {
         // begin search from end of selection
@@ -1239,7 +1239,7 @@ wxString FormattedTextCtrl::GetFormattedTextRtf(const bool fixHighlightingTags /
     wxUnusedVar(fixHighlightingTags);
     GetFormattedTextGtk(text, RtfFormat);
 #else
-    text = GetTextPeer()->GetRtfValue();   
+    text = GetTextPeer()->GetRtfValue();
 #endif
     if (fixHighlightingTags)
         { text = FixHighlightingTags(text); }

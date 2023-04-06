@@ -179,7 +179,7 @@ namespace Wisteria::GraphItems
                 }
             return areaWidth;
             }
-        /** @returns The area of a polygon using the shoelace formuala.
+        /** @returns The area of a polygon using the shoelace formula.
             @param polygon The polygon's points.
             @details Based on https://www.geeksforgeeks.org/area-of-a-polygon-with-given-n-ordered-vertices/.
             @todo needs unit testing*/
@@ -191,7 +191,7 @@ namespace Wisteria::GraphItems
                 { return 0.0; }
             // Initialize area
             double area{ 0.0 };
- 
+
             // Calculate value of shoelace formula
             int j = polygon.size() - 1;
             for (size_t i = 0; i < polygon.size(); i++)
@@ -199,7 +199,7 @@ namespace Wisteria::GraphItems
                 area += (polygon[j].x + polygon[i].x) * (polygon[j].y - polygon[i].y);
                 j = i;  // j is previous vertex to i
                 }
- 
+
             // Return absolute value
             return std::abs(area / 2.0);
             }

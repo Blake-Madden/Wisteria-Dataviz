@@ -528,7 +528,7 @@ namespace Wisteria::Graphs
                     return lhv.GetAxisPosition() < rhv.GetAxisPosition();
                     });
             };
-        
+
         // reorder the provided labels (if necessary) to match the sorting direction
         if ((direction == SortDirection::SortDescending && GetBarOrientation() == Orientation::Vertical) ||
             (direction == SortDirection::SortAscending && GetBarOrientation() == Orientation::Horizontal))
@@ -658,7 +658,7 @@ namespace Wisteria::Graphs
         const wxCoord barSpacing = m_includeSpacesBetweenBars ? ScaleToScreenAndCanvas(10) : 0;
         const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
         const wxCoord labelSpacingFromLine = ScaleToScreenAndCanvas(5);
-        
+
         std::vector<std::shared_ptr<GraphItems::Label>> decals;
         double barWidth{ 0 };
         wxRect barRect;
@@ -891,7 +891,7 @@ namespace Wisteria::Graphs
                                 }
 
                             wxASSERT_LEVEL_2(box);
-                            
+
                             if (barBlock.GetOutlinePen().IsOk())
                                 { box->GetPen() = barBlock.GetOutlinePen(); }
                             else
@@ -1228,11 +1228,13 @@ namespace Wisteria::Graphs
                                     // then don't bother with the shadow
                                     if (barRect.GetHeight() > scaledShadowOffset)
                                         {
-                                        wxPoint shadowPts[4];
-                                        shadowPts[0] = barRect.GetRightBottom() + wxPoint(scaledShadowOffset,0);
-                                        shadowPts[1] = barRect.GetRightTop() + wxPoint(scaledShadowOffset, scaledShadowOffset);
-                                        shadowPts[2] = barRect.GetRightTop() + wxPoint(0, scaledShadowOffset);
-                                        shadowPts[3] = barRect.GetRightBottom();
+                                        const wxPoint shadowPts[4] =
+                                            {
+                                            barRect.GetRightBottom() + wxPoint(scaledShadowOffset,0),
+                                            barRect.GetRightTop() + wxPoint(scaledShadowOffset, scaledShadowOffset),
+                                            barRect.GetRightTop() + wxPoint(0, scaledShadowOffset),
+                                            barRect.GetRightBottom()
+                                            };
                                         AddObject(std::make_shared<GraphItems::Polygon>(
                                             GraphItemInfo().Pen(wxNullPen).Brush(GraphItemBase::GetShadowColour()),
                                             shadowPts, std::size(shadowPts)));
@@ -1604,7 +1606,7 @@ namespace Wisteria::Graphs
                         Icons::IconShape::RightCurlyBrace,
                         wxSize(bracesWidth, DownscaleFromScreenAndCanvas(barsWidth)),
                         nullptr);
-                    
+
                     const auto yPos = std::min(brackPos1.y, brackPos2.y) +
                         safe_divide<double>(std::abs(brackPos1.y - brackPos2.y), 2);
                     if (GetBarAxis().GetValueFromPhysicalCoordinate(yPos, barAxisPos))

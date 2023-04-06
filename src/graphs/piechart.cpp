@@ -659,7 +659,7 @@ namespace Wisteria::Graphs
                         }
                     measureAndFitLabel(outerLabel);
                     }
-                
+
                 smallestOuterLabelFontSize =
                     std::min(smallestOuterLabelFontSize, outerLabel->GetFont().GetPointSize());
 
@@ -1788,7 +1788,7 @@ namespace Wisteria::Graphs
                 showcasedOuterIndices.cend())
                 { innerLabelsForGroups.emplace_back(innerSlice.GetGroupLabel()); }
             }
-        
+
         if (outerLabelRingToShow == Perimeter::Inner)
             { ShowInnerPieLabels(true, innerLabelsForGroups); }
         else

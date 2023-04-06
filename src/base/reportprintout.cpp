@@ -229,7 +229,7 @@ PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
     {
     wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
     wxASSERT_MSG(printOut, L"Invalid printout passed to PrintFitToPageChanger!");
-    if (m_canvas != nullptr && 
+    if (m_canvas != nullptr &&
         printOut != nullptr &&
         m_canvas->IsFittingToPageWhenPrinting())
         {

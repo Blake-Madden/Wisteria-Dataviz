@@ -107,7 +107,7 @@ namespace Wisteria
         /// @returns The maximum number of observations to show in a bin label.
         [[nodiscard]] static size_t GetMaxObservationInBin() noexcept
             { return m_maxObservationsInBin; }
- 
+
         /// @brief Sets the radius of the rounded corner, which is used when using rounded
         ///     corners for labels, box plots, etc.
         /// @param roundedCornerRadius The rounded corner radius.

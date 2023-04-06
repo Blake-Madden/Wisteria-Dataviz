@@ -42,7 +42,6 @@ namespace Wisteria::Graphs
         GetBottomXAxis().SetRange(0, 100, 0, 1, 1);
         }
 
-    
     //----------------------------------------------------------------
     void Roadmap::RecalcSizes(wxDC& dc)
         {
@@ -112,7 +111,7 @@ namespace Wisteria::Graphs
                      wxString::Format(L"%s (%s)",
                         GetRoadStops()[i].GetName(),
                             wxNumberFormatter::ToString(GetRoadStops()[i].GetValue(), 3,
-                            wxNumberFormatter::Style::Style_NoTrailingZeroes)) : 
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
                 (m_markerLabelDisplay == MarkerLabelDisplay::NameAndAbsoluteValue) ?
                     wxString::Format(L"%s (%s)",
                         GetRoadStops()[i].GetName(),
@@ -227,7 +226,7 @@ namespace Wisteria::Graphs
             rightTextArea.SetLeft(coord);
             rightTextArea.SetRight(GetPlotAreaBoundingBox().GetRight());
             }
-        
+
         constexpr double smallestLabelScalingAllowable{ 0.5 };
         for (auto& locationLabel : locationLabels)
             {

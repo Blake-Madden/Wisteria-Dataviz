@@ -259,7 +259,7 @@ wxString FindFileInMatchingDirStructure(const wxString& currentDir, const wxStri
             {
             const wxString currentNewPath =
         #ifdef __WXMSW__
-                wxFileName(currentDir).GetVolume() + wxFileName::GetVolumeSeparator() + 
+                wxFileName(currentDir).GetVolume() + wxFileName::GetVolumeSeparator() +
                 wxFileName::GetPathSeparator() +
         #else
                 L"/" +
@@ -366,28 +366,28 @@ wxString StripIllegalFileCharacters(const wxString& filePath)
 
 //------------------------------------------------------------------
 bool SendToRecycleBinOrDelete(const wxString& fileToDelete)
-	{
+    {
     if (!wxFile::Exists(fileToDelete) )
-		{ return false; }
+        { return false; }
 #ifdef __WXMSW__
-	/* file path needs to have TWO null terminators for SHFileOperation,
-	   so we need to use a different filepath buffer with two NULLs at the end.*/
+    /* file path needs to have TWO null terminators for SHFileOperation,
+       so we need to use a different filepath buffer with two NULLs at the end.*/
     const size_t fileBufferLength = fileToDelete.length() + 2;
     auto filePath = std::make_unique<wchar_t[]>(fileBufferLength);
     wxStrncpy(filePath.get(), fileToDelete.c_str(), fileToDelete.length());
 
     SHFILEOPSTRUCT SHFileOp;
     std::memset(&SHFileOp, 0, sizeof(SHFILEOPSTRUCT));
-	SHFileOp.wFunc = FO_DELETE;
-	SHFileOp.pFrom = filePath.get();
-	SHFileOp.fFlags = FOF_ALLOWUNDO;
+    SHFileOp.wFunc = FO_DELETE;
+    SHFileOp.pFrom = filePath.get();
+    SHFileOp.fFlags = FOF_ALLOWUNDO;
 
     // SHFileOperation returns 0 on success, so negate it
-	return !::SHFileOperation(&SHFileOp);
+    return !::SHFileOperation(&SHFileOp);
 #else
-    return wxRemoveFile(fileToDelete);    
+    return wxRemoveFile(fileToDelete);
 #endif
-	}
+    }
 
 //------------------------------------------------------------------
 int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)

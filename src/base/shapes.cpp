@@ -121,10 +121,10 @@ namespace Wisteria::GraphItems
             {
             shapeTopLeftCorner.y += GetBoundingBox(dc).GetHeight() - drawRect.GetHeight();
             }
-        
+
         drawRect.SetTopLeft(shapeTopLeftCorner);
 
-        Draw(drawRect, dc);        
+        Draw(drawRect, dc);
 
         // draw the outline
         if (IsSelected())
@@ -456,7 +456,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             { scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()) ); }
         DCPenChangerIfDifferent pc(dc, scaledPen);
-        
+
         // whisker
         dc.DrawLine(wxPoint(rect.GetLeft()+(rect.GetWidth()/2),
                             rect.GetTop()),
@@ -532,31 +532,31 @@ namespace Wisteria::GraphItems
             // the needle
             wxPoint(GetXPosFromLeft(rect, 0),
                     GetYPosFromTop(rect, math_constants::half)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::third),
                     GetYPosFromTop(rect, math_constants::half)),
             // top half of tack's handle
-            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::third),
                     GetYPosFromTop(rect, 0)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::half), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::half),
                     GetYPosFromTop(rect, math_constants::third)),
-            wxPoint(GetXPosFromLeft(rect, 0.90), 
+            wxPoint(GetXPosFromLeft(rect, 0.90),
                     GetYPosFromTop(rect, math_constants::third)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::full), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::full),
                     GetYPosFromTop(rect, safe_divide(math_constants::third, 2.0))),
             // bottom half
-            wxPoint(GetXPosFromLeft(rect, math_constants::full), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::full),
                     GetYPosFromTop(rect, math_constants::half +
                                          (safe_divide(math_constants::third, 2.0) * 2))),
-            wxPoint(GetXPosFromLeft(rect, 0.90), 
+            wxPoint(GetXPosFromLeft(rect, 0.90),
                     GetYPosFromTop(rect, math_constants::two_thirds)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::half), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::half),
                     GetYPosFromTop(rect, math_constants::two_thirds)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::third),
                     GetYPosFromTop(rect, math_constants::full)),
-            wxPoint(GetXPosFromLeft(rect, math_constants::third), 
+            wxPoint(GetXPosFromLeft(rect, math_constants::third),
                     GetYPosFromTop(rect, math_constants::half)),
             };
-        
+
         DrawWithBaseColorAndBrush(dc, [&](){ dc.DrawPolygon(points.size(), &points[0]); });
         }
 
@@ -570,14 +570,14 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(-iconRadius, 0),
             midPoint + wxPoint(0, iconRadius),
             midPoint + wxPoint(iconRadius, 0)
             };
-        
+
         std::for_each(points.begin(), points.end(),
             [&iconRadius, this](auto& pt)
             { pt.y -= ScaleToScreenAndCanvas(2 + (iconRadius/2)); });
@@ -599,14 +599,14 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(-iconRadius, 0),
             midPoint + wxPoint(0, -iconRadius),
             midPoint + wxPoint(iconRadius, 0)
             };
-        
+
         std::for_each(points.begin(), points.end(),
             [&iconRadius, this](auto& pt)
             { pt.y += ScaleToScreenAndCanvas(-2 + (iconRadius/2)); });
@@ -628,7 +628,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 4> points =
             {
             midPoint + wxPoint(0, -iconRadius),
@@ -636,7 +636,7 @@ namespace Wisteria::GraphItems
             midPoint + wxPoint(0, iconRadius),
             midPoint + wxPoint(-iconRadius, 0)
             };
-        
+
         DrawWithBaseColorAndBrush(dc, [&](){ dc.DrawPolygon(points.size(), &points[0]); });
         }
 
@@ -754,7 +754,7 @@ namespace Wisteria::GraphItems
             DrawCircularSign(signRect, ColorBrewer::GetColor(Color::KellyGreen), _(L"GO"), dc);
             }
         }
-    
+
     //---------------------------------------------------
     void ShapeRenderer::DrawBanner(const wxRect rect, wxDC& dc) const
         {
@@ -916,7 +916,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 6> points =
             {
             midPoint + wxPoint(-iconRadius / 2, -iconRadius),
@@ -940,7 +940,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(0, -iconRadius),
@@ -962,7 +962,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(0, iconRadius),
@@ -984,7 +984,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(iconRadius, 0),
@@ -1006,7 +1006,7 @@ namespace Wisteria::GraphItems
 
         const auto iconRadius = GetRadius(rect);
         const auto midPoint = GetMidPoint(rect);
-        
+
         const std::array<wxPoint, 3> points =
             {
             midPoint + wxPoint(-iconRadius, 0),
@@ -1157,7 +1157,7 @@ namespace Wisteria::GraphItems
         // just to reset when we are done
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
         wxDCBrushChanger bc(dc, *wxBLACK_BRUSH);
-        
+
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for water color effect!");
@@ -1311,7 +1311,7 @@ namespace Wisteria::GraphItems
         wxDCPenChanger pc(dc, *wxBLACK_PEN);
 
         wxRect drawRect(rect);
-        
+
         GraphicsContextFallback gcf{ &dc, rect };
         auto gc = gcf.GetGraphicsContext();
         wxASSERT_MSG(gc, L"Failed to get graphics context for curly braces!");

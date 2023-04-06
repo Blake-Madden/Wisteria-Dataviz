@@ -75,7 +75,7 @@ void FileListDlg::CreateControls()
     m_thumbnail = new Wisteria::UI::Thumbnail(this, wxNullBitmap);
     fileInfoSizer->Add(m_thumbnail, wxSizerFlags(1).Expand().
         Border(wxDirection::wxALL, wxSizerFlags::GetDefaultBorder()));
-    
+
     m_label = new wxStaticText(this, wxID_ANY, L"\n\n\n");
     fileInfoSizer->Add(m_label, szFlags);
 

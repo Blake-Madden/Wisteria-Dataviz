@@ -27,7 +27,7 @@ GridExportDlg::GridExportDlg(wxWindow* parent, int rowCount, int columnCount,
     CreateControls();
     Centre();
 
-    // setup the radio buttons' subcontrols' enablablements
+    // setup the radio buttons' subcontrols' enablablement
     Bind(wxEVT_RADIOBUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
             {
@@ -114,7 +114,7 @@ void GridExportDlg::CreateControls()
     // row options
     rangeOptionsSizer->Add(new wxStaticText(m_rangeBoxSizer->GetStaticBox(),
         ID_ROWS_FROM_LABEL, _(L"Rows: from")), wxSizerFlags().CenterVertical());
-    
+
     auto fromRowSpinCtrl = new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(),
         ControlIDs::ID_ROWS_FROM_SPIN,
         L"1", wxDefaultPosition, wxSize(FromDIP(wxSize(100, 100)).GetWidth(),-1), wxSP_ARROW_KEYS,

@@ -40,48 +40,60 @@ struct WarningMessage
         m_onlyShowOnce(onlyShowOnce)
         {}
     /// @private
-    [[nodiscard]] bool operator<(const WarningMessage& that) const
+    [[nodiscard]]
+    bool operator<(const WarningMessage& that) const
         { return m_Id < that.m_Id; }
     /// @private
-    [[nodiscard]] bool operator==(const WarningMessage& that) const
+    [[nodiscard]]
+    bool operator==(const WarningMessage& that) const
         { return m_Id == that.m_Id; }
     /// @private
-    [[nodiscard]] bool operator==(const wxString& id) const
+    [[nodiscard]]
+    bool operator==(const wxString& id) const
         { return m_Id == id; }
     /// @returns The ID.
-    [[nodiscard]] const wxString& GetId() const noexcept
+    [[nodiscard]]
+    const wxString& GetId() const noexcept
         { return m_Id; }
     /// @returns The message.
-    [[nodiscard]] const wxString& GetMessage() const noexcept
+    [[nodiscard]]
+    const wxString& GetMessage() const noexcept
         { return m_Message; }
     /// @brief Sets the message.
     /// @param message The message to use.
     void SetMessage(const wxString& message)
         { m_Message = message; }
     /// @returns The title.
-    [[nodiscard]] const wxString& GetTitle() const noexcept
+    [[nodiscard]]
+    const wxString& GetTitle() const noexcept
         { return m_title; }
     /// @returns The description.
-    [[nodiscard]] const wxString& GetDescription() const noexcept
+    [[nodiscard]]
+    const wxString& GetDescription() const noexcept
         { return m_description; }
     /// @returns The flags.
-    [[nodiscard]] int GetFlags() const noexcept
+    [[nodiscard]]
+    int GetFlags() const noexcept
         { return m_flags; }
     /// @brief Whether the message should be shown.
     /// @param show @c true if it should be shown to the user.
     void Show(const bool show) noexcept
         { m_showWarning = show; }
     /// @private
-    [[nodiscard]] bool& ShouldBeShown() noexcept
+    [[nodiscard]]
+    bool& ShouldBeShown() noexcept
         { return m_showWarning; }
     /// @returns @c true if the warning should be shown.
-    [[nodiscard]] bool ShouldBeShown() const noexcept
+    [[nodiscard]]
+    bool ShouldBeShown() const noexcept
         { return m_showWarning; }
     /// @returns @c true if the warning should only be shown once to the user.
-    [[nodiscard]] bool ShouldOnlyBeShownOnce() const noexcept
+    [[nodiscard]]
+    bool ShouldOnlyBeShownOnce() const noexcept
         { return m_onlyShowOnce; }
     /// @returns The previous response.
-    [[nodiscard]] int GetPreviousResponse() const noexcept
+    [[nodiscard]]
+    int GetPreviousResponse() const noexcept
         { return m_previousResponse; }
     /// @brief Sets the response from the user.
     /// @param response The response.
@@ -105,7 +117,8 @@ class WarningManager
     {
 public:
     /// @returns The vector of warning messages.
-    [[nodiscard]] static std::vector<WarningMessage>& GetWarnings() noexcept
+    [[nodiscard]]
+    static std::vector<WarningMessage>& GetWarnings() noexcept
         { return m_warningManager; }
     /// @brief Adds a warning to the system.
     /// @param message The warning message to add to the system.
@@ -158,19 +171,21 @@ public:
         }
     /// @returns A warning iterator by the given ID. Returns an invalid iterator if not found.
     /// @param messageId The ID of the warning to access.
-    [[nodiscard]] static std::vector<WarningMessage>::iterator GetWarning(const wxString& messageId)
+    [[nodiscard]]
+    static std::vector<WarningMessage>::iterator GetWarning(const wxString& messageId)
         {
         std::vector<WarningMessage>::iterator warningPos =
             std::lower_bound(m_warningManager.begin(), m_warningManager.end(),
                 WarningMessage(messageId));
         wxASSERT_LEVEL_2_MSG(messageId.IsEmpty() || (warningPos != m_warningManager.end() &&
                              warningPos->GetId() == messageId), messageId);
-        return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId) ? 
+        return (warningPos != m_warningManager.end() && warningPos->GetId() == messageId) ?
             warningPos : m_warningManager.end();
         }
     /// @returns Whether a warning message is (by ID) is in the system.
     /// @param messageId The ID of the warning to find.
-    [[nodiscard]] static bool HasWarning(const wxString& messageId)
+    [[nodiscard]]
+    static bool HasWarning(const wxString& messageId)
         {
         std::vector<WarningMessage>::iterator warningPos =
             std::lower_bound(m_warningManager.begin(), m_warningManager.end(),

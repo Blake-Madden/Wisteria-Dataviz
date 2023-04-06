@@ -114,7 +114,8 @@ namespace Wisteria::UI
                     long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
 
         /// @returns The options selected by the user.
-        [[nodiscard]] ImageExportOptions GetOptions() const noexcept
+        [[nodiscard]]
+        ImageExportOptions GetOptions() const noexcept
             { return m_options; }
         /** @brief Sets the help topic for the dialog.
             @param helpProjectDirectory The folder/base URL where the topics are stored.

@@ -445,32 +445,32 @@ namespace Wisteria::GraphItems
     //------------------------------------------------------
     void Polygon::DrawArrow(wxDC& dc, const wxPoint pt1, const wxPoint pt2,
                             const wxSize arrowHeadSize)
-	    {
+        {
         wxASSERT_MSG(arrowHeadSize.IsFullySpecified(), L"Arrowhead size not fully specified.");
         if (!arrowHeadSize.IsFullySpecified())
             { return; }
-	    const float dx = static_cast<float>(pt2.x - pt1.x);
-	    const float dy = static_cast<float>(pt2.y - pt1.y);
-	    const auto length = std::sqrt(dx*dx + dy*dy);
+        const float dx = static_cast<float>(pt2.x - pt1.x);
+        const float dy = static_cast<float>(pt2.y - pt1.y);
+        const auto length = std::sqrt(dx*dx + dy*dy);
 
-	    // ux,uy is a unit vector parallel to the line.
-	    const auto ux = safe_divide(dx, length);
-	    const auto uy = safe_divide(dy, length);
+        // ux,uy is a unit vector parallel to the line.
+        const auto ux = safe_divide(dx, length);
+        const auto uy = safe_divide(dy, length);
 
-	    // vx,vy is a unit vector perpendicular to ux,uy
-	    const auto vx = -uy;
-	    const auto vy = ux;
+        // vx,vy is a unit vector perpendicular to ux,uy
+        const auto vx = -uy;
+        const auto vy = ux;
 
-	    const auto halfWidth = math_constants::half * arrowHeadSize.GetWidth();
+        const auto halfWidth = math_constants::half * arrowHeadSize.GetWidth();
 
-	    const std::array<wxPoint, 3> arrowHead
-		    {
+        const std::array<wxPoint, 3> arrowHead
+            {
             { pt2,
               wxPoint(std::round(pt2.x - arrowHeadSize.GetHeight()*ux + halfWidth * vx),
                 std::round(pt2.y - arrowHeadSize.GetHeight()*uy + halfWidth * vy)),
               wxPoint(std::round(pt2.x - arrowHeadSize.GetHeight()*ux - halfWidth * vx),
                 std::round(pt2.y - arrowHeadSize.GetHeight()*uy - halfWidth * vy)) }
-		    };
+            };
 
         // The end of the line should be going underneath the head by just one pixel,
         // so that it doesn't poke out under the point of the arrowhead.
@@ -481,14 +481,14 @@ namespace Wisteria::GraphItems
                                     (pt1.y == pt2.y && pt1.x > pt2.x) ?
                                         ((arrowHeadSize.GetWidth())-1) : 0;
 
-	    dc.DrawLine(pt1, wxPoint(pt2.x+xAdjustment, pt2.y));
+        dc.DrawLine(pt1, wxPoint(pt2.x+xAdjustment, pt2.y));
         // fill the arrowhead with the same color as the line
         wxDCBrushChanger bc(dc, dc.GetPen().GetColour());
         // need to turn off the pen because a thicker pen will cause an odd-looking
         // effect when the two lines converge at the tip of the arrowhead
         wxDCPenChanger pc(dc, *wxTRANSPARENT_PEN);
-	    dc.DrawPolygon(arrowHead.size(), &arrowHead[0]);
-	    }
+        dc.DrawPolygon(arrowHead.size(), &arrowHead[0]);
+        }
 
     //-------------------------------------------
     void Polygon::Offset(const int xToMove, const int yToMove)

@@ -371,7 +371,7 @@ namespace Wisteria
             OnDraw(gcdc);
     #endif
             // unlock the image from the DC
-            memDc.SelectObject(wxNullBitmap); 
+            memDc.SelectObject(wxNullBitmap);
 
             // save image with contents of the DC to a file
             wxImage img(exportFile.ConvertToImage());
@@ -660,7 +660,7 @@ namespace Wisteria
                     }
                 }
             }
-        
+
         if constexpr(Settings::IsDebugFlagEnabled(DebugSettings::DrawExtraInformation))
             {
             m_debugInfo = wxString::Format(
@@ -1789,7 +1789,7 @@ namespace Wisteria
 
         m_rectDIPs.SetWidth(m_rectDIPs.GetWidth() / ZOOM_FACTOR);
         m_rectDIPs.SetHeight(m_rectDIPs.GetHeight() / ZOOM_FACTOR);
-        
+
         CalcAllSizes(gdc);
         Refresh();
         Update();

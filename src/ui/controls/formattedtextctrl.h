@@ -375,7 +375,7 @@ private:
        Here is the reasoning:
        1. LibreOffice and TextEdit (macOS) don't understand "highlight".
        2. Wordpad doesn't understand "chcbpat".
-       3. LibreOffice, Word, and Wordpad don't understand "cb".*/
+       3. LibreOffice, Word, and WordPad don't understand "cb".*/
     [[nodiscard]]
     static wxString FixHighlightingTags(const wxString& text);
     /// @returns The formatted text meant for white backgrounds.
@@ -414,10 +414,10 @@ private:
     FormattedTextCtrl* m_printWindow{ nullptr };
     wxSize m_paperSize;
     wxRect m_rectMargin{ 720, 720, 720, 720 };
-    
+
     wxPrintData* m_printData{ nullptr };
     wxPrintOrientation m_printOrientation{ wxLANDSCAPE };
-    
+
     // headers
     wxString m_leftPrinterHeader;
     wxString m_centerPrinterHeader;

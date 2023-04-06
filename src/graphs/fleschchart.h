@@ -89,7 +89,7 @@ namespace Wisteria::Graphs
         const Wisteria::Data::Column<double>* m_wordsPerSentenceColumn{ nullptr };
         const Wisteria::Data::Column<double>* m_scoresColumn{ nullptr };
         const Wisteria::Data::Column<double>* m_syllablesPerWordColumn{ nullptr };
-        
+
         Wisteria::Data::Jitter m_jitterWords{ Wisteria::AxisType::LeftYAxis };
         Wisteria::Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };
         Wisteria::Data::Jitter m_jitterSyllables{ Wisteria::AxisType::LeftYAxis };

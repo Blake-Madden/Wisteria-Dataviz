@@ -57,7 +57,7 @@ namespace Wisteria::Data
                         (sheetPos - m_xlsxTextExtractor.get_worksheet_names().cbegin()) + 1));
 
                 xlsx_extract_text::worksheet wkData;
-            
+
                 m_xlsxTextExtractor(sheetFile.wc_str(), sheetFile.length(), wkData);
                 return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
@@ -78,7 +78,7 @@ namespace Wisteria::Data
                         *worksheetIndex));
 
                 xlsx_extract_text::worksheet wkData;
-            
+
                 m_xlsxTextExtractor(sheetFile.wc_str(), sheetFile.length(), wkData);
                 return xlsx_extract_text::get_worksheet_text(wkData, delimiter);
                 }
@@ -93,6 +93,6 @@ namespace Wisteria::Data
             {
             throw std::runtime_error(
                 _(L"Unknown value specified for Excel worksheet.").ToUTF8());
-            } 
+            }
         }
     }

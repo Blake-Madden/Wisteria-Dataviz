@@ -45,7 +45,7 @@ namespace Wisteria::Graphs
 
         if (GetDataset() == nullptr)
             { return; }
-        
+
         SetGroupColumn(groupColumnName);
         m_continuousColumn = GetDataset()->GetContinuousColumn(continuousColumnName);
         if (m_continuousColumn == GetDataset()->GetContinuousColumns().cend())

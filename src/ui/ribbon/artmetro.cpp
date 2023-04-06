@@ -337,7 +337,7 @@ void RibbonMetroArtProvider::DrawTab(
             background.y += 1;
             background.width -= 3;
             background.height -= 1;
-            
+
             dc.SetPen(*wxTRANSPARENT_PEN);
             dc.SetBrush(m_tab_active_background_colour);
             dc.DrawRectangle(background);
@@ -386,7 +386,7 @@ void RibbonMetroArtProvider::DrawTab(
                     }
                 }
             }
-        
+
         const wxBitmap icon(imgIcon);
 
         int x = tab.rect.x + 4;
@@ -568,9 +568,9 @@ void RibbonMetroArtProvider::DrawPanelBackground(
                 dc.DrawBitmap(m_panel_extension_bitmap[0], label_rect.GetRight() + 3, label_rect.GetBottom() - 10, true);
         }
     }
-    
+
     if (wnd->GetParent()->IsKindOf(CLASSINFO(wxFrame))) // expanded panels are in their own wxFrame otherwise normal panel
-    {    
+    {
         wxRect shadow(rect);
         shadow.x +=4;
         shadow.y +=4;
@@ -602,12 +602,12 @@ void RibbonMetroArtProvider::DrawMinimisedPanel(
     DrawPartialPageBackground(dc, wnd, rect, false);
 
     const wxRect true_rect(rect);
-    
+
     wxRect client_rect(true_rect);
     client_rect.width -= 2;
     client_rect.y++;
     client_rect.height -= 2;
-    
+
     if(wnd->GetExpandedPanel() != nullptr)
     {
         dc.SetPen(m_button_bar_active_border_pen);
@@ -623,7 +623,7 @@ void RibbonMetroArtProvider::DrawMinimisedPanel(
     else {
         dc.SetPen(m_button_bar_hover_border_pen);
         dc.SetBrush (m_button_bar_hover_background_colour);
-        dc.DrawRectangle(client_rect);        
+        dc.DrawRectangle(client_rect);
     }
 
     wxRect preview;
@@ -796,12 +796,12 @@ void RibbonMetroArtProvider::DrawButtonBarButton(
         bg_rect.y++;
         bg_rect.width -= 2;
         bg_rect.height -= 2;
-        
+
         wxRect bg_rect_top(bg_rect);
         bg_rect_top.height /= 3;
         bg_rect.y += bg_rect_top.height;
         bg_rect.height -= bg_rect_top.height;
-        
+
         if(kind == wxRIBBON_BUTTON_HYBRID)
         {
             switch(state & wxRIBBON_BUTTONBAR_BUTTON_SIZE_MASK)
@@ -872,7 +872,7 @@ void RibbonMetroArtProvider::DrawButtonBarButton(
             dc.SetPen(m_button_bar_active_border_pen);
         else
             dc.SetPen(m_button_bar_hover_border_pen);
-            
+
         dc.SetBrush(*wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(rect);
     }
@@ -895,7 +895,7 @@ void RibbonMetroArtProvider::DrawButtonBarButtonForeground(
     const wxColour paintingColour = (state & wxRIBBON_BUTTONBAR_BUTTON_HOVER_MASK) ?
         m_tab_highlight_colour : m_button_bar_label_colour;
     wxDCTextColourChanger cc(dc, paintingColour);
-    
+
     switch (state & wxRIBBON_BUTTONBAR_BUTTON_SIZE_MASK)
     {
     case wxRIBBON_BUTTONBAR_BUTTON_LARGE:
@@ -1016,7 +1016,7 @@ void RibbonMetroArtProvider::DrawTool(
     bg_rect.Deflate(1);
     if((state & wxRIBBON_TOOLBAR_TOOL_LAST) == 0)
         bg_rect.width++;
-    
+
     const bool is_split_hybrid = (kind == wxRIBBON_BUTTON_HYBRID && (state &
         (wxRIBBON_TOOLBAR_TOOL_HOVER_MASK | wxRIBBON_TOOLBAR_TOOL_ACTIVE_MASK)));
 

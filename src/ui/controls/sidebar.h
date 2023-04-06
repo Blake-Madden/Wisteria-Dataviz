@@ -75,7 +75,7 @@ namespace Wisteria::UI
         SideBar& operator=(const SideBar&) = delete;
         /// @private
         SideBar& operator=(SideBar&&) = delete;
-    
+
         /// @brief A child item (i.e., child of a "folder") in the sidebar.
         struct SideBarSubItem
             {
@@ -166,7 +166,7 @@ namespace Wisteria::UI
                 Set to @c std::optional to not display an icon.
             @returns @c true if the item was inserted, @c false if not added
                 (e.g., will fail if parent item is not found).*/
-        bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label, 
+        bool InsertSubItemById(const wxWindowID parentItemId, const wxString& label,
                                const wxWindowID Id, std::optional<size_t> iconIndex);
 
         /** @brief Accesses a (root-level) item.
@@ -219,7 +219,7 @@ namespace Wisteria::UI
             @note Subitems are not included in this count.*/
         [[nodiscard]] size_t GetFolderCount() const noexcept
             { return m_folders.size(); }
-        
+
         /** @returns The label of a given root item.
             @param item The index of the item in the list of root items.*/
         [[nodiscard]] wxString GetFolderText(const size_t item) const
@@ -480,7 +480,7 @@ namespace Wisteria::UI
                 iconId.value() < GetImageList().size() &&
                 GetImageList()[iconId.value()].IsOk());
             }
- 
+
         // events
         void OnPaint([[maybe_unused]] wxPaintEvent& event);
         void OnMouseChange(wxMouseEvent& event);

@@ -43,7 +43,7 @@ public:
     /// @private
     ~ListCtrlSortDlg()
         { wxDELETE(m_data); }
-    
+
     /// @brief Sets the column sorting information.
     /// @param sortColumns The columns to sort by.
     void FillSortCriteria(const std::vector<std::pair<size_t, Wisteria::SortDirection>>& sortColumns);

@@ -36,7 +36,7 @@ public:
 
     // these are pure virtual in wxGridTableBase
     /// @private
-    [[nodiscard]] 
+    [[nodiscard]]
     int GetNumberRows() final
         {
         wxASSERT_LEVEL_2(m_wrk && m_excelFile);
@@ -133,7 +133,8 @@ public:
         }
     /// @returns Whether importing only the selected cells was specified.
     ///     If @c false, then the entire sheet should be imported.
-    [[nodiscard]] bool IsImportingOnlySelectedCells() const noexcept
+    [[nodiscard]]
+    bool IsImportingOnlySelectedCells() const noexcept
         { return (m_importMethod==1); }
 private:
     void OnOK([[maybe_unused]] wxCommandEvent& event);
@@ -149,7 +150,7 @@ private:
     std::set<int> m_selectedRows;
     std::set<int> m_selectedColumns;
     std::vector<std::pair<wxGridCellCoords,wxGridCellCoords>> m_selectedBlocks;
- 
+
     ExcelPreviewDlg() = default;
     DECLARE_EVENT_TABLE()
     };

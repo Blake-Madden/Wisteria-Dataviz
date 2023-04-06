@@ -67,7 +67,7 @@ namespace Wisteria::Data
             throw std::runtime_error(
                 _(L"Replacement map empty for category mutation.").ToUTF8());
             }
-       
+
         // get target iterator first as this may need to add a new column and invalid
         // other column iterators
         auto targetVar = GetCategoricalColumn(targetColumnName);
@@ -174,7 +174,7 @@ namespace Wisteria::Data
                                                const wxString& otherLabel /*= _("Other")*/)
         {
         bool recodingNeeded{ false };
-        
+
         for (auto& strEntry : GetStringTable())
             {
             if (const auto foundPos = std::find_if(labelsToKeep.cbegin(), labelsToKeep.cend(),
@@ -919,7 +919,7 @@ namespace Wisteria::Data
                                          wxSysErrorMsg(fl.GetLastError())).ToUTF8());
                 }
             }
-        
+
         return ReadColumnInfoRaw(fileText, delim, rowPreviewCount, skipRows);
         }
 
@@ -1061,7 +1061,7 @@ namespace Wisteria::Data
                 {
                 // convert double quotes in val to two double quotes,
                 // then wrap text with double quotes
-                
+
                 escapedText.Replace(L"\"", L"\"\"", true);
                 return wxString(L"\"" + escapedText + L"\"");
                 }
@@ -1090,7 +1090,7 @@ namespace Wisteria::Data
             (continuousColumnNames.length() ? continuousColumnNames + delimiter : wxString{});
         if (colNames.length() && colNames[colNames.length()-1] == delimiter)
             { colNames.RemoveLast(); }
-        
+
         wxString fileContent = colNames + L'\n';
 
         // write the data

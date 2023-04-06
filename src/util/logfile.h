@@ -68,10 +68,11 @@ public:
     LogFile& operator=(const LogFile&) = delete;
     /// @private
     LogFile& operator=(LogFile&&) = delete;
-    
+
     /// @brief Reads (and returns) the content of the log file.
     /// @returns The content of the log report.
-    [[nodiscard]] wxString ReadLog();
+    [[nodiscard]]
+    wxString ReadLog();
 
     /** @brief Gets the path of the log file.
         @details This can be useful for archiving a log file
@@ -85,7 +86,8 @@ public:
         @endcode
         @returns The path of the log file.
      */
-    [[nodiscard]] const wxString& GetLogFilePath() const noexcept
+    [[nodiscard]]
+    const wxString& GetLogFilePath() const noexcept
         { return m_logFilePath; }
 
     /// @private

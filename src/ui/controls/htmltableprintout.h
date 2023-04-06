@@ -308,7 +308,7 @@ namespace Wisteria::UI
 
         void SetRightPrinterFooter(const wxString& header)
             { m_rightPrinterFooter = header; }
-        [[nodiscard]] 
+        [[nodiscard]]
         const wxString& GetRightPrinterFooter() const noexcept
             { return m_rightPrinterFooter; }
 

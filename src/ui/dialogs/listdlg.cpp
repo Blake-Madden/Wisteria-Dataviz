@@ -31,7 +31,7 @@ void ListDlg::OnFind(wxFindDialogEvent& event)
         {
         m_list->ProcessWindowEvent(event);
         m_list->SetFocus();
-        }   
+        }
     }
 
 //------------------------------------------------------

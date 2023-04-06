@@ -375,7 +375,7 @@ namespace Wisteria::Graphs
                     indexAndRowCounts.push_back(std::make_pair(rowIndex, row[0].m_rowCount));
                     }
                 }
-            
+
             // has groups, so add grand total and group subtotals
             if (indexAndRowCounts.size() &&
                 // parent group, sub group, then value columns
@@ -582,7 +582,7 @@ namespace Wisteria::Graphs
         if (cellNote.m_cells.size() == 0)
             { return; }
 
-        // turn off customized full-width specifiction if adding annotations
+        // turn off customized full-width specification if adding annotations
         if (GetMinWidthProportion().has_value() &&
             compare_doubles(GetMinWidthProportion().value(), math_constants::full))
             { SetMinWidthProportion(std::nullopt); }
@@ -603,7 +603,7 @@ namespace Wisteria::Graphs
         {
         if (cellNote.m_cells.size() == 0)
             { return; }
-        // turn off customized full-width specifiction if adding annotations
+        // turn off customized full-width specification if adding annotations
         if (GetMinWidthProportion().has_value() &&
             compare_doubles(GetMinWidthProportion().value(), math_constants::full))
             { SetMinWidthProportion(std::nullopt); }
@@ -950,7 +950,7 @@ namespace Wisteria::Graphs
             tableHeight = std::accumulate(rowHeights.cbegin(), rowHeights.cend(), 0);
             tableWidth = std::accumulate(columnWidths.cbegin(), columnWidths.cend(), 0);
             }
-        
+
         // adjust if column widths collectively go outside of the drawing area
         if (tableWidth + (widestLeftNote + widestRightNote + extraSpaceForCentering) >
             drawArea.GetWidth())
@@ -1037,7 +1037,7 @@ namespace Wisteria::Graphs
         // calculate the necessary heights of the rows and widths of the columns
         std::vector<wxCoord> columnWidths;
         std::vector<wxCoord> rowHeights;
-        
+
         const auto tableSize = CalculateTableSize(columnWidths, rowHeights, drawArea, dc);
         const auto tableWidth = tableSize.GetWidth();
         const auto tableHeight = tableSize.GetHeight();
@@ -1099,7 +1099,7 @@ namespace Wisteria::Graphs
                     }
                 columnsToOverwrite = cell.m_columnCount - 1;
                 // build a list of cells in the proceeding rows that should be skipped
-                // in the next loop if this one is mutli-row
+                // in the next loop if this one is multi-row
                 if (cell.m_rowCount > 1)
                     {
                     auto rowsToSkip = cell.m_rowCount - 1;
@@ -1177,12 +1177,12 @@ namespace Wisteria::Graphs
 
                 // cache it for annotations and highlights
                 m_cachedCellRects[currentRow][currentColumn] = boxRect;
-                
+
                 AdjustTextLabelToCell(cell, *cellLabel);
                 cellLabel->SetLineSpacing(0);
 
                 cellLabel->SetBoundingBox(boxRect, dc, GetScaling());
-                smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);         
+                smallestTextScaling = std::min(cellLabel->GetScaling(), smallestTextScaling);
 
                 cellLabels.push_back(cellLabel); // need to homogenize scaling of text later
 
@@ -1250,7 +1250,7 @@ namespace Wisteria::Graphs
                 {
                 const auto& cell = GetCell(currentRow, currentColumn);
                 // build a list of cells in the following rows that should be skipped
-                // in the next loop if this one is mutli-row
+                // in the next loop if this one is multi-row
                 if (cell.m_rowCount > 1)
                     {
                     auto rowsToSkip = cell.m_rowCount - 1;
@@ -1325,7 +1325,7 @@ namespace Wisteria::Graphs
                                              wxPoint(currentXPos + colWidth, currentYPos));
                         }
                     }
-                // skip over cells being eclipsed by the previous one since it's mutli-column
+                // skip over cells being eclipsed by the previous one since it's multi-column
                 if (columnsToOverwrite > 0)
                     {
                     --columnsToOverwrite;

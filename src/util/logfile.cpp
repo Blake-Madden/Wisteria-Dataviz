@@ -73,7 +73,7 @@ void LogFile::DoLogTextAtLevel(wxLogLevel level, const wxString &msg)
             // so translating them causes more problems than it solves
             prefix = L"\U0001F41E Debug: ";
             break;
-        case wxLOG_FatalError: 
+        case wxLOG_FatalError:
             [[fallthrough]];
         case wxLOG_Error:
             prefix = L"\U00002757 Error: ";
@@ -99,7 +99,7 @@ void LogFile::DoLogRecord(wxLogLevel level, const wxString &msg,
         case wxLOG_Trace:
             prefix = L"\U0001F41E Debug: ";
             break;
-        case wxLOG_FatalError: 
+        case wxLOG_FatalError:
             [[fallthrough]];
         case wxLOG_Error:
             prefix = L"\U00002757 Error: ";

@@ -192,7 +192,7 @@ public:
     /// @param row The row to return.
     virtual const wxItemAttr* GetRowAttributes(const size_t row) const = 0;
     /// @brief Sets the row's attributes (visual look).
-    /// @param row The row to eidt.
+    /// @param row The row to edit.
     /// @param attribs The attributes to apply.
     virtual void SetRowAttributes(const size_t row, const wxItemAttr& attribs) = 0;
     /** @brief Sets the number of rows and columns.
@@ -241,7 +241,7 @@ public:
     virtual long Find(const wchar_t* textToFind, const size_t startIndex = 0) const = 0;
     /// @brief Sorts a column.
     /// @param column The column to sort.
-    /// @param direction The direftion to sort.
+    /// @param direction The direction to sort.
     /// @param low The starting row to begin the sort.
     /// @param high The ending row for the sort.
     virtual void Sort(const size_t column, const Wisteria::SortDirection direction,
@@ -446,7 +446,7 @@ public:
     /** @brief Constructor.
         @param textValues The text values (and IDs) to use.
         @param columnsToCompare When sorting, the columns in the row to sort by.*/
-    DoubleWithTextValuesGreaterThan(const ListCtrlLabelManager::IDLabelMap& textValues, 
+    DoubleWithTextValuesGreaterThan(const ListCtrlLabelManager::IDLabelMap& textValues,
              const std::vector<std::pair<size_t,Wisteria::SortDirection>>& columnsToCompare) :
         DoubleWithTextCompare(textValues, columnsToCompare)
         {}
@@ -676,7 +676,7 @@ public:
     const wxItemAttr* GetRowAttributes(const size_t row) const final
         { return m_virtualData.operator[](row).operator[](0).GetItemAttributes(); }
     /// @brief Sets the row's attributes (visual look).
-    /// @param row The row to eidt.
+    /// @param row The row to edit.
     /// @param attribs The attributes to apply.
     void SetRowAttributes(const size_t row, const wxItemAttr& attribs) final
         { m_virtualData.operator[](row).operator[](0).SetItemAttributes(attribs); }
@@ -777,7 +777,7 @@ public:
         }
     /// @brief Sorts a column.
     /// @param column The column to sort.
-    /// @param direction The direftion to sort.
+    /// @param direction The direction to sort.
     /// @param low The starting row to begin the sort.
     /// @param high The ending row for the sort.
     void Sort(const size_t column, const Wisteria::SortDirection direction,
@@ -861,7 +861,7 @@ public:
         }
     /// @brief Sorts a column.
     /// @param column The column to sort.
-    /// @param direction The direftion to sort.
+    /// @param direction The direction to sort.
     /// @param low The starting row to begin the sort.
     /// @param high The ending row for the sort.
     void Sort(const size_t column, const Wisteria::SortDirection direction,
@@ -1031,7 +1031,7 @@ public:
     const wxItemAttr* GetRowAttributes(const size_t row) const final
         { return m_virtualData.operator[](row).operator[](0).GetItemAttributes(); }
     /// @brief Sets the row's attributes (visual look).
-    /// @param row The row to eidt.
+    /// @param row The row to edit.
     /// @param attribs The attributes to apply.
     void SetRowAttributes(const size_t row, const wxItemAttr& attribs) final
         { m_virtualData.operator[](row).operator[](0).SetItemAttributes(attribs); }

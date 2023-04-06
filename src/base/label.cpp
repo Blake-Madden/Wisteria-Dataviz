@@ -192,7 +192,7 @@ namespace Wisteria::GraphItems
                                 // don't go too small, though
                                 math_constants::tenth));
             }
-        
+
         // used for page alignment
         SetMinimumUserSizeDIPs(dc.ToDIP(rect.GetWidth()), dc.ToDIP(rect.GetHeight()));
 
@@ -496,7 +496,7 @@ namespace Wisteria::GraphItems
                              scaledIconPen.GetWidth())) );
                     }
                 DCPenChangerIfDifferent pc3(dc, scaledIconPen);
-                DCBrushChangerIfDifferent bc2(dc, iconPos->m_brush.IsOk() ? 
+                DCBrushChangerIfDifferent bc2(dc, iconPos->m_brush.IsOk() ?
                     iconPos->m_brush : GetBrush());
                 const size_t currentIndex = (iconPos-GetLegendIcons().begin());
                 wxCoord middleOfCurrentRow =

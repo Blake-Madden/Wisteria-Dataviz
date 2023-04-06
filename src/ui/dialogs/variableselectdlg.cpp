@@ -11,7 +11,7 @@
 using namespace Wisteria;
 using namespace Wisteria::UI;
 
-VariableSelectDlg::VariableSelectDlg(wxWindow* parent, 
+VariableSelectDlg::VariableSelectDlg(wxWindow* parent,
                                      const Data::Dataset::ColumnPreviewInfo& columnInfo,
                        const std::vector<VariableListInfo>& varInfo,
                        wxWindowID id /*= wxID_ANY*/,

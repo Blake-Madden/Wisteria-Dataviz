@@ -23,7 +23,7 @@ namespace Wisteria::Graphs
             { return; }
 
         GetSelectedIds().clear();
-    
+
         auto dateColumn = data->GetDateColumn(dateColumnName);
         if (dateColumn == data->GetDateColumns().cend())
             {
@@ -205,7 +205,7 @@ namespace Wisteria::Graphs
                     GraphItemInfo(ohlcInfo).
                     Brush((ohlc.m_open <= ohlc.m_close ? m_gainBrush : m_lossBrush)),
                     &points[0], std::size(points));
-                
+
                 // if candle is really thin, then remove the outline so that
                 // we can at least see the color
                 if ((points[1].x - points[0].x) <= ScaleToScreenAndCanvas(1))

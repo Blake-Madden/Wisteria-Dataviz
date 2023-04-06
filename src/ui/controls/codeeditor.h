@@ -111,7 +111,7 @@ namespace Wisteria::UI
         /// Call this after adding all the functions/classes/libraries.
         /// @sa AddFunctionsOrClasses(), AddClass(), AddLibrary().
         void Finalize();
-    
+
         /** @brief Sets whether to include the line-number margins.
             @param include Set to @c true to include the line-number margins,
                 @c false to hide them.*/
@@ -199,12 +199,13 @@ namespace Wisteria::UI
     private:
         struct wxStringCmpNoCase
             {
-            [[nodiscard]] bool operator()(const wxString& s1, const wxString& s2) const
+            [[nodiscard]]
+            bool operator()(const wxString& s1, const wxString& s2) const
                 { return s1.CmpNoCase(s2) < 0; }
             };
         struct wxStringPartialCmpNoCase
             {
-            [[nodiscard]] 
+            [[nodiscard]]
             bool operator()(const wxString& s1, const wxString& s2) const
                 { return s1.CmpNoCase(s2.Mid(0,s1.length())) < 0; }
             };
