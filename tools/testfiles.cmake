@@ -15,8 +15,6 @@ SET(TEST_SRC_FILES
     htmlimporttests.cpp
     idlparsetests.cpp
     intsplittests.cpp
-    labeltests.cpp
-    listctrlextests.cpp
     mapstests.cpp
     odtparsetests.cpp
     postscriptimporttests.cpp
@@ -25,12 +23,9 @@ SET(TEST_SRC_FILES
     rtfencodetests.cpp
     rtfparsetests.cpp
     safemathtests.cpp
-    sidebartests.cpp
     statstests.cpp
     subsettests.cpp
     tagfiltertests.cpp
-    testableframe.cpp
-    testingmain.cpp
     textextracttests.cpp
     textimporttests.cpp
     textstreamtests.cpp

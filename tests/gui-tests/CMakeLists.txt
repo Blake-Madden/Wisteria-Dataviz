@@ -1,9 +1,9 @@
 #############################################################################
-# Name:       CMakeLists.txt
-# Purpose:    Unit test runner for Wisteria DV
+# Name:        CMakeLists.txt
+# Purpose:     Unit test runner for Wisteria DV
 # Author:      Blake Madden
 # Created:     2022-10-31
-# Copyright: (c) 2022 Blake Madden
+# Copyright:   (c) 2022 Blake Madden
 # License:     3-Clause BSD license
 #############################################################################
 
@@ -121,10 +121,10 @@ ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${TEST_SRC_FILES})
 
 # Link required libraries to the executable
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2WithMain Wisteria ${wxWidgets_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${TEST_APP} PRIVATE Catch2::Catch2 Wisteria ${wxWidgets_LIBRARIES})
 ELSEIF(UNIX)
     FIND_LIBRARY(TBB_LIB tbb)
-    TARGET_LINK_LIBRARIES(${TEST_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2WithMain)
+    TARGET_LINK_LIBRARIES(${TEST_APP} Wisteria ${wxWidgets_LIBRARIES} ${TBB_LIB} Catch2::Catch2)
 ENDIF()
 
 # Copy datasets into build folder
