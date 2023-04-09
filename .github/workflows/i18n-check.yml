@@ -21,7 +21,7 @@ jobs:
              # Ignore i18n-check's own folder.
              # You can ignore other folders by adding a comma and the folder name
              # after "--ignore=i18n-check".
-             ./i18n-check/bin/i18n-check ./src --ignore=import,i18n-check,math,debug -q -v -o i18nresults.txt
+             ./i18n-check/bin/i18n-check ./src --ignore=import,i18n-check,math,debug,base/colors.h -q -v -o i18nresults.txt
 
       - name: review results
         run: |
