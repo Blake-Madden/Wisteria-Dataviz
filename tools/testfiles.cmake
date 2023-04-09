@@ -3,7 +3,7 @@
 # DO NOT MODIFY MANUALLY!
 
 SET(TEST_SRC_FILES
-    basetests.cpp
+    colortests.cpp
     comparedoublestests.cpp
     cppparsetests.cpp
     datatests.cpp
