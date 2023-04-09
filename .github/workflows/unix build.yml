@@ -37,7 +37,7 @@ jobs:
       - name: run tests
         run: |
              git clone https://github.com/catchorg/Catch2.git
-             cd Wisteria-Dataviz/tests
+             cd tests
              cmake ./
              make -j4
              cd bin
