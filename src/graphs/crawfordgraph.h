@@ -40,7 +40,8 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citations:
-            Crawford, Alan. “A Spanish Language Fry-Type Readability Procedure: Elementary Level.” *Bilingual Education Paper Series*, vol. 7, no. 8, 1984, pp. 1-17.*/
+            Crawford, Alan. “A Spanish Language Fry-Type Readability Procedure: Elementary Level.”
+            *Bilingual Education Paper Series*, vol. 7, no. 8, 1984, pp. 1-17.*/
     class CrawfordGraph final : public GroupGraph2D
         {
     public:

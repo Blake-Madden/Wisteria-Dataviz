@@ -164,7 +164,8 @@ void HtmlTableWindow::OnPreview([[maybe_unused]] wxCommandEvent& event)
             tableEnd = lily_of_the_valley::html_extract_text::find_close_tag(tableEnd);
             if (tableEnd == nullptr)
                 { break; }
-            ++tableEnd;//skip '>'
+            // skip '>'
+            ++tableEnd;
             printOut->AddTable(wxString(tableStart, tableEnd-tableStart));
             printOutForPrinting->AddTable(wxString(tableStart, tableEnd-tableStart));
             }

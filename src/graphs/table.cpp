@@ -470,8 +470,12 @@ namespace Wisteria::Graphs
                         }
                     // if custom start and/or end column requested and it is not a valid number,
                     // then insert NaN
-                    const bool onCustomStartRow{ aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == currentRow };
-                    const bool onCustomEndRow{ aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == currentRow };
+                    const bool onCustomStartRow{
+                        aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == currentRow
+                    };
+                    const bool onCustomEndRow{
+                        aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == currentRow
+                    };
                     if ((onCustomStartRow || onCustomEndRow) &&
                         (!cell.IsNumeric() || std::isnan(cell.GetDoubleValue())))
                         { colValues.push_back(cell.GetDoubleValue()); }

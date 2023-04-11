@@ -185,7 +185,8 @@ void PrinterHeaderFooterDlg::CreateControls()
         choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_rightPrinterFooter));
     footerRightSizer->Add(rightFooterPrinterCombo, 1, wxEXPAND);
 
-    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
+    mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0,
+                   wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
     SetSizerAndFit(mainSizer);
     }

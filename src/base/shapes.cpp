@@ -1653,83 +1653,83 @@ namespace Wisteria::GraphItems
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
                                        GetYPosFromTop(bodyRect, 0));
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
-                                       GetYPosFromTop(bodyRect, 0),
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
+                GetYPosFromTop(bodyRect, 0),
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - shoulderWidth)),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // left arm (left side)
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, 0),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect, armWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect, (armWidth * math_constants::quarter)),
+                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                GetXPosFromLeft(bodyRect, armWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // inside of left arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // left armpit to waist
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
             // left waist to bottom of dress
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                GetYPosFromTop(bodyRect, dressBottom));
             // dress bottom to leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                GetYPosFromTop(bodyRect, dressBottom));
             // left leg to ankle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle to middle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
 
             // right side
             //-----------
             // ankle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle up right leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                GetYPosFromTop(bodyRect, dressBottom));
             // dress bottom
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + dressWidth),
-                                       GetYPosFromTop(bodyRect, dressBottom));
+                GetYPosFromTop(bodyRect, dressBottom));
             // bottom of dress to right waist
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
             // waist to right armpit
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // inside of right arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::full - armWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect, math_constants::full - (armWidth * math_constants::quarter)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect, math_constants::full),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
+                GetXPosFromLeft(bodyRect, math_constants::full - (armWidth * math_constants::quarter)),
+                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength + yControlPointOffset),
+                GetXPosFromLeft(bodyRect, math_constants::full),
+                GetYPosFromTop(bodyRect, shoulderHeight + armShortLength));
             // right arm (right side)
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarWidth + shoulderWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    math_constants::half + collarWidth + shoulderWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // shoulder and right collar
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
-                                       GetYPosFromTop(bodyRect, 0),
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarShortWidth),
-                                       GetYPosFromTop(bodyRect, 0));
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
+                GetYPosFromTop(bodyRect, 0),
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half + collarShortWidth),
+                GetYPosFromTop(bodyRect, 0));
             // collar
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
-                                       GetYPosFromTop(bodyRect, 0));
+                GetYPosFromTop(bodyRect, 0));
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);
@@ -1797,101 +1797,101 @@ namespace Wisteria::GraphItems
             constexpr auto xControlPointLeftShoulderOffset{ shoulderWidth };
             // left collar and shoulder
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - collarShortWidth),
-                                       GetYPosFromTop(bodyRect, 0));
+                GetYPosFromTop(bodyRect, 0));
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
-                                       GetYPosFromTop(bodyRect, 0),
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - xControlPointLeftShoulderOffset)),
+                GetYPosFromTop(bodyRect, 0),
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - shoulderWidth)),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // left arm (left side)
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, (math_constants::half - collarWidth - shoulderWidth)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // left hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth) +
-                                            (armWidth)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - shoulderWidth) +
+                    (armWidth)),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // inside of left arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    (math_constants::half - collarWidth - shoulderWidth) + armWidth + armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // left armpit to waist
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
             // left waist to bottom of dress
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half - hipWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                                      (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
-                                       GetXPosFromLeft(bodyRect, math_constants::half - skirtWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half - hipWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
+                                (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                GetXPosFromLeft(bodyRect, math_constants::half - skirtWidth),
+                GetYPosFromTop(bodyRect, skirtBottom));
             // dress bottom to leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - legWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+                GetYPosFromTop(bodyRect, skirtBottom));
             // left leg to ankle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half - ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle to middle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
 
             // right side
             //-----------
             // ankle
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + ankleWidth),
-                                       GetYPosFromTop(bodyRect, 0.9));
+                GetYPosFromTop(bodyRect, 0.9));
             // ankle up right leg
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + legWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+                GetYPosFromTop(bodyRect, skirtBottom));
             // dress bottom
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half + skirtWidth),
-                                       GetYPosFromTop(bodyRect, skirtBottom));
+                GetYPosFromTop(bodyRect, skirtBottom));
             // bottom of dress to right waist
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half + hipWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
-                                                      (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
-                                       GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half + hipWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight +
+                                (skirtBottom - (shoulderHeight + thoraxHeight)) * math_constants::quarter),
+                GetXPosFromLeft(bodyRect, math_constants::half + waistWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + thoraxHeight));
             // waist to right armpit
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // inside of right arm
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                        (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                    (math_constants::half + collarWidth + shoulderWidth) - armWidth - armpitWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right hand
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half + collarWidth + shoulderWidth) - armWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
-                                       GetXPosFromLeft(bodyRect,
-                                           (math_constants::half + collarWidth + shoulderWidth)),
-                                       GetYPosFromTop(bodyRect, shoulderHeight + armLength));
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half + collarWidth + shoulderWidth) - armWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength + yControlPointOffset),
+                GetXPosFromLeft(bodyRect,
+                    (math_constants::half + collarWidth + shoulderWidth)),
+                GetYPosFromTop(bodyRect, shoulderHeight + armLength));
             // right arm (right side)
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarWidth + shoulderWidth),
-                                       GetYPosFromTop(bodyRect, shoulderHeight));
+                    math_constants::half + collarWidth + shoulderWidth),
+                GetYPosFromTop(bodyRect, shoulderHeight));
             // shoulder and right collar
             outlinePath.AddQuadCurveToPoint(
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
-                                       GetYPosFromTop(bodyRect, 0),
-                                       GetXPosFromLeft(bodyRect,
-                                           math_constants::half + collarShortWidth),
-                                       GetYPosFromTop(bodyRect, 0));
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half + collarShortWidth + xControlPointRightShoulderOffset),
+                GetYPosFromTop(bodyRect, 0),
+                GetXPosFromLeft(bodyRect,
+                    math_constants::half + collarShortWidth),
+                GetYPosFromTop(bodyRect, 0));
             // collar
             outlinePath.AddLineToPoint(GetXPosFromLeft(bodyRect, math_constants::half),
-                                       GetYPosFromTop(bodyRect, 0));
+                GetYPosFromTop(bodyRect, 0));
 
             gc->FillPath(outlinePath);
             gc->StrokePath(outlinePath);

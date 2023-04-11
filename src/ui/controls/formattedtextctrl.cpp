@@ -396,7 +396,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
         headerText += L"<td width=\"33%\" align=\"right\">" +
             GetRightPrinterHeader() + L"</td></tr></table>";
         }
-    //format the footer
+    // format the footer
     wxString footerText;
     if (GetLeftPrinterFooter().length() ||
         GetCenterPrinterFooter().length() ||
@@ -950,7 +950,7 @@ bool FormattedTextCtrl::SaveAsRtf(const wxFileName& path) const
 //------------------------------------------------------
 void FormattedTextCtrl::OnFind(wxFindDialogEvent &myEvent)
     {
-    //if they were just hitting Cancel then close
+    // if they were just hitting Cancel then close
     if (myEvent.GetEventType() == wxEVT_COMMAND_FIND_CLOSE)
         { return; }
     if (wxNOT_FOUND == FindText(myEvent.GetFindString(),
@@ -1087,7 +1087,7 @@ long FormattedTextCtrl::FindText(const wchar_t* textToFind, const bool searchDow
     gboolean found = false;
     if (searchDown)
         {
-        //search forward, beginning at the end of the selected text
+        // search forward, beginning at the end of the selected text
         const GtkTextIter selStart = selectionStart;
         const GtkTextIter selEnd = selectionEnd;
         found = gtk_text_iter_forward_search_ex(&selEnd,
@@ -1389,7 +1389,7 @@ void FormattedTextCtrl::GetFormattedTextGtk(wxString& text, const GtkFormat form
         for (tagp = tags; tagp != nullptr; tagp = tagp->next)
             {
             GtkTextTag* tag = GTK_TEXT_TAG(tagp->data);
-            //any tags at the current iterator that might start a new formatting block
+            // any tags at the current iterator that might start a new formatting block
             // (there might be more than one, though unlikely)
             if (gtk_text_iter_begins_tag(&start, tag))
                 {
@@ -1509,7 +1509,7 @@ DWORD wxCALLBACK FormattedTextCtrl::EditStreamOutCallback(
     // Address of our string var is in psEntry
     std::string* psEntry = reinterpret_cast<std::string*>(dwCookie);
 
-    //write the text
+    // write the text
     (*psEntry).append(reinterpret_cast<const char*>(pbBuff), cb);
 
     return 0;

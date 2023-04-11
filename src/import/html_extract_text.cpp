@@ -132,7 +132,8 @@ namespace lily_of_the_valley
                 // otherwise, eat up crlfs and replace with spaces
                 else
                     { index = string_util::strncspn<wchar_t>(text+currentStartPosition, textSize, L"\r\n&$", 4); }
-                index += currentStartPosition; // move the index to the position in the full valid string
+                // move the index to the position in the full valid string
+                index += currentStartPosition;
                 if (index < textSize)
                     {
                     if (text[index] == L'&')

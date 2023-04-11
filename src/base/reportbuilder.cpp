@@ -168,7 +168,8 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadGanttChart(item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"candlestick-plot") == 0)
+                                            else if (typeProperty->GetValueString().
+                                                        CmpNoCase(L"candlestick-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadCandlestickPlot(item, canvas, currentRow, currentColumn));
@@ -183,7 +184,8 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadLikertChart(item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"linear-regression-roadmap") == 0)
+                                            else if (typeProperty->GetValueString().
+                                                        CmpNoCase(L"linear-regression-roadmap") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadLRRoadmap(item, canvas, currentRow, currentColumn));
@@ -213,7 +215,8 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadHistogram(item, canvas, currentRow, currentColumn));
                                                 }
-                                            else if (typeProperty->GetValueString().CmpNoCase(L"categorical-bar-chart") == 0)
+                                            else if (typeProperty->GetValueString().
+                                                        CmpNoCase(L"categorical-bar-chart") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
                                                     LoadCategoricalBarChart(item, canvas, currentRow, currentColumn));
@@ -1320,7 +1323,7 @@ namespace Wisteria
         const std::shared_ptr<const Data::Dataset>& dataset) const
         {
         const wxRegEx re(FunctionStartRegEx() +
-            L"(min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname)" +
+            LR"((min|max|n|total|grandtotal|groupcount|grouppercentdecimal|grouppercent|continuouscolumn|now|pagenumber|reportname))" +
             OpeningParenthesisRegEx());
         if (re.Matches(formula))
             {
@@ -2872,7 +2875,8 @@ namespace Wisteria
         const auto sortNode = graphNode->GetProperty(L"bar-sort");
         if (sortNode->IsOk())
             {
-            const auto sortDirection = sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase(_DT(L"ascending")) == 0 ?
+            const auto sortDirection =
+                sortNode->GetProperty(L"direction")->GetValueString().CmpNoCase(_DT(L"ascending")) == 0 ?
                 SortDirection::SortAscending : SortDirection::SortDescending;
             const auto byNode = sortNode->GetProperty(L"by");
             if (byNode->IsOk())

@@ -420,25 +420,25 @@ wxString Wisteria::UI::BaseApp::FindResourceDirectory(const wxString& subDir) co
     // Sometimes the program might be installed to a different prefix than what
     // wxWidgets is detecting.
 #if defined (__UNIX__) || defined (__APPLE__)
-    //this is usually the default
+    // this is usually the default
     foundFolder = FindResourceDirectoryWithAppInfo(_DT(L"/usr/local/share/"), subDir);
     if (wxFileName::DirExists(foundFolder))
         { return foundFolder; }
-    //older systems might do this
+    // older systems might do this
     foundFolder = FindResourceDirectoryWithAppInfo(_DT(L"/usr/share/"), subDir);
     if (wxFileName::DirExists(foundFolder))
         { return foundFolder; }
 #endif
-    //...or, program dir + subfolder
+    // ...or, program dir + subfolder
     foundFolder = wxStandardPaths::Get().GetExecutablePath() +
                     wxFileName::GetPathSeparator() + subDir;
     if (wxFileName::DirExists(foundFolder))
         { return foundFolder; }
-    //...or, cwd + subfolder
+    // ...or, cwd + subfolder
     foundFolder = wxFileName::GetCwd() + wxFileName::GetPathSeparator() + subDir;
     if (wxFileName::DirExists(foundFolder))
         { return foundFolder; }
-    //give up, can't find it anywhere
+    // give up, can't find it anywhere
     return wxString{};
     }
 

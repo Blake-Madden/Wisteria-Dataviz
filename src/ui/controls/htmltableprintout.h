@@ -203,11 +203,11 @@ namespace Wisteria::UI
             m_pageStarts.clear();
             m_currentPage = 0;
 
-            //calculate lines per page and line height
+            // calculate lines per page and line height
             wxDC* dc = GetDC();
             if (dc)
                 {
-                //adjust user scaling
+                // adjust user scaling
                 float scaleX ,scaleY;
                 GetScreenToPageScaling(scaleX, scaleY);
                 const float scaleXReciprical = safe_divide<float>(1.0f, scaleX);
@@ -218,7 +218,8 @@ namespace Wisteria::UI
                 wxCoord dcWidth, dcHeight;
                 dc->GetSize(&dcWidth, &dcHeight);
                 const wxCoord drawingWidth = (dcWidth*scaleXReciprical) -
-                                             (GetMarginPadding()*2)/*side margins*/;
+                                             // side margins
+                                             (GetMarginPadding()*2);
 
                 // Measure a standard line of text
                 wxCoord textWidth, textHeight;

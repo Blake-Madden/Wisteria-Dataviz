@@ -42,7 +42,8 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citation:
-            Danielson, Wayne A., and Sam Dunn Bryan. “Computer Automation of Two Readability Formulas.” *Journalism Quarterly*, vol. 40, 1963, pp. 201-06.*/
+            Danielson, Wayne A., and Sam Dunn Bryan. “Computer Automation of Two Readability Formulas.”
+            *Journalism Quarterly*, vol. 40, 1963, pp. 201-06.*/
     class DanielsonBryan2Plot final : public GroupGraph2D
         {
     public:

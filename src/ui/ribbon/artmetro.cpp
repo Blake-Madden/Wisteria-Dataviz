@@ -231,12 +231,18 @@ void RibbonMetroArtProvider::SetFlags(long flags)
     m_flags = flags;
 
     // Need to reload some bitmaps when flags change
-    SetColour(wxRIBBON_ART_GALLERY_BUTTON_FACE_COLOUR, GetColour(wxRIBBON_ART_GALLERY_BUTTON_FACE_COLOUR));
-    SetColour(wxRIBBON_ART_GALLERY_BUTTON_HOVER_FACE_COLOUR, GetColour(wxRIBBON_ART_GALLERY_BUTTON_HOVER_FACE_COLOUR));
-    SetColour(wxRIBBON_ART_GALLERY_BUTTON_ACTIVE_FACE_COLOUR, GetColour(wxRIBBON_ART_GALLERY_BUTTON_ACTIVE_FACE_COLOUR));
-    SetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR, GetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR));
-    SetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR, GetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR));
-    SetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR, GetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_GALLERY_BUTTON_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_HOVER_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_GALLERY_BUTTON_HOVER_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_ACTIVE_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_GALLERY_BUTTON_ACTIVE_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_GALLERY_BUTTON_DISABLED_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_PANEL_BUTTON_FACE_COLOUR));
+    SetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR,
+              GetColour(wxRIBBON_ART_PANEL_BUTTON_HOVER_FACE_COLOUR));
 }
 void RibbonMetroArtProvider::DrawTabCtrlBackground(
                         wxDC& dc,
@@ -562,14 +568,17 @@ void RibbonMetroArtProvider::DrawPanelBackground(
                 dc.SetPen(m_panel_hover_button_border_pen);
                 dc.SetBrush(m_panel_hover_button_background_brush);
                 dc.DrawRectangle(label_rect.GetRight(), label_rect.GetBottom() - 14, 14, 14);
-                dc.DrawBitmap(m_panel_extension_bitmap[1], label_rect.GetRight() + 3, label_rect.GetBottom() - 10, true);
+                dc.DrawBitmap(m_panel_extension_bitmap[1], label_rect.GetRight() + 3,
+                              label_rect.GetBottom() - 10, true);
             }
             else
-                dc.DrawBitmap(m_panel_extension_bitmap[0], label_rect.GetRight() + 3, label_rect.GetBottom() - 10, true);
+                dc.DrawBitmap(m_panel_extension_bitmap[0], label_rect.GetRight() + 3,
+                              label_rect.GetBottom() - 10, true);
         }
     }
 
-    if (wnd->GetParent()->IsKindOf(CLASSINFO(wxFrame))) // expanded panels are in their own wxFrame otherwise normal panel
+    // expanded panels are in their own wxFrame otherwise normal panel
+    if (wnd->GetParent()->IsKindOf(CLASSINFO(wxFrame)))
     {
         wxRect shadow(rect);
         shadow.x +=4;

@@ -70,24 +70,48 @@ namespace Wisteria::GraphItems
             {
             // adjust top left corner
             if (ptBoundingBox.GetTopLeft().x < GetBoundingBox(dc).GetTopLeft().x)
-                { m_boundingBox.SetTopLeft(wxPoint(ptBoundingBox.GetTopLeft().x, GetBoundingBox(dc).GetTopLeft().y)); }
+                {
+                m_boundingBox.SetTopLeft(
+                    wxPoint(ptBoundingBox.GetTopLeft().x, GetBoundingBox(dc).GetTopLeft().y));
+                }
             if (ptBoundingBox.GetTopLeft().y < GetBoundingBox(dc).GetTopLeft().y)
-                { m_boundingBox.SetTopLeft(wxPoint(GetBoundingBox(dc).GetTopLeft().x, ptBoundingBox.GetTopLeft().y)); }
+                {
+                m_boundingBox.SetTopLeft(
+                    wxPoint(GetBoundingBox(dc).GetTopLeft().x, ptBoundingBox.GetTopLeft().y));
+                }
             // adjust bottom left corner
             if (ptBoundingBox.GetBottomLeft().x < GetBoundingBox(dc).GetBottomLeft().x)
-                { m_boundingBox.SetBottomLeft(wxPoint(ptBoundingBox.GetBottomLeft().x, GetBoundingBox(dc).GetBottomLeft().y)); }
+                {
+                m_boundingBox.SetBottomLeft(
+                    wxPoint(ptBoundingBox.GetBottomLeft().x, GetBoundingBox(dc).GetBottomLeft().y));
+                }
             if (ptBoundingBox.GetBottomLeft().y > GetBoundingBox(dc).GetBottomLeft().y)
-                { m_boundingBox.SetBottomLeft(wxPoint(GetBoundingBox(dc).GetBottomLeft().x, ptBoundingBox.GetBottomLeft().y)); }
+                {
+                m_boundingBox.SetBottomLeft(
+                    wxPoint(GetBoundingBox(dc).GetBottomLeft().x, ptBoundingBox.GetBottomLeft().y));
+                }
             // adjust top right corner
             if (ptBoundingBox.GetTopRight().x > GetBoundingBox(dc).GetTopRight().x)
-                { m_boundingBox.SetTopRight(wxPoint(ptBoundingBox.GetTopRight().x, GetBoundingBox(dc).GetTopRight().y)); }
+                {
+                m_boundingBox.SetTopRight(
+                    wxPoint(ptBoundingBox.GetTopRight().x, GetBoundingBox(dc).GetTopRight().y));
+                }
             if (ptBoundingBox.GetTopRight().y < GetBoundingBox(dc).GetTopRight().y)
-                { m_boundingBox.SetTopRight(wxPoint(GetBoundingBox(dc).GetTopRight().x, ptBoundingBox.GetTopRight().y)); }
+                {
+                m_boundingBox.SetTopRight(
+                    wxPoint(GetBoundingBox(dc).GetTopRight().x, ptBoundingBox.GetTopRight().y));
+                }
             // adjust bottom right corner
             if (ptBoundingBox.GetBottomRight().x > GetBoundingBox(dc).GetBottomRight().x)
-                { m_boundingBox.SetBottomRight(wxPoint(ptBoundingBox.GetBottomRight().x, GetBoundingBox(dc).GetBottomRight().y)); }
+                {
+                m_boundingBox.SetBottomRight(
+                    wxPoint(ptBoundingBox.GetBottomRight().x, GetBoundingBox(dc).GetBottomRight().y));
+                }
             if (ptBoundingBox.GetBottomRight().y > GetBoundingBox(dc).GetBottomRight().y)
-                { m_boundingBox.SetBottomRight(wxPoint(GetBoundingBox(dc).GetBottomRight().x, ptBoundingBox.GetBottomRight().y)); }
+                {
+                m_boundingBox.SetBottomRight(
+                    wxPoint(GetBoundingBox(dc).GetBottomRight().x, ptBoundingBox.GetBottomRight().y));
+                }
             }
         }
 

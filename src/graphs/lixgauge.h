@@ -40,7 +40,8 @@ namespace Wisteria::Graphs
          - Blank group labels will be lumped into a "[NO GROUP]" category.
 
         @par Citation:
-            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.*/
+            Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research Quarterly*,
+            vol. 18, no. 4, 1983, pp. 480-97.*/
     class LixGauge final : public GroupGraph2D
         {
     public:

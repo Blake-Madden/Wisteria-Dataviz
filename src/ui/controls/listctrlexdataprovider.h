@@ -786,8 +786,9 @@ public:
         if (column >= GetColumnCount())
             { return; }
         StringMatrix::iterator dataEndToSortTo = m_virtualData.end();
+        // if the starting point is beyond the range of rows, then nothing to sort
         if (low >= m_virtualData.size())
-            { return; }//if the starting point is beyond the range of rows, then nothing to sort
+            { return; }
         if (high != static_cast<size_t>(-1) && high < m_virtualData.size())
             { dataEndToSortTo = m_virtualData.begin()+high+1; }
         if (direction == Wisteria::SortDirection::SortAscending)
@@ -814,8 +815,9 @@ public:
                 { return; }
             }
         StringMatrix::iterator dataEndToSortTo = m_virtualData.end();
+        // if the starting point is beyond the range of rows, then nothing to sort
         if (low >= m_virtualData.size())
-            { return; }//if the starting point is beyond the range of rows, then nothing to sort
+            { return; }
         if (high != static_cast<size_t>(-1) && high < m_virtualData.size())
             { dataEndToSortTo = m_virtualData.begin()+high+1; }
         std::sort(m_virtualData.begin()+low, dataEndToSortTo,
@@ -937,7 +939,8 @@ public:
                 return wxNumberFormatter::ToString(cell.m_numericValue,
                     cell.GetNumberFormatType().m_precision,
                     cell.GetNumberFormatType().m_displayThousandsSeparator ?
-                    wxNumberFormatter::Style::Style_WithThousandsSep|wxNumberFormatter::Style::Style_NoTrailingZeroes :
+                    wxNumberFormatter::Style::Style_WithThousandsSep|
+                        wxNumberFormatter::Style::Style_NoTrailingZeroes :
                     wxNumberFormatter::Style::Style_NoTrailingZeroes) +
                     percentageLabel;
                 }
@@ -963,7 +966,8 @@ public:
                     wxNumberFormatter::ToString(cell.m_numericValue,
                         cell.GetNumberFormatType().m_precision,
                         cell.GetNumberFormatType().m_displayThousandsSeparator ?
-                        wxNumberFormatter::Style::Style_WithThousandsSep|wxNumberFormatter::Style::Style_NoTrailingZeroes :
+                        wxNumberFormatter::Style::Style_WithThousandsSep|
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes :
                         wxNumberFormatter::Style::Style_NoTrailingZeroes);
                 }
             }

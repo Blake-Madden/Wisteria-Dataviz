@@ -103,12 +103,13 @@ namespace Wisteria::Graphs
                     currentGroupId = GetGroupColumn()->GetValue(i);
                     }
                 wxASSERT_LEVEL_2_MSG(currentRow < m_matrix.size(),
-                    L"Invalid row when filling heatmap matrix! Data should be sorted by group before calling SetData().!");
+                    L"Invalid row when filling heatmap matrix! "
+                    "Data should be sorted by group before calling SetData().!");
                 wxASSERT_LEVEL_2_MSG(currentColumn < m_matrix[currentRow].size(),
                     L"Invalid column when filling heatmap matrix!");
-                // should not happen, just do this to prevent crash if data was not sorted by value and then by
-                // group first. What's displayed if this happens is the data won't be grouped properly, but it's
-                // showing it how the client passed it in.
+                // should not happen, just do this to prevent crash if data was not sorted by
+                // value and then by group first. What's displayed if this happens is the data
+                // won't be grouped properly, but it's showing it how the client passed it in.
                 if (currentRow >= m_matrix.size())
                     {
                     std::vector<HeatCell> newRow;
@@ -276,13 +277,16 @@ namespace Wisteria::Graphs
                                          safe_divide<wxCoord>(drawArea.GetWidth(),
                                                               ((m_groupColumnCount > 1) ?
                                                                   m_matrix[0].size() :
-                                                                  // just one column? keep boxes from being huge
+                                                                  // just one column?
+                                                                  // keep boxes from being huge
                                                                   std::max<size_t>(m_matrix[0].size(), 5)))) :
                                 // If being drawn rectangularly (i.e., not grouped), prevent the boxes from
                                 // being larger than a fifth of the area's width;
-                                // having only a few cells would cause the boxes to be a ridiculously huge size.
+                                // having only a few cells would cause the boxes to be a
+                                // ridiculously huge size.
                                 std::min(safe_divide<wxCoord>(drawArea.GetHeight(), m_matrix.size()),
-                                         safe_divide<wxCoord>(drawArea.GetWidth(), std::max<size_t>(m_matrix[0].size(), 5)) );
+                                         safe_divide<wxCoord>(drawArea.GetWidth(),
+                                                              std::max<size_t>(m_matrix[0].size(), 5)) );
 
         // get the best font size to fit the row labels
         wxFont groupLabelFont{ GetBottomXAxis().GetFont() };

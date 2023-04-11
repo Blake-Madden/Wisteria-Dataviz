@@ -297,9 +297,10 @@ namespace Wisteria::Graphs
 
         /* if we are creating integer categories, then we need to adjust the range and number of groups to fit an
            even distribution.*/
-        const bool isLowestValueBeingAdjusted = (std::floor(static_cast<double>(minVal)) == ConvertToSortableValue(minVal)) &&
-                                                 !compare_doubles(ConvertToSortableValue(minVal), 0) &&
-                                                 (!GetBinsStart() || minVal < GetBinsStart().value());
+        const bool isLowestValueBeingAdjusted =
+            (std::floor(static_cast<double>(minVal)) == ConvertToSortableValue(minVal)) &&
+            !compare_doubles(ConvertToSortableValue(minVal), 0) &&
+            (!GetBinsStart() || minVal < GetBinsStart().value());
 
         if (GetBinsStart() && !std::isnan(GetBinsStart().value()))
             { minVal = std::min(minVal, GetBinsStart().value()); }
@@ -308,12 +309,15 @@ namespace Wisteria::Graphs
         if (GetBinningMethod() == BinningMethod::BinByIntegerRange)
             {
             minVal = std::floor(static_cast<double>(minVal));
-            /* If in integer mode (with rounding) and the lowest value is rounded down, then move the min value of the
-               range to one integer less. This will create an extra bin for the low value. Normally, adding the lowest value
-               to the first bin (without making an extra new bin for it is OK), but for integer mode where rounding is
-               being used, this could make the first bin much bigger than the other and cause imbalance. That is to say,
-               if the low value is 1 and a bin of 0-1 should be created for it because there will probably be other 1 values
-               (due to the rounding). Throwing the 1s into a 1-2 bin would make this bin much bigger than the others.*/
+            /* If in integer mode (with rounding) and the lowest value is rounded down,
+               then move the min value of the range to one integer less.
+               This will create an extra bin for the low value. Normally, adding the lowest value
+               to the first bin (without making an extra new bin for it is OK), but for integer mode
+               where rounding is being used, this could make the first bin much bigger than the
+               other and cause imbalance. That is to say, if the low value is 1 and a bin of 0-1
+               should be created for it because there will probably be other 1 values
+               (due to the rounding).
+               Throwing the 1s into a 1-2 bin would make this bin much bigger than the others.*/
             if (GetRoundingMethod() != RoundingMethod::NoRounding &&
                 isLowestValueBeingAdjusted)
                 { minVal -= 1; }

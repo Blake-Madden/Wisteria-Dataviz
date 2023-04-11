@@ -33,19 +33,25 @@ bool InfoBarEx::Create(wxWindow *parent, wxWindowID winid)
                   wxCommandEventHandler(InfoBarEx::OnButton), nullptr, this);
     closeButton->SetToolTip(_("Hide this notification message."));
 
-    m_dontShowAgainCheckbox = new wxCheckBox(this, wxID_ANY, _("Do not show this again."), wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_dontShowAgain));
+    m_dontShowAgainCheckbox = new wxCheckBox(this, wxID_ANY, _("Do not show this again."),
+                                             wxDefaultPosition, wxDefaultSize, 0,
+                                             wxGenericValidator(&m_dontShowAgain));
 
     // center the text inside the sizer with an icon to the left of it and a
     // button at the very right
     wxBoxSizer* const sizer = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* const firstRowSizer = new wxBoxSizer(wxHORIZONTAL);
-    firstRowSizer->Add(m_icon, wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
-    firstRowSizer->Add(m_text, wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()).Proportion(1));
+    firstRowSizer->Add(m_icon,
+        wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    firstRowSizer->Add(m_text,
+        wxSizerFlags().Expand().Border(wxALL, wxSizerFlags::GetDefaultBorder()).Proportion(1));
     firstRowSizer->AddStretchSpacer();
-    firstRowSizer->Add(closeButton, wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    firstRowSizer->Add(closeButton,
+        wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     wxBoxSizer* const secondRowSizer = new wxBoxSizer(wxHORIZONTAL);
-    secondRowSizer->Add(m_dontShowAgainCheckbox, wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
+    secondRowSizer->Add(m_dontShowAgainCheckbox,
+        wxSizerFlags().CentreVertical().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     sizer->Add(firstRowSizer, wxSizerFlags().Proportion(1).Expand());
     sizer->Add(secondRowSizer);

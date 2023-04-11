@@ -194,15 +194,15 @@ bool FilePathResolverBase::HasNetworkPrefix(const wxString& str)
 //------------------------------------------------
 wxString ParseTitleFromFileName(wxString filename)
     {
-    //if page is just a PHP query, then use the name of the folder
+    // if page is just a PHP query, then use the name of the folder
     if (wxFileName(filename).GetName().StartsWith(L"?") )
         { filename = wxFileName(filename).GetPath(); }
-    //sometimes webpage paths end with a '/', so chop that off when getting the title
+    // sometimes webpage paths end with a '/', so chop that off when getting the title
     if (filename.EndsWith(L"/") )
         { filename = filename.substr(0, filename.length()-1); }
     FilePathResolverBase resolvePath(filename);
     filename = resolvePath.GetResolvedPath();
-    //paths to worksheet/cell inside of Excel file should keep the spreadsheet file extension
+    // paths to worksheet/cell inside of Excel file should keep the spreadsheet file extension
     if (resolvePath.IsExcelCell())
         { filename.Replace(L".", wxString{}, true); }
     wxString retVal = StripIllegalFileCharacters(wxFileName(filename).GetName());
@@ -308,7 +308,7 @@ wxString GetShortenedFileName(const wxString& filePath, const size_t maxLength /
             size_t slash = filePath.find(L'/');
             if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }
-            if (filePath[slash+1] == L'/')//skip the "http://"
+            if (filePath[slash+1] == L'/') // skip the "http://"
                 { slash = filePath.find(L'/', slash+2); }
             if (slash == wxString::npos || slash == filePath.length()-1)
                 { return filePath; }

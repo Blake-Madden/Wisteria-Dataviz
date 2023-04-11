@@ -44,7 +44,8 @@ namespace Wisteria::Graphs
         @par Citations:
             Björnsson, C.H. “Readability of Newspapers in 11 Languages.” *Reading Research Quarterly*, vol. 18, no. 4, 1983, pp. 480-97.
             
-            Schulz, Renate A. “Literature and Readability: Bridging the Gap in Foreign Language Reading.” *The Modern Language Journal*, vol. 65, no. 1, Spring 1981, pp. 43-53.*/
+            Schulz, Renate A. “Literature and Readability: Bridging the Gap in Foreign Language Reading.” *The Modern Language Journal*,
+            vol. 65, no. 1, Spring 1981, pp. 43-53.*/
     class LixGaugeGerman final : public GroupGraph2D
         {
     public:

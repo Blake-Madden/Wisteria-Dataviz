@@ -133,9 +133,11 @@ class ListEditSpinCtrlDouble final : public wxSpinCtrlDouble
     {
 public:
     ListEditSpinCtrlDouble() = delete;
-    ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner, wxWindowID id = wxID_ANY, const wxString& value = wxString{},
+    ListEditSpinCtrlDouble(wxWindow* parent, ListCtrlEx* owner,
+        wxWindowID id = wxID_ANY, const wxString& value = wxString{},
         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-        long style = wxSP_ARROW_KEYS, double Min = 1.0, double Max = 100.0, double initial = 1.0,
+        long style = wxSP_ARROW_KEYS, double Min = 1.0, double Max = 100.0,
+        double initial = 1.0,
         const wxString& name = L"ListEditSpinCtrlDouble");
     void OnEndEditKillFocus(wxFocusEvent& event);
     void SetCurrentItem(const long row, const long column)
@@ -661,7 +663,7 @@ public:
                 wxString(m_virtualData->GetItemText(item, column)) :
                 GetItemTextNonVirtual(item, column);
             }
-        //not report view, so this call makes no sense--return blank
+        // not report view, so this call makes no sense--return blank
         else
             { return wxString{}; }
         }
@@ -860,17 +862,23 @@ public:
 
     /// @brief Formats the list control's contents to HTML.
     /// @param[out] outputText The text buffer to write to.
-    /// @param usePrinterSettings Whether to format the output the same as if being printed.
-    ///  This will insert page breaks, resize columns, and possibly split narrow tables to fit more of them on one page.
-    ///  This will be ignored if no printer settings are connected to the control.
+    /// @param usePrinterSettings Whether to format the output the same as if being printed.\n
+    ///     This will insert page breaks, resize columns, and possibly split
+    ///     narrow tables to fit more of them on one page.\n
+    ///     This will be ignored if no printer settings are connected to the control.
     /// @param rowSelection Specifies how rows and columns should be exported.
-    /// @param firstRow The starting row of the range to format. Defaults to 0.
-    /// @param lastRow The ending row of the range to format. Defaults to -1, which specifies the last row.
-    /// @param firstColumn The starting column of the range to format. Defaults to 0.
-    /// @param lastColumn The ending column of the range to format. Defaults to -1, which specifies the last column.
-    /// @param includeColumnHeader Specifies whether to include the column headers, which will be the first row.
-    /// @param formatAsStandAloneFile Specifies whether this HTML is going to represent a stand-alone file. If true, a document declaration is added to the top.
-    /// @param tableCaption A caption to be drawn above the data. Will be inside of a div with class "caption" that can be customized via CSS.
+    /// @param firstRow The starting row of the range to format. Defaults to @c 0.
+    /// @param lastRow The ending row of the range to format.\n
+    ///     Defaults to @c -1, which specifies the last row.
+    /// @param firstColumn The starting column of the range to format. Defaults to @c 0.
+    /// @param lastColumn The ending column of the range to format.
+    ///     Defaults to @c -1, which specifies the last column.
+    /// @param includeColumnHeader Specifies whether to include the column headers,
+    ///     which will be the first row.
+    /// @param formatAsStandAloneFile Specifies whether this HTML is going to
+    ///     represent a stand-alone file. If true, a document declaration is added to the top.
+    /// @param tableCaption A caption to be drawn above the data.\n
+    ///     Will be inside of a div with class "caption" that can be customized via CSS.
     void FormatToHtml(wxString& outputText,
                       bool usePrinterSettings,
                       const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
@@ -1023,11 +1031,11 @@ private:
 
     bool m_enableItemViewable{ false };
 
-    //headers
+    // headers
     wxString m_leftPrinterHeader;
     wxString m_centerPrinterHeader;
     wxString m_rightPrinterHeader;
-    //footers
+    // footers
     wxString m_leftPrinterFooter;
     wxString m_centerPrinterFooter;
     wxString m_rightPrinterFooter;
@@ -1038,12 +1046,12 @@ private:
     wxMenu* m_menu{ nullptr };
     wxPrintData* m_printData{ nullptr };
 
-    //help
+    // help
     wxString m_helpProjectPath;
     wxString m_exportHelpTopic;
     wxString m_sortHelpTopic;
 
-    //cell editing controls
+    // cell editing controls
     ListEditTextCtrl* m_editTextCtrl{ nullptr };
     ListEditSpinCtrl* m_editSpinCtrl{ nullptr };
     ListEditSpinCtrlDouble* m_editSpinCtrlDouble{ nullptr };

@@ -70,7 +70,11 @@ namespace Wisteria::UI
         void OnHelpClicked([[maybe_unused]] wxCommandEvent& event)
             {
             if (m_helpTopic.length())
-                { wxLaunchDefaultBrowser(wxFileName::FileNameToURL(m_helpProjectFolder + wxFileName::GetPathSeparator() + m_helpTopic)); }
+                {
+                wxLaunchDefaultBrowser(
+                    wxFileName::FileNameToURL(m_helpProjectFolder + wxFileName::GetPathSeparator() +
+                                              m_helpTopic));
+                }
             }
         void OnContextHelp([[maybe_unused]] wxHelpEvent& event)
             {

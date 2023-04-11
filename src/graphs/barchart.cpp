@@ -643,6 +643,8 @@ namespace Wisteria::Graphs
         {
         Graph2D::RecalcSizes(dc);
 
+        const auto defaultFontPointSize{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize() };
+
         // if no bars then just draw a blank 10x10 grid
         if (GetBars().size() == 0)
             {
@@ -722,7 +724,8 @@ namespace Wisteria::Graphs
                         const size_t overallBarSpacing = (barSpacing*(barSlots-1));
                         barWidth = safe_divide<double>(
                             GetPlotAreaBoundingBox().GetHeight() -
-                            (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth()+barSlots ? overallBarSpacing : 0),
+                            (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth()+barSlots ?
+                                overallBarSpacing : 0),
                             (barSlots+1));
                         }
 
@@ -765,11 +768,15 @@ namespace Wisteria::Graphs
                     if (barBlock.IsShown() && barLength > 0)
                         {
                         // if block has a customized opacity, then use that instead of the bar's opacity
-                        const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
+                        const wxColour blockColor =
+                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                            ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(),
+                                                         bar.GetOpacity()) :
                             barBlock.GetBrush().GetColour();
-                        const wxColour blockLightenedColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
-                            ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(), bar.GetOpacity()) :
+                        const wxColour blockLightenedColor =
+                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                            ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(),
+                                                         bar.GetOpacity()) :
                             barBlock.GetLightenedColor();
                         wxBrush blockBrush{ barBlock.GetBrush() };
                         blockBrush.SetColour(blockColor);
@@ -777,10 +784,12 @@ namespace Wisteria::Graphs
                         if (bar.GetEffect() == BoxEffect::CommonImage && scaledCommonImg.IsOk())
                             {
                             wxRect barRectAdjustedToPlotArea = barRect;
-                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() - GetPlotAreaBoundingBox().GetLeft());
+                            barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() -
+                                                              GetPlotAreaBoundingBox().GetLeft());
                             barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
                                  (GetPlotAreaBoundingBox().GetTop() +
-                                     safe_divide(GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight(), 2)) );
+                                     safe_divide(GetPlotAreaBoundingBox().GetHeight() -
+                                                 scaledCommonImg.GetHeight(), 2)) );
                             auto barImage = std::make_shared<Image>(
                                 GraphItemInfo(barBlock.GetSelectionLabel().GetText()).
                                 Pen(GetImageOutlineColor()).
@@ -841,10 +850,13 @@ namespace Wisteria::Graphs
                             GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
-                                // Polygons don't support drop shadows, so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoDisplay) && (barBlock.GetLength() > rangeStart))
+                                // Polygons don't support drop shadows,
+                                // so need to manually add a shadow as another polygon
+                                if ((GetShadowType() != ShadowType::NoDisplay) &&
+                                    (barBlock.GetLength() > rangeStart))
                                     {
-                                    // in case this bar is way too small because of the scaling then don't bother with the shadow
+                                    // in case this bar is way too small because of the
+                                    // scaling then don't bother with the shadow
                                     if (barRect.GetHeight() > scaledShadowOffset)
                                         {
                                         wxPoint shadowPts[7] =
@@ -873,12 +885,13 @@ namespace Wisteria::Graphs
                                 {
                                 wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
                                                      L"Drop shadow not supported for arrow shape currently.");
-                                barNeckRect.Deflate(wxSize(0,safe_divide(barNeckRect.GetHeight(),5)) );
+                                barNeckRect.Deflate(wxSize(0,safe_divide(barNeckRect.GetHeight(), 5)) );
                                 barNeckRect.SetRight(barNeckRect.GetRight()-(safe_divide(barNeckRect.GetWidth(),10)));
                                 arrowPoints[0] = barNeckRect.GetTopLeft();
                                 arrowPoints[1] = barNeckRect.GetTopRight();
                                 arrowPoints[2] = wxPoint(barNeckRect.GetRight(), barRect.GetTop());
-                                arrowPoints[3] = wxPoint(barRect.GetRight(), barRect.GetTop()+(safe_divide((barRect.GetHeight()),2)) );
+                                arrowPoints[3] = wxPoint(barRect.GetRight(), barRect.GetTop() +
+                                                    (safe_divide((barRect.GetHeight()),2)) );
                                 arrowPoints[4] = wxPoint(barNeckRect.GetRight(), barRect.GetBottom());
                                 arrowPoints[5] = barNeckRect.GetBottomRight();
                                 arrowPoints[6] = barNeckRect.GetBottomLeft();
@@ -1003,7 +1016,8 @@ namespace Wisteria::Graphs
                                 dc, wxSize(decalRect.GetWidth(),
                                 std::numeric_limits<int>::max()));
                             }
-                        // if drawing as-is, then draw a box around the label if it's larger than the parent block
+                        // if drawing as-is, then draw a box around the label
+                        // if it's larger than the parent block
                         else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
                             {
                             const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
@@ -1024,12 +1038,13 @@ namespace Wisteria::Graphs
                         decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         // allow selecting the bar underneath this label
                         decalLabel->SetSelectable(false);
-                        // if font is way too small, then show it as a label overlapping the bar instead of a decal
+                        // if font is way too small, then show it as a label
+                        // overlapping the bar instead of a decal
                         if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
                             decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                            decalLabel->GetFont().GetPointSize() < wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()/2)
+                            decalLabel->GetFont().GetPointSize() < defaultFontPointSize/2)
                             {
-                            decalLabel->GetFont().SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+                            decalLabel->GetFont().SetPointSize(defaultFontPointSize);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -1037,19 +1052,25 @@ namespace Wisteria::Graphs
                         const wxRect labelBox = decalLabel->GetBoundingBox(dc);
                         if (decalLabel->GetRelativeAlignment() == RelativeAlignment::FlushLeft)
                             {
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() + leftPadding),
-                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() - labelBox.GetHeight(), 2))));
+                            decalLabel->SetAnchorPoint(
+                                wxPoint((barNeckRect.GetLeft() + leftPadding),
+                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() -
+                                    labelBox.GetHeight(), 2))));
                             }
                         else if (decalLabel->GetRelativeAlignment() == RelativeAlignment::Centered)
                             {
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
-                                safe_divide(barNeckRect.GetWidth()-labelBox.GetWidth(), 2)),
-                                (barNeckRect.GetTop()+safe_divide(barNeckRect.GetHeight()-labelBox.GetHeight(), 2))));
+                            decalLabel->SetAnchorPoint(
+                                wxPoint((barNeckRect.GetLeft() +
+                                    safe_divide(barNeckRect.GetWidth()-labelBox.GetWidth(), 2)),
+                                (barNeckRect.GetTop()+safe_divide(barNeckRect.GetHeight() -
+                                    labelBox.GetHeight(), 2))));
                             }
                         else // flush right
                             {
-                            decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetRight() - (labelBox.GetWidth()+leftPadding)),
-                                (barNeckRect.GetTop()+safe_divide(barNeckRect.GetHeight()-labelBox.GetHeight(), 2))));
+                            decalLabel->SetAnchorPoint(
+                                wxPoint((barNeckRect.GetRight() - (labelBox.GetWidth()+leftPadding)),
+                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() -
+                                    labelBox.GetHeight(), 2))));
                             }
                         // if drawing a color and hatch pattern, then show the decal with an outline
                         // to make it easier to read
@@ -1061,8 +1082,10 @@ namespace Wisteria::Graphs
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
                             }
-                        // This will be added to the plot's collection of object AFTER all blocks have been added.
-                        // This ensures that decals that go outside of their block are eclipsed by the next block.
+                        // This will be added to the plot's collection of object AFTER
+                        // all blocks have been added.
+                        // This ensures that decals that go outside of their block are
+                        // eclipsed by the next block.
                         decals.push_back(decalLabel);
                         }
                     }
@@ -1075,18 +1098,22 @@ namespace Wisteria::Graphs
                     if (barBlock.GetCustomWidth().has_value())
                         {
                         wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhysicalCoordinates(bar.GetAxisPosition()-safe_divide<double>(barBlock.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition() -
+                                safe_divide<double>(barBlock.GetCustomWidth().value(),2),
                             barBlock.GetLength()/*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhysicalCoordinates(bar.GetAxisPosition()+safe_divide<double>(barBlock.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition() +
+                                safe_divide<double>(barBlock.GetCustomWidth().value(),2),
                             barBlock.GetLength(), rightPointOfBar);
                         barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
                         }
                     else if (bar.GetCustomWidth().has_value())
                         {
                         wxPoint leftPointOfBar, rightPointOfBar;
-                        GetPhysicalCoordinates(bar.GetAxisPosition()-safe_divide<double>(bar.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition() -
+                                safe_divide<double>(bar.GetCustomWidth().value(),2),
                             barBlock.GetLength()/*offset doesn't matter here*/, leftPointOfBar);
-                        GetPhysicalCoordinates(bar.GetAxisPosition()+safe_divide<double>(bar.GetCustomWidth().value(),2),
+                        GetPhysicalCoordinates(bar.GetAxisPosition() +
+                                safe_divide<double>(bar.GetCustomWidth().value(),2),
                             barBlock.GetLength(), rightPointOfBar);
                         barWidth = ((rightPointOfBar.x - leftPointOfBar.x) - barSpacing);
                         }
@@ -1098,8 +1125,10 @@ namespace Wisteria::Graphs
                             // the plot area, minus the cumulative spaces between their bars
                             // (unless the spacing is too aggressive)
                             GetPlotAreaBoundingBox().GetWidth() -
-                            (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth()+barSlots ? overallBarSpacing : 0),
-                            // add an "extra" bar to account for the half bar space around the first and last bars
+                            (overallBarSpacing < GetPlotAreaBoundingBox().GetWidth()+barSlots ?
+                                overallBarSpacing : 0),
+                            // add an "extra" bar to account for the half bar space
+                            // around the first and last bars
                             (barSlots+1));
                         }
 
@@ -1109,18 +1138,21 @@ namespace Wisteria::Graphs
                         {
                         // top of block
                         GetPhysicalCoordinates(bar.GetAxisPosition(),
-                            bar.GetCustomScalingAxisStartPosition().value() + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
+                            bar.GetCustomScalingAxisStartPosition().value() +
+                            axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
                         // bottom of block
                         wxPoint customStartPt;
                         GetPhysicalCoordinates(bar.GetAxisPosition(),
-                            bar.GetCustomScalingAxisStartPosition().value() + axisOffset, customStartPt);
+                            bar.GetCustomScalingAxisStartPosition().value() +
+                            axisOffset, customStartPt);
                         lineYStart = customStartPt.y;
                         }
                     else
                         {
                         // top of block
                         GetPhysicalCoordinates(bar.GetAxisPosition(),
-                            GetScalingAxis().GetRange().first + axisOffset + barBlock.GetLength(), middlePointOfBarEnd);
+                            GetScalingAxis().GetRange().first + axisOffset + barBlock.GetLength(),
+                            middlePointOfBarEnd);
                         // bottom of block
                         wxPoint pt;
                         GetPhysicalCoordinates(bar.GetAxisPosition(),
@@ -1131,7 +1163,8 @@ namespace Wisteria::Graphs
                     axisOffset += barBlock.GetLength();
                     const wxCoord barLength = lineYStart-middlePointOfBarEnd.y;
                     const wxCoord lineYEnd = lineYStart-barLength;
-                    const wxCoord lineXStart = middlePointOfBarEnd.x - safe_divide<double>(barWidth, 2.0);
+                    const wxCoord lineXStart = middlePointOfBarEnd.x -
+                        safe_divide<double>(barWidth, 2.0);
                     const auto [rangeStart, rangeEnd] = GetLeftYAxis().GetRange();
                     barRect = wxRect(lineXStart, lineYEnd, barWidth, barLength);
                     wxRect barNeckRect = barRect;
@@ -1144,10 +1177,12 @@ namespace Wisteria::Graphs
                     if (barBlock.IsShown() && barLength > 0)
                         {
                         // if block has a customized opacity, then use that instead of the bar's opacity
-                        const wxColour blockColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                        const wxColour blockColor =
+                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
                             ColorContrast::ChangeOpacity(barBlock.GetBrush().GetColour(), bar.GetOpacity()) :
                             barBlock.GetBrush().GetColour();
-                        const wxColour blockLightenedColor = barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
+                        const wxColour blockLightenedColor =
+                            barBlock.GetBrush().GetColour().Alpha() == wxALPHA_OPAQUE ?
                             ColorContrast::ChangeOpacity(barBlock.GetLightenedColor(), bar.GetOpacity()) :
                             barBlock.GetLightenedColor();
                         wxBrush blockBrush{ barBlock.GetBrush() };
@@ -1158,7 +1193,8 @@ namespace Wisteria::Graphs
                             wxRect barRectAdjustedToPlotArea = barRect;
                             barRectAdjustedToPlotArea.SetLeft(barRect.GetLeft() -
                                 (GetPlotAreaBoundingBox().GetLeft() +
-                                    safe_divide(GetPlotAreaBoundingBox().GetWidth() - scaledCommonImg.GetWidth(), 2)) );
+                                    safe_divide(GetPlotAreaBoundingBox().GetWidth() -
+                                        scaledCommonImg.GetWidth(), 2)) );
                             barRectAdjustedToPlotArea.SetTop(barRect.GetTop() -
                                 (GetPlotAreaBoundingBox().GetTop() +
                                     GetPlotAreaBoundingBox().GetHeight() - scaledCommonImg.GetHeight()));
@@ -1182,7 +1218,8 @@ namespace Wisteria::Graphs
                                 Pen(GetImageOutlineColor()).
                                 AnchorPoint(wxPoint(lineXStart, lineYEnd)),
                                      Image::CropImageToRect(
-                                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).
+                                            ConvertToImage(),
                                          barRect, true));
                             barImage->SetOpacity(bar.GetOpacity());
                             barImage->SetAnchoring(Anchoring::TopLeftCorner);
@@ -1221,8 +1258,10 @@ namespace Wisteria::Graphs
                             GraphItems::Polygon::GetRectPoints(barRect, boxPoints);
                             if (bar.GetShape() == BarShape::Rectangle)
                                 {
-                                // polygons don't support drop shadows, so need to manually add a shadow as another polygon
-                                if ((GetShadowType() != ShadowType::NoDisplay) && (barBlock.GetLength() > rangeStart))
+                                // polygons don't support drop shadows,
+                                // so need to manually add a shadow as another polygon
+                                if ((GetShadowType() != ShadowType::NoDisplay) &&
+                                    (barBlock.GetLength() > rangeStart))
                                     {
                                     // in case this bar is way too small because of the scaling,
                                     // then don't bother with the shadow
@@ -1251,7 +1290,7 @@ namespace Wisteria::Graphs
                             else if (bar.GetShape() == BarShape::Arrow)
                                 {
                                 wxASSERT_LEVEL_2_MSG(!(GetShadowType() != ShadowType::NoDisplay),
-                                                     L"Drop shadow not supported for arrow shape currently.");
+                                     L"Drop shadow not supported for arrow shape currently.");
                                 barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(),5), 0) );
                                 const auto arrowHeadSize = safe_divide(barNeckRect.GetHeight(),10);
                                 barNeckRect.SetTop(barNeckRect.GetTop()+arrowHeadSize);
@@ -1260,7 +1299,7 @@ namespace Wisteria::Graphs
                                 arrowPoints[1] = barNeckRect.GetTopLeft();
                                 arrowPoints[2] = wxPoint(barRect.GetLeft(), barNeckRect.GetTop());
                                 arrowPoints[3] = wxPoint(barRect.GetLeft() +
-                                                         (safe_divide(barRect.GetWidth(),2)), barRect.GetTop());
+                                    (safe_divide(barRect.GetWidth(),2)), barRect.GetTop());
                                 arrowPoints[4] = wxPoint(barRect.GetRight(), barNeckRect.GetTop());
                                 arrowPoints[5] = barNeckRect.GetTopRight();
                                 arrowPoints[6] = barNeckRect.GetBottomRight();
@@ -1364,7 +1403,8 @@ namespace Wisteria::Graphs
                         {
                         const wxCoord leftPadding = ScaleToScreenAndCanvas(2);
                         // rectangle is inverted
-                        wxRect decalRect(wxPoint(0,0), wxSize(barNeckRect.GetHeight(), barNeckRect.GetWidth()));
+                        wxRect decalRect(wxPoint(0,0), wxSize(barNeckRect.GetHeight(),
+                                         barNeckRect.GetWidth()));
                         decalRect.SetHeight(decalRect.GetHeight()-leftPadding);
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
@@ -1386,7 +1426,8 @@ namespace Wisteria::Graphs
                                 dc, wxSize(decalRect.GetWidth(),
                                 std::numeric_limits<int>::max()));
                             }
-                        // if drawing as-is, then draw a box around the label if it's larger than the parent block
+                        // if drawing as-is, then draw a box around the label
+                        // if it's larger than the parent block
                         else if (decalLabel->GetLabelFit() == LabelFit::DisplayAsIsAutoFrame)
                             {
                             const auto actualDecalRect = decalLabel->GetBoundingBox(dc);
@@ -1397,7 +1438,8 @@ namespace Wisteria::Graphs
                                     ColorContrast::BlackOrWhiteContrast(decalLabel->GetFontColor()));
                                 }
                             }
-                        // make multiline decals a little more compact so that they have a better chance of fitting
+                        // make multiline decals a little more compact so that they
+                        // have a better chance of fitting
                         decalLabel->SetLineSpacing(0);
                         decalLabel->SetShadowType(ShadowType::NoDisplay);
                         decalLabel->SetTextAlignment(TextAlignment::FlushLeft);
@@ -1405,12 +1447,13 @@ namespace Wisteria::Graphs
                         decalLabel->SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
                         // allow selecting the bar underneath this label
                         decalLabel->SetSelectable(false);
-                        // if font is way too small, then show it as a label overlapping the bar instead of a decal.
+                        // if font is way too small, then show it as a label
+                        // overlapping the bar instead of a decal.
                         if (decalLabel->GetLabelFit() != LabelFit::DisplayAsIs &&
                             decalLabel->GetLabelFit() != LabelFit::DisplayAsIsAutoFrame &&
-                            decalLabel->GetFont().GetPointSize() < wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize()/2)
+                            decalLabel->GetFont().GetPointSize() < defaultFontPointSize/2)
                             {
-                            decalLabel->GetFont().SetPointSize(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize());
+                            decalLabel->GetFont().SetPointSize(defaultFontPointSize);
                             decalLabel->SetFontColor(*wxBLACK);
                             decalLabel->GetPen().SetColour(*wxBLACK);
                             decalLabel->SetFontBackgroundColor(*wxWHITE);
@@ -1427,7 +1470,9 @@ namespace Wisteria::Graphs
                             decalLabel->SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                             decalLabel->SetAnchorPoint(wxPoint((barNeckRect.GetLeft() +
                                 safe_divide(barNeckRect.GetWidth() - labelBoundingBox.GetWidth(), 2)),
-                                (barNeckRect.GetTop() + safe_divide(barNeckRect.GetHeight() - labelBoundingBox.GetHeight(), 2))));
+                                (barNeckRect.GetTop() +
+                                    safe_divide(barNeckRect.GetHeight() -
+                                        labelBoundingBox.GetHeight(), 2))));
                             }
                         else // flush top
                             {
@@ -1504,7 +1549,8 @@ namespace Wisteria::Graphs
                     {
                     barLabel->Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()));
                     bBox.Offset(0, (GetPlotAreaBoundingBox().GetTop() - bBox.GetTop()) -
-                        // wiggle room before adding outlining that will stand out from the other labels
+                        // wiggle room before adding outlining
+                        // that will stand out from the other labels
                         ScaleToScreenAndCanvas(2));
                     if (barRect.Intersects(bBox))
                         {
@@ -1525,7 +1571,8 @@ namespace Wisteria::Graphs
         std::vector<wxPoint> boxCorners;
         for (auto& bar : GetBars())
             {
-            drawBar(bar, true, 0); // index is only used for image, irrelevant here
+            // index is only used for image, irrelevant here
+            drawBar(bar, true, 0);
             boxCorners.push_back(barRect.GetTopLeft());
             boxCorners.push_back(barRect.GetTopRight());
             boxCorners.push_back(barRect.GetBottomLeft());
@@ -1542,7 +1589,8 @@ namespace Wisteria::Graphs
         scaledCommonImg = GetCommonBoxImage().IsOk() ?
             Image::CropImageToRect(
                 GetCommonBoxImage().GetBitmap(GetCommonBoxImage().GetDefaultSize()).ConvertToImage(),
-                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5), // add padding for rounding issues
+                // add padding for rounding issues
+                wxSize((maxX->x - minX->x) + ScaleToScreenAndCanvas(5),
                        (maxY->y - minY->y) + ScaleToScreenAndCanvas(5)), false) :
             wxNullImage;
 

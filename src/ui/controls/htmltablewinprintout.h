@@ -202,11 +202,11 @@ public:
         m_pageStarts.clear();
         m_currentPage = 0;
 
-        //calculate lines per page and line height
+        // calculate lines per page and line height
         wxDC* dc = GetDC();
         if (dc)
             {
-            //adjust user scaling
+            // adjust user scaling
             float scaleX ,scaleY;
             GetScreenToPageScaling(scaleX, scaleY);
             const float scaleXReciprocal = safe_divide<float>(1.0f, scaleX);

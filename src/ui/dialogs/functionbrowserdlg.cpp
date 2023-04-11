@@ -274,7 +274,7 @@ void FunctionBrowserDlg::CreateControls(const wxString& firstWindowCaption,
         FromDIP(wxSize(500, 150)), wxHW_SCROLLBAR_AUTO|wxBORDER_THEME|wxHW_NO_SELECTION);
     mainSizer->Add(m_functionDescriptionWindow, 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
-    //Close and Insert buttons
+    // Close and Insert buttons
     mainSizer->Add(CreateSeparatedButtonSizer(wxOK|wxCANCEL|wxHELP), 0, wxEXPAND|wxALL,
         wxSizerFlags::GetDefaultBorder());
     SetSizerAndFit(mainSizer);
