@@ -25,6 +25,7 @@
 #include <wx/string.h>
 #include <wx/uilocale.h>
 #include <wx/numformatter.h>
+#include <wx/settings.h>
 #include "settings.h"
 #include "icons.h"
 #include "enums.h"
