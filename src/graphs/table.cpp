@@ -459,13 +459,13 @@ namespace Wisteria::Graphs
                             {
                             colValues.push_back(
                                 round_decimal_place(valueOrSuppressed*100,
-                                                    std::pow(10, cell.GetPrecision())));
+                                    (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         else
                             {
                             colValues.push_back(
                                 round_decimal_place(valueOrSuppressed,
-                                                    std::pow(10, cell.GetPrecision())));
+                                    (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         }
                     // if custom start and/or end column requested and it is not a valid number,
@@ -558,13 +558,13 @@ namespace Wisteria::Graphs
                             {
                             rowValues.push_back(
                                 round_decimal_place(valueOrSuppressed*100,
-                                                    std::pow(10, cell.GetPrecision())));
+                                    (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         else
                             {
                             rowValues.push_back(
                                 round_decimal_place(valueOrSuppressed,
-                                                    std::pow(10, cell.GetPrecision())));
+                                    (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         }
                     // if custom start and/or end column requested and it is not a valid number,
