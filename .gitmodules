@@ -4,6 +4,7 @@
 [submodule "docs/doxygen/doxygen-awesome-css"]
 	path = docs/doxygen/doxygen-awesome-css
 	url = https://github.com/jothepro/doxygen-awesome-css
+	branch = main
 [submodule "src/wxSimpleJSON"]
 	path = src/wxSimpleJSON
 	url = https://github.com/Blake-Madden/wxSimpleJSON.git
@@ -20,4 +21,4 @@
 [submodule "src/wxStartPage"]
 	path = src/wxStartPage
 	url = https://github.com/Blake-Madden/wxStartPage.git
-    branch = main
+	branch = main
