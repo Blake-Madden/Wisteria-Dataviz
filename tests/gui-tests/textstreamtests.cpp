@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/util/textstream.h"
+#include "../../src/util/textstream.h"
 
 // Assigning a char* to a wxString in a UTF-8 encoded file behaves differently between Windows and UNIX.
 // On Windows, MSVC converts the char* to the current locale, whereas UNIX leaves it in the raw UTF-8 data.

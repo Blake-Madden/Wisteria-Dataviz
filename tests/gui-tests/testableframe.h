@@ -44,6 +44,6 @@ public:
 
 private:
     wxEventType m_type;
-    wxTestableFrame* m_frame;
-    wxWindow* m_win;
+    wxTestableFrame* m_frame{ nullptr };
+    wxWindow* m_win{ nullptr };
 };

@@ -1,10 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/data/dataset.h"
+#include "../src/math/mathematics.h"
 
 using namespace Catch::Matchers;
-using namespace Wisteria;
-using namespace Wisteria::Data;
 
 TEST_CASE("Truncate decimals", "[truncate]")
 	{

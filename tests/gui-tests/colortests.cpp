@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/base/colorbrewer.h"
+#include "../../src/base/colorbrewer.h"
 
 using namespace Wisteria;
 using namespace Wisteria::Colors;

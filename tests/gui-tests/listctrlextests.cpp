@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include "../src/ui/controls/listctrlexdataprovider.h"
-#include "../src/ui/controls/listctrlex.h"
+#include "../../src/ui/controls/listctrlexdataprovider.h"
+#include "../../src/ui/controls/listctrlex.h"
 
 using namespace Catch::Matchers;
 
