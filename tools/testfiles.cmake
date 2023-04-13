@@ -3,10 +3,8 @@
 # DO NOT MODIFY MANUALLY!
 
 SET(TEST_SRC_FILES
-    colortests.cpp
     comparedoublestests.cpp
     cppparsetests.cpp
-    datatests.cpp
     docxparsetests.cpp
     evenoddtests.cpp
     geometrytests.cpp
@@ -24,11 +22,9 @@ SET(TEST_SRC_FILES
     rtfparsetests.cpp
     safemathtests.cpp
     statstests.cpp
-    subsettests.cpp
     tagfiltertests.cpp
     textextracttests.cpp
     textimporttests.cpp
-    textstreamtests.cpp
     truncatetests.cpp
     unicodeparsetests.cpp
     xlsximporttests.cpp)

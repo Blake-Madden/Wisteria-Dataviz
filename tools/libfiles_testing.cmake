@@ -71,6 +71,7 @@ SET(WISTERIA_SRC
     ../src/ui/controls/thumbnail.cpp
     ../src/ui/dialogs/archivedlg.cpp
     ../src/ui/dialogs/edittextdlg.cpp
+    ../src/ui/dialogs/excelpreviewdlg.cpp
     ../src/ui/dialogs/filelistdlg.cpp
     ../src/ui/dialogs/functionbrowserdlg.cpp
     ../src/ui/dialogs/getdirdlg.cpp
@@ -87,6 +88,7 @@ SET(WISTERIA_SRC
     ../src/ui/dialogs/warningmessagesdlg.cpp
     ../src/ui/mainframe.cpp
     ../src/ui/ribbon/artmetro.cpp
+    ../src/util/downloadfile.cpp
     ../src/util/fileutil.cpp
     ../src/util/formulaformat.cpp
     ../src/util/idhelpers.cpp
@@ -99,4 +101,5 @@ SET(WISTERIA_SRC
     ../src/util/warningmanager.cpp
     ../src/util/zipcatalog.cpp
     ../src/wxSimpleJSON/src/cJSON/cJSON.c
-    ../src/wxSimpleJSON/src/wxSimpleJSON.cpp)
+    ../src/wxSimpleJSON/src/wxSimpleJSON.cpp
+    ../src/wxStartPage/startpage.cpp)

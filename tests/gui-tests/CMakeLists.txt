@@ -28,7 +28,7 @@ IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 ENDIF()
 
-PROJECT(WisteriaTestRunner)
+PROJECT(WisteriaGuiTestRunner)
 
 # Setup wxWidgets
 ########################
@@ -58,7 +58,7 @@ ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 # Build Wisteria library
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
-INCLUDE(${CMAKE_SOURCE_DIR}/../tools/libfiles_testing.cmake)
+INCLUDE(${CMAKE_SOURCE_DIR}/../../tools/guilibfiles_testing.cmake)
 ADD_LIBRARY(Wisteria STATIC ${WISTERIA_SRC})
 # Add OpenMP for mutlithreading
 FIND_PACKAGE(OpenMP)
@@ -105,8 +105,8 @@ MESSAGE(STATUS "Finding Catch2...")
 # place Catch2 at the same folder level as this repo if it isn't installed
 # (you will need to do this on Windows or macOS or if version 3 of Catch2 isn't installed)
 GET_FILENAME_COMPONENT(_fullpath "${_dir}" REALPATH)
-IF(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../Catch2")
-    ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
+IF(EXISTS "${_fullpath}" AND EXISTS "${_fullpath}/../../../Catch2")
+    ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/../../../Catch2 ${CMAKE_CURRENT_BINARY_DIR}/Catch2)
 ELSE()
     # ...otherwise, see if it is installed
     FIND_PACKAGE(Catch2 3 REQUIRED)
@@ -114,8 +114,8 @@ ENDIF()
 
 # Define the build target for the executable
 MESSAGE(STATUS "Preparing the test runner...")
-SET(TEST_APP WisteriaTestRunner)
-INCLUDE(${CMAKE_SOURCE_DIR}/../tools/testfiles.cmake)
+SET(TEST_APP WisteriaGuiTestRunner)
+INCLUDE(${CMAKE_SOURCE_DIR}/../../tools/guitestfiles.cmake)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 ADD_EXECUTABLE(${TEST_APP} WIN32 MACOSX_BUNDLE ${TEST_SRC_FILES})
 
@@ -129,10 +129,10 @@ ENDIF()
 
 # Copy datasets into build folder
 MESSAGE(STATUS "Copying datasets...")
-ADD_CUSTOM_COMMAND(TARGET ${TEST_APP}
+ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/../datasets $<TARGET_FILE_DIR:${TEST_APP}>/datasets)
+                   ${CMAKE_SOURCE_DIR}/../../datasets $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/datasets)
 
 # load the test cases into the runner
 INCLUDE(CTest)

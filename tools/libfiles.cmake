@@ -58,47 +58,17 @@ SET(WISTERIA_SRC
     src/import/postscript_extract_text.cpp
     src/import/rtf_extract_text.cpp
     src/import/xlsx_extract_text.cpp
-    src/ui/app.cpp
-    src/ui/controls/codeeditor.cpp
-    src/ui/controls/htmltablewin.cpp
-    src/ui/controls/infobarex.cpp
-    src/ui/controls/listctrlex.cpp
-    src/ui/controls/listctrlexdataprovider.cpp
-    src/ui/controls/searchpanel.cpp
-    src/ui/controls/sidebar.cpp
-    src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
-    src/ui/dialogs/archivedlg.cpp
-    src/ui/dialogs/edittextdlg.cpp
-    src/ui/dialogs/excelpreviewdlg.cpp
-    src/ui/dialogs/filelistdlg.cpp
-    src/ui/dialogs/functionbrowserdlg.cpp
-    src/ui/dialogs/getdirdlg.cpp
-    src/ui/dialogs/gridexportdlg.cpp
-    src/ui/dialogs/htmltablepanel.cpp
     src/ui/dialogs/imageexportdlg.cpp
-    src/ui/dialogs/listctrlitemviewdlg.cpp
-    src/ui/dialogs/listctrlsortdlg.cpp
-    src/ui/dialogs/listdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp
-    src/ui/dialogs/variableselectdlg.cpp
-    src/ui/dialogs/warningmessagesdlg.cpp
-    src/ui/mainframe.cpp
-    src/ui/ribbon/artmetro.cpp
-    src/util/downloadfile.cpp
     src/util/fileutil.cpp
     src/util/formulaformat.cpp
-    src/util/idhelpers.cpp
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
-    src/util/resource_manager.cpp
-    src/util/screenshot.cpp
     src/util/textreplace.cpp
     src/util/textstream.cpp
-    src/util/warningmanager.cpp
     src/util/zipcatalog.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
-    src/wxSimpleJSON/src/wxSimpleJSON.cpp
-    src/wxStartPage/startpage.cpp)
+    src/wxSimpleJSON/src/wxSimpleJSON.cpp)

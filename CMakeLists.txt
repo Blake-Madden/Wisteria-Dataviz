@@ -86,7 +86,7 @@ ADD_COMPILE_OPTIONS("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 # Build Wisteria library
 ########################
 # (run "tools/Build CMake Files List.R" to update this)
-INCLUDE(${CMAKE_SOURCE_DIR}/tools/files.cmake)
+INCLUDE(${CMAKE_SOURCE_DIR}/tools/libfiles.cmake)
 ADD_LIBRARY(WisteriaLib STATIC ${WISTERIA_SRC})
 # Add OpenMP for mutlithreading
 FIND_PACKAGE(OpenMP)
