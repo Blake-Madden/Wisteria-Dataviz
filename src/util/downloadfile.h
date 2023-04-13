@@ -160,7 +160,7 @@ public:
     /// @brief Constructor.
     /// @param handler The parent event handler (e.g., dialog or @c wxApp)
     ///     to connect to this queue.
-    DownloadFile(wxEvtHandler* handler) : m_handler(handler)
+    explicit DownloadFile(wxEvtHandler* handler) : m_handler(handler)
         {};
     /// @private
     DownloadFile() = default;
