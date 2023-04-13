@@ -5,8 +5,98 @@
 #include "../src/import/text_column.h"
 #include "../src/import/text_matrix.h"
 #include "../src/import/text_preview.h"
+#include "../src/import/text_functional.h"
 
 using namespace Catch::Matchers;
+
+TEST_CASE("Cell trim", "[text import]")
+    {
+    SECTION("Null")
+        {
+        lily_of_the_valley::cell_trim trim;
+        CHECK(trim(nullptr, 5) == nullptr);
+        }
+    SECTION("Nothing")
+        {
+        const wchar_t* myString = L"Hello";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wcscmp(start,L"Hello") == 0);
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Nothing2")
+        {
+        const wchar_t* myString = L"H";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wcscmp(start,L"H") == 0);
+        CHECK(trim.get_trimmed_string_length() == 1);
+        }
+    SECTION("Nothing3")
+        {
+        const wchar_t* myString = L"";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString);
+        CHECK(trim.get_trimmed_string_length() == 0);
+        CHECK(start == myString);
+        }
+    SECTION("Trim Left")
+        {
+        const wchar_t* myString = L" \t \n\r\tHello";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wcscmp(start,L"Hello") == 0);
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Trim Right")
+        {
+        const wchar_t* myString = L"Hello \t \n\r\t";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wcsncmp(start,L"Hello", 5) == 0);
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Trim Both")
+        {
+        const wchar_t* myString = L"      \nHello \t \n\r\t";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wcsncmp(start,L"Hello", 5) == 0);
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Trim Both No Known Length")
+        {
+        const wchar_t* myString = L"      \nHello \t \n\r\t";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString);
+        CHECK(std::wcsncmp(start,L"Hello", 5) == 0);
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Trim All Spaces")
+        {
+        const wchar_t* myString = L"    \t";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, 5);
+        CHECK(trim.get_trimmed_string_length() == 0);
+        CHECK(start == myString+5);
+        }
+    SECTION("Trim All Spaces Followed By Text")
+        {
+        const wchar_t* myString = L"   some text";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, 3);
+        CHECK(std::wcscmp(start,L"some text") == 0);
+        CHECK(trim.get_trimmed_string_length() == 0);
+        }
+    SECTION("Trim Some Spaces Followed By Text")
+        {
+        const wchar_t* myString = L" some text";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, 3);
+        CHECK(std::wcsncmp(start,L"so", 2) == 0);
+        CHECK(trim.get_trimmed_string_length() == 2);
+        }
+    }
 
 TEST_CASE("Test Tabbed Different Column", "[text import]")
 	{
