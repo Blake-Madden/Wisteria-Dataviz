@@ -29,13 +29,13 @@
         and then downloads them asynchronously.
     @par Example
         An `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
-        should store an initialize a @c DownloadQueue object as a member
+        should store an initialize a @c QueueDownload object as a member
         and then initialize it as such:
     @code
         m_downloader.SetEventHandler(this);
 
         // Bind state event
-        Bind(wxEVT_WEBREQUEST_STATE, &DownloadQueue::ProcessRequest, &m_downloader);
+        Bind(wxEVT_WEBREQUEST_STATE, &QueueDownload::ProcessRequest, &m_downloader);
         // either bind this, or call m_downloader.CancelPending() in the
         // wxEvtHandler's already-existing close event
         Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
@@ -62,24 +62,24 @@
         // respective local paths
         m_downloader.Start();
     @endcode
-    @warning An `wxEvtHandler`-derived class can either be connected to a single DownloadQueue
-        or a single DownloadFile object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
-        event to the `DownloadQueue`'s or `DownloadFile`'s @c ProcessRequest() method.
+    @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
+        or a single FileDownload object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
+        event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest() method.
 */
-class DownloadQueue
+class QueueDownload
     {
 public:
     /// @brief Constructor.
     /// @param handler The parent event handler (e.g., dialog or @c wxApp)
     ///     to connect to this queue.
-    explicit DownloadQueue(wxEvtHandler* handler) : m_handler(handler)
+    explicit QueueDownload(wxEvtHandler* handler) : m_handler(handler)
         {};
     /// @private
-    DownloadQueue() = default;
+    QueueDownload() = default;
     /// @private
-    DownloadQueue(const DownloadQueue&) = delete;
+    QueueDownload(const QueueDownload&) = delete;
     /// @private
-    DownloadQueue& operator=(const DownloadQueue&) = delete;
+    QueueDownload& operator=(const QueueDownload&) = delete;
 
     /// @brief Connect the download queue to a parent dialog or @c wxApp.
     /// @param handler The @c wxEvtHandler to connect the queue to.
@@ -103,9 +103,9 @@ public:
     /// @param evt The event to process.
     /// @par Example:
     /// @code
-    ///     // assuming m_downloads is a DownloadQueue member of the dialog
+    ///     // assuming m_downloads is a QueueDownload member of the dialog
     ///     Bind(wxEVT_WEBREQUEST_STATE,
-    ///          &DownloadQueue::ProcessRequest, &m_downloads);
+    ///          &QueueDownload::ProcessRequest, &m_downloads);
     /// @endcode
     void ProcessRequest(wxWebRequestEvent& evt);
     /// @brief Bind this to the parent `wxEvtHandler`'s close event
@@ -124,13 +124,13 @@ private:
 /** @brief Reads or downloads a file synchronously.
     @par Example
         An `wxEvtHandler`-derived class (a @c wxFrame, @c wxApp, etc.)
-        should store an initialize a @c DownloadFile object as a member
+        should store an initialize a @c FileDownload object as a member
         and then initialize it as such:
     @code
         m_downloadFile.SetEventHandler(this);
 
         // Bind state event
-        Bind(wxEVT_WEBREQUEST_STATE, &DownloadFile::ProcessRequest, &m_downloadFile);
+        Bind(wxEVT_WEBREQUEST_STATE, &FileDownload::ProcessRequest, &m_downloadFile);
         // either bind this, or call m_downloadFile.CancelPending() in the
         // wxEvtHandler's already-existing close event
         Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
@@ -150,24 +150,24 @@ private:
         wxString webPageContent(m_downloadFile.Read("https://www.wxwidgets.org/") ?
                                 &m_downloadFile.GetLastRead()[0] : wxString{});
     @endcode
-    @warning An `wxEvtHandler`-derived class can either be connected to a single DownloadQueue
-        or a single DownloadFile object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
-        event to the `DownloadQueue`'s or `DownloadFile`'s @c ProcessRequest() method.
+    @warning An `wxEvtHandler`-derived class can either be connected to a single QueueDownload
+        or a single FileDownload object. This is because the class must bind its @c wxEVT_WEBREQUEST_STATE
+        event to the `QueueDownload`'s or `FileDownload`'s @c ProcessRequest() method.
 */
-class DownloadFile
+class FileDownload
     {
 public:
     /// @brief Constructor.
     /// @param handler The parent event handler (e.g., dialog or @c wxApp)
     ///     to connect to this queue.
-    explicit DownloadFile(wxEvtHandler* handler) : m_handler(handler)
+    explicit FileDownload(wxEvtHandler* handler) : m_handler(handler)
         {};
     /// @private
-    DownloadFile() = default;
+    FileDownload() = default;
     /// @private
-    DownloadFile(const DownloadQueue&) = delete;
+    FileDownload(const QueueDownload&) = delete;
     /// @private
-    DownloadFile& operator=(const DownloadQueue&) = delete;
+    FileDownload& operator=(const QueueDownload&) = delete;
 
     /// @brief Connect the downloader to a parent dialog or @c wxApp.
     /// @param handler The @c wxEvtHandler to connect the downloader to.
@@ -200,16 +200,16 @@ public:
     /// @param evt The event to process.
     /// @par Example:
     /// @code
-    ///     // assuming m_downloadFile is a DownloadFile member of the dialog
+    ///     // assuming m_downloadFile is a FileDownload member of the dialog
     ///     Bind(wxEVT_WEBREQUEST_STATE,
-    ///          &DownloadFile::ProcessRequest, &m_downloadFile);
+    ///          &FileDownload::ProcessRequest, &m_downloadFile);
     /// @endcode
     void ProcessRequest(wxWebRequestEvent& evt);
     /// @brief Bind this to the parent `wxEvtHandler`'s close event
     ///     to close any download or read that are still pending.
     /// @par Example:
     /// @code
-    ///     // assuming m_downloadFile is a DownloadFile member of the dialog
+    ///     // assuming m_downloadFile is a FileDownload member of the dialog
     ///     Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
     ///         {
     ///         m_downloadFile.CancelPending();

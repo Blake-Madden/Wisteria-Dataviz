@@ -9,7 +9,7 @@
 #include "downloadfile.h"
 
 //--------------------------------------------------
-void DownloadQueue::Add(const wxString& url, const wxString& localDownloadPath)
+void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
     {
     wxASSERT_MSG(m_handler,
                     L"Call SetEventHandler() to connect an event handler!");
@@ -27,7 +27,7 @@ void DownloadQueue::Add(const wxString& url, const wxString& localDownloadPath)
     }
 
 //--------------------------------------------------
-wxString DownloadQueue::GetLocalPath(const int ID) const
+wxString QueueDownload::GetLocalPath(const int ID) const
     {
     std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
@@ -36,7 +36,7 @@ wxString DownloadQueue::GetLocalPath(const int ID) const
     }
 
 //--------------------------------------------------
-void DownloadQueue::Remove(const int ID)
+void QueueDownload::Remove(const int ID)
     {
     std::lock_guard<decltype(m_mutex)> lock{ m_mutex };
     auto downloadInfo = m_downloads.find(ID);
@@ -48,7 +48,7 @@ void DownloadQueue::Remove(const int ID)
     }
 
 //--------------------------------------------------
-void DownloadQueue::CancelPending()
+void QueueDownload::CancelPending()
     {
     std::for_each(m_requests.begin(), m_requests.end(),
         [](wxWebRequest& request)
@@ -60,7 +60,7 @@ void DownloadQueue::CancelPending()
     }
 
 //--------------------------------------------------
-void DownloadQueue::ProcessRequest(wxWebRequestEvent& evt)
+void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
     {
     switch (evt.GetState())
         {
@@ -131,7 +131,7 @@ void DownloadQueue::ProcessRequest(wxWebRequestEvent& evt)
     }
 
 //--------------------------------------------------
-bool DownloadFile::Download(const wxString& url, const wxString& localDownloadPath)
+bool FileDownload::Download(const wxString& url, const wxString& localDownloadPath)
     {
     wxASSERT_MSG(m_handler,
         L"Call SetEventHandler() to connect an event handler!");
@@ -175,7 +175,7 @@ bool DownloadFile::Download(const wxString& url, const wxString& localDownloadPa
     }
 
 //--------------------------------------------------
-bool DownloadFile::Read(const wxString& url)
+bool FileDownload::Read(const wxString& url)
     {
     wxASSERT_MSG(m_handler,
         L"Call SetEventHandler() to connect an event handler!");
@@ -199,7 +199,7 @@ bool DownloadFile::Read(const wxString& url)
     }
 
 //--------------------------------------------------
-void DownloadFile::ProcessRequest(wxWebRequestEvent& evt)
+void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     {
     switch (evt.GetState())
         {
