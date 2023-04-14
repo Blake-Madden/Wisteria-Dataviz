@@ -195,6 +195,9 @@ public:
     ///     into a wxString.
     const std::vector<char>& GetLastRead() const noexcept
         { return m_buffer; }
+    /// @returns The response from the last call to Read() or Download().
+    wxWebResponse GetResponse() const
+        { return m_request.GetResponse(); }
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
     ///     parent @c wxEvtHandler.
     /// @param evt The event to process.
