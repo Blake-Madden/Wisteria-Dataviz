@@ -247,7 +247,7 @@ namespace Wisteria::Graphs
                 }
             smallestLabelScaling = std::min(smallestLabelScaling, locationLabel->GetScaling());
             if (compare_doubles(smallestLabelScaling, smallestLabelScalingAllowable))
-                { break;}
+                { break; }
             }
         for (auto& locationLabel : locationLabels)
             {

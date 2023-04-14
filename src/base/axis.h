@@ -748,7 +748,7 @@ namespace Wisteria::GraphItems
             @note This only applies when labels are parallel to the axis, see SetAxisLabelOrientation().
                 To control how the text within the axis labels are aligned, call SetTextAlignment().*/
         void SetParallelLabelAlignment(const RelativeAlignment alignment) noexcept
-            { m_labelAlignmet = alignment;}
+            { m_labelAlignmet = alignment; }
         /** @brief Sets whether the first and last axis labels should be shown
                 (the outer lines of the plot).
                 This should be called after the labels and scaling have been set.

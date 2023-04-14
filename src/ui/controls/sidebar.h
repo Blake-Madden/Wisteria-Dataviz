@@ -80,7 +80,8 @@ namespace Wisteria::UI
         struct SideBarSubItem
             {
             /// @private
-            [[nodiscard]] bool operator<(const SideBarSubItem& that) const
+            [[nodiscard]]
+            bool operator<(const SideBarSubItem& that) const
                 {
                 return wxUILocale::GetCurrent().
                     CompareStrings(m_label, that.m_label, wxCompare_CaseInsensitive) < 0;
@@ -114,11 +115,13 @@ namespace Wisteria::UI
                     { m_isExpanded = false; }
                 }
             /// @returns The number of child items in this folder.
-            [[nodiscard]] size_t GetSubItemCount() const noexcept
+            [[nodiscard]]
+            size_t GetSubItemCount() const noexcept
                 { return m_subItems.size(); }
             /// @returns @c true if the selected item in the sidebar is
             ///     one of this folder's children.
-            [[nodiscard]] bool IsSubItemSelected() const noexcept
+            [[nodiscard]]
+            bool IsSubItemSelected() const noexcept
                 {
                 return (m_selectedItem.has_value() &&
                         m_selectedItem.value() < m_subItems.size());
@@ -128,7 +131,8 @@ namespace Wisteria::UI
             void SortSubItems()
                 { std::sort(m_subItems.begin(), m_subItems.end()); }
             /// @returns The item's ID.
-            [[nodiscard]] wxWindowID GetId() const noexcept
+            [[nodiscard]]
+            wxWindowID GetId() const noexcept
                 { return m_id; }
         private:
             wxString m_label;
@@ -172,7 +176,8 @@ namespace Wisteria::UI
         /** @brief Accesses a (root-level) item.
             @param item The item to access (by index).
             @returns The folder at item index.*/
-        [[nodiscard]] SideBarItem& GetFolder(const size_t item)
+        [[nodiscard]]
+        SideBarItem& GetFolder(const size_t item)
             {
             wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
             return m_folders.at(item);
@@ -207,7 +212,8 @@ namespace Wisteria::UI
         void SetImageList(const std::vector<wxBitmapBundle>& imageList)
             { m_imageList = imageList; }
         /** @returns The control's image list.*/
-        [[nodiscard]] std::vector<wxBitmapBundle>& GetImageList() noexcept
+        [[nodiscard]]
+        std::vector<wxBitmapBundle>& GetImageList() noexcept
             { return m_imageList; }
         /// @}
 
@@ -217,12 +223,14 @@ namespace Wisteria::UI
 
         /** @returns The total of (root level) items.
             @note Subitems are not included in this count.*/
-        [[nodiscard]] size_t GetFolderCount() const noexcept
+        [[nodiscard]]
+        size_t GetFolderCount() const noexcept
             { return m_folders.size(); }
 
         /** @returns The label of a given root item.
             @param item The index of the item in the list of root items.*/
-        [[nodiscard]] wxString GetFolderText(const size_t item) const
+        [[nodiscard]]
+        wxString GetFolderText(const size_t item) const
             {
             if (item >= GetFolderCount())
                 { return wxEmptyString; }
@@ -270,17 +278,20 @@ namespace Wisteria::UI
         /** @returns The position of the selected root-level item, or @c std::nullopt
                 if nothing is selected.
             @note If a subitem is selected, this will return the position of its parent item.*/
-        [[nodiscard]] std::optional<size_t> GetSelectedFolder() const noexcept
+        [[nodiscard]]
+        std::optional<size_t> GetSelectedFolder() const noexcept
             { return m_selectedFolder; }
         /** @brief Gets the position of the selected item (or sub item).
             @returns The raw position of the selected item,
                 meaning the index of the item including subitems.\n
                 Returns @c std::nullopt if nothing is selected.*/
-        [[nodiscard]] std::optional<size_t> GetSelectedAnyItem() const;
+        [[nodiscard]]
+        std::optional<size_t> GetSelectedAnyItem() const;
         /** @returns The ID of the selected root-level item,
                 or @c std::nullopt if nothing is selected.
             @note If a subitem is selected, this will return the ID of its parent item.*/
-        [[nodiscard]] std::optional<wxWindowID> GetSelectedFolderId() const
+        [[nodiscard]]
+        std::optional<wxWindowID> GetSelectedFolderId() const
             {
             return IsFolderSelected() ?
                 std::optional<wxWindowID>(m_folders[GetSelectedFolder().value()].m_id) :
@@ -289,13 +300,16 @@ namespace Wisteria::UI
         /** @brief Gets parent position and ID of its selected subitem, or a pair of
                 @c std::nullopt if no subitem is selected.
             @returns The position of the parent and the subitem's ID.*/
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<wxWindowID>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<wxWindowID>>
             GetSelectedSubItemId() const;
         /** @returns The label of the selected folder
                 (or subitem if the folder has a select subitem).*/
-        [[nodiscard]] wxString GetSelectedLabel() const;
+        [[nodiscard]]
+        wxString GetSelectedLabel() const;
         /** @returns Whether a (root-level) item is selected in the sidebar.*/
-        [[nodiscard]] bool IsFolderSelected() const noexcept
+        [[nodiscard]]
+        bool IsFolderSelected() const noexcept
             {
             return (m_selectedFolder.has_value() &&
                     m_selectedFolder.value() < GetFolderCount());
@@ -309,20 +323,23 @@ namespace Wisteria::UI
         /** @brief Search for a (root-level) item by ID.
             @param Id The ID of the item to search for.
             @return The position of the item, or @c std::nullopt if not found.*/
-        [[nodiscard]] std::optional<size_t> FindFolder(const wxWindowID Id) const;
+        [[nodiscard]]
+        std::optional<size_t> FindFolder(const wxWindowID Id) const;
         /** @brief Searches for a sub item by ID.
             @note This it will search within all of the root-level items.
             @param Id The ID of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxWindowID Id) const;
         /** @brief Searches for a sub item by ID, but only within a specified parent item
             @param parentId The parent item's ID to search within.
             @param subItemId The ID of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxWindowID parentId, const wxWindowID subItemId) const;
         /** Searches for a sub item by ID, but only within a specified parent item
             @param parentId The parent item's ID to search within.
@@ -330,14 +347,16 @@ namespace Wisteria::UI
                 the best match based on @c subItem's ID, label, and icon.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxWindowID parentId, const SideBarSubItem& subItem) const;
         /** @brief Searches for a subitem by label
             @details Note that it will search within all of the root-level items.
             @param label The Label of the sub item to search for.
             @returns If found, returns the parent's index and the subitem's index. Returns a
                 pair of @c std::nullopt otherwise.*/
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(const wxString& label) const;
         /// @}
 
@@ -379,7 +398,8 @@ namespace Wisteria::UI
             }
 
         /// @returns Which sort of effect is being used to render the control.
-        [[nodiscard]] SidebarStyle GetStyle() const noexcept
+        [[nodiscard]]
+        SidebarStyle GetStyle() const noexcept
             { return m_style; }
         /// @brief Sets the visual effect to render the control.
         /// @param style The style to use.
@@ -416,19 +436,23 @@ namespace Wisteria::UI
             { m_iconSizeDIPs = sz; }
 
         /// @private
-        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImageList() const noexcept
+        [[nodiscard]]
+        const std::vector<wxBitmapBundle>& GetImageList() const noexcept
             { return m_imageList; }
         /// @private
-        [[nodiscard]] const SideBarItem& GetFolder(const size_t item) const
+        [[nodiscard]]
+        const SideBarItem& GetFolder(const size_t item) const
             {
             wxASSERT_MSG(item < m_folders.size(), L"Invalid item in call to GetFolder()!");
             return m_folders.at(item);
             }
         /// @private
-        [[nodiscard]] std::optional<size_t> FindFolder(const std::optional<wxWindowID> Id) const
+        [[nodiscard]]
+        std::optional<size_t> FindFolder(const std::optional<wxWindowID> Id) const
             { return (Id.has_value() ? FindFolder(Id.value()) : std::nullopt); }
         /// @private
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(std::optional<wxWindowID> parentId, std::optional<wxWindowID> subItemId) const
             {
             return ((parentId.has_value() && subItemId.has_value()) ?
@@ -436,7 +460,8 @@ namespace Wisteria::UI
                 std::make_pair(std::nullopt, std::nullopt));
             }
         /// @private
-        [[nodiscard]] std::pair<std::optional<size_t>, std::optional<size_t>>
+        [[nodiscard]]
+        std::pair<std::optional<size_t>, std::optional<size_t>>
             FindSubItem(std::optional<wxWindowID> Id) const
             {
             return (Id.has_value() ? FindSubItem(Id.value()) :
@@ -463,7 +488,8 @@ namespace Wisteria::UI
                 so the width of the widest subitem will be returned if wider than the root item.
             @param item The position of the root item.
             @returns The item's width.*/
-        [[nodiscard]] size_t GetFolderWidth(const size_t item);
+        [[nodiscard]]
+        size_t GetFolderWidth(const size_t item);
         /// @brief Updates the areas and positions for the items and returns
         ///     their collective height.
         /// @returns The total height of all items.
@@ -497,15 +523,20 @@ namespace Wisteria::UI
         void DrawGlassEffect(wxDC& dc, const wxRect rect, const wxColour color);
 
         std::vector<wxBitmapBundle> m_imageList;
-        [[nodiscard]] wxCoord GetItemHeight() const noexcept
+        [[nodiscard]]
+        wxCoord GetItemHeight() const noexcept
             { return m_itemHeight; }
-        [[nodiscard]] wxSize GetIconSize() const
+        [[nodiscard]]
+        wxSize GetIconSize() const
             { return FromDIP(m_iconSizeDIPs); }
-        [[nodiscard]] wxCoord GetPaddingWidth() const
+        [[nodiscard]]
+        wxCoord GetPaddingWidth() const
             { return wxSizerFlags::GetDefaultBorder() * 2; }
-        [[nodiscard]] wxCoord GetPaddingHeight() const
-            { return wxSizerFlags::GetDefaultBorder() * 2;}
-        [[nodiscard]] wxCoord GetSubitemIndentation() const
+        [[nodiscard]]
+        wxCoord GetPaddingHeight() const
+            { return wxSizerFlags::GetDefaultBorder() * 2; }
+        [[nodiscard]]
+        wxCoord GetSubitemIndentation() const
             { return GetPaddingWidth() * 2; }
 
         wxCoord m_itemHeight{ 0 };

@@ -407,7 +407,7 @@ public:
         {
         std::map<long, ColumnInfo>::const_iterator pos = m_columnInfo.find(column);
         if (pos != m_columnInfo.end())
-            { return pos->second;}
+            { return pos->second; }
         else
             { return DefaultColumnInfo; }
         }
@@ -501,7 +501,7 @@ public:
         {
         std::map<long, ColumnInfo>::const_iterator pos = m_columnInfo.find(column);
         if (pos == m_columnInfo.end())
-            { return ColumnInfo::ColumnFilePathTruncationMode::NoTruncation;}
+            { return ColumnInfo::ColumnFilePathTruncationMode::NoTruncation; }
         else
             { return pos->second.m_truncateFilePathsMode; }
         }

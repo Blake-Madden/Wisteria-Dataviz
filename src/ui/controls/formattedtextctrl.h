@@ -235,7 +235,7 @@ public:
     /// @returns The width of the printing area.
     [[nodiscard]]
     int GetPrintWidth() const
-        { return m_paperSize.x - m_rectMargin.GetLeft() - m_rectMargin.GetRight();}
+        { return m_paperSize.x - m_rectMargin.GetLeft() - m_rectMargin.GetRight(); }
     /// @returns The actual area being printed (page minus the margins).
     [[nodiscard]]
     wxRect GetPrintRect() const

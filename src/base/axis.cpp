@@ -463,7 +463,7 @@ namespace Wisteria::GraphItems
                 (CalcTickMarkInnerWidth()+(HasDoubleSidedAxisLabels() ? spaceBetweenAxisAndLabel : 0)),
                 GetBottomPoint().y); // the line, tickmarks, and space after that
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
-                { bottomRightCorner.x += textMeasurement/2;}
+                { bottomRightCorner.x += textMeasurement/2; }
             topLeftCorner.x -= (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine) ?
                                 0 :
                                 IsStackingLabels() ? textMeasurement*2 : textMeasurement;
@@ -511,7 +511,7 @@ namespace Wisteria::GraphItems
                                     0 :
                                     IsStackingLabels() ? textMeasurement*2 : textMeasurement;
             if (GetPerpendicularLabelAxisAlignment() == AxisLabelAlignment::CenterOnAxisLine)
-                { bottomRightCorner.x += textMeasurement/2;}
+                { bottomRightCorner.x += textMeasurement/2; }
             if (HasDoubleSidedAxisLabels() &&
                 (GetPerpendicularLabelAxisAlignment() != AxisLabelAlignment::CenterOnAxisLine))
                 { topLeftCorner.x -= IsStackingLabels() ? textMeasurement*2 : textMeasurement; }
