@@ -32,10 +32,10 @@
         should store an initialize a @c QueueDownload object as a member
         and then initialize it as such:
     @code
-        m_downloader.SetEventHandler(this);
+        // You can also call SetEventHandler() and bind wxEVT_WEBREQUEST_STATE and
+        // wxEVT_WEBREQUEST_DATA yourself if you prefer; this is a shortcut for that.
+        m_downloader.SetAndBindEventHandler(this);
 
-        // Bind state event
-        Bind(wxEVT_WEBREQUEST_STATE, &QueueDownload::ProcessRequest, &m_downloader);
         // either bind this, or call m_downloader.CancelPending() in the
         // wxEvtHandler's already-existing close event
         Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
@@ -83,8 +83,21 @@ public:
 
     /// @brief Connect the download queue to a parent dialog or @c wxApp.
     /// @param handler The @c wxEvtHandler to connect the queue to.
+    /// @sa ProcessRequest(), SetAndBindEventHandler().
     void SetEventHandler(wxEvtHandler* handler)
         { m_handler = handler; }
+    /// @brief Connect the downloader to a parent dialog or @c wxApp, and also
+    ///     bind the event handler's @c wxEVT_WEBREQUEST_STATE and @c wxEVT_WEBREQUEST_DATA
+    ///     events to this object.
+    /// @param handler The @c wxEvtHandler to connect the downloader to.
+    /// @note It is recommended to call @c CancelPending() in the event handler's
+    ///     close event (that will not be bound here).
+    void SetAndBindEventHandler(wxEvtHandler* handler)
+        {
+        m_handler = handler;
+        m_handler->Bind(wxEVT_WEBREQUEST_STATE, &QueueDownload::ProcessRequest, this);
+        m_handler->Bind(wxEVT_WEBREQUEST_DATA, &QueueDownload::ProcessRequest, this);
+        }
     /// @brief Adds an URL and download path to the queue.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
@@ -127,12 +140,12 @@ private:
         should store an initialize a @c FileDownload object as a member
         and then initialize it as such:
     @code
-        m_downloadFile.SetEventHandler(this);
+        // You can also call SetEventHandler() and bind wxEVT_WEBREQUEST_STATE and
+        // wxEVT_WEBREQUEST_DATA yourself if you prefer; this is a shortcut for that.
+        m_downloadFile.SetAndBindEventHandler(this);
 
-        // Bind state event
-        Bind(wxEVT_WEBREQUEST_STATE, &FileDownload::ProcessRequest, &m_downloadFile);
-        // either bind this, or call m_downloadFile.CancelPending() in the
-        // wxEvtHandler's already-existing close event
+        // Either bind this, or call m_downloadFile.CancelPending() in the
+        // wxEvtHandler's already-existing close event.
         Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
             {
             m_downloadFile.CancelPending();
@@ -140,8 +153,12 @@ private:
             });
     @endcode
 
-    Later, the `wxEvtHandler`-derived class can call Read or Download as such:
+    Later, the `wxEvtHandler`-derived class can call GetResponse(), Read(), or Download() as such:
     @code
+        // get the content type of a page (without reading its full content)
+        const wxString contentType = m_downloadFile.GetResponse(
+            "https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md").GetHeader("Content-Type");
+
         // download a file locally
         m_downloadFile.Download("https://github.com/wxWidgets/wxWidgets/blob/master/README-GIT.md",
                                 wxStandardPaths::Get().GetDocumentsDir() + "/readme.md");
@@ -171,8 +188,21 @@ public:
 
     /// @brief Connect the downloader to a parent dialog or @c wxApp.
     /// @param handler The @c wxEvtHandler to connect the downloader to.
+    /// @sa ProcessRequest(), SetAndBindEventHandler().
     void SetEventHandler(wxEvtHandler* handler)
         { m_handler = handler; }
+    /// @brief Connect the downloader to a parent dialog or @c wxApp, and also
+    ///     bind the event handler's @c wxEVT_WEBREQUEST_STATE and @c wxEVT_WEBREQUEST_DATA
+    ///     events to this object.
+    /// @param handler The @c wxEvtHandler to connect the downloader to.
+    /// @note It is recommended to call @c CancelPending() in the event handler's
+    ///     close event (that will not be bound here).
+    void SetAndBindEventHandler(wxEvtHandler* handler)
+        {
+        m_handler = handler;
+        m_handler->Bind(wxEVT_WEBREQUEST_STATE, &FileDownload::ProcessRequest, this);
+        m_handler->Bind(wxEVT_WEBREQUEST_DATA, &FileDownload::ProcessRequest, this);
+        }
     /// @brief If @c true, shows a progress dialog while downloading a file.
     /// @param show @c true to show the progress dialog.
     void ShowProgress(const bool show) noexcept
@@ -198,6 +228,12 @@ public:
     /// @returns The response from the last call to Read() or Download().
     wxWebResponse GetResponse() const
         { return m_request.GetResponse(); }
+    /// @returns The response from the provided URL.
+    /// @note This will not read or download the webpage, it will only get its response.\n
+    ///     If using @c SetEventHandler() instead of @c SetAndBindEventHandler(),
+    ///     this object's event handler will need to have its @c  wxEVT_WEBREQUEST_DATA event
+    ///     bound to object if calling this.
+    wxWebResponse GetResponse(const wxString& url);
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
     ///     parent @c wxEvtHandler.
     /// @param evt The event to process.
@@ -206,6 +242,8 @@ public:
     ///     // assuming m_downloadFile is a FileDownload member of the dialog
     ///     Bind(wxEVT_WEBREQUEST_STATE,
     ///          &FileDownload::ProcessRequest, &m_downloadFile);
+    ///     Bind(wxEVT_WEBREQUEST_DATA,
+    ///         &FileDownload::ProcessRequest, &m_downloadFile);
     /// @endcode
     void ProcessRequest(wxWebRequestEvent& evt);
     /// @brief Bind this to the parent `wxEvtHandler`'s close event

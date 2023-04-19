@@ -175,6 +175,30 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     }
 
 //--------------------------------------------------
+wxWebResponse FileDownload::GetResponse(const wxString& url)
+    {
+    wxASSERT_MSG(m_handler,
+        L"Call SetEventHandler() to connect an event handler!");
+    if (m_handler == nullptr)
+        {
+        wxLogError(L"Download could not start because event handler "
+                    "has not been connected.");
+        return wxWebResponse{};
+        }
+    m_downloadPath.clear();
+    m_buffer.clear();
+    m_request = wxWebSession::GetDefault().CreateRequest(
+        m_handler, url);
+    m_request.SetStorage(wxWebRequest::Storage_None);
+    m_stillActive = true;
+    m_request.Start();
+
+    while (m_stillActive)
+        { wxYield(); }
+    return m_request.GetResponse();
+    }
+
+//--------------------------------------------------
 bool FileDownload::Read(const wxString& url)
     {
     wxASSERT_MSG(m_handler,
@@ -208,7 +232,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             {
             // if file was downloaded to a temp file,
             // copy it to the requested location
-            if (!m_downloadPath.empty())
+            if (m_request.GetStorage() == wxWebRequest::Storage_File)
                 {
                 if (!wxRenameFile(evt.GetDataFile(), m_downloadPath))
                     { wxLogError(L"Could not move %s", evt.GetDataFile()); }
@@ -216,7 +240,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     { m_downloadSuccessful = true; }
                 }
             // otherwise, it was requested to be read into a buffer
-            else
+            else if (m_request.GetStorage() == wxWebRequest::Storage_Memory)
                 {
                 m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
                 evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
