@@ -18,12 +18,12 @@
 #include <unordered_set>
 
 /// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added.
-template <typename T, typename Compare = std::less<T>>
+template <typename T, typename Compare = std::less<T>, typename FrequencyT = size_t>
 class frequency_set
     {
 public:
     /// @private
-    using map_type = std::map<T, size_t, Compare>;
+    using map_type = std::map<T, FrequencyT, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @brief Constructor.
@@ -74,7 +74,7 @@ class double_frequency_set
     {
 public:
     /// @private
-    using map_type = std::map<T, std::pair<size_t,size_t>, TCompare>;
+    using map_type = std::map<T, std::pair<size_t, size_t>, TCompare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /** @brief Inserts an item into the set.
@@ -411,12 +411,13 @@ private:
          supports multiple (unique) values (with their own freqency counts)
          connected to each key. Also includes an aggregator for each key.*/
 template <typename T1, typename T2,
-          typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
+          typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>,
+          typename FrequencyT = size_t>
 class multi_value_frequency_aggregate_map
     {
 public:
     /// @private
-    using values_set = frequency_set<T2, CompareSecondaryValues>;
+    using values_set = frequency_set<T2, CompareSecondaryValues, FrequencyT>;
     /// @private
     using values_and_aggregate_pair_type = std::pair<values_set, double>;
     /// @private
