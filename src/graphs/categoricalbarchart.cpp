@@ -19,14 +19,14 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void CategoricalBarChart::SetData(std::shared_ptr<const Data::Dataset> data,
                             const wxString& categoricalColumnName,
-                            const std::optional<const wxString> valueColumnName /*= std::nullopt*/,
+                            const std::optional<const wxString> weightColumnName /*= std::nullopt*/,
                             const std::optional<const wxString> groupColumnName /*= std::nullopt*/,
                             const BinLabelDisplay blDisplay /*= BinLabelDisplay::BinValue*/)
         {
         // point to (new) data and reset
         SetDataset(data);
         ResetGrouping();
-        m_useValueColumn = valueColumnName.has_value();
+        m_useWeightColumn = weightColumnName.has_value();
         m_useIDColumnForBars = false;
         GetSelectedIds().clear();
         ClearBars();
@@ -55,13 +55,13 @@ namespace Wisteria::Graphs
         // set the grouping column (or keep it as null if not in use)
         SetGroupColumn(groupColumnName);
 
-        m_continuousColumn = (valueColumnName ? GetDataset()->GetContinuousColumn(valueColumnName.value()) :
+        m_weightColumn = (weightColumnName ? GetDataset()->GetContinuousColumn(weightColumnName.value()) :
             GetDataset()->GetContinuousColumns().cend());
-        if (valueColumnName && m_continuousColumn == GetDataset()->GetContinuousColumns().cend())
+        if (weightColumnName && m_weightColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for categorical bar chart."),
-                valueColumnName.value()).ToUTF8());
+                _(L"'%s': weight column not found for categorical bar chart."),
+                weightColumnName.value()).ToUTF8());
             }
 
         // if grouping, build the list of group IDs, sorted by their respective labels
@@ -111,10 +111,10 @@ namespace Wisteria::Graphs
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
-            if (m_useValueColumn &&
-                std::isnan(m_continuousColumn->GetValue(i)))
+            if (m_useWeightColumn &&
+                std::isnan(m_weightColumn->GetValue(i)))
                 { continue; }
-            const double groupTotal = (m_useValueColumn ? m_continuousColumn->GetValue(i) : 1);
+            const double groupTotal = (m_useWeightColumn ? m_weightColumn->GetValue(i) : 1);
             grandTotal += groupTotal;
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
@@ -169,7 +169,7 @@ namespace Wisteria::Graphs
                 GetBrushScheme()->GetBrush(blockTable.first.m_schemeIndex) :
                 GetBrushScheme()->GetBrush(0));
 
-            wxString blockLabelText = (m_useValueColumn ?
+            wxString blockLabelText = (m_useWeightColumn ?
                 wxString::Format(_(L"%s item(s), totaling %s"),
                     wxNumberFormatter::ToString(blockTable.second.first, 0,
                         Settings::GetDefaultNumberFormat()),

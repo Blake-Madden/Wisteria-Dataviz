@@ -108,7 +108,7 @@ namespace Wisteria::Graphs
                 labels to group the data into. The labels in this column will become the bars.\n
                 Note that using the ID column here will be less optimal than a categorical column,
                 so this should avoided for larger datasets.
-            @param valueColumnName The column with values to sum for each category.
+            @param weightColumnName The column with values to sum for each category.
                 If not used (@c std::nullopt), then the frequency of the observations
                 in each group will be used.
             @param groupColumnName An additional group column to split the bars into
@@ -121,7 +121,7 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& categoricalColumnName,
-                     const std::optional<const wxString> valueColumnName = std::nullopt,
+                     const std::optional<const wxString> weightColumnName = std::nullopt,
                      const std::optional<const wxString> groupColumnName = std::nullopt,
                      const BinLabelDisplay blDisplay = BinLabelDisplay::BinValue);
     private:
@@ -139,7 +139,8 @@ namespace Wisteria::Graphs
             wxString m_groupName;
             // sorts by group ID from the primary categorical column, or by the
             // subgroup label (if grouping is in use) alphabetically
-            [[nodiscard]] bool operator<(const CatBarBlock& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const CatBarBlock& that) const noexcept
                 {
                 if (m_bin != that.m_bin)
                     { return m_bin < that.m_bin; }
@@ -150,15 +151,16 @@ namespace Wisteria::Graphs
         void Calculate();
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
-        [[nodiscard]] size_t GetBarSlotCount() const noexcept final
+        [[nodiscard]]
+        size_t GetBarSlotCount() const noexcept final
             { return GetBars().size(); }
 
         const Wisteria::Data::Column<wxString>* m_idColumn{ nullptr };
         std::vector<Wisteria::Data::ColumnWithStringTable>::const_iterator m_categoricalColumn;
-        std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
+        std::vector<Wisteria::Data::Column<double>>::const_iterator m_weightColumn;
 
         bool m_useIDColumnForBars{ false };
-        bool m_useValueColumn{ false };
+        bool m_useWeightColumn{ false };
         };
     }
 
