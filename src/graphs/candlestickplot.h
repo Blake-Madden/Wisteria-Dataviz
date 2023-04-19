@@ -95,7 +95,7 @@ namespace Wisteria::Graphs
             };
 
         /** @brief Constructor.
-            @param canvas The canvas to draw the line plot on.*/
+            @param canvas The canvas to draw the plot on.*/
         explicit CandlestickPlot(Canvas* canvas) :
             Graph2D(canvas)
             {
