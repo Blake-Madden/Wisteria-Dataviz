@@ -98,7 +98,7 @@ TARGET_INCLUDE_DIRECTORIES(WisteriaLib PUBLIC ${wxWidgets_INCLUDE_DIRS})
 
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 IF(MSVC)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ wxUSE_STL=1 _CRT_SECURE_NO_WARNINGS
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
@@ -117,18 +117,18 @@ IF(MSVC)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 ELSEIF(MINGW OR MSYS)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXMSW__ wxUSE_STL=1
             $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 # TODO: Placeholder code for macOS (needs testing)
 #ELSEIF(APPLE)
-#    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
+#    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__ wxUSE_STL=1
 #        $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
 #    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic
 #                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ELSEIF(UNIX)
-    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
+    TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__ wxUSE_STL=1
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
     TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
