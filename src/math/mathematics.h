@@ -576,23 +576,71 @@ namespace geometry
         @details This assumes that the two points represent a line going
             left-to-right, and the middle point will be adjusted up or down
             to create a "ribbon" like spline.
+        @returns The middle point between two points and a boolean indicating
+            that the spline is going upwards. (@c false means that the splice
+            is going downwards.)\n
+            The returned pair represents the x and y values of the middle point.
+        @param pt1 The first point.
+        @param pt2 The second point.
+        @todo needs unit tested.*/
+    [[nodiscard]]
+    inline constexpr std::tuple<double, double, bool> middle_point_horizontal_spline(
+        const std::pair<double, double> pt1,
+        const std::pair<double, double> pt2) noexcept
+        {
+        // see which point is which in our left-to-right flow
+        const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
+
+        const auto [x, y] = middle_point(pt1, pt2);
+        const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
+        return std::make_tuple(x, y + safe_divide(distanceBetweenMidYAndRightY, 2.0),
+                               (y >= rightPt.second));
+        }
+
+    /** @brief Gets the middle point between two points, where this point would
+            create a spline between the two points.
+        @details This assumes that the two points represent a line going
+            left-to-right, and the middle point will be adjusted up
+            to create a "ribbon" like spline.
         @returns The middle point between two points.\n
             The returned pair represents the x and y values of the middle point.
         @param pt1 The first point.
         @param pt2 The second point.
         @todo needs unit tested.*/
     [[nodiscard]]
-    inline constexpr std::pair<double, double> middle_point_horizontal_spline(
+    inline constexpr std::pair<double, double> middle_point_horizontal_upward_spline(
         const std::pair<double, double> pt1,
         const std::pair<double, double> pt2) noexcept
         {
         // see which point is which in our left-to-right flow
-        const auto leftPt{ (pt1.first <= pt2.first) ? pt1 : pt2 };
         const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
 
         const auto [x, y] = middle_point(pt1, pt2);
         const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
-        return std::make_pair(x, y - safe_divide(distanceBetweenMidYAndRightY, 2.0) );
+        return std::make_pair(x, y - std::abs(safe_divide(distanceBetweenMidYAndRightY, 2.0)) );
+        }
+
+    /** @brief Gets the middle point between two points, where this point would
+            create a spline between the two points.
+        @details This assumes that the two points represent a line going
+            left-to-right, and the middle point will be adjusted down
+            to create a "ribbon" like spline.
+        @returns The middle point between two points.\n
+            The returned pair represents the x and y values of the middle point.
+        @param pt1 The first point.
+        @param pt2 The second point.
+        @todo needs unit tested.*/
+    [[nodiscard]]
+    inline constexpr std::pair<double, double> middle_point_horizontal_downward_spline(
+        const std::pair<double, double> pt1,
+        const std::pair<double, double> pt2) noexcept
+        {
+        // see which point is which in our left-to-right flow
+        const auto rightPt{ (pt1.first > pt2.first) ? pt1 : pt2 };
+
+        const auto [x, y] = middle_point(pt1, pt2);
+        const auto distanceBetweenMidYAndRightY{ rightPt.second - y };
+        return std::make_pair(x, y + std::abs(safe_divide(distanceBetweenMidYAndRightY, 2.0)) );
         }
 
     /** @returns The angle (in degrees) of a line segment.
