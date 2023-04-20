@@ -130,6 +130,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WCURVE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LR_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PROCON_ROADMAP_GRAPH);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SANKEY_DIAGRAM);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_3POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_7POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HEATMAP);
@@ -187,6 +188,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"));
     fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"));
+    fileMenu->Append(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -1234,6 +1236,35 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                     RingPerimeter(Perimeter::Inner).
                     PlacementHint(LegendCanvasPlacementHint::RightOfGraph)));
         }
+    // Sankey Diagram
+    else if (event.GetId() == MyApp::ID_NEW_SANKEY_DIAGRAM)
+        {
+        subframe->SetTitle(_(L"Sankey Diagram"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto sankeyData = std::make_shared<Data::Dataset>();
+        try
+            {
+            sankeyData->ImportTSV(appDir + L"/datasets/Historical/Titanic.csv",
+                ImportInfo().
+                CategoricalColumns({
+                    { L"Sex", CategoricalImportMethod::ReadAsStrings },
+                    { L"Survived", CategoricalImportMethod::ReadAsIntegers }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
+        sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt);
+        sankey->SetCanvasMargins(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, sankey);
+        }
     // Linear Regression Roadmap
     else if (event.GetId() == MyApp::ID_NEW_LR_ROADMAP_GRAPH)
         {
@@ -1987,6 +2018,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
         _(L"Pros & Cons Roadmap"));
+    toolBar->AddTool(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+        _(L"Sankey Diagram"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

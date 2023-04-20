@@ -37,6 +37,7 @@
 #include "../src/graphs/lrroadmap.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
+#include "../src/graphs/sankeydiagram.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/wcurveplot.h"
 #include "../src/import/text_matrix.h"
@@ -78,6 +79,7 @@ public:
         ID_NEW_CATEGORICAL_BARCHART_STIPPLED,
         ID_NEW_LR_ROADMAP_GRAPH,
         ID_NEW_PROCON_ROADMAP_GRAPH,
+        ID_NEW_SANKEY_DIAGRAM,
         ID_NEW_TABLE,
         ID_PRINT_ALL
         };
