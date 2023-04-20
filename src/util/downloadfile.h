@@ -229,6 +229,7 @@ public:
     wxWebResponse GetResponse() const
         { return m_request.GetResponse(); }
     /// @returns The response from the provided URL.
+    /// @param url The URL to check. 
     /// @note This will not read or download the webpage, it will only get its response.\n
     ///     If using @c SetEventHandler() instead of @c SetAndBindEventHandler(),
     ///     this object's event handler will need to have its @c  wxEVT_WEBREQUEST_DATA event
