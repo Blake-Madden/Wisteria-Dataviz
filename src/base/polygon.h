@@ -295,6 +295,12 @@ namespace Wisteria::GraphItems
         static wxPoint PairToPoint(const std::pair<double,
                                                     double>& coordPair) noexcept
             { return wxPoint(coordPair.first, coordPair.second); }
+        /** @brief Converts a @c wxPoint to a pair of doubles.
+            @param pt The point to convert.
+            @returns The @c wxPoint as a pair of double values.*/
+        [[nodiscard]]
+        static std::pair<double, double> PointToPair(wxPoint pt) noexcept
+            { return std::make_pair(static_cast<double>(pt.x), static_cast<double>(pt.y)); }
         /// @}
     private:
         /** @returns @c true if the given point is inside of this polygon.
