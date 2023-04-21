@@ -1245,7 +1245,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto sankeyData = std::make_shared<Data::Dataset>();
         try
             {
-            sankeyData->ImportTSV(appDir + L"/datasets/Historical/Titanic.csv",
+            sankeyData->ImportCSV(appDir + L"/datasets/historical/Titanic.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"Sex", CategoricalImportMethod::ReadAsStrings },
