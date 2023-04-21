@@ -98,6 +98,14 @@ public:
         m_handler->Bind(wxEVT_WEBREQUEST_STATE, &QueueDownload::ProcessRequest, this);
         m_handler->Bind(wxEVT_WEBREQUEST_DATA, &QueueDownload::ProcessRequest, this);
         }
+    /** @brief Sets the user agent to send the server when connecting.
+        @param userAgent The user agent to use.*/
+    void SetUserAgent(wxString userAgent)
+        { m_userAgent = std::move(userAgent); }
+    [[nodiscard]]
+    /// @returns The user agent being sent when connecting.
+    const wxString& GetUserAgent() const noexcept
+        { return m_userAgent; }
     /// @brief Adds an URL and download path to the queue.
     /// @param url The web file to download.
     /// @param localDownloadPath Where to download to.
@@ -131,6 +139,7 @@ private:
     mutable std::mutex m_mutex;
     std::map<int, wxString> m_downloads;
     std::vector<wxWebRequest> m_requests;
+    wxString m_userAgent;
     int m_currentId{ 0 };
     };
 
@@ -203,6 +212,14 @@ public:
         m_handler->Bind(wxEVT_WEBREQUEST_STATE, &FileDownload::ProcessRequest, this);
         m_handler->Bind(wxEVT_WEBREQUEST_DATA, &FileDownload::ProcessRequest, this);
         }
+    /** @brief Sets the user agent to send the server when connecting.
+        @param userAgent The user agent to use.*/
+    void SetUserAgent(wxString userAgent)
+        { m_userAgent = std::move(userAgent); }
+    /// @returns The user agent being sent when connecting.
+    [[nodiscard]]
+    const wxString& GetUserAgent() const noexcept
+        { return m_userAgent; }
     /// @brief If @c true, shows a progress dialog while downloading a file.
     /// @param show @c true to show the progress dialog.
     void ShowProgress(const bool show) noexcept
@@ -274,6 +291,7 @@ private:
     mutable std::mutex m_mutex;
     wxString m_downloadPath;
     wxString m_readContent;
+    wxString m_userAgent;
     wxWebRequest m_request;
     };
 

@@ -22,6 +22,7 @@ void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url, m_currentId++);
     request.SetStorage(wxWebRequest::Storage_File);
+    request.SetHeader(L"User-Agent", GetUserAgent());
     m_downloads.insert(std::make_pair(request.GetId(), localDownloadPath));
     m_requests.push_back(request);
     }
@@ -71,8 +72,11 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         auto downloadPath = GetLocalPath(evt.GetId());
         if (!downloadPath.empty())
             {
+            if (wxFileName::FileExists(downloadPath))
+                { wxFileName(downloadPath).SetPermissions(wxS_DEFAULT); }
+
             if (!wxRenameFile(evt.GetDataFile(), downloadPath))
-                wxLogError(L"Could not move %s", evt.GetDataFile());
+                { wxLogError(L"Could not move %s", evt.GetDataFile()); }
             Remove(evt.GetId());
             }
         break;
@@ -145,6 +149,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     m_request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     m_request.SetStorage(wxWebRequest::Storage_File);
+    m_request.SetHeader(L"User-Agent", GetUserAgent());
     m_stillActive = true;
     m_downloadSuccessful = false;
     m_request.Start();
@@ -190,6 +195,7 @@ wxWebResponse FileDownload::GetResponse(const wxString& url)
     m_request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     m_request.SetStorage(wxWebRequest::Storage_None);
+    m_request.SetHeader(L"User-Agent", GetUserAgent());
     m_stillActive = true;
     m_request.Start();
 
@@ -214,6 +220,7 @@ bool FileDownload::Read(const wxString& url)
     m_request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     m_request.SetStorage(wxWebRequest::Storage_Memory);
+    m_request.SetHeader(L"User-Agent", GetUserAgent());
     m_stillActive = true;
     m_request.Start();
 
@@ -234,6 +241,9 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             // copy it to the requested location
             if (m_request.GetStorage() == wxWebRequest::Storage_File)
                 {
+                if (wxFileName::FileExists(m_downloadPath))
+                    { wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT); }
+
                 if (!wxRenameFile(evt.GetDataFile(), m_downloadPath))
                     { wxLogError(L"Could not move %s", evt.GetDataFile()); }
                 else
