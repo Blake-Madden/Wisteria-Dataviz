@@ -97,40 +97,40 @@ namespace Wisteria::Graphs
         Graph2D::RecalcSizes(dc);
 
         size_t colorIndex{ 0 };
-        const auto drawColumn =
+        // use 10% of the area as negative space between the groups
+        double negativeSpacePercent{ 10 };
+        const auto yRangeStart{ GetLeftYAxis().GetRange().first };
+        const auto yRangeEnd{
+            GetLeftYAxis().GetRange().second -
+            (safe_divide(GetLeftYAxis().GetRange().second - yRangeStart, negativeSpacePercent)) };
+        const auto spacePadding{ GetLeftYAxis().GetRange().second - yRangeEnd };
+
+        const auto calcColumn =
             [&, this]
             (const size_t colIndex, const double xStart, const double xEnd)
             {
-            const auto yRangeStart{ GetLeftYAxis().GetRange().first };
-            const auto yRangeEnd{ GetLeftYAxis().GetRange().second };
-            std::array<wxPoint, 4> pts;
-
-            // use 10% of the area as negative space between the groups
-            const auto spacePadding{
-                safe_divide<double>(safe_divide((yRangeEnd - yRangeStart), 10.0), m_sankeyColumns[colIndex].size())
-                };
-            auto startY{ yRangeEnd - (spacePadding * math_constants::half) };
+            // set initial positions and sizes of group boxes
+            auto startY{ yRangeEnd };
             for (auto& group : m_sankeyColumns[colIndex])
                 {
-                const auto boxLength = ((yRangeEnd - yRangeStart) * group.m_percentOfColumn) - spacePadding;
-                const auto endY{ std::max(startY - boxLength, 0.0) };
-                if (GetPhysicalCoordinates(xStart, startY, pts[0]) &&
-                    GetPhysicalCoordinates(xStart, endY, pts[1]) &&
-                    GetPhysicalCoordinates(xEnd, endY, pts[2]) &&
-                    GetPhysicalCoordinates(xEnd, startY, pts[3]))
-                    {
-                    AddObject(std::make_shared<GraphItems::Polygon>(
-                        GraphItemInfo(group.m_label).Pen(wxNullPen).
-                        Brush(GetBrushScheme()->GetBrush(colorIndex)).
-                        Scaling(GetScaling()),
-                        pts));
-                    group.m_currentYAxisPosition = startY;
-                    group.m_yAxisWidth = boxLength;
-                    }
-
+                group.m_yAxisWidth = ((yRangeEnd - yRangeStart) * group.m_percentOfColumn);
+                group.m_currentYAxisPosition = startY;
+                group.m_yAxisTopPosition = startY;
+                group.m_xAxisLeft = xStart;
+                group.m_xAxisRight = xEnd;
                 // prepare for next group underneath this one
-                startY = endY - spacePadding;
-                ++colorIndex;
+                startY = std::max(group.m_currentYAxisPosition - group.m_yAxisWidth, 0.0);
+                }
+
+            // adjust group positions, inserting negative space between them
+            const auto groupSpacePadding{ safe_divide<double>(spacePadding, m_sankeyColumns[colIndex].size()) };
+            size_t offsetMultiplier{ m_sankeyColumns[colIndex].size() };
+            for (size_t i = 0; i < m_sankeyColumns[colIndex].size(); ++i, --offsetMultiplier)
+                {
+                auto& group{ m_sankeyColumns[colIndex][i] };
+                group.m_currentYAxisPosition += (groupSpacePadding * offsetMultiplier);
+                group.m_yAxisTopPosition = group.m_currentYAxisPosition;
+                group.m_yAxisBottomPosition = group.m_currentYAxisPosition - group.m_yAxisWidth;
                 }
             };
 
@@ -152,38 +152,26 @@ namespace Wisteria::Graphs
                 {
                 auto currentColor{ GetBrushScheme()->GetBrush(currentColorIndex++).GetColour() };
                 auto currentGroupAxisWidthRemaining{ group.m_yAxisWidth };
-                for (auto downstreamGroup = group.m_downStreamGroups.get_data().cbegin();
-                    downstreamGroup != group.m_downStreamGroups.get_data().cend();
-                    ++downstreamGroup)
+                for (const auto& downstreamGroup : group.m_downStreamGroups.get_data())
                     {
                     auto downstreamGroupPos =
                         std::find(m_sankeyColumns[colIndex + 1].begin(),
-                                  m_sankeyColumns[colIndex + 1].end(), SankeyGroup{ downstreamGroup->first });
+                                  m_sankeyColumns[colIndex + 1].end(), SankeyGroup{ downstreamGroup.first });
                     if (downstreamGroupPos != m_sankeyColumns[colIndex + 1].end())
                         {
                         const auto percentOfDownstreamGroup =
-                            safe_divide(downstreamGroup->second, downstreamGroupPos->m_frequency);
+                            safe_divide(downstreamGroup.second, downstreamGroupPos->m_frequency);
                         const auto streamWidth{ downstreamGroupPos->m_yAxisWidth * percentOfDownstreamGroup };
-
-                        // If last group, then adjust positions of stream to fit precisely with the edges
-                        // of the boxs (these alignments may be slightly off because of rounding).
-                        double groupYOffset{ 0 }, downstreamYOffset{ 0 };
-                        if (auto nextGroup = downstreamGroup;
-                            ++nextGroup == group.m_downStreamGroups.get_data().cend())
-                            {
-                            groupYOffset =
-                                currentGroupAxisWidthRemaining - streamWidth;
-                            }
 
                         std::array<wxPoint, 10> pts;
                         if (GetPhysicalCoordinates(xStart,
-                                group.m_currentYAxisPosition - groupYOffset, pts[0]) &&
+                                group.m_currentYAxisPosition, pts[0]) &&
                             GetPhysicalCoordinates(xEnd,
                                 downstreamGroupPos->m_currentYAxisPosition, pts[4]) &&
                             GetPhysicalCoordinates(xEnd,
                                 downstreamGroupPos->m_currentYAxisPosition - streamWidth, pts[5]) &&
                             GetPhysicalCoordinates(xStart,
-                                (group.m_currentYAxisPosition - streamWidth) - groupYOffset, pts[9]))
+                                (group.m_currentYAxisPosition - streamWidth), pts[9]))
                             {
                             const auto [topMidPointX, topMidPointY, isTopUpward] =
                                 middle_point_horizontal_spline(
@@ -225,7 +213,7 @@ namespace Wisteria::Graphs
 
                             auto streamRibbon{
                                 std::make_shared<GraphItems::Polygon>(
-                                GraphItemInfo(wxString::Format(L"%s \x2192 %s", group.m_label, downstreamGroup->first)).
+                                GraphItemInfo(wxString::Format(L"%s \x2192 %s", group.m_label, downstreamGroup.first)).
                                 Pen(wxNullPen).
                                 Brush(ColorContrast::ChangeOpacity(currentColor, 100)).
                                 Scaling(GetScaling()),
@@ -243,31 +231,84 @@ namespace Wisteria::Graphs
                 }
             };
 
+        const auto alignColumns =
+            [&, this]()
+            {
+            const auto lowestYPosition = [&, this]()
+                {
+                const auto lowestHangingColumn =
+                    std::min_element(m_sankeyColumns.cbegin(), m_sankeyColumns.cend(),
+                        [](const auto& lhv, const auto& rhv)
+                        { return lhv.back().m_yAxisBottomPosition < rhv.back().m_yAxisBottomPosition; });
+                return lowestHangingColumn->back().m_yAxisBottomPosition;
+                }();
+
+            // adjust spacing between groups so that the bottom of the columns line up vertically
+            for (auto& col : m_sankeyColumns)
+                {
+                const auto yAdjustment{ lowestYPosition - col.back().m_yAxisBottomPosition };
+                // leave the top group where it is, just adjust the ones beneath it
+                // so that they have even spacing and then all columns will line up
+                // evenly at the bottom
+                std::for_each(col.begin() + 1, col.end(),
+                    [&yAdjustment](auto& group)
+                    { group.OffsetY(yAdjustment); });
+                }
+
+            // ...then push everything down so that there is even spacing above
+            // and below the groups
+            const auto outerOffset{ lowestYPosition * math_constants::half};
+            for (auto& col : m_sankeyColumns)
+                {
+                std::for_each(col.begin(), col.end(),
+                    [&outerOffset](auto& group)
+                    { group.OffsetY(-outerOffset); });
+                }
+            };
+
+        const auto drawColumns =
+            [&, this]()
+            {
+            std::array<wxPoint, 4> pts;
+            
+            for (const auto& col : m_sankeyColumns)
+                {
+                for (const auto& group : col)
+                    {
+                    if (GetPhysicalCoordinates(group.m_xAxisLeft, group.m_currentYAxisPosition, pts[0]) &&
+                        GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
+                        GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
+                        GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition, pts[3]))
+                        {
+                        AddObject(std::make_shared<GraphItems::Polygon>(
+                            GraphItemInfo(group.m_label).Pen(wxNullPen).
+                            Brush(GetBrushScheme()->GetBrush(colorIndex)).
+                            Scaling(GetScaling()),
+                            pts));
+                        }
+                    ++colorIndex;
+                    }
+                }
+            };
+
         const auto drawLabels =
             [&, this]
-            (const size_t colIndex, const double xStart, const double xEnd,
-             Wisteria::Side labelSide)
+            (const size_t colIndex, Wisteria::Side labelSide)
             {
-            const auto yRangeStart{ GetLeftYAxis().GetRange().first };
-            const auto yRangeEnd{ GetLeftYAxis().GetRange().second };
             std::array<wxPoint, 4> pts;
 
-            // use 10% of the area as negative space between the groups
-            const auto spacePadding{
-                safe_divide<double>(safe_divide((yRangeEnd - yRangeStart), 10.0), m_sankeyColumns[colIndex].size())
-                };
-            auto startY{ yRangeEnd - (spacePadding * math_constants::half) };
             for (auto& group : m_sankeyColumns[colIndex])
                 {
-                const auto boxLength = ((yRangeEnd - yRangeStart) * group.m_percentOfColumn) - spacePadding;
-                const auto endY{ std::max(startY - boxLength, 0.0) };
-                if (GetPhysicalCoordinates(xStart, startY, pts[0]) &&
-                    GetPhysicalCoordinates(xStart, endY, pts[1]) &&
-                    GetPhysicalCoordinates(xEnd, endY, pts[2]) &&
-                    GetPhysicalCoordinates(xEnd, startY, pts[3]))
+                if (GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisTopPosition, pts[0]) &&
+                    GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
+                    GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
+                    GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))
                     {
                     if (labelSide == Side::Right &&
-                        GetPhysicalCoordinates(xEnd, startY - ((startY - endY) * math_constants::half), pts[0]))
+                        GetPhysicalCoordinates(group.m_xAxisRight,
+                            group.m_yAxisTopPosition -
+                                ((group.m_yAxisTopPosition - group.m_yAxisBottomPosition) *
+                                    math_constants::half), pts[0]))
                         {
                         auto groupLabel = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(group.m_label).
@@ -281,7 +322,10 @@ namespace Wisteria::Graphs
                         AddObject(groupLabel);
                         }
                     else if (labelSide == Side::Left &&
-                        GetPhysicalCoordinates(xStart, startY - ((startY - endY) * math_constants::half), pts[0]))
+                        GetPhysicalCoordinates(group.m_xAxisLeft,
+                            group.m_yAxisTopPosition -
+                                ((group.m_yAxisTopPosition - group.m_yAxisBottomPosition) *
+                                    math_constants::half), pts[0]))
                         {
                         auto groupLabel = std::make_shared<GraphItems::Label>(
                             GraphItemInfo(group.m_label).
@@ -293,25 +337,22 @@ namespace Wisteria::Graphs
                         groupLabel->Offset(0, -(bBox.GetHeight() * math_constants::half));
                         AddObject(groupLabel);
                         }
-                    group.m_currentYAxisPosition = startY;
-                    group.m_yAxisWidth = boxLength;
                     }
-
-                // prepare for next group underneath this one
-                startY = endY - spacePadding;
-                ++colorIndex;
                 }
             };
 
         if (m_sankeyColumns.size() == 2)
             {
-            drawColumn(0, 0, 0.5);
-            drawColumn(1, 9.5, 10);
+            calcColumn(0, 0, 0.5);
+            calcColumn(1, 9.5, 10);
+
+            alignColumns();
+            drawColumns();
 
             drawStreams(0, 0.5, 9.5);
 
-            drawLabels(0, 0, 0.5, Side::Right);
-            drawLabels(1, 9.5, 10, Side::Left);
+            drawLabels(0, Side::Right);
+            drawLabels(1, Side::Left);
             }
         }
     }

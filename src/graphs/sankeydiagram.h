@@ -49,10 +49,12 @@ namespace Wisteria::Graphs
           auto sankeyData = std::make_shared<Data::Dataset>();
           try
               {
-              sankeyData->ImportTSV(appDir + L"/datasets/Historical/Titanic.csv",
+              sankeyData->ImportTSV(appDir + L"/datasets/historical/Titanic.csv",
                   ImportInfo().
                   CategoricalColumns({
                       { L"Sex", CategoricalImportMethod::ReadAsStrings },
+                      { L"Embarked", CategoricalImportMethod::ReadAsStrings },
+                      { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
                       { L"Survived", CategoricalImportMethod::ReadAsIntegers }
                       }));
               }
@@ -132,8 +134,18 @@ namespace Wisteria::Graphs
             double m_frequency{ 0 };
             double m_percentOfColumn{ 0 };
             double m_currentYAxisPosition{ 0 };
+            double m_yAxisTopPosition{ 0 };
+            double m_yAxisBottomPosition{ 0 };
             double m_yAxisWidth{ 0 };
+            double m_xAxisLeft{ 0 };
+            double m_xAxisRight{ 0 };
             DownStreamGroups m_downStreamGroups;
+            void OffsetY(const double offset) noexcept
+                {
+                m_yAxisTopPosition += offset;
+                m_yAxisBottomPosition += offset;
+                m_currentYAxisPosition += offset;
+                }
             [[nodiscard]]
             bool operator<(const SankeyGroup& that) const
                 { return m_label.CmpNoCase(that.m_label) < 0; }
