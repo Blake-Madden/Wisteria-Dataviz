@@ -1249,6 +1249,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
                 ImportInfo().
                 CategoricalColumns({
                     { L"Sex", CategoricalImportMethod::ReadAsStrings },
+                    { L"Embarked", CategoricalImportMethod::ReadAsStrings },
+                    { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
                     { L"Survived", CategoricalImportMethod::ReadAsIntegers }
                     }));
             }

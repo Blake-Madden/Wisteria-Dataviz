@@ -402,7 +402,7 @@ namespace Wisteria
     enum class BoxCorners
         {
         Straight, /*!< Straight lines meet at the corner.*/
-        Rounded   /*!< Corners are rounded.
+        Rounded   /*!< Corners are rounded.\n
                        The roundedness level can be controlled via
                        Settings::SetBoxRoundedCornerRadius().*/
         };
@@ -452,6 +452,26 @@ namespace Wisteria
         UpscaleOnly,
         /// @brief Don't rescale the item.
         NoResize
+        };
+
+    /// @brief How to display the name of a column of items in a graph.
+    enum class GraphColumnHeader
+        {
+        /// @brief Display the column's name as an axis header.
+        AsHeader,
+        /// @brief Display the column's name as an axis footer.
+        AsFooter,
+        /// @brief Do not display the column's name.
+        NoDisplay
+        };
+
+    /// @brief How to draw a flow (e.g., Sankey diagram).
+    enum class FlowShape
+        {
+        /// @brief Draw a flow with a spline-like shape.
+        Curvy,
+        /// @brief Draw straight lines between the points in the flow's shape.
+        Jagged
         };
 
     /// @brief How to display a table cell's content.

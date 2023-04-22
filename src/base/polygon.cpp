@@ -405,6 +405,36 @@ namespace Wisteria::GraphItems
                         { dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetTopLeft()); }
                     }
                 }
+            else if (GetShape() == PolygonShape::CurvyRectangle &&
+                m_scaledPoints.size() == 10)
+                {
+                GraphicsContextFallback gcf{ &dc, boundingBox };
+                auto gc = gcf.GetGraphicsContext();
+                wxASSERT_MSG(gc, L"Failed to get graphics context for curvy rectangle!");
+                if (gc)
+                    {
+                    // save current transform matrix state
+                    gc->PushState();
+                    
+                    auto outlinePath = gc->CreatePath();
+
+                    outlinePath.MoveToPoint(m_scaledPoints[0].x, m_scaledPoints[0].y);
+                    outlinePath.AddCurveToPoint(m_scaledPoints[1].x, m_scaledPoints[1].y,
+                        m_scaledPoints[3].x, m_scaledPoints[3].y,
+                        m_scaledPoints[4].x, m_scaledPoints[4].y);
+                    outlinePath.AddLineToPoint(m_scaledPoints[5].x, m_scaledPoints[5].y);
+                    outlinePath.AddCurveToPoint(m_scaledPoints[6].x, m_scaledPoints[6].y,
+                        m_scaledPoints[8].x, m_scaledPoints[8].y,
+                        m_scaledPoints[9].x, m_scaledPoints[9].y);
+                    outlinePath.AddLineToPoint(m_scaledPoints[0].x, m_scaledPoints[0].y);
+
+                    gc->FillPath(outlinePath);
+                    gc->StrokePath(outlinePath);
+
+                    // restore transform matrix
+                    gc->PopState();
+                    }
+                }
             else if (GetShape() == PolygonShape::WaterColorRectangle)
                 {
                 GraphItems::Shape sh(GetGraphItemInfo(), Icons::IconShape::WaterColorRectangle,

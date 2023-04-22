@@ -87,8 +87,14 @@ namespace Wisteria::Graphs
                 std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
 
             GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
-            GetLeftYAxis().Show(false);
-            GetRightYAxis().Show(false);
+            GetLeftYAxis().GetGridlinePen() = wxNullPen;
+            GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            GetLeftYAxis().GetAxisLinePen() = wxNullPen;
+
+            GetRightYAxis().SetRange(0, 100, 0, 1, 10);
+            GetRightYAxis().GetGridlinePen() = wxNullPen;
+            GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            GetRightYAxis().GetAxisLinePen() = wxNullPen;
 
             GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
             GetBottomXAxis().Show(false);
@@ -107,6 +113,41 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& fromColumnName, const wxString& toColumnName,
                      const std::optional<wxString>& weightColumnName);
+
+        /// @name Style functions
+        /// @brief Functions relating to how the diagram is displayed.
+        /// @{
+
+        /// @returns The shape of the streams going between the groups.
+        [[nodiscard]]
+        FlowShape GetFlowShape() const noexcept
+            { return m_flowShape; }
+        /// @brief Sets the shape of the streams going between the groups.
+        /// @param shape The shape to use.
+        void SetFlowShape(FlowShape shape) noexcept
+            { m_flowShape = shape; }
+
+        /// @returns The format of the labels shown on the group boxes.
+        [[nodiscard]]
+        BinLabelDisplay GetGroupLabelDisplay() const noexcept
+            { return m_groupLabelDisplay; }
+        /// @brief Sets the format of the labels shown on the group boxes.
+        /// @param labelDisplay The format to use.
+        void SetGroupLabelDisplay(const BinLabelDisplay labelDisplay) noexcept
+            { m_groupLabelDisplay = labelDisplay; }
+        
+        /// @returns How the columns (i.e., groups from each variable) display
+        ///     their variable's name.
+        [[nodiscard]]
+        GraphColumnHeader GetColumnHeaderDisplay() const noexcept
+            { return m_columnDisplay; }
+        /// @brief Sets how the columns (i.e., groups from each variable) display
+        ///     their variable's name.
+        /// @param columnDisplay The display method to use.
+        void SetColumnHeaderDisplay(const GraphColumnHeader columnDisplay) noexcept
+            { m_columnDisplay = columnDisplay; }
+       
+        /// @}
 
         /// @private
         [[deprecated("Sankey diagram does not support legends.")]]
@@ -156,6 +197,11 @@ namespace Wisteria::Graphs
         using SankeyColumn = std::vector<SankeyGroup>;
 
         std::vector<SankeyColumn> m_sankeyColumns;
+        std::vector<wxString> m_columnsNames;
+
+        FlowShape m_flowShape{ FlowShape::Curvy };
+        BinLabelDisplay m_groupLabelDisplay{ BinLabelDisplay::BinName };
+        GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
 
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;

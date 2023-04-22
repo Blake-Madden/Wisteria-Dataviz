@@ -49,6 +49,8 @@ namespace Wisteria::Graphs
                 }
             }
 
+        m_columnsNames = { fromColumnName, toColumnName };
+
         // load the combinations of labels (and weights)
         multi_value_frequency_aggregate_map<wxString, wxString,
                                             Data::wxStringLessNoCase, Data::wxStringLessNoCase,
@@ -218,7 +220,9 @@ namespace Wisteria::Graphs
                                 Brush(ColorContrast::ChangeOpacity(currentColor, 100)).
                                 Scaling(GetScaling()),
                                 pts) };
-                            //streamRibbon->SetShape(Polygon::PolygonShape::Spline);
+                            streamRibbon->SetShape(GetFlowShape() == FlowShape::Curvy ?
+                                Polygon::PolygonShape::CurvyRectangle :
+                                Polygon::PolygonShape::Irregular);
 
                             AddObject(streamRibbon);
                             downstreamGroupPos->m_currentYAxisPosition -= streamWidth;
@@ -304,6 +308,32 @@ namespace Wisteria::Graphs
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))
                     {
+                    const wxString boxLabel = [&, this]()
+                        {
+                        return (
+                            GetGroupLabelDisplay() == BinLabelDisplay::BinName) ?
+                                group.m_label :
+                            (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
+                                wxString::Format(L"%s\n%s%%", group.m_label,
+                                    wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
+                            (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
+                                wxString::Format(L"%s\n%s", group.m_label,
+                                    wxNumberFormatter::ToString(group.m_frequency, 0,
+                                                                wxNumberFormatter::Style::Style_WithThousandsSep)) :
+                            (GetGroupLabelDisplay() == BinLabelDisplay::BinPercentage) ?
+                                wxString::Format(L"%s%%",
+                                    wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
+                            (GetGroupLabelDisplay() == BinLabelDisplay::BinValue) ?
+                                wxString::Format(L"%s",
+                                    wxNumberFormatter::ToString(group.m_frequency, 0,
+                                        wxNumberFormatter::Style::Style_WithThousandsSep)) :
+                            (GetGroupLabelDisplay() == BinLabelDisplay::BinValueAndPercentage) ?
+                                wxString::Format(L"%s\n%s%%",
+                                    wxNumberFormatter::ToString(group.m_frequency, 0,
+                                        wxNumberFormatter::Style::Style_WithThousandsSep),
+                                    wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
+                            wxString{};
+                        }();
                     if (labelSide == Side::Right &&
                         GetPhysicalCoordinates(group.m_xAxisRight,
                             group.m_yAxisTopPosition -
@@ -311,7 +341,7 @@ namespace Wisteria::Graphs
                                     math_constants::half), pts[0]))
                         {
                         auto groupLabel = std::make_shared<GraphItems::Label>(
-                            GraphItemInfo(group.m_label).
+                            GraphItemInfo(boxLabel).
                             Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                             Pen(wxNullPen).
                             FontColor(ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor())).
@@ -328,7 +358,7 @@ namespace Wisteria::Graphs
                                     math_constants::half), pts[0]))
                         {
                         auto groupLabel = std::make_shared<GraphItems::Label>(
-                            GraphItemInfo(group.m_label).
+                            GraphItemInfo(boxLabel).
                             Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                             Pen(wxNullPen).
                             Padding(2, 2, 2, 2).
@@ -353,6 +383,35 @@ namespace Wisteria::Graphs
 
             drawLabels(0, Side::Right);
             drawLabels(1, Side::Left);
+
+            if (GetColumnHeaderDisplay() == GraphColumnHeader::AsHeader)
+                {
+                GetLeftYAxis().GetHeader().GetGraphItemInfo().
+                    Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+                GetRightYAxis().GetHeader().GetGraphItemInfo().
+                    Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+
+                GetLeftYAxis().GetFooter().SetText(wxString{});
+                GetRightYAxis().GetFooter().SetText(wxString{});
+                }
+            else if (GetColumnHeaderDisplay() == GraphColumnHeader::AsFooter)
+                {
+                GetLeftYAxis().GetFooter().GetGraphItemInfo().
+                    Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+                GetRightYAxis().GetFooter().GetGraphItemInfo().
+                    Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+
+                GetLeftYAxis().GetHeader().SetText(wxString{});
+                GetRightYAxis().GetHeader().SetText(wxString{});
+                }
+            else
+                {
+                GetLeftYAxis().GetFooter().SetText(wxString{});
+                GetRightYAxis().GetFooter().SetText(wxString{});
+
+                GetLeftYAxis().GetHeader().SetText(wxString{});
+                GetRightYAxis().GetHeader().SetText(wxString{});
+                }
             }
         }
     }
