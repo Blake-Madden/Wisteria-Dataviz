@@ -1,6 +1,6 @@
 /** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
-    @date 2010-2020
+    @date 2005-2023
     @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -17,6 +17,7 @@
 namespace lily_of_the_valley
     {
     /// @brief Class to format text into RTF.
+    /// @date 2010
     class rtf_encode_text
         {
     public:

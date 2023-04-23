@@ -1,6 +1,6 @@
 /** @addtogroup UI
     @brief User interface classes.
-    @date 2005-2022
+    @date 2005-2023
     @copyright Peter Cawley, "iwbnwif", Blake Madden
     @authors Peter Cawley (wxRibbon), "iwbnwif" (wxRibbonMetroArtProvider),
      Blake Madden (modernized code)

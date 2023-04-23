@@ -1,6 +1,6 @@
 ﻿/** @addtogroup Exporting
     @brief Classes for formatting and exporting text.
-    @date 2010-2020
+    @date 2005-2023
     @copyright Oleander Software, Ltd.
     @author Blake Madden
     @details This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@ namespace lily_of_the_valley
             // a wide string.
             std::wstring fileText(docxExtract.get_filtered_text(),
                                   docxExtract.get_filtered_text_length());
-        @endcode*/
+        @endcode
+        @date 2010*/
     class word2007_extract_text final : public html_extract_text
         {
     public:
