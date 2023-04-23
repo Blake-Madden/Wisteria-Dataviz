@@ -203,10 +203,10 @@ namespace Wisteria::Graphs
             // which color are we on?
             auto currentColorIndex = [&, this]()
                 {
-                size_t currentColorIndex{ 0 };
+                size_t prevColumnColorIndices{ 0 };
                 for (size_t i = 0; i < colIndex; ++i)
-                    { currentColorIndex += m_sankeyColumns[i].size(); }
-                return currentColorIndex;
+                    { prevColumnColorIndices += m_sankeyColumns[i].size(); }
+                return prevColumnColorIndices;
                 }();
             for (auto& group : m_sankeyColumns[colIndex])
                 {
