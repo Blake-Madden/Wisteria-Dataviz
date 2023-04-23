@@ -17,7 +17,8 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void SankeyDiagram::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& fromColumnName, const wxString& toColumnName,
-        const std::optional<wxString>& weightColumnName)
+        const std::optional<wxString>& fromWeightColumnName,
+        const std::optional<wxString>& toWeightColumnName)
         {
         if (data == nullptr)
             { return; }
@@ -29,40 +30,61 @@ namespace Wisteria::Graphs
         if (fromColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': 'from' column not found for plot."), fromColumnName).ToUTF8());
+                _(L"'%s': 'from' column not found for diagram."), fromColumnName).ToUTF8());
             }
         const auto toColumn = data->GetCategoricalColumn(toColumnName);
         if (toColumn == data->GetCategoricalColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': 'to' column not found for plot."), toColumnName).ToUTF8());
+                _(L"'%s': 'to' column not found for diagram."), toColumnName).ToUTF8());
             }
-        const bool useWeightColumn = weightColumnName.has_value();
-        auto weightColumn = data->GetContinuousColumns().cend();
+
+        // weight columns
+        if (fromWeightColumnName.has_value() && !toWeightColumnName.has_value())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': 'from' weight column provided, but 'to' column was not."), fromWeightColumnName.value()).ToUTF8());
+            }
+        else if (toWeightColumnName.has_value() && !fromWeightColumnName.has_value())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': 'to' weight column provided, but 'from' column was not."), toWeightColumnName.value()).ToUTF8());
+            }
+        const bool useWeightColumn = fromWeightColumnName.has_value() && toWeightColumnName.has_value();
+        auto fromWeightColumn = data->GetContinuousColumns().cend();
+        auto toWeightColumn = data->GetContinuousColumns().cend();
         if (useWeightColumn)
             {
-            weightColumn = data->GetContinuousColumn(weightColumnName.value());
-            if (weightColumn == data->GetContinuousColumns().cend())
+            fromWeightColumn = data->GetContinuousColumn(fromWeightColumnName.value());
+            if (fromWeightColumn == data->GetContinuousColumns().cend())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': weight column not found for plot."), weightColumnName.value()).ToUTF8());
+                    _(L"'%s': 'from' weight column not found for diagram."), fromWeightColumnName.value()).ToUTF8());
+                }
+            toWeightColumn = data->GetContinuousColumn(toWeightColumnName.value());
+            if (toWeightColumn == data->GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': 'to' weight column not found for diagram."), toWeightColumnName.value()).ToUTF8());
                 }
             }
 
         m_columnsNames = { fromColumnName, toColumnName };
 
         // load the combinations of labels (and weights)
-        multi_value_frequency_aggregate_map<wxString, wxString,
-                                            Data::wxStringLessNoCase, Data::wxStringLessNoCase,
-                                            double> fromAndToMap;
+        multi_value_frequency_double_aggregate_map<wxString, wxString,
+                                            Data::wxStringLessNoCase, Data::wxStringLessNoCase> fromAndToMap;
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
             if (useWeightColumn &&
-                std::isnan(weightColumn->GetValue(i)))
+                (std::isnan(fromWeightColumn->GetValue(i)) ||
+                 std::isnan(toWeightColumn->GetValue(i))) )
                 { continue; }
-            const double comboTotal = (useWeightColumn ? weightColumn->GetValue(i) : 1);
-            fromAndToMap.insert(fromColumn->GetValueAsLabel(i), toColumn->GetValueAsLabel(i), comboTotal);
+
+            fromAndToMap.insert(fromColumn->GetValueAsLabel(i), toColumn->GetValueAsLabel(i),
+                (useWeightColumn ? fromWeightColumn->GetValue(i) : 1),
+                (useWeightColumn ? toWeightColumn->GetValue(i) : 1));
             }
 
         m_sankeyColumns.resize(2);
@@ -74,11 +96,47 @@ namespace Wisteria::Graphs
             for (const auto& subVal : subValues.first.get_data())
                 {
                 auto subColGroupPos = std::find(m_sankeyColumns[1].begin(), m_sankeyColumns[1].end(),
-                    SankeyGroup{ subVal.first, subVal.second, SankeyGroup::DownStreamGroups{} });
+                    SankeyGroup{ subVal.first, subVal.second.second, SankeyGroup::DownStreamGroups{} });
                 if (subColGroupPos != m_sankeyColumns[1].end())
-                    { subColGroupPos->m_frequency += subVal.second; }
+                    { subColGroupPos->m_frequency += subVal.second.second; }
                 else
-                    { m_sankeyColumns[1].push_back({ subVal.first, subVal.second, SankeyGroup::DownStreamGroups{} }); }
+                    {
+                    m_sankeyColumns[1].push_back(
+                        { subVal.first, subVal.second.second, SankeyGroup::DownStreamGroups{} });
+                    }
+                }
+            }
+
+        AdjustColumns();
+        }
+
+    //----------------------------------------------------------------
+    void SankeyDiagram::AdjustColumns()
+        {
+        // if 'from' and 'to' are weighted, then ensure all columns have the same
+        // total value, adding an empty group to a column is necessary
+        double maxGroupTotal{ 0 };
+        for (const auto& col : m_sankeyColumns)
+            {
+            const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
+                [](const auto initVal, const auto val) noexcept
+                { return val.m_frequency + initVal; });
+            maxGroupTotal = std::max(maxGroupTotal, groupTotal);
+            }
+
+        for (auto& col : m_sankeyColumns)
+            {
+            const auto groupTotal = std::accumulate(col.cbegin(), col.cend(), 0.0,
+                [](const auto initVal, const auto val) noexcept
+                { return val.m_frequency + initVal; });
+            // Column lost some observations for the upstream groups, so add
+            // an empty group on top of it and flag it as not having any upstream
+            // groups flowing into it. (That will cause it to not be drawn.)
+            if (groupTotal < maxGroupTotal)
+                {
+                col.insert(col.begin(),
+                    { wxString{}, (maxGroupTotal - groupTotal),
+                      SankeyGroup::DownStreamGroups{} })->m_hasParent = false;
                 }
             }
 
@@ -162,7 +220,7 @@ namespace Wisteria::Graphs
                     if (downstreamGroupPos != m_sankeyColumns[colIndex + 1].end())
                         {
                         const auto percentOfDownstreamGroup =
-                            safe_divide(downstreamGroup.second, downstreamGroupPos->m_frequency);
+                            safe_divide<double>(downstreamGroup.second.second, downstreamGroupPos->m_frequency);
                         const auto streamWidth{ downstreamGroupPos->m_yAxisWidth * percentOfDownstreamGroup };
 
                         std::array<wxPoint, 10> pts;
@@ -279,7 +337,8 @@ namespace Wisteria::Graphs
                 {
                 for (const auto& group : col)
                     {
-                    if (GetPhysicalCoordinates(group.m_xAxisLeft, group.m_currentYAxisPosition, pts[0]) &&
+                    if (group.m_hasParent &&
+                        GetPhysicalCoordinates(group.m_xAxisLeft, group.m_currentYAxisPosition, pts[0]) &&
                         GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
                         GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
                         GetPhysicalCoordinates(group.m_xAxisRight, group.m_currentYAxisPosition, pts[3]))
@@ -303,7 +362,8 @@ namespace Wisteria::Graphs
 
             for (auto& group : m_sankeyColumns[colIndex])
                 {
-                if (GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisTopPosition, pts[0]) &&
+                if (group.m_hasParent &&
+                    GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisTopPosition, pts[0]) &&
                     GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))

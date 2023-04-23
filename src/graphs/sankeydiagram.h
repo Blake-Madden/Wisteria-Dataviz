@@ -17,61 +17,82 @@
 
 namespace Wisteria::Graphs
     {
-    /** @brief Flow diagram, showing the flow of one series of groups into anther series of groups.
+    /** @brief Flow diagram, showing the flow of one series of groups into another series of groups.
+        @details This implementation supports a two-level flow (one column of groups flowing into another column).
 
         @image html SankeyDiagram.svg width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where two categorical columns represent the start and end
-         groups and a continuous column can be an optional weight column.
+         groups and (optionally) two continuous columns are their respective weight columns.
+
+         The following dataset shows using a "from" and "to" column, where the frequency counts of
+         the columns' groups will be used. The gender groups (i.e., "Male", "Female") will appear on
+         the left, and the number of those that passed and failed will flow to the right side of the diagram.
 
          | From   | To   |
-         | :--    | --:  |
+         | :--    | :--  |
          | Male   | Pass |
          | Male   | Pass |
          | Female | Fail |
+         | Female | Pass |
+         | Female | Pass |
 
          ...
 
-         @par Missing Data:
-          - Any missing data in an observation will result in listwise deletion.
+         This example dataset includes the "from" and "to" groups, and also weight variables.
+         *Graduated* is the weight applied to *From* and *Enrolled* would be applied to *To*.
+         By doing this, the diagram would show large groups for the feeder schools (e.g., "West HS")
+         on the left, and how many of their respective graduating students matriculated to
+         "Miskatonic University."
 
-         @par Example:
-         @code
-          // "this" will be a parent wxWidgets frame or dialog,
-          // "canvas" is a scrolled window derived object
-          // that will hold the plot
-          auto canvas = new Wisteria::Canvas{ this };
-          canvas->SetFixedObjectsGridSize(1, 1);
+         | From        | Graduated | To                    | Enrolled |
+         | :--         | --:       | :--                   | --:      |
+         | Westland HS | 150       | Miskatonic University | 13       |
+         | Lincoln HS  | 175       | Miskatonic University | 2        |
+         | West HS     | 197       | Miskatonic University | 0        |
 
-          SetTitle(_(L"Sankey Diagram"));
+         ...
 
-          auto sankeyData = std::make_shared<Data::Dataset>();
-          try
-              {
-              sankeyData->ImportTSV(appDir + L"/datasets/historical/Titanic.csv",
-                  ImportInfo().
-                  CategoricalColumns({
-                      { L"Sex", CategoricalImportMethod::ReadAsStrings },
-                      { L"Embarked", CategoricalImportMethod::ReadAsStrings },
-                      { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
-                      { L"Survived", CategoricalImportMethod::ReadAsIntegers }
-                      }));
-              }
-          catch (const std::exception& err)
-              {
-              wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
-                           _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
-              return;
-              }
+        @par Missing Data:
+         - Any missing data in an observation will result in listwise deletion.
 
-          auto sankey = std::make_shared<SankeyDiagram>(canvas);
-          sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt);
-          sankey->SetCanvasMargins(5, 5, 5, 5);
+        @par Example:
+        @code
+         // "this" will be a parent wxWidgets frame or dialog,
+         // "canvas" is a scrolled window derived object
+         // that will hold the plot
+         auto canvas = new Wisteria::Canvas{ this };
+         canvas->SetFixedObjectsGridSize(1, 1);
 
-          canvas->SetFixedObject(0, 0, sankey);
+         SetTitle(_(L"Sankey Diagram"));
 
-         @endcode
+         auto sankeyData = std::make_shared<Data::Dataset>();
+         try
+             {
+             sankeyData->ImportCSV(appDir + L"/datasets/historical/Titanic.csv",
+                 ImportInfo().
+                 CategoricalColumns({
+                     { L"Sex", CategoricalImportMethod::ReadAsStrings },
+                     { L"Embarked", CategoricalImportMethod::ReadAsStrings },
+                     { L"Pclass", CategoricalImportMethod::ReadAsIntegers },
+                     { L"Survived", CategoricalImportMethod::ReadAsIntegers }
+                     }));
+             }
+         catch (const std::exception& err)
+             {
+             wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                          _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+             return;
+             }
+
+         auto sankey = std::make_shared<SankeyDiagram>(canvas);
+         sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt);
+         sankey->SetCanvasMargins(5, 5, 5, 5);
+
+         canvas->SetFixedObject(0, 0, sankey);
+
+        @endcode
     */
     class SankeyDiagram : public Graph2D
         {
@@ -106,13 +127,19 @@ namespace Wisteria::Graphs
             @param fromColumnName The column containing the left-side groups.
             @param toColumnName The column containing the right-side groups that the
                 left-side groups flow into.
-            @param weightColumnName The (optional) column containing the multiplier value for each row.
+            @param fromWeightColumnName The (optional) column containing the multiplier value for
+                the "from" column.
+            @param toWeightColumnName The (optional) column containing the multiplier value for
+                the "to" column.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
-                 The exception's @c what() message is UTF-8 encoded, so pass it to
-                 @c wxString::FromUTF8() when formatting it for an error message.*/
+                Also throws an exception if only @c fromWeightColumnName is provided but
+                @c toWeightColumnName was not (or vice versa).\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& fromColumnName, const wxString& toColumnName,
-                     const std::optional<wxString>& weightColumnName);
+                     const std::optional<wxString>& fromWeightColumnName,
+                     const std::optional<wxString>& toWeightColumnName);
 
         /// @name Style functions
         /// @brief Functions relating to how the diagram is displayed.
@@ -162,7 +189,7 @@ namespace Wisteria::Graphs
         class SankeyGroup
             {
         public:
-            using DownStreamGroups = frequency_set<wxString, Data::wxStringLessNoCase, double>;
+            using DownStreamGroups = aggregate_frequency_set<wxString, Data::wxStringLessNoCase>;
 
             explicit SankeyGroup(wxString label) :
                 m_label(std::move(label))
@@ -180,6 +207,7 @@ namespace Wisteria::Graphs
             double m_yAxisWidth{ 0 };
             double m_xAxisLeft{ 0 };
             double m_xAxisRight{ 0 };
+            bool m_hasParent{ true };
             DownStreamGroups m_downStreamGroups;
             void OffsetY(const double offset) noexcept
                 {
@@ -203,6 +231,8 @@ namespace Wisteria::Graphs
         BinLabelDisplay m_groupLabelDisplay{ BinLabelDisplay::BinName };
         GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
 
+        // after setting the data, homogenizes the columns and their groups
+        void AdjustColumns();
         /// @brief Recalculates the size of embedded objects on the plot.
         void RecalcSizes(wxDC& dc) final;
         };
