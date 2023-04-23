@@ -339,7 +339,7 @@ namespace lily_of_the_valley
 
         /// @returns @c true if a @c paragraph ends with a newline.
         [[nodiscard]]
-        bool paragraph_ends_with_crlf(const std::wstring& paragraph) const noexcept
+        static bool paragraph_ends_with_crlf(const std::wstring& paragraph)
             {
             if (paragraph.length() == 0)
                 { return false; }
@@ -357,8 +357,8 @@ namespace lily_of_the_valley
         /// @returns Whether a paragraph begins with a specified string.\n
         ///     Leading spaces will be skipped.
         [[nodiscard]]
-        bool paragraph_begins_with(const std::wstring& para,
-                                   const wchar_t* searchText) const noexcept
+        static bool paragraph_begins_with(const std::wstring& para,
+                                          const wchar_t* searchText)
             {
             if (!searchText)
                 { return false; }
