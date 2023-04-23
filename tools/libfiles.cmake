@@ -52,12 +52,7 @@ SET(WISTERIA_SRC
     src/graphs/wcurveplot.cpp
     src/graphs/wordcloud.cpp
     src/i18n-check/src/i18n_string_util.cpp
-    src/import/cpp_extract_text.cpp
-    src/import/docx_extract_text.cpp
     src/import/html_extract_text.cpp
-    src/import/odt_odp_extract_text.cpp
-    src/import/postscript_extract_text.cpp
-    src/import/rtf_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/imageexportdlg.cpp
