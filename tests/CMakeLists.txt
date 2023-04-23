@@ -32,6 +32,7 @@ MESSAGE(STATUS "Preparing the test runner...")
 INCLUDE(${CMAKE_SOURCE_DIR}/../tools/testfiles.cmake)
 SET(LIB_SRC_FILES
     ../src/import/cpp_extract_text.cpp
+    ../src/import/doc_extract_text.cpp
     ../src/import/docx_extract_text.cpp
     ../src/import/html_extract_text.cpp
     ../src/import/odt_odp_extract_text.cpp
@@ -44,6 +45,7 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${TEST_SRC_FILES} ${LIB_SRC_FILES})
 # Link required libraries to the executable
 IF(WIN32)
     TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS __UNITTEST)
+    TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus)
     TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} PRIVATE Catch2::Catch2WithMain)
 ELSEIF(UNIX)
     TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC __UNITTEST)

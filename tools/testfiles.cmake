@@ -5,6 +5,7 @@
 SET(TEST_SRC_FILES
     comparedoublestests.cpp
     cppparsetests.cpp
+    docparsetests.cpp
     docxparsetests.cpp
     evenoddtests.cpp
     geometrytests.cpp
@@ -14,6 +15,7 @@ SET(TEST_SRC_FILES
     idlparsetests.cpp
     intsplittests.cpp
     mapstests.cpp
+    mdparsetests.cpp
     odtparsetests.cpp
     postscriptimporttests.cpp
     pptxparsetests.cpp
