@@ -20,8 +20,6 @@ namespace Wisteria::Graphs
     /** @brief Flow diagram, showing the flow of one series of groups into another series of groups.
         @details This implementation supports a two-level flow (one column of groups flowing into another column).
 
-        @image html SankeyDiagram.svg width=90%
-
         @par %Data:
          This plot accepts a Data::Dataset where two categorical columns represent the start and end
          groups and (optionally) two continuous columns are their respective weight columns.
@@ -105,7 +103,8 @@ namespace Wisteria::Graphs
             Graph2D(canvas)
             {
             SetBrushScheme(brushes != nullptr ? brushes :
-                std::make_shared<Brushes::Schemes::BrushScheme>(*Settings::GetDefaultColorScheme()));
+                std::make_shared<Brushes::Schemes::BrushScheme>
+                    (Wisteria::Colors::Schemes::IceCream{}));
 
             GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
             GetLeftYAxis().GetGridlinePen() = wxNullPen;
