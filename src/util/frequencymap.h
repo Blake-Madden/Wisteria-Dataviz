@@ -18,12 +18,12 @@
 #include <unordered_set>
 
 /// @brief Same as a @c std::set, but also keeps a frequency count of every unique value added.
-template <typename T, typename Compare = std::less<T>, typename FrequencyT = size_t>
+template <typename T, typename Compare = std::less<T>>
 class frequency_set
     {
 public:
     /// @private
-    using map_type = std::map<T, FrequencyT, Compare>;
+    using map_type = std::map<T, size_t, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
     /// @brief Constructor.
@@ -181,6 +181,14 @@ public:
     using map_type = std::map<T, std::pair<size_t, double>, Compare>;
     /// @private
     using const_iterator = typename map_type::const_iterator;
+    /// @private
+    aggregate_frequency_set() = default;
+    /** @brief Constructor; inserts an item into the set.
+        @param value The value to insert.
+        @param aggregateValue The value to add to running total.
+        @note If a value is already in the set, then that value's count is incremented.*/
+    aggregate_frequency_set(const T& value, double aggregateValue)
+        { insert(value, aggregateValue); }
     /** @brief Inserts an item into the set.
         @param value The value to insert.
         @param aggregateValue The value to add to running total.
@@ -409,15 +417,14 @@ private:
 
 /** @brief Same as a @c std::map (where the key is a single value), but also
          supports multiple (unique) values (with their own freqency counts)
-         connected to each key. Also includes an aggregator for each key.*/
+         connected to each key. Includes an aggregate for each key.*/
 template <typename T1, typename T2,
-          typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>,
-          typename FrequencyT = size_t>
+          typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
 class multi_value_frequency_aggregate_map
     {
 public:
     /// @private
-    using values_set = frequency_set<T2, CompareSecondaryValues, FrequencyT>;
+    using values_set = frequency_set<T2, CompareSecondaryValues>;
     /// @private
     using values_and_aggregate_pair_type = std::pair<values_set, double>;
     /// @private
@@ -511,6 +518,117 @@ private:
     map_type m_table;
     };
 
+/** @brief Same as a @c std::map (where the key is a single value), but also
+        supports multiple (unique) values (with their own freqency counts and aggregates)
+        connected to each key. Includes an aggregate for each key and each subitem under each key.
+    @todo Add unit test.*/
+template <typename T1, typename T2,
+          typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
+class multi_value_frequency_double_aggregate_map
+    {
+public:
+    /// @private
+    using values_set = aggregate_frequency_set<T2, CompareSecondaryValues>;
+    /// @private
+    using values_and_aggregate_pair_type = std::pair<values_set, double>;
+    /// @private
+    using map_type = std::map<T1, values_and_aggregate_pair_type, Compare>;
+    /// @private
+    using const_iterator = typename map_type::const_iterator;
+    /// @private
+    using iterator = typename map_type::iterator;
+    /// @private
+    using value_type = std::pair<T1, values_and_aggregate_pair_type>;
+    /// @private
+    multi_value_frequency_double_aggregate_map() = default;
+    /** @brief Inserts a pair of items into the map.
+        @param value1 The first value of the pair.
+        @param value2 The second value of the pair.
+        @param aggregateValue1 The amount to increase the aggregated value for the key.\n
+            Would normally be @c 1.
+        @param aggregateValue2 The amount to increase the aggregated value for the subitem.\n
+            Would normally be @c 1.
+        @returns An iterator to the inserted or updated item.
+        @note The first value is what makes the item unique.\n
+            If a key is already in the map, then that key's count is incremented.\n
+            If the second value isn't in the key's current values,
+            then that value is added to the list of values connected to that key.*/
+    const_iterator insert(const T1& value1, const T2& value2,
+                          const double aggregateValue1 = 1,
+                          const double aggregateValue2 = 1)
+        {
+        auto [index_iter, inserted] =
+            m_table.try_emplace(value1,
+                values_and_aggregate_pair_type(values_set({ value2, aggregateValue2 }), aggregateValue1) );
+        // if it was already there, then just update it
+        if (!inserted)
+            {
+            index_iter->second.first.insert(value2, aggregateValue2);
+            index_iter->second.second += aggregateValue1;
+            }
+        return index_iter;
+        }
+    /** @brief Inserts a pair of items into the map.
+        @param value1 The first value of the pair.
+        @param value2 The second value of the pair.
+        @param aggregateValue1 The amount to increase the aggregated value for the key.\n
+            Would normally be @c 1.
+        @param aggregateValue2 The amount to increase the aggregated value for the subitem.\n
+            Would normally be @c 1.
+        @returns An iterator to the inserted or updated item.
+        @note The first value is what makes the item unique.\n
+            If a key is already in the map, then that key's count is incremented.\n
+            If the second value isn't in the key's current values,
+            then that value is added to the list of values connected to that key.*/
+    const_iterator insert(T1&& value1, T2&& value2,
+                          const double aggregateValue1 = 1,
+                          const double aggregateValue2 = 1)
+        {
+        auto [index_iter, inserted] =
+            m_table.try_emplace(value1,
+                values_and_aggregate_pair_type(values_set({ value2, aggregateValue2 }), aggregateValue1) );
+        // if it was already there, then just update it
+        if (!inserted)
+            {
+            index_iter->second.first.insert(value2, aggregateValue2);
+            index_iter->second.second += aggregateValue1;
+            }
+        return index_iter;
+        }
+    /** @brief Insert an already constructed item with its values and counts loaded.
+        @details This would normally be used if needing to update an item,
+            where you would have to copy, edit, delete, and then insert the copy back in.
+        @param value The value to insert.
+        @returns A (const) iterator and flag indicating whether the value was inserted
+            (will be @c false if value was already in the map).*/
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(const value_type& value)
+        { return m_table.try_emplace(value); }
+    /** @brief Insert an already constructed item with its values and counts loaded.
+        @details This would normally be used if needing to update an item,
+            where you would have to copy, edit, delete, and then insert the copy back in.
+        @param value The value to insert.
+        @returns A (const) iterator and flag indicating whether the value was inserted
+            (will be @c false if value was already in the map).*/
+    [[nodiscard]]
+    std::pair<const_iterator, bool> insert(value_type&& value)
+        { return m_table.try_emplace(value); }
+    /// @returns The map of pairs and their respective frequency counts.
+    [[nodiscard]]
+    const map_type& get_data() const noexcept
+        { return m_table; }
+    /// Clears the contents from the map.
+    void clear() noexcept
+        { m_table.clear(); }
+    /** @brief Erases the specified iterator.
+        @returns The next iterator after this iterator, or @c end() if that was the last item.
+        @param position The iterator to erase.*/
+    iterator erase(const_iterator position)
+        { return m_table.erase(position); }
+private:
+    map_type m_table;
+    };
+
 /** @}*/
 
-#endif //__FREQUENCY_MAPS_H__
+#endif // __FREQUENCY_MAPS_H__
