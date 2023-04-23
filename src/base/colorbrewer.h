@@ -657,7 +657,7 @@ namespace Wisteria::Colors
             };
 
         /** @brief An %October themed color scheme, including traditional
-             Halloween colors.)
+             Halloween colors.
              \htmlonly
              <div style='background-color:#FFA500; width:50px;'>&nbsp;</div>
              <div style='background-color:#000000; width:50px;'>&nbsp;</div>
