@@ -898,7 +898,8 @@ namespace Wisteria::Data
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
         size_t skipRows /*= 0*/,
-        const std::variant<wxString, size_t>& worksheet /*= L""*/)
+        const std::variant<wxString, size_t>& worksheet /*= L""*/,
+        std::optional<std::wstring> mdCode /*= std::nullopt*/)
         {
         const auto fileExt{ wxFileName(filePath).GetExt() };
         const auto delim = (fileExt.CmpNoCase(L"csv") == 0) ?
@@ -920,18 +921,20 @@ namespace Wisteria::Data
                 }
             }
 
-        return ReadColumnInfoRaw(fileText, delim, rowPreviewCount, skipRows);
+        return ReadColumnInfoRaw(fileText, delim, rowPreviewCount, skipRows, mdCode);
         }
 
     //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfoRaw(const wxString& fileText,
         const wchar_t delimiter,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        size_t skipRows /*= 0*/)
+        size_t skipRows /*= 0*/,
+        std::optional<std::wstring> mdCode /*= std::nullopt*/)
         {
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
+        importer.set_missing_data_code(mdCode);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
@@ -1162,6 +1165,7 @@ namespace Wisteria::Data
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
+        importer.set_missing_data_code(m_mdCode);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });

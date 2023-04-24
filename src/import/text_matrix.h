@@ -14,6 +14,7 @@
 
 #include "text_column.h"
 #include "text_row.h"
+#include <optional>
 
 /// @brief Text importing library.
 /// @details This is low-level code. Prefer using Wisteria::Data::Dataset::ImportText()
@@ -92,7 +93,10 @@ namespace lily_of_the_valley
                     ++i)
                     {
                     if (currentRowIndex >= row_count)
-                        { return currentRowIndex; }
+                        {
+                        recode_md_code();
+                        return currentRowIndex;
+                        }
                     if (m_matrix)
                         {
                         m_matrix->at(currentRowIndex).resize(column_count);
@@ -147,6 +151,7 @@ namespace lily_of_the_valley
                                     { m_matrix->resize(currentRowIndex); }
                                 else
                                     { m_vector->resize(currentRowIndex); }
+                                recode_md_code();
                                 return currentRowIndex;
                                 }
                             /* check to see if the row reader went to the end of its line
@@ -211,6 +216,7 @@ namespace lily_of_the_valley
                             { m_matrix->resize(currentRowIndex); }
                         else
                             { m_vector->resize(currentRowIndex); }
+                        recode_md_code();
                         return currentRowIndex;
                         }
                     /* check to see if the row reader went to the end of its line
@@ -235,13 +241,45 @@ namespace lily_of_the_valley
                 { m_matrix->resize(currentRowIndex); }
             else
                 { m_vector->resize(currentRowIndex); }
+
+            recode_md_code();
             return currentRowIndex;
             }
+        /// @brief Sets the value to treat as missing data.
+        /// @param mdCode The value to treat as missing data.
+        void set_missing_data_code(const std::optional<string_typeT>& mdCode) noexcept
+            { m_mdVal = mdCode; }
     private:
+        void recode_md_code()
+            {
+            if (m_mdVal)
+                {
+                if (m_matrix)
+                    {
+                    for (auto& row : *m_matrix)
+                        {
+                        for (auto& cell : row)
+                            {
+                            if (cell == m_mdVal.value())
+                                { cell.clear(); }
+                            }
+                        }
+                    }
+                else
+                    {
+                    for (auto& val : *m_vector)
+                        {
+                        if (val == m_mdVal.value())
+                            { val.clear(); }
+                        }
+                    }
+                }
+            }
         std::vector<std::vector<string_typeT>>* m_matrix{ nullptr };
         std::vector<string_typeT>* m_vector{ nullptr };
         std::vector<text_row<string_typeT>> m_rows;
         is_end_of_line is_eol;
+        std::optional<string_typeT> m_mdVal{ std::nullopt };
         };
     };
 

@@ -732,6 +732,14 @@ namespace Wisteria::Data
             m_skipRows = startRow;
             return *this;
             }
+        /** @brief Set the value to treat as missing data during an import.
+            @param mdCode The value to treat as missing data.
+            @returns A self reference.*/
+        ImportInfo& MDCode(const std::optional<std::wstring>& mdCode)
+            {
+            m_mdCode = mdCode;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
@@ -760,6 +768,10 @@ namespace Wisteria::Data
             m_textImportReplacements = replaceStrings;
             return *this;
             }
+        /// @returns The value to import as missing data during the import.
+        [[nodiscard]]
+        const std::optional<std::wstring>& GetMDCode() const noexcept
+            { return m_mdCode; }
         /// @returns The row to start reading text from.
         [[nodiscard]]
         size_t GetRowsToSkip() const noexcept
@@ -792,6 +804,7 @@ namespace Wisteria::Data
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
         double m_continuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
+        std::optional<std::wstring> m_mdCode{ std::nullopt };
         size_t m_skipRows{ 0 };
         };
 
@@ -1309,7 +1322,8 @@ namespace Wisteria::Data
         static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
             std::optional<size_t> rowPreviewCount = std::nullopt,
             size_t skipRows = 0,
-            const std::variant<wxString, size_t>& worksheet = L"");
+            const std::variant<wxString, size_t>& worksheet = L"",
+            std::optional<std::wstring> mdCode = std::nullopt);
         /** @brief Reads the column names from a text buffer and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
             @param fileText The text to analyze.
@@ -1327,7 +1341,8 @@ namespace Wisteria::Data
         static ColumnPreviewInfo ReadColumnInfoRaw(const wxString& fileText,
             const wchar_t delimiter,
             std::optional<size_t> rowPreviewCount = std::nullopt,
-            size_t skipRows = 0);
+            size_t skipRows = 0,
+            std::optional<std::wstring> mdCode = std::nullopt);
 
         /** @brief Set the value to replace missing data in continuous cells
                 during import. (The default value is NaN.)
@@ -1337,6 +1352,12 @@ namespace Wisteria::Data
         void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
             { m_importContinuousMDRecodeValue = recodeVal; }
 
+        /** @brief Sets the value to treat as missing data during an import.
+            @details This will be applied to all cells in the data during the import.
+            @param mdCode The value to treat as missing data.*/
+        void SetImportMDRecode(const std::optional<std::wstring>& mdCode) noexcept
+            { m_mdCode = mdCode; }
+        
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
             @param previewInfo A file's preview information (from a call to ReadColumnInfo()).
@@ -1523,6 +1544,7 @@ namespace Wisteria::Data
         std::wstring m_name;
 
         double m_importContinuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
+        std::optional<std::wstring> m_mdCode{ std::nullopt };
 
         // actual data
         Column<wxString> m_idColumn;
