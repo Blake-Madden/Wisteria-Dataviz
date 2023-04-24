@@ -18,7 +18,8 @@ namespace Wisteria::Graphs
     void SankeyDiagram::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& fromColumnName, const wxString& toColumnName,
         const std::optional<wxString>& fromWeightColumnName,
-        const std::optional<wxString>& toWeightColumnName)
+        const std::optional<wxString>& toWeightColumnName,
+        const std::optional<wxString>& fromGroupColumnName)
         {
         if (data == nullptr)
             { return; }
@@ -69,11 +70,25 @@ namespace Wisteria::Graphs
                 }
             }
 
+        // grouping column
+        auto fromGroupColumn = data->GetCategoricalColumns().cend();
+        if (fromGroupColumnName.has_value())
+            {        
+            fromGroupColumn = data->GetCategoricalColumn(fromGroupColumnName.value());
+            if (fromGroupColumn == data->GetCategoricalColumns().cend())
+                {
+                throw std::runtime_error(wxString::Format(
+                    _(L"'%s': 'from' group column not found for diagram."), fromGroupColumnName.value()).ToUTF8());
+                }
+            }
+
         m_columnsNames = { fromColumnName, toColumnName };
 
-        // load the combinations of labels (and weights)
+        // load the combinations of labels (and weights and groups)
         multi_value_frequency_double_aggregate_map<wxString, wxString,
                                             Data::wxStringLessNoCase, Data::wxStringLessNoCase> fromAndToMap;
+        multi_value_aggregate_map<wxString, wxString,
+                                  Data::wxStringLessNoCase, Data::wxStringLessNoCase> fromGrouping;
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
@@ -85,6 +100,11 @@ namespace Wisteria::Graphs
             fromAndToMap.insert(fromColumn->GetValueAsLabel(i), toColumn->GetValueAsLabel(i),
                 (useWeightColumn ? fromWeightColumn->GetValue(i) : 1),
                 (useWeightColumn ? toWeightColumn->GetValue(i) : 1));
+
+            if (fromGroupColumnName.has_value())
+                {
+                fromGrouping.insert(fromGroupColumn->GetValueAsLabel(i), fromColumn->GetValueAsLabel(i));
+                }
             }
 
         m_sankeyColumns.resize(2);
@@ -105,6 +125,29 @@ namespace Wisteria::Graphs
                         { subVal.first, subVal.second.second, SankeyGroup::DownStreamGroups{} });
                     }
                 }
+            }
+
+        if (fromGrouping.get_data().size())
+            {
+            SankeyColumn tempColumn;
+            size_t groupOffset{ 0 };
+            for (const auto& groups : fromGrouping.get_data())
+                {
+                wxASSERT_MSG(groups.second.first.size(), L"No groups in column group info!");
+                m_fromAxisGroups.push_back(
+                    SankeyAxisGroup{ groups.first, groupOffset, groupOffset + (groups.second.first.size() - 1) });
+                groupOffset += groups.second.first.size();
+                for (const auto& gr : groups.second.first)
+                    {
+                    const auto subGroupPos = std::find(m_sankeyColumns[0].cbegin(),
+                                                       m_sankeyColumns[0].cend(), SankeyGroup{ gr });
+                    wxASSERT_MSG(subGroupPos != m_sankeyColumns[0].cend(),
+                                 L"Unable to find group in sankey column!");
+                    if (subGroupPos != m_sankeyColumns[0].cend())
+                        { tempColumn.push_back(*subGroupPos); }
+                    }
+                }
+            m_sankeyColumns[0] = tempColumn;
             }
 
         AdjustColumns();
@@ -155,6 +198,8 @@ namespace Wisteria::Graphs
     void SankeyDiagram::RecalcSizes(wxDC& dc)
         {
         Graph2D::RecalcSizes(dc);
+
+        GetLeftYAxis().ClearBrackets();
 
         size_t colorIndex{ 0 };
         // use 10% of the area as negative space between the groups
@@ -443,34 +488,49 @@ namespace Wisteria::Graphs
 
             drawLabels(0, Side::Right);
             drawLabels(1, Side::Left);
+            }
 
-            if (GetColumnHeaderDisplay() == GraphColumnHeader::AsHeader)
+        if (GetColumnHeaderDisplay() == GraphColumnHeader::AsHeader)
+            {
+            GetLeftYAxis().GetHeader().GetGraphItemInfo().
+                Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+            GetRightYAxis().GetHeader().GetGraphItemInfo().
+                Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+
+            GetLeftYAxis().GetFooter().SetText(wxString{});
+            GetRightYAxis().GetFooter().SetText(wxString{});
+            }
+        else if (GetColumnHeaderDisplay() == GraphColumnHeader::AsFooter)
+            {
+            GetLeftYAxis().GetFooter().GetGraphItemInfo().
+                Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+            GetRightYAxis().GetFooter().GetGraphItemInfo().
+                Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+
+            GetLeftYAxis().GetHeader().SetText(wxString{});
+            GetRightYAxis().GetHeader().SetText(wxString{});
+            }
+        else
+            {
+            GetLeftYAxis().GetFooter().SetText(wxString{});
+            GetRightYAxis().GetFooter().SetText(wxString{});
+
+            GetLeftYAxis().GetHeader().SetText(wxString{});
+            GetRightYAxis().GetHeader().SetText(wxString{});
+            }
+
+        if (m_fromAxisGroups.size() && m_sankeyColumns.size())
+            {
+            for (const auto& aGr : m_fromAxisGroups)
                 {
-                GetLeftYAxis().GetHeader().GetGraphItemInfo().
-                    Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
-                GetRightYAxis().GetHeader().GetGraphItemInfo().
-                    Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
-
-                GetLeftYAxis().GetFooter().SetText(wxString{});
-                GetRightYAxis().GetFooter().SetText(wxString{});
-                }
-            else if (GetColumnHeaderDisplay() == GraphColumnHeader::AsFooter)
-                {
-                GetLeftYAxis().GetFooter().GetGraphItemInfo().
-                    Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
-                GetRightYAxis().GetFooter().GetGraphItemInfo().
-                    Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
-
-                GetLeftYAxis().GetHeader().SetText(wxString{});
-                GetRightYAxis().GetHeader().SetText(wxString{});
-                }
-            else
-                {
-                GetLeftYAxis().GetFooter().SetText(wxString{});
-                GetRightYAxis().GetFooter().SetText(wxString{});
-
-                GetLeftYAxis().GetHeader().SetText(wxString{});
-                GetRightYAxis().GetHeader().SetText(wxString{});
+                wxASSERT_MSG(aGr.m_startGroup < m_sankeyColumns[0].size(), L"Axis group start out of range!");
+                wxASSERT_MSG(aGr.m_endGroup < m_sankeyColumns[0].size(), L"Axis group start out of range!");
+                const auto groupTop = m_sankeyColumns[0].at(aGr.m_startGroup).m_yAxisTopPosition;
+                const auto groupBottom = m_sankeyColumns[0].at(aGr.m_endGroup).m_yAxisBottomPosition;
+                GetLeftYAxis().AddBracket(
+                    Axis::AxisBracket(groupBottom, groupTop,
+                        groupBottom + ((groupTop - groupBottom) * math_constants::half),
+                        aGr.m_label));
                 }
             }
         }

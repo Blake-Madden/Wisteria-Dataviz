@@ -22,7 +22,9 @@ namespace Wisteria::Graphs
 
         @par %Data:
          This plot accepts a Data::Dataset where two categorical columns represent the start and end
-         groups and (optionally) two continuous columns are their respective weight columns.
+         groups. Optionally, two continuous columns can also be used as weight columns for the
+         "from" and "to" columns. Finally, an optional group column can be provided to group the "from"
+         groups on the left-side.
 
          The following dataset shows using a "from" and "to" column, where the frequency counts of
          the columns' groups will be used. The gender groups (i.e., "Male", "Female") will appear on
@@ -42,13 +44,15 @@ namespace Wisteria::Graphs
          *Graduated* is the weight applied to *From* and *Enrolled* would be applied to *To*.
          By doing this, the diagram would show large groups for the feeder schools (e.g., "West HS")
          on the left, and how many of their respective graduating students matriculated to
-         "Miskatonic University."
+         "Miskatonic University." Finally, the "County" column can be used as grouping column
+         for the "From" column. This will order the labels from the "From" column into groups
+         and show axis brackets to the left of these groups showing the counties' names.
 
-         | From        | Graduated | To                    | Enrolled |
-         | :--         | --:       | :--                   | --:      |
-         | Westland HS | 150       | Miskatonic University | 13       |
-         | Lincoln HS  | 175       | Miskatonic University | 2        |
-         | West HS     | 197       | Miskatonic University | 0        |
+         | From        | Graduated | To                    | Enrolled | County    |
+         | :--         | --:       | :--                   | --:      | :--       |
+         | Westland HS | 150       | Miskatonic University | 13       | Berkshire |
+         | Lincoln HS  | 175       | Miskatonic University | 2        | Franklin  |
+         | West HS     | 197       | Miskatonic University | 0        | Berkshire |
 
          ...
 
@@ -130,6 +134,8 @@ namespace Wisteria::Graphs
                 the "from" column.
             @param toWeightColumnName The (optional) column containing the multiplier value for
                 the "to" column.
+            @param fromGroupColumnName The (optional) column used to categorize the groups in the
+                from column.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 Also throws an exception if only @c fromWeightColumnName is provided but
                 @c toWeightColumnName was not (or vice versa).\n
@@ -138,7 +144,8 @@ namespace Wisteria::Graphs
         void SetData(std::shared_ptr<const Data::Dataset> data,
                      const wxString& fromColumnName, const wxString& toColumnName,
                      const std::optional<wxString>& fromWeightColumnName,
-                     const std::optional<wxString>& toWeightColumnName);
+                     const std::optional<wxString>& toWeightColumnName,
+                     const std::optional<wxString>& fromGroupColumnName);
 
         /// @name Style functions
         /// @brief Functions relating to how the diagram is displayed.
@@ -221,9 +228,16 @@ namespace Wisteria::Graphs
             bool operator==(const SankeyGroup& that) const
                 { return m_label.CmpNoCase(that.m_label) == 0; }
             };
+        struct SankeyAxisGroup
+            {
+            wxString m_label;
+            size_t m_startGroup{ 0 };
+            size_t m_endGroup{ 0 };
+            };
         using SankeyColumn = std::vector<SankeyGroup>;
 
         std::vector<SankeyColumn> m_sankeyColumns;
+        std::vector<SankeyAxisGroup> m_fromAxisGroups;
         std::vector<wxString> m_columnsNames;
 
         FlowShape m_flowShape{ FlowShape::Curvy };
