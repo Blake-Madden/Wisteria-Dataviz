@@ -1310,6 +1310,7 @@ namespace Wisteria::Data
             @param skipRows The number of rows to skip before reading the text.
             @param worksheet If loading an Excel workbook, the name or
                 1-based index of the worksheet.
+            @param mdCode A value to treat as missing data.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
@@ -1329,6 +1330,7 @@ namespace Wisteria::Data
             @param fileText The text to analyze.
             @param rowPreviewCount The number of rows to read when deducing column types.
             @param skipRows The number of rows to skip before reading the text.
+            @param mdCode A value to treat as missing data.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
