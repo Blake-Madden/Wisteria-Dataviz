@@ -17,6 +17,7 @@ Properties for the `"datasets"` node:
   - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns.<br />
     This property is optional.
   - `"worksheet"`: if importing an Excel worksheet, the name or 1-based index of the worksheet.
+  - `"md-code"`: the string value to import as missing data during the import.
   - `"id-column"`: the ID column.<br />
     This property is optional.
   - `"continuous-columns"`: an array of continuous column names to import.<br />
@@ -74,7 +75,7 @@ Properties for the `"datasets"` node:
     - `"column"`: the categorical column to collapse.
     - `"min"`: the minimum number of times a string must appear in the column to remain in the string table.
     - `"other-label"`: the label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
-  - `"collapse-except"`: collapses strings into an "Other" category, except for a list of provided labels.
+  - `"collapse-except"`: collapses strings into an "Other" category, except for a list of provided labels.<br />
     This is an array of specifications which contain the following:
     - `"column"`: the categorical column to collapse.
     - `"labels-to-keep"`: an array of strings to preserve; all others will be lumped into a new `"Other"` category.
@@ -154,7 +155,7 @@ Properties for the `"datasets"` node:
   - `"filter"`: the subset filtering definition, which will contain the following:
     - `"column"`: the column from the dataset to filter on. The following values can also be used:
       - `"last-continuous-column"`
-    - `"operator"`: how to compare the values from the column with the filter's value.
+    - `"operator"`: how to compare the values from the column with the filter's value.<br />
       Available options are:
       - `"="` or `"=="` equals (the default)
       - `"!="` or `"<>"` not equals
@@ -178,7 +179,7 @@ Properties for the `"datasets"` node:
   - `"name"`: the name of the merged dataset. (This should be different from the datasets being merged;
     otherwise, it will overwrite them.)<br />
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - `"type"`: a string specifying which type of merge to use.
+  - `"type"`: a string specifying which type of merge to use.<br />
     Available options are:
     - `"left-join-unique"`: (unique) left join the dataset with another dataset (the default).
   - `"other-dataset"`: the other dataset to merge the current dataset with. This should be a name referencing
@@ -194,7 +195,7 @@ Properties for the `"datasets"` node:
   - `"name"`: the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
     otherwise, it will overwrite it.)<br />
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - `"type"`: a string specifying which type of pivot to use.
+  - `"type"`: a string specifying which type of pivot to use.<br />
     Available options are:
     - `"wider"`: pivot wider (the default).
     - `"longer"`: pivot longer.
