@@ -1262,7 +1262,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             }
 
         auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
-        sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt, std::nullopt);
+        sankey->SetData(sankeyData, L"Sex", L"Survived", std::nullopt, std::nullopt, std::nullopt);
         sankey->SetCanvasMargins(5, 5, 5, 5);
 
         subframe->m_canvas->SetFixedObject(0, 0, sankey);

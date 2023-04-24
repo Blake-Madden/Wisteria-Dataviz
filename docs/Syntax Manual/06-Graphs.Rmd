@@ -290,7 +290,7 @@ The following are properties relevant to specific graphs' base-level graph type.
 
 Properties common to all bar-chart derived graphs:
 
-- `"box-effect"`: string specifying the effects for the bars.
+- `"box-effect"`: string specifying the effects for the bars.<br />
   Available options are:
   - `"common-image"` (This will require an `"image-scheme"` to be defined.)
   - `"fade-from-bottom-to-top"`
@@ -301,7 +301,7 @@ Properties common to all bar-chart derived graphs:
   - `"solid"` (the default)
   - `"stipple"`
   - `"watercolor"`
-- `"bar-label-display"`: string specifying how to display labels on the bars.
+- `"bar-label-display"`: string specifying how to display labels on the bars.<br />
   Available options are:
   - `"percentage"`
   - `"value"`
@@ -316,13 +316,13 @@ Properties common to all bar-chart derived graphs:
 - `"bar-icons"`: an array of bar icon specifications. Each specification contains the following:
   - `"label"`: the label of the bar to add an icon to.
   - `"image"`: the path to the image to add to the bar label.
-- `"bar-sort"`: properties specifying how to sort the bars (after loading the data).
+- `"bar-sort"`: properties specifying how to sort the bars (after loading the data).<br />
   Available options are:
   - `"direction"`
     Available options are:
     - `"ascending"`
     - `"descending"`
-  - `"by"`: how to sort the bars, by label or length. This will override any `"labels"` option.
+  - `"by"`: how to sort the bars, by label or length. This will override any `"labels"` option.<br />
     Available options are:
     - `"length"`
     - `"label"`
@@ -341,7 +341,7 @@ Properties common to all bar-chart derived graphs:
   - `"bar"`: the axis label of the bar.
   - `"block"`: number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
   - `"decal"`: the decal to add to the bar, which will contain [label](#label-properties) properties.
-- `"first-bar-brackets"`: properties adding axis brackets that reference the first bar.
+- `"first-bar-brackets"`: properties adding axis brackets that reference the first bar.<br />
   Available options are:
   - `"label"`: string for the bracket's label.
   - `"start-block-re"`: a regular expression used to find the starting block for the bracket.
@@ -365,7 +365,7 @@ Properties for `"box-plot"` nodes:
 - `"variables"`: an item containing the following properties:
   - `"aggregate"`: the column containing the data.
   - `"group-1"`: a (optional) grouping column to divide the boxes into (along the X axis).
-- `"box-effect"`: string specifying the effects for the boxes.
+- `"box-effect"`: string specifying the effects for the boxes.<br />
   Available options are:
   - `"common-image"` (This will require an `"image-scheme"` to be defined.)
   - `"image" `(This will require an `"image-scheme"` to be defined.)
@@ -389,7 +389,7 @@ Properties for `"candlestick-plot"` nodes:
   - `"high"`: the high-value column.
   - `"low"`: the low-value column.
   - `"close"`: the closing-value column.
-- `"plot-type"`: string specifying which type of plot it should be.
+- `"plot-type"`: string specifying which type of plot it should be.<br />
   Available options are:
   - `"candlestick"`
   - `"ohlc"`
@@ -425,7 +425,7 @@ Properties for `"gantt-chart"` nodes:
   - `"description"`: the description column (this is optional).
   - `"completion"`: the completion column (this is optional).
   - `"group"`: the grouping column (this is optional).
-- `"task-label-display"`: string specifying what to display on the tasks.
+- `"task-label-display"`: string specifying what to display on the tasks.<br />
   Available options are:
   - `"days"`
   - `"description"`
@@ -545,7 +545,7 @@ Properties for `"pie-chart"` nodes:
 - `"dynamic-margins"`: @c true to shift the pie chart to one side if either gutter has no outer labels.
 - `"left-margin-note"`: a label specification for a label within the left margin of the chart.
 - `"right-margin-note"`: a label specification for a label within the right margin of the chart.
-- `"pie-label-effect"`: string specifying the effects for the pie slices.
+- `"pie-label-effect"`: string specifying the effects for the pie slices.<br />
   Available options are:
   - `"image"` (This will require an `"image-scheme"` to be defined.)
   - `"solid"` (the default)
@@ -635,16 +635,16 @@ Properties for `"linear-regression-roadmap"` nodes:
 - `"default-caption"`: @c true to add a caption explaining how to interpret the graph.
 - `"road-pen"`: a pen specification for the road.
 - `"lane-separator-pen"`: a pen specification for the road's lane sepatator.
-- `"lane-separator-style"`: a string specifying the lane separator style.
+- `"lane-separator-style"`: a string specifying the lane separator style.<br />
   Available options are:
   - `"single-line"` (the default)
   - `"double-line"`
   - `"no-display"`
-- `"road-stop-theme"`: a string specifying the road stops theme.
+- `"road-stop-theme"`: a string specifying the road stops theme.<br />
   Available options are:
   - `"location-markers"` (the default)
   - `"road-signs"`
-- `"marker-label-display"`: a string specifying what to show for the markers' labels.
+- `"marker-label-display"`: a string specifying what to show for the markers' labels.<br />
   Available options are:
   - `"name"`
   - `"name-and-value"`
@@ -668,16 +668,16 @@ Properties for `"pro-con-roadmap"` nodes:
 - `"default-caption"`: @c true to add a caption explaining how to interpret the graph.
 - `"road-pen"`: a pen specification for the road.
 - `"lane-separator-pen"`: a pen specification for the road's lane sepatator.
-- `"lane-separator-style"`: a string specifying the lane separator style.
+- `"lane-separator-style"`: a string specifying the lane separator style.<br />
   Available options are:
   - `"single-line"` (the default)
   - `"double-line"`
   - `"no-display"`
-- `"road-stop-theme"`: a string specifying the road stops theme.
+- `"road-stop-theme"`: a string specifying the road stops theme.<br />
   Available options are:
   - `"location-markers"` (the default)
   - `"road-signs"`
-- `"marker-label-display"`: a string specifying what to show for the markers' labels.
+- `"marker-label-display"`: a string specifying what to show for the markers' labels.<br />
   Available options are:
   - `"name"`
   - `"name-and-value"`
@@ -686,6 +686,41 @@ Properties for `"pro-con-roadmap"` nodes:
   Available options are:
   - `"flush"` (the default)
   - `"next-to-parent"`
+
+## Sankey Diagram {#sankey-diagram-properties .unnumbered}
+
+Properties for `"sankey-diagram"` nodes:
+
+- `"variables"`: an item containing the following properties:
+  - `"from"`: the column containing the left-side groups.
+  - `"to"`: the column containing the right-side groups that the left-side groups flow into.
+  - `"from-weight"`: the (optional) column containing the multiplier value for the "from" column.
+  - `"to-weight"`: the (optional) column containing the multiplier value for the "to" column.
+  - `"from-group"`: the (optional) column used to categorize the groups in the from column.
+- `"brush-scheme"`: for graphs that support brush schemes only.<br />
+     Contains the following properties:
+     `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
+     `"color-scheme"`: a color scheme that is mapped to the brush styles.
+     This can also be a string specifying a named color scheme (e.g., `"icecream"`).
+- `"group-label-display"`: string specifying how to display labels on the bars.<br />
+  Available options are:
+  - `"percentage"`
+  - `"value"`
+  - `"value-and-percentage"`
+  - `"no-display"`
+  - `"bin-name"`
+  - `"bin-name-and-value"`
+  - `"bin-name-and-percentage"`
+- `"group-header-display"`: a string specifying how the columns
+  (i.e., groups from each variable) display their variable's name.<br />
+  Available options are:
+  - `"as-header"`: display the column's name as an axis header.
+  - `"as-footer"`: display the column's name as an axis footer.
+  - `"no-display"`: do not display the column's name.
+- `"flow-shape"`: a string specifying the shape of the streams going between the groups.<br />
+  Available options are:
+  - `"curvy"`: a flow with a spline-like shape (the default).
+  - `"jagged"`: straight lines between the points in the flow's shape.
 
 ## Table {#table-properties .unnumbered}
 
@@ -740,9 +775,9 @@ The remaining properties are executed in the following order:
 - `"row-formatting"`: an array of row and formatting pairs, which contain the following properties:
   - `"position"`: which row to reformat.<br />
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column.<br />
-  - `"end"`: if specifying a range of rows, this is the end column.<br />
-  - `"format"`: the formatting for the column.
+  - `"start"`: if specifying a range of rows, this is the starting column.
+  - `"end"`: if specifying a range of rows, this is the end column.
+  - `"format"`: the formatting for the column.<br />
     Available options are:
     - `"accounting"`
     - `"general"`
@@ -797,7 +832,7 @@ The remaining properties are executed in the following order:
        Refer to [position](#position-properties) for available properties.
   - `"end"`: if reformatting a range of columns, this is the end column.<br />
        Refer to [position](#position-properties) for available properties.
-  - `"format"`: the formatting for the column.
+  - `"format"`: the formatting for the column.<br />
     Available options are:
     - `"accounting"`
     - `"general"`
