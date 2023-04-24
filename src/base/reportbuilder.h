@@ -34,6 +34,7 @@
 #include "../graphs/candlestickplot.h"
 #include "../graphs/likertchart.h"
 #include "../graphs/wordcloud.h"
+#include "../graphs/sankeydiagram.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <vector>
 #include <map>
@@ -176,6 +177,15 @@ namespace Wisteria
         /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
         /// @returns The graph that was added to the canvas, or null upon failure.
         [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadWordCloud(
+            const wxSimpleJSON::Ptr_t& graphNode,
+            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @brief Loads a Sankey dialog into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]] std::shared_ptr<Graphs::Graph2D> LoadSankeyDiagram(
             const wxSimpleJSON::Ptr_t& graphNode,
             Canvas* canvas, size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a Gantt chart node into the canvas.
@@ -416,6 +426,12 @@ namespace Wisteria
         /// @brief Converts a string value to a TextAlignment enum value.
         [[nodiscard]] static std::optional<TextAlignment>
             ConvertTextAlignment(const wxString& value);
+        /// @brief Converts a string value to a GraphColumnHeader enum value.
+        [[nodiscard]] static std::optional<GraphColumnHeader>
+            ConvertGraphColumnHeader(const wxString& value);
+        /// @brief Converts a string value to a FlowShape enum value.
+        [[nodiscard]] static std::optional<FlowShape>
+            ConvertFlowShape(const wxString& value);
         /// @brief Finds a position on the axis based on the value from a node.
         [[nodiscard]] std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
             const wxSimpleJSON::Ptr_t& positionNode) const;

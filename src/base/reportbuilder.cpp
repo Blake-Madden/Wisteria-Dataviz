@@ -200,6 +200,11 @@ namespace Wisteria
                                                 embeddedGraphs.push_back(
                                                     LoadWordCloud(item, canvas, currentRow, currentColumn));
                                                 }
+                                            else if (typeProperty->GetValueString().CmpNoCase(L"sankey-diagram") == 0)
+                                                {
+                                                embeddedGraphs.push_back(
+                                                    LoadSankeyDiagram(item, canvas, currentRow, currentColumn));
+                                                }
                                             else if (typeProperty->GetValueString().CmpNoCase(L"box-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(
@@ -497,6 +502,37 @@ namespace Wisteria
         const auto foundValue = textAlignValues.find(value.Lower().ToStdWstring());
         return ((foundValue != textAlignValues.cend()) ?
             std::optional<TextAlignment>(foundValue->second) :
+            std::nullopt);
+        }
+
+    //---------------------------------------------------
+    std::optional<GraphColumnHeader> ReportBuilder::ConvertGraphColumnHeader(const wxString& value)
+        {
+        static const std::map<std::wstring, GraphColumnHeader> graphColumnHeader =
+            {
+            { L"as-header", GraphColumnHeader::AsHeader },
+            { L"as-footer", GraphColumnHeader::AsFooter },
+            { L"no-display", GraphColumnHeader::NoDisplay }
+            };
+
+        const auto foundValue = graphColumnHeader.find(value.Lower().ToStdWstring());
+        return ((foundValue != graphColumnHeader.cend()) ?
+            std::optional<GraphColumnHeader>(foundValue->second) :
+            std::nullopt);
+        }
+    
+    //---------------------------------------------------
+    std::optional<FlowShape> ReportBuilder::ConvertFlowShape(const wxString& value)
+        {
+        static const std::map<std::wstring, FlowShape> flowShapeValues =
+            {
+            { L"curvy", FlowShape::Curvy },
+            { L"jagged", FlowShape::Jagged }
+            };
+
+        const auto foundValue = flowShapeValues.find(value.Lower().ToStdWstring());
+        return ((foundValue != flowShapeValues.cend()) ?
+            std::optional<FlowShape>(foundValue->second) :
             std::nullopt);
         }
 
@@ -2308,6 +2344,8 @@ namespace Wisteria
                     ImportInfo importDefines;
                     if (datasetNode->HasProperty(L"skip-rows"))
                         { importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0)); }
+                    if (datasetNode->HasProperty(L"md-code"))
+                        { importDefines.MDCode(datasetNode->GetProperty(L"md-code")->GetValueString().ToStdWstring()); }
 
                     const std::variant<wxString, size_t> worksheet =
                     datasetNode->GetProperty(L"worksheet")->IsValueNumber() ?
@@ -2325,7 +2363,8 @@ namespace Wisteria
                         importDefines = Dataset::ImportInfoFromPreview(
                             Dataset::ReadColumnInfo(path, std::nullopt,
                                 importDefines.GetRowsToSkip(),
-                                worksheet));
+                                worksheet,
+                                importDefines.GetMDCode()));
                         importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
                         }
                     else
@@ -3300,6 +3339,65 @@ namespace Wisteria
             {
             throw std::runtime_error(
                 _(L"Variables not defined for bar chart.").ToUTF8());
+            }
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadSankeyDiagram(
+        const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+        size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->GetValueString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() ||
+            foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Sankey diagram."),
+                                 dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (variablesNode->IsOk())
+            {
+            const auto fromVarName = variablesNode->GetProperty(L"from")->GetValueString();
+            const auto toColName = variablesNode->GetProperty(L"to")->GetValueString();
+
+            const auto fromWeightVarName = variablesNode->GetProperty(L"from-weight")->GetValueString();
+            const auto toWeightColName = variablesNode->GetProperty(L"to-weight")->GetValueString();
+
+            const auto fromGroupVarName = variablesNode->GetProperty(L"from-group")->GetValueString();
+
+            auto sankey = std::make_shared<SankeyDiagram>(canvas,
+                LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")) );
+
+            const auto groupLabelDisplay = ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"group-label-display")->GetValueString());
+            if (groupLabelDisplay)
+                { sankey->SetGroupLabelDisplay(groupLabelDisplay.value()); }
+
+            const auto groupHeaderDisplay = ConvertGraphColumnHeader(
+                graphNode->GetProperty(L"group-header-display")->GetValueString());
+            if (groupHeaderDisplay)
+                { sankey->SetColumnHeaderDisplay(groupHeaderDisplay.value()); }
+
+            const auto flowShape = ConvertFlowShape(
+                graphNode->GetProperty(L"flow-shape")->GetValueString());
+            if (flowShape)
+                { sankey->SetFlowShape(flowShape.value()); }
+
+            sankey->SetData(foundPos->second, fromVarName, toColName,
+                fromWeightVarName.length() ? std::optional<wxString>(fromWeightVarName) : std::nullopt,
+                toWeightColName.length() ? std::optional<wxString>(toWeightColName) : std::nullopt,
+                fromGroupVarName.length() ? std::optional<wxString>(fromGroupVarName) : std::nullopt);
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, sankey);
+            return sankey;
+            }
+        else
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Sankey diagram.").ToUTF8());
             }
         }
 
