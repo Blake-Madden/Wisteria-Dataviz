@@ -71,7 +71,8 @@ namespace Wisteria::Data
         else if (const auto worksheetIndex{ std::get_if<size_t>(&worksheet) };
             worksheetIndex != nullptr)
             {
-            if (*worksheetIndex < m_xlsxTextExtractor.get_worksheet_names().size())
+            if (*worksheetIndex > 0 &&
+                *worksheetIndex <= m_xlsxTextExtractor.get_worksheet_names().size())
                 {
                 const wxString sheetFile = archive.ReadTextFile(
                     wxString::Format(L"xl/worksheets/sheet%zu.xml",
