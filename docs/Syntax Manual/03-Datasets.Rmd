@@ -17,7 +17,10 @@ Properties for the `"datasets"` node:
   - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns.<br />
     This property is optional.
   - `"worksheet"`: if importing an Excel worksheet, the name or 1-based index of the worksheet.
-  - `"md-code"`: the string value to import as missing data during the import.
+  - `"md-code"`: the string value to import as missing data during the import.<br />
+    This property is optional.
+  - "treat-leading-zeros-as-text": whether to import numeric columns with leading zeros as text.<br />
+    This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
   - `"id-column"`: the ID column.<br />
     This property is optional.
   - `"continuous-columns"`: an array of continuous column names to import.<br />
@@ -45,15 +48,20 @@ Properties for the `"datasets"` node:
     - `"format"`: if `"parser"` is set to `"strptime-format"`,
       then this is the user-defined format to parse with.
     Note that the `"parser"` and `"format"` options are ignored if importing an Excel file.
-    Excel stores dates and times as serial dates, and these will be converted to accordingly.
+    Excel stores dates and times as serial dates, and these will be converted accordingly.
 
   If no columns are defined, then the importer will import all columns and deduce their types.
 
   Next, any transformation commands for a dataset node are executed. These are performed in the following order:
 
-  - `"columns-rename"`: an array of column rename commands, which contain the following:
+  - `"columns-rename"`: an array of column rename commands, which contain either of the following:
     - `"name"`: the column to rename.
     - `"new-name"`: the new name for the column.
+
+    or
+
+    - `"name-re"`: the column to rename (using a regular expression pattern).
+    - `"new-name-re"`: the new name for the column (an include regular expression pattern relative to `"name-re"`).
   - `"mutate-categorical-columns"`: an array of categorical column mutation commands. This will either create or update
        a categorical column and fill it with values based on another categorical column. This will use a map of
        regular expression patterns and corresponding replacements, where each value in the source column is compared

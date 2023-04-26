@@ -673,7 +673,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             companyAcquisitionData->ImportCSV(datasetPath,
                 // preview the data and deduce how to import it
                 Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath, L',')));
+                    Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /*companyAcquisitionData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -747,7 +747,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             silverFuturesData->ImportCSV(datasetPath,
                 // preview the data and deduce how to import it
                 Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath, L',')));
+                    Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* silverFuturesData->ImportCSV(datasetPath,
                 ImportInfo().
@@ -1475,7 +1475,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             surveyData->ImportCSV(datasetPath,
                 // preview the data and deduce how to import it
                 Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath, L',')));
+                    Dataset::ReadColumnInfo(datasetPath)));
             // we could also import the dataset by explicitly defining the columns, as such:
             /* surveyData->ImportCSV(datasetPath,
                 Data::ImportInfo().
@@ -1553,7 +1553,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             const auto datasetPath = appDir + L"/datasets/Graph Library Survey.csv";
             surveyData->ImportCSV(datasetPath,
                 Dataset::ImportInfoFromPreview(
-                    Dataset::ReadColumnInfo(datasetPath, L',')));
+                    Dataset::ReadColumnInfo(datasetPath)));
             }
         catch (const std::exception& err)
             {

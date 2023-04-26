@@ -311,6 +311,49 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::RenameColumnRE(const wxString& colNamePattern, const wxString& newColNamePattern)
+        {
+        if (colNamePattern.empty())
+            {
+            throw std::runtime_error(
+                _(L"New column name cannot be empty.").ToUTF8());
+            }
+        wxRegEx columnRE(colNamePattern);
+        if (!columnRE.IsValid())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': invalid regex used for renaming column."), colNamePattern).ToUTF8());
+            }
+
+        auto continuousCol = std::find_if(GetContinuousColumns().begin(),
+                GetContinuousColumns().end(),
+                [&columnRE](const auto& item)
+                { return columnRE.Matches(item.GetName()); });
+        auto catCol = std::find_if(GetCategoricalColumns().begin(),
+            GetCategoricalColumns().end(),
+            [&columnRE](const auto& item)
+            { return columnRE.Matches(item.GetName()); });
+        auto dateCol = std::find_if(GetDateColumns().begin(),
+            GetDateColumns().end(),
+            [&columnRE](const auto& item)
+            { return columnRE.Matches(item.GetName()); });
+
+        if (columnRE.Matches(GetIdColumn().GetName()))
+            { columnRE.ReplaceAll(&GetIdColumn().m_name, newColNamePattern); }
+        else if (continuousCol != GetContinuousColumns().end())
+            { columnRE.ReplaceAll(&continuousCol->m_name, newColNamePattern); }
+        else if (catCol != GetCategoricalColumns().end())
+            { columnRE.ReplaceAll(&catCol->m_name, newColNamePattern); }
+        else if (dateCol != GetDateColumns().end())
+            { columnRE.ReplaceAll(&dateCol->m_name, newColNamePattern); }
+        else
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': column not found for renaming."), colNamePattern).ToUTF8());
+            }
+        }
+
+    //----------------------------------------------
     bool Dataset::ContainsColumn(const wxString& colName) const noexcept
         {
         auto continuousCol = GetContinuousColumn(colName);
@@ -896,10 +939,9 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfo(const wxString& filePath,
+        const ImportInfo& importInfo /*= ImportInfo{}*/,
         std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        size_t skipRows /*= 0*/,
-        const std::variant<wxString, size_t>& worksheet /*= L""*/,
-        std::optional<std::wstring> mdCode /*= std::nullopt*/)
+        const std::variant<wxString, size_t>& worksheet /*= L""*/)
         {
         const auto fileExt{ wxFileName(filePath).GetExt() };
         const auto delim = (fileExt.CmpNoCase(L"csv") == 0) ?
@@ -921,27 +963,26 @@ namespace Wisteria::Data
                 }
             }
 
-        return ReadColumnInfoRaw(fileText, delim, rowPreviewCount, skipRows, mdCode);
+        return ReadColumnInfoRaw(fileText, delim, importInfo, rowPreviewCount);
         }
 
     //----------------------------------------------
     Dataset::ColumnPreviewInfo Dataset::ReadColumnInfoRaw(const wxString& fileText,
         const wchar_t delimiter,
-        std::optional<size_t> rowPreviewCount /*= std::nullopt*/,
-        size_t skipRows /*= 0*/,
-        std::optional<std::wstring> mdCode /*= std::nullopt*/)
+        const ImportInfo& importInfo /*= ImportInfo{}*/,
+        std::optional<size_t> rowPreviewCount /*= std::nullopt*/)
         {
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
-        importer.set_missing_data_code(mdCode);
+        importer.set_missing_data_code(importInfo.m_mdCode);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
-        if (skipRows > 0)
+        if (importInfo.m_skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
-            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ skipRows };
+            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ importInfo.m_skipRows };
             noReadRowsStart.add_column(noReadColumn);
             importer.add_row_definition(noReadRowsStart);
             }
@@ -961,7 +1002,7 @@ namespace Wisteria::Data
         std::vector<std::pair<wxString, ColumnImportType>> columnInfo;
         // read either first few rows or entire file, whichever is less
         size_t rowCount = std::min<size_t>(
-            preview(fileText.wc_str(), delimiter, false, false, skipRows),
+            preview(fileText.wc_str(), delimiter, false, false, importInfo.m_skipRows),
                     rowPreviewCount.has_value() ?
                         (rowPreviewCount.value() + 1/*header*/) : 100);
 
@@ -1003,6 +1044,15 @@ namespace Wisteria::Data
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
+                // "0002789" will trigger the column to be imported as text,
+                // preserving the leading zeros and seeing these "numbers" as
+                // identifying labels instead.
+                if (importInfo.m_treatLeadingZerosAsText &&
+                    currentCell.length() && currentCell.front() == L'0')
+                    {
+                    currentColumnType = ColumnImportType::String;
+                    break;
+                    }
                 // can't deduce anything from MD
                 if (currentCell.empty() || mdRegex.Matches(currentCell))
                     { continue; }
@@ -1169,10 +1219,10 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
-        if (info.GetRowsToSkip() > 0)
+        if (info.m_skipRows > 0)
             {
             // skip initial lines of text that the caller asked to skip
-            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ info.GetRowsToSkip() };
+            lily_of_the_valley::text_row<std::wstring> noReadRowsStart{ info.m_skipRows };
             noReadRowsStart.add_column(noReadColumn);
             importer.add_row_definition(noReadRowsStart);
             }
@@ -1190,7 +1240,7 @@ namespace Wisteria::Data
 
         lily_of_the_valley::text_preview preview;
         // see how many lines are in the file and resize the container
-        size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.GetRowsToSkip());
+        size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.m_skipRows);
         if (rowCount > 0)
             {
             dataStrings.resize(rowCount);

@@ -740,6 +740,16 @@ namespace Wisteria::Data
             m_mdCode = mdCode;
             return *this;
             }
+        /** @brief Set whether to import numeric columns with leading zeros as text.
+            @details This is useful for fixed-width numeric IDs that should actually
+                be treated as labels (rather than continuous values).
+            @param leadZeros @c true to import numeric columns with leading zeros as text.
+            @returns A self reference.*/
+        ImportInfo& TreatLeadingZerosAsText(const bool leadZeros)
+            {
+            m_treatLeadingZerosAsText = leadZeros;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
@@ -768,14 +778,6 @@ namespace Wisteria::Data
             m_textImportReplacements = replaceStrings;
             return *this;
             }
-        /// @returns The value to import as missing data during the import.
-        [[nodiscard]]
-        const std::optional<std::wstring>& GetMDCode() const noexcept
-            { return m_mdCode; }
-        /// @returns The row to start reading text from.
-        [[nodiscard]]
-        size_t GetRowsToSkip() const noexcept
-            { return m_skipRows; }
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
                 and their replacement values from a file and passing that to ReplacementStrings().
@@ -806,6 +808,7 @@ namespace Wisteria::Data
         double m_continuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
         std::optional<std::wstring> m_mdCode{ std::nullopt };
         size_t m_skipRows{ 0 };
+        bool m_treatLeadingZerosAsText{ false };
         };
 
     /** @brief %Dataset interface for graphs.
@@ -1028,11 +1031,11 @@ namespace Wisteria::Data
             @note Check the return against `GetCategoricalColumns().cend()`
                 to confirm that the column was found prior to using it.*/
         [[nodiscard]]
-        CategoricalColumnConstIterator GetCategoricalColumn(const wxString& columnName) const noexcept
+        CategoricalColumnConstIterator GetCategoricalColumn(const wxString& columnName) const
             {
             return std::find_if(GetCategoricalColumns().cbegin(),
                 GetCategoricalColumns().cend(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets a writable iterator to a categorical column by name.
@@ -1043,11 +1046,11 @@ namespace Wisteria::Data
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetCategoricalColumn() unless you need to edit the column.*/
         [[nodiscard]]
-        CategoricalColumnIterator GetCategoricalColumn(const wxString& columnName) noexcept
+        CategoricalColumnIterator GetCategoricalColumn(const wxString& columnName)
             {
             return std::find_if(GetCategoricalColumns().begin(),
                 GetCategoricalColumns().end(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets an iterator to a date column by name.
@@ -1057,11 +1060,11 @@ namespace Wisteria::Data
             @note Check the return against `GetDateColumns().cend()`
                 to confirm that the column was found prior to using it.*/
         [[nodiscard]]
-        DateColumnConstIterator GetDateColumn(const wxString& columnName) const noexcept
+        DateColumnConstIterator GetDateColumn(const wxString& columnName) const
             {
             return std::find_if(GetDateColumns().cbegin(),
                 GetDateColumns().cend(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets a writable iterator to a date column by name.
@@ -1072,11 +1075,11 @@ namespace Wisteria::Data
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetDateColumn() unless you need to edit the column.*/
         [[nodiscard]]
-        DateColumnIterator GetDateColumn(const wxString& columnName) noexcept
+        DateColumnIterator GetDateColumn(const wxString& columnName)
             {
             return std::find_if(GetDateColumns().begin(),
                 GetDateColumns().end(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets an iterator to a continuous column by name.
@@ -1087,11 +1090,11 @@ namespace Wisteria::Data
                 to confirm that the column was found prior to using it.*/
         [[nodiscard]]
         ContinuousColumnConstIterator
-            GetContinuousColumn(const wxString& columnName) const noexcept
+            GetContinuousColumn(const wxString& columnName) const
             {
             return std::find_if(GetContinuousColumns().cbegin(),
                 GetContinuousColumns().cend(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
         /** @brief Gets a writable iterator to a continuous column by name.
@@ -1102,11 +1105,11 @@ namespace Wisteria::Data
                 to confirm that the column was found prior to using it.\n
                 Also, prefer using GetContinuousColumns() unless you need to edit the column.*/
         [[nodiscard]]
-        ContinuousColumnIterator GetContinuousColumn(const wxString& columnName) noexcept
+        ContinuousColumnIterator GetContinuousColumn(const wxString& columnName)
             {
             return std::find_if(GetContinuousColumns().begin(),
                 GetContinuousColumns().end(),
-                [&columnName](const auto& item) noexcept
+                [&columnName](const auto& item)
                 { return item.GetName().CmpNoCase(columnName) == 0; });
             }
 
@@ -1256,6 +1259,19 @@ namespace Wisteria::Data
             @throws std::runtime_error If column not found, throws an exception.*/
         void RenameColumn(const wxString& colName, const wxString& newColName);
 
+        /** @brief Renames a column using regular expressions.
+            @param colNamePattern The column regex pattern to search for and rename.
+            @param newColNamePattern The new name for the column.\n
+                Can be a regex such as "\2" that references @c colNamePattern.
+            @code
+             // this will rename "Four Year Graduation Rate Numerator - Class of 2021"
+             // to "GRAD YEAR 2021"
+             dataset->RenameColumnRE("Four Year Graduation Rate Numerator \\- Class of ([[:digit:]]{4})",
+                       "GRAD YEAR \\1");
+            @endcode
+            @throws std::runtime_error If column not found or regex pattern is invalid, throws an exception.*/
+        void RenameColumnRE(const wxString& colNamePattern, const wxString& newColNamePattern);
+
         /** @brief Applies a regular expression string replacement for all values in
                 the specified categorical column.
             @param colName The categorical column to edit.
@@ -1307,10 +1323,9 @@ namespace Wisteria::Data
         /** @brief Reads the column names from a file and deduces their data types.
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types.
-            @param skipRows The number of rows to skip before reading the text.
+            @param @param importInfo Import settings (row start and MD code are used).
             @param worksheet If loading an Excel workbook, the name or
                 1-based index of the worksheet.
-            @param mdCode A value to treat as missing data.
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
@@ -1321,16 +1336,14 @@ namespace Wisteria::Data
             @sa ImportInfoFromPreview().*/
         [[nodiscard]]
         static ColumnPreviewInfo ReadColumnInfo(const wxString& filePath,
+            const ImportInfo& importInfo = ImportInfo{},
             std::optional<size_t> rowPreviewCount = std::nullopt,
-            size_t skipRows = 0,
-            const std::variant<wxString, size_t>& worksheet = L"",
-            std::optional<std::wstring> mdCode = std::nullopt);
+            const std::variant<wxString, size_t>& worksheet = L"");
         /** @brief Reads the column names from a text buffer and deduces their data types.
             @param delimiter The delimiter to parse the columns with.
             @param fileText The text to analyze.
             @param rowPreviewCount The number of rows to read when deducing column types.
-            @param skipRows The number of rows to skip before reading the text.
-            @param mdCode A value to treat as missing data.
+            @param importInfo Import settings (row start and MD code are used).
             @returns A vector of column names and their respective data types.\n
                 This can be especially useful for determining whether a categorical column
                 should be imported as strings or codes (i.e., discrete numbers).
@@ -1342,9 +1355,8 @@ namespace Wisteria::Data
         [[nodiscard]]
         static ColumnPreviewInfo ReadColumnInfoRaw(const wxString& fileText,
             const wchar_t delimiter,
-            std::optional<size_t> rowPreviewCount = std::nullopt,
-            size_t skipRows = 0,
-            std::optional<std::wstring> mdCode = std::nullopt);
+            const ImportInfo& importInfo = ImportInfo{},
+            std::optional<size_t> rowPreviewCount = std::nullopt);
 
         /** @brief Set the value to replace missing data in continuous cells
                 during import. (The default value is NaN.)

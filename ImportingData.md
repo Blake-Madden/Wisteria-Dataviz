@@ -41,7 +41,7 @@ auto BelongingData = std::make_shared<Data::Dataset>();
 BelongingData->ImportCSV(datasetPath,
     // preview the data and deduce how to import it
     Dataset::ImportInfoFromPreview(
-        Dataset::ReadColumnInfo(datasetPath, L',')));
+        Dataset::ReadColumnInfo(datasetPath)));
 ```
 
 Continuous Data

@@ -2130,9 +2130,18 @@ namespace Wisteria
             auto colRenames = dsNode->GetProperty(L"columns-rename")->GetValueArrayObject();
             for (const auto& colRename : colRenames)
                 {
-                dataset->RenameColumn(
-                    colRename->GetProperty(_DT(L"name"))->GetValueString(),
-                    colRename->GetProperty(L"new-name")->GetValueString());
+                if (colRename->HasProperty(_DT(L"name")))
+                    {
+                    dataset->RenameColumn(
+                        colRename->GetProperty(_DT(L"name"))->GetValueString(),
+                        colRename->GetProperty(L"new-name")->GetValueString());
+                    }
+                if (colRename->HasProperty(L"name-re"))
+                    {
+                    dataset->RenameColumnRE(
+                        colRename->GetProperty(L"name-re")->GetValueString(),
+                        colRename->GetProperty(L"new-name-re")->GetValueString());
+                    }
                 }
 
             // column mutations
@@ -2342,10 +2351,25 @@ namespace Wisteria
                     auto dataset = std::make_shared<Data::Dataset>();
 
                     ImportInfo importDefines;
-                    if (datasetNode->HasProperty(L"skip-rows"))
-                        { importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0)); }
-                    if (datasetNode->HasProperty(L"md-code"))
-                        { importDefines.MDCode(datasetNode->GetProperty(L"md-code")->GetValueString().ToStdWstring()); }
+                    const auto fillImportDefines = [&importDefines,&datasetNode]()
+                        {
+                        if (datasetNode->HasProperty(L"skip-rows"))
+                            {
+                            importDefines.SkipRows(
+                                datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
+                            }
+                        if (datasetNode->HasProperty(L"md-code"))
+                            {
+                            importDefines.MDCode(
+                                datasetNode->GetProperty(L"md-code")->GetValueString().ToStdWstring());
+                            }
+                        if (datasetNode->HasProperty(L"treat-leading-zeros-as-text"))
+                            {
+                            importDefines.TreatLeadingZerosAsText(
+                                datasetNode->GetProperty(L"treat-leading-zeros-as-text")->GetValueBool());
+                            }
+                        };
+                    fillImportDefines();
 
                     const std::variant<wxString, size_t> worksheet =
                     datasetNode->GetProperty(L"worksheet")->IsValueNumber() ?
@@ -2361,11 +2385,8 @@ namespace Wisteria
                         !datasetNode->HasProperty(L"categorical-columns"))
                         {
                         importDefines = Dataset::ImportInfoFromPreview(
-                            Dataset::ReadColumnInfo(path, std::nullopt,
-                                importDefines.GetRowsToSkip(),
-                                worksheet,
-                                importDefines.GetMDCode()));
-                        importDefines.SkipRows(datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
+                            Dataset::ReadColumnInfo(path, importDefines, std::nullopt, worksheet));
+                        fillImportDefines();
                         }
                     else
                         {
