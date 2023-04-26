@@ -415,7 +415,7 @@ namespace Wisteria::GraphItems
                     {
                     // save current transform matrix state
                     gc->PushState();
-                    
+
                     auto outlinePath = gc->CreatePath();
 
                     outlinePath.MoveToPoint(m_scaledPoints[0].x, m_scaledPoints[0].y);

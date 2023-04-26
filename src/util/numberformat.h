@@ -13,7 +13,6 @@
 #define __NUMBERFORMAT_H__
 
 #include <wx/wx.h>
-#include <wx/listctrl.h>
 #include <wx/math.h>
 #include <wx/numformatter.h>
 
@@ -59,15 +58,15 @@ namespace Wisteria
         };
 
     /// @brief Formats numbers (and strings) into a specialized string format.
-    /// @details This is a wrapper around @c wxNumberFormatter, but also includes
-    ///     support for percentages and possibly custom formats in derived classes.
-    ///     Support for parsing a string and returning it in a different format
-    ///     is also available.
+    /// @details This can support for percentages and possibly custom formats
+    ///     in derived classes. Support for parsing a string and returning it
+    ///     in a different format is also available.
     class NumberFormat
         {
     public:
         /// @private
-        virtual ~NumberFormat() {}
+        virtual ~NumberFormat()
+            {}
         /// @brief Formats a string into a different format.
         /// @param value The string to reformat.
         /// @param format The format specification.

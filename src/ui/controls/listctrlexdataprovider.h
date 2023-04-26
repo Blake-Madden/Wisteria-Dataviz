@@ -172,7 +172,7 @@ public:
     /// @param row The row to access.
     /// @param column The column to access.
     virtual int GetItemImage(const size_t row, const size_t column) const = 0;
-    // @brief Sets the item's index into the image list.
+    /// @brief Sets the item's index into the image list.
     /// @param row The row to access.
     /// @param column The column to access.
     /// @param image The image to use (index into the image list).

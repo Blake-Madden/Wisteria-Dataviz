@@ -1323,7 +1323,7 @@ namespace Wisteria::Data
         /** @brief Reads the column names from a file and deduces their data types.
             @param filePath The path to the data file.
             @param rowPreviewCount The number of rows to read when deducing column types.
-            @param @param importInfo Import settings (row start and MD code are used).
+            @param importInfo Import settings (row start and MD code are used).
             @param worksheet If loading an Excel workbook, the name or
                 1-based index of the worksheet.
             @returns A vector of column names and their respective data types.\n
@@ -1371,7 +1371,7 @@ namespace Wisteria::Data
             @param mdCode The value to treat as missing data.*/
         void SetImportMDRecode(const std::optional<std::wstring>& mdCode) noexcept
             { m_mdCode = mdCode; }
-        
+
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
             @param previewInfo A file's preview information (from a call to ReadColumnInfo()).

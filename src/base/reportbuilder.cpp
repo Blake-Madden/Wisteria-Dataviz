@@ -520,7 +520,7 @@ namespace Wisteria
             std::optional<GraphColumnHeader>(foundValue->second) :
             std::nullopt);
         }
-    
+
     //---------------------------------------------------
     std::optional<FlowShape> ReportBuilder::ConvertFlowShape(const wxString& value)
         {
