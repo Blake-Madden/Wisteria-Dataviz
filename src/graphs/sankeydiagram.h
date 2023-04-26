@@ -44,9 +44,11 @@ namespace Wisteria::Graphs
          *Graduated* is the weight applied to *From* and *Enrolled* would be applied to *To*.
          By doing this, the diagram would show large groups for the feeder schools (e.g., "West HS")
          on the left, and how many of their respective graduating students matriculated to
-         "Miskatonic University." Finally, the "County" column can be used as grouping column
+         "Miskatonic University." Finally, the "County" column can be used to sort the groups
          for the "From" column. This will order the labels from the "From" column into groups
          and show axis brackets to the left of these groups showing the counties' names.
+         (Note that if any group from "From" appears in multiple values from "County,"
+          then it will be sorted by the first county that it encountered.)
 
          | From        | Graduated | To                    | Enrolled | County    |
          | :--         | --:       | :--                   | --:      | :--       |
@@ -134,8 +136,11 @@ namespace Wisteria::Graphs
                 the "from" column.
             @param toWeightColumnName The (optional) column containing the multiplier value for
                 the "to" column.
-            @param fromGroupColumnName The (optional) column used to categorize the groups in the
-                from column.
+            @param fromSortColumnName The (optional) column used to sort the groups in the
+                from column.\n
+                Note that if a group from @c fromWeightColumnName occurs with multiple values
+                from this column, then it will be sorted by the first value from this column
+                that it encountered.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
                 Also throws an exception if only @c fromWeightColumnName is provided but
                 @c toWeightColumnName was not (or vice versa).\n
@@ -145,7 +150,7 @@ namespace Wisteria::Graphs
                      const wxString& fromColumnName, const wxString& toColumnName,
                      const std::optional<wxString>& fromWeightColumnName,
                      const std::optional<wxString>& toWeightColumnName,
-                     const std::optional<wxString>& fromGroupColumnName);
+                     const std::optional<wxString>& fromSortColumnName);
 
         /// @name Style functions
         /// @brief Functions relating to how the diagram is displayed.
@@ -168,7 +173,7 @@ namespace Wisteria::Graphs
         /// @param labelDisplay The format to use.
         void SetGroupLabelDisplay(const BinLabelDisplay labelDisplay) noexcept
             { m_groupLabelDisplay = labelDisplay; }
-        
+
         /// @returns How the columns (i.e., groups from each variable) display
         ///     their variable's name.
         [[nodiscard]]
@@ -179,7 +184,7 @@ namespace Wisteria::Graphs
         /// @param columnDisplay The display method to use.
         void SetColumnHeaderDisplay(const GraphColumnHeader columnDisplay) noexcept
             { m_columnDisplay = columnDisplay; }
-       
+
         /// @}
 
         /// @private

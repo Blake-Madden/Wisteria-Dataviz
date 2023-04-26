@@ -19,7 +19,7 @@ namespace Wisteria::Graphs
         const wxString& fromColumnName, const wxString& toColumnName,
         const std::optional<wxString>& fromWeightColumnName,
         const std::optional<wxString>& toWeightColumnName,
-        const std::optional<wxString>& fromGroupColumnName)
+        const std::optional<wxString>& fromSortColumnName)
         {
         if (data == nullptr)
             { return; }
@@ -44,12 +44,14 @@ namespace Wisteria::Graphs
         if (fromWeightColumnName.has_value() && !toWeightColumnName.has_value())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': 'from' weight column provided, but 'to' column was not."), fromWeightColumnName.value()).ToUTF8());
+                _(L"'%s': 'from' weight column provided, but 'to' column was not."),
+                fromWeightColumnName.value()).ToUTF8());
             }
         else if (toWeightColumnName.has_value() && !fromWeightColumnName.has_value())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': 'to' weight column provided, but 'from' column was not."), toWeightColumnName.value()).ToUTF8());
+                _(L"'%s': 'to' weight column provided, but 'from' column was not."),
+                toWeightColumnName.value()).ToUTF8());
             }
         const bool useWeightColumn = fromWeightColumnName.has_value() && toWeightColumnName.has_value();
         auto fromWeightColumn = data->GetContinuousColumns().cend();
@@ -72,13 +74,13 @@ namespace Wisteria::Graphs
 
         // grouping column
         auto fromGroupColumn = data->GetCategoricalColumns().cend();
-        if (fromGroupColumnName.has_value())
-            {        
-            fromGroupColumn = data->GetCategoricalColumn(fromGroupColumnName.value());
+        if (fromSortColumnName.has_value())
+            {
+            fromGroupColumn = data->GetCategoricalColumn(fromSortColumnName.value());
             if (fromGroupColumn == data->GetCategoricalColumns().cend())
                 {
                 throw std::runtime_error(wxString::Format(
-                    _(L"'%s': 'from' group column not found for diagram."), fromGroupColumnName.value()).ToUTF8());
+                    _(L"'%s': 'from' sort column not found for diagram."), fromSortColumnName.value()).ToUTF8());
                 }
             }
 
@@ -101,7 +103,7 @@ namespace Wisteria::Graphs
                 (useWeightColumn ? fromWeightColumn->GetValue(i) : 1),
                 (useWeightColumn ? toWeightColumn->GetValue(i) : 1));
 
-            if (fromGroupColumnName.has_value())
+            if (fromSortColumnName.has_value())
                 {
                 fromGrouping.insert(fromGroupColumn->GetValueAsLabel(i), fromColumn->GetValueAsLabel(i));
                 }
@@ -377,7 +379,7 @@ namespace Wisteria::Graphs
             [&, this]()
             {
             std::array<wxPoint, 4> pts;
-            
+
             for (const auto& col : m_sankeyColumns)
                 {
                 for (const auto& group : col)
