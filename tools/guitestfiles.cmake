@@ -6,10 +6,12 @@ SET(TEST_SRC_FILES
     basetests.cpp
     colortests.cpp
     datatests.cpp
+    formattedtexttests.cpp
     labeltests.cpp
     listctrlextests.cpp
     sidebartests.cpp
     subsettests.cpp
     testableframe.cpp
     testingmain.cpp
-    textstreamtests.cpp)
+    textstreamtests.cpp
+    xmlformattests.cpp)
