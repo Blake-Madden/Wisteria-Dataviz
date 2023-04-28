@@ -74,3 +74,54 @@ TEST_CASE("Infinity", "[infinitiy]")
     CHECK_FALSE(is_infinity(0.017453));
     CHECK(is_infinity(log((float)0)));
     }
+
+TEST_CASE("Comparable first pair", "[comparable]")
+    {
+    SECTION("Compare First Doubles")
+        {
+        comparable_first_pair<double, double> first(0.1, 999999);
+        comparable_first_pair<double, double> second(1.1, 9);
+        CPPUNIT_ASSERT(first < second);
+        CPPUNIT_ASSERT((second < first) == false);
+        }
+    SECTION("Compare First Strings")
+        {
+        comparable_first_pair<std::wstring, std::wstring> first(L"hi", L"zoo");
+        comparable_first_pair<std::wstring, std::wstring> second(L"zoo", L"hi");
+        CPPUNIT_ASSERT(first < second);
+        CPPUNIT_ASSERT((second < first) == false);
+        }
+    SECTION("Compare First Mixed")
+        {
+        comparable_first_pair<double, std::wstring> first(0.1, L"zoo");
+        comparable_first_pair<double, std::wstring> second(1.1, L"hi");
+        CPPUNIT_ASSERT(first < second);
+        CPPUNIT_ASSERT((second < first) == false);
+        }
+    SECTION("CTOR From Pair")
+        {
+        comparable_first_pair<double, std::wstring> myPair(1.2, L"one point 2");
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.2, myPair.first, 1e-1);
+        CPPUNIT_ASSERT_EQUAL(myPair.second, std::wstring(L"one point 2"));
+        }
+    SECTION("Assignment")
+        {
+        comparable_first_pair<double, std::wstring> myPair;
+        myPair = comparable_first_pair<double, std::wstring>(1.2, L"one point 2");
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.2, myPair.first, 1e-1);
+        CPPUNIT_ASSERT_EQUAL(myPair.second, std::wstring(L"one point 2"));
+
+        comparable_first_pair<double, std::wstring> myOtherPair = myPair;
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.2, myOtherPair.first, 1e-1);
+        CPPUNIT_ASSERT_EQUAL(myOtherPair.second, std::wstring(L"one point 2"));
+        CPPUNIT_ASSERT(myOtherPair == myPair);
+
+        comparable_first_pair<double, std::wstring> myOtherOtherPair;
+        myOtherOtherPair = myPair;
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.2, myOtherOtherPair.first, 1e-1);
+        CPPUNIT_ASSERT_EQUAL(myOtherOtherPair.second, std::wstring(L"one point 2"));
+
+        myPair.first = 7;
+        CPPUNIT_ASSERT(!(myOtherPair == myPair));
+        }
+    }
