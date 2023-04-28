@@ -155,7 +155,7 @@ public:
     ListCtrlExDataProviderBase() = default;
     /// @brief Sets the number formatting interface for the entire grid.
     /// @param format The format to use.
-    void SetNumberFormatter(const Wisteria::NumberFormat* format) noexcept
+    void SetNumberFormatter(const Wisteria::NumberFormat<wxString>* format) noexcept
         { m_formatNumber = format; }
 
     // Virtual interfaces to be implemented by derived class
@@ -254,7 +254,7 @@ public:
                       const size_t low /*= 0*/, const size_t high /*= -1*/) = 0;
 protected:
     /// @private
-    const Wisteria::NumberFormat* m_formatNumber{ nullptr };
+    const Wisteria::NumberFormat<wxString>* m_formatNumber{ nullptr };
     };
 
 /** @brief String/Numeric value management class for a data provider.

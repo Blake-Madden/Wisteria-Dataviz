@@ -12,10 +12,6 @@
 #ifndef __NUMBERFORMAT_H__
 #define __NUMBERFORMAT_H__
 
-#include <wx/wx.h>
-#include <wx/math.h>
-#include <wx/numformatter.h>
-
 namespace Wisteria
     {
     /// @brief Specification for formatting a value into a string.
@@ -61,6 +57,7 @@ namespace Wisteria
     /// @details This can support for percentages and possibly custom formats
     ///     in derived classes. Support for parsing a string and returning it
     ///     in a different format is also available.
+    template<typename stringT>
     class NumberFormat
         {
     public:
@@ -71,13 +68,13 @@ namespace Wisteria
         /// @param value The string to reformat.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
-        virtual wxString GetFormattedValue(const wxString& value,
+        virtual stringT GetFormattedValue(const wxString& value,
                                            const NumberFormatInfo& format) const = 0;
         /// @brief Formats a number into a string.
         /// @param value The number to format.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
-        virtual wxString GetFormattedValue(const double value,
+        virtual stringT GetFormattedValue(const double value,
                                            const NumberFormatInfo& format) const = 0;
         };
     }
