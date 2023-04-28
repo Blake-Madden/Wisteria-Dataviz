@@ -30,7 +30,7 @@ TEST_CASE("Safe LDivides", "[safemath]")
     CHECK((-7) == safe_ldiv(-207, 20).rem);
     }
 
-TEST_CASE("Safe Divides B yZero", "[safemath]")
+TEST_CASE("Safe Divides By Zero", "[safemath]")
     {
     CHECK(0 == safe_divide(0, 100));
     CHECK(0 == safe_divide(0, 0));
@@ -101,24 +101,24 @@ TEST_CASE("Comparable first pair", "[comparable]")
     SECTION("CTOR From Pair")
         {
         comparable_first_pair<double, std::wstring> myPair(1.2, L"one point 2");
-        CHECK(1.2, WithinRel(myPair.first, 1e-1));
+        CHECK_THAT(1.2, WithinRel(myPair.first, 1e-1));
         CHECK(myPair.second == std::wstring(L"one point 2"));
         }
     SECTION("Assignment")
         {
         comparable_first_pair<double, std::wstring> myPair;
         myPair = comparable_first_pair<double, std::wstring>(1.2, L"one point 2");
-        CHECK(1.2, WithinRel(myPair.first, 1e-1));
+        CHECK_THAT(1.2, WithinRel(myPair.first, 1e-1));
         CHECK(myPair.second == std::wstring(L"one point 2"));
 
         comparable_first_pair<double, std::wstring> myOtherPair = myPair;
-        CHECK(1.2, WithinRel(myOtherPair.first, 1e-1));
+        CHECK_THAT(1.2, WithinRel(myOtherPair.first, 1e-1));
         CHECK(myOtherPair.second == std::wstring(L"one point 2"));
         CHECK(myOtherPair == myPair);
 
         comparable_first_pair<double, std::wstring> myOtherOtherPair;
         myOtherOtherPair = myPair;
-        CHECK(1.2, WithinRel(myOtherOtherPair.first, 1e-1));
+        CHECK_THAT(1.2, WithinRel(myOtherOtherPair.first, 1e-1));
         CHECK(myOtherOtherPair.second == std::wstring(L"one point 2"));
 
         myPair.first = 7;
