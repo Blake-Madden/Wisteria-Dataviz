@@ -1,4 +1,5 @@
 /.vs/
+/tests/gui-tests/.vs/
 /app/
 /build/
 /out/
