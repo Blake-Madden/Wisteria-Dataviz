@@ -1,5 +1,7 @@
 /.vs/
 /tests/gui-tests/.vs/
+/tests/gui-tests/bin/
+/tests/gui-tests/out/
 /app/
 /build/
 /out/

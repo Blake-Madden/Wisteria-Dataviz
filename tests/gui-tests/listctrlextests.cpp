@@ -11,7 +11,7 @@ TEST_CASE("ListCtrlExNumericDataProvider", "[listctrlexnumericdataprovider]")
 
     SECTION("Set items")
         {
-        class SimpleFormat : public Wisteria::NumberFormat
+        class SimpleFormat : public Wisteria::NumberFormat<wxString>
             {
         public:
             wxString GetFormattedValue(const wxString& value, const Wisteria::NumberFormatInfo&) const
