@@ -66,7 +66,6 @@ public:
         { ResolvePath(path); }
     /** @brief Resolves a string to see if it is a file path.
         @param path The string to resolve to a file path.
-        @note Set @c attemptToConnect to false if performance is a concern.
         @returns The resolved path.*/
     wxString ResolvePath(const wxString& path);
     /** @returns The (possibly) corrected path that the supplied path was resolved to.
