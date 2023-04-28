@@ -331,7 +331,7 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart,
         entityTag == nullptr)
         { return color; }
 
-    //get the color
+    // get the color
     const size_t startTagLength = std::wcslen(entityTag);
     const wchar_t* currentPos =
         lily_of_the_valley::html_extract_text::find_element(
@@ -415,7 +415,7 @@ bool XmlFormat::GetBoolean(const wchar_t* sectionStart,
         else
             {
             wxMessageBox(
-                wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag), 
+                wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
                 _(L"Warning"), wxOK|wxICON_INFORMATION);
             return defaultValue;
             }
@@ -469,7 +469,7 @@ void XmlFormat::GetStringsWithExtraInfo(const wchar_t* sectionStart,
             else
                 {
                 wxMessageBox(
-                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag), 
+                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
                     _(L"Warning"), wxOK|wxICON_INFORMATION);
                 return;
                 }
@@ -519,7 +519,7 @@ void XmlFormat::GetStrings(const wchar_t* sectionStart,
             else
                 {
                 wxMessageBox(
-                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag), 
+                    wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
                     _(L"Warning"), wxOK|wxICON_INFORMATION);
                 return;
                 }
@@ -565,7 +565,7 @@ wxString XmlFormat::GetString(const wchar_t* sectionStart,
         else
             {
             wxMessageBox(
-                wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag), 
+                wxString::Format(_(L"Warning: %s section of file is ill-formatted."), entityTag),
                 _(L"Warning"), wxOK|wxICON_INFORMATION);
             return wxString{};
             }
