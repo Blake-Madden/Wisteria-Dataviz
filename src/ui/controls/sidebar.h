@@ -477,12 +477,13 @@ namespace Wisteria::UI
                 { SelectFolder(item.value(), setFocus, sendEvent); }
             }
         /// @private
-        void SelectSubItem(
+        bool SelectSubItem(
             const std::pair<std::optional<size_t>, std::optional<size_t>> item,
             const bool setFocus = true, const bool sendEvent = true)
             {
             if (item.first.has_value() && item.second.has_value())
-                { SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent); }
+                { return SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent); }
+            return false;
             }
     private:
         /** @brief Gets the width (label, icon, and padding) of a given root item.
