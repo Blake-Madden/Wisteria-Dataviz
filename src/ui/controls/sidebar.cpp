@@ -992,18 +992,18 @@ void SideBar::SelectAnyItem(const size_t item, const bool setFocus /*= true*/,
     }
 
 //-------------------------------------------
-void SideBar::SelectSubItem(const size_t item, const size_t subItem,
+bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
                             const bool setFocus /*= true*/,
                             const bool sendEvent /*= true*/)
     {
     if (item >= GetFolderCount())
-        { return; }
-    // if bogus subitem, then just select the parent item
+        { return false; }
+    // if bogus subitem, then just select the parent folder
     if (m_folders[item].GetSubItemCount() == 0 ||
         subItem >= m_folders[item].GetSubItemCount())
         {
         SelectFolder(item, setFocus, sendEvent);
-        return;
+        return true;
         }
     const auto previouslySelectedFolder = m_selectedFolder.value_or(item);
     const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
@@ -1049,4 +1049,5 @@ void SideBar::SelectSubItem(const size_t item, const size_t subItem,
         cevent.SetEventObject(this);
         GetEventHandler()->ProcessEvent(cevent);
         }
+    return true;
     }

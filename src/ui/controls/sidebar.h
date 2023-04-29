@@ -259,16 +259,18 @@ namespace Wisteria::UI
             @param item The position of the parent item to select.
             @param subItem The position of the subitem (relative to its parent) to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
-        void SelectSubItem(const size_t item, const size_t subItem,
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @returns @c true if the subitem (or at least the folder) was found and selected.*/
+        bool SelectSubItem(const size_t item, const size_t subItem,
                            const bool setFocus = true, const bool sendEvent = true);
         /** @brief Selects a subitem.
             @param item The position of the parent item and subitem (relative to its parent) to select.
             @param setFocus Whether to set the keyboard focus to the control.
-            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.*/
-        void SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @returns @c true if the subitem was found and selected.*/
+        bool SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
                            const bool sendEvent = true)
-            { SelectSubItem(item.first, item.second, setFocus, sendEvent); }
+            { return SelectSubItem(item.first, item.second, setFocus, sendEvent); }
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
