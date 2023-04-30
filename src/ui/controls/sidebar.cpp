@@ -196,7 +196,7 @@ void SideBar::OnChar(wxKeyEvent& event)
     }
 
 //---------------------------------------------------
-std::pair<std::optional<size_t>, std::optional<wxWindowID>> SideBar::GetSelectedSubItemId() const
+std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>> SideBar::GetSelectedSubItemId() const
     {
     if (!IsFolderSelected() ||
         m_folders[GetSelectedFolder().value()].GetSubItemCount() == 0 ||
