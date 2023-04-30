@@ -54,8 +54,9 @@ void QueueDownload::CancelPending()
     std::for_each(m_requests.begin(), m_requests.end(),
         [](wxWebRequest& request)
         {
-        if (request.GetState() == wxWebRequest::State_Active ||
-            request.GetState() == wxWebRequest::State_Unauthorized)
+        if (request.IsOk() &&
+            (request.GetState() == wxWebRequest::State_Active ||
+             request.GetState() == wxWebRequest::State_Unauthorized))
             { request.Cancel(); }
         });
     }
@@ -128,7 +129,7 @@ void QueueDownload::ProcessRequest(wxWebRequestEvent& evt)
         }
     // Nothing special to do for these states.
     case wxWebRequest::State_Active:
-        wxFALLTHROUGH;
+        [[fallthrough]];
     case wxWebRequest::State_Idle:
         break;
         }
@@ -146,13 +147,16 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         return false;
         }
     m_downloadPath = localDownloadPath;
-    m_request = wxWebSession::GetDefault().CreateRequest(
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
-    m_request.SetStorage(wxWebRequest::Storage_File);
-    m_request.SetHeader(L"User-Agent", GetUserAgent());
+    request.SetStorage(wxWebRequest::Storage_File);
+    request.SetHeader(L"User-Agent", GetUserAgent());
+    m_lastStatus = 404;;
+    m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
     m_downloadSuccessful = false;
-    m_request.Start();
+    wxWebRequest tempRequest{ request };
+    request.Start();
 
     wxProgressDialog* progressDlg = m_showProgress ?
         new wxProgressDialog(wxTheApp->GetAppName(),
@@ -163,13 +167,13 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     while (m_stillActive)
         {
         wxYield();
-        if (m_request.GetBytesExpectedToReceive() > 0)
+        if (progressDlg != nullptr &&
+            request.GetBytesExpectedToReceive() > 0)
             {
-            if (progressDlg != nullptr &&
-                !progressDlg->Update((m_request.GetBytesReceived() * 100) /
-                m_request.GetBytesExpectedToReceive()))
+            if (!progressDlg->Update((request.GetBytesReceived() * 100) /
+                                      request.GetBytesExpectedToReceive()))
                 {
-                m_request.Cancel();
+                request.Cancel();
                 break;
                 }
             }
@@ -180,7 +184,7 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
     }
 
 //--------------------------------------------------
-wxWebResponse FileDownload::GetResponse(const wxString& url)
+void FileDownload::RequestResponse(const wxString& url)
     {
     wxASSERT_MSG(m_handler,
         L"Call SetEventHandler() to connect an event handler!");
@@ -188,20 +192,21 @@ wxWebResponse FileDownload::GetResponse(const wxString& url)
         {
         wxLogError(L"Download could not start because event handler "
                     "has not been connected.");
-        return wxWebResponse{};
+        return;
         }
     m_downloadPath.clear();
     m_buffer.clear();
-    m_request = wxWebSession::GetDefault().CreateRequest(
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
-    m_request.SetStorage(wxWebRequest::Storage_None);
-    m_request.SetHeader(L"User-Agent", GetUserAgent());
+    request.SetStorage(wxWebRequest::Storage_None);
+    request.SetHeader(L"User-Agent", GetUserAgent());
+    m_lastStatus = 404;
+    m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
-    m_request.Start();
+    request.Start();
 
     while (m_stillActive)
         { wxYield(); }
-    return m_request.GetResponse();
     }
 
 //--------------------------------------------------
@@ -217,21 +222,36 @@ bool FileDownload::Read(const wxString& url)
         }
     m_downloadPath.clear();
     m_buffer.clear();
-    m_request = wxWebSession::GetDefault().CreateRequest(
+    wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
-    m_request.SetStorage(wxWebRequest::Storage_Memory);
-    m_request.SetHeader(L"User-Agent", GetUserAgent());
+    request.SetStorage(wxWebRequest::Storage_Memory);
+    request.SetHeader(L"User-Agent", GetUserAgent());
+    m_lastStatus = 404;;
+    m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
-    m_request.Start();
+    request.Start();
 
     while (m_stillActive)
         { wxYield(); }
-    return (m_request.GetState() == wxWebRequest::State_Completed);
+    return (m_lastState == wxWebRequest::State_Completed);
     }
 
 //--------------------------------------------------
 void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     {
+    // wxWebResponse does not get deep copied, so cached the response information that we
+    // want for later here.
+    const auto fillResponseInfo = [this, &evt]()
+        {
+        m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+                         evt.GetRequest().GetResponse().GetStatus() : 404);
+        m_lastState = (evt.GetRequest().IsOk() ? evt.GetRequest().GetState() : wxWebRequest::State_Failed);
+        m_lastUrl = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+                      evt.GetRequest().GetResponse().GetURL() : wxString{});
+        m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+                              evt.GetRequest().GetResponse().GetHeader("Content-Type") : wxString{});
+        };
+
     switch (evt.GetState())
         {
         // Request completed
@@ -239,7 +259,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             {
             // if file was downloaded to a temp file,
             // copy it to the requested location
-            if (m_request.GetStorage() == wxWebRequest::Storage_File)
+            if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_File)
                 {
                 if (wxFileName::FileExists(m_downloadPath))
                     { wxFileName(m_downloadPath).SetPermissions(wxS_DEFAULT); }
@@ -250,29 +270,33 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                     { m_downloadSuccessful = true; }
                 }
             // otherwise, it was requested to be read into a buffer
-            else if (m_request.GetStorage() == wxWebRequest::Storage_Memory)
+            else if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_Memory)
                 {
                 m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
                 evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
                 }
             m_stillActive = false;
+            fillResponseInfo();
             break;
             }
         case wxWebRequest::State_Failed:
             wxLogError(L"Web Request failed: %s", evt.GetErrorDescription());
             m_stillActive = false;
+            fillResponseInfo();
             break;
         case wxWebRequest::State_Cancelled:
             m_stillActive = false;
+            fillResponseInfo();
             break;
         case wxWebRequest::State_Unauthorized:
             {
             wxWebAuthChallenge
-                auth = m_request.GetAuthChallenge();
+                auth = evt.GetRequest().GetAuthChallenge();
             if (!auth.IsOk())
                 {
-                wxLogStatus(L"Unexpectedly missing auth challenge");
+                wxLogStatus(L"Unexpectedly missing authentication challenge");
                 m_stillActive = false;
+                fillResponseInfo();
                 break;
                 }
 
@@ -291,7 +315,7 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             }
         // Nothing special to do for these states.
         case wxWebRequest::State_Active:
-            wxFALLTHROUGH;
+            [[fallthrough]];
         case wxWebRequest::State_Idle:
             m_stillActive = true;
             break;

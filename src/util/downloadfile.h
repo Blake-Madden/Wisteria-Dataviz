@@ -204,8 +204,6 @@ public:
     ///     bind the event handler's @c wxEVT_WEBREQUEST_STATE and @c wxEVT_WEBREQUEST_DATA
     ///     events to this object.
     /// @param handler The @c wxEvtHandler to connect the downloader to.
-    /// @note It is recommended to call @c CancelPending() in the event handler's
-    ///     close event (that will not be bound here).
     void SetAndBindEventHandler(wxEvtHandler* handler)
         {
         m_handler = handler;
@@ -242,16 +240,26 @@ public:
     ///     into a wxString.
     const std::vector<char>& GetLastRead() const noexcept
         { return m_buffer; }
-    /// @returns The response from the last call to Read() or Download().
-    wxWebResponse GetResponse() const
-        { return m_request.GetResponse(); }
-    /// @returns The response from the provided URL.
+    /// @brief Attempts to connect to an URL and load its response.
     /// @param url The URL to check. 
     /// @note This will not read or download the webpage, it will only get its response.\n
     ///     If using @c SetEventHandler() instead of @c SetAndBindEventHandler(),
     ///     this object's event handler will need to have its @c  wxEVT_WEBREQUEST_DATA event
     ///     bound to object if calling this.
-    wxWebResponse GetResponse(const wxString& url);
+    /// @sa GetLastStatus(), GetLastUrl(), GetLastContentType().
+    void RequestResponse(const wxString& url);
+    /// @returns The last status from a read, download, or response request.
+    [[nodiscard]]
+    int GetLastStatus() const noexcept
+        { return m_lastStatus; };
+    /// @returns The last url (or possible redirect) from a read, download, or response request.
+    [[nodiscard]]
+    wxString GetLastUrl() const
+        { return m_lastUrl; };
+    /// @returns The last @c Content-Type from a read, download, or response request.
+    [[nodiscard]]
+    wxString GetLastContentType() const
+        { return m_lastContentType; };
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
     ///     parent @c wxEvtHandler.
     /// @param evt The event to process.
@@ -264,24 +272,6 @@ public:
     ///         &FileDownload::ProcessRequest, &m_downloadFile);
     /// @endcode
     void ProcessRequest(wxWebRequestEvent& evt);
-    /// @brief Bind this to the parent `wxEvtHandler`'s close event
-    ///     to close any download or read that are still pending.
-    /// @par Example:
-    /// @code
-    ///     // assuming m_downloadFile is a FileDownload member of the dialog
-    ///     Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
-    ///         {
-    ///         m_downloadFile.CancelPending();
-    ///         event.Skip();
-    ///         });
-    /// @endcode
-    /// @note If the parent @c wxEvtHandler already has a close event,
-    ///     then you can simply call `m_downloadFile.CancelPending()` there.
-    void CancelPending()
-        {
-        if (m_stillActive)
-            { m_request.Cancel(); }
-        }
 private:
     std::vector<char> m_buffer;
     bool m_stillActive{ false };
@@ -292,7 +282,10 @@ private:
     wxString m_downloadPath;
     wxString m_readContent;
     wxString m_userAgent;
-    wxWebRequest m_request;
+    int m_lastStatus{ 404 };
+    wxString m_lastUrl;
+    wxString m_lastContentType;
+    wxWebRequest::State m_lastState{ wxWebRequest::State_Failed };
     };
 
 /** @}*/
