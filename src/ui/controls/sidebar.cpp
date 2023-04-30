@@ -992,6 +992,79 @@ void SideBar::SelectAnyItem(const size_t item, const bool setFocus /*= true*/,
     }
 
 //-------------------------------------------
+bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
+                                const bool setFocus = true, const bool sendEvent = true)
+    {
+    if (item >= GetFolderCount())
+        { return false; }
+
+    // convert the ID of the subitem to an index relative to its folder
+    std:optional<size_t> subItemIndex{ std::nullopt };
+    for (size_t i = 0; i < m_folders[item].GetSubItemCount(); ++i)
+        {
+        if (m_folders[item].m_subItems[i].GetId() == subItemId)
+            {
+            subItemIndex = i;
+            break;
+            }
+        }
+
+    // if bogus subitem, then just select the parent folder
+    if (!subItemIndex)
+        {
+        SelectFolder(item, setFocus, sendEvent);
+        return true;
+        }
+    const auto previouslySelectedFolder = m_selectedFolder.value_or(item);
+    const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
+        std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
+        std::nullopt;
+
+    m_selectedFolder = item;
+    const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
+    m_folders[GetSelectedFolder().value()].Expand();
+    m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex.value();
+
+    EnsureFolderVisible(GetSelectedFolder().value());
+    RecalcSizes();
+
+    // get the rects of the selected (prior and current) selected items
+    const auto previosuslySelectedRect = previouslySelectedSubItem ?
+        m_folders[previouslySelectedFolder].m_subItems[previouslySelectedSubItem.value()].m_Rect :
+        m_folders[previouslySelectedFolder].m_Rect;
+
+    const auto currentlySelectedRect =
+        m_folders[GetSelectedFolder().value()].m_subItems[subItemIndex.value()].m_Rect;
+
+    int x{ 0 }, y{ 0 };
+    CalcUnscrolledPosition(0, 0, &x, &y);
+
+    wxRect refreshRect =
+        (needsExpanding ?
+         GetClientRect() :
+         previosuslySelectedRect.Union(currentlySelectedRect));
+    refreshRect.Offset(0, -std::min(y, refreshRect.y));
+
+    Refresh(true, &refreshRect);
+    Update();
+    if (setFocus)
+        { SetFocus(); }
+
+    if (sendEvent)
+        {
+        wxCommandEvent cevent(EVT_SIDEBAR_CLICK, GetId());
+        cevent.SetString(m_folders[GetSelectedFolder().value()].
+            m_subItems[subItemIndex.value()].m_label);
+        cevent.SetExtraLong(m_folders[GetSelectedFolder().value()].m_id);
+        cevent.SetInt(m_folders[GetSelectedFolder().value()].
+            m_subItems[subItemIndex.value()].m_id);
+        cevent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(cevent);
+        }
+    return true;
+    }
+
+//-------------------------------------------
 bool SideBar::SelectSubItem(const size_t item, const size_t subItem,
                             const bool setFocus /*= true*/,
                             const bool sendEvent /*= true*/)

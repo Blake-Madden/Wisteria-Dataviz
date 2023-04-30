@@ -271,6 +271,22 @@ namespace Wisteria::UI
         bool SelectSubItem(const std::pair<size_t, size_t>& item, const bool setFocus = true,
                            const bool sendEvent = true)
             { return SelectSubItem(item.first, item.second, setFocus, sendEvent); }
+        /** @brief Selects a folder or subitem with the provided ID.
+            @param folder The position of the parent item to select.
+            @param subItemId The ID of the item to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @returns @c true if the item was found and selected.*/
+        bool SelectSubItemById(const size_t folder, const wxWindowID subItemId,
+                               const bool setFocus = true, const bool sendEvent = true);
+        /** @brief Selects a folder or subitem with the provided ID.
+            @param folderPosAnSubItemId The position of the parent item and ID of the item to select.
+            @param setFocus Whether to set the keyboard focus to the control.
+            @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
+            @returns @c true if the item was found and selected.*/
+        bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderPosAnSubItemId,
+                               const bool setFocus = true, const bool sendEvent = true)
+            { return SelectSubItemById(item.first, item.second, setFocus, sendEvent); }
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
@@ -483,6 +499,15 @@ namespace Wisteria::UI
             {
             if (item.first.has_value() && item.second.has_value())
                 { return SelectSubItem(item.first.value(), item.second.value(), setFocus, sendEvent); }
+            return false;
+            }
+        /// @private
+        bool SelectSubItemById(const std::pair<std::optional<size_t>,
+                                               std::optional<wxWindowID>> folderPosAnSubItemId,
+                               const bool setFocus = true, const bool sendEvent = true)
+            {
+            if (item.first.has_value() && item.second.has_value())
+                { return SelectSubItemById(item.first, item.second, setFocus, sendEvent); }
             return false;
             }
     private:
