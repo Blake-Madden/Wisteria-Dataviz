@@ -9,7 +9,8 @@
 #include "fileutil.h"
 
 //------------------------------------------------
-wxString FilePathResolverBase::ResolvePath(const wxString& path)
+wxString FilePathResolverBase::ResolvePath(const wxString& path,
+    std::initializer_list<wxString> pathsToSearch /*= std::initializer_list<wxString>{}*/)
     {
     // reset
     m_fileType = FilePathType::InvalidFileType;
@@ -159,6 +160,26 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path)
         }
     else
         {
+        // see if in the CWD
+        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() };
+            wxFile::Exists(absPath))
+            {
+            m_path = absPath;
+            m_fileType = FilePathType::LocalOrNetwork;
+            return m_path;
+            }
+        // ...or other provided paths
+        for (const auto& otherPath : pathsToSearch)
+            {
+            if (const auto absPath{ wxFileName(m_path).GetAbsolutePath(otherPath) };
+                wxFile::Exists(absPath))
+                {
+                m_path = absPath;
+                m_fileType = FilePathType::LocalOrNetwork;
+                return m_path;
+                }
+            }
+
         m_fileType = FilePathType::InvalidFileType;
         return m_path;
         }

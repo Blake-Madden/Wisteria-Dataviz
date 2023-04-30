@@ -24,6 +24,7 @@
 #include <wx/tokenzr.h>
 #include <memory>
 #include <string>
+#include <initializer_list>
 #ifdef __WXMSW__
     #include <windows.h>
     #include <shlobj.h>
@@ -66,8 +67,11 @@ public:
         { ResolvePath(path); }
     /** @brief Resolves a string to see if it is a file path.
         @param path The string to resolve to a file path.
+        @param pathsToSearch A list of local paths to look in if @c path is a relative local path.
         @returns The resolved path.*/
-    wxString ResolvePath(const wxString& path);
+    wxString ResolvePath(const wxString& path,
+                         std::initializer_list<wxString> pathsToSearch =
+                             std::initializer_list<wxString>{});
     /** @returns The (possibly) corrected path that the supplied path was resolved to.
             This includes correcting slashes, encoding spaces, and stripping
             file protocol prefixes.*/
