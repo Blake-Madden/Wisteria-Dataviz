@@ -1010,9 +1010,9 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
 
     // convert the ID of the subitem to an index relative to its folder
     std::optional<size_t> subItemIndex{ std::nullopt };
-    for (size_t i = 0; i < m_folders[folder].GetSubItemCount(); ++i)
+    for (size_t i = 0; i < m_folders[folderIndex.value()].GetSubItemCount(); ++i)
         {
-        if (m_folders[folderIndex].m_subItems[i].m_id == subItemId)
+        if (m_folders[folderIndex.value()].m_subItems[i].m_id == subItemId)
             {
             subItemIndex = i;
             break;
@@ -1022,15 +1022,15 @@ bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subI
     // if bogus subitem, then just select the parent folder
     if (!subItemIndex)
         {
-        SelectFolder(folderIndex, setFocus, sendEvent);
+        SelectFolder(folderIndex.value(), setFocus, sendEvent);
         return true;
         }
-    const auto previouslySelectedFolder = m_selectedFolder.value_or(folderIndex);
+    const auto previouslySelectedFolder = m_selectedFolder.value_or(folderIndex.value());
     const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
         std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
         std::nullopt;
 
-    m_selectedFolder = folderIndex;
+    m_selectedFolder = folderIndex.value();
     const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
     m_folders[GetSelectedFolder().value()].Expand();
     m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex.value();
