@@ -272,23 +272,23 @@ namespace Wisteria::UI
                            const bool sendEvent = true)
             { return SelectSubItem(item.first, item.second, setFocus, sendEvent); }
         /** @brief Selects a folder or subitem with the provided ID.
-            @param folder The position of the parent item to select.
+            @param folderId The ID of the parent item to select.
             @param subItemId The ID of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
             @returns @c true if the item was found and selected.*/
-        bool SelectSubItemById(const size_t folder, const wxWindowID subItemId,
+        bool SelectSubItemById(const wxWindowID folderId, const wxWindowID subItemId,
                                const bool setFocus = true, const bool sendEvent = true);
         /** @brief Selects a folder or subitem with the provided ID.
-            @param folderPosAnSubItemId The position of the parent item and ID of the item to select.
+            @param folderAndSubItemId The position of the parent item and ID of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
             @param sendEvent Whether to send a @c EVT_SIDEBAR_CLICK event.
             @returns @c true if the item was found and selected.*/
-        bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderPosAnSubItemId,
+        bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
-            return SelectSubItemById(folderPosAnSubItemId.first,
-                                     folderPosAnSubItemId.second, setFocus, sendEvent);
+            return SelectSubItemById(folderAndSubItemId.first,
+                                     folderAndSubItemId.second, setFocus, sendEvent);
             }
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
@@ -318,11 +318,11 @@ namespace Wisteria::UI
                 std::optional<wxWindowID>(m_folders[GetSelectedFolder().value()].m_id) :
                 std::nullopt;
             }
-        /** @brief Gets parent position and ID of its selected subitem, or a pair of
+        /** @brief Gets parent ID and ID of its selected subitem, or a pair of
                 @c std::nullopt if no subitem is selected.
             @returns The position of the parent and the subitem's ID.*/
         [[nodiscard]]
-        std::pair<std::optional<size_t>, std::optional<wxWindowID>>
+        std::pair<std::optional<wxWindowID>, std::optional<wxWindowID>>
             GetSelectedSubItemId() const;
         /** @returns The label of the selected folder
                 (or subitem if the folder has a select subitem).*/
@@ -505,14 +505,14 @@ namespace Wisteria::UI
             return false;
             }
         /// @private
-        bool SelectSubItemById(const std::pair<std::optional<size_t>,
-                                               std::optional<wxWindowID>> folderPosAnSubItemId,
+        bool SelectSubItemById(const std::pair<std::optional<wxWindowID>,
+                                               std::optional<wxWindowID>> folderAndSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
-            if (folderPosAnSubItemId.first.has_value() && folderPosAnSubItemId.second.has_value())
+            if (folderAndSubItemId.first.has_value() && folderAndSubItemId.second.has_value())
                 {
-                return SelectSubItemById(folderPosAnSubItemId.first.value(),
-                                         folderPosAnSubItemId.second.value(), setFocus, sendEvent);
+                return SelectSubItemById(folderAndSubItemId.first.value(),
+                                         folderAndSubItemId.second.value(), setFocus, sendEvent);
                 }
             return false;
             }

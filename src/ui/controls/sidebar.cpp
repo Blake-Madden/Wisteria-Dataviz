@@ -992,17 +992,27 @@ void SideBar::SelectAnyItem(const size_t item, const bool setFocus /*= true*/,
     }
 
 //-------------------------------------------
-bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
+bool SideBar::SelectSubItemById(const wxWindowID folderId, const wxWindowID subItemId,
                                 const bool setFocus /*= true*/, const bool sendEvent /*= true*/)
     {
-    if (folder >= GetFolderCount())
+    // convert the ID of the subitem to an index relative to its folder
+    std::optional<size_t> folderIndex{ std::nullopt };
+    for (size_t i = 0; i < m_folders.size(); ++i)
+        {
+        if (m_folders[i].m_id == folderId)
+            {
+            folderIndex = i;
+            break;
+            }
+        }
+    if (!folderIndex)
         { return false; }
 
     // convert the ID of the subitem to an index relative to its folder
     std::optional<size_t> subItemIndex{ std::nullopt };
     for (size_t i = 0; i < m_folders[folder].GetSubItemCount(); ++i)
         {
-        if (m_folders[folder].m_subItems[i].m_id == subItemId)
+        if (m_folders[folderIndex].m_subItems[i].m_id == subItemId)
             {
             subItemIndex = i;
             break;
@@ -1012,15 +1022,15 @@ bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
     // if bogus subitem, then just select the parent folder
     if (!subItemIndex)
         {
-        SelectFolder(folder, setFocus, sendEvent);
+        SelectFolder(folderIndex, setFocus, sendEvent);
         return true;
         }
-    const auto previouslySelectedFolder = m_selectedFolder.value_or(folder);
+    const auto previouslySelectedFolder = m_selectedFolder.value_or(folderIndex);
     const auto previouslySelectedSubItem = m_folders[previouslySelectedFolder].m_selectedItem ?
         std::optional<size_t>(m_folders[previouslySelectedFolder].m_selectedItem.value()) :
         std::nullopt;
 
-    m_selectedFolder = folder;
+    m_selectedFolder = folderIndex;
     const auto needsExpanding = !m_folders[GetSelectedFolder().value()].m_isExpanded;
     m_folders[GetSelectedFolder().value()].Expand();
     m_folders[GetSelectedFolder().value()].m_selectedItem = subItemIndex.value();
