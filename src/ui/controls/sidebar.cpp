@@ -993,7 +993,7 @@ void SideBar::SelectAnyItem(const size_t item, const bool setFocus /*= true*/,
 
 //-------------------------------------------
 bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
-                                const bool setFocus = true, const bool sendEvent = true)
+                                const bool setFocus /*= true*/, const bool sendEvent /*= true*/)
     {
     if (folder >= GetFolderCount())
         { return false; }
@@ -1002,7 +1002,7 @@ bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
     std::optional<size_t> subItemIndex{ std::nullopt };
     for (size_t i = 0; i < m_folders[folder].GetSubItemCount(); ++i)
         {
-        if (m_folders[folder].m_subItems[i].GetId() == subItemId)
+        if (m_folders[folder].m_subItems[i].m_id == subItemId)
             {
             subItemIndex = i;
             break;
