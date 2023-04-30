@@ -999,7 +999,7 @@ bool SideBar::SelectSubItemById(const size_t folder, const wxWindowID subItemId,
         { return false; }
 
     // convert the ID of the subitem to an index relative to its folder
-    std:optional<size_t> subItemIndex{ std::nullopt };
+    std::optional<size_t> subItemIndex{ std::nullopt };
     for (size_t i = 0; i < m_folders[item].GetSubItemCount(); ++i)
         {
         if (m_folders[item].m_subItems[i].GetId() == subItemId)
