@@ -286,7 +286,10 @@ namespace Wisteria::UI
             @returns @c true if the item was found and selected.*/
         bool SelectSubItemById(const std::pair<size_t, wxWindowID> folderPosAnSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
-            { return SelectSubItemById(item.first, item.second, setFocus, sendEvent); }
+            {
+            return SelectSubItemById(folderPosAnSubItemId.first,
+                                     folderPosAnSubItemId.second, setFocus, sendEvent);
+            }
         /** @brief Selects a folder or subitem.
             @param item The position of the item to select.
             @param setFocus Whether to set the keyboard focus to the control.
