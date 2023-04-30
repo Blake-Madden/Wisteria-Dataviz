@@ -509,8 +509,11 @@ namespace Wisteria::UI
                                                std::optional<wxWindowID>> folderPosAnSubItemId,
                                const bool setFocus = true, const bool sendEvent = true)
             {
-            if (item.first.has_value() && item.second.has_value())
-                { return SelectSubItemById(item.first, item.second, setFocus, sendEvent); }
+            if (folderPosAnSubItemId.first.has_value() && folderPosAnSubItemId.second.has_value())
+                {
+                return SelectSubItemById(folderPosAnSubItemId.first,
+                                         folderPosAnSubItemId.second, setFocus, sendEvent);
+                }
             return false;
             }
     private:
