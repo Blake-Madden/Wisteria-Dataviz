@@ -511,8 +511,8 @@ namespace Wisteria::UI
             {
             if (folderPosAnSubItemId.first.has_value() && folderPosAnSubItemId.second.has_value())
                 {
-                return SelectSubItemById(folderPosAnSubItemId.first,
-                                         folderPosAnSubItemId.second, setFocus, sendEvent);
+                return SelectSubItemById(folderPosAnSubItemId.first.value(),
+                                         folderPosAnSubItemId.second.value(), setFocus, sendEvent);
                 }
             return false;
             }
