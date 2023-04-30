@@ -78,8 +78,8 @@ void ListCtrlSortDlg::FillSortCriteria(
     // odd not having any sort criteria when this dialog is shown.
     if (sortColumns.size() == 0 && m_columnChoices.size() > 0)
         {
-        m_columnList->SetItemText(0,0,m_columnChoices[0]);
-        m_columnList->SetItemText(0,1,GetAscendingLabel());
+        m_columnList->SetItemText(0, 0, m_columnChoices[0]);
+        m_columnList->SetItemText(0, 1, GetAscendingLabel());
         }
     else
         {
@@ -87,13 +87,14 @@ void ListCtrlSortDlg::FillSortCriteria(
             {
             if (sortColumns[i].first < m_columnChoices.size())
                 {
-                m_columnList->SetItemText(i,0,m_columnChoices[sortColumns[i].first]);
-                m_columnList->SetItemText(i,1,
+                m_columnList->SetItemText(i, 0, m_columnChoices[sortColumns[i].first]);
+                m_columnList->SetItemText(i, 1,
                     (sortColumns[i].second == Wisteria::SortDirection::SortAscending) ?
                         GetAscendingLabel() : GetDescendingLabel());
                 }
             }
         }
+    m_columnList->DistributeColumns();
     }
 
 //------------------------------------------------
@@ -104,11 +105,11 @@ std::vector<std::pair<wxString,Wisteria::SortDirection>> ListCtrlSortDlg::GetCol
         {
         for (size_t i = 0; i < m_data->GetItemCount(); ++i)
             {
-            const wxString columnName = m_data->GetItemText(i,0);
-            if (columnName.IsEmpty())
+            const wxString columnName = m_data->GetItemText(i, 0);
+            if (columnName.empty())
                 { continue; }
             const Wisteria::SortDirection direction =
-                (m_data->GetItemText(i,1).CmpNoCase(GetAscendingLabel())==0) ?
+                (m_data->GetItemText(i, 1).CmpNoCase(GetAscendingLabel())==0) ?
                 Wisteria::SortDirection::SortAscending :
                 Wisteria::SortDirection::SortDescending;
             columns.push_back(std::pair<wxString,Wisteria::SortDirection>(columnName, direction));
