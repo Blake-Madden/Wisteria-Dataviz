@@ -63,18 +63,20 @@ Properties for the `"datasets"` node:
     - `"name-re"`: the column to rename (using a regular expression pattern).
     - `"new-name-re"`: the new name for the column (an include regular expression pattern relative to `"name-re"`).
   - `"mutate-categorical-columns"`: an array of categorical column mutation commands. This will either create or update
-       a categorical column and fill it with values based on another categorical column. This will use a map of
-       regular expression patterns and corresponding replacements, where each value in the source column is compared
-       against the regex patterns. When the first match is encounted, then the corresponding replacement will then
-       be applied to the target column.<br />
-       Each set of commands contains the following properties:
+    a categorical column and fill it with values based on another categorical column. This will use a map of
+    regular expression patterns and corresponding replacements, where each value in the source column is compared
+    against the regex patterns. When the first match is encounted, then the corresponding replacement will then
+    be applied to the target column.<br />
+    Each set of commands contains the following properties:
     - `"source-column"`: the source categorical column to review.
     - `"target-column"`: the categorical column being mutated. (If it doesn't exist, then it will be added.)
     - `"replacements"`: an array of pattern and replacement pairs. Each of these contain the following:
       - `"pattern"`: the regular expression pattern to match against the source column.
       - `"replacement"`: the replacement text.
+  - `"columns-select"`: the columns to select (using a regular expression pattern).<br />
+    Columns that do not match this pattern will be removed.
   - `"recode-re"`: an array of categorical column recode commands. This will apply a regular expression
-       text replace for each label in the provided column(s). Each set of commands contains the following properties:
+    text replace for each label in the provided column(s). Each set of commands contains the following properties:
     - `"column"`: the categorical column to recode.
     - `"pattern"`: the regular expression pattern to search for.
     - `"replacement"`: the replacement text. Note that capture groups are supported.
@@ -210,10 +212,10 @@ Properties for the `"datasets"` node:
 
   If pivoting wider, the following options are available:
   - `"id-columns"`: an array of strings representing the ID columns.
-  - `"names-from-column"`: a strings representing the 'names from'.
+  - `"names-from-column"`: a string representing the 'names from'.
   - `"values-from-columns"`: an array of strings representing the 'values from' columns.
   - `"names-separator"`: if multiple value columns are provided, then this separator will
-       join the label from `names-from-column` and the value column name.
+    join the label from `names-from-column` and the value column name.
   - `"names-prefix"`: string to prepend to newly created pivot columns.
   - `"fill-value"`: numeric value to assign to missing data. The default it so leave it as missing data.
 

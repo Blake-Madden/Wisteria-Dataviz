@@ -311,6 +311,55 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::SelectColumnsRE(const wxString& colNamePattern)
+        {
+        if (colNamePattern.empty())
+            {
+            throw std::runtime_error(
+                _(L"New column name cannot be empty.").ToUTF8());
+            }
+        wxRegEx columnRE(colNamePattern);
+        if (!columnRE.IsValid())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': invalid regex used for selecting columns."), colNamePattern).ToUTF8());
+            }
+
+        if (HasValidIdData() && !columnRE.Matches(GetIdColumn().GetName()))
+            {
+            GetIdColumn().FillWithMissingData();
+            GetIdColumn().SetName(wxString{});
+            }
+        for (auto colIter = GetCategoricalColumns().begin();
+            colIter != GetCategoricalColumns().end();
+            /*in loop*/)
+            {
+            if (!columnRE.Matches(colIter->GetName()))
+                { colIter = GetCategoricalColumns().erase(colIter); }
+            else
+                { ++colIter; }
+            }
+        for (auto colIter = GetContinuousColumns().begin();
+            colIter != GetContinuousColumns().end();
+            /*in loop*/)
+            {
+            if (!columnRE.Matches(colIter->GetName()))
+                { colIter = GetContinuousColumns().erase(colIter); }
+            else
+                { ++colIter; }
+            }
+        for (auto colIter = GetDateColumns().begin();
+            colIter != GetDateColumns().end();
+            /*in loop*/)
+            {
+            if (!columnRE.Matches(colIter->GetName()))
+                { colIter = GetDateColumns().erase(colIter); }
+            else
+                { ++colIter; }
+            }
+        }
+
+    //----------------------------------------------
     void Dataset::RenameColumnRE(const wxString& colNamePattern, const wxString& newColNamePattern)
         {
         if (colNamePattern.empty())
@@ -1044,7 +1093,7 @@ namespace Wisteria::Data
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
-                // "0002789" will trigger the column to be imported as text,
+                // "0002789" can trigger the column to be imported as text,
                 // preserving the leading zeros and seeing these "numbers" as
                 // identifying labels instead.
                 if (importInfo.m_treatLeadingZerosAsText &&

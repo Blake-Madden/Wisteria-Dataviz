@@ -1642,6 +1642,11 @@ namespace Wisteria
                     reMap);
                 }
 
+            // column SELECT
+            auto selectPattern = dsNode->GetProperty(L"columns-select")->GetValueString();
+            if (selectPattern.length())
+                { dataset->SelectColumnsRE(selectPattern); }
+
             // label recoding
             auto recodeREs = dsNode->GetProperty(L"recode-re")->GetValueArrayObject();
             for (const auto& recodeRE : recodeREs)

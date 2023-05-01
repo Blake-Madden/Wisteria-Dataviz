@@ -1272,6 +1272,12 @@ namespace Wisteria::Data
             @throws std::runtime_error If column not found or regex pattern is invalid, throws an exception.*/
         void RenameColumnRE(const wxString& colNamePattern, const wxString& newColNamePattern);
 
+        /// @brief Select (i.e., keep) all columns whose names match the regular expression @c colNamePattern.
+        /// @details All other columns will be removed.
+        /// @param colNamePattern The column pattern to match.
+        /// @throws std::runtime_error If the regex pattern is invalid, throws an exception.
+        void SelectColumnsRE(const wxString& colNamePattern);
+
         /** @brief Applies a regular expression string replacement for all values in
                 the specified categorical column.
             @param colName The categorical column to edit.
