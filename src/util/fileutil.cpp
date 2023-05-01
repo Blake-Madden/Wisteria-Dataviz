@@ -160,15 +160,7 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path,
         }
     else
         {
-        // see if in the CWD
-        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() };
-            wxFile::Exists(absPath))
-            {
-            m_path = absPath;
-            m_fileType = FilePathType::LocalOrNetwork;
-            return m_path;
-            }
-        // ...or other provided paths
+        // see if in other provided paths
         for (const auto& otherPath : pathsToSearch)
             {
             if (const auto absPath{ wxFileName(m_path).GetAbsolutePath(otherPath) };
@@ -178,6 +170,14 @@ wxString FilePathResolverBase::ResolvePath(const wxString& path,
                 m_fileType = FilePathType::LocalOrNetwork;
                 return m_path;
                 }
+            }
+        // ...or in the CWD
+        if (const auto absPath{ wxFileName(m_path).GetAbsolutePath() };
+            wxFile::Exists(absPath))
+            {
+            m_path = absPath;
+            m_fileType = FilePathType::LocalOrNetwork;
+            return m_path;
             }
 
         m_fileType = FilePathType::InvalidFileType;
