@@ -117,6 +117,9 @@ namespace lily_of_the_valley
                     }
                 }
             m_html_text = endTag;
+            std::transform(currentString.begin(), currentString.end(), currentString.begin(),
+                [](auto& ch) noexcept
+                { return (ch == L'\n' || ch == L'\r' || ch == L'\t') ? L' ' : ch; });
             return std::make_pair(true, currentString);
             }
         return return_finished();
