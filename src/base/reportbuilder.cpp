@@ -1964,22 +1964,26 @@ namespace Wisteria
             LoadPen(graphNode->GetProperty(L"lane-separator-pen"), pcRoadmap->GetLaneSeparatorPen());
 
             const auto labelPlacement =
-                ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                ReportEnumConvert::ConvertLabelPlacement(
+                    graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { pcRoadmap->SetLabelPlacement(labelPlacement.value()); }
 
             const auto laneSepStyle =
-                ReportEnumConvert::ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+                ReportEnumConvert::ConvertLaneSeparatorStyle(
+                    graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { pcRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
 
             const auto roadStopTheme =
-                ReportEnumConvert::ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+                ReportEnumConvert::ConvertRoadStopTheme(
+                    graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { pcRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
 
             const auto markerLabelDisplay =
-                ReportEnumConvert::ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+                ReportEnumConvert::ConvertMarkerLabelDisplay(
+                    graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
                 { pcRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
 
@@ -2038,7 +2042,8 @@ namespace Wisteria
                     std::nullopt));
 
             const auto taskLabelDisplay =
-                ReportEnumConvert::ConvertTaskLabelDisplay(graphNode->GetProperty(L"task-label-display")->GetValueString());
+                ReportEnumConvert::ConvertTaskLabelDisplay(
+                    graphNode->GetProperty(L"task-label-display")->GetValueString());
             if (taskLabelDisplay.has_value())
                 { ganttChart->SetLabelDisplay(taskLabelDisplay.value()); }
 
@@ -2107,22 +2112,26 @@ namespace Wisteria
             LoadPen(graphNode->GetProperty(L"lane-separator-pen"), lrRoadmap->GetLaneSeparatorPen());
 
             const auto labelPlacement =
-                ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                ReportEnumConvert::ConvertLabelPlacement(
+                    graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { lrRoadmap->SetLabelPlacement(labelPlacement.value()); }
 
             const auto laneSepStyle =
-                ReportEnumConvert::ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+                ReportEnumConvert::ConvertLaneSeparatorStyle(
+                    graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { lrRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
 
             const auto roadStopTheme =
-                ReportEnumConvert::ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+                ReportEnumConvert::ConvertRoadStopTheme(
+                    graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { lrRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
 
             const auto markerLabelDisplay =
-                ReportEnumConvert::ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+                ReportEnumConvert::ConvertMarkerLabelDisplay(
+                    graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
                 { lrRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
 
@@ -3087,7 +3096,8 @@ namespace Wisteria
                 }
 
             if (const auto pieEffect =
-                ReportEnumConvert::ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
+                ReportEnumConvert::ConvertPieSliceEffect(
+                    graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
                 pieEffect.has_value())
                 { pieChart->SetPieSliceEffect(pieEffect.value()); }
 
@@ -3098,7 +3108,8 @@ namespace Wisteria
             if (showcaseNode->IsValueArray())
                 {
                 const auto peri =
-                    ReportEnumConvert::ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                    ReportEnumConvert::ConvertPerimeter(
+                        showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
                 pieChart->ShowcaseOuterPieSlices(
                     showcaseNode->GetValueStringVector(),
                     peri.has_value() ? peri.value() : Perimeter::Outer);
@@ -3108,7 +3119,8 @@ namespace Wisteria
                 const auto pieType = showcaseNode->GetProperty(L"pie")->GetValueString();
                 const auto categoryType = showcaseNode->GetProperty(L"category")->GetValueString();
                 const auto peri =
-                    ReportEnumConvert::ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                    ReportEnumConvert::ConvertPerimeter(
+                        showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
                 if (pieType.CmpNoCase(L"inner") == 0)
                     {
                     if (categoryType.CmpNoCase(L"smallest") == 0)
@@ -3372,7 +3384,8 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] = readPositions(rowFormattingCommand);
                 const auto formatValue =
-                    ReportEnumConvert::ConvertTableCellFormat(rowFormattingCommand->GetProperty(L"format")->GetValueString());
+                    ReportEnumConvert::ConvertTableCellFormat(
+                        rowFormattingCommand->GetProperty(L"format")->GetValueString());
 
                 const std::set<size_t> colStops =
                     loadStops(rowFormattingCommand->GetProperty(L"stops"));
