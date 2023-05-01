@@ -55,7 +55,7 @@ namespace Wisteria
                 orientation.CmpNoCase(L"portrait") == 0)
                 { reportPrintSettings.SetOrientation(wxPrintOrientation::wxPORTRAIT); }
 
-            const auto paperSize = ConvertPaperSize(printNode->GetProperty(L"paper-size")->
+            const auto paperSize = ReportEnumConvert::ConvertPaperSize(printNode->GetProperty(L"paper-size")->
                 GetValueString(L"paper-letter"));
             if (paperSize.has_value())
                 { reportPrintSettings.SetPaperId(paperSize.value()); }
@@ -338,527 +338,6 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::optional<wxPaperSize> ReportBuilder::ConvertPaperSize(const wxString& value)
-        {
-        static const std::map<std::wstring, wxPaperSize> paperSizeValues =
-            {
-            { L"paper-letter", wxPaperSize::wxPAPER_LETTER },
-            { L"paper-legal", wxPaperSize::wxPAPER_LEGAL },
-            { L"paper-a4", wxPaperSize::wxPAPER_A4 },
-            { L"paper-csheet", wxPaperSize::wxPAPER_CSHEET },
-            { L"paper-dsheet", wxPaperSize::wxPAPER_DSHEET },
-            { L"paper-esheet", wxPaperSize::wxPAPER_ESHEET },
-            { L"paper-lettersmall", wxPaperSize::wxPAPER_LETTERSMALL },
-            { L"paper-tabloid", wxPaperSize::wxPAPER_TABLOID },
-            { L"paper-ledger", wxPaperSize::wxPAPER_LEDGER },
-            { L"paper-statement", wxPaperSize::wxPAPER_STATEMENT },
-            { L"paper-executive", wxPaperSize::wxPAPER_EXECUTIVE },
-            { L"paper-a3", wxPaperSize::wxPAPER_A3 },
-            { L"paper-a4small", wxPaperSize::wxPAPER_A4SMALL },
-            { L"paper-a5", wxPaperSize::wxPAPER_A5 },
-            { L"paper-b4", wxPaperSize::wxPAPER_B4 },
-            { L"paper-b5", wxPaperSize::wxPAPER_B5 },
-            { L"paper-folio", wxPaperSize::wxPAPER_FOLIO },
-            { L"paper-quarto", wxPaperSize::wxPAPER_QUARTO },
-            { L"paper-10x14", wxPaperSize::wxPAPER_10X14 },
-            { L"paper-11x17", wxPaperSize::wxPAPER_11X17 },
-            { L"paper-note", wxPaperSize::wxPAPER_NOTE },
-            { L"paper-env-9", wxPaperSize::wxPAPER_ENV_9 },
-            { L"paper-env-10", wxPaperSize::wxPAPER_ENV_10 },
-            { L"paper-env-11", wxPaperSize::wxPAPER_ENV_11 },
-            { L"paper-env-12", wxPaperSize::wxPAPER_ENV_12 },
-            { L"paper-env-14", wxPaperSize::wxPAPER_ENV_14 },
-            { L"paper-env-dl", wxPaperSize::wxPAPER_ENV_DL },
-            { L"paper-env-c5", wxPaperSize::wxPAPER_ENV_C5 },
-            { L"paper-env-c3", wxPaperSize::wxPAPER_ENV_C3 },
-            { L"paper-env-c4", wxPaperSize::wxPAPER_ENV_C4 },
-            { L"paper-env-c6", wxPaperSize::wxPAPER_ENV_C6 },
-            { L"paper-env-c65", wxPaperSize::wxPAPER_ENV_C65 },
-            { L"paper-env-b4", wxPaperSize::wxPAPER_ENV_B4 },
-            { L"paper-env-b5", wxPaperSize::wxPAPER_ENV_B5 },
-            { L"paper-env-b6", wxPaperSize::wxPAPER_ENV_B6 },
-            { L"paper-env-italy", wxPaperSize::wxPAPER_ENV_ITALY },
-            { L"paper-env-monarch", wxPaperSize::wxPAPER_ENV_MONARCH },
-            { L"paper-env-personal", wxPaperSize::wxPAPER_ENV_PERSONAL },
-            { L"paper-fanfold-us", wxPaperSize::wxPAPER_FANFOLD_US },
-            { L"paper-fanfold-std-german", wxPaperSize::wxPAPER_FANFOLD_STD_GERMAN },
-            { L"paper-fanfold-lgl-german", wxPaperSize::wxPAPER_FANFOLD_LGL_GERMAN },
-            { L"paper-iso-b4", wxPaperSize::wxPAPER_ISO_B4 },
-            { L"paper-japanese-postcard", wxPaperSize::wxPAPER_JAPANESE_POSTCARD },
-            { L"paper-9x11", wxPaperSize::wxPAPER_9X11 },
-            { L"paper-10x11", wxPaperSize::wxPAPER_10X11 },
-            { L"paper-15x11", wxPaperSize::wxPAPER_15X11 },
-            { L"paper-env-invite", wxPaperSize::wxPAPER_ENV_INVITE },
-            { L"paper-letter-extra", wxPaperSize::wxPAPER_LETTER_EXTRA },
-            { L"paper-legal-extra", wxPaperSize::wxPAPER_LEGAL_EXTRA },
-            { L"paper-tabloid-extra", wxPaperSize::wxPAPER_TABLOID_EXTRA },
-            { L"paper-a4-extra", wxPaperSize::wxPAPER_A4_EXTRA },
-            { L"paper-letter-transverse", wxPaperSize::wxPAPER_LETTER_TRANSVERSE },
-            { L"paper-a4-transverse", wxPaperSize::wxPAPER_A4_TRANSVERSE },
-            { L"paper-letter-extra-transverse", wxPaperSize::wxPAPER_LETTER_EXTRA_TRANSVERSE },
-            { L"paper-a-plus", wxPaperSize::wxPAPER_A_PLUS },
-            { L"paper-b-plus", wxPaperSize::wxPAPER_B_PLUS },
-            { L"paper-letter-plus", wxPaperSize::wxPAPER_LETTER_PLUS },
-            { L"paper-a4-plus", wxPaperSize::wxPAPER_A4_PLUS },
-            { L"paper-a5-transverse", wxPaperSize::wxPAPER_A5_TRANSVERSE },
-            { L"paper-b5-transverse", wxPaperSize::wxPAPER_B5_TRANSVERSE },
-            { L"paper-a3-extra", wxPaperSize::wxPAPER_A3_EXTRA },
-            { L"paper-a5-extra", wxPaperSize::wxPAPER_A5_EXTRA },
-            { L"paper-b5-extra", wxPaperSize::wxPAPER_B5_EXTRA },
-            { L"paper-a2", wxPaperSize::wxPAPER_A2 },
-            { L"paper-a3-transverse", wxPaperSize::wxPAPER_A3_TRANSVERSE },
-            { L"paper-a3-extra-transverse", wxPaperSize::wxPAPER_A3_EXTRA_TRANSVERSE },
-            { L"paper-dbl-japanese-postcard", wxPaperSize::wxPAPER_DBL_JAPANESE_POSTCARD },
-            { L"paper-a6", wxPaperSize::wxPAPER_A6 },
-            { L"paper-jenv-kaku2", wxPaperSize::wxPAPER_JENV_KAKU2 },
-            { L"paper-jenv-kaku3", wxPaperSize::wxPAPER_JENV_KAKU3 },
-            { L"paper-jenv-chou3", wxPaperSize::wxPAPER_JENV_CHOU3 },
-            { L"paper-jenv-chou4", wxPaperSize::wxPAPER_JENV_CHOU4 },
-            { L"paper-letter-rotated", wxPaperSize::wxPAPER_LETTER_ROTATED },
-            { L"paper-a3-rotated", wxPaperSize::wxPAPER_A3_ROTATED },
-            { L"paper-a4-rotated", wxPaperSize::wxPAPER_A4_ROTATED },
-            { L"paper-a5-rotated", wxPaperSize::wxPAPER_A5_ROTATED },
-            { L"paper-b4-jis-rotated", wxPaperSize::wxPAPER_B4_JIS_ROTATED },
-            { L"paper-b5-jis-rotated", wxPaperSize::wxPAPER_B5_JIS_ROTATED },
-            { L"paper-japanese-postcard-rotated", wxPaperSize::wxPAPER_JAPANESE_POSTCARD_ROTATED },
-            { L"paper-dbl-japanese-postcard-rotated", wxPaperSize::wxPAPER_DBL_JAPANESE_POSTCARD_ROTATED },
-            { L"paper-a6-rotated", wxPaperSize::wxPAPER_A6_ROTATED },
-            { L"paper-jenv-kaku2-rotated", wxPaperSize::wxPAPER_JENV_KAKU2_ROTATED },
-            { L"paper-jenv-kaku3-rotated", wxPaperSize::wxPAPER_JENV_KAKU3_ROTATED },
-            { L"paper-jenv-chou3-rotated", wxPaperSize::wxPAPER_JENV_CHOU3_ROTATED },
-            { L"paper-jenv-chou4-rotated", wxPaperSize::wxPAPER_JENV_CHOU4_ROTATED },
-            { L"paper-b6-jis", wxPaperSize::wxPAPER_B6_JIS },
-            { L"paper-b6-jis-rotated", wxPaperSize::wxPAPER_B6_JIS_ROTATED },
-            { L"paper-12x11", wxPaperSize::wxPAPER_12X11 },
-            { L"paper-jenv-you4", wxPaperSize::wxPAPER_JENV_YOU4 },
-            { L"paper-jenv-you4-rotated", wxPaperSize::wxPAPER_JENV_YOU4_ROTATED },
-            { L"paper-p16k", wxPaperSize::wxPAPER_P16K },
-            { L"paper-p32k", wxPaperSize::wxPAPER_P32K },
-            { L"paper-p32kbig", wxPaperSize::wxPAPER_P32KBIG },
-            { L"paper-penv-1", wxPaperSize::wxPAPER_PENV_1 },
-            { L"paper-penv-2", wxPaperSize::wxPAPER_PENV_2 },
-            { L"paper-penv-3", wxPaperSize::wxPAPER_PENV_3 },
-            { L"paper-penv-4", wxPaperSize::wxPAPER_PENV_4 },
-            { L"paper-penv-5", wxPaperSize::wxPAPER_PENV_5 },
-            { L"paper-penv-6", wxPaperSize::wxPAPER_PENV_6 },
-            { L"paper-penv-7", wxPaperSize::wxPAPER_PENV_7 },
-            { L"paper-penv-8", wxPaperSize::wxPAPER_PENV_8 },
-            { L"paper-penv-9", wxPaperSize::wxPAPER_PENV_9 },
-            { L"paper-penv-10", wxPaperSize::wxPAPER_PENV_10 },
-            { L"paper-p16k-rotated", wxPaperSize::wxPAPER_P16K_ROTATED },
-            { L"paper-p32k-rotated", wxPaperSize::wxPAPER_P32K_ROTATED },
-            { L"paper-p32kbig-rotated", wxPaperSize::wxPAPER_P32KBIG_ROTATED },
-            { L"paper-penv-1-rotated", wxPaperSize::wxPAPER_PENV_1_ROTATED },
-            { L"paper-penv-2-rotated", wxPaperSize::wxPAPER_PENV_2_ROTATED },
-            { L"paper-penv-3-rotated", wxPaperSize::wxPAPER_PENV_3_ROTATED },
-            { L"paper-penv-4-rotated", wxPaperSize::wxPAPER_PENV_4_ROTATED },
-            { L"paper-penv-5-rotated", wxPaperSize::wxPAPER_PENV_5_ROTATED },
-            { L"paper-penv-6-rotated", wxPaperSize::wxPAPER_PENV_6_ROTATED },
-            { L"paper-penv-7-rotated", wxPaperSize::wxPAPER_PENV_7_ROTATED },
-            { L"paper-penv-8-rotated", wxPaperSize::wxPAPER_PENV_8_ROTATED },
-            { L"paper-penv-9-rotated", wxPaperSize::wxPAPER_PENV_9_ROTATED },
-            { L"paper-penv-10-rotated", wxPaperSize::wxPAPER_PENV_10_ROTATED },
-            { L"paper-a0", wxPaperSize::wxPAPER_A0 },
-            { L"paper-a1", wxPaperSize::wxPAPER_A1 }
-            };
-
-        const auto foundValue = paperSizeValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != paperSizeValues.cend()) ?
-            std::optional<wxPaperSize>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<LabelPlacement> ReportBuilder::ConvertLabelPlacement(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, LabelPlacement> labelPlacementValues =
-            {
-            { L"next-to-parent", LabelPlacement::NextToParent },
-            { L"flush", LabelPlacement::Flush }
-            };
-
-        const auto foundValue = labelPlacementValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != labelPlacementValues.cend()) ?
-            std::optional<LabelPlacement>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<TextAlignment> ReportBuilder::ConvertTextAlignment(const wxString& value)
-        {
-        static const std::map<std::wstring, TextAlignment> textAlignValues =
-            {
-            { L"flush-left", TextAlignment::FlushLeft },
-            { L"flush-right", TextAlignment::FlushRight },
-            { L"ragged-right", TextAlignment::RaggedRight },
-            { L"ragged-left", TextAlignment::RaggedLeft },
-            { L"centered", TextAlignment::Centered },
-            { L"justified", TextAlignment::Justified },
-            { L"justified-at-character", TextAlignment::JustifiedAtCharacter },
-            { L"justified-at-word", TextAlignment::JustifiedAtWord }
-            };
-
-        const auto foundValue = textAlignValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != textAlignValues.cend()) ?
-            std::optional<TextAlignment>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<GraphColumnHeader> ReportBuilder::ConvertGraphColumnHeader(const wxString& value)
-        {
-        static const std::map<std::wstring, GraphColumnHeader> graphColumnHeader =
-            {
-            { L"as-header", GraphColumnHeader::AsHeader },
-            { L"as-footer", GraphColumnHeader::AsFooter },
-            { L"no-display", GraphColumnHeader::NoDisplay }
-            };
-
-        const auto foundValue = graphColumnHeader.find(value.Lower().ToStdWstring());
-        return ((foundValue != graphColumnHeader.cend()) ?
-            std::optional<GraphColumnHeader>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<FlowShape> ReportBuilder::ConvertFlowShape(const wxString& value)
-        {
-        static const std::map<std::wstring, FlowShape> flowShapeValues =
-            {
-            { L"curvy", FlowShape::Curvy },
-            { L"jagged", FlowShape::Jagged }
-            };
-
-        const auto foundValue = flowShapeValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != flowShapeValues.cend()) ?
-            std::optional<FlowShape>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<wxBrushStyle> ReportBuilder::ConvertBrushStyle(const wxString& value)
-        {
-        static const std::map<std::wstring, wxBrushStyle> styleValues =
-            {
-            { L"backwards-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_BDIAGONAL_HATCH },
-            { L"forward-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_FDIAGONAL_HATCH },
-            { L"cross-diagonal-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSSDIAG_HATCH },
-            { L"solid", wxBrushStyle::wxBRUSHSTYLE_SOLID },
-            { L"cross-hatch", wxBrushStyle::wxBRUSHSTYLE_CROSS_HATCH },
-            { L"horizontal-hatch", wxBrushStyle::wxBRUSHSTYLE_HORIZONTAL_HATCH },
-            { L"vertical-hatch", wxBrushStyle::wxBRUSHSTYLE_VERTICAL_HATCH }
-            };
-
-        const auto foundValue = styleValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != styleValues.cend()) ?
-            std::optional<wxBrushStyle>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<DateInterval> ReportBuilder::ConvertDateInterval(const wxString& value)
-        {
-        static const std::map<std::wstring, DateInterval> dateValues =
-            {
-            { L"daily", DateInterval::Daily },
-            { L"fiscal-quarterly", DateInterval::FiscalQuarterly },
-            { L"monthly", DateInterval::Monthly },
-            { L"weekly", DateInterval::Weekly }
-            };
-
-        const auto foundValue = dateValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != dateValues.cend()) ?
-            std::optional<DateInterval>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<TableCellFormat> ReportBuilder::ConvertTableCellFormat(const wxString& value)
-        {
-        static const std::map<std::wstring, TableCellFormat> formatValues =
-            {
-            { L"accounting", TableCellFormat::Accounting },
-            { L"general", TableCellFormat::General },
-            { L"percent", TableCellFormat::Percent },
-            { L"percent-changed", TableCellFormat::PercentChange }
-            };
-
-        const auto foundValue = formatValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != formatValues.cend()) ?
-            std::optional<TableCellFormat>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<FiscalYear> ReportBuilder::ConvertFiscalYear(const wxString& value)
-        {
-        static const std::map<std::wstring, FiscalYear> fyValues =
-            {
-            { L"education", FiscalYear::Education },
-            { L"us-business", FiscalYear::USBusiness }
-            };
-
-        const auto foundValue = fyValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != fyValues.cend()) ?
-            std::optional<FiscalYear>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<GanttChart::TaskLabelDisplay> ReportBuilder::ConvertTaskLabelDisplay(const wxString& value)
-        {
-        static const std::map<std::wstring, GanttChart::TaskLabelDisplay> taskLabelDisplays =
-            {
-            { L"days", GanttChart::TaskLabelDisplay::Days },
-            { L"description", GanttChart::TaskLabelDisplay::Description },
-            { L"description-and-days", GanttChart::TaskLabelDisplay::DescriptionAndDays },
-            { L"no-display", GanttChart::TaskLabelDisplay::NoDisplay },
-            { L"resource", GanttChart::TaskLabelDisplay::Resource },
-            { L"resource-and-days", GanttChart::TaskLabelDisplay::ResourceAndDays },
-            { L"resource-and-description", GanttChart::TaskLabelDisplay::ResourceAndDescription },
-            { L"resource-description-and-days", GanttChart::TaskLabelDisplay::ResourceDescriptionAndDays }
-            };
-
-        const auto foundValue = taskLabelDisplays.find(value.Lower().ToStdWstring());
-        return ((foundValue != taskLabelDisplays.cend()) ?
-            std::optional<GanttChart::TaskLabelDisplay>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<CandlestickPlot::PlotType> ReportBuilder::ConvertCandlestickPlotType(
-        const wxString& value)
-        {
-        static const std::map<std::wstring, CandlestickPlot::PlotType> candleTypes =
-            {
-            { L"candlestick", CandlestickPlot::PlotType::Candlestick },
-            { L"ohlc", CandlestickPlot::PlotType::Ohlc }
-            };
-
-        const auto foundValue = candleTypes.find(value.Lower().ToStdWstring());
-        return ((foundValue != candleTypes.cend()) ?
-            std::optional<CandlestickPlot::PlotType>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<LikertChart::LikertSurveyQuestionFormat>
-        ReportBuilder::ConvertLikertSurveyQuestionFormat(const wxString& value)
-        {
-        static const std::map<std::wstring, LikertChart::LikertSurveyQuestionFormat> surveyTypes =
-            {
-            { L"two-point", LikertChart::LikertSurveyQuestionFormat::TwoPoint },
-            { L"two-point-categorized", LikertChart::LikertSurveyQuestionFormat::TwoPointCategorized },
-            { L"three-point", LikertChart::LikertSurveyQuestionFormat::ThreePoint },
-            { L"threepoint-categorized", LikertChart::LikertSurveyQuestionFormat::ThreePointCategorized },
-            { L"four-point", LikertChart::LikertSurveyQuestionFormat::FourPoint },
-            { L"four-point-categorized", LikertChart::LikertSurveyQuestionFormat::FourPointCategorized },
-            { L"five-point", LikertChart::LikertSurveyQuestionFormat::FivePoint },
-            { L"five-point-categorized", LikertChart::LikertSurveyQuestionFormat::FivePointCategorized },
-            { L"six-point", LikertChart::LikertSurveyQuestionFormat::SixPoint },
-            { L"six-point-categorized", LikertChart::LikertSurveyQuestionFormat::SixPointCategorized },
-            { L"seven-point", LikertChart::LikertSurveyQuestionFormat::SevenPoint },
-            { L"seven-point-categorized", LikertChart::LikertSurveyQuestionFormat::SevenPointCategorized }
-            };
-
-        const auto foundValue = surveyTypes.find(value.Lower().ToStdWstring());
-        return ((foundValue != surveyTypes.cend()) ?
-            std::optional<LikertChart::LikertSurveyQuestionFormat>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<BoxEffect> ReportBuilder::ConvertBoxEffect(const wxString& value)
-        {
-        static const std::map<std::wstring_view, BoxEffect> boxEffects =
-            {
-            { L"common-image", BoxEffect::CommonImage },
-            { L"image", BoxEffect::Image },
-            { L"fade-from-bottom-to-top", BoxEffect::FadeFromBottomToTop },
-            { L"fade-from-left-to-right", BoxEffect::FadeFromLeftToRight },
-            { L"fade-from-right-to-left", BoxEffect::FadeFromRightToLeft },
-            { L"fade-from-top-to-bottom", BoxEffect::FadeFromTopToBottom },
-            { L"glassy", BoxEffect::Glassy },
-            { L"solid", BoxEffect::Solid },
-            { L"stipple", BoxEffect::Stipple },
-            { L"watercolor", BoxEffect::WaterColor }
-            };
-
-        const auto foundValue = boxEffects.find(value.Lower().ToStdWstring());
-        return ((foundValue != boxEffects.cend()) ?
-            std::optional<BoxEffect>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<PieSliceEffect> ReportBuilder::ConvertPieSliceEffect(const wxString& value)
-        {
-        static const std::map<std::wstring_view, PieSliceEffect> sliceEffects =
-            {
-            { L"image", PieSliceEffect::Image },
-            { L"solid", PieSliceEffect::Solid }
-            };
-
-        const auto foundValue = sliceEffects.find(value.Lower().ToStdWstring());
-        return ((foundValue != sliceEffects.cend()) ?
-            std::optional<PieSliceEffect>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Perimeter> ReportBuilder::ConvertPerimeter(const wxString& value)
-        {
-        static const std::map<std::wstring_view, Perimeter> peris =
-            {
-            { L"inner", Perimeter::Inner },
-            { L"outer", Perimeter::Outer }
-            };
-
-        const auto foundValue = peris.find(value.Lower().ToStdWstring());
-        return ((foundValue != peris.cend()) ?
-            std::optional<Perimeter>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Histogram::BinningMethod> ReportBuilder::ConvertBinningMethod(const wxString& value)
-        {
-        static const std::map<std::wstring, Histogram::BinningMethod> binMethods =
-            {
-            { L"bin-by-integer-range", Histogram::BinningMethod::BinByIntegerRange },
-            { L"bin-by-range", Histogram::BinningMethod::BinByRange },
-            { L"bin-unique-values", Histogram::BinningMethod::BinUniqueValues }
-            };
-
-        const auto foundValue = binMethods.find(value.Lower().ToStdWstring());
-        return ((foundValue != binMethods.cend()) ?
-            std::optional<Histogram::BinningMethod>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Histogram::IntervalDisplay> ReportBuilder::ConvertIntervalDisplay(const wxString& value)
-        {
-        static const std::map<std::wstring, Histogram::IntervalDisplay> binIntervals =
-            {
-            { L"cutpoints", Histogram::IntervalDisplay::Cutpoints },
-            { L"midpoints", Histogram::IntervalDisplay::Midpoints }
-            };
-
-        const auto foundValue = binIntervals.find(value.Lower().ToStdWstring());
-        return ((foundValue != binIntervals.cend()) ?
-            std::optional<Histogram::IntervalDisplay>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<RoundingMethod> ReportBuilder::ConvertRoundingMethod(const wxString& value)
-        {
-        static const std::map<std::wstring, RoundingMethod> roundingMethods =
-            {
-            { L"no-rounding", RoundingMethod::NoRounding },
-            { L"round", RoundingMethod::Round },
-            { L"round-down", RoundingMethod::RoundDown },
-            { L"round-up", RoundingMethod::RoundUp }
-            };
-
-        const auto foundValue = roundingMethods.find(value.Lower().ToStdWstring());
-        return ((foundValue != roundingMethods.cend()) ?
-            std::optional<RoundingMethod>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<BinLabelDisplay> ReportBuilder::ConvertBinLabelDisplay(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, BinLabelDisplay> bDisplayValues =
-            {
-            { L"percentage", BinLabelDisplay::BinPercentage },
-            { L"value", BinLabelDisplay::BinValue },
-            { L"value-and-percentage", BinLabelDisplay::BinValueAndPercentage },
-            { L"no-display", BinLabelDisplay::NoDisplay },
-            { L"bin-name", BinLabelDisplay::BinName },
-            { L"bin-name-and-value", BinLabelDisplay::BinNameAndValue },
-            { L"bin-name-and-percentage", BinLabelDisplay::BinNameAndPercentage },
-            };
-
-        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != bDisplayValues.cend()) ?
-            std::optional<BinLabelDisplay>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Roadmap::LaneSeparatorStyle> ReportBuilder::ConvertLaneSeparatorStyle(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, Roadmap::LaneSeparatorStyle> bDisplayValues =
-            {
-            { L"single-line", Roadmap::LaneSeparatorStyle::SingleLine },
-            { L"double-line", Roadmap::LaneSeparatorStyle::DoubleLine },
-            { L"no-display", Roadmap::LaneSeparatorStyle::NoDisplay }
-            };
-
-        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != bDisplayValues.cend()) ?
-            std::optional<Roadmap::LaneSeparatorStyle>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Roadmap::RoadStopTheme> ReportBuilder::ConvertRoadStopTheme(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, Roadmap::RoadStopTheme> bDisplayValues =
-            {
-            { L"location-markers", Roadmap::RoadStopTheme::LocationMarkers },
-            { L"road-signs", Roadmap::RoadStopTheme::RoadSigns }
-            };
-
-        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != bDisplayValues.cend()) ?
-            std::optional<Roadmap::RoadStopTheme>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<Roadmap::MarkerLabelDisplay> ReportBuilder::ConvertMarkerLabelDisplay(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, Roadmap::MarkerLabelDisplay> bDisplayValues =
-            {
-            { L"name", Roadmap::MarkerLabelDisplay::Name },
-            { L"name-and-absolute-value", Roadmap::MarkerLabelDisplay::NameAndAbsoluteValue },
-            { L"name-and-value", Roadmap::MarkerLabelDisplay::NameAndValue }
-            };
-
-        const auto foundValue = bDisplayValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != bDisplayValues.cend()) ?
-            std::optional<Roadmap::MarkerLabelDisplay>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
-    std::optional<AxisType> ReportBuilder::ConvertAxisType(const wxString& value)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring, AxisType> axisValues =
-            {
-            { L"bottom-x", AxisType::BottomXAxis },
-            { L"top-x", AxisType::TopXAxis },
-            { L"left-y", AxisType::LeftYAxis },
-            { L"right-y", AxisType::RightYAxis }
-            };
-
-        const auto foundValue = axisValues.find(value.Lower().ToStdWstring());
-        return ((foundValue != axisValues.cend()) ?
-            std::optional<AxisType>(foundValue->second) :
-            std::nullopt);
-        }
-
-    //---------------------------------------------------
     void ReportBuilder::LoadBrush(const wxSimpleJSON::Ptr_t& brushNode, wxBrush& brush)
         {
         if (brushNode->IsOk())
@@ -882,7 +361,7 @@ namespace Wisteria
                     { brush.SetColour(brushColor); }
 
                 const auto foundStyle =
-                    ConvertBrushStyle(brushNode->GetProperty(L"style")->GetValueString());
+                    ReportEnumConvert::ConvertBrushStyle(brushNode->GetProperty(L"style")->GetValueString());
                 if (foundStyle)
                     { brush.SetStyle(foundStyle.value()); }
                 }
@@ -1088,7 +567,7 @@ namespace Wisteria
     void ReportBuilder::LoadCommonAxis(const wxSimpleJSON::Ptr_t& commonAxisNode,
                                        const size_t currentRow, const size_t currentColumn)
         {
-        const auto axisType = ConvertAxisType(
+        const auto axisType = ReportEnumConvert::ConvertAxisType(
             commonAxisNode->GetProperty(L"axis-type")->GetValueString());
         if (axisType.has_value())
             {
@@ -1163,7 +642,7 @@ namespace Wisteria
                     { label->GetFont().SetWeight(wxFONTWEIGHT_NORMAL); }
                 }
 
-            const auto textAlignment = ConvertTextAlignment(
+            const auto textAlignment = ReportEnumConvert::ConvertTextAlignment(
                 labelNode->GetProperty(L"text-alignment")->GetValueString());
             if (textAlignment.has_value())
                 { label->SetTextAlignment(textAlignment.value()); }
@@ -1188,7 +667,7 @@ namespace Wisteria
                 label->GetHeaderInfo().RelativeScaling(
                     headerNode->GetProperty(L"relative-scaling")->GetValueNumber(1));
 
-                const auto headerTextAlignment = ConvertTextAlignment(
+                const auto headerTextAlignment = ReportEnumConvert::ConvertTextAlignment(
                     headerNode->GetProperty(L"text-alignment")->GetValueString());
                 if (headerTextAlignment.has_value())
                     { label->GetHeaderInfo().LabelAlignment(headerTextAlignment.value()); }
@@ -2475,22 +1954,22 @@ namespace Wisteria
             LoadPen(graphNode->GetProperty(L"lane-separator-pen"), pcRoadmap->GetLaneSeparatorPen());
 
             const auto labelPlacement =
-                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { pcRoadmap->SetLabelPlacement(labelPlacement.value()); }
 
             const auto laneSepStyle =
-                ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+                ReportEnumConvert::ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { pcRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
 
             const auto roadStopTheme =
-                ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+                ReportEnumConvert::ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { pcRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
 
             const auto markerLabelDisplay =
-                ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+                ReportEnumConvert::ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
                 { pcRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
 
@@ -2524,9 +2003,9 @@ namespace Wisteria
         if (variablesNode->IsOk())
             {
             const auto dateInterval =
-                ConvertDateInterval(graphNode->GetProperty(L"date-interval")->GetValueString());
+                ReportEnumConvert::ConvertDateInterval(graphNode->GetProperty(L"date-interval")->GetValueString());
             const auto fyType =
-                ConvertFiscalYear(graphNode->GetProperty(L"fy-type")->GetValueString());
+                ReportEnumConvert::ConvertFiscalYear(graphNode->GetProperty(L"fy-type")->GetValueString());
 
             auto ganttChart = std::make_shared<GanttChart>(canvas);
             ganttChart->SetData(foundPos->second,
@@ -2549,7 +2028,7 @@ namespace Wisteria
                     std::nullopt));
 
             const auto taskLabelDisplay =
-                ConvertTaskLabelDisplay(graphNode->GetProperty(L"task-label-display")->GetValueString());
+                ReportEnumConvert::ConvertTaskLabelDisplay(graphNode->GetProperty(L"task-label-display")->GetValueString());
             if (taskLabelDisplay.has_value())
                 { ganttChart->SetLabelDisplay(taskLabelDisplay.value()); }
 
@@ -2618,22 +2097,22 @@ namespace Wisteria
             LoadPen(graphNode->GetProperty(L"lane-separator-pen"), lrRoadmap->GetLaneSeparatorPen());
 
             const auto labelPlacement =
-                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { lrRoadmap->SetLabelPlacement(labelPlacement.value()); }
 
             const auto laneSepStyle =
-                ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
+                ReportEnumConvert::ConvertLaneSeparatorStyle(graphNode->GetProperty(L"lane-separator-style")->GetValueString());
             if (laneSepStyle.has_value())
                 { lrRoadmap->SetLaneSeparatorStyle(laneSepStyle.value()); }
 
             const auto roadStopTheme =
-                ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
+                ReportEnumConvert::ConvertRoadStopTheme(graphNode->GetProperty(L"road-stop-theme")->GetValueString());
             if (roadStopTheme.has_value())
                 { lrRoadmap->SetRoadStopTheme(roadStopTheme.value()); }
 
             const auto markerLabelDisplay =
-                ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
+                ReportEnumConvert::ConvertMarkerLabelDisplay(graphNode->GetProperty(L"marker-label-display")->GetValueString());
             if (markerLabelDisplay.has_value())
                 { lrRoadmap->SetMarkerLabelDisplay(markerLabelDisplay.value()); }
 
@@ -2683,7 +2162,7 @@ namespace Wisteria
 
             // get the survey format
             auto surveyFormat =
-                ConvertLikertSurveyQuestionFormat(
+                ReportEnumConvert::ConvertLikertSurveyQuestionFormat(
                     graphNode->GetProperty(L"survey-format")->GetValueString());
             if (!surveyFormat.has_value())
                 {
@@ -2829,7 +2308,7 @@ namespace Wisteria
                 variablesNode->GetProperty(L"close")->GetValueString());
 
             const auto plotType =
-                ConvertCandlestickPlotType(graphNode->GetProperty(L"plot-type")->GetValueString());
+                ReportEnumConvert::ConvertCandlestickPlotType(graphNode->GetProperty(L"plot-type")->GetValueString());
             if (plotType.has_value())
                 { candlestickPlot->SetPlotType(plotType.value()); }
 
@@ -2926,7 +2405,7 @@ namespace Wisteria
     void ReportBuilder::LoadBarChart(const wxSimpleJSON::Ptr_t& graphNode,
         std::shared_ptr<Graphs::BarChart> barChart)
         {
-        const auto boxEffect = ConvertBoxEffect(
+        const auto boxEffect = ReportEnumConvert::ConvertBoxEffect(
                 graphNode->GetProperty(L"box-effect")->GetValueString());
         if (boxEffect)
             { barChart->SetBarEffect(boxEffect.value()); }
@@ -3098,7 +2577,7 @@ namespace Wisteria
                 }
             }
 
-        const auto binLabel = ConvertBinLabelDisplay(
+        const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
             graphNode->GetProperty(L"bar-label-display")->GetValueString());
         if (binLabel.has_value())
             { barChart->SetBinLabelDisplay(binLabel.value()); }
@@ -3143,7 +2622,7 @@ namespace Wisteria
     std::shared_ptr<GraphItems::FillableShape>
         ReportBuilder::LoadFillableShape(const wxSimpleJSON::Ptr_t& shapeNode)
         {
-        const auto loadedShape = ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
+        const auto loadedShape = ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
         if (!loadedShape.has_value())
             {
             throw std::runtime_error(
@@ -3201,7 +2680,7 @@ namespace Wisteria
     //---------------------------------------------------
     std::shared_ptr<GraphItems::Shape> ReportBuilder::LoadShape(const wxSimpleJSON::Ptr_t& shapeNode)
         {
-        const auto loadedShape = ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
+        const auto loadedShape = ReportEnumConvert::ConvertIcon(shapeNode->GetProperty(L"icon")->GetValueString());
         if (!loadedShape.has_value())
             {
             throw std::runtime_error(
@@ -3261,16 +2740,16 @@ namespace Wisteria
             const auto contVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
             const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
 
-            const auto binMethod = ConvertBinningMethod(
+            const auto binMethod = ReportEnumConvert::ConvertBinningMethod(
                 graphNode->GetProperty(L"binning-method")->GetValueString());
 
-            const auto binIntervalDisplay = ConvertIntervalDisplay(
+            const auto binIntervalDisplay = ReportEnumConvert::ConvertIntervalDisplay(
                 graphNode->GetProperty(L"interval-display")->GetValueString());
 
-            const auto binLabel = ConvertBinLabelDisplay(
+            const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"bar-label-display")->GetValueString());
 
-            const auto rounding = ConvertRoundingMethod(
+            const auto rounding = ReportEnumConvert::ConvertRoundingMethod(
                 graphNode->GetProperty(L"rounding")->GetValueString());
 
             const std::optional<double> startBinsValue = graphNode->HasProperty(L"bins-start") ?
@@ -3334,7 +2813,7 @@ namespace Wisteria
             const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
             const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
             const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
-            const auto binLabel = ConvertBinLabelDisplay(
+            const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"bar-label-display")->GetValueString());
 
             auto barChart = std::make_shared<CategoricalBarChart>(canvas,
@@ -3392,17 +2871,17 @@ namespace Wisteria
             auto sankey = std::make_shared<SankeyDiagram>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")) );
 
-            const auto groupLabelDisplay = ConvertBinLabelDisplay(
+            const auto groupLabelDisplay = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"group-label-display")->GetValueString());
             if (groupLabelDisplay)
                 { sankey->SetGroupLabelDisplay(groupLabelDisplay.value()); }
 
-            const auto groupHeaderDisplay = ConvertGraphColumnHeader(
+            const auto groupHeaderDisplay = ReportEnumConvert::ConvertGraphColumnHeader(
                 graphNode->GetProperty(L"group-header-display")->GetValueString());
             if (groupHeaderDisplay)
                 { sankey->SetColumnHeaderDisplay(groupHeaderDisplay.value()); }
 
-            const auto flowShape = ConvertFlowShape(
+            const auto flowShape = ReportEnumConvert::ConvertFlowShape(
                 graphNode->GetProperty(L"flow-shape")->GetValueString());
             if (flowShape)
                 { sankey->SetFlowShape(flowShape.value()); }
@@ -3487,7 +2966,7 @@ namespace Wisteria
                 aggVarName,
                 (groupVar1Name.length() ? std::optional<wxString>(groupVar1Name) : std::nullopt));
 
-            const auto boxEffect = ConvertBoxEffect(
+            const auto boxEffect = ReportEnumConvert::ConvertBoxEffect(
                 graphNode->GetProperty(L"box-effect")->GetValueString());
             if (boxEffect)
                 { boxPlot->SetBoxEffect(boxEffect.value()); }
@@ -3538,21 +3017,21 @@ namespace Wisteria
                     pieChart->GetInnerPieConnectionLinePen());
 
             const auto labelPlacement =
-                ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
+                ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"label-placement")->GetValueString());
             if (labelPlacement.has_value())
                 { pieChart->SetLabelPlacement(labelPlacement.value()); }
 
-            const auto outerPieMidLabel = ConvertBinLabelDisplay(
+            const auto outerPieMidLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"outer-pie-midpoint-label-display")->GetValueString());
             if (outerPieMidLabel.has_value())
                 { pieChart->SetOuterPieMidPointLabelDisplay(outerPieMidLabel.value()); }
 
-            const auto innerPieMidLabel = ConvertBinLabelDisplay(
+            const auto innerPieMidLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"inner-pie-midpoint-label-display")->GetValueString());
             if (innerPieMidLabel.has_value())
                 { pieChart->SetInnerPieMidPointLabelDisplay(innerPieMidLabel.value()); }
 
-            const auto outerLabelDisplay = ConvertBinLabelDisplay(
+            const auto outerLabelDisplay = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"outer-label-display")->GetValueString());
             if (outerLabelDisplay.has_value())
                 { pieChart->SetOuterLabelDisplay(outerLabelDisplay.value()); }
@@ -3598,7 +3077,7 @@ namespace Wisteria
                 }
 
             if (const auto pieEffect =
-                    ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
+                ReportEnumConvert::ConvertPieSliceEffect(graphNode->GetProperty(L"pie-slice-effect")->GetValueString());
                 pieEffect.has_value())
                 { pieChart->SetPieSliceEffect(pieEffect.value()); }
 
@@ -3609,7 +3088,7 @@ namespace Wisteria
             if (showcaseNode->IsValueArray())
                 {
                 const auto peri =
-                    ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                    ReportEnumConvert::ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
                 pieChart->ShowcaseOuterPieSlices(
                     showcaseNode->GetValueStringVector(),
                     peri.has_value() ? peri.value() : Perimeter::Outer);
@@ -3619,7 +3098,7 @@ namespace Wisteria
                 const auto pieType = showcaseNode->GetProperty(L"pie")->GetValueString();
                 const auto categoryType = showcaseNode->GetProperty(L"category")->GetValueString();
                 const auto peri =
-                    ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
+                    ReportEnumConvert::ConvertPerimeter(showcaseNode->GetProperty(L"outer-label-ring")->GetValueString());
                 if (pieType.CmpNoCase(L"inner") == 0)
                     {
                     if (categoryType.CmpNoCase(L"smallest") == 0)
@@ -3883,7 +3362,7 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] = readPositions(rowFormattingCommand);
                 const auto formatValue =
-                    ConvertTableCellFormat(rowFormattingCommand->GetProperty(L"format")->GetValueString());
+                    ReportEnumConvert::ConvertTableCellFormat(rowFormattingCommand->GetProperty(L"format")->GetValueString());
 
                 const std::set<size_t> colStops =
                     loadStops(rowFormattingCommand->GetProperty(L"stops"));
@@ -4209,7 +3688,7 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] = readPositions(columnFormattingCommand);
                 const auto formatValue =
-                    ConvertTableCellFormat(columnFormattingCommand->GetProperty(L"format")->GetValueString());
+                    ReportEnumConvert::ConvertTableCellFormat(columnFormattingCommand->GetProperty(L"format")->GetValueString());
 
                 const std::set<size_t> rowStops =
                     loadStops(columnFormattingCommand->GetProperty(L"stops"));
@@ -4653,7 +4132,7 @@ namespace Wisteria
                     if (outerBorderToggles.size() >= 4)
                         { currentCell->ShowLeftBorder(outerBorderToggles[3]); }
 
-                    const auto textAlignment = ConvertTextAlignment(
+                    const auto textAlignment = ReportEnumConvert::ConvertTextAlignment(
                         cellUpdate->GetProperty(L"text-alignment")->GetValueString());
                     if (textAlignment.has_value())
                         { currentCell->SetTextAlignment(textAlignment.value()); }
@@ -4896,7 +4375,7 @@ namespace Wisteria
             const auto brushStylesVals = brushStylesNode->GetValueArrayString();
             for (const auto& brushStylesVal : brushStylesVals)
                 {
-                const auto bStyle = ConvertBrushStyle(brushStylesVal);
+                const auto bStyle = ReportEnumConvert::ConvertBrushStyle(brushStylesVal);
                 if (bStyle)
                     { brushStyles.push_back(bStyle.value()); }
                 }
@@ -5019,57 +4498,6 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::optional<Icons::IconShape> ReportBuilder::ConvertIcon(wxString iconStr)
-        {
-        // use standard string, wxString should not be constructed globally
-        static const std::map<std::wstring_view, IconShape> iconEnums =
-            {
-            { L"blank", IconShape::Blank },
-            { L"horizontal-line", IconShape::HorizontalLine },
-            { L"arrow-right", IconShape::ArrowRight },
-            { L"circle", IconShape::Circle },
-            { L"image", IconShape::Image },
-            { L"horizontal-separator", IconShape::HorizontalSeparator },
-            { L"horizontal-arrow-right-separator", IconShape::HorizontalArrowRightSeparator },
-            { L"color-gradient", IconShape::ColorGradient },
-            { L"square", IconShape::Square },
-            { L"triangle-upward", IconShape::TriangleUpward },
-            { L"triangle-downward", IconShape::TriangleDownward },
-            { L"triangle-right", IconShape::TriangleRight },
-            { L"triangle-left", IconShape::TriangleLeft },
-            { L"diamond", IconShape::Diamond },
-            { L"plus", IconShape::Plus },
-            { L"asterisk", IconShape::Asterisk },
-            { L"hexagon", IconShape::Hexagon },
-            { L"box-plot", IconShape::BoxPlot },
-            { L"location-marker", IconShape::LocationMarker },
-            { L"go-road-sign", IconShape::GoRoadSign },
-            { L"warning-road-sign", IconShape::WarningRoadSign },
-            { L"sun", IconShape::Sun },
-            { L"flower", IconShape::Flower },
-            { L"fall-leaf", IconShape::FallLeaf },
-            { L"top-curly-brace", IconShape::TopCurlyBrace },
-            { L"right-curly-brace", IconShape::RightCurlyBrace },
-            { L"bottom-curly-brace", IconShape::BottomCurlyBrace },
-            { L"left-curly-brace", IconShape::LeftCurlyBrace },
-            { L"man", IconShape::Man },
-            { L"woman", IconShape::Woman },
-            { L"business-woman", IconShape::BusinessWoman },
-            { L"chevron-downward", IconShape::ChevronDownward },
-            { L"chevron-upward", IconShape::ChevronUpward },
-            { L"text", IconShape::Text },
-            { L"tack", IconShape::Tack },
-            { L"banner", IconShape::Banner },
-            { L"watercolor-rectangle", IconShape::WaterColorRectangle }
-            };
-
-        const auto foundPos = iconEnums.find(std::wstring_view(iconStr.MakeLower().wc_str()));
-        return (foundPos != iconEnums.cend() ?
-                std::optional<Icons::IconShape>(foundPos->second) :
-                std::nullopt);
-        }
-
-    //---------------------------------------------------
     std::shared_ptr<Wisteria::Icons::Schemes::IconScheme> ReportBuilder::LoadIconScheme(
         const wxSimpleJSON::Ptr_t& iconSchemeNode)
         {
@@ -5090,7 +4518,7 @@ namespace Wisteria
                 { return nullptr; }
             for (const auto& icon : iconValues)
                 {
-                const auto iconValue = ConvertIcon(icon);
+                const auto iconValue = ReportEnumConvert::ConvertIcon(icon);
                 if (iconValue.has_value())
                     { icons.emplace_back(iconValue.value()); }
                 }
@@ -5428,7 +4856,7 @@ namespace Wisteria
             const auto axesNodes = axesProperty->GetValueArrayObject();
             for (const auto& axisNode : axesNodes)
                 {
-                const auto axisType = ConvertAxisType(
+                const auto axisType = ReportEnumConvert::ConvertAxisType(
                     axisNode->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
@@ -5527,7 +4955,7 @@ namespace Wisteria
             const auto refLines = referenceLinesNode->GetValueArrayObject();
             for (const auto& refLine : refLines)
                 {
-                const auto axisType = ConvertAxisType(
+                const auto axisType = ReportEnumConvert::ConvertAxisType(
                     refLine->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {
@@ -5571,7 +4999,7 @@ namespace Wisteria
             const auto refAreas = referenceAreasNode->GetValueArrayObject();
             for (const auto& refArea : refAreas)
                 {
-                const auto axisType = ConvertAxisType(
+                const auto axisType = ReportEnumConvert::ConvertAxisType(
                     refArea->GetProperty(L"axis-type")->GetValueString());
                 if (axisType.has_value())
                     {

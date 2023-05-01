@@ -17,6 +17,7 @@
 #include "colorbrewer.h"
 #include "fillableshape.h"
 #include "../base/tablelink.h"
+#include "../base/reportenumconvert.h"
 #include "../data/subset.h"
 #include "../data/pivot.h"
 #include "../data/join.h"
@@ -345,70 +346,14 @@ namespace Wisteria
             const wxSimpleJSON::Ptr_t& dsNode,
             std::shared_ptr<Data::Dataset>& dataset);
 
+        /// @brief Finds a position on the axis based on the value from a node.
+        [[nodiscard]] std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
+            const wxSimpleJSON::Ptr_t& positionNode) const;
+
         /// @brief If @c path is fully specified, then returns @c path.
         ///     Otherwise, tries to return the path relative to the project file.
         [[nodiscard]] wxString NormalizeFilePath(const wxString& path);
 
-        /// @brief Converts a string value to a @c wxPaperSize enum value.
-        [[nodiscard]] static std::optional<wxPaperSize>
-            ConvertPaperSize(const wxString& value);
-        /// @brief Converts a string value to a LabelPlacement enum value.
-        [[nodiscard]] static std::optional<LabelPlacement>
-            ConvertLabelPlacement(const wxString& value);
-        /// @brief Converts a string value to an AxisType enum value.
-        [[nodiscard]] static std::optional<AxisType>
-            ConvertAxisType(const wxString& value);
-        /// @brief Converts a string value to a BinLabelDisplay enum value.
-        [[nodiscard]] static std::optional<BinLabelDisplay>
-            ConvertBinLabelDisplay(const wxString& value);
-        /// @brief Converts a string value to a Roadmap::LaneSeparatorStyle enum value.
-        [[nodiscard]] static std::optional<Graphs::Roadmap::LaneSeparatorStyle>
-            ConvertLaneSeparatorStyle(const wxString& value);
-        /// @brief Converts a string value to a Roadmap::RoadStopTheme enum value.
-        [[nodiscard]] static std::optional<Graphs::Roadmap::RoadStopTheme>
-            ConvertRoadStopTheme(const wxString& value);
-        /// @brief Converts a string value to a Roadmap::MarkerLabelDisplay enum value.
-        [[nodiscard]] static std::optional<Graphs::Roadmap::MarkerLabelDisplay>
-            ConvertMarkerLabelDisplay(const wxString& value);
-        /// @brief Converts a string value to a Histogram::BinningMethod enum value.
-        [[nodiscard]] static std::optional<Graphs::Histogram::BinningMethod>
-            ConvertBinningMethod(const wxString& value);
-        /// @brief Converts a string value to a Histogram::IntervalDisplay enum value.
-        [[nodiscard]] static std::optional<Graphs::Histogram::IntervalDisplay>
-            ConvertIntervalDisplay(const wxString& value);
-        /// @brief Converts a string value to a RoundingMethod enum value.
-        [[nodiscard]] static std::optional<RoundingMethod>
-            ConvertRoundingMethod(const wxString& value);
-        /// @brief Converts a string value to a BoxEffect enum value.
-        [[nodiscard]] static std::optional<BoxEffect>
-            ConvertBoxEffect(const wxString& value);
-        /// @brief Converts a string value to a PieSliceEffect enum value.
-        [[nodiscard]] static std::optional<PieSliceEffect>
-            ConvertPieSliceEffect(const wxString& value);
-        /// @brief Converts a string value to a Perimeter enum value.
-        [[nodiscard]] static std::optional<Perimeter>
-            ConvertPerimeter(const wxString& value);
-        /// @brief Converts a string value to a @c wxBrushStyle enum value.
-        [[nodiscard]] static std::optional<wxBrushStyle>
-            ConvertBrushStyle(const wxString& value);
-        /// @brief Converts a string value to a @c TableCellFormat enum value.
-        [[nodiscard]] static std::optional<TableCellFormat>
-            ConvertTableCellFormat(const wxString& value);
-        /// @brief Converts a string value to a @c DateInterval enum value.
-        [[nodiscard]] static std::optional<DateInterval>
-            ConvertDateInterval(const wxString& value);
-        /// @brief Converts a string value to a @c FiscalYear enum value.
-        [[nodiscard]] static std::optional<FiscalYear>
-            ConvertFiscalYear(const wxString& value);
-        /// @brief Converts a string value to a `GanttChart::TaskLabelDisplay` enum value.
-        [[nodiscard]] static std::optional<Wisteria::Graphs::GanttChart::TaskLabelDisplay>
-            ConvertTaskLabelDisplay(const wxString& value);
-        /// @brief Converts a string value to a `CandlestickPlot::PlotType` enum value.
-        [[nodiscard]] static std::optional<Wisteria::Graphs::CandlestickPlot::PlotType>
-            ConvertCandlestickPlotType(const wxString& value);
-        /// @brief Converts a string value to a `LikertChart::LikertSurveyQuestionFormat` enum value.
-        [[nodiscard]] static std::optional<Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat>
-            ConvertLikertSurveyQuestionFormat(const wxString& value);
         /// @brief Loads a color from a string.
         /// @param colorStr The string to parse and convert into a color.
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
@@ -419,22 +364,6 @@ namespace Wisteria
         /// @returns The loaded color. Check with @c IsOk() to verify that the color
         ///     was successfully loaded.
         [[nodiscard]] wxColour ConvertColor(const wxSimpleJSON::Ptr_t& colorNode);
-        /// @brief Converts a string value to an icon shape enum value.
-        /// @param iconStr the string name of the icon.
-        /// @returns The icon enum value if found, @c std::nullopt otherwise.
-        [[nodiscard]] std::optional<Icons::IconShape> ConvertIcon(wxString iconStr);
-        /// @brief Converts a string value to a TextAlignment enum value.
-        [[nodiscard]] static std::optional<TextAlignment>
-            ConvertTextAlignment(const wxString& value);
-        /// @brief Converts a string value to a GraphColumnHeader enum value.
-        [[nodiscard]] static std::optional<GraphColumnHeader>
-            ConvertGraphColumnHeader(const wxString& value);
-        /// @brief Converts a string value to a FlowShape enum value.
-        [[nodiscard]] static std::optional<FlowShape>
-            ConvertFlowShape(const wxString& value);
-        /// @brief Finds a position on the axis based on the value from a node.
-        [[nodiscard]] std::optional<double> FindAxisPosition(const GraphItems::Axis& axis,
-            const wxSimpleJSON::Ptr_t& positionNode) const;
 
         [[nodiscard]]
         std::optional<double> ConvertNumber(const wxSimpleJSON::Ptr_t& node)
