@@ -21,6 +21,9 @@ Properties for the `"datasets"` node:
     This property is optional.
   - "treat-leading-zeros-as-text": whether to import numeric columns with leading zeros as text.<br />
     This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
+  - "treat-years-as-text": whether to import numeric columns that are four-digits as text
+    (going under the assumption that they are years).<br />
+    This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
   - `"id-column"`: the ID column.<br />
     This property is optional.
   - `"continuous-columns"`: an array of continuous column names to import.<br />

@@ -1090,9 +1090,12 @@ namespace Wisteria::Data
             // assume column's data is integral unless something in the first
             // few rows looks like a string
             ColumnImportType currentColumnType{ ColumnImportType::Discrete };
+            std::optional<size_t> minCellLength{ std::nullopt }, maxCellLength{ std::nullopt };
             for (size_t rowIndex = 0; rowIndex < rowCount; ++rowIndex)
                 {
                 const auto& currentCell = dataStrings.at(rowIndex).at(colIndex);
+                minCellLength = std::min(minCellLength.value_or(currentCell.length()), currentCell.length());
+                maxCellLength = std::max(maxCellLength.value_or(currentCell.length()), currentCell.length());
                 // "0002789" can trigger the column to be imported as text,
                 // preserving the leading zeros and seeing these "numbers" as
                 // identifying labels instead.
@@ -1137,6 +1140,12 @@ namespace Wisteria::Data
                     !is_within(std::make_pair(0.0, 7.0), parsedNumber))
                     { currentColumnType = ColumnImportType::Numeric; }
                 }
+
+            if (importInfo.m_treatYearsAsText &&
+                currentColumnType == ColumnImportType::Numeric &&
+                minCellLength && maxCellLength &&
+                minCellLength == 4 && maxCellLength == 4)
+                { currentColumnType = ColumnImportType::String; }
             // silently ignore columns with no name (missing header)
             if (preview.get_header_names().at(colIndex).length())
                 {
@@ -1259,12 +1268,10 @@ namespace Wisteria::Data
         m_continuousColumns.clear();
         m_name.clear();
 
-        SetImportContinuousMDRecodeValue(info.m_continuousMDRecodeValue);
-
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
-        importer.set_missing_data_code(m_mdCode);
+        importer.set_missing_data_code(info.m_mdCode);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
@@ -1494,7 +1501,7 @@ namespace Wisteria::Data
                     continuousValues.emplace_back(
                         ConvertToDouble(
                             currentRow.at(continuousColumnIndices.at(i).value()),
-                            m_importContinuousMDRecodeValue));
+                            info.m_continuousMDRecodeValue));
                     }
                 }
             currentItem.Continuous(continuousValues);

@@ -750,6 +750,15 @@ namespace Wisteria::Data
             m_treatLeadingZerosAsText = leadZeros;
             return *this;
             }
+        /** @brief Set whether to import numeric columns that are four-digits as text
+                (going under the assumption that they are years).
+            @param yearsAsText @c true to import four-digit numbers (i.e., years) as text.
+            @returns A self reference.*/
+        ImportInfo& TreatYearsAsText(const bool yearsAsText)
+            {
+            m_treatYearsAsText = yearsAsText;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
@@ -809,6 +818,7 @@ namespace Wisteria::Data
         std::optional<std::wstring> m_mdCode{ std::nullopt };
         size_t m_skipRows{ 0 };
         bool m_treatLeadingZerosAsText{ false };
+        bool m_treatYearsAsText{ false };
         };
 
     /** @brief %Dataset interface for graphs.
@@ -1364,20 +1374,6 @@ namespace Wisteria::Data
             const ImportInfo& importInfo = ImportInfo{},
             std::optional<size_t> rowPreviewCount = std::nullopt);
 
-        /** @brief Set the value to replace missing data in continuous cells
-                during import. (The default value is NaN.)
-            @details Missing data can be either empty cells or text values in a
-                numeric column that can't be converted to a number.
-            @param recodeVal The value to replace missing data with.*/
-        void SetImportContinuousMDRecodeValue(const double recodeVal) noexcept
-            { m_importContinuousMDRecodeValue = recodeVal; }
-
-        /** @brief Sets the value to treat as missing data during an import.
-            @details This will be applied to all cells in the data during the import.
-            @param mdCode The value to treat as missing data.*/
-        void SetImportMDRecode(const std::optional<std::wstring>& mdCode) noexcept
-            { m_mdCode = mdCode; }
-
         /** @brief Converts previewed column information into an ImportInfo object
                 that can be passed to an import function.
             @param previewInfo A file's preview information (from a call to ReadColumnInfo()).
@@ -1562,9 +1558,6 @@ namespace Wisteria::Data
                                         const wxString& formatStr);
 
         std::wstring m_name;
-
-        double m_importContinuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
-        std::optional<std::wstring> m_mdCode{ std::nullopt };
 
         // actual data
         Column<wxString> m_idColumn;

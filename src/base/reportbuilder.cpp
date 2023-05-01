@@ -1852,6 +1852,11 @@ namespace Wisteria
                             importDefines.TreatLeadingZerosAsText(
                                 datasetNode->GetProperty(L"treat-leading-zeros-as-text")->GetValueBool());
                             }
+                        if (datasetNode->HasProperty(L"treat-years-as-text"))
+                            {
+                            importDefines.TreatYearsAsText(
+                                datasetNode->GetProperty(L"treat-years-as-text")->GetValueBool());
+                            }
                         };
                     fillImportDefines();
 
