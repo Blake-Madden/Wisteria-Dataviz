@@ -3711,7 +3711,8 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] = readPositions(columnFormattingCommand);
                 const auto formatValue =
-                    ReportEnumConvert::ConvertTableCellFormat(columnFormattingCommand->GetProperty(L"format")->GetValueString());
+                    ReportEnumConvert::ConvertTableCellFormat(
+                        columnFormattingCommand->GetProperty(L"format")->GetValueString());
 
                 const std::set<size_t> rowStops =
                     loadStops(columnFormattingCommand->GetProperty(L"stops"));
