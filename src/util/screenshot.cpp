@@ -8,6 +8,8 @@
 
 #include "screenshot.h"
 
+std::map<wxWindowID, wxWindowID> Screenshot::m_dynamicIdMap;
+
 //---------------------------------------------------
 bool Screenshot::HighlightItemInScreenshot(const wxString& filePath,
                                            const wxPoint topLeftCorner,
@@ -96,7 +98,16 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath,
 
     if (buttonBarToHighlight != wxID_ANY)
         {
-        const auto buttonBar = ribbonBar->FindWindow(buttonBarToHighlight);
+        wxWindow* buttonBar{ nullptr };
+        // Try to find it as an external ID mapped to a dynamic one (e.g., wxHIGHEST_ID+1).
+        if (const auto internalId = m_dynamicIdMap.find(buttonBarToHighlight);
+            internalId != m_dynamicIdMap.cend())
+            { buttonBar = ribbonBar->FindWindow(internalId->second); }
+
+        // ...or search for the literal ID that was passed in that may be a stock ID (e.g., wxSAVE_ID).
+        if (buttonBar == nullptr)
+            { buttonBar = ribbonBar->FindWindow(buttonBarToHighlight); }
+
         if (buttonBar && buttonBar->IsKindOf(CLASSINFO(wxRibbonButtonBar)))
             {
             /* Step back all the way from the child window to the parent and tally the offset
@@ -167,10 +178,10 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath,
     auto listCtrl = dynamic_cast<wxListCtrl*>(windowToCapture);
     wxASSERT(listCtrl);
 
-    long columnsWidth{0};
+    long columnsWidth{ 0 };
     for (auto i = 0; i < listCtrl->GetColumnCount(); ++i)
         { columnsWidth += listCtrl->GetColumnWidth(i); }
-    long rowHeight{0};
+    long rowHeight{ 0 };
     if (listCtrl->GetItemCount())
         {
         wxRect itemRect;
