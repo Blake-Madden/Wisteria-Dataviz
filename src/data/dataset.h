@@ -146,7 +146,7 @@ namespace Wisteria::Data
             if (index >= m_data.size())
                 { return false; }
             if constexpr (std::is_floating_point<T>())
-                { return GetValue(index) == std::numeric_limits<T>::quiet_NaN(); }
+                { return std::isnan(GetValue(index)); }
             else if constexpr (std::is_same_v<T, wxString>)
                 { return GetValue(index).empty(); }
             else if constexpr (std::is_same_v<T, wxDateTime>)
