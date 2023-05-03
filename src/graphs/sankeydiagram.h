@@ -182,8 +182,18 @@ namespace Wisteria::Graphs
         /// @brief Sets how the columns (i.e., groups from each variable) display
         ///     their variable's name.
         /// @param columnDisplay The display method to use.
+        /// @sa SetColumnHeaders().
         void SetColumnHeaderDisplay(const GraphColumnHeader columnDisplay) noexcept
             { m_columnDisplay = columnDisplay; }
+
+        /// @brief Sets the column headers to display above or below the columns.
+        /// @details Syntax such as @c @COLUMNNAME@ and @c @COUNT@ can be
+        ///     embedded in this string. (These expand to the column and
+        ///     number of oberservations, respectively).
+        /// @param colHeader The strings to use as the columns' headers.
+        /// @sa SetColumnHeaderDisplay().
+        void SetColumnHeaders(const std::vector<wxString>& colHeaders)
+            { m_columnHeaders = colHeaders; }
 
         /// @}
 
@@ -218,7 +228,7 @@ namespace Wisteria::Graphs
             double m_yAxisWidth{ 0 };
             double m_xAxisLeft{ 0 };
             double m_xAxisRight{ 0 };
-            bool m_hasParent{ true };
+            bool m_isShown{ true };
             DownStreamGroups m_downStreamGroups;
             void OffsetY(const double offset) noexcept
                 {
@@ -241,13 +251,26 @@ namespace Wisteria::Graphs
             };
         using SankeyColumn = std::vector<SankeyGroup>;
 
+        [[nodiscard]]
+        wxString ExpandColumnHeader(const size_t index)
+            {
+            wxString expandedStr{ m_columnHeaders[index]};
+            expandedStr.Replace(L"@COLUMNNAME@", m_columnsNames[index]);
+            expandedStr.Replace(L"@COUNT@",
+                wxNumberFormatter::ToString(m_columnTotals[index], 0,
+                    wxNumberFormatter::Style_WithThousandsSep | wxNumberFormatter::Style_NoTrailingZeroes));
+            return expandedStr;
+            }
+
         std::vector<SankeyColumn> m_sankeyColumns;
         std::vector<SankeyAxisGroup> m_fromAxisGroups;
         std::vector<wxString> m_columnsNames;
+        std::vector<double> m_columnTotals;
 
         FlowShape m_flowShape{ FlowShape::Curvy };
         BinLabelDisplay m_groupLabelDisplay{ BinLabelDisplay::BinName };
         GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
+        std::vector<wxString> m_columnHeaders;
 
         // after setting the data, homogenizes the columns and their groups
         void AdjustColumns();

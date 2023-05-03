@@ -717,6 +717,9 @@ Properties for `"sankey-diagram"` nodes:
   - `"as-header"`: display the column's name as an axis header.
   - `"as-footer"`: display the column's name as an axis footer.
   - `"no-display"`: do not display the column's name.
+- "column-headers": if showing column headers, this is an array of strings to use as the column headers.<br />
+  User-defined constants (e.g., `"{{MaxFiscalYear}}"`) can be used in these strings, and they can also
+  contain @c @COLUMNNAME@ and @c @COUNT@ to show the columns' names and obsveration counts.
 - `"flow-shape"`: a string specifying the shape of the streams going between the groups.<br />
   Available options are:
   - `"curvy"`: a flow with a spline-like shape (the default).
@@ -728,8 +731,8 @@ Properties for `"table"` nodes:
 
 - `"variables"`: an array of column names to use from the dataset.<br />
   These values can also be variable selection formulas, including the following:
-  - ``{{Matches(`value`)}}``: where `value` will be the regular expression search pattern, and any column
-      in the dataset that contains this text will be included.
+  - ``{{Matches(`value`)}}``: where `value` is a regular expression search pattern, and any column
+      in the dataset that matches this text will be included.
   - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
   - ``{{EverythingExcept(`value`)}}``: will return all columns from the dataset that do not match the

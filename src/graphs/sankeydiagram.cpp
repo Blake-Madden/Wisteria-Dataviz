@@ -181,7 +181,7 @@ namespace Wisteria::Graphs
                 {
                 col.insert(col.begin(),
                     { wxString{}, (maxGroupTotal - groupTotal),
-                      SankeyGroup::DownStreamGroups{} })->m_hasParent = false;
+                      SankeyGroup::DownStreamGroups{} })->m_isShown = false;
                 }
             }
 
@@ -384,7 +384,7 @@ namespace Wisteria::Graphs
                 {
                 for (const auto& group : col)
                     {
-                    if (group.m_hasParent &&
+                    if (group.m_isShown &&
                         GetPhysicalCoordinates(group.m_xAxisLeft, group.m_currentYAxisPosition, pts[0]) &&
                         GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
                         GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
@@ -407,9 +407,10 @@ namespace Wisteria::Graphs
             {
             std::array<wxPoint, 4> pts;
 
+            std::vector<std::shared_ptr<GraphItems::Label>> labels;
             for (auto& group : m_sankeyColumns[colIndex])
                 {
-                if (group.m_hasParent &&
+                if (group.m_isShown &&
                     GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisTopPosition, pts[0]) &&
                     GetPhysicalCoordinates(group.m_xAxisLeft, group.m_yAxisBottomPosition, pts[1]) &&
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisBottomPosition, pts[2]) &&
@@ -421,10 +422,10 @@ namespace Wisteria::Graphs
                             GetGroupLabelDisplay() == BinLabelDisplay::BinName) ?
                                 group.m_label :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndPercentage) ?
-                                wxString::Format(L"%s\n%s%%", group.m_label,
+                                wxString::Format(L"%s (%s%%)", group.m_label,
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
-                                wxString::Format(L"%s\n%s", group.m_label,
+                                wxString::Format(L"%s (%s)", group.m_label,
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                                                 wxNumberFormatter::Style::Style_WithThousandsSep)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinPercentage) ?
@@ -435,7 +436,7 @@ namespace Wisteria::Graphs
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                         wxNumberFormatter::Style::Style_WithThousandsSep)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinValueAndPercentage) ?
-                                wxString::Format(L"%s\n%s%%",
+                                wxString::Format(L"%s (%s%%)",
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
                                         wxNumberFormatter::Style::Style_WithThousandsSep),
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
@@ -456,7 +457,7 @@ namespace Wisteria::Graphs
                             AnchorPoint(pts[0]).Anchoring(Anchoring::TopLeftCorner));
                         const auto bBox{ groupLabel->GetBoundingBox(dc) };
                         groupLabel->Offset(0, -(bBox.GetHeight() * math_constants::half));
-                        AddObject(groupLabel);
+                        labels.push_back(groupLabel);
                         }
                     else if (labelSide == Side::Left &&
                         GetPhysicalCoordinates(group.m_xAxisLeft,
@@ -472,10 +473,56 @@ namespace Wisteria::Graphs
                             AnchorPoint(pts[0]).Anchoring(Anchoring::TopRightCorner));
                         const auto bBox{ groupLabel->GetBoundingBox(dc) };
                         groupLabel->Offset(0, -(bBox.GetHeight() * math_constants::half));
-                        AddObject(groupLabel);
+                        labels.push_back(groupLabel);
                         }
                     }
                 }
+
+            // look for overlapping labels
+            if (labels.size() > 1)
+                {
+                constexpr double minFontScale{ 1.0 };
+                std::optional<double> smallestFontScale{ std::nullopt };
+                for (size_t i = 0; i < (labels.size() - 1); ++i)
+                    {
+                    const auto bBox = labels[i]->GetBoundingBox(dc);
+                    const auto nextBBox = labels[i + 1]->GetBoundingBox(dc);
+                    if (bBox.Intersects(nextBBox))
+                        {
+                        const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
+                        const auto perecentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
+                        labels[i]->SetScaling(labels[i]->GetScaling() *
+                                              (1.0 - perecentEclipsed));
+                        smallestFontScale =
+                            std::max(minFontScale,
+                                std::min(smallestFontScale.value_or(labels[i]->GetScaling()),
+                                         labels[i]->GetScaling()));
+                        const auto newBBox = labels[i]->GetBoundingBox(dc);
+                        const auto heightDiff = bBox.GetHeight() - newBBox.GetHeight();
+                        labels[i]->Offset(0, heightDiff * math_constants::half);
+                        }
+                    }
+                // homogenize the labels' font scales (or hide the ones that are too small)
+                for (auto labelIter = labels.begin(); labelIter != labels.end(); /* in loop */)
+                    {
+                    if (compare_doubles_less((*labelIter)->GetScaling(), smallestFontScale.value()))
+                        {
+                        labelIter = labels.erase(labelIter);
+                        }
+                    else
+                        {
+                        const auto bBox = (*labelIter)->GetBoundingBox(dc);
+                        (*labelIter)->SetScaling(smallestFontScale.value());
+                        const auto newBBox = (*labelIter)->GetBoundingBox(dc);
+                        const auto heightDiff = bBox.GetHeight() - newBBox.GetHeight();
+                        (*labelIter)->Offset(0, heightDiff * math_constants::half);
+                        ++labelIter;
+                        }
+                    }
+                }
+
+            for (const auto& label : labels)
+                { AddObject(label); }
             };
 
         if (m_sankeyColumns.size() == 2)
@@ -492,12 +539,30 @@ namespace Wisteria::Graphs
             drawLabels(1, Side::Left);
             }
 
+        m_columnTotals.resize(m_sankeyColumns.size());
+        std::transform(m_sankeyColumns.cbegin(), m_sankeyColumns.cend(), m_columnTotals.begin(),
+            [](const auto& group)
+            {
+            return std::accumulate(group.cbegin(), group.cend(), 0.0,
+                [](const auto init, const auto& val)
+                { return (val.m_isShown ? val.m_frequency : 0) + init; });
+            });
+
+        // if user hasn't supplied enough custom column headers (or any)
+        if (m_columnHeaders.size() < m_sankeyColumns.size())
+            {
+            const auto originalSize{ m_columnHeaders.size() };
+            m_columnHeaders.resize(m_sankeyColumns.size());
+            for (size_t i = originalSize; i < m_sankeyColumns.size(); ++i)
+                { m_columnHeaders[i] = L"@COLUMNNAME@"; }
+            }
+
         if (GetColumnHeaderDisplay() == GraphColumnHeader::AsHeader)
             {
             GetLeftYAxis().GetHeader().GetGraphItemInfo().
-                Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+                Text(ExpandColumnHeader(0)).ChildAlignment(RelativeAlignment::FlushLeft);
             GetRightYAxis().GetHeader().GetGraphItemInfo().
-                Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+                Text(ExpandColumnHeader(1)).ChildAlignment(RelativeAlignment::FlushRight);
 
             GetLeftYAxis().GetFooter().SetText(wxString{});
             GetRightYAxis().GetFooter().SetText(wxString{});
@@ -505,9 +570,9 @@ namespace Wisteria::Graphs
         else if (GetColumnHeaderDisplay() == GraphColumnHeader::AsFooter)
             {
             GetLeftYAxis().GetFooter().GetGraphItemInfo().
-                Text(m_columnsNames[0]).ChildAlignment(RelativeAlignment::FlushLeft);
+                Text(ExpandColumnHeader(0)).ChildAlignment(RelativeAlignment::FlushLeft);
             GetRightYAxis().GetFooter().GetGraphItemInfo().
-                Text(m_columnsNames[1]).ChildAlignment(RelativeAlignment::FlushRight);
+                Text(ExpandColumnHeader(1)).ChildAlignment(RelativeAlignment::FlushRight);
 
             GetLeftYAxis().GetHeader().SetText(wxString{});
             GetRightYAxis().GetHeader().SetText(wxString{});
