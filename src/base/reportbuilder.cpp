@@ -2885,10 +2885,13 @@ namespace Wisteria
             const auto fromVarName = ExpandConstants(variablesNode->GetProperty(L"from")->GetValueString());
             const auto toColName = ExpandConstants(variablesNode->GetProperty(L"to")->GetValueString());
 
-            const auto fromWeightVarName = ExpandConstants(variablesNode->GetProperty(L"from-weight")->GetValueString());
-            const auto toWeightColName = ExpandConstants(variablesNode->GetProperty(L"to-weight")->GetValueString());
+            const auto fromWeightVarName = ExpandConstants(
+                variablesNode->GetProperty(L"from-weight")->GetValueString());
+            const auto toWeightColName = ExpandConstants(
+                variablesNode->GetProperty(L"to-weight")->GetValueString());
 
-            const auto fromGroupVarName = ExpandConstants(variablesNode->GetProperty(L"from-group")->GetValueString());
+            const auto fromGroupVarName = ExpandConstants(
+                variablesNode->GetProperty(L"from-group")->GetValueString());
 
             auto sankey = std::make_shared<SankeyDiagram>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")) );
