@@ -1263,6 +1263,11 @@ namespace Wisteria::Data
             const std::optional<wxString>& groupColumn = std::nullopt,
             const std::optional<GroupIdType> groupId = std::nullopt) const;
 
+        /// @brief Sorts the columns by name.
+        /// @note The columns will still be grouped by type (e.g., continuous vs. categorical),
+        ///     but the columns will be sorted by name within each of these group types.
+        void SortColumnNames();
+
         /** @brief Renames a column.
             @param colName The column to rename.
             @param newColName The new name for the column.

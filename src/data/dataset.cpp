@@ -243,6 +243,23 @@ namespace Wisteria::Data
         }
 
     //----------------------------------------------
+    void Dataset::SortColumnNames()
+        {
+        std::sort(GetCategoricalColumns().begin(), GetCategoricalColumns().end(),
+            [](const auto& lhv, const auto& rhv)
+            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
+            );
+        std::sort(GetContinuousColumns().begin(), GetContinuousColumns().end(),
+            [](const auto& lhv, const auto& rhv)
+            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
+            );
+        std::sort(GetDateColumns().begin(), GetDateColumns().end(),
+            [](const auto& lhv, const auto& rhv)
+            { return lhv.GetName().CmpNoCase(rhv.GetName()) < 0;  }
+            );
+        }
+
+    //----------------------------------------------
     void ColumnWithStringTable::RecodeRE(const wxString& pattern,
                                          const wxString& replace)
         {

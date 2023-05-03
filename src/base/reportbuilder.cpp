@@ -1689,6 +1689,9 @@ namespace Wisteria
             // load any merges of this dataset
             LoadMerges(dsNode->GetProperty(L"merges"), dataset);
 
+            if (dsNode->GetProperty(L"column-names-sort")->GetValueBool())
+                { dataset->SortColumnNames(); }
+
             const auto exportPath =
                     dsNode->GetProperty(L"export-path")->GetValueString();
             // A project silently writing to an arbitrary file is

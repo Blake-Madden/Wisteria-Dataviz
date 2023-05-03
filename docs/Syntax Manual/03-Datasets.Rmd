@@ -17,7 +17,7 @@ Properties for the `"datasets"` node:
   - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns.<br />
     This property is optional.
   - `"worksheet"`: if importing an Excel worksheet, the name or 1-based index of the worksheet.
-  - `"md-code"`: the string value to import as missing data during the import.<br />
+  - `"md-codes"`: an array of string values to import as missing data during the import.<br />
     This property is optional.
   - "treat-leading-zeros-as-text": whether to import numeric columns with leading zeros as text.<br />
     This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
