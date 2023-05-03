@@ -1848,7 +1848,8 @@ namespace Wisteria
                         if (datasetNode->HasProperty(L"md-codes"))
                             {
                             importDefines.MDCodes(
-                                wxStringVectorToWstringVector(datasetNode->GetProperty(L"md-codes")->GetValueStringVector()));
+                                wxStringVectorToWstringVector(
+                                    datasetNode->GetProperty(L"md-codes")->GetValueStringVector()));
                             }
                         if (datasetNode->HasProperty(L"treat-leading-zeros-as-text"))
                             {
