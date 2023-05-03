@@ -57,6 +57,15 @@ namespace Wisteria
     private:
         using ValuesType = std::variant<wxString, double>;
 
+        static auto wxStringVectorToWstringVector(const std::vector<wxString>& inVec)
+            {
+            std::vector<std::wstring> outVec(inVec.size());
+            std::transform(inVec.cbegin(), inVec.cend(), outVec.begin(),
+                [](const auto& val)
+                { return val.ToStdWstring(); });
+            return outVec;
+            };
+
         /// @brief Loads the datasets node into @c m_datasets.
         /// @details These datasets are used by objects throughout the report,
         ///     referencing them by name.

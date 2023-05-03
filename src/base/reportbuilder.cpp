@@ -1845,10 +1845,10 @@ namespace Wisteria
                             importDefines.SkipRows(
                                 datasetNode->GetProperty(L"skip-rows")->GetValueNumber(0));
                             }
-                        if (datasetNode->HasProperty(L"md-code"))
+                        if (datasetNode->HasProperty(L"md-codes"))
                             {
-                            importDefines.MDCode(
-                                datasetNode->GetProperty(L"md-code")->GetValueString().ToStdWstring());
+                            importDefines.MDCodes(
+                                wxStringVectorToWstringVector(datasetNode->GetProperty(L"md-codes")->GetValueStringVector()));
                             }
                         if (datasetNode->HasProperty(L"treat-leading-zeros-as-text"))
                             {
@@ -2882,13 +2882,13 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto fromVarName = variablesNode->GetProperty(L"from")->GetValueString();
-            const auto toColName = variablesNode->GetProperty(L"to")->GetValueString();
+            const auto fromVarName = ExpandConstants(variablesNode->GetProperty(L"from")->GetValueString());
+            const auto toColName = ExpandConstants(variablesNode->GetProperty(L"to")->GetValueString());
 
-            const auto fromWeightVarName = variablesNode->GetProperty(L"from-weight")->GetValueString();
-            const auto toWeightColName = variablesNode->GetProperty(L"to-weight")->GetValueString();
+            const auto fromWeightVarName = ExpandConstants(variablesNode->GetProperty(L"from-weight")->GetValueString());
+            const auto toWeightColName = ExpandConstants(variablesNode->GetProperty(L"to-weight")->GetValueString());
 
-            const auto fromGroupVarName = variablesNode->GetProperty(L"from-group")->GetValueString();
+            const auto fromGroupVarName = ExpandConstants(variablesNode->GetProperty(L"from-group")->GetValueString());
 
             auto sankey = std::make_shared<SankeyDiagram>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")) );
@@ -2902,6 +2902,15 @@ namespace Wisteria
                 graphNode->GetProperty(L"group-header-display")->GetValueString());
             if (groupHeaderDisplay)
                 { sankey->SetColumnHeaderDisplay(groupHeaderDisplay.value()); }
+
+            if (graphNode->HasProperty(L"column-headers"))
+                {
+                std::vector<wxString> columnHeader = graphNode->GetProperty(L"column-headers")->GetValueStringVector();
+                std::transform(columnHeader.begin(), columnHeader.end(), columnHeader.begin(),
+                    [this](const auto& val)
+                    { return ExpandConstants(val); });
+                sankey->SetColumnHeaders(columnHeader);
+                }
 
             const auto flowShape = ReportEnumConvert::ConvertFlowShape(
                 graphNode->GetProperty(L"flow-shape")->GetValueString());
