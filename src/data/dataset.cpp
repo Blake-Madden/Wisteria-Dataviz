@@ -1024,7 +1024,7 @@ namespace Wisteria::Data
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
-        importer.set_missing_data_code(importInfo.m_mdCode);
+        importer.set_missing_data_codes(importInfo.m_mdCodes);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });
@@ -1271,7 +1271,7 @@ namespace Wisteria::Data
         std::vector<std::vector<std::wstring>> dataStrings;
 
         lily_of_the_valley::text_matrix<std::wstring> importer{ &dataStrings };
-        importer.set_missing_data_code(info.m_mdCode);
+        importer.set_missing_data_codes(info.m_mdCodes);
 
         lily_of_the_valley::text_column<text_column_to_eol_parser>
             noReadColumn(lily_of_the_valley::text_column_to_eol_parser{ false });

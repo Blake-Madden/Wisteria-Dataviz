@@ -245,32 +245,45 @@ namespace lily_of_the_valley
             recode_md_code();
             return currentRowIndex;
             }
-        /// @brief Sets the value to treat as missing data.
-        /// @param mdCode The value to treat as missing data.
-        void set_missing_data_code(const std::optional<string_typeT>& mdCode) noexcept
-            { m_mdVal = mdCode; }
+        /// @brief Sets the values to treat as missing data (e.g., "NULL," "NA," etc.).
+        /// @param mdCodes The values to treat as missing data.
+        void set_missing_data_codes(const std::optional<std::vector<string_typeT>>& mdCodes) noexcept
+            { m_mdVals = mdCodes; }
     private:
         void recode_md_code()
             {
-            if (m_mdVal)
+            if (m_mdVals)
                 {
                 if (m_matrix)
                     {
-                    for (auto& row : *m_matrix)
+                    #pragma omp parallel for
+                    for (int64_t row = 0; row < static_cast<int64_t>(m_matrix->size()); ++row)
                         {
-                        for (auto& cell : row)
+                        for (auto& cell : (*m_matrix)[row])
                             {
-                            if (cell == m_mdVal.value())
-                                { cell.clear(); }
+                            for (const auto& mdVal : m_mdVals.value())
+                                {
+                                if (cell == mdVal)
+                                    {
+                                    cell.clear();
+                                    break;
+                                    }
+                                }
                             }
                         }
                     }
                 else
                     {
-                    for (auto& val : *m_vector)
+                    for (auto& cell : *m_vector)
                         {
-                        if (val == m_mdVal.value())
-                            { val.clear(); }
+                        for (const auto& mdVal : m_mdVals.value())
+                            {
+                            if (cell == mdVal)
+                                {
+                                cell.clear();
+                                break;
+                                }
+                            }
                         }
                     }
                 }
@@ -279,7 +292,7 @@ namespace lily_of_the_valley
         std::vector<string_typeT>* m_vector{ nullptr };
         std::vector<text_row<string_typeT>> m_rows;
         is_end_of_line is_eol;
-        std::optional<string_typeT> m_mdVal{ std::nullopt };
+        std::optional<std::vector<string_typeT>> m_mdVals{ std::nullopt };
         };
     };
 

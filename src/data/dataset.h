@@ -732,12 +732,12 @@ namespace Wisteria::Data
             m_skipRows = startRow;
             return *this;
             }
-        /** @brief Set the value to treat as missing data during an import.
-            @param mdCode The value to treat as missing data.
+        /** @brief Sets the values to treat as missing data (e.g., "NULL," "NA," etc.).
+            @param mdCodes The values to treat as missing data.
             @returns A self reference.*/
-        ImportInfo& MDCode(const std::optional<std::wstring>& mdCode)
+        ImportInfo& MDCodes(const std::optional<std::vector<std::wstring>>& mdCodes)
             {
-            m_mdCode = mdCode;
+            m_mdCodes = mdCodes;
             return *this;
             }
         /** @brief Set whether to import numeric columns with leading zeros as text.
@@ -815,7 +815,7 @@ namespace Wisteria::Data
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
         double m_continuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
-        std::optional<std::wstring> m_mdCode{ std::nullopt };
+        std::optional<std::vector<std::wstring>> m_mdCodes{ std::nullopt };
         size_t m_skipRows{ 0 };
         bool m_treatLeadingZerosAsText{ false };
         bool m_treatYearsAsText{ false };
