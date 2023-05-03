@@ -1082,7 +1082,7 @@ namespace Wisteria::Data
 
         wxLogNull nl;
         wxRegEx fpRegex(L"^[0-9]+[.,][0-9]+$");
-        wxRegEx mdRegex(L"(?i)^(NA|N/A)$");
+        wxRegEx mdRegex(L"(?i)^(NA|N/A|NULL)$");
         wxDateTime dt;
         wxString::const_iterator end;
         for (size_t colIndex = 0; colIndex < preview.get_header_names().size(); ++colIndex)
