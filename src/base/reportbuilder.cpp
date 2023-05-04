@@ -3323,8 +3323,10 @@ namespace Wisteria
             const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"), table);
             const std::set<size_t> colStops =
                 loadStops(altRowColorNode->GetProperty(L"stops"));
-            table->ApplyAlternateRowColors(ConvertColor(altRowColorNode->GetProperty(L"color")),
-                startRow.value_or(0), colStops);
+            auto rowColor{ ConvertColor(altRowColorNode->GetProperty(L"color")) };
+            if (!rowColor.IsOk())
+                { rowColor = *wxWHITE; }
+            table->ApplyAlternateRowColors(rowColor, startRow.value_or(0), colStops);
             }
 
         // add rows

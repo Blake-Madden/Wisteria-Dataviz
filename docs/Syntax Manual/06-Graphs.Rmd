@@ -771,7 +771,7 @@ The remaining properties are executed in the following order:
 - `"alternate-row-color"`: applies "zebra stripes" down the rows.<br />
   Available options are:
   - `"color"`: the base row color for the starting row; a shaded/tinted version of this color will be applied
-       to every other row.
+       to every other row. (Default is white, creating a shaded white as the alternate color.)
   - `"start"`: the row to start the alternating from. (Default is `0`.)
   - `"stops"`: an array of which columns to skip over when applying the row alternating color.<br />
        This is an array of `"position"` items.
