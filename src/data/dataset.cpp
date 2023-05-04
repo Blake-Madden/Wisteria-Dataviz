@@ -1117,7 +1117,8 @@ namespace Wisteria::Data
                 // preserving the leading zeros and seeing these "numbers" as
                 // identifying labels instead.
                 if (importInfo.m_treatLeadingZerosAsText &&
-                    currentCell.length() && currentCell.front() == L'0')
+                    currentCell.length() > 1 &&
+                    currentCell.front() == L'0')
                     {
                     currentColumnType = ColumnImportType::String;
                     break;
