@@ -62,6 +62,7 @@ SET(WISTERIA_SRC
     src/import/xlsx_extract_text.cpp
     src/ui/app.cpp
     src/ui/controls/codeeditor.cpp
+    src/ui/controls/formattedtextctrl.cpp
     src/ui/controls/htmltablewin.cpp
     src/ui/controls/infobarex.cpp
     src/ui/controls/listctrlex.cpp
@@ -100,6 +101,7 @@ SET(WISTERIA_SRC
     src/util/textreplace.cpp
     src/util/textstream.cpp
     src/util/warningmanager.cpp
+    src/util/xml_format.cpp
     src/util/zipcatalog.cpp
     src/wxSimpleJSON/src/cJSON/cJSON.c
     src/wxSimpleJSON/src/wxSimpleJSON.cpp

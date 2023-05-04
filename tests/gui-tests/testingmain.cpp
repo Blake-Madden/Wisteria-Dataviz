@@ -126,6 +126,7 @@ bool TestApp::ProcessEvent(wxEvent& event)
 //--------------------------------------------
 int TestApp::RunTests()
     {
+    wxLogNull nl;
     Catch::Session session;
     // Cast is needed under MSW where Catch also provides an overload taking
     // wchar_t, but as it simply converts arguments to char internally anyhow,

@@ -39,7 +39,7 @@ SET(WISTERIA_SRC\n    {paste(files, collapse='\n    ')})"),
 
 # Library files for GUI testing library
 ################################################
-files <- stringr::str_replace(files, "src/", "../src/")
+files <- stringr::str_replace(files, "src/", "../../src/")
 write_file(str_glue("# Automatically generated from 'Build CMake Files List.R'
 # This should be used for the unit test runner.
 # DO NOT MODIFY MANUALLY!

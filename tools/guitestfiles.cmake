@@ -6,6 +6,7 @@ SET(TEST_SRC_FILES
     basetests.cpp
     colortests.cpp
     datatests.cpp
+    fileutiltests.cpp
     formattedtexttests.cpp
     labeltests.cpp
     listctrlextests.cpp
