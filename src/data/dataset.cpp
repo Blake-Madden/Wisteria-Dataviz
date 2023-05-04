@@ -1162,7 +1162,7 @@ namespace Wisteria::Data
             if (importInfo.m_treatYearsAsText &&
                 currentColumnType == ColumnImportType::Numeric &&
                 minCellLength && maxCellLength &&
-                minCellLength == 4 && maxCellLength == 4)
+                minCellLength.value() == 4 && maxCellLength.value() == 4)
                 { currentColumnType = ColumnImportType::String; }
             // silently ignore columns with no name (missing header)
             if (preview.get_header_names().at(colIndex).length())
