@@ -132,6 +132,7 @@ namespace Wisteria::Graphs
                     }
                 }
             GroupRow(0);
+            m_hasGroupHeader = true;
             }
         }
 
@@ -385,13 +386,16 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::InsertRowTotals(std::optional<wxColour> bkColor /*= std::nullopt*/)
         {
-        if (GetColumnCount() && GetRowCount() > 1) // at least a header and one row of data
+        if (GetColumnCount() &&
+            GetRowCount() > (1 + (m_hasGroupHeader ? 1 : 0))) // at least one row of data beneath header(s)
             {
             std::vector<std::pair<size_t, size_t>> indexAndRowCounts;
-            for (size_t rowIndex = 0; rowIndex < GetRowCount(); ++rowIndex)
+            for (size_t rowIndex = 1 + (m_hasGroupHeader ? 1 : 0) /* skip header(s)*/;
+                rowIndex < GetRowCount();
+                ++rowIndex)
                 {
                 const auto& row = m_table[rowIndex];
-                if (row.size() && row[0].m_rowCount > 1)
+                if (row.size() && row[0].m_rowCount >= 1)
                     {
                     indexAndRowCounts.push_back(std::make_pair(rowIndex, row[0].m_rowCount));
                     }
@@ -753,7 +757,9 @@ namespace Wisteria::Graphs
         {
         if (GetRowCount() > 1 && column < GetColumnCount())
             {
-            for (size_t i = 0; i < GetRowCount(); /*in loop*/)
+            for (size_t i = 1 + (m_hasGroupHeader ? 1 : 0)/* skip header*/;
+                i < GetRowCount();
+                /*in loop*/)
                 {
                 size_t startingCounter = i;
                 while (i < GetRowCount()-1 &&
@@ -768,7 +774,10 @@ namespace Wisteria::Graphs
                     for (size_t clearCounter = startingCounter + 1;
                         clearCounter < (startingCounter + 1) + (i - startingCounter);
                         ++clearCounter)
-                        { m_table[clearCounter][column].SetValue(wxString{}); }
+                        {
+                        m_table[clearCounter][column].SetValue(wxString{});
+                        m_table[clearCounter][column].m_rowCount = 0;
+                        }
                     ++i;
                     }
                 else
@@ -1235,6 +1244,7 @@ namespace Wisteria::Graphs
                                   L"\x2014" :
                                   cell.GetDoubleValue() < 0 ? L"\x25BC" : L"\x25B2")) :
                         cell.GetPrefix();
+                    const auto cellBkColor{ cell.m_bgColor.IsOk() ? cell.m_bgColor : *wxWHITE };
                     auto cellPrefixLabel = std::make_shared<Label>(
                     GraphItemInfo(prefix).
                         Pen(wxNullPen).Padding(5, 5, 5, 5).
@@ -1251,8 +1261,12 @@ namespace Wisteria::Graphs
                         {
                         cellPrefixLabel->SetFontColor(
                             (cell.GetDoubleValue() < 0) ?
-                            ColorBrewer::GetColor(Colors::Color::Red) :
-                            ColorBrewer::GetColor(Colors::Color::HunterGreen));
+                            (ColorContrast::IsDark(cellBkColor) ?
+                                ColorBrewer::GetColor(Colors::Color::RosePink) :
+                                ColorBrewer::GetColor(Colors::Color::Red)) :
+                            (ColorContrast::IsDark(cellBkColor) ?
+                                ColorBrewer::GetColor(Colors::Color::MintGreen) :
+                                ColorBrewer::GetColor(Colors::Color::HunterGreen)));
                         }
                     cellPrefixLabel->SetBoundingBox(boxRect, dc, GetScaling());
                     cellPrefixLabel->SetPageVerticalAlignment(PageVerticalAlignment::Centered);

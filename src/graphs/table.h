@@ -585,6 +585,7 @@ namespace Wisteria::Graphs
             m_footnotes.clear();
             m_currentAggregateColumns.clear();
             m_currentAggregateRows.clear();
+            m_hasGroupHeader = false;
             }
 
         /** @brief Sets the font for the entire table.
@@ -1403,6 +1404,8 @@ namespace Wisteria::Graphs
         // cached aggregate info
         std::set<size_t> m_currentAggregateColumns;
         std::set<size_t> m_currentAggregateRows;
+
+        bool m_hasGroupHeader{ false };
 
         // cached values
         std::vector<std::vector<wxRect>> m_cachedCellRects;
