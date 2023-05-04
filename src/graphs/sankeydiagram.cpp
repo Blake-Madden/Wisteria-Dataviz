@@ -503,20 +503,24 @@ namespace Wisteria::Graphs
                         }
                     }
                 // homogenize the labels' font scales (or hide the ones that are too small)
-                for (auto labelIter = labels.begin(); labelIter != labels.end(); /* in loop */)
+                // if there was an overlaps that were adjusted
+                if (smallestFontScale)
                     {
-                    if (compare_doubles_less((*labelIter)->GetScaling(), smallestFontScale.value()))
+                    for (auto labelIter = labels.begin(); labelIter != labels.end(); /* in loop */)
                         {
-                        labelIter = labels.erase(labelIter);
-                        }
-                    else
-                        {
-                        const auto bBox = (*labelIter)->GetBoundingBox(dc);
-                        (*labelIter)->SetScaling(smallestFontScale.value());
-                        const auto newBBox = (*labelIter)->GetBoundingBox(dc);
-                        const auto heightDiff = bBox.GetHeight() - newBBox.GetHeight();
-                        (*labelIter)->Offset(0, heightDiff * math_constants::half);
-                        ++labelIter;
+                        if (compare_doubles_less((*labelIter)->GetScaling(), smallestFontScale.value()))
+                            {
+                            labelIter = labels.erase(labelIter);
+                            }
+                        else
+                            {
+                            const auto bBox = (*labelIter)->GetBoundingBox(dc);
+                            (*labelIter)->SetScaling(smallestFontScale.value());
+                            const auto newBBox = (*labelIter)->GetBoundingBox(dc);
+                            const auto heightDiff = bBox.GetHeight() - newBBox.GetHeight();
+                            (*labelIter)->Offset(0, heightDiff * math_constants::half);
+                            ++labelIter;
+                            }
                         }
                     }
                 }
