@@ -291,18 +291,12 @@ namespace Wisteria
         /// @brief Loads a row or column position for a table from a node.
         /// @details This support loading the @c origin and @c offset properties.
         /// @param positionNode The node to parse.
-        /// @param columnCount The column count in the table.\n
-        ///     This is what the constant @c "last-column" is expanded into (minus one).
-        /// @param columnRow The row count in the table.\n
-        ///     This is what the constant @c "last-row" is expanded into (minus one).
         /// @param table The table being reviewed.
         /// @note column and row counts should be the table's original column and row
         ///     counts, prior to any aggregation columns being added.
         /// @returns The row or column position.
         [[nodiscard]] std::optional<size_t> LoadTablePosition(
             const wxSimpleJSON::Ptr_t& positionNode,
-            const size_t columnCount,
-            const size_t columnRow,
             std::shared_ptr<Graphs::Table> table);
 
         /// @brief Loads an image node.

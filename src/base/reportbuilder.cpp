@@ -3270,28 +3270,22 @@ namespace Wisteria
 
         LoadPen(graphNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
 
-        const size_t originalColumnCount = table->GetColumnCount();
-        const size_t originalRowCount = table->GetRowCount();
-
         // reads a single position and range of positions (start and end)
         const auto readPositions =
-            [&originalColumnCount, &originalRowCount, &table, this]
+            [&table, this]
             (const wxSimpleJSON::Ptr_t& theNode)
             {
             const std::optional<size_t> position =
-                LoadTablePosition(theNode->GetProperty(L"position"),
-                    originalColumnCount, originalRowCount, table);
+                LoadTablePosition(theNode->GetProperty(L"position"), table);
             const std::optional<size_t> startPosition =
-                LoadTablePosition(theNode->GetProperty(L"start"),
-                    originalColumnCount, originalRowCount, table);
+                LoadTablePosition(theNode->GetProperty(L"start"), table);
             const std::optional<size_t> endPosition =
-                LoadTablePosition(theNode->GetProperty(L"end"),
-                    originalColumnCount, originalRowCount, table);
+                LoadTablePosition(theNode->GetProperty(L"end"), table);
             return std::tuple(position, startPosition, endPosition);
             };
 
         // loads the positions from a row or column stops array
-        const auto loadStops = [this, &originalColumnCount, &originalRowCount, &table](const auto& stopsNode)
+        const auto loadStops = [this, &table](const auto& stopsNode)
             {
             std::set<size_t> rowOrColumnStops;
             const auto stops = stopsNode->GetValueArrayObject();
@@ -3300,14 +3294,16 @@ namespace Wisteria
                 for (const auto& stop : stops)
                     {
                     const std::optional<size_t> stopPosition =
-                        LoadTablePosition(stop->GetProperty(L"position"),
-                            originalColumnCount, originalRowCount, table);
+                        LoadTablePosition(stop->GetProperty(L"position"), table);
                     if (stopPosition.has_value())
                         { rowOrColumnStops.insert(stopPosition.value()); }
                     }
                 }
             return rowOrColumnStops;
             };
+
+        if (graphNode->HasProperty(L"insert-group-header"))
+            { table->InsertGroupHeader(graphNode->GetProperty(L"insert-group-header")->GetValueStringVector()); }
 
         // group the rows
         const auto rowGroupings = graphNode->GetProperty(L"row-group")->GetValueArrayNumber();
@@ -3324,8 +3320,7 @@ namespace Wisteria
         if (graphNode->HasProperty(L"alternate-row-color"))
             {
             const auto altRowColorNode = graphNode->GetProperty(L"alternate-row-color");
-            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"),
-                originalColumnCount, originalRowCount, table);
+            const auto startRow = LoadTablePosition(altRowColorNode->GetProperty(L"start"), table);
             const std::set<size_t> colStops =
                 loadStops(altRowColorNode->GetProperty(L"stops"));
             table->ApplyAlternateRowColors(ConvertColor(altRowColorNode->GetProperty(L"color")),
@@ -3339,8 +3334,7 @@ namespace Wisteria
             for (const auto& rowAddCommand : rowAddCommands)
                 {
                 const std::optional<size_t> position =
-                    LoadTablePosition(rowAddCommand->GetProperty(L"position"),
-                        originalColumnCount, originalRowCount, table);
+                    LoadTablePosition(rowAddCommand->GetProperty(L"position"), table);
                 if (!position.has_value())
                     { continue; }
                 table->InsertRow(position.value());
@@ -3964,27 +3958,28 @@ namespace Wisteria
             }
 
         // column/row aggregates
-        const auto columnAggregates =
+        const auto columnRowAggregates =
             graphNode->GetProperty(L"aggregates")->GetValueArrayObject();
-        if (columnAggregates.size())
+        if (columnRowAggregates.size())
             {
-            for (const auto& columnAggregate : columnAggregates)
+            for (const auto& columnRowAggregate : columnRowAggregates)
                 {
-                const auto aggName = columnAggregate->GetProperty(_DT(L"name"))->GetValueString();
-                const auto whereType = columnAggregate->GetProperty(L"type")->GetValueString();
-                const auto aggType = columnAggregate->GetProperty(L"aggregate-type")->GetValueString();
+                const auto aggName = columnRowAggregate->GetProperty(_DT(L"name"))->GetValueString();
+                const auto whereType = columnRowAggregate->GetProperty(L"type")->GetValueString();
+                const auto aggType = columnRowAggregate->GetProperty(L"aggregate-type")->GetValueString();
 
                 // starting column/row
                 const std::optional<size_t> startColumn =
-                    LoadTablePosition(columnAggregate->GetProperty(L"start"),
-                        originalColumnCount, originalRowCount, table);
+                    LoadTablePosition(columnRowAggregate->GetProperty(L"start"), table);
                 // ending column/row
                 const std::optional<size_t> endingColumn =
-                    LoadTablePosition(columnAggregate->GetProperty(L"end"),
-                        originalColumnCount, originalRowCount, table);
+                    LoadTablePosition(columnRowAggregate->GetProperty(L"end"), table);
+                // position
+                const std::optional<size_t> insertionPosition =
+                    LoadTablePosition(columnRowAggregate->GetProperty(L"position"), table);
                 // (optional) overriding cell borders
                 const auto cellBorders =
-                    columnAggregate->GetProperty(L"borders")->GetValueArrayBool();
+                    columnRowAggregate->GetProperty(L"borders")->GetValueArrayBool();
                 std::bitset<4> borders{ 0 };
                 borders[0] = (cellBorders.size() > 0 ? cellBorders[0] : table->IsShowingTopBorder());
                 borders[1] = (cellBorders.size() > 1 ? cellBorders[1] : table->IsShowingRightBorder());
@@ -3992,7 +3987,7 @@ namespace Wisteria
                 borders[3] = (cellBorders.size() > 3 ? cellBorders[3] : table->IsShowingLeftBorder());
 
                 const wxColour bkColor(
-                    ConvertColor(columnAggregate->GetProperty(L"background")));
+                    ConvertColor(columnRowAggregate->GetProperty(L"background")));
 
                 Table::AggregateInfo aggInfo;
                 if (startColumn.has_value())
@@ -4015,8 +4010,8 @@ namespace Wisteria
                 if (whereType.CmpNoCase(L"column") == 0)
                     {
                     table->InsertAggregateColumn(aggInfo, aggName,
-                        std::nullopt,
-                        columnAggregate->GetProperty(L"use-adjacent-color")->GetValueBool(),
+                        insertionPosition,
+                        columnRowAggregate->GetProperty(L"use-adjacent-color")->GetValueBool(),
                         (bkColor.IsOk() ?
                             std::optional<wxColour>(bkColor) : std::nullopt),
                         (cellBorders.size() ? std::optional<std::bitset<4>>(borders) : std::nullopt));
@@ -4024,7 +4019,7 @@ namespace Wisteria
                 else if (whereType.CmpNoCase(L"row") == 0)
                     {
                     table->InsertAggregateRow(aggInfo, aggName,
-                        std::nullopt, (bkColor.IsOk() ?
+                        insertionPosition, (bkColor.IsOk() ?
                                        std::optional<wxColour>(bkColor) : std::nullopt),
                         (cellBorders.size() ? std::optional<std::bitset<4>>(borders) : std::nullopt));
                     }
@@ -4052,13 +4047,9 @@ namespace Wisteria
                 // last column and row will be the last aggregates at this point
                 // (if applicable)
                 const std::optional<size_t> rowPosition =
-                    LoadTablePosition(cellUpdate->GetProperty(L"row"),
-                        table->GetColumnCount(),
-                        table->GetRowCount(), table);
+                    LoadTablePosition(cellUpdate->GetProperty(L"row"), table);
                 const std::optional<size_t> columnPosition =
-                    LoadTablePosition(cellUpdate->GetProperty(L"column"),
-                        table->GetColumnCount(),
-                        table->GetRowCount(), table);
+                    LoadTablePosition(cellUpdate->GetProperty(L"column"), table);
                 Table::TableCell* currentCell =
                     ((rowPosition.has_value() && columnPosition.has_value() &&
                       rowPosition.value() < table->GetRowCount() &&
@@ -4359,7 +4350,7 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::optional<size_t> ReportBuilder::LoadTablePosition(const wxSimpleJSON::Ptr_t& positionNode,
-        const size_t columnCount, const size_t columnRow, std::shared_ptr<Graphs::Table> table)
+        std::shared_ptr<Graphs::Table> table)
         {
         if (!positionNode->IsOk())
             { return std::nullopt; }
@@ -4369,11 +4360,11 @@ namespace Wisteria
         const auto loadStringToPosition = [&](const auto& originStr)
             {
             if (originStr.CmpNoCase(L"last-column") == 0)
-                { position = columnCount-1; }
+                { position = table->GetLastDataColumn(); }
             else if (originStr.CmpNoCase(L"last-row") == 0)
-                { position = columnRow-1; }
+                { position = table->GetLastDataRow(); }
             else if (const auto colPos = (table ? table->FindColumnIndex(originStr) : std::nullopt);
-                        colPos.has_value())
+                     colPos.has_value())
                 { position = colPos; }
             else
                 {
