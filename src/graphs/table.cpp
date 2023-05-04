@@ -385,7 +385,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::InsertRowTotals(std::optional<wxColour> bkColor /*= std::nullopt*/)
         {
-        if (GetColumnCount())
+        if (GetColumnCount() && GetRowCount() > 1) // at least a header and one row of data
             {
             std::vector<std::pair<size_t, size_t>> indexAndRowCounts;
             for (size_t rowIndex = 0; rowIndex < GetRowCount(); ++rowIndex)
@@ -401,8 +401,8 @@ namespace Wisteria::Graphs
             if (indexAndRowCounts.size() &&
                 // parent group, sub group, then value columns
                 GetColumnCount() > 2 &&
-                // first two column appear to be grouping labels
-                GetCell(0, 0).IsText() && GetCell(0, 1).IsText())
+                // first two columns in the first row of data appear to be grouping labels
+                GetCell(1, 0).IsText() && GetCell(1, 1).IsText())
                 {
                 InsertAggregateRow(Table::AggregateInfo(AggregateType::Total),
                     _(L"Grand Total"), std::nullopt, bkColor);
@@ -440,6 +440,7 @@ namespace Wisteria::Graphs
             {
             const auto rIndex = (rowIndex.has_value() ? rowIndex.value() : GetRowCount());
             InsertRow(rIndex);
+            m_currentAggregateRows.insert(rIndex);
             m_aggregateRows.insert(std::make_pair(rIndex, aggInfo.m_type));
             if (rowName.has_value())
                 { GetCell(rIndex, 0).SetValue(rowName.value()); }
@@ -467,6 +468,9 @@ namespace Wisteria::Graphs
                      currentRow < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value()+1 : rIndex);
                      ++currentRow)
                     {
+                    // skip over columns that are aggregates
+                    if (m_currentAggregateColumns.find(currentCol) != m_currentAggregateColumns.cend())
+                        { continue; }
                     const auto& cell = GetCell(currentRow, currentCol);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
                         {
@@ -489,15 +493,16 @@ namespace Wisteria::Graphs
                                     (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         }
-                    // if custom start and/or end column requested and it is not a valid number,
-                    // then insert NaN
+                    // If NOT totalling (e.g., change percent), custom start and/or end column was requested
+                    // and it is not a valid number, then insert NaN.
                     const bool onCustomStartRow{
                         aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == currentRow
                     };
                     const bool onCustomEndRow{
                         aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == currentRow
                     };
-                    if ((onCustomStartRow || onCustomEndRow) &&
+                    if (aggInfo.m_type != AggregateType::Total &&
+                        (onCustomStartRow || onCustomEndRow) &&
                         (!cell.IsNumeric() || std::isnan(cell.GetDoubleValue())))
                         { colValues.push_back(cell.GetDoubleValue()); }
                     CalculateAggregate(aggInfo, GetCell(rIndex, currentCol), colValues);
@@ -518,6 +523,7 @@ namespace Wisteria::Graphs
             {
             const auto columnIndex = (colIndex.has_value() ? colIndex.value() : GetColumnCount());
             InsertColumn(columnIndex);
+            m_currentAggregateColumns.insert(columnIndex);
             m_aggregateColumns.insert(std::make_pair(columnIndex, aggInfo.m_type));
             if (colName.has_value())
                 {
@@ -566,6 +572,9 @@ namespace Wisteria::Graphs
                      i < (aggInfo.m_cell2.has_value() ? aggInfo.m_cell2.value() + 1 : columnIndex);
                      ++i)
                     {
+                    // skip over columns that are aggregates
+                    if (m_currentAggregateRows.find(i) != m_currentAggregateRows.cend())
+                        { continue; }
                     const auto& cell = GetCell(rowCounter, i);
                     if (cell.IsNumeric() && !std::isnan(cell.GetDoubleValue()))
                         {
@@ -588,11 +597,12 @@ namespace Wisteria::Graphs
                                     (cell.GetPrecision() == 0) ? 0 : std::pow(10, cell.GetPrecision())));
                             }
                         }
-                    // if custom start and/or end column requested and it is not a valid number,
-                    // then insert NaN
+                    // If NOT totalling (e.g., change percent), custom start and/or end column was requested
+                    // and it is not a valid number, then insert NaN.
                     const bool onCustomStartColumn{ aggInfo.m_cell1.has_value() && aggInfo.m_cell1.value() == i };
                     const bool onCustomEndColumn{ aggInfo.m_cell2.has_value() && aggInfo.m_cell2.value() == i };
-                    if ((onCustomStartColumn || onCustomEndColumn) &&
+                    if (aggInfo.m_type != AggregateType::Total &&
+                        (onCustomStartColumn || onCustomEndColumn) &&
                         (!cell.IsNumeric() || std::isnan(cell.GetDoubleValue())))
                         { rowValues.push_back(cell.GetDoubleValue()); }
                     }

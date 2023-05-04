@@ -583,6 +583,8 @@ namespace Wisteria::Graphs
             m_aggregateRows.clear();
             m_cellAnnotations.clear();
             m_footnotes.clear();
+            m_currentAggregateColumns.clear();
+            m_currentAggregateRows.clear();
             }
 
         /** @brief Sets the font for the entire table.
@@ -717,7 +719,8 @@ namespace Wisteria::Graphs
         ///     or SetTableSize()), then calls to this will ignored since the
         ///     number of columns is unknown.
         /// @param rowIndex Where to insert the row.
-        void InsertRow(const size_t rowIndex)
+        /// @returns @c true if row was inserted.
+        bool InsertRow(const size_t rowIndex)
             {
             if (GetColumnCount())
                 {
@@ -728,7 +731,9 @@ namespace Wisteria::Graphs
                         TableCell(std::numeric_limits<double>::quiet_NaN(),
                                   *wxWHITE, m_showTopBorder, m_showRightBorder,
                                   m_showBottomBorder, m_showLeftBorder)));
+                return true;
                 }
+            return false;
             }
         /// @brief Inserts an empty column at the given index.
         /// @details For example, an index of @c 0 will insert the column at the
@@ -1394,6 +1399,10 @@ namespace Wisteria::Graphs
         bool m_showRightBorder{ true };
         bool m_showBottomBorder{ true };
         bool m_showLeftBorder{ true };
+
+        // cached aggregate info
+        std::set<size_t> m_currentAggregateColumns;
+        std::set<size_t> m_currentAggregateRows;
 
         // cached values
         std::vector<std::vector<wxRect>> m_cachedCellRects;
