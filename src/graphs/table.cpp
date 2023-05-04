@@ -697,7 +697,7 @@ namespace Wisteria::Graphs
                 {
                 size_t startingCounter = i;
                 while (i < currentRow.size()-1 &&
-                    currentRow[i].IsText() && currentRow[i+1].IsText()&&
+                    currentRow[i].IsText() && currentRow[i+1].IsText() &&
                     currentRow[i].GetDisplayValue().CmpNoCase(currentRow[i+1].GetDisplayValue()) == 0)
                     { ++i; }
                 if (i > startingCounter)
@@ -709,6 +709,7 @@ namespace Wisteria::Graphs
                         clearCounter < (startingCounter + 1) + (i - startingCounter);
                         ++clearCounter)
                         { currentRow[clearCounter].SetValue(wxString{}); }
+                    ++i;
                     }
                 else
                     { ++i; }
@@ -719,7 +720,7 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void Table::GroupColumn(const size_t column)
         {
-        if (GetRowCount() > 0 && column < GetColumnCount())
+        if (GetRowCount() > 1 && column < GetColumnCount())
             {
             for (size_t i = 0; i < GetRowCount(); /*in loop*/)
                 {
@@ -737,6 +738,7 @@ namespace Wisteria::Graphs
                         clearCounter < (startingCounter + 1) + (i - startingCounter);
                         ++clearCounter)
                         { m_table[clearCounter][column].SetValue(wxString{}); }
+                    ++i;
                     }
                 else
                     { ++i; }
