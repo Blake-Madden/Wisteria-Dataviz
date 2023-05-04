@@ -100,8 +100,9 @@ namespace Wisteria::Data
             @param dataset The dataset to pivot.
             @param columnsToKeep The columns to not pivot. These will be copied to the new dataset
                 and will have their values filled in all new rows created from their observation.
-                These would usually the ID columns.\n
-                These columns can be of any type, including the ID column.
+                These would usually be the ID and grouping columns.\n
+                These columns can be of any type, including the ID column.\n
+                Note that the output will be sorted based on the ordering of these columns.
             @param fromColumns The continuous column(s) to pivot into longer format.
             @param namesTo The target column(s) to move the names from the @c fromColumns into.
             @param valuesTo The column to move the values from the @c fromColumns into.

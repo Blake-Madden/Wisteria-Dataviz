@@ -203,7 +203,7 @@ Properties for the `"datasets"` node:
   - `"suffix"`: if columns in the right dataset already appear in the left dataset, then append this suffix to
     to column to make it unique.
 
-  Finally, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
+  Next, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:
   - `"name"`: the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
     otherwise, it will overwrite it.)<br />
@@ -214,7 +214,8 @@ Properties for the `"datasets"` node:
     - `"longer"`: pivot longer.
 
   If pivoting wider, the following options are available:
-  - `"id-columns"`: an array of strings representing the ID columns.
+  - `"id-columns"`: an array of strings representing the ID columns.<br />
+    Note that the output will be sorted based on the ordering of these columns. 
   - `"names-from-column"`: a string representing the 'names from'.
   - `"values-from-columns"`: an array of strings representing the 'values from' columns.
   - `"names-separator"`: if multiple value columns are provided, then this separator will
@@ -231,6 +232,8 @@ Properties for the `"datasets"` node:
   - `"names-to"`: an array of strings specifying the target column(s) to move the names from the `"from-columns"` into.
   - `"values-to"`: a string specifying the column to move the values from the `"from-columns"` into.
   - `"names-pattern"`: an optional string specifying a regular expression to split the `"from-columns"` names into.
+
+  Finally, the `"column-names-sort"` command (a boolean value) can request to sort the columns by name.
 
   Note that subset and pivot nodes can contain their own transformation and formula sections,
   same as a dataset node.
