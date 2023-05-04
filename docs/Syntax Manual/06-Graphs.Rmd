@@ -731,7 +731,7 @@ Properties for `"table"` nodes:
 
 - `"variables"`: an array of column names to use from the dataset.<br />
   These values can also be variable selection formulas, including the following:
-  - ``{{Matches(`value`)}}``: where `value` is a regular expression search pattern, and any column
+  - ``{{Matches(`value`)}}``: where `value` is a regular expression search pattern; any column name
       in the dataset that matches this text will be included.
   - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
@@ -759,6 +759,11 @@ Likewise, set `"fit-row-to-content"` to `false` for taller tables that are meant
 
 The remaining properties are executed in the following order:
 
+- `"insert-group-header"`: a string array representing the groups to build a group header with, based on the first row.<br />
+  For example, if the first row contains labels such as "Graduated 1997"
+  and "Graduated 1998," then the newly inserted top row will say "Graduated"
+  above them (as a combined group). Also, the original labels will now
+  be trimmed to "1997" and "1998" as their group header now indicated "Graduated."
 - `"row-group"`: a numeric array representing which rows to apply label grouping to.<br />
      Across each provided row, this will combine consecutive cells with the same label into one cell.
 - `"column-group"`: a numeric array representing which columns to apply label grouping to.<br />
@@ -891,6 +896,9 @@ The remaining properties are executed in the following order:
   - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
        `false` will apply a light gray to the column.
   - `"name"`: the name for the newly added aggregate column/row.
+  - `"position"`: which column/row to insert the aggreate.<br />
+       This property is optional, and if not included will be inserted as the last column/row.<br />
+       Refer to [position](#position-properties) for available properties.
   - `"start"`: the first column/row that the aggregate column/row should use.<br />
        This property is optional, and if not included the first numeric column/row encountered will be used.<br />
        Refer to [position](#position-properties) for available properties.
