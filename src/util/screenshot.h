@@ -18,7 +18,6 @@
 #include <wx/listctrl.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
-#include <map>
 
 /// @brief Class for creating and editing screenshots.
 class Screenshot
@@ -94,10 +93,6 @@ public:
     static bool HighlightItemInScreenshot(const wxString& filePath,
                                           const wxPoint topLeftCorner,
                                           const wxPoint bottomRightCorner);
-
-    /// @brief IDs exposed to scripting and their respective dynamic IDs in the framework.
-    /// @details Set (or add to this) in your framework's initialization.
-    static std::map<wxWindowID, wxWindowID> m_dynamicIdMap;
 private:
     /// @returns The active dialog or frame.
     /// @note @c wxGetActiveWindow() always returns null on macOS, so this
