@@ -663,6 +663,53 @@ namespace Wisteria::Graphs
         size_t GetColumnCount() const noexcept
             { return (GetRowCount() == 0) ? 0 : m_table[0].size(); }
 
+        /// @returns The last column that is not an aggregate column.
+        [[nodiscard]]
+        std::optional<size_t> GetLastDataColumn() const
+            {
+            if (GetColumnCount() == 0)
+                { return std::nullopt; }
+            else if (m_currentAggregateColumns.size() == 0)
+                { return GetColumnCount() - 1; }
+            else
+                {
+                int64_t lastCol = GetColumnCount() - 1;
+                while (m_currentAggregateColumns.find(lastCol) != m_currentAggregateColumns.cend())
+                    { --lastCol; }
+                return (lastCol >= 0) ? std::optional<size_t>(lastCol) : std::nullopt;
+                }
+            }
+
+        /// @returns The last row that is not an aggregate row.
+        [[nodiscard]]
+        std::optional<size_t> GetLastDataRow() const
+            {
+            if (GetRowCount() == 0)
+                { return std::nullopt; }
+            else if (m_currentAggregateRows.size() == 0)
+                { return GetRowCount() - 1; }
+            else
+                {
+                int64_t lastRow = GetRowCount() - 1;
+                while (m_currentAggregateRows.find(lastRow) != m_currentAggregateRows.cend())
+                    { --lastRow; }
+                return (lastRow >= 0) ? std::optional<size_t>(lastRow) : std::nullopt;
+                }
+            }
+
+        /** @brief Inserts a top row filled with the provided group names
+                based on the values in the data's first row.
+            @details For example, if the first row contains labels such as "Graduated 1997"
+                and "Graduated 1998," then the newly inserted top row will say "Graduated"
+                above them (as a combined group). Also, the original labels will now
+                be trimmed to "1997" and "1998" as their group header now indicated "Graduated."
+            @param groups The groups to look for in the first row.
+            @warning This is destructive to the first row, as it will remove the
+                prefix from any label that matches anything from @c groups.\n
+                Also, it is assumed that the labels in the first row are already
+                ordered and grouped together.*/
+        void InsertGroupHeader(const std::vector<wxString>& groups);
+
         /// @brief Inserts an empty row at the given index.
         /// @details For example, an index of @c 0 will insert the row at the
         ///     top of the table.

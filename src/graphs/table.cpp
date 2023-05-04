@@ -115,6 +115,27 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void Table::InsertGroupHeader(const std::vector<wxString>& groups)
+        {
+        if (GetRowCount() > 0 && InsertRow(0))
+            {
+            for (size_t col = 0; col < GetColumnCount(); ++col)
+                {
+                auto currentVal = GetCell(1, col).GetDisplayValue();
+                for (const auto& gr : groups)
+                    {
+                    if (currentVal.starts_with(gr))
+                        {
+                        GetCell(0, col).SetValue(gr);
+                        GetCell(1, col).SetValue(currentVal.erase(0, gr.length()).Trim(false));
+                        }
+                    }
+                }
+            GroupRow(0);
+            }
+        }
+
+    //----------------------------------------------------------------
     Table::TableCell& Table::GetCell(const size_t row, const size_t column)
         {
         wxASSERT_MSG(row < GetRowCount(),
