@@ -26,9 +26,17 @@ namespace lily_of_the_valley
     public:
         /** @brief Constructor.
             @param html_text The HTML text to analyze.
-            @param length The length of html_text.*/
-        xlsx_string_table_parse(const wchar_t* html_text, const size_t length) noexcept :
-                m_html_text(html_text), m_html_text_end(html_text+length)
+            @param length The length of html_text.
+            @param removeNewlinesAndTabs @c true to replace any newlines or tabs in cells' text with spaces.\n
+                This is recommended @c true (tne default) for traditional data, where there may be
+                column headers with newlines that you wish to "clean."\n
+                This is recommended @c false if cells represent complex text and tabs and
+                newlines should be preserved.*/
+        xlsx_string_table_parse(const wchar_t* html_text,
+                                const size_t length,
+                                const bool removeNewlinesAndTabs) noexcept :
+                m_html_text(html_text), m_html_text_end(html_text+length),
+                m_removeNewlinesAndTabs(removeNewlinesAndTabs)
             {}
         /** @brief Main function that returns the next string in the file.
             @returns @c true and the string if another item is found,
@@ -47,6 +55,7 @@ namespace lily_of_the_valley
         const wchar_t* m_html_text{ nullptr };
         const wchar_t* const m_html_text_end{ nullptr };
         html_extract_text m_html_extract;
+        bool m_removeNewlinesAndTabs{ true };
         };
 
     /// @brief Class to extract text from an Excel stream
@@ -171,6 +180,17 @@ namespace lily_of_the_valley
         /// The table which stores the unique strings throughout the Excel file.
         using string_table = std::vector<std::wstring>;
 
+        /** @brief Set to @c true to replace any newlines or tabs in cells' text with spaces.\n
+                This is recommended @c true (the default) for traditional
+                data, where there may be column headers with newlines that you wish to "clean."\n
+                This is also recommended @c true if you plan to export the file as text later
+                or when calling get_worksheet_text().\n
+                This is recommended @c false if cells represent complex text and tabs and
+                newlines should be preserved. For this situation, call get_cell_text() instead of
+                get_worksheet_text() to read the text as expected..*/
+        void remove_newlines_and_tabs_when_reading(const bool removeNewlinesAndTabs)
+            { m_removeNewlinesAndTabs = removeNewlinesAndTabs; }
+
         /** @brief Retrieves the text from a given cell.
             @param cellName The cell to retrieve the text from (e.g., "A13").
             @param workSheet The worksheet to read the text from.
@@ -190,11 +210,11 @@ namespace lily_of_the_valley
             @param worksheet_length The length of sheet[n].xml.
             @returns The cell's textual content.*/
         [[nodiscard]]
-        static std::wstring get_cell_text(const wchar_t* cell_name,
-                                          const wchar_t* shared_strings,
-                                          const size_t shared_strings_length,
-                                          const wchar_t* worksheet_text,
-                                          const size_t worksheet_length);
+        std::wstring get_cell_text(const wchar_t* cell_name,
+                                   const wchar_t* shared_strings,
+                                   const size_t shared_strings_length,
+                                   const wchar_t* worksheet_text,
+                                   const size_t worksheet_length) const;
 
         /** @brief Retrieves a list of cells in the worksheet that has text in them.
             @param wrk The worksheet to review.
@@ -215,7 +235,9 @@ namespace lily_of_the_valley
         /** @brief Gets the worksheet as delimited text.
             @param wrk The worksheet to format.
             @param delim The delimiter to separate the columns with.
-            @returns The worksheet as delimited text.*/
+            @returns The worksheet as delimited text.
+            @note It is recommended to set remove_newlines_and_tabs_when_reading() to @c true
+                before calling this.*/
         [[nodiscard]]
         static std::wstring get_worksheet_text(const worksheet& wrk,
                                                const wchar_t delim = L'\t');
@@ -330,9 +352,9 @@ namespace lily_of_the_valley
             @returns The string at the given index of the string table,
                 or empty string if not found.*/
         [[nodiscard]]
-        static std::wstring get_shared_string(const size_t index,
-                                              const wchar_t* text,
-                                              const size_t text_length);
+        std::wstring get_shared_string(const size_t index,
+                                       const wchar_t* text,
+                                       const size_t text_length) const;
 
         /** @brief Splits a cell name into the column name and row number.
             @param cell_name The cell name (e.g., "A2").
@@ -351,6 +373,8 @@ namespace lily_of_the_valley
         // style indices that use a date format
         std::set<size_t> m_date_format_indices;
         string_table m_shared_strings;
+
+        bool m_removeNewlinesAndTabs{ true };
         };
     }
 

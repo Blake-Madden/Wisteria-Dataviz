@@ -117,9 +117,12 @@ namespace lily_of_the_valley
                     }
                 }
             m_html_text = endTag;
-            std::transform(currentString.begin(), currentString.end(), currentString.begin(),
-                [](auto& ch) noexcept
-                { return (ch == L'\n' || ch == L'\r' || ch == L'\t') ? L' ' : ch; });
+            if (m_removeNewlinesAndTabs)
+                {
+                std::transform(currentString.begin(), currentString.end(), currentString.begin(),
+                    [](auto& ch) noexcept
+                    { return (ch == L'\n' || ch == L'\r' || ch == L'\t') ? L' ' : ch; });
+                }
             return std::make_pair(true, currentString);
             }
         return return_finished();
@@ -158,7 +161,7 @@ namespace lily_of_the_valley
     //------------------------------------------------------------------
     std::wstring xlsx_extract_text::get_cell_text(const wchar_t* cell_name,
                                           const wchar_t* shared_strings, const size_t shared_strings_length,
-                                          const wchar_t* worksheet_text, const size_t worksheet_length)
+                                          const wchar_t* worksheet_text, const size_t worksheet_length) const
         {
         assert(shared_strings_length == std::wcslen(shared_strings) );
         assert(worksheet_length == std::wcslen(worksheet_text) );
@@ -547,7 +550,7 @@ namespace lily_of_the_valley
             else
                 { m_shared_strings.reserve(std::min<size_t>(stringCount,ExcelMaxRows)); }
             }
-        xlsx_string_table_parse tableParse(text,text_length);
+        xlsx_string_table_parse tableParse(text, text_length, m_removeNewlinesAndTabs);
         std::pair<bool,std::wstring> nextString;
         while ((nextString = tableParse()).first)
             {
@@ -812,10 +815,10 @@ namespace lily_of_the_valley
 
     //------------------------------------------------------------------
     std::wstring xlsx_extract_text::get_shared_string(const size_t index, const wchar_t* text,
-                                                      const size_t text_length)
+                                                      const size_t text_length) const
         {
         assert(text_length <= std::wcslen(text) );
-        xlsx_string_table_parse tableParse(text,text_length);
+        xlsx_string_table_parse tableParse(text, text_length, m_removeNewlinesAndTabs);
         std::pair<bool,std::wstring> nextString;
         size_t i = 0;
         while ((nextString = tableParse()).first)
