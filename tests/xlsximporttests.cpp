@@ -1070,15 +1070,16 @@ TEST_CASE("XLSX import", "[xlsx]")
         }
     SECTION("Get String")
         {
+        xlsx_extract_text ext{ true };
         const wchar_t* text = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"109\" uniqueCount=\"52\"><si><t>Readability Study</t></si><si><t>Possibly &amp; look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. </t></si><si><t>Attending</t></si><si><t>Specialty </t></si><si><t>F-K</t></si></sst>";
-        CHECK(xlsx_extract_text::get_shared_string(0, text, std::wcslen(text)) == L"Readability Study");
-        CHECK(xlsx_extract_text::get_shared_string(1, text, std::wcslen(text)) == L"Possibly & look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. ");
-        CHECK(xlsx_extract_text::get_shared_string(2, text, std::wcslen(text)) == L"Attending");
-        CHECK(xlsx_extract_text::get_shared_string(3, text, std::wcslen(text)) == L"Specialty ");
-        CHECK(xlsx_extract_text::get_shared_string(4, text, std::wcslen(text)) == L"F-K");
+        CHECK(ext.get_shared_string(0, text, std::wcslen(text)) == L"Readability Study");
+        CHECK(ext.get_shared_string(1, text, std::wcslen(text)) == L"Possibly & look at number of impressions, seriousness of the impressions, seriousness of the differentials, number of differentials, incidental findings. ");
+        CHECK(ext.get_shared_string(2, text, std::wcslen(text)) == L"Attending");
+        CHECK(ext.get_shared_string(3, text, std::wcslen(text)) == L"Specialty ");
+        CHECK(ext.get_shared_string(4, text, std::wcslen(text)) == L"F-K");
         // bogus index
-        CHECK(xlsx_extract_text::get_shared_string(5, text, std::wcslen(text)) == L"");
-        CHECK(xlsx_extract_text::get_shared_string(500, text, std::wcslen(text)) == L"");
+        CHECK(ext.get_shared_string(5, text, std::wcslen(text)) == L"");
+        CHECK(ext.get_shared_string(500, text, std::wcslen(text)) == L"");
         }
     SECTION("Read Sheet By Cell")
         {
