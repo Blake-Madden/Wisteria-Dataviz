@@ -65,7 +65,7 @@ namespace lily_of_the_valley
     ///     https://www.brendanlong.com/the-minimum-viable-xlsx-reader.html\n
     ///     https://github.com/brendanlong/ocaml-ooxml\n
     ///     https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3
-    class 
+    class xlsx_extract_text
         {
     public:
         /** @brief Constructor.
