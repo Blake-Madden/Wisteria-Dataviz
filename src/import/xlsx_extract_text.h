@@ -192,7 +192,8 @@ namespace lily_of_the_valley
         /// The table which stores the unique strings throughout the Excel file.
         using string_table = std::vector<std::wstring>;
 
-        /** @brief Set to @c true to replace any newlines or tabs in cells' text with spaces.\n
+        /** @param removeNewlinesAndTabs Set to @c true to replace any newlines or tabs in cells'
+                text with spaces.\n
                 This is recommended @c true (the default) for traditional
                 data, where there may be column headers with newlines that you wish to "clean."\n
                 This is also recommended @c true if you plan to export the file as text later
