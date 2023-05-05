@@ -65,9 +65,21 @@ namespace lily_of_the_valley
     ///     https://www.brendanlong.com/the-minimum-viable-xlsx-reader.html\n
     ///     https://github.com/brendanlong/ocaml-ooxml\n
     ///     https://support.microsoft.com/en-us/office/excel-specifications-and-limits-1672b34d-7043-467e-8e27-269d656771c3
-    class xlsx_extract_text
+    class 
         {
     public:
+        /** @brief Constructor.
+            @param removeNewlinesAndTabs Set to @c true to replace any newlines or tabs in cells' text with spaces.\n
+                This is recommended @c true (the default) for traditional
+                data, where there may be column headers with newlines that you wish to "clean."\n
+                This is also recommended @c true if you plan to export the file as text later
+                or when calling get_worksheet_text().\n
+                This is recommended @c false if cells represent complex text and tabs and
+                newlines should be preserved. For this situation, call get_cell_text() instead of
+                get_worksheet_text() to read the text as expected.*/
+        explicit xlsx_extract_text(const bool removeNewlinesAndTabs) :
+            m_removeNewlinesAndTabs(removeNewlinesAndTabs)
+            {}
         /// The maximum number of rows an Excel file can have
         static constexpr size_t ExcelMaxRows = 1'048'576; // 1024 * 1024;
         /// The maximum number of columns an Excel file can have
@@ -187,7 +199,7 @@ namespace lily_of_the_valley
                 or when calling get_worksheet_text().\n
                 This is recommended @c false if cells represent complex text and tabs and
                 newlines should be preserved. For this situation, call get_cell_text() instead of
-                get_worksheet_text() to read the text as expected..*/
+                get_worksheet_text() to read the text as expected.*/
         void remove_newlines_and_tabs_when_reading(const bool removeNewlinesAndTabs)
             { m_removeNewlinesAndTabs = removeNewlinesAndTabs; }
 

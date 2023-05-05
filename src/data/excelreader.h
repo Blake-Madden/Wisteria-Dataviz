@@ -49,7 +49,7 @@ namespace Wisteria::Data
             const wchar_t delimiter = L'\t');
     private:
         wxString m_filePath;
-        lily_of_the_valley::xlsx_extract_text m_xlsxTextExtractor;
+        lily_of_the_valley::xlsx_extract_text m_xlsxTextExtractor{ true };
         };
     }
 
