@@ -387,7 +387,8 @@ namespace Wisteria::Graphs
     void Table::InsertRowTotals(std::optional<wxColour> bkColor /*= std::nullopt*/)
         {
         if (GetColumnCount() &&
-            GetRowCount() > (1 + (m_hasGroupHeader ? 1 : 0))) // at least one row of data beneath header(s)
+            // at least one row of data beneath header(s)
+            GetRowCount() > static_cast<size_t>(1 + (m_hasGroupHeader ? 1 : 0)))
             {
             std::vector<std::pair<size_t, size_t>> indexAndRowCounts;
             for (size_t rowIndex = 1 + (m_hasGroupHeader ? 1 : 0) /* skip header(s)*/;
