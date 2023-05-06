@@ -68,7 +68,7 @@ void ListCtrlItemViewDlg::CreateControls()
 
     m_htmlWindow = new HtmlTableWindow(this, wxID_ANY, wxDefaultPosition,
                                        wxDefaultSize, wxHW_SCROLLBAR_NEVER);
-    m_htmlWindow->SetLabel(_("Item"));
+    m_htmlWindow->SetLabel(_(L"Item"));
     lily_of_the_valley::html_format::set_title(htmlText, m_htmlWindow->GetLabel().ToStdWstring());
     lily_of_the_valley::html_format::set_encoding(htmlText);
     m_htmlWindow->SetPage(htmlText);

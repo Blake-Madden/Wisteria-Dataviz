@@ -25,8 +25,8 @@ void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
         {
         wxMessageBox(
             wxString::Format(
-                _("'%s': resource archive file missing. Please reinstall."), resourceArchivePath),
-                _("Error"), wxOK|wxICON_EXCLAMATION);
+                _(L"'%s': resource archive file missing. Please reinstall."), resourceArchivePath),
+                _(L"Error"), wxOK|wxICON_EXCLAMATION);
         m_resourceFile.Clear();
         return;
         }
@@ -37,8 +37,8 @@ void ResourceManager::LoadArchive(const wxString& resourceArchivePath)
         }
     catch (...)
         {
-        wxMessageBox(_("Cannot open resource collection file."),
-            _("Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(_(L"Cannot open resource collection file."),
+            _(L"Error"), wxOK|wxICON_EXCLAMATION);
         m_resourceFile.Clear();
         return;
         }

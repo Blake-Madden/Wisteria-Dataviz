@@ -30,7 +30,7 @@ public:
         @param style The dialog's style.*/
     explicit EditTextDlg(wxWindow* parent,
              wxWindowID id = wxID_ANY,
-             const wxString& caption = _("Edit Text"),
+             const wxString& caption = _(L"Edit Text"),
              const wxString& description = wxEmptyString,
              const wxPoint& pos = wxDefaultPosition,
              const wxSize& size = wxSize(600, 600),

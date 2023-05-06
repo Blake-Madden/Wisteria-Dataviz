@@ -31,7 +31,7 @@ public:
         @param size The dialog's size.
         @param style The dialog's style.*/
     ListCtrlSortDlg(wxWindow* parent, const wxArrayString& columnChoices,
-                    wxWindowID id = wxID_ANY, const wxString& caption = _("Sort Columns"),
+                    wxWindowID id = wxID_ANY, const wxString& caption = _(L"Sort Columns"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                     long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER) :
             m_columnChoices(columnChoices)
@@ -54,7 +54,7 @@ public:
 private:
     /// Creation
     bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
-                const wxString& caption = _("Sort Columns"),
+                const wxString& caption = _(L"Sort Columns"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                 long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
         {
@@ -68,11 +68,11 @@ private:
     void CreateControls();
     [[nodiscard]]
     const static wxString GetAscendingLabel()
-        { return _("Smallest to Largest"); }
+        { return _(L"Smallest to Largest"); }
 
     [[nodiscard]]
     const static wxString GetDescendingLabel()
-        { return _("Largest to Smallest"); }
+        { return _(L"Largest to Smallest"); }
 
     wxArrayString m_columnChoices;
     ListCtrlEx* m_columnList{ nullptr };

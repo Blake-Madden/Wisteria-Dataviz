@@ -22,12 +22,12 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
 
     wxBitmapButton* nextButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_NEXT,
             wxArtProvider::GetBitmapBundle(wxART_GO_DOWN, wxART_BUTTON));
-    nextButton->SetToolTip(_("Find the next occurrence"));
+    nextButton->SetToolTip(_(L"Find the next occurrence"));
     mainSizer->Add(nextButton, 0, wxALIGN_CENTER_VERTICAL);
 
     wxBitmapButton* peviousButton = new wxBitmapButton(this, ControlIDs::ID_SEARCH_PREVIOUS,
             wxArtProvider::GetBitmapBundle(wxART_GO_UP, wxART_BUTTON));
-    peviousButton->SetToolTip(_("Find the previous occurrence"));
+    peviousButton->SetToolTip(_(L"Find the previous occurrence"));
     mainSizer->Add(peviousButton, 0, wxALIGN_CENTER_VERTICAL);
 
     mainSizer->AddSpacer(3);
@@ -38,11 +38,11 @@ SearchPanel::SearchPanel(wxWindow *parent, wxWindowID id) :
     auto searchOptionsMenu = new wxMenu;
 
     m_matchCaseItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_CASE"),
-        _("Match Case"), _("Match Case"));
+        _(L"Match Case"), _(L"Match Case"));
     m_matchCaseItem->Check(false);
 
     m_wholeWordItem = searchOptionsMenu->AppendCheckItem(XRCID("ID_MATCH_WHOLE_WORD"),
-        _("Match Whole Word"), _("Match Whole Word"));
+        _(L"Match Whole Word"), _(L"Match Whole Word"));
     m_wholeWordItem->Check(false);
 
     m_search->SetMenu(searchOptionsMenu);
@@ -89,8 +89,8 @@ void SearchPanel::OnSearch(wxCommandEvent& event)
     {
     if (m_search->GetValue().empty())
         {
-        wxMessageBox(_("Please enter an item to search for."),
-            _("Search"), wxOK|wxICON_INFORMATION, nullptr);
+        wxMessageBox(_(L"Please enter an item to search for."),
+            _(L"Search"), wxOK|wxICON_INFORMATION, nullptr);
         return;
         }
     m_previousSearches.push_back(m_search->GetValue());

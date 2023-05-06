@@ -37,7 +37,7 @@
                               BatchProjectFunctions, ListTypeEnum;
         StandardProjectFunctions.insert(L"Open()\tOpens a project.\tStandardProject");
         functionBrowser = new FunctionBrowserDlg(this, scriptCtrl, wxID_ANY,
-                _("Library Browser"), _("Libraries/Classes"), _("Functions"), *wxBLUE);
+                _(L"Library Browser"), _(L"Libraries/Classes"), _(L"Functions"), *wxBLUE);
         functionBrowser->AddCategory(L"Libraries", 1000);
         functionBrowser->AddCategory(L"Classes", 1001);
         functionBrowser->AddCategory(L"Enumerations", 1002);
@@ -67,9 +67,9 @@ public:
     FunctionBrowserDlg(wxWindow* parent,
                        wxWindow* editor,
                        wxWindowID id = wxID_ANY,
-                       const wxString& caption = _("Function Browser"),
-                       const wxString& firstWindowCaption = _("Categories:"),
-                       const wxString& secondWindowCaption = _("Functions/Operators:"),
+                       const wxString& caption = _(L"Function Browser"),
+                       const wxString& firstWindowCaption = _(L"Categories:"),
+                       const wxString& secondWindowCaption = _(L"Functions/Operators:"),
                        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                        long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER ) :
             m_editWindow(editor)
@@ -92,9 +92,9 @@ public:
         @note Using this will not connect this browser to an editor.
         @returns @c true if successfully created.*/
     bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
-                const wxString& caption = _("Function Browser"),
-                const wxString& firstWindowCaption = _("Categories:"),
-                const wxString& secondWindowCaption = _("Functions/Operators:"),
+                const wxString& caption = _(L"Function Browser"),
+                const wxString& firstWindowCaption = _(L"Categories:"),
+                const wxString& secondWindowCaption = _(L"Functions/Operators:"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                 long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER);
     /** @brief Adds a category that doesn't contain functions, but rather other categories
@@ -144,7 +144,7 @@ private:
     [[nodiscard]]
     static wxString GetFunctionName(const wxString& signature)
         {
-        const auto firstParam = signature.find(wxT('('));
+        const auto firstParam = signature.find(L'(');
         return (firstParam == wxString::npos) ?
             signature : signature.substr(0, firstParam);
         }

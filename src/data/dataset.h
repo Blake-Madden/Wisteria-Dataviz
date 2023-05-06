@@ -311,7 +311,7 @@ namespace Wisteria::Data
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where low-frequency
                 values are lumped into.*/
-        void CollapseMin(const size_t minVal, const wxString& otherLabel = _("Other"));
+        void CollapseMin(const size_t minVal, const wxString& otherLabel = _(L"Other"));
 
         /** @brief Collapses strings into an "Other" categorical,
                 except for a list of provided labels.
@@ -319,7 +319,7 @@ namespace Wisteria::Data
                 into a new "Other" category.
             @param otherLabel The label to use for the new category "Other" category.*/
         void CollapseExcept(const std::vector<wxString>& labelsToKeep,
-                            const wxString& otherLabel = _("Other"));
+                            const wxString& otherLabel = _(L"Other"));
 
         /** @brief Gets the label from the string table given the numeric code,
                 or the code formatted as a string if not found.
@@ -1309,7 +1309,7 @@ namespace Wisteria::Data
                 the value will be lumped into an "other" label.
             @param otherLabel The label to use for the new category where low-frequency values are lumped into.*/
         void CollapseMin(const wxString& colName, const size_t minVal,
-                         const wxString& otherLabel = _("Other"));
+                         const wxString& otherLabel = _(L"Other"));
 
         /** @brief Collapses strings into an "Other" categorical,
                 except for a list of provided labels.
@@ -1319,7 +1319,7 @@ namespace Wisteria::Data
             @param otherLabel The label to use for the new category "Other" category.*/
         void CollapseExcept(const wxString& colName,
                             const std::vector<wxString>& labelsToKeep,
-                            const wxString& otherLabel = _("Other"));
+                            const wxString& otherLabel = _(L"Other"));
 
         /** @brief Fills an existing (or new, if not found) categorical column with values
                 based on the values in another categorical column.

@@ -36,7 +36,7 @@ public:
         @param size The window size.
         @param style The window style (i.e., decorations and flags).*/
     explicit FileListDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
-                const wxString& caption = _("File List"),
+                const wxString& caption = _(L"File List"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                 long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER)
         {

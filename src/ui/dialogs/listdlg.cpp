@@ -140,50 +140,50 @@ void ListDlg::CreateControls()
         // export
         if (m_buttonStyle & LD_SAVE_BUTTON || m_buttonStyle & LD_PRINT_BUTTON)
             {
-            wxRibbonPanel* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _("Export"),
+            wxRibbonPanel* exportPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Export"),
                                                           wxNullBitmap, wxDefaultPosition,
                                                           wxDefaultSize,
                                                           wxRIBBON_PANEL_NO_AUTO_MINIMISE);
             wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(exportPage);
             if (m_buttonStyle & LD_SAVE_BUTTON)
                 {
-                buttonBar->AddButton(wxID_SAVE, _("Save"),
+                buttonBar->AddButton(wxID_SAVE, _(L"Save"),
                     wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(32, 32))),
-                    _("Save the list."));
+                    _(L"Save the list."));
                 }
             if (m_buttonStyle & LD_PRINT_BUTTON)
                 {
-                buttonBar->AddButton(wxID_PRINT, _("Print"),
+                buttonBar->AddButton(wxID_PRINT, _(L"Print"),
                     wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON, FromDIP(wxSize(32, 32))),
-                    _("Print the list."));
+                    _(L"Print the list."));
                 }
             }
         // edit
         if (m_buttonStyle & LD_COPY_BUTTON || m_buttonStyle & LD_SELECT_ALL_BUTTON ||
             m_buttonStyle & LD_SORT_BUTTON)
             {
-            wxRibbonPanel* editPage = new wxRibbonPanel(homePage, wxID_ANY, _("Edit"),
+            wxRibbonPanel* editPage = new wxRibbonPanel(homePage, wxID_ANY, _(L"Edit"),
                                                         wxNullBitmap, wxDefaultPosition,
                                                         wxDefaultSize,
                                                         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
             wxRibbonButtonBar* buttonBar = new wxRibbonButtonBar(editPage);
             if (m_buttonStyle & LD_COPY_BUTTON)
                 {
-                buttonBar->AddButton(wxID_COPY, _("Copy Selection"),
+                buttonBar->AddButton(wxID_COPY, _(L"Copy Selection"),
                     wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))), _("Copy the selected items."));
+                        FromDIP(wxSize(32, 32))), _(L"Copy the selected items."));
                 }
             if (m_buttonStyle & LD_SELECT_ALL_BUTTON)
                 {
-                buttonBar->AddButton(wxID_SELECTALL, _("Select All"),
+                buttonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
                     wxArtProvider::GetBitmap(L"ID_SELECT_ALL", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))), _("Select the entire list."));
+                        FromDIP(wxSize(32, 32))), _(L"Select the entire list."));
                 }
             if (m_buttonStyle & LD_SORT_BUTTON)
                 {
-                buttonBar->AddButton(XRCID("ID_LIST_SORT"), _("Sort"),
+                buttonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
                     wxArtProvider::GetBitmap(L"ID_LIST_SORT", wxART_BUTTON,
-                        FromDIP(wxSize(32, 32))), _("Sort the list."));
+                        FromDIP(wxSize(32, 32))), _(L"Sort the list."));
                 }
             }
         ribbon->SetArtProvider(new Wisteria::UI::RibbonMetroArtProvider);
@@ -268,7 +268,7 @@ void ListDlg::CreateControls()
 
     if ((m_buttonStyle & LD_DONT_SHOW_AGAIN) && OkCancelSizer)
         {
-        m_checkBox = new wxCheckBox(this, wxID_ANY, _("Don't show this again"),
+        m_checkBox = new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"),
                                     wxDefaultPosition , wxDefaultSize, wxCHK_2STATE,
                                     wxGenericValidator(&m_dontShowAgain));
         OkCancelSizer->Insert(0, m_checkBox, 0, wxALL|wxEXPAND, wxSizerFlags::GetDefaultBorder());

@@ -86,7 +86,7 @@ void FunctionBrowserDlg::OnListSelected(wxCommandEvent& event)
                     currentDescriptionAndRetVal +=
                         wxString::Format(L"<br />%s<tt><span style='font-weight:bold;'>"
                             "<span style=\"color:blue\"><a href=\"%s\">%s</a></span></span></tt>.",
-                            _("Returns the object as a "), retVal, retVal);
+                            _(L"Returns the object as a "), retVal, retVal);
                     }
                 m_currentFunctionsAndDescriptions.emplace_back(
                     FormatFunctionSignature(currentFunctionSignature), currentDescriptionAndRetVal);
@@ -187,8 +187,8 @@ void FunctionBrowserDlg::InsertFunction()
     if (m_functionList->GetSelection() == wxNOT_FOUND ||
         m_functionList->GetSelection() >= static_cast<long>(m_currentFunctionsAndDescriptions.size()))
         {
-        wxMessageBox(_("Please select an item in the function list to insert."),
-                _("Invalid Selection"), wxOK|wxICON_INFORMATION);
+        wxMessageBox(_(L"Please select an item in the function list to insert."),
+                _(L"Invalid Selection"), wxOK|wxICON_INFORMATION);
         return;
         }
     if (m_editWindow->IsKindOf(CLASSINFO(wxStyledTextCtrl)))
@@ -216,9 +216,9 @@ void FunctionBrowserDlg::InsertFunction()
 
 //------------------------------------------------
 bool FunctionBrowserDlg::Create(wxWindow* parent, wxWindowID id /*= wxID_ANY*/,
-                const wxString& caption /*= _("Function Browser")*/,
-                const wxString& firstWindowCaption /*= _("Categories:")*/,
-                const wxString& secondWindowCaption /*= _("Functions/Operators:")*/,
+                const wxString& caption /*= _(L"Function Browser")*/,
+                const wxString& firstWindowCaption /*= _(L"Categories:")*/,
+                const wxString& secondWindowCaption /*= _(L"Functions/Operators:")*/,
                 const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
                 long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/)
     {
@@ -282,9 +282,9 @@ void FunctionBrowserDlg::CreateControls(const wxString& firstWindowCaption,
     if (insertButton)
         {
         insertButton->SetId(ID_INSERT_BUTTON);
-        insertButton->SetLabel(_("&Insert"));
+        insertButton->SetLabel(_(L"&Insert"));
         }
     wxWindow* closeButton = FindWindow(wxID_CANCEL);
     if (closeButton)
-        { closeButton->SetLabel(_("&Close")); }
+        { closeButton->SetLabel(_(L"&Close")); }
     }

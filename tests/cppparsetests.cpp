@@ -116,7 +116,7 @@ TEST_CASE("Check CPP", "[cpp]")
         }
     SECTION("Strip Escapes")
         {
-        const wchar_t* text = LR"(_("Hello, \"Carl\"."))";
+        const wchar_t* text = LR"(_(L"Hello, \"Carl\"."))";
         cpp_extract_text ext;
         const std::wstring output = ext(text, std::wcslen(text));
         CHECK(std::wstring(L"Hello, \"Carl\".") == output);
@@ -205,7 +205,7 @@ TEST_CASE("Check CPP", "[cpp]")
 
     SECTION("Get Text Embedded Strings String")
         {
-        const wchar_t* text = LR"(string blah = _("My text \\\"here\\\"");)";
+        const wchar_t* text = LR"(string blah = _(L"My text \\\"here\\\"");)";
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, LR"(My text \"here\")") == 0);
@@ -214,14 +214,14 @@ TEST_CASE("Check CPP", "[cpp]")
 
     SECTION("Get Text String With NewLines")
         {
-        const wchar_t* text = LR"(string blah = _("My text\nSecond Line\rThird\tLine");)";
+        const wchar_t* text = LR"(string blah = _(L"My text\nSecond Line\rThird\tLine");)";
         cpp_extract_text ext;
         const wchar_t* output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"My text\nSecond Line\nThird\tLine") == 0);
         CHECK(ext.get_filtered_text_length() == 30);
 
         // boundary test (trailing newline is trimmed by design)
-        text = LR"(string blah = _("\nMy text\nSecond Line\rThird\tLine\n");)";
+        text = LR"(string blah = _(L"\nMy text\nSecond Line\rThird\tLine\n");)";
         output = ext(text, std::wcslen(text));
         CHECK(std::wcscmp(output, L"\nMy text\nSecond Line\nThird\tLine") == 0);
         CHECK(ext.get_filtered_text_length() == 31);

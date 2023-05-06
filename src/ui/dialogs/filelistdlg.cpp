@@ -31,24 +31,24 @@ void FileListDlg::CreateControls()
     auto buttonsSizer = new wxGridSizer(4, wxSize(wxSizerFlags::GetDefaultBorder(),
         wxSizerFlags::GetDefaultBorder()));
 
-    wxButton* button = new wxButton(this, wxID_OPEN, _("&Open File(s)..."));
+    wxButton* button = new wxButton(this, wxID_OPEN, _(L"&Open File(s)..."));
     button->SetBitmap(wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON,
         FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 
 #ifdef __WXMSW__
-    button = new wxButton(this, ID_FOLDER_OPEN, _("Open &Folder(s)..."));
+    button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folder(s)..."));
     button->SetBitmap(wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON,
         FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 #endif
 
-    button = new wxButton(this, wxID_DELETE, _("&Delete File(s)"));
+    button = new wxButton(this, wxID_DELETE, _(L"&Delete File(s)"));
     button->SetBitmap(wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON,
         FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
 
-    button = new wxButton(this, wxID_REFRESH, _("&Refresh List"));
+    button = new wxButton(this, wxID_REFRESH, _(L"&Refresh List"));
     button->SetBitmap(wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON,
         FromDIP(wxSize(16, 16))));
     buttonsSizer->Add(button, wxSizerFlags().Align(wxALIGN_LEFT).Expand());
@@ -59,11 +59,11 @@ void FileListDlg::CreateControls()
                                 wxLC_REPORT|wxLC_VIRTUAL);
     m_listCtrl->EnableGridLines();
     m_listCtrl->EnableAlternateRowColours(false);
-    m_listCtrl->InsertColumn(0, _("File"));
+    m_listCtrl->InsertColumn(0, _(L"File"));
     m_listCtrl->SetFileColumn(0);
-    m_listCtrl->InsertColumn(1, _("Folder"));
+    m_listCtrl->InsertColumn(1, _(L"Folder"));
     m_listCtrl->SetFolderColumn(1);
-    m_listCtrl->InsertColumn(2, _("Group"));
+    m_listCtrl->InsertColumn(2, _(L"Group"));
     m_listCtrl->SetSortable(true);
     m_listCtrl->EnableFileDeletion();
     m_listCtrl->SetVirtualDataProvider(m_fileData);
@@ -107,7 +107,7 @@ void FileListDlg::BindEvents()
                 wxDateTime accessedDt, modifiedDt, createdDt;
                 fn.GetTimes(&accessedDt, &modifiedDt, &createdDt);
                 const wxString fileInfo =
-                    wxString::Format(_("Name: %s\nSize: %s\nCreated: %s %s\nModified: %s %s"),
+                    wxString::Format(_(L"Name: %s\nSize: %s\nCreated: %s %s\nModified: %s %s"),
                     wxFileName(m_listCtrl->GetSelectedText()).GetFullName(),
                     fn.GetHumanReadableSize(),
                     createdDt.FormatDate(), createdDt.FormatTime(),
@@ -126,9 +126,9 @@ void FileListDlg::BindEvents()
             // make sure user isn't accidently opening too many files at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
                 wxMessageBox(wxString::Format(
-                    _("Do you wish to open the selected %d files?"),
+                    _(L"Do you wish to open the selected %d files?"),
                     m_listCtrl->GetSelectedItemCount()),
-                        _("Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
+                        _(L"Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
                 { return; }
             long item{ wxNOT_FOUND };
             for (;;)
@@ -150,9 +150,9 @@ void FileListDlg::BindEvents()
             // make sure user isn't accidently opening too many folders at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
                 wxMessageBox(
-                    wxString::Format(_("Do you wish to open the selected %d folders?"),
+                    wxString::Format(_(L"Do you wish to open the selected %d folders?"),
                         m_listCtrl->GetSelectedItemCount()),
-                    _("Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
+                    _(L"Open Files"), wxYES_NO|wxICON_WARNING) == wxNO)
                 { return; }
             long item{ wxNOT_FOUND };
             for (;;)
@@ -175,9 +175,9 @@ void FileListDlg::BindEvents()
             if (m_promptOnDelete)
                 {
                 wxRichMessageDialog msg(this,
-                    _("Do you wish to delete the selected file(s)?"),
-                    _("Delete File"), wxYES_NO | wxICON_WARNING);
-                msg.ShowCheckBox(_("Do not show this again"));
+                    _(L"Do you wish to delete the selected file(s)?"),
+                    _(L"Delete File"), wxYES_NO | wxICON_WARNING);
+                msg.ShowCheckBox(_(L"Do not show this again"));
                 if (msg.ShowModal() == wxID_NO)
                     { return; }
                 // 'Yes' to delete, see if they don't want to see this prompt again

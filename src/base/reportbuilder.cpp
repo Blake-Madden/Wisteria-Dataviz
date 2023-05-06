@@ -1664,7 +1664,7 @@ namespace Wisteria
                 dataset->CollapseMin(
                     collapseMin->GetProperty(L"column")->GetValueString(),
                     collapseMin->GetProperty(L"min")->GetValueNumber(2),
-                    collapseMin->GetProperty(L"other-label")->GetValueString(_("Other")));
+                    collapseMin->GetProperty(L"other-label")->GetValueString(_(L"Other")));
                 }
 
             // category collapsing (except)
@@ -1674,7 +1674,7 @@ namespace Wisteria
                 dataset->CollapseExcept(
                     collapseExcept->GetProperty(L"column")->GetValueString(),
                     collapseExcept->GetProperty(L"labels-to-keep")->GetValueStringVector(),
-                    collapseExcept->GetProperty(L"other-label")->GetValueString(_("Other")));
+                    collapseExcept->GetProperty(L"other-label")->GetValueString(_(L"Other")));
                 }
 
             // load any constants defined with this dataset

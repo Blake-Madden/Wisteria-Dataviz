@@ -6,21 +6,21 @@ TEST_CASE("Parse title from file name", "[parse-title]")
     {
     SECTION("Local File")
         {
-        CHECK(ParseTitleFromFileName(wxT("c:\\files\\file.txt")) == wxT("file"));
-        CHECK(ParseTitleFromFileName(wxT("/users/files/file.txt")) == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"c:\\files\\file.txt") == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"/users/files/file.txt") == wxT("file"));
         }
     SECTION("Local File Illegal Chars")
         {
-        CHECK(ParseTitleFromFileName(wxT("c:\\files\\fi?l*e.txt")) == wxT("file"));
-        CHECK(ParseTitleFromFileName(wxT("/users/files/fi?l*e.txt")) == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"c:\\files\\fi?l*e.txt") == wxT("file"));
+        CHECK(ParseTitleFromFileName(L"/users/files/fi?l*e.txt") == wxT("file"));
         }
     SECTION("Url Ending With Slash")
         {
-        CHECK(ParseTitleFromFileName(wxT("http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/")) == wxT("bachmann_gas_prices"));
+        CHECK(ParseTitleFromFileName(L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/") == L"bachmann_gas_prices");
         }
     SECTION("Url Query")
         {
-        CHECK(ParseTitleFromFileName(wxT("http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/?iref=NS1")) == wxT("bachmann_gas_prices"));
+        CHECK(ParseTitleFromFileName(L"http://money.cnn.com/2011/08/18/news/economy/bachmann_gas_prices/?iref=NS1") == L"bachmann_gas_prices");
         }
     }
 

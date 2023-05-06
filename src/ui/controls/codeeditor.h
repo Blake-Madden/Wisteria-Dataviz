@@ -47,9 +47,9 @@ namespace Wisteria::UI
         // add a set of global math functions
         CodeEditor::NameList MathFunctions;
         MathFunctions.insert(wxString(L"SIN(x)\t" +
-            _("Sine of x, which returns the sine of the angle X in radians.")).ToStdWstring());
+            _(L"Sine of x, which returns the sine of the angle X in radians.")).ToStdWstring());
         MathFunctions.insert(wxString("COS(x)\t" +
-            _("Cosine of x, returns the cosine of the angle X in radians.")).ToStdWstring());
+            _(L"Cosine of x, returns the cosine of the angle X in radians.")).ToStdWstring());
 
         codeEditor->AddFunctionsOrClasses(MathFunctions);
 

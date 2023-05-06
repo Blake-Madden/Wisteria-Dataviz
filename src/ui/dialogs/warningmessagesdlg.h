@@ -33,7 +33,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style.*/
         explicit WarningMessagesDlg(wxWindow* parent, wxWindowID id = wxID_ANY,
-                          const wxString& caption = _("Warnings & Prompts Display"),
+                          const wxString& caption = _(L"Warnings & Prompts Display"),
                           const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                           long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
             { Create(parent, id, caption, pos, size, style); }
@@ -55,7 +55,7 @@ namespace Wisteria::UI
             @param style The window style.
             @returns @c true if successfully created.*/
         bool Create(wxWindow* parent, wxWindowID id = wxID_ANY,
-                    const wxString& caption = _("Warnings & Prompts Display"),
+                    const wxString& caption = _(L"Warnings & Prompts Display"),
                     const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                     long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
             {

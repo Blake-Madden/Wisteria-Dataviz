@@ -104,9 +104,9 @@ TEST_CASE("Set point", "[point]")
 TEST_CASE("Build polygon", "[point]")
     {
     const wxPoint pts[5] = { wxPoint(98,48), wxPoint(102,48), wxPoint(102,52), wxPoint(98,52), wxPoint(0,0) };
-    GraphItems::Polygon pi(GraphItemInfo(wxT("hello")), pts, 5);
+    GraphItems::Polygon pi(GraphItemInfo(L"hello"), pts, 5);
     GraphItems::Polygon pi2 = pi;
-    CHECK(pi2.GetText() == wxT("hello"));
+    CHECK(pi2.GetText() == L"hello");
     const std::vector<wxPoint> pts2 = pi2.GetPoints();
     CHECK(pts2.size() == 5);
     CHECK(pts2[0] == wxPoint(98,48));
@@ -119,9 +119,9 @@ TEST_CASE("Build polygon", "[point]")
 TEST_CASE("Points copy CTOR", "[point]")
     {
     const wxPoint pts[5] = { wxPoint(98,48), wxPoint(102,48), wxPoint(102,52), wxPoint(98,52), wxPoint(0,0) };
-    GraphItems::Polygon pi(GraphItemInfo(wxT("hello")), pts, 5);
+    GraphItems::Polygon pi(GraphItemInfo(L"hello"), pts, 5);
     GraphItems::Polygon pi2(pi);
-    CHECK(pi2.GetText() == wxT("hello"));
+    CHECK(pi2.GetText() == L"hello");
     const std::vector<wxPoint> pts2 = pi2.GetPoints();
     CHECK(pts2.size() == 5);
     CHECK(pts2[0] == wxPoint(98,48));
@@ -133,7 +133,7 @@ TEST_CASE("Points copy CTOR", "[point]")
 
 TEST_CASE("Point copy CTOR", "[point]")
     {
-    GraphItems::Point2D pi(GraphItemInfo(wxT("hello")).AnchorPoint(wxPoint(100, 50)), 5);
+    GraphItems::Point2D pi(GraphItemInfo(L"hello").AnchorPoint(wxPoint(100, 50)), 5);
     GraphItems::Point2D pi2(pi);
     CHECK(pi2.GetAnchorPoint() == wxPoint(100,50));
     CHECK(5 == pi2.GetRadius());

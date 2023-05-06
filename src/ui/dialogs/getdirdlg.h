@@ -42,7 +42,7 @@ namespace Wisteria::UI
             @param style The window style (i.e., decorations and flags).*/
         GetDirFilterDialog(wxWindow* parent, const wxString& fullFileFilter,
             wxWindowID id = wxID_ANY,
-            const wxString& caption = _("Select Directory"),
+            const wxString& caption = _(L"Select Directory"),
             const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
             long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER);
         /// @private

@@ -31,9 +31,9 @@ bool InfoBarEx::Create(wxWindow *parent, wxWindowID winid)
     wxBitmapButton* closeButton = wxBitmapButton::NewCloseButton(this, wxID_CLOSE);
     closeButton->Connect(wxEVT_BUTTON,
                   wxCommandEventHandler(InfoBarEx::OnButton), nullptr, this);
-    closeButton->SetToolTip(_("Hide this notification message."));
+    closeButton->SetToolTip(_(L"Hide this notification message."));
 
-    m_dontShowAgainCheckbox = new wxCheckBox(this, wxID_ANY, _("Do not show this again."),
+    m_dontShowAgainCheckbox = new wxCheckBox(this, wxID_ANY, _(L"Do not show this again."),
                                              wxDefaultPosition, wxDefaultSize, 0,
                                              wxGenericValidator(&m_dontShowAgain));
 

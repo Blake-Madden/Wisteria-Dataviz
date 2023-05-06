@@ -114,19 +114,19 @@ namespace Wisteria::Graphs
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
             leftRuler.AddBracket(Axis::AxisBracket(25, 25, 25,
-                IsUsingEnglishLabels() ? _("very easy text") :
+                IsUsingEnglishLabels() ? _(L"very easy text") :
                 wxString(_DT("Sehr leichter Text")), wxColour(66, 51, 251)));
             leftRuler.AddBracket(Axis::AxisBracket(35, 35, 35,
-                IsUsingEnglishLabels() ? _("easy text") : wxString(_DT("Leichter Text")),
-                wxColour(163,182,250)));
+                IsUsingEnglishLabels() ? _(L"easy text") : wxString(_DT("Leichter Text")),
+                wxColour(163, 182, 250)));
             leftRuler.AddBracket(Axis::AxisBracket(45, 45, 45,
-                IsUsingEnglishLabels() ? _("average text") :
+                IsUsingEnglishLabels() ? _(L"average text") :
                 wxString(_DT("Durchschnittlicher Text")), wxColour(239, 173, 186)));
             leftRuler.AddBracket(Axis::AxisBracket(55, 55, 55,
-                IsUsingEnglishLabels() ? _("difficult text") :
+                IsUsingEnglishLabels() ? _(L"difficult text") :
                 wxString(_DT("Schwieriger Text")), wxColour(237, 27, 37)));
             leftRuler.AddBracket(Axis::AxisBracket(65, 65, 65,
-                IsUsingEnglishLabels() ? _("very difficult text") :
+                IsUsingEnglishLabels() ? _(L"very difficult text") :
                 wxString(_DT("Sehr schwieriger Text")), wxColour(250, 0, 0)));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
@@ -167,20 +167,20 @@ namespace Wisteria::Graphs
             rightRuler.GetAxisLinePen() = wxNullPen;
             rightRuler.AddBracket(Axis::AxisBracket(30, 30, 30,
                 IsUsingEnglishLabels() ?
-                _("children and youth\nliterature (for ages 8-16)") :
+                _(L"children and youth\nliterature (for ages 8-16)") :
                 wxString(DONTTRANSLATE(L"Kinder- und Jugendb\U000000FCcher", DTExplanation::DirectQuote)),
                 wxColour(138,163,249)));
             rightRuler.AddBracket(Axis::AxisBracket(40, 40, 40,
                 IsUsingEnglishLabels() ?
-                _("bellestristic texts (prose\nfiction for adults)") :
+                _(L"bellestristic texts (prose\nfiction for adults)") :
                 wxString(DONTTRANSLATE(L"Belletristik")), wxColour(207, 217, 252)));
             rightRuler.AddBracket(Axis::AxisBracket(50, 50, 50,
                 IsUsingEnglishLabels() ?
-                _("informational (non fiction)\ntexts (Sachliteratur)") :
+                _(L"informational (non fiction)\ntexts (Sachliteratur)") :
                 wxString(DONTTRANSLATE(L"Sachliteratur")), wxColour(245, 126, 133)));
             rightRuler.AddBracket(Axis::AxisBracket(60, 60, 60,
                 IsUsingEnglishLabels() ?
-                _("technical texts\n(Fachliteratur)") :
+                _(L"technical texts\n(Fachliteratur)") :
                 wxString(DONTTRANSLATE(L"Fachliteratur")), wxColour(237, 10, 10)));
             for (auto& bracket : rightRuler.GetBrackets())
                 {

@@ -600,7 +600,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,0,7);
         m_list->SetVirtualDataProvider(m_dataProvider);
         m_list->SetVirtualDataSize(7, 1);
-        m_list->InsertColumn(0, _("NAME"));
+        m_list->InsertColumn(0, L"NAME");
         };
     const auto Reset2Columns = [&m_dataProvider, &m_list]()
         {
@@ -622,8 +622,8 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(6,1,8);
         m_list->SetVirtualDataProvider(m_dataProvider);
         m_list->SetVirtualDataSize(7, 2);
-        m_list->InsertColumn(0, _("NAME"));
-        m_list->InsertColumn(1, _("OTHER"));
+        m_list->InsertColumn(0, L"NAME");
+        m_list->InsertColumn(1, L"OTHER");
         };
 
     Reset();
@@ -632,10 +632,10 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         {
         CHECK(m_list->AddRow() == 7);
         CHECK(m_list->GetItemCount() == 8);
-        CHECK(m_list->AddRow(wxT("NewItem")) == 8);
+        CHECK(m_list->AddRow(L"NewItem") == 8);
         CHECK(m_list->GetItemCount() == 9);
-        CHECK(m_list->GetItemTextEx(7,0) == _(""));
-        CHECK(m_list->GetItemTextEx(8,0) == _("NewItem"));
+        CHECK(m_list->GetItemTextEx(7,0) == _(L""));
+        CHECK(m_list->GetItemTextEx(8,0) == L"NewItem");
         }
     SECTION("Format to html only selected rows")
         {
@@ -683,9 +683,9 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         {
         wxString ouputText;
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);//starting point after ending point is nonsense
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
         CHECK(ouputText == wxString(
             "<table border='1' style='font-family:Segoe UI; font-size:9pt; border-collapse:collapse;'>\n"
@@ -722,7 +722,7 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(5,1,272);
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
-        m_list->InsertColumn(1, _("NAME2"));
+        m_list->InsertColumn(1, L"NAME2");
         wxString ouputText;
         // get both columns
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
@@ -775,11 +775,11 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(5,1,272);
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
-        m_list->InsertColumn(1, _("NAME2"));
+        m_list->InsertColumn(1, L"NAME2");
         wxString ouputText;
         // start bigger then end is nonsense
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         // bogus negative start should be reset to first column
         m_list->FormatToHtml(ouputText, false, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
         CHECK(wxString(
@@ -848,10 +848,10 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         {
         wxString ouputText;
         m_list->FormatToText(ouputText, false, 99, 5, 0, -1, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         // starting point after ending point is nonsense
         m_list->FormatToText(ouputText, false, 5, 4, 0, -1, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         m_list->FormatToText(ouputText, false, 0, 99, 0, -1, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         m_list->FormatToText(ouputText, false, -10, -1, 0, -1, true);
@@ -891,17 +891,17 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_dataProvider->SetItemValue(5,1,272);
         m_dataProvider->SetItemValue(6,1,27);
         m_list->SetVirtualDataSize(7, 2);
-        m_list->InsertColumn(1, _("NAME2"));
+        m_list->InsertColumn(1, L"NAME2");
         wxString ouputText;
         // start bigger then end is nonsense
         m_list->FormatToText(ouputText, false, 0, -1, 1, 0, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         // bogus negative start should be reset to first column
         m_list->FormatToText(ouputText, false, 0, -1, -10, 0, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         // bogus (too large) is nonsense
         m_list->FormatToText(ouputText, false, 0, -1, 99, 1, true);
-        CHECK(ouputText == wxString(wxT("")));
+        CHECK(ouputText.empty());
         // bogus negative end should be reset to last column
         m_list->FormatToText(ouputText, false, 0, -1, 1, -10, true);
         CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
@@ -915,22 +915,22 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 1);
         CHECK(m_list->GetSortableRange().second == 4);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
         m_list->SetSortableRange(0, -1);
         m_list->SortColumn(0, Wisteria::SortDirection::SortDescending);
-        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
 
         Reset2Columns();
         m_list->SetSortableRange(0, -1);
@@ -938,13 +938,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortAscending));
         columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortDescending));
         m_list->SortColumns(columns);
-        CHECK(m_list->GetItemTextEx(0,0) == _("7"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(_("teXt2")) == 0);
+        CHECK(m_list->GetItemTextEx(0,0) == L"7");
+        CHECK(m_list->GetItemTextEx(1,0) == L"72");
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(L"teXt2") == 0);
 
         // test multicolumn sorting
         Reset();
@@ -954,26 +954,26 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         columns.clear();
         columns.push_back(std::pair<size_t,Wisteria::SortDirection>(0, Wisteria::SortDirection::SortAscending));
         m_list->SortColumns(columns);
-        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
 
         Reset();
         m_list->SetSortableRange(5,6);
         CHECK(m_list->GetSortableRange().first == 5);
         CHECK(m_list->GetSortableRange().second == 6);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0) == _("7"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("72"));
+        CHECK(m_list->GetItemTextEx(0,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(1,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0) == L"7");
+        CHECK(m_list->GetItemTextEx(6,0) == L"72");
 
         Reset();
         // -1 as the end of the range should make everything sortable
@@ -981,13 +981,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 0);
         CHECK(m_list->GetSortableRange().second == -1);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0) == _("7"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(_("teXt2")) == 0);
+        CHECK(m_list->GetItemTextEx(0,0) == L"7");
+        CHECK(m_list->GetItemTextEx(1,0) == L"72");
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(L"teXt2") == 0);
 
         Reset();
         // bogus range, should just make everything sortable
@@ -995,13 +995,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 0);
         CHECK(m_list->GetSortableRange().second == 10);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0) == _("7"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(_("teXt2")) == 0);
+        CHECK(m_list->GetItemTextEx(0,0) == L"7");
+        CHECK(m_list->GetItemTextEx(1,0) == L"72");
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(L"teXt2") == 0);
 
         Reset();
         // bogus range, should just make everything sortable
@@ -1009,13 +1009,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 0);
         CHECK(m_list->GetSortableRange().second == -1);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0) == _("7"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(_("text")) == 0);
-        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(_("teXt2")) == 0);
-        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(_("teXt2")) == 0);
+        CHECK(m_list->GetItemTextEx(0,0) == L"7");
+        CHECK(m_list->GetItemTextEx(1,0) == L"72");
+        CHECK(m_list->GetItemTextEx(2,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(3,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(4,0).CmpNoCase(L"text") == 0);
+        CHECK(m_list->GetItemTextEx(5,0).CmpNoCase(L"teXt2") == 0);
+        CHECK(m_list->GetItemTextEx(6,0).CmpNoCase(L"teXt2") == 0);
 
         Reset();
         // bogus range, should make nothing sortable
@@ -1023,13 +1023,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 10);
         CHECK(m_list->GetSortableRange().second == -1);
         m_list->SortColumn(0, Wisteria::SortDirection::SortAscending);
-        CHECK(m_list->GetItemTextEx(0,0) == _("Text"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("tExt2"));
-        CHECK(m_list->GetItemTextEx(2,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(3,0) == _("teXt2"));
-        CHECK(m_list->GetItemTextEx(4,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0) == L"Text");
+        CHECK(m_list->GetItemTextEx(1,0) == L"tExt2");
+        CHECK(m_list->GetItemTextEx(2,0) == L"text");
+        CHECK(m_list->GetItemTextEx(3,0) == L"teXt2");
+        CHECK(m_list->GetItemTextEx(4,0) == L"text");
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
 
         Reset();
         // bogus range, should make nothing sortable
@@ -1037,28 +1037,28 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         CHECK(m_list->GetSortableRange().first == 10);
         CHECK(m_list->GetSortableRange().second == -1);
         m_list->SortColumns(columns);
-        CHECK(m_list->GetItemTextEx(0,0) == _("Text"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("tExt2"));
-        CHECK(m_list->GetItemTextEx(2,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(3,0) == _("teXt2"));
-        CHECK(m_list->GetItemTextEx(4,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0) == L"Text");
+        CHECK(m_list->GetItemTextEx(1,0) == L"tExt2");
+        CHECK(m_list->GetItemTextEx(2,0) == L"text");
+        CHECK(m_list->GetItemTextEx(3,0) == L"teXt2");
+        CHECK(m_list->GetItemTextEx(4,0) == L"text");
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
         }
     SECTION("FindEx")
         {
         m_list->Select(0);
-        CHECK(m_list->FindEx(_("text"),0) == 0);
-        CHECK(m_list->FindEx(_("text2"),0) == 1);
-        CHECK(m_list->FindEx(_("text2"),2) == 3);
-        CHECK(m_list->FindEx(_("bogus")) == wxNOT_FOUND);
+        CHECK(m_list->FindEx(L"text",0) == 0);
+        CHECK(m_list->FindEx(L"text2",0) == 1);
+        CHECK(m_list->FindEx(L"text2",2) == 3);
+        CHECK(m_list->FindEx(L"bogus") == wxNOT_FOUND);
         }
     SECTION("Find column")
         {
-        m_list->InsertColumn(1, _("Second"));
-        CHECK(m_list->FindColumn(_("SeCOnd")) == 1);
-        CHECK(m_list->FindColumn(_("Name")) == 0);
-        CHECK(m_list->FindColumn(_("bogus")) == wxNOT_FOUND);
+        m_list->InsertColumn(1, L"Second");
+        CHECK(m_list->FindColumn(L"SeCOnd") == 1);
+        CHECK(m_list->FindColumn(L"Name") == 0);
+        CHECK(m_list->FindColumn(L"bogus") == wxNOT_FOUND);
         }
     SECTION("Delete item")
         {
@@ -1101,37 +1101,37 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         }
     SECTION("Get column name")
         {
-        CHECK(m_list->GetColumnName(0) == _("NAME"));
+        CHECK(m_list->GetColumnName(0) == L"NAME");
         // bogus values
-        CHECK(m_list->GetColumnName(-1) == _(""));
-        CHECK(m_list->GetColumnName(1) == _(""));
+        CHECK(m_list->GetColumnName(-1) == _(L""));
+        CHECK(m_list->GetColumnName(1) == _(L""));
         }
     SECTION("Get selected text")
         {
         m_list->DeselectAll();
         m_list->Select(1);
-        CHECK(m_list->GetSelectedText() == _("tExt2"));
+        CHECK(m_list->GetSelectedText() == L"tExt2");
         m_list->DeselectAll();
         m_list->Select(5);
-        CHECK(m_list->GetSelectedText() == _("72"));
+        CHECK(m_list->GetSelectedText() == L"72");
         }
     SECTION("GetItemTextEx")
         {
-        CHECK(m_list->GetItemTextEx(0,0) == _("Text"));
-        CHECK(m_list->GetItemTextEx(1,0) == _("tExt2"));
-        CHECK(m_list->GetItemTextEx(2,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(3,0) == _("teXt2"));
-        CHECK(m_list->GetItemTextEx(4,0) == _("text"));
-        CHECK(m_list->GetItemTextEx(5,0) == _("72"));
-        CHECK(m_list->GetItemTextEx(6,0) == _("7"));
+        CHECK(m_list->GetItemTextEx(0,0) == L"Text");
+        CHECK(m_list->GetItemTextEx(1,0) == L"tExt2");
+        CHECK(m_list->GetItemTextEx(2,0) == L"text");
+        CHECK(m_list->GetItemTextEx(3,0) == L"teXt2");
+        CHECK(m_list->GetItemTextEx(4,0) == L"text");
+        CHECK(m_list->GetItemTextEx(5,0) == L"72");
+        CHECK(m_list->GetItemTextEx(6,0) == L"7");
 
-        CHECK(m_list->GetItemTextFormatted(0,0) == _("Text"));
-        CHECK(m_list->GetItemTextFormatted(1,0) == _("tExt2"));
-        CHECK(m_list->GetItemTextFormatted(2,0) == _("text"));
-        CHECK(m_list->GetItemTextFormatted(3,0) == _("teXt2"));
-        CHECK(m_list->GetItemTextFormatted(4,0) == _("text"));
-        CHECK(m_list->GetItemTextFormatted(5,0) == _("72"));
-        CHECK(m_list->GetItemTextFormatted(6,0) == _("7"));
+        CHECK(m_list->GetItemTextFormatted(0,0) == L"Text");
+        CHECK(m_list->GetItemTextFormatted(1,0) == L"tExt2");
+        CHECK(m_list->GetItemTextFormatted(2,0) == L"text");
+        CHECK(m_list->GetItemTextFormatted(3,0) == L"teXt2");
+        CHECK(m_list->GetItemTextFormatted(4,0) == L"text");
+        CHECK(m_list->GetItemTextFormatted(5,0) == L"72");
+        CHECK(m_list->GetItemTextFormatted(6,0) == L"7");
         // assertions are in place to handle out-of-boundary issues.
         // it's too slow to have boundary checks in this function.
         }

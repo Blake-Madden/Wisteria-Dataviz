@@ -6,7 +6,7 @@ TEST_CASE("Formatted text control", "[controls][text-control]")
     {
      FormattedTextCtrl* m_textCtrl = new FormattedTextCtrl(wxTheApp->GetTopWindow());
     // "This is some Test text. THIS IS for something like testing a test cONtrol."
-    m_textCtrl->SetFormattedText(wxT("{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fprq2\\fcharset0 Berlin Sans FB;}}{\\colortbl ;\\red128\\green0\\blue128;\\red255\\green0\\blue255;}\\viewkind4\\uc1\\pard\\f0\\fs32 This \\fs20 is some Test \\b text\\b0 . THIS IS for \\i something\\i0  like \\cf1\\highlight2\\f1 testing\\highlight0  \\cf0\\f0 a test cONtrol.\\par}"));
+    m_textCtrl->SetFormattedText(L"{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fprq2\\fcharset0 Berlin Sans FB;}}{\\colortbl ;\\red128\\green0\\blue128;\\red255\\green0\\blue255;}\\viewkind4\\uc1\\pard\\f0\\fs32 This \\fs20 is some Test \\b text\\b0 . THIS IS for \\i something\\i0  like \\cf1\\highlight2\\f1 testing\\highlight0  \\cf0\\f0 a test cONtrol.\\par}");
     
     SECTION("On Find Up Case Insensitive Partial Match")
         {

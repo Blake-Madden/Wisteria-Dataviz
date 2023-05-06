@@ -18,7 +18,7 @@ void WarningMessagesDlg::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxStaticBoxSizer* checksBoxSizer = new wxStaticBoxSizer(
-        new wxStaticBox(this, wxID_ANY, _("Display the following prompts:")), wxVERTICAL);
+        new wxStaticBox(this, wxID_ANY, _(L"Display the following prompts:")), wxVERTICAL);
 
     // sort the warnings by display label
     std::map<wxString, std::vector<WarningMessage>::iterator> warningsSortedByLabel;

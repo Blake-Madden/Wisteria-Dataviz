@@ -274,7 +274,7 @@ void Wisteria::UI::BaseApp::GenerateReport(wxDebugReport::Context ctx)
     report->AddAll(ctx);
 
     const wxDateTime dt = wxDateTime::Now();
-    report->AddText(L"Timestamp.log", dt.FormatISODate() + wxT(' ') +
+    report->AddText(L"Timestamp.log", dt.FormatISODate() + L' ' +
                     dt.FormatISOTime(), _(L"Timestamp of this report"));
 
     report->AddFile(m_logBuffer->GetLogFilePath(), _(L"Log Report"));

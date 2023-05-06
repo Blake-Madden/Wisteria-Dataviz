@@ -106,8 +106,8 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
     catch (...)
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path),
-            _("Read Error"), wxOK|wxICON_EXCLAMATION);
+            _(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
         return wxEmptyString;
         }
     if (mappedTempFile.IsOk())
@@ -121,8 +121,8 @@ wxString ZipCatalog::ReadTextFile(const wxString& path) const
     else
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path),
-            _("Read Error"), wxOK|wxICON_EXCLAMATION);
+            _(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
         wxRemoveFile(tempFilePath);
         return wxEmptyString;
         }
@@ -150,8 +150,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     catch (...)
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path),
-            _("Read Error"), wxOK|wxICON_EXCLAMATION);
+            _(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
         return wxEmptyString;
         }
     if (mappedTempFile.IsOk())
@@ -180,8 +180,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
             catch (...)
                 {
                 wxMessageBox(wxString::Format(
-                    _("Error reading extracted file from temp folder: %s"), path),
-                    _("Read Error"), wxOK|wxICON_EXCLAMATION);
+                    _(L"Error reading extracted file from temp folder: %s"), path),
+                    _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
                 return wxEmptyString;
                 }
             if (mappedUnicodeFile.IsOk())
@@ -196,8 +196,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
                 {
                 wxLogError(L"Error writing extracted file to temp folder: %s", path);
                 wxMessageBox(wxString::Format(
-                    _("Error writing extracted file to temp folder: %s"), path),
-                    _("Read Error"), wxOK|wxICON_EXCLAMATION);
+                    _(L"Error writing extracted file to temp folder: %s"), path),
+                    _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
                 mappedUnicodeFile.UnmapFile();
                 wxRemoveFile(UnicodeTempFilePath);
                 return wxEmptyString;
@@ -211,8 +211,8 @@ wxString ZipCatalog::ExtractTextFileToTempFile(const wxString& path) const
     else
         {
         wxMessageBox(wxString::Format(
-            _("Error reading extracted file from temp folder: %s"), path),
-            _("Read Error"), wxOK|wxICON_EXCLAMATION);
+            _(L"Error reading extracted file from temp folder: %s"), path),
+            _(L"Read Error"), wxOK|wxICON_EXCLAMATION);
         wxRemoveFile(charStreamTempFilePath);
         return wxEmptyString;
         }
@@ -270,7 +270,7 @@ bool ZipCatalog::Read(wxInputStream* stream_in, wxOutputStream& stream_out,
     if (stream_out.GetLength() == 0 && !m_readErrorShown)
         {
         m_messages.emplace_back(
-            _("Unable to read file from archive. Archive may be corrupt or password protected."),
+            _(L"Unable to read file from archive. Archive may be corrupt or password protected."),
             wxICON_EXCLAMATION);
         m_readErrorShown = true;
         return false;

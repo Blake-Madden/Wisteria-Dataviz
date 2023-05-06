@@ -54,8 +54,8 @@ void ExcelPreviewDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     if (IsImportingOnlySelectedCells() && m_selectedCells.empty() &&
         m_selectedRows.empty() && m_selectedColumns.empty() && m_selectedBlocks.empty())
         {
-        wxMessageBox(_("Please highlight cells to import."),
-            _("Error"), wxOK|wxICON_EXCLAMATION);
+        wxMessageBox(_(L"Please highlight cells to import."),
+            _(L"Error"), wxOK|wxICON_EXCLAMATION);
         return;
         }
 
@@ -68,9 +68,9 @@ void ExcelPreviewDlg::CreateControls()
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
     wxArrayString choices;
-    choices.Add(_("All text cells"));
-    choices.Add(_("Only highlighted cells"));
-    mainSizer->Add(new wxRadioBox(this, wxID_ANY, _("Import:"), wxDefaultPosition,
+    choices.Add(_(L"All text cells"));
+    choices.Add(_(L"Only highlighted cells"));
+    mainSizer->Add(new wxRadioBox(this, wxID_ANY, _(L"Import:"), wxDefaultPosition,
         wxDefaultSize, choices, 0, wxRA_SPECIFY_ROWS, wxGenericValidator(&m_importMethod)), 0,
         wxLEFT|wxTOP|wxBOTTOM, wxSizerFlags::GetDefaultBorder());
     if (m_wrk->size() > 0)
@@ -85,7 +85,7 @@ void ExcelPreviewDlg::CreateControls()
         }
 
     mainSizer->Add(new wxStaticText(this, wxID_STATIC,
-        _("Note: only text cells are being shown and are truncated here for display purposes.")), 0,
+        _(L"Note: only text cells are being shown and are truncated here for display purposes.")), 0,
         wxALL, wxSizerFlags::GetDefaultBorder());
     mainSizer->Add(CreateButtonSizer(wxOK|wxHELP), 0, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 

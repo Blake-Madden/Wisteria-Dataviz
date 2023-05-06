@@ -37,7 +37,7 @@ public:
         @param pos The position of this dialog.
         @param size The size of this dialog.
         @param style The style of this dialog.*/
-    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _("View Item"),
+    bool Create(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& caption = _(L"View Item"),
                 const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                 long style = wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN)
         {

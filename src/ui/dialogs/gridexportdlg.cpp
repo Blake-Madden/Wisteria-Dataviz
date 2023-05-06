@@ -84,27 +84,27 @@ void GridExportDlg::CreateControls()
     wxBoxSizer* optionsSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(optionsSizer, wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
-    wxCheckBox* columnHeaderCheck = new wxCheckBox(this, wxID_ANY, _("&Include column headers"),
+    wxCheckBox* columnHeaderCheck = new wxCheckBox(this, wxID_ANY, _(L"&Include column headers"),
         wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
         wxGenericValidator(&m_options.m_includeColumnHeaders));
     optionsSizer->Add(columnHeaderCheck, wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     optionsSizer->Add(new wxRadioButton(this,
-        ControlIDs::ID_EXPORT_ALL_OPTION, _("&Export all rows"),
+        ControlIDs::ID_EXPORT_ALL_OPTION, _(L"&Export all rows"),
         wxDefaultPosition, wxDefaultSize, wxRB_GROUP, wxGenericValidator(&m_options.m_exportAll)),
         wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     optionsSizer->Add(new wxRadioButton(this,
-        ControlIDs::ID_EXPORT_SELECTED_OPTION, _("Export &selected rows"),
+        ControlIDs::ID_EXPORT_SELECTED_OPTION, _(L"Export &selected rows"),
         wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_options.m_exportSelected)),
         wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
     optionsSizer->Add(new wxRadioButton(this,
-        ControlIDs::ID_EXPORT_RANGE_OPTION, _("Export a &range of rows"),
+        ControlIDs::ID_EXPORT_RANGE_OPTION, _(L"Export a &range of rows"),
         wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_options.m_exportRange)),
         wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));
 
-    m_rangeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Range:"));
+    m_rangeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Range:"));
     optionsSizer->Add(m_rangeBoxSizer, wxSizerFlags().Expand().Border(wxALL,
         wxSizerFlags::GetDefaultBorder()));
 
@@ -154,7 +154,7 @@ void GridExportDlg::CreateControls()
     if (m_exportFormat == GridExportFormat::ExportHtml)
         {
         m_paginateCheckBox = new wxCheckBox(this, wxID_ANY,
-            _("&Paginate using printer settings"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
+            _(L"&Paginate using printer settings"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
             wxGenericValidator(&m_options.m_pageUsingPrinterSettings));
         optionsSizer->Add(m_paginateCheckBox,
             wxSizerFlags().Border(wxALL, wxSizerFlags::GetDefaultBorder()));

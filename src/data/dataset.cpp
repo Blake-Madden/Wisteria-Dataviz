@@ -171,7 +171,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     void ColumnWithStringTable::CollapseExcept(const std::vector<wxString>& labelsToKeep,
-                                               const wxString& otherLabel /*= _("Other")*/)
+                                               const wxString& otherLabel /*= _(L"Other")*/)
         {
         bool recodingNeeded{ false };
 
@@ -193,7 +193,7 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::CollapseExcept(const wxString& colName,
                                  const std::vector<wxString>& labelsToKeep,
-                                 const wxString& otherLabel /*= _("Other")*/)
+                                 const wxString& otherLabel /*= _(L"Other")*/)
         {
         auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())
@@ -206,7 +206,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     void ColumnWithStringTable::CollapseMin(const size_t minVal,
-                                            const wxString& otherLabel /*= _("Other")*/)
+                                            const wxString& otherLabel /*= _(L"Other")*/)
         {
         frequency_set<GroupIdType> vals;
         std::for_each(GetValues().cbegin(), GetValues().cend(),
@@ -231,7 +231,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     void Dataset::CollapseMin(const wxString& colName, const size_t minVal,
-                              const wxString& otherLabel /*= _("Other")*/)
+                              const wxString& otherLabel /*= _(L"Other")*/)
         {
         auto catColumn = GetCategoricalColumn(colName);
         if (catColumn == GetCategoricalColumns().end())

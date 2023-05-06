@@ -637,8 +637,8 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
             { return false; }
         }
 
-    wxProgressDialog progressDlg(wxString::Format(_("Moving %s"), fromDirectory),
-        _("Moving Folder"),
+    wxProgressDialog progressDlg(wxString::Format(_(L"Moving %s"), fromDirectory),
+        _(L"Moving Folder"),
         static_cast<int>(filesToMove.GetCount()), nullptr,
         wxPD_AUTO_HIDE|wxPD_SMOOTH|wxPD_ESTIMATED_TIME|wxPD_REMAINING_TIME|wxPD_CAN_ABORT);
     progressDlg.Centre();
@@ -647,7 +647,7 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
         {
         wxYield();
         if (!progressDlg.Update(static_cast<int>(i),
-            wxString::Format(_("Moving %s"), filesToMove[i])) )
+            wxString::Format(_(L"Moving %s"), filesToMove[i])) )
             { return false; }
         wxString relativeFilePath = filesToMove[i];
         relativeFilePath.Remove(0, rootFolderPathLength);

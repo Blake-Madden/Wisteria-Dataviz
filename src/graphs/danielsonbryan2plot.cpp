@@ -87,7 +87,7 @@ namespace Wisteria::Graphs
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(.7f);
             leftRuler.SetCustomYPosition(8);
-            leftRuler.SetRange(0,8,0);
+            leftRuler.SetRange(0, 8, 0);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
@@ -124,7 +124,7 @@ namespace Wisteria::Graphs
             middleRuler.GetAxisLinePen() = wxNullPen;
             middleRuler.SetCustomXPosition(0.75);
             middleRuler.SetCustomYPosition(8);
-            middleRuler.SetRange(0,8,0);
+            middleRuler.SetRange(0, 8, 0);
             middleRuler.SetId(101);
             AddCustomAxis(middleRuler);
             }
@@ -134,24 +134,24 @@ namespace Wisteria::Graphs
             leftRuler.SetDPIScaleFactor(GetDPIScaleFactor());
             leftRuler.SetCustomXPosition(0.8);
             leftRuler.SetCustomYPosition(8);
-            leftRuler.SetRange(0,8,0);
+            leftRuler.SetRange(0, 8, 0);
             leftRuler.SetLabelDisplay(AxisLabelDisplay::NoDisplay);
             leftRuler.SetId(100);
             leftRuler.GetAxisLinePen() = wxNullPen;
             leftRuler.AddBracket(Axis::AxisBracket(2, 2, 2,
-                _("very difficult, college level")));
+                _(L"very difficult, college level")));
             leftRuler.AddBracket(Axis::AxisBracket(3, 3, 3,
-                _("difficult, high school level")));
+                _(L"difficult, high school level")));
             leftRuler.AddBracket(Axis::AxisBracket(4, 4, 4,
-                _("fairly difficult, junior high school level")));
+                _(L"fairly difficult, junior high school level")));
             leftRuler.AddBracket(Axis::AxisBracket(5, 5, 5,
-                _("standard, sixth-grade level")));
+                _(L"standard, sixth-grade level")));
             leftRuler.AddBracket(Axis::AxisBracket(6, 6, 6,
-                _("fairly easy, fifth-grade level")));
+                _(L"fairly easy, fifth-grade level")));
             leftRuler.AddBracket(Axis::AxisBracket(7, 7, 7,
-                _("easy, fourth-grade level")));
+                _(L"easy, fourth-grade level")));
             leftRuler.AddBracket(Axis::AxisBracket(8, 8, 8,
-                _("very easy, third-grade level")));
+                _(L"very easy, third-grade level")));
             for (auto& bracket : leftRuler.GetBrackets())
                 {
                 bracket.SetTickmarkLength(0);

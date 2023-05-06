@@ -26,10 +26,10 @@ void ListCtrlSortDlg::CreateControls()
     m_columnList->EnableGridLines();
     m_columnList->EnableItemDeletion();
     m_columnList->EnableItemAdd();
-    m_columnList->InsertColumn(0, _("Column"));
+    m_columnList->InsertColumn(0, _(L"Column"));
     m_columnList->SetColumnEditable(0);
     m_columnList->SetColumnTextSelectionsReadOnly(0, m_columnChoices);
-    m_columnList->InsertColumn(1, _("Order"));
+    m_columnList->InsertColumn(1, _(L"Order"));
     wxArrayString orderOptions;
     orderOptions.Add(GetAscendingLabel());
     orderOptions.Add(GetDescendingLabel());
@@ -44,12 +44,12 @@ void ListCtrlSortDlg::CreateControls()
     wxRect rect;
     m_columnList->GetItemRect(0,rect);
     labelsSizer->AddSpacer(rect.GetHeight() + 3);
-    wxStaticText* label = new wxStaticText(this, wxID_STATIC, _("Sort by:"),
+    wxStaticText* label = new wxStaticText(this, wxID_STATIC, _(L"Sort by:"),
                                            wxDefaultPosition, wxDefaultSize, 0);
     labelsSizer->Add(label, 0);
     if (m_columnChoices.size() > 1)
         {
-        label = new wxStaticText(this, wxID_STATIC, _("...then by:"),
+        label = new wxStaticText(this, wxID_STATIC, _(L"...then by:"),
                                  wxDefaultPosition, wxDefaultSize, 0);
         labelsSizer->Add(label, 0, wxTOP, wxSizerFlags::GetDefaultBorder());
         }
@@ -58,7 +58,7 @@ void ListCtrlSortDlg::CreateControls()
     optionsSizer->Add(m_columnList, 1, wxEXPAND);
 
     wxStaticText* infoText = new wxStaticText(this, wxID_ANY,
-        _("Double click a field to add or edit a sort criterion."));
+        _(L"Double click a field to add or edit a sort criterion."));
     infoText->Wrap(GetSize().GetWidth());
     mainSizer->Add(infoText, 0, wxALL|wxEXPAND, wxSizerFlags::GetDefaultBorder());
 
