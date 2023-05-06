@@ -118,7 +118,7 @@ namespace Wisteria
         // if just plain ASCII text
         else
             {
-            if (srcCharSet.IsEmpty())
+            if (srcCharSet.empty())
                 {
                 // in case this is an ASCII file that incorrectly has a Windows UTF-8
                 // signature in front, then chop off that signature set it to load it
@@ -219,12 +219,12 @@ namespace Wisteria
             if (!wxFile::Exists(filePath))
                 {
                 if (wxMessageBox(wxString::Format(
-                    _("%s: file not found.\nDo you wish to search for it?"), filePath),
-                    _("File Not Found"), wxYES_NO|wxICON_WARNING) == wxNO)
+                    _(L"%s: file not found.\nDo you wish to search for it?"), filePath),
+                    _(L"File Not Found"), wxYES_NO|wxICON_WARNING) == wxNO)
                     { return false; }
                 wxFileName fn(filePath);
                 wxFileDialog dialog(nullptr,
-                    _("Select File"),
+                    _(L"Select File"),
                     fn.GetPath(),
                     fn.GetName(),
                     wxFileSelectorDefaultWildcardStr,
@@ -245,14 +245,14 @@ namespace Wisteria
             textBuffer = TextStream::CharStreamToUnicode(
                                 static_cast<const char*>(file.GetStream()),
                                 file.GetMapSize(), srcCharSet);
-            if (textBuffer.IsEmpty())
+            if (textBuffer.empty())
                 {
                 // uncommon situation, but if file is nothing more than a UTF-8 BOM then it's OK
                 if (file.GetMapSize() == sizeof(utf8::bom) &&
                     std::memcmp(file.GetStream(),utf8::bom,sizeof(utf8::bom)) == 0)
                     { return true; }
-                wxMessageBox(_("Unable to read file."),
-                    _("Error"), wxOK|wxICON_EXCLAMATION);
+                wxMessageBox(_(L"Unable to read file."),
+                    _(L"Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }
             }
@@ -261,8 +261,8 @@ namespace Wisteria
             wxFile theFile;
             if (!theFile.Open(filePath, wxFile::read) )
                 {
-                wxMessageBox(_("Unable to open file."),
-                    _("Error"), wxOK|wxICON_EXCLAMATION);
+                wxMessageBox(_(L"Unable to open file."),
+                    _(L"Error"), wxOK|wxICON_EXCLAMATION);
                 return false;
                 }
             auto fileText = std::make_unique<char[]>(theFile.Length() + 1);

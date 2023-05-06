@@ -1994,7 +1994,7 @@ wxString ListCtrlEx::GetItemTextFormatted(const long item, const long column) co
                 {
                 wxFileName fn(retVal);
                 // sometimes URLs look like directories and won't have a filename
-                return fn.GetFullName().IsEmpty() ? retVal : fn.GetFullName();
+                return fn.GetFullName().empty() ? retVal : fn.GetFullName();
                 }
             else
                 { return retVal; }
@@ -2044,7 +2044,7 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
 
     wxFileName filePath = dialog.GetPath();
     // in case the extension is missing then use the selected filter
-    if (filePath.GetExt().IsEmpty())
+    if (filePath.GetExt().empty())
         {
         switch (exportTypesDlg.GetSelection())
             {

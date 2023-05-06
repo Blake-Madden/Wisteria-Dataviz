@@ -405,7 +405,7 @@ void RibbonMetroArtProvider::DrawTab(
     if (m_flags & wxRIBBON_BAR_SHOW_PAGE_LABELS)
     {
         wxString label = tab.page->GetLabel();
-        if (!label.IsEmpty())
+        if (!label.empty())
         {
             dc.SetFont(m_tab_label_font);
             dc.SetTextForeground(tabTextColour);

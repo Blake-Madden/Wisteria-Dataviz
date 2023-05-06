@@ -876,7 +876,7 @@ void FormattedTextCtrl::OnSave([[maybe_unused]] wxCommandEvent& event)
     wxBusyCursor wait;
     wxFileName filePath = dialog.GetPath();
     // in case the extension is missing then use the selected filter
-    if (filePath.GetExt().IsEmpty())
+    if (filePath.GetExt().empty())
         {
         switch (exportTypesDlg.GetSelection())
             {

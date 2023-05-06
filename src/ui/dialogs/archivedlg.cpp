@@ -12,7 +12,7 @@ using namespace Wisteria::UI;
 
 ArchiveDlg::ArchiveDlg(wxWindow* parent, const wxString& fullFileFilter,
             wxWindowID id /*= wxID_ANY*/,
-            const wxString& caption /*= _("Select Archive File")*/,
+            const wxString& caption /*= _(L"Select Archive File")*/,
             const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
             long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/) :
         m_fullFileFilter(fullFileFilter)
@@ -32,9 +32,9 @@ void ArchiveDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     {
     TransferDataFromWindow();
 
-    if (m_filePath.IsEmpty() || !wxFileName::Exists(m_filePath))
+    if (m_filePath.empty() || !wxFileName::Exists(m_filePath))
         {
-        wxMessageBox(_("Please select a valid archive file."), _("Invalid File"),
+        wxMessageBox(_(L"Please select a valid archive file."), _(L"Invalid File"),
                      wxICON_EXCLAMATION|wxOK, this);
         return;
         }
@@ -52,10 +52,10 @@ void ArchiveDlg::OnFileButtonClick([[maybe_unused]] wxCommandEvent& event)
     wxFileDialog dialog
             (
             this,
-            _("Select Archive File"),
+            _(L"Select Archive File"),
             wxEmptyString,
             wxEmptyString,
-            _("Archive files (*.zip)|*.zip"),
+            _(L"Archive files (*.zip)|*.zip"),
             wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_PREVIEW|wxFD_MULTIPLE);
 
     if (dialog.ShowModal() != wxID_OK)
@@ -84,7 +84,7 @@ void ArchiveDlg::CreateControls()
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(fileTypeSizer, 0, wxEXPAND);
-    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _("File types to include:")), 0,
+    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:")), 0,
         wxALIGN_CENTER_VERTICAL|wxLEFT, wxSizerFlags::GetDefaultBorder());
     wxArrayString choiceStrings;
     wxStringTokenizer tkz(m_fullFileFilter, L"|", wxTOKEN_STRTOK);

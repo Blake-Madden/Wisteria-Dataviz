@@ -13,7 +13,7 @@ using namespace Wisteria::UI;
 //-------------------------------------------------------------
 GetDirFilterDialog::GetDirFilterDialog(wxWindow* parent, const wxString& fullFileFilter,
                     wxWindowID id /*= wxID_ANY*/,
-                    const wxString& caption /*= _("Select Directory")*/,
+                    const wxString& caption /*= _(L"Select Directory")*/,
                     const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
                     long style /*= wxDEFAULT_DIALOG_STYLE|wxCLIP_CHILDREN|wxRESIZE_BORDER*/) :
                 m_fullFileFilter(fullFileFilter)
@@ -35,9 +35,9 @@ void GetDirFilterDialog::OnOK([[maybe_unused]] wxCommandEvent& event)
     {
     TransferDataFromWindow();
 
-    if (m_filePath.IsEmpty() || !wxFileName::DirExists(m_filePath))
+    if (m_filePath.empty() || !wxFileName::DirExists(m_filePath))
         {
-        wxMessageBox(_("Please select a valid folder."), _("Invalid Folder"),
+        wxMessageBox(_(L"Please select a valid folder."), _(L"Invalid Folder"),
                      wxICON_EXCLAMATION|wxOK, this);
         return;
         }
@@ -81,7 +81,7 @@ void GetDirFilterDialog::CreateControls()
 
     wxBoxSizer* fileTypeSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(fileTypeSizer, 0, wxEXPAND);
-    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _("File types to include:"),
+    fileTypeSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"File types to include:"),
                                         wxDefaultPosition, wxDefaultSize, 0), 0,
                                         wxALIGN_CENTER_VERTICAL|wxLEFT,
                                         wxSizerFlags::GetDefaultBorder());
@@ -99,7 +99,7 @@ void GetDirFilterDialog::CreateControls()
     fileTypeSizer->Add(m_fileFilterCombo, 1, wxEXPAND|wxALL, wxSizerFlags::GetDefaultBorder());
 
     wxCheckBox* recurseDirsCheckBox = new wxCheckBox(this, wxID_ANY,
-        _("&Search directories recursively"), wxDefaultPosition, wxDefaultSize, 0,
+        _(L"&Search directories recursively"), wxDefaultPosition, wxDefaultSize, 0,
         wxGenericValidator(&m_isRecursive) );
     mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT|wxALL, wxSizerFlags::GetDefaultBorder());
     mainSizer->AddStretchSpacer(1);

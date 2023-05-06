@@ -12,7 +12,7 @@ bool MemoryMappedFile::MapFile(const wxString& filePath,
                                const bool readOnly /*= true*/,
                                const bool autoBufferOnException /*= false*/)
     {
-    if (filePath.IsEmpty())
+    if (filePath.empty())
         {
         wxLogError(L"Attempted to map a file with an empty file path.");
         return false;
