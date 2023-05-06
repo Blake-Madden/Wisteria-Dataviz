@@ -32,7 +32,7 @@ public:
     /// @returns The formula in the U.S. format.
     static wxString FormatMathExpressionToUS(const wxString& expression);
     /// @returns The locale's list separator.
-    static wxChar GetListSeparator() noexcept
+    static wchar_t GetListSeparator() noexcept
         {
         // bit of a hack, but there is no standard way of getting this
         return (wxNumberFormatter::GetDecimalSeparator() == L'.') ? L',' : L';';

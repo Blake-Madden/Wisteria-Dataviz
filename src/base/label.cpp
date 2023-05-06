@@ -1227,7 +1227,7 @@ namespace Wisteria::GraphItems
                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) > boundingBoxSize.GetHeight())
                     {
                     if (text.length())
-                        { text[text.length()-1] = wxChar{8230}; }
+                        { text[text.length()-1] = wchar_t{ 8230 }; }
                     break;
                     }
                 text += "\n"+currentLine;
@@ -1246,7 +1246,7 @@ namespace Wisteria::GraphItems
              std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) > boundingBoxSize.GetHeight())
             {
             if (text.length())
-                { text[text.length()-1] = wxChar{8230}; }
+                { text[text.length()-1] = wchar_t{ 8230 }; }
             }
         else
             { text += "\n" + currentLine; }
