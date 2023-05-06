@@ -122,6 +122,14 @@ TEST_CASE("Check CPP", "[cpp]")
         CHECK(std::wstring(L"Hello, \"Carl\".") == output);
         CHECK(ext.get_filtered_text_length() == 14);
         }
+    SECTION("Strip Escapes Raw")
+        {
+        const wchar_t* text = LR"(_(LR"Hello, \"Carl\"."))";
+        cpp_extract_text ext;
+        const std::wstring output = ext(text, std::wcslen(text));
+        CHECK(std::wstring(L"Hello, \"Carl\".") == output);
+        CHECK(ext.get_filtered_text_length() == 14);
+        }
     SECTION("Block Comment")
         {
         const wchar_t* text = L"/*!Some \ncomment*/\n\nSome code\n/**A doxygen comment.*/";

@@ -21,13 +21,13 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
         return nullptr;
         }
     assert(std::wcslen(cpp_text) == text_length);
-    const wchar_t* const endSentinel = cpp_text+text_length;
+    const wchar_t* const endSentinel = cpp_text + text_length;
     if (!allocate_text_buffer(text_length))
         {
         set_filtered_text_length(0);
         return nullptr;
         }
-    while (cpp_text+2 < endSentinel && cpp_text[0] != 0)
+    while (cpp_text + 2 < endSentinel && cpp_text[0] != 0)
         {
         // if a comment...
         if (cpp_text[0] == L'/')
@@ -85,15 +85,31 @@ const wchar_t* cpp_extract_text::operator()(const wchar_t* cpp_text, const size_
             }
         // ...or gettext resources
         else if (cpp_text[0] == L'_' &&
-                 cpp_text[1] == L'(' && cpp_text[2] == L'\"')
+                 cpp_text[1] == L'(')
             {
-            cpp_text += 3;
+            if (endSentinel &&
+                cpp_text[2] == L'\"')
+                { cpp_text += 3; }
+            else if (cpp_text + 3 < endSentinel &&
+                cpp_text[2] == L'L' &&
+                cpp_text[3] == L'\"')
+                { cpp_text += 4; }
+            else if (cpp_text + 4 < endSentinel &&
+                cpp_text[2] == L'L' &&
+                cpp_text[3] == L'R' &&
+                cpp_text[4] == L'\"')
+                { cpp_text += 5; }
+            else
+                {
+                ++cpp_text;
+                continue;
+                }
             const wchar_t* const end = string_util::find_unescaped_char(cpp_text, L'\"');
             if (end && end < endSentinel)
                 {
                 add_characters_strip_escapes(cpp_text, end-cpp_text);
                 add_characters(L"\n\n", 2);
-                cpp_text = end+1;
+                cpp_text = end + 1;
                 }
             else
                 { break; }

@@ -20,30 +20,38 @@ namespace lily_of_the_valley
     class cpp_extract_text final : public extract_text
         {
     public:
-        /** Main interface for extracting plain text from C++ source code.
-            This will include Doxygen/Javadoc comments and GETTEXT strings.
+        /** @brief Main interface for extracting plain text from C++ source code.
+            @details This will include Doxygen/Javadoc comments and GETTEXT strings.
             @param cpp_text The C++ code text to extract text from.
             @param text_length The length of the text.
             @returns A pointer to the parsed text, or null upon failure.
             @note To include all comments (not just Doxygen content), call include_all_comments(true).*/
-        [[nodiscard]] const wchar_t* operator()(const wchar_t* cpp_text, const size_t text_length);
-        /// Sets whether all comments should be included (not just Doxygen-style comments).
+        [[nodiscard]]
+        const wchar_t* operator()(const wchar_t* cpp_text, const size_t text_length);
+        /// @brief Sets whether all comments should be included (not just Doxygen-style comments).
         /// @param includeAll Set to true to include all comments.
         void include_all_comments(const bool includeAll) noexcept
             { m_include_all_comments = includeAll; }
         /// @returns True if all comments are being included (not just Doxygen-style comments).
         /// @note The default is to only include Doxygen comments.
-        [[nodiscard]] bool is_including_all_comments() const noexcept
+        [[nodiscard]]
+        bool is_including_all_comments() const noexcept
             { return m_include_all_comments; }
         /** @returns The author from the document summary.
             @note Must be called after calling operator().*/
-        [[nodiscard]] const std::wstring& get_author() const noexcept
+        [[nodiscard]]
+        const std::wstring& get_author() const noexcept
             { return m_author; }
     protected:
-        /// @returns True if a character is an English letter, number, or underscore.
+        /// @returns @c true if a character is an English letter, number, or underscore.
         /// @param ch The character to review.
-        [[nodiscard]] static constexpr bool is_valid_char(const wchar_t ch) noexcept
-            { return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z') || (ch >= L'0' && ch <= L'9') || (ch == L'_'); }
+        [[nodiscard]]
+        static constexpr bool is_valid_char(const wchar_t ch) noexcept
+            {
+            return (ch >= L'a' && ch <= L'z') ||
+                   (ch >= L'A' && ch <= L'Z') ||
+                   (ch >= L'0' && ch <= L'9') || (ch == L'_');
+            }
         /** @brief Replaces \\n \\t \\r characters with respective spaces while calling add_characters().
             @param characters The string to add.
             @param length The length of the string to add.*/
