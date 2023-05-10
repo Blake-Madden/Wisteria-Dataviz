@@ -47,26 +47,32 @@ namespace lily_of_the_valley
         {
     public:
         /// @returns The UTF-8 leading signature.
-        [[nodiscard]] static const char* get_bom_utf8() noexcept { return "\357\273\277"; }
+        [[nodiscard]]
+        static const char* get_bom_utf8() noexcept { return "\357\273\277"; }
         /// @returns The 16-bit Unicode byte order marker (little endian).
-        [[nodiscard]] static const char* get_bom_utf16le() noexcept { return "\377\376"; }
+        [[nodiscard]]
+        static const char* get_bom_utf16le() noexcept { return "\377\376"; }
         /// @returns The 16-bit Unicode byte order marker (big endian).
-        [[nodiscard]] static const char* get_bom_utf16be() noexcept { return "\376\377"; }
+        [[nodiscard]]
+        static const char* get_bom_utf16be() noexcept { return "\376\377"; }
         /** @returns Whether a text stream is Unicode
                 (by seeing if it has a leading Byte Order Mark).
             @param text The text stream to analyze.*/
-        [[nodiscard]] static bool is_unicode(const char* text) noexcept
+        [[nodiscard]]
+        static bool is_unicode(const char* text) noexcept
             {
             return (std::strncmp(get_bom_utf16le(), text, 2) == 0 ||
                     std::strncmp(get_bom_utf16be(), text, 2) == 0);
             }
         /** @returns Whether a text stream is little endian Unicode (based on the BoM).
             @param text The text stream to analyze.*/
-        [[nodiscard]] static bool is_little_endian(const char* text) noexcept
+        [[nodiscard]]
+        static bool is_little_endian(const char* text) noexcept
             { return (std::strncmp(get_bom_utf16le(), text, 2) == 0); }
         /** @returns Whether a text stream is big endian Unicode (based on the BoM).
             @param text The text stream to analyze.*/
-        [[nodiscard]] static bool is_big_endian(const char* text) noexcept
+        [[nodiscard]]
+        static bool is_big_endian(const char* text) noexcept
             { return (std::strncmp(get_bom_utf16be(), text, 2) == 0); }
         /** @brief Main interface for taking a Unicode (char*) stream and converting
                 it into a wide Unicode stream.
