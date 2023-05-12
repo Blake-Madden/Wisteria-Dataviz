@@ -524,8 +524,10 @@ namespace Wisteria
                     const auto variablesNode = bracketsNode->GetProperty(L"variables");
                     if (variablesNode->IsOk())
                         {
-                        const auto labelVarName = variablesNode->GetProperty(L"label")->GetValueString();
-                        const auto valueVarName = variablesNode->GetProperty(L"value")->GetValueString();
+                        const auto labelVarName =
+                            ExpandConstants(variablesNode->GetProperty(L"label")->GetValueString());
+                        const auto valueVarName =
+                            ExpandConstants(variablesNode->GetProperty(L"value")->GetValueString());
 
                         axis.AddBrackets(foundDataset->second, labelVarName, valueVarName);
                         if (bracketPen.IsOk())
@@ -1942,11 +1944,13 @@ namespace Wisteria
             pcRoadmap->SetData(foundPos->second,
                 variablesNode->GetProperty(L"positive")->GetValueString(),
                 (variablesNode->HasProperty(L"positive-aggregate") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"positive-aggregate")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"positive-aggregate")->GetValueString())) :
                     std::nullopt),
                 variablesNode->GetProperty(L"negative")->GetValueString(),
                 (variablesNode->HasProperty(L"negative-aggregate") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"negative-aggregate")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"negative-aggregate")->GetValueString())) :
                     std::nullopt),
                 (graphNode->GetProperty(L"minimum-count")->IsValueNumber() ?
                     std::optional<double>(graphNode->GetProperty(L"minimum-count")->
@@ -2029,20 +2033,24 @@ namespace Wisteria
             ganttChart->SetData(foundPos->second,
                 dateInterval.has_value() ? dateInterval.value() : DateInterval::FiscalQuarterly,
                 fyType.has_value() ? fyType.value() : FiscalYear::USBusiness,
-                variablesNode->GetProperty(L"task")->GetValueString(),
-                variablesNode->GetProperty(L"start-date")->GetValueString(),
-                variablesNode->GetProperty(L"end-date")->GetValueString(),
+                ExpandConstants(variablesNode->GetProperty(L"task")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"start-date")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"end-date")->GetValueString()),
                 (variablesNode->HasProperty(L"resource") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"resource")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"resource")->GetValueString())) :
                     std::nullopt),
                 (variablesNode->HasProperty(L"description") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"description")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"description")->GetValueString())) :
                     std::nullopt),
                 (variablesNode->HasProperty(L"completion") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"completion")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"completion")->GetValueString())) :
                     std::nullopt),
                 (variablesNode->HasProperty(L"group") ?
-                    std::optional<wxString>(variablesNode->GetProperty(L"group")->GetValueString()) :
+                    std::optional<wxString>(
+                        ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString())) :
                     std::nullopt));
 
             const auto taskLabelDisplay =
@@ -2078,8 +2086,10 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto pValueColumn = variablesNode->GetProperty(L"p-value")->GetValueString();
-            const auto dvName = graphNode->GetProperty(L"dependent-variable-name")->GetValueString();
+            const auto pValueColumn =
+                ExpandConstants(variablesNode->GetProperty(L"p-value")->GetValueString());
+            const auto dvName =
+                ExpandConstants(variablesNode->GetProperty(L"dependent-variable-name")->GetValueString());
 
             int lrPredictors{ 0 };
             if (graphNode->HasProperty(L"predictors-to-include"))
@@ -2100,8 +2110,8 @@ namespace Wisteria
 
             auto lrRoadmap = std::make_shared<LRRoadmap>(canvas);
             lrRoadmap->SetData(foundPos->second,
-                variablesNode->GetProperty(L"predictor")->GetValueString(),
-                variablesNode->GetProperty(L"coefficient")->GetValueString(),
+                ExpandConstants(variablesNode->GetProperty(L"predictor")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"coefficient")->GetValueString()),
                 (pValueColumn.length() ? std::optional<wxString>(pValueColumn) : std::nullopt),
                 (graphNode->GetProperty(L"p-value-threshold")->IsValueNumber() ?
                     std::optional<double>(graphNode->GetProperty(L"p-value-threshold")->
@@ -2169,7 +2179,8 @@ namespace Wisteria
         if (variablesNode->IsOk())
             {
             std::vector<wxString> questions;
-            const auto questionVars = variablesNode->GetProperty(L"questions")->GetValueStringVector();
+            const auto questionVars =
+                ExpandConstants(variablesNode->GetProperty(L"questions")->GetValueStringVector());
             for (const auto& questionVar : questionVars)
                 {
                 auto convertedVars = ExpandColumnSelections(questionVar, foundPos->second);
@@ -2181,7 +2192,7 @@ namespace Wisteria
                 else
                     { questions.push_back(questionVar); }
                 }
-            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto groupVarName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
 
             // get the survey format
             auto surveyFormat =
@@ -2280,15 +2291,15 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto groupVarName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
 
             auto wcurvePlot = std::make_shared<WCurvePlot>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             wcurvePlot->SetData(foundPos->second,
-                variablesNode->GetProperty(L"y")->GetValueString(),
-                variablesNode->GetProperty(L"x")->GetValueString(),
+                ExpandConstants(variablesNode->GetProperty(L"y")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"x")->GetValueString()),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
             if (graphNode->HasProperty(L"time-interval-label"))
                 {
@@ -2324,11 +2335,11 @@ namespace Wisteria
             {
             auto candlestickPlot = std::make_shared<CandlestickPlot>(canvas);
             candlestickPlot->SetData(foundPos->second,
-                variablesNode->GetProperty(L"date")->GetValueString(),
-                variablesNode->GetProperty(L"open")->GetValueString(),
-                variablesNode->GetProperty(L"high")->GetValueString(),
-                variablesNode->GetProperty(L"low")->GetValueString(),
-                variablesNode->GetProperty(L"close")->GetValueString());
+                ExpandConstants(variablesNode->GetProperty(L"date")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"open")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"high")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"low")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"close")->GetValueString()));
 
             const auto plotType =
                 ReportEnumConvert::ConvertCandlestickPlotType(graphNode->GetProperty(L"plot-type")->GetValueString());
@@ -2365,15 +2376,15 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto groupVarName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
 
             auto linePlot = std::make_shared<LinePlot>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")),
                 LoadIconScheme(graphNode->GetProperty(L"icon-scheme")),
                 LoadLineStyleScheme(graphNode->GetProperty(L"line-scheme")));
             linePlot->SetData(foundPos->second,
-                variablesNode->GetProperty(L"y")->GetValueString(),
-                variablesNode->GetProperty(L"x")->GetValueString(),
+                ExpandConstants(variablesNode->GetProperty(L"y")->GetValueString()),
+                ExpandConstants(variablesNode->GetProperty(L"x")->GetValueString()),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt));
             LoadGraph(graphNode, canvas, currentRow, currentColumn, linePlot);
             return linePlot;
@@ -2402,12 +2413,12 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto groupVarName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto groupVarName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
 
             auto heatmap = std::make_shared<HeatMap>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
             heatmap->SetData(foundPos->second,
-                variablesNode->GetProperty(L"continuous")->GetValueString(),
+                ExpandConstants(variablesNode->GetProperty(L"continuous")->GetValueString()),
                 (groupVarName.length() ? std::optional<wxString>(groupVarName) : std::nullopt),
                 graphNode->GetProperty(L"group-column-count")->GetValueNumber(5));
 
@@ -2760,8 +2771,8 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto contVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-            const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
+            const auto contVarName = ExpandConstants(variablesNode->GetProperty(L"aggregate")->GetValueString());
+            const auto groupName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
 
             const auto binMethod = ReportEnumConvert::ConvertBinningMethod(
                 graphNode->GetProperty(L"binning-method")->GetValueString());
@@ -2833,9 +2844,9 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-            const auto groupName = variablesNode->GetProperty(L"group")->GetValueString();
-            const auto categoryName = variablesNode->GetProperty(L"category")->GetValueString();
+            const auto aggVarName = ExpandConstants(variablesNode->GetProperty(L"aggregate")->GetValueString());
+            const auto groupName = ExpandConstants(variablesNode->GetProperty(L"group")->GetValueString());
+            const auto categoryName = ExpandConstants(variablesNode->GetProperty(L"category")->GetValueString());
             const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
                 graphNode->GetProperty(L"bar-label-display")->GetValueString());
 
@@ -2954,8 +2965,8 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-            const auto wordColName = variablesNode->GetProperty(L"words")->GetValueString();
+            const auto aggVarName = ExpandConstants(variablesNode->GetProperty(L"aggregate")->GetValueString());
+            const auto wordColName = ExpandConstants(variablesNode->GetProperty(L"words")->GetValueString());
 
             auto wordCloud = std::make_shared<WordCloud>(canvas,
                 LoadColorScheme(graphNode->GetProperty(L"color-scheme")) );
@@ -2990,8 +3001,8 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-            const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
+            const auto aggVarName = ExpandConstants(variablesNode->GetProperty(L"aggregate")->GetValueString());
+            const auto groupVar1Name = ExpandConstants(variablesNode->GetProperty(L"group-1")->GetValueString());
 
             auto boxPlot = std::make_shared<BoxPlot>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
@@ -3036,9 +3047,9 @@ namespace Wisteria
         const auto variablesNode = graphNode->GetProperty(L"variables");
         if (variablesNode->IsOk())
             {
-            const auto aggVarName = variablesNode->GetProperty(L"aggregate")->GetValueString();
-            const auto groupVar1Name = variablesNode->GetProperty(L"group-1")->GetValueString();
-            const auto groupVar2Name = variablesNode->GetProperty(L"group-2")->GetValueString();
+            const auto aggVarName = ExpandConstants(variablesNode->GetProperty(L"aggregate")->GetValueString());
+            const auto groupVar1Name = ExpandConstants(variablesNode->GetProperty(L"group-1")->GetValueString());
+            const auto groupVar2Name = ExpandConstants(variablesNode->GetProperty(L"group-2")->GetValueString());
 
             auto pieChart = std::make_shared<PieChart>(canvas,
                 LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),

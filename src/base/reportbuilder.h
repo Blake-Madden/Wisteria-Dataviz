@@ -382,7 +382,15 @@ namespace Wisteria
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced
                 with the user-defined values.*/
-        [[nodiscard]] wxString ExpandConstants(wxString str) const;
+        [[nodiscard]]
+        wxString ExpandConstants(wxString str) const;
+        [[nodiscard]]
+        std::vector<wxString> ExpandConstants(std::vector<wxString> strs) const
+            {
+            for (auto& str : strs)
+                { str = ExpandConstants(str); }
+            return strs;
+            }
         [[nodiscard]] std::optional<double> ExpandNumericConstant(wxString str) const;
         /// @todo needs support for ID and date columns
         void CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
