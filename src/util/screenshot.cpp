@@ -320,8 +320,8 @@ bool Screenshot::SaveScreenshotOfTextWindow(const wxString& filePath,
             else
                 { endPoint.y += (textWindow->GetDefaultStyle().GetFontSize()*2); }
             // adjust in case the lines are on the edge of the DC
-            startPoint.x = wxMax(startPoint.x, 1);
-            startPoint.y = wxMax(startPoint.y, 1);
+            startPoint.x = std::max(startPoint.x, 1);
+            startPoint.y = std::max(startPoint.y, 1);
 
             endPoint.x = std::min(endPoint.x,
                 memDC.GetSize().GetWidth() -

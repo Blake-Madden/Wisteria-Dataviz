@@ -83,8 +83,8 @@ void ListCtrlItemViewDlg::CreateControls()
         // if the table is too big for the screen then set its min size
         // to the screen and add scrollbars
         m_htmlWindow->SetMinSize(
-            wxSize(wxMin(m_htmlWindow->GetInternalRepresentation()->GetWidth(), screenWidth * .8),
-                   wxMin(m_htmlWindow->GetInternalRepresentation()->GetHeight(), screenHeight * .8)));
+            wxSize(std::min<int>(m_htmlWindow->GetInternalRepresentation()->GetWidth(), screenWidth * .8),
+                   std::min<int>(m_htmlWindow->GetInternalRepresentation()->GetHeight(), screenHeight * .8)));
         m_htmlWindow->SetWindowStyle(wxHW_SCROLLBAR_AUTO);
         }
     else
