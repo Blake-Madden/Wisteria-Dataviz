@@ -1,0 +1,50 @@
+name: macOS Build & Unit Tests
+on: [push]
+
+jobs:
+  build:
+    name: macos-build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+  
+      - name: Install wxwidgets
+        run: |
+             brew install cmake tbb
+             git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
+             cd wxWidgets
+             mkdir build-cocoa
+             cd build-cocoa
+             ../configure --enable-debug
+             make -j4
+             sudo make install
+ 
+      - name: Build
+        run: |
+             cd ${{ github.workspace }}
+             cmake ./
+             make -j4
+
+      - name: Run tests
+        run: |
+             brew install grep
+             cd ..
+             git clone https://github.com/catchorg/Catch2.git
+             cd ${{ github.workspace }}/tests
+             cmake ./
+             make -j4
+             cd bin
+             ./WisteriaTestRunner --reporter JUnit::out=WDV-junit.xml
+             cat WDV-junit.xml
+             errors=$(cat WDV-junit.xml | ggrep -Po '(errors)="\K[^"]*')
+             failures=$(cat WDV-junit.xml | ggrep -Po '(failures)="\K[^"]*')
+             echo "Error count is: ${errors}"
+             echo "Failure count is: ${failures}"
+             if [ "$errors" -gt 0 ]; then
+               exit 1
+             fi
+             if [ "$failures" -gt 0 ]; then
+               exit 1
+             fi
