@@ -260,7 +260,7 @@ namespace Wisteria::Graphs
                     }
                 // it fit next to the other label, so recheck for overlapping
                 // and give up if another overlap happens
-                foundPos = std::find_if(std::execution::par,
+                foundPos = std::find_if(
                     drawnRects.cbegin(), drawnRects.cend(),
                     [&bBox](const auto& rect) noexcept
                     { return rect.Intersects(bBox); });
