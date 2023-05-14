@@ -319,8 +319,6 @@ namespace Wisteria::Data
         std::vector<ColumnConstIterator> fromNamesList;
         // where names go to as labels
         std::vector<CategoricalColumnIterator> toNamesList;
-        // the one column that the source columns' data are going into
-        ColumnIterator valueTo{ nullptr };
 
         // find and add the columns being kept, then map the columns between the datasets
         for (const auto& columnToKeep : columnsToKeep)
