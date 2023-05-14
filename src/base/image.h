@@ -14,7 +14,6 @@
 
 #include <cstring>
 #include <random>
-#include <omp.h>
 #include <wx/wx.h>
 #include <wx/image.h>
 #include <wx/mstream.h>
@@ -24,6 +23,9 @@
 #include <wx/bmpbndl.h>
 #include <wx/xml/xml.h>
 #include <wx/regex.h>
+#__has_include(<omp.h>)
+    #include <omp.h>
+#endif
 #include "graphitems.h"
 #include "colorbrewer.h"
 #include "../math/mathematics.h"
