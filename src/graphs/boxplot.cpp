@@ -105,7 +105,7 @@ namespace Wisteria::Graphs
                            { return !std::isnan(val); });
             }
 
-        std::sort(std::execution::par, dest.begin(), dest.end());
+        std::sort(dest.begin(), dest.end());
         statistics::quartiles_presorted(dest,
             m_lowerControlLimit, m_upperControlLimit);
         const double outlierRange = 1.5*(m_upperControlLimit-m_lowerControlLimit);

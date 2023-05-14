@@ -19,7 +19,6 @@
 #include <cmath>
 #include <vector>
 #include <map>
-#include <execution>
 #include "mathematics.h"
 #include "safe_math.h"
 #include "../util/frequencymap.h"
@@ -185,7 +184,7 @@ namespace statistics
             std::back_inserter(dest),
             [](const auto val) noexcept
               { return !std::isnan(val); });
-        std::sort(std::execution::par, dest.begin(), dest.end());
+        std::sort( dest.begin(), dest.end());
         return median_presorted(dest);
         }
 
@@ -399,7 +398,7 @@ namespace statistics
                 std::back_inserter(m_temp_buffer),
                 [](const auto val) noexcept
                   { return !std::isnan(val); });
-            std::sort(std::execution::par, m_temp_buffer.begin(), m_temp_buffer.end() );
+            std::sort(m_temp_buffer.begin(), m_temp_buffer.end() );
             // calculate the quartile ranges
             statistics::quartiles_presorted(
                 m_temp_buffer,
@@ -414,7 +413,6 @@ namespace statistics
         [[nodiscard]] std::vector<double>::const_iterator operator()() noexcept
             {
             m_current_position = std::find_if(
-                std::execution::par,
                 m_current_position, m_end,
                 [this](const auto& val) noexcept
                     { return !is_within<double>(std::make_pair(lo, uo), val); }

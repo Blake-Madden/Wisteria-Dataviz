@@ -229,7 +229,7 @@ namespace Wisteria::Graphs
             bBox.SetTopLeft(pt);
             AdjustRectToDrawArea(bBox, polyBoundingBox);
 
-            auto foundPos = std::find_if(std::execution::par,
+            auto foundPos = std::find_if(
                 drawnRects.cbegin(), drawnRects.cend(),
                 [&bBox](const auto& rect) noexcept
                 { return rect.Intersects(bBox); });

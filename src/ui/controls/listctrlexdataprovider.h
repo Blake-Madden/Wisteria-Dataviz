@@ -16,7 +16,6 @@
 #include <limits>
 #include <vector>
 #include <map>
-#include <execution>
 #include <wx/wx.h>
 #include <wx/listctrl.h>
 #include <wx/math.h>
@@ -793,12 +792,12 @@ public:
             { dataEndToSortTo = m_virtualData.begin()+high+1; }
         if (direction == Wisteria::SortDirection::SortAscending)
             {
-            std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
+            std::sort( m_virtualData.begin()+low, dataEndToSortTo,
                     StringCellLessThan(std::vector<size_t>(1,column)));
             }
         else
             {
-            std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
+            std::sort(m_virtualData.begin()+low, dataEndToSortTo,
                     StringCellGreaterThan(std::vector<size_t>(1,column)));
             }
         }
@@ -858,7 +857,7 @@ public:
             { return; }
         if (high != static_cast<size_t>(-1) && high < m_virtualData.size())
             { dataEndToSortTo = m_virtualData.begin()+high+1; }
-        std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
+        std::sort(m_virtualData.begin()+low, dataEndToSortTo,
                 DoubleWithTextValuesMultiDirectional(m_labelManager.GetLabels(), columns));
         }
     /// @brief Sorts a column.
@@ -879,14 +878,14 @@ public:
             { dataEndToSortTo = m_virtualData.begin()+high+1; }
         if (direction == Wisteria::SortDirection::SortAscending)
             {
-            std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
+            std::sort(m_virtualData.begin()+low, dataEndToSortTo,
                     DoubleWithTextValuesLessThan(m_labelManager.GetLabels(),
                     std::vector<std::pair<size_t, Wisteria::SortDirection>>
                         (1, std::pair<size_t,Wisteria::SortDirection>(column,direction))));
             }
         else
             {
-            std::sort(std::execution::par, m_virtualData.begin()+low, dataEndToSortTo,
+            std::sort(m_virtualData.begin()+low, dataEndToSortTo,
                     DoubleWithTextValuesGreaterThan(m_labelManager.GetLabels(),
                     std::vector<std::pair<size_t,Wisteria::SortDirection>>
                         (1, std::pair<size_t,Wisteria::SortDirection>(column,direction))));
