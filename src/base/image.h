@@ -23,7 +23,7 @@
 #include <wx/bmpbndl.h>
 #include <wx/xml/xml.h>
 #include <wx/regex.h>
-#__has_include(<omp.h>)
+#if __has_include(<omp.h>)
     #include <omp.h>
 #endif
 #include "graphitems.h"
