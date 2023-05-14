@@ -12,7 +12,7 @@ jobs:
   
       - name: Install wxwidgets
         run: |
-             brew install cmake tbb
+             brew install cmake tbb libomp
              git clone https://github.com/wxWidgets/wxWidgets.git --recurse-submodules
              cd wxWidgets
              mkdir build-cocoa
