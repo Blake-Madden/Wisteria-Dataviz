@@ -584,7 +584,7 @@ namespace Wisteria::GraphItems
         dc.DrawLines(points.size(), &points[0]);
 
         std::for_each(points.begin(), points.end(),
-            [&iconRadius, this](auto& pt)
+            [this](auto& pt)
             { pt.y += ScaleToScreenAndCanvas(4); });
         dc.DrawLines(points.size(), &points[0]);
         }
