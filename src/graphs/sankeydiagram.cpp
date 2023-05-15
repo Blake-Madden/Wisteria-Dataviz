@@ -144,7 +144,7 @@ namespace Wisteria::Graphs
                     const auto subGroupPos = std::find(m_sankeyColumns[0].cbegin(),
                                                        m_sankeyColumns[0].cend(), SankeyGroup{ gr });
                     wxASSERT_MSG(subGroupPos != m_sankeyColumns[0].cend(),
-                                 L"Unable to find group in sankey column!");
+                                 L"Unable to find group in Sankey column!");
                     if (subGroupPos != m_sankeyColumns[0].cend())
                         { tempColumn.push_back(*subGroupPos); }
                     }
@@ -258,7 +258,6 @@ namespace Wisteria::Graphs
             for (auto& group : m_sankeyColumns[colIndex])
                 {
                 auto currentColor{ GetBrushScheme()->GetBrush(currentColorIndex++).GetColour() };
-                auto currentGroupAxisWidthRemaining{ group.m_yAxisWidth };
                 for (const auto& downstreamGroup : group.m_downStreamGroups.get_data())
                     {
                     auto downstreamGroupPos =
@@ -267,10 +266,11 @@ namespace Wisteria::Graphs
                     if (downstreamGroupPos != m_sankeyColumns[colIndex + 1].end())
                         {
                         const auto percentOfDownstreamGroup =
-                            safe_divide<double>(downstreamGroup.second.second, downstreamGroupPos->m_frequency);
+                            safe_divide<double>(downstreamGroup.second.second,
+                                                downstreamGroupPos->m_frequency);
                         const auto streamWidth{ downstreamGroupPos->m_yAxisWidth * percentOfDownstreamGroup };
 
-                        std::array<wxPoint, 10> pts;
+                        std::array<wxPoint, 10> pts{};
                         if (GetPhysicalCoordinates(xStart,
                                 group.m_currentYAxisPosition, pts[0]) &&
                             GetPhysicalCoordinates(xEnd,
@@ -332,7 +332,6 @@ namespace Wisteria::Graphs
                             AddObject(streamRibbon);
                             downstreamGroupPos->m_currentYAxisPosition -= streamWidth;
                             group.m_currentYAxisPosition -= streamWidth;
-                            currentGroupAxisWidthRemaining -= streamWidth;
                             }
                         }
                     currentColor = ColorContrast::ShadeOrTint(currentColor);
@@ -378,7 +377,7 @@ namespace Wisteria::Graphs
         const auto drawColumns =
             [&, this]()
             {
-            std::array<wxPoint, 4> pts;
+            std::array<wxPoint, 4> pts{};
 
             for (const auto& col : m_sankeyColumns)
                 {
@@ -405,7 +404,7 @@ namespace Wisteria::Graphs
             [&, this]
             (const size_t colIndex, Wisteria::Side labelSide)
             {
-            std::array<wxPoint, 4> pts;
+            std::array<wxPoint, 4> pts{};
 
             std::vector<std::shared_ptr<GraphItems::Label>> labels;
             for (auto& group : m_sankeyColumns[colIndex])
@@ -427,7 +426,7 @@ namespace Wisteria::Graphs
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
                                 wxString::Format(L"%s (%s)", group.m_label,
                                     wxNumberFormatter::ToString(group.m_frequency, 0,
-                                                                wxNumberFormatter::Style::Style_WithThousandsSep)) :
+                                        wxNumberFormatter::Style::Style_WithThousandsSep)) :
                             (GetGroupLabelDisplay() == BinLabelDisplay::BinPercentage) ?
                                 wxString::Format(L"%s%%",
                                     wxNumberFormatter::ToString(group.m_percentOfColumn * 100, 0)) :
@@ -490,9 +489,9 @@ namespace Wisteria::Graphs
                     if (bBox.Intersects(nextBBox))
                         {
                         const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
-                        const auto perecentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
+                        const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
                         labels[i]->SetScaling(labels[i]->GetScaling() *
-                                              (1.0 - perecentEclipsed));
+                                              (1.0 - percentEclipsed));
                         smallestFontScale =
                             std::max(minFontScale,
                                 std::min(smallestFontScale.value_or(labels[i]->GetScaling()),
