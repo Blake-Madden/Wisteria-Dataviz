@@ -149,16 +149,38 @@ and specify the path to your wxWidgets folder. Save and then build the project.
 Linux
 -----------------------------
 
-Install the following from your repository manager:
+Install the following from your repository manager (or build from source):
 
 - wxWidgets 3.2
 - wxGTK3 development files (version 3.2 or higher)
 - Threading Building Blocks (libtbb) and its development files
 
-Open "CMakeLists.txt" in CMake GUI, configure, and then generate a make script. Finally, go into
-the build folder that you specified and run `make` to build the library and demo.
+Go into the project folder and run the following to
+build the library and demo:
 
-If using KDevelop, you can also open the CMake file and build from there.
+```
+cmake ./
+make -j4
+```
+
+If using KDevelop or VS Code, you can also open the CMake file and build from there.
+
+macOS
+-----------------------------
+
+Install the following using brew (or build from source):
+
+- wxWidgets 3.2
+- Threading Building Blocks (tbb)
+- OpenMP (libomp)
+
+Go into the project folder and run the following to
+build the library and demo:
+
+```
+cmake ./
+make -j4
+```
 
 Documentation
 =============================
@@ -170,8 +192,9 @@ Dependencies
 
 - [wxWidgets](https://github.com/wxWidgets/wxWidgets) 3.2 or higher
 - GTK 3 (Linux)
-- libtbb (Linux)
+- Threading Building Blocks: libtbb (Linux), tbb (macOS)
 - A C++17 compatible compiler
+- OpenMP (optional): libomp (macOS)
 
 If using a version of CMake older than 3.24, please refer to
 [wxWidgets's CMake overview](https://docs.wxwidgets.org/trunk/overview_cmake.html) for instructions
