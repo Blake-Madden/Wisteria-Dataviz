@@ -125,7 +125,7 @@ ELSEIF(MINGW OR MSYS)
 ELSEIF(APPLE)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__ wxDEBUG_LEVEL=2> $<$<CONFIG:Release>:wxDEBUG_LEVEL=0>)
-    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow
+    TARGET_COMPILE_OPTIONS(WisteriaLib PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
 ELSEIF(UNIX)
     TARGET_COMPILE_DEFINITIONS(WisteriaLib PUBLIC __WXGTK__
