@@ -3,10 +3,13 @@ Wisteria Dataviz
 
 <img src="wisteria-dv.svg" width="200" />
 
+[![Linux Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml)
+[![macOS Build & Unit Tests](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/macos-build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/macos-build.yml)
+
 [![cppcheck](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/cppcheck.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/cppcheck.yml)
-[![i18n-check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml)
+
 [![doxygen](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/doxygen.yml)
-[![unix build](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/unix%20build.yml)
+[![i18n-check](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml/badge.svg)](https://github.com/Blake-Madden/Wisteria-Dataviz/actions/workflows/i18n-check.yml)
 
 About
 =============================
