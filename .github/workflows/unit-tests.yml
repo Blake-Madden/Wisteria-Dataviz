@@ -1,4 +1,4 @@
-name: unit tests
+name: Gui Unit Tests
 on: [push]
 
 jobs:
