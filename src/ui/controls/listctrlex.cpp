@@ -2168,7 +2168,7 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
         {
         firstRow = 0;
         lastRow = GetItemCount()-1;
-        // can't paginate when using discontigous rows
+        // can't paginate when using discontiguous rows
         usePrinterSettings = false;
         }
     // or if exporting all, then set the range to everything

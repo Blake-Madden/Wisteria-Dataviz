@@ -240,7 +240,7 @@ public:
     /** @brief Constructor.
         @param parent The parent window.
         @param id The control's ID.
-        @param pos The control's postion.
+        @param pos The control's position.
         @param size The control's size.
         @param style The control's style.
         @param validator A validator for the control.*/

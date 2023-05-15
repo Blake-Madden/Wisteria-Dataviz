@@ -118,9 +118,9 @@ namespace lily_of_the_valley
     class is_standard_delimiters
         {
     public:
-        /// @brief Determines if character is either whitespace, a semicolor, or comma.
+        /// @brief Determines if character is either whitespace, a semicolon, or comma.
         /// @param character The character to review.
-        /// @returns @c true if character is either whitespace, a semicolor, or comma.
+        /// @returns @c true if character is either whitespace, a semicolon, or comma.
         [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
             {
             return (std::iswspace(character) ||

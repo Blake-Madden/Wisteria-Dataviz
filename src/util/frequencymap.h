@@ -416,7 +416,7 @@ private:
     };
 
 /** @brief Same as a @c std::map (where the key is a single value), but also
-         supports multiple (unique) values (with their own freqency counts)
+         supports multiple (unique) values (with their own frequency counts)
          connected to each key. Includes an aggregate for each key.*/
 template <typename T1, typename T2,
           typename Compare = std::less<T1>, typename CompareSecondaryValues = std::less<T2>>
@@ -519,7 +519,7 @@ private:
     };
 
 /** @brief Same as a @c std::map (where the key is a single value), but also
-        supports multiple (unique) values (with their own freqency counts and aggregates)
+        supports multiple (unique) values (with their own frequency counts and aggregates)
         connected to each key. Includes an aggregate for each key and each subitem under each key.
     @todo Add unit test.*/
 template <typename T1, typename T2,

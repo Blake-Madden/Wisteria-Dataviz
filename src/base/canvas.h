@@ -603,7 +603,7 @@ namespace Wisteria
         double GetScaling() const
             {
             // aspect ratio is the same when resizing or zooming the window,
-            // so using width or height is interchangable here
+            // so using width or height is interchangeable here
             return std::max<double>(
                 safe_divide<double>(
                     GetCanvasRectDIPs().GetWidth(),

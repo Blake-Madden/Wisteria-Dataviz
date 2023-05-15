@@ -16,7 +16,7 @@
 
 namespace Wisteria::UI
     {
-    /// @brief Dialog to dislay a HtmlTableWindow.
+    /// @brief Dialog to display a HtmlTableWindow.
     class HtmlTablePanel : public wxWindow
         {
     public:

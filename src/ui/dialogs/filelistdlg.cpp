@@ -123,7 +123,7 @@ void FileListDlg::BindEvents()
     Bind(wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
             {
-            // make sure user isn't accidently opening too many files at once
+            // make sure user isn't accidentally opening too many files at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
                 wxMessageBox(wxString::Format(
                     _(L"Do you wish to open the selected %d files?"),
@@ -147,7 +147,7 @@ void FileListDlg::BindEvents()
     Bind(wxEVT_BUTTON,
         [this]([[maybe_unused]] wxCommandEvent&)
             {
-            // make sure user isn't accidently opening too many folders at once
+            // make sure user isn't accidentally opening too many folders at once
             if (m_listCtrl->GetSelectedItemCount() > 10 &&
                 wxMessageBox(
                     wxString::Format(_(L"Do you wish to open the selected %d folders?"),

@@ -39,7 +39,7 @@ namespace Wisteria::Data
             { return m_xlsxTextExtractor.get_worksheet_names(); }
         /** @brief Reads a worksheet from the loaded workbook.
             @param worksheet The name or 1-based index of the worksheet to read.
-            @param delimiter The charater to delimit the columns with.
+            @param delimiter The character to delimit the columns with.
             @returns The worksheet data, delimited as text.
             @throws std::runtime_error If the worksheet can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

@@ -99,7 +99,7 @@ If reading the columns as strings, then the importer will internally assign inte
 in the order that they appear in the file. Because of this, the numeric code assigned to missing data
 (i.e., empty string) is non-deterministic. It will be whatever the next ID in the sequence is when the
 first empty value is encountered in the column. `ColumnWithStringTable::FindMissingDataCode()`
-can be usded to find this code after import.
+can be used to find this code after import.
 
 Otherwise, if the file contains integers, then you can import the column as such using
 `CategoricalImportMethod::ReadAsIntegers`. If you want strings to be connected to these
@@ -180,7 +180,7 @@ companyAcquisitionData->ImportCSV(L"/home/rdoyle/data/Company Acquisition.csv",
 ```
 
 Missing data in a date column are imported as `wxInvalidDateTime`, so `wxDateTime::IsValid()` should be called when
-working with imported values. Also, any parsing errors (from malformed input) while imporing dates are logged
+working with imported values. Also, any parsing errors (from malformed input) while importing dates are logged
 (via `wxLogWarning()`).
 
 Recoding Data
@@ -237,7 +237,7 @@ Subsetting
 A dataset can be subsetted using the `Wisteria::Data::Subset` class. This class's @c Subset()
 method accepts a filter criterion based on a column, the value to filter with, and how to compare with
 that value. For example, the following will create a subset where it filtered a dataset on the
-column @c Gender equalling @c Female.
+column @c Gender equaling @c Female.
 
 ```cpp
 auto theData = std::make_shared<Data::Dataset>();

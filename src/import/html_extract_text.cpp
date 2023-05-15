@@ -442,7 +442,7 @@ namespace lily_of_the_valley
             { ++start; }
         const char* nextAngle = string_util::strnchr(start, '>', (end-start));
         const char* nextClosedAngle = string_util::strnistr(start, "/>", (end-start));
-        // no close angle?  This HMTL is messed up, so just return the default charset
+        // no close angle?  This HTML is messed up, so just return the default charset
         if (!nextAngle && !nextClosedAngle)
             { return charset; }
         // see which closing angle is the closest one

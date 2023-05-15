@@ -5,7 +5,7 @@ A `Wisteria::Data::Dataset` object can be built programmatically, as well as [im
 To build a dataset, you first construct it as a `shared_ptr<Data::Dataset>`, then you set its data via
 `AddRow()`. After that, if you are using a categorical (e.g., grouping) variable, you can set its string labels.
 
-The following demostrates this:
+The following demonstrates this:
 
 ```cpp
 auto yData = std::make_shared<Data::Dataset>();

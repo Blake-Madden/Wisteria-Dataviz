@@ -311,7 +311,7 @@ void FormattedTextCtrl::OnPrint([[maybe_unused]] wxCommandEvent& event)
        background into another dummy text control and then use that
        control for printing. If our current control is dark themed,
        then that background will be printed (both on Windows and macOS),
-       and obviouosly we don't want to print a black page.
+       and obviously we don't want to print a black page.
 
        The workaround is to create a hidden text control, set its
        background to white, copy in RFT meant for a white background,
@@ -971,7 +971,7 @@ void FormattedTextCtrl::OnContextMenu([[maybe_unused]] wxContextMenuEvent& event
     if (wxGetMouseState().ShiftDown())
         {
         wxMessageBox(
-            wxString::Format(_DT(L"Cursor postion: %d", DTExplanation::DebugMessage),
+            wxString::Format(_DT(L"Cursor position: %d", DTExplanation::DebugMessage),
                 GetInsertionPoint()), _DT(L"Position"), wxOK);
         }
     if (m_menu)

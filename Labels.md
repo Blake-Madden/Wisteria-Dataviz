@@ -87,7 +87,7 @@ Label groupHeader(
         // call this if being constructed inside of a graph's
         // size calculation function
         DPIScaling(GetDPIScaleFactor()).
-        // bottom align text within its (minimum-sized bouding box)
+        // bottom align text within its (minimum-sized bounding box)
         LabelPageVerticalAlignment(PageVerticalAlignment::BottomAligned));
 // At least 200 pixels (not DIPs) tall.
 // (The minimum user width is left unused with std::nullopt)

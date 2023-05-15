@@ -23,7 +23,7 @@ wxColour ColorBrewer::BrewColor(const double value) const
     {
     wxASSERT_MSG(std::isnan(value) ||
                  (value >= m_range.first && value <= m_range.second),
-                 L"Value passed to BrewColor() should be within establised data range "
+                 L"Value passed to BrewColor() should be within established data range "
                   "from previous call to BrewColors()!");
     // return invalid color or NaN
     if (std::isnan(value))

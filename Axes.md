@@ -114,7 +114,7 @@ them with respect to the other labels via `SetPerpendicularLabelAxisAlignment()`
 Label Stacking
 -----------------------------
 
-Axes support label stacking, where if any labels overlap each other, then evey other label will be drawn
+Axes support label stacking, where if any labels overlap each other, then every other label will be drawn
 on a second line:
 
     |

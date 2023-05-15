@@ -1272,7 +1272,7 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 
         // render the text
-        wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };
+        wxCoord lineX{ 0 }, lineY{ 0 }, offset{ 0 };
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
         wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
@@ -1375,29 +1375,29 @@ namespace Wisteria::GraphItems
                 dc.GetTextExtent(token, &lineX, &lineY);
                 if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushLeft)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offest = (safe_divide<double>(fullTextSzForHeader.GetHeight(),2) -
+                    offset = (safe_divide<double>(fullTextSzForHeader.GetHeight(),2) -
                               safe_divide<double>(lineX, 2)) +
                              leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = (fullTextSzForHeader.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
+                    offset = (fullTextSzForHeader.GetHeight()-lineX-ScaleToScreenAndCanvas(GetLeftPadding())) +
                         (HasLegendIcons() ? 0 : leftOffset);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, true);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, false);
                     }
@@ -1405,25 +1405,25 @@ namespace Wisteria::GraphItems
             else
                 {
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
-                    { offest = ScaleToScreenAndCanvas(GetLeftPadding()); }
+                    { offset = ScaleToScreenAndCanvas(GetLeftPadding()); }
                 else if (GetTextAlignment() == TextAlignment::Centered)
                     {
-                    offest = (safe_divide<double>(fullTextSz.GetHeight(), 2) -
+                    offset = (safe_divide<double>(fullTextSz.GetHeight(), 2) -
                               safe_divide<double>(lineX, 2));
                     }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = fullTextSz.GetHeight() - lineX -
+                    offset = fullTextSz.GetHeight() - lineX -
                         ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSz, true);
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSz, false);
                     }
                 }
@@ -1451,7 +1451,7 @@ namespace Wisteria::GraphItems
             DCTextColourChangerIfDifferent tcc(dc,
                 isHeader ?
                 GetHeaderInfo().GetFontColor() : dc.GetTextForeground());
-            dc.DrawRotatedText(token, pt.x + xOffset, pt.y-offest-currentLineOffset, 90+m_tiltAngle);
+            dc.DrawRotatedText(token, pt.x + xOffset, pt.y-offset-currentLineOffset, 90+m_tiltAngle);
             // move over for next line
             pt.x += (lineY+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;
@@ -1475,7 +1475,7 @@ namespace Wisteria::GraphItems
                 ScaleToScreenAndCanvas(GetPen().GetWidth()) : 0);
 
         // render the text
-        wxCoord lineX{ 0 }, lineY{ 0 }, offest{ 0 };
+        wxCoord lineX{ 0 }, lineY{ 0 }, offset{ 0 };
         // if justified, shrink it down to include the padding on all sides
         wxSize fullTextSz = GetCachedContentBoundingBox().GetSize();
         wxSize fullTextSzForHeader = GetCachedContentBoundingBox().GetSize();
@@ -1584,31 +1584,31 @@ namespace Wisteria::GraphItems
                 // otherwise, align with the rest of the text
                 if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushLeft)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     }
                 // note that for centering we need to add half of the margin back in
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::Centered)
                     {
-                    offest = (safe_divide<double>(fullTextSzForHeader.GetWidth(), 2) -
+                    offset = (safe_divide<double>(fullTextSzForHeader.GetWidth(), 2) -
                               safe_divide<double>(lineX, 2)) +
                         leftOffset;
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = (fullTextSzForHeader.GetWidth() - lineX -
+                    offset = (fullTextSzForHeader.GetWidth() - lineX -
                               ScaleToScreenAndCanvas(GetLeftPadding())) +
                              (HasLegendIcons() ? 0 : leftOffset);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, true);
                     }
                 else if (GetHeaderInfo().GetLabelAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offest = HasLegendIcons() ? 0 :
+                    offset = HasLegendIcons() ? 0 :
                         leftOffset + ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSzForHeader, false);
                     }
@@ -1616,25 +1616,25 @@ namespace Wisteria::GraphItems
             else
                 {
                 if (GetTextAlignment() == TextAlignment::FlushLeft)
-                    { offest = ScaleToScreenAndCanvas(GetLeftPadding()); }
+                    { offset = ScaleToScreenAndCanvas(GetLeftPadding()); }
                 else if (GetTextAlignment() == TextAlignment::Centered)
                     {
-                    offest = (safe_divide<double>(fullTextSz.GetWidth(), 2) -
+                    offset = (safe_divide<double>(fullTextSz.GetWidth(), 2) -
                               safe_divide<double>(lineX, 2));
                     }
                 else if (GetTextAlignment() == TextAlignment::FlushRight)
                     {
-                    offest = fullTextSz.GetWidth() - lineX -
+                    offset = fullTextSz.GetWidth() - lineX -
                              ScaleToScreenAndCanvas(GetRightPadding());
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtCharacter)
                     {
-                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSz, true);
                     }
                 else if (GetTextAlignment() == TextAlignment::JustifiedAtWord)
                     {
-                    offest = ScaleToScreenAndCanvas(GetLeftPadding());
+                    offset = ScaleToScreenAndCanvas(GetLeftPadding());
                     trackTextLine(token, fullTextSz, false);
                     }
                 }
@@ -1663,9 +1663,9 @@ namespace Wisteria::GraphItems
                 isHeader ?
                 GetHeaderInfo().GetFontColor() : dc.GetTextForeground());
             if (m_tiltAngle != 0)
-                { dc.DrawRotatedText(token,pt.x+offest+currentLineOffset, pt.y + yOffset, m_tiltAngle); }
+                { dc.DrawRotatedText(token,pt.x+offset+currentLineOffset, pt.y + yOffset, m_tiltAngle); }
             else
-                { dc.DrawText(token,pt.x+offest+currentLineOffset, pt.y + yOffset); }
+                { dc.DrawText(token,pt.x+offset+currentLineOffset, pt.y + yOffset); }
             // move down for next line
             pt.y += (lineY+std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             ++currentLineNumber;

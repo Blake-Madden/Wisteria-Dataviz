@@ -28,7 +28,7 @@ namespace lily_of_the_valley
             @param html_text The HTML text to analyze.
             @param length The length of html_text.
             @param removeNewlinesAndTabs @c true to replace any newlines or tabs in cells' text with spaces.\n
-                This is recommended @c true (tne default) for traditional data, where there may be
+                This is recommended @c true (the default) for traditional data, where there may be
                 column headers with newlines that you wish to "clean."\n
                 This is recommended @c false if cells represent complex text and tabs and
                 newlines should be preserved.*/

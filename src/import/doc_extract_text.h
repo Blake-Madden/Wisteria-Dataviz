@@ -259,7 +259,7 @@ namespace lily_of_the_valley
             const char* m_eof{ nullptr };
             };
 
-        /// @breif A file system entry pointing to a "file."
+        /// @brief A file system entry pointing to a "file."
         /// @details Usually, a storage (directory) or stream (file).
         class file_system_entry final : public cfb_iostream
             {

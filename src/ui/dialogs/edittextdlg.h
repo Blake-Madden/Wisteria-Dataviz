@@ -48,7 +48,7 @@ public:
         m_value = text;
         TransferDataToWindow();
         }
-     /// @returns The editted text.
+     /// @returns The edited text.
      [[nodiscard]]
      const wxString& GetValue() const noexcept
         { return m_value; }

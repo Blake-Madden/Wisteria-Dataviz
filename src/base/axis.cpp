@@ -1324,7 +1324,7 @@ namespace Wisteria::GraphItems
             wxDCPenChanger penCh(dc, scaledPen);
 
             // if not showing labels, don't include the space between the lines and the
-            // non-existant labels when positioning the brackets
+            // non-existent labels when positioning the brackets
             const auto spaceAreasNeeded = !IsShowingLabels() ? 1 : 2;
 
             if (GetAxisType() == AxisType::LeftYAxis)
