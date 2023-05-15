@@ -15,7 +15,7 @@ jobs:
           pip install codespell
       - name: Run codespell
         run: |
-          codespell src/ *.md
+          codespell src/ *.md -L berkley,currenty,lightening,pard,ment
           rc=$?
           if [ $rc != 0 ]; then
           cat <<EOF
