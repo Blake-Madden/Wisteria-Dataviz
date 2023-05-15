@@ -107,7 +107,6 @@ namespace Wisteria::Graphs
                 }
             }
 
-        double grandTotal{ 0 };
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
             {
             // entire observation is ignored if value being aggregated is NaN
@@ -115,7 +114,6 @@ namespace Wisteria::Graphs
                 std::isnan(m_weightColumn->GetValue(i)))
                 { continue; }
             const double groupTotal = (m_useWeightColumn ? m_weightColumn->GetValue(i) : 1);
-            grandTotal += groupTotal;
             // Convert group ID into color scheme index
             // (index is ordered by labels alphabetically).
             // Note that this will be zero if grouping is not in use.
