@@ -1,4 +1,4 @@
-name: unix build
+name: Linux Build & Unit Tests
 on: [push]
 
 jobs:
