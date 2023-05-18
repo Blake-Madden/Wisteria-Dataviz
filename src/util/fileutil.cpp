@@ -650,7 +650,7 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
             wxString::Format(_(L"Moving %s"), filesToMove[i])) )
             { return false; }
         wxString relativeFilePath = filesToMove[i];
-        relativeFilePath.Remove(0, rootFolderPathLength);
+        relativeFilePath.Truncate(rootFolderPathLength);
         if (PathCombine(toDir, relativeFilePath, newFileName))
             {
             newFolder = newFileName;
