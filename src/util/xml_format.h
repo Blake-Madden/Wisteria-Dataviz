@@ -177,7 +177,7 @@ public:
         }
 
     template<typename T>
-    static void FormatAttribute(wxString& text, const wxString elementName, const T value)
+    static void FormatAttribute(wxString& text, const wxString& elementName, const T value)
         {
         text.Clear();
         text.append(L" ").append(elementName).append(L"=\"");
