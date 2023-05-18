@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-          
+
       - name: cppcheck
         uses: deep5050/cppcheck-action@main
         with:
@@ -16,7 +16,8 @@ jobs:
           inline_suppression: enable
           exclude_check: ./tests
           output_file: cppcheck_report.txt
-          
+          other_options: --library=wxWidgets
+
       - name: print output
         run: |
              REPORTFILE=./cppcheck_report.txt
