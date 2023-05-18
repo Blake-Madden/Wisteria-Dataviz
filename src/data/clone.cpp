@@ -82,6 +82,7 @@ namespace Wisteria::Data
         m_continuousColumnsMap.clear();
         // will only happen if the source was changed after SetSourceData(),
         // which the client should not be doing
+        // cppcheck-suppress assertWithSideEffect
         wxASSERT_MSG(m_fromDataset->GetContinuousColumns().size() ==
                      m_toDataset->GetContinuousColumns().size(),
                      L"Continuous column counts are different between datasets!");
@@ -97,11 +98,13 @@ namespace Wisteria::Data
 
         // categoricals
         m_catColumnsMap.clear();
+        // cppcheck-suppress assertWithSideEffect
         wxASSERT_MSG(m_fromDataset->GetCategoricalColumns().size() ==
                      m_toDataset->GetCategoricalColumns().size(),
                      L"Categorical column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetCategoricalColumns().size(); ++i)
             {
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(m_fromDataset->GetCategoricalColumn(i).GetName() ==
                          m_toDataset->GetCategoricalColumn(i).GetName(),
                          L"Categorical columns aren't mapped correctly!");
@@ -112,11 +115,13 @@ namespace Wisteria::Data
 
         // dates
         m_dateColumnsMap.clear();
+        // cppcheck-suppress assertWithSideEffect
         wxASSERT_MSG(m_fromDataset->GetDateColumns().size() ==
                      m_toDataset->GetDateColumns().size(),
                      L"Date column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetDateColumns().size(); ++i)
             {
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(m_fromDataset->GetDateColumn(i).GetName() ==
                          m_toDataset->GetDateColumn(i).GetName(),
                          L"Date columns aren't mapped correctly!");

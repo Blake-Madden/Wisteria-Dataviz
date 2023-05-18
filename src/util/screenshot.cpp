@@ -37,7 +37,7 @@ bool Screenshot::HighlightItemInScreenshot(const wxString& filePath,
     }
 
 //---------------------------------------------------
-void Screenshot::AddBorderToImage(wxBitmap& bmp)
+void Screenshot::AddBorderToImage(wxBitmap& bmp) // cppcheck-suppress constParameter
     {
     wxMemoryDC memDC;
     memDC.SelectObject(bmp);

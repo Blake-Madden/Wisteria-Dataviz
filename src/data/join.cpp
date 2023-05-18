@@ -203,6 +203,7 @@ namespace Wisteria::Data
         for (const auto& [srcCol, outCol] : outCatColNamesMap)
             {
             const auto rCol = rightDataset->GetCategoricalColumn(srcCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(rCol != rightDataset->GetCategoricalColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetCategoricalColumns().cend())
@@ -213,6 +214,7 @@ namespace Wisteria::Data
                         srcCol).ToUTF8());
                 }
             const auto mCol = mergedData->GetCategoricalColumn(outCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(mCol != mergedData->GetCategoricalColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetCategoricalColumns().cend())
@@ -227,6 +229,7 @@ namespace Wisteria::Data
         for (const auto& [srcCol, outCol] : outContinuousColNamesMap)
             {
             const auto rCol = rightDataset->GetContinuousColumn(srcCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(rCol != rightDataset->GetContinuousColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetContinuousColumns().cend())
@@ -237,6 +240,7 @@ namespace Wisteria::Data
                         srcCol).ToUTF8());
                 }
             const auto mCol = mergedData->GetContinuousColumn(outCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(mCol != mergedData->GetContinuousColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetContinuousColumns().cend())
@@ -251,6 +255,7 @@ namespace Wisteria::Data
         for (const auto& [srcCol, outCol] : outDateColNamesMap)
             {
             const auto rCol = rightDataset->GetDateColumn(srcCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(rCol != rightDataset->GetDateColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (rCol == rightDataset->GetDateColumns().cend())
@@ -261,6 +266,7 @@ namespace Wisteria::Data
                         srcCol).ToUTF8());
                 }
             const auto mCol = mergedData->GetDateColumn(outCol);
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(mCol != mergedData->GetDateColumns().cend(),
                 L"Error getting mapped right dataset column!");
             if (mCol == mergedData->GetDateColumns().cend())

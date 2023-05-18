@@ -218,6 +218,7 @@ namespace Wisteria::Data
             if (count < minVal)
                 {
                 auto foundPos = GetStringTable().find(id);
+                // cppcheck-suppress assertWithSideEffect
                 wxASSERT_MSG(foundPos != GetStringTable().cend(),
                              L"Unable to find key in string table!");
                 if (foundPos != GetStringTable().cend())
