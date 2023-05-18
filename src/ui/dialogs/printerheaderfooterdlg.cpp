@@ -49,7 +49,7 @@ void PrinterHeaderFooterDlg::UCaseEmbeddedTags(wxString& str)
         embeddedTags.emplace_back(re.GetMatch(processText, 0));
 
         // Process the remainder of the text if there is any.
-        processText = processText.Mid(start + len);
+        processText = processText.substr(start + len);
         }
     for (const auto& tag : embeddedTags)
         { str.Replace(tag, tag.Upper()); }
@@ -83,7 +83,7 @@ bool PrinterHeaderFooterDlg::Validate()
                 }
 
             // Process the remainder of the text if there is any
-            processText = processText.Mid(start + len);
+            processText = processText.substr(start + len);
             }
         return true;
         };

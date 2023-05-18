@@ -88,6 +88,7 @@ namespace Wisteria::Data
                      L"Continuous column counts are different between datasets!");
         for (size_t i = 0; i < m_fromDataset->GetContinuousColumns().size(); ++i)
             {
+            // cppcheck-suppress assertWithSideEffect
             wxASSERT_MSG(m_fromDataset->GetContinuousColumn(i).GetName() ==
                          m_toDataset->GetContinuousColumn(i).GetName(),
                          L"Continuous columns aren't mapped correctly!");
