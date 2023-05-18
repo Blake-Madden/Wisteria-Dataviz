@@ -266,7 +266,12 @@ namespace Wisteria
                 return false;
                 }
             auto fileText = std::make_unique<char[]>(theFile.Length() + 1);
-            theFile.Read(fileText.get(), theFile.Length());
+            if (!theFile.Read(fileText.get(), theFile.Length()))
+                {
+                wxMessageBox(_(L"Unable to read file."),
+                    _(L"Error"), wxOK|wxICON_EXCLAMATION);
+                return false;
+                }
             textBuffer = TextStream::CharStreamToUnicode(fileText.get(),
                                                          theFile.Length(), srcCharSet);
             }
