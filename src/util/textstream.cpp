@@ -12,7 +12,7 @@ namespace Wisteria
     {
     //------------------------------------------------
     bool TextStream::FixBrokenUtf8Stream(wchar_t* dest, size_t destLength,
-                                               const char* text, size_t length)
+                                         const char* text, size_t length)
         {
         wxLogWarning(L"Possible broken UTF-8 stream encountered.");
         wxASSERT_LEVEL_2(text && length && dest && destLength);
@@ -59,7 +59,7 @@ namespace Wisteria
     //------------------------------------------------
     wxString TextStream::CharStreamWithEmbeddedNullsToUnicode(const char* text,
                            const size_t length,
-                           wxString srcCharSet /*= wxEmptyString*/)
+                           const wxString& srcCharSet /*= wxEmptyString*/)
         {
         if (length == 0 || text == nullptr)
             { return wxEmptyString; }
@@ -83,7 +83,7 @@ namespace Wisteria
     //------------------------------------------------
     bool TextStream::CharStreamToUnicode(wchar_t* dest, const size_t destLength,
                         const char* text, const size_t length,
-                        wxString srcCharSet /*= wxEmptyString*/)
+                        const wxString& srcCharSet /*= wxEmptyString*/)
         {
         if (length == 0 || text == nullptr || destLength == 0 || dest == nullptr)
             { return false; }
@@ -194,7 +194,7 @@ namespace Wisteria
     //------------------------------------------------
     wxString TextStream::CharStreamToUnicode(const char* text,
                         size_t length,
-                        wxString srcCharSet /*= wxEmptyString*/)
+                        const wxString& srcCharSet /*= wxEmptyString*/)
         {
         if (length == 0 || text == nullptr)
             { return wxEmptyString; }
@@ -266,7 +266,12 @@ namespace Wisteria
                 return false;
                 }
             auto fileText = std::make_unique<char[]>(theFile.Length() + 1);
-            theFile.Read(fileText.get(), theFile.Length());
+            if (!theFile.Read(fileText.get(), theFile.Length()))
+                {
+                wxMessageBox(_(L"Unable to read file."),
+                    _(L"Error"), wxOK|wxICON_EXCLAMATION);
+                return false;
+                }
             textBuffer = TextStream::CharStreamToUnicode(fileText.get(),
                                                          theFile.Length(), srcCharSet);
             }
