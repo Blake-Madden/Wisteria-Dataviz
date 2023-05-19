@@ -59,6 +59,7 @@ namespace Wisteria
     //------------------------------------------------
     wxString TextStream::CharStreamWithEmbeddedNullsToUnicode(const char* text,
                            const size_t length,
+                           // cppcheck-suppress passedByValue
                            wxString srcCharSet /*= wxEmptyString*/)
         {
         if (length == 0 || text == nullptr)
@@ -194,6 +195,8 @@ namespace Wisteria
     //------------------------------------------------
     wxString TextStream::CharStreamToUnicode(const char* text,
                         size_t length,
+                        // This is correct, it's an [in,out] parameter
+                        // cppcheck-suppress passedByValue
                         wxString srcCharSet /*= wxEmptyString*/)
         {
         if (length == 0 || text == nullptr)
