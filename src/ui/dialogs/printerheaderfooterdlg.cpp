@@ -45,11 +45,15 @@ void PrinterHeaderFooterDlg::UCaseEmbeddedTags(wxString& str)
     while (re.Matches(processText) )
         {
         // Find the size of the first match
-        re.GetMatch(&start, &len, 0);
-        embeddedTags.emplace_back(re.GetMatch(processText, 0));
+        if (re.GetMatch(&start, &len, 0))
+            {
+            embeddedTags.emplace_back(re.GetMatch(processText, 0));
 
-        // Process the remainder of the text if there is any.
-        processText = processText.substr(start + len);
+            // Move past the current tag, preparing to find the next one
+            processText = processText.substr(start + len);
+            }
+        else
+            { break; }
         }
     for (const auto& tag : embeddedTags)
         { str.Replace(tag, tag.Upper()); }
@@ -72,18 +76,22 @@ bool PrinterHeaderFooterDlg::Validate()
         while (re.Matches(processText) )
             {
             // Find the size of the first match
-            re.GetMatch(&start, &len, 0);
-            embeddedTag = re.GetMatch(processText, 0).MakeUpper();
-
-            if (supportedTags.find(embeddedTag) == supportedTags.cend())
+            if (re.GetMatch(&start, &len, 0))
                 {
-                wxMessageBox(wxString::Format(_(L"Invalid tag: %s"), embeddedTag),
-                             _(L"Syntax Error"), wxICON_WARNING);
-                return false;
-                }
+                embeddedTag = re.GetMatch(processText, 0).MakeUpper();
 
-            // Process the remainder of the text if there is any
-            processText = processText.substr(start + len);
+                if (supportedTags.find(embeddedTag) == supportedTags.cend())
+                    {
+                    wxMessageBox(wxString::Format(_(L"Invalid tag: %s"), embeddedTag),
+                                 _(L"Syntax Error"), wxICON_WARNING);
+                    return false;
+                    }
+
+                // Move past the current tag, preparing to find the next one
+                processText = processText.substr(start + len);
+                }
+            else
+                { break; }
             }
         return true;
         };
