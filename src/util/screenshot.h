@@ -18,6 +18,8 @@
 #include <wx/listctrl.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
+#include <wx/filename.h>
+#include "../math/mathematics.h"
 
 /// @brief Class for creating and editing screenshots.
 class Screenshot
@@ -93,6 +95,15 @@ public:
     static bool HighlightItemInScreenshot(const wxString& filePath,
                                           const wxPoint topLeftCorner,
                                           const wxPoint bottomRightCorner);
+
+    /** @brief Converts an image to a PNG file (and downscaling it as necessary).
+        @param filePath The image to convert.
+        @param scaledSize The (smaller) size to convert the image to.\n
+            Note that this size is a request, as aspect ratio will be preserved.
+        @param removeOriginalFile @c true to delete the original image.
+        @returns @true if the image was successfully converted and saved.*/
+    static bool ConvertImageToPng(const wxString& filePath, const wxSize scaledSize,
+        const bool removeOriginalFile = false);
 private:
     /// @returns The active dialog or frame.
     /// @note @c wxGetActiveWindow() always returns null on macOS, so this

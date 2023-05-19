@@ -9,6 +9,36 @@
 #include "screenshot.h"
 
 //---------------------------------------------------
+bool Screenshot::ConvertImageToPng(const wxString& filePath, const wxSize scaledSize,
+    const bool removeOriginalFile /*= false*/)
+    {
+    wxBitmap bmp(filePath, wxBITMAP_TYPE_ANY);
+    if (bmp.IsOk())
+        {
+        wxFileName fn(filePath);
+        fn.SetExt(L"png");
+        wxImage img(bmp.ConvertToImage());
+        const auto [newWidth, newHeight] = geometry::downscaled_size(
+            std::make_pair(img.GetWidth(), img.GetHeight()),
+            std::make_pair(scaledSize.GetWidth(), scaledSize.GetHeight()));
+        if (!img.Rescale(newWidth, newHeight, wxIMAGE_QUALITY_HIGH).
+            SaveFile(fn.GetFullPath(), wxBitmapType::wxBITMAP_TYPE_PNG))
+            {
+            wxLogWarning(L"Unable to save '%s' when converting screenshot.", fn.GetFullPath());
+            return false;
+            }
+        if (removeOriginalFile)
+            {
+            if (!wxRemoveFile(filePath))
+                { wxLogWarning(L"Unable to delete '%s' when converting screenshot.", filePath); }
+            }
+        return true;
+        }
+    else
+        { return false; }
+    }
+
+//---------------------------------------------------
 bool Screenshot::HighlightItemInScreenshot(const wxString& filePath,
                                            const wxPoint topLeftCorner,
                                            const wxPoint bottomRightCorner)
