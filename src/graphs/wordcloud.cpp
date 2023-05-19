@@ -344,7 +344,7 @@ namespace Wisteria::Graphs
                     { ++labelPos; }
                 }
             // not the first, but one of the top five widest labels couldn't be placed,
-            // so force it into one of the bouding box's corners
+            // so force it into one of the bounding box's corners
             else if (!sucessfullyPlaced && drawnRects.size() <= 5)
                 {
                 auto bBox = (*labelPos)->GetBoundingBox(dc);
