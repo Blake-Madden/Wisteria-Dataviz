@@ -427,7 +427,8 @@ int GetAllDirs(const wxString& rootDirectory, wxArrayString& subDirs)
         ++counter;
 
         wxString subdir = rootDirectory;
-        if (subdir.Last() != wxFileName::GetPathSeparator())
+        if (subdir.length() &&
+            subdir.at(subdir.length() - 1) != wxFileName::GetPathSeparator())
             { subdir += wxFileName::GetPathSeparator(); }
         subdir += filename;
 
@@ -520,7 +521,8 @@ void FilterFiles(wxArrayString& files, const wxString& fileExtensions)
 bool RemoveEmptyDirsRecursively(const wxString& rootDirectory)
     {
     wxString rdir = rootDirectory;
-    if (rdir.Last() != wxFileName::GetPathSeparator())
+    if (rootDirectory.length() &&
+        rootDirectory.at(rootDirectory.length() - 1) != wxFileName::GetPathSeparator())
         { rdir += wxFileName::GetPathSeparator(); }
     wxArrayString subDirs;
     const auto numberOfDirs = GetAllDirs(rdir, subDirs);
@@ -603,9 +605,11 @@ bool MoveDirectory(const wxString& fromDirectory, const wxString& toDirectory)
     wxString newFileName;
     wxString fromDir = fromDirectory;
     wxString toDir = toDirectory;
-    if (fromDir.Last() != wxFileName::GetPathSeparator())
+    if (fromDir.length() &&
+        fromDir.at(fromDir.length() - 1) != wxFileName::GetPathSeparator())
         { fromDir += wxFileName::GetPathSeparator(); }
-    if (toDir.Last() != wxFileName::GetPathSeparator())
+    if (toDir.length() &&
+        toDir.at(toDir.length() - 1) != wxFileName::GetPathSeparator())
         { toDir += wxFileName::GetPathSeparator(); }
     // see how much we need to trim off of file paths to get the relative paths
     wxFileName newFolder = fromDir;
