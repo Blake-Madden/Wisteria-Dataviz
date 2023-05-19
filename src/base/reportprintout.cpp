@@ -274,14 +274,21 @@ FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas,
     m_originalSize(canvas ? canvas->GetSize() : wxSize())
     {
     wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
-    const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),
-                             canvas->GetCanvasRectDIPs().GetHeight());
-    m_sizeChanged = currentSize != newSize;
-    if (m_canvas != nullptr && m_sizeChanged)
+    if (m_canvas != nullptr)
         {
-        // set the physical size of the window; this will force a call to
-        // CalcAllSizes() and fit all the objects to the altered drawing area
-        m_canvas->SetSize(m_canvas->FromDIP(newSize));
+        const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),
+                                 canvas->GetCanvasRectDIPs().GetHeight());
+        m_sizeChanged = currentSize != newSize;
+        if (m_canvas != nullptr && m_sizeChanged)
+            {
+            m_canvas->SetCanvasMinWidthDIPs(newSize.GetWidth());
+            m_canvas->SetCanvasMinHeightDIPs(newSize.GetHeight());
+            // recalculate the row and column proportions for the new drawing area
+            m_canvas->CalcRowDimensions();
+            // set the physical size of the window; this will force a call to
+            // CalcAllSizes() and fit all the objects to the altered drawing area
+            m_canvas->SetSize(m_canvas->FromDIP(newSize));
+            }
         }
     }
 

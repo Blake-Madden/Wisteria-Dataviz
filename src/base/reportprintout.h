@@ -18,6 +18,8 @@
 namespace Wisteria
     {
     /// @brief Printing interface for reports (i.e., collection of canvases/pages).
+    /// @note It is recommended to pass the canvas to a @c wxWindowUpdateLocker
+    ///     object prior to this to avoid flickering.
     class ReportPrintout final : public wxPrintout
         {
     public:
@@ -51,7 +53,8 @@ namespace Wisteria
         bool OnPrintPage(int page) final;
     private:
         /// @returns The margin around the printing area.
-        [[nodiscard]] wxCoord GetMarginPadding(const size_t pageNumber) const
+        [[nodiscard]]
+        wxCoord GetMarginPadding(const size_t pageNumber) const
             {
             if (GetCanvasFromPageNumber(pageNumber) == nullptr)
                 { return 0; }
@@ -59,19 +62,22 @@ namespace Wisteria
             }
 
         /// @returns A header or footer with dynamic constants expanded in them.
-        [[nodiscard]] wxString ExpandPrintString(
+        [[nodiscard]]
+        wxString ExpandPrintString(
             const wxString& printString, const int pageNumber) const;
 
         /// @brief Gets the canvas associated with a page #.
         /// @details Page numbers are 1-indexed, so we need to take that into account.
-        [[nodiscard]] Canvas* GetCanvasFromPageNumber(const int pageNumber)
+        [[nodiscard]]
+        Canvas* GetCanvasFromPageNumber(const int pageNumber)
             {
             if (pageNumber <= 0 || static_cast<size_t>(pageNumber-1) >= m_canvases.size())
                 { return nullptr; }
             return m_canvases.at(static_cast<size_t>(pageNumber - 1));
             }
         /// @private
-        [[nodiscard]] const Canvas* GetCanvasFromPageNumber(const int pageNumber) const
+        [[nodiscard]]
+        const Canvas* GetCanvasFromPageNumber(const int pageNumber) const
             {
             if (pageNumber <= 0 || static_cast<size_t>(pageNumber-1) >= m_canvases.size())
                 { return nullptr; }
@@ -102,6 +108,8 @@ namespace Wisteria
 
     /// @brief Temporarily changes a canvas's size to fit a custom size
     ///     when exporting as an image.
+    /// @note It is recommended to pass the canvas to a @c wxWindowUpdateLocker
+    ///     object prior to this to avoid flickering.
     /// @warning Caller is responsible for maintaining the aspect ratio;
     ///     the provided size will be explicitly used.
     class FitToSaveOptionsChanger

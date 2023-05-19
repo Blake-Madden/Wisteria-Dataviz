@@ -328,6 +328,17 @@ namespace Wisteria::Graphs
         m_plotRect.SetHeight(m_plotRect.GetHeight() -
             (m_calculatedTopPadding+m_calculatedBottomPadding));
 
+        if (m_plotRect.GetWidth() < 0)
+            {
+            wxLogMessage(L"Graph window too small; plot area width will be adjusted.");
+            m_plotRect.SetWidth(1);
+            }
+        if (m_plotRect.GetHeight() < 0)
+            {
+            wxLogMessage(L"Graph window too small; plot area height will be adjusted.");
+            m_plotRect.SetHeight(1);
+            }
+
         // make space for the titles
         if (GetTitle().GetText().length() && GetTitle().IsShown())
             {

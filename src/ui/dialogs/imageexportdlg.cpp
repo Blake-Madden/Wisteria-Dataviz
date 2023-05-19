@@ -11,6 +11,7 @@
 
 using namespace Wisteria::UI;
 
+//------------------------------------------------------
 void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
     {
     if (!m_previewThumbnail || !m_originalBitmap.IsOk())
@@ -27,6 +28,7 @@ void ImageExportDlg::OnOptionsChanged([[maybe_unused]] wxCommandEvent& event)
     m_previewThumbnail->SetBitmap(wxBitmap(img));
     }
 
+//------------------------------------------------------
 void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
     {
     std::pair<double,double> imgSize(m_options.m_imageSize.x, m_options.m_imageSize.y);
@@ -48,7 +50,7 @@ void ImageExportDlg::OnSizeChanged(wxSpinEvent& event)
     TransferDataToWindow();
     }
 
-/// Creation
+//------------------------------------------------------
 bool ImageExportDlg::Create(wxWindow* parent,
                             const wxBitmapType bitmapType, wxWindowID id /*= wxID_ANY*/,
                             const wxString& caption /*= _(L"Image Export Options")*/,
@@ -72,7 +74,7 @@ bool ImageExportDlg::Create(wxWindow* parent,
     }
 
 /// Creates the controls and sizers
-//-------------------------------------------------------------
+//------------------------------------------------------
 void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -96,7 +98,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
         std::to_wstring(m_options.m_imageSize.GetWidth()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
-        Wisteria::Canvas::GetDefaultCanvasWidthDIPs(), 10'000);
+        128, 10'000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
     imageSizeInfoSizer->Add(widthCtrl, 0);
 
@@ -106,7 +108,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_HEIGHT_ID,
         std::to_wstring(m_options.m_imageSize.GetHeight()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
-        Wisteria::Canvas::GetDefaultCanvasHeightDIPs(), 10'000);
+        128, 10'000);
     heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));
     imageSizeInfoSizer->Add(heightCtrl);
     column1Sizer->Add(imageSizeSizer, 0, wxEXPAND);
@@ -169,7 +171,7 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     SetSizerAndFit(mainSizer);
     }
 
-//-------------------------------------------------------------
+//------------------------------------------------------
 void ImageExportDlg::OnOK([[maybe_unused]] wxCommandEvent& event)
     {
     TransferDataFromWindow();
