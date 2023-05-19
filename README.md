@@ -71,6 +71,10 @@ Basic
 | :-------------- |
 | ![](docs/doxygen/images/TableMajors.svg) |
 
+| Word Cloud (Wisteria::Graphs::WordCloud) |
+| :-------------- |
+| ![](docs/doxygen/images/wordcloud.png) |
+
 Business
 -----------------------------
 

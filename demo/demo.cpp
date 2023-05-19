@@ -131,6 +131,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LR_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PROCON_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SANKEY_DIAGRAM);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WORD_CLOUD);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_3POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_7POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_HEATMAP);
@@ -189,6 +190,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"));
+    fileMenu->Append(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -1267,6 +1269,45 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, sankey);
         }
+    // Sankey Diagram
+    else if (event.GetId() == MyApp::ID_NEW_WORD_CLOUD)
+        {
+        subframe->SetTitle(_(L"Word Cloud"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto friendsData = std::make_shared<Data::Dataset>();
+        try
+            {
+            friendsData->ImportCSV(appDir + L"/datasets/social/Friends Descriptions.csv",
+                ImportInfo().
+                ContinuousColumns({ L"Frequency"  }).
+                CategoricalColumns({
+                    { L"Word", CategoricalImportMethod::ReadAsStrings }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto wordCloud = std::make_shared<WordCloud>(subframe->m_canvas);
+        // remove the low-frequency words, and also the extreme high frequency
+        // ones to remove the main characters
+        wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100);
+        wordCloud->GetTitle().GetGraphItemInfo().Padding(5, 5, 25, 5).
+            Text(_(L"Episode Descriptions of the Sitcom 'Friends'"));
+        wordCloud->GetTitle().GetFont().MakeBold();
+
+        wordCloud->GetCaption().GetGraphItemInfo().Padding(25, 5, 5, 5).
+            Text(_(L"Note: main characters (Rachel, Ross, Monica, Chandler, Joey, & Phoebe) "
+                    "and common words have been excluded."));
+
+        wordCloud->SetCanvasMargins(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, wordCloud);
+        }
     // Linear Regression Roadmap
     else if (event.GetId() == MyApp::ID_NEW_LR_ROADMAP_GRAPH)
         {
@@ -2023,6 +2064,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
         _(L"Sankey Diagram"));
+    toolBar->AddTool(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
+        _(L"Word Cloud"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),
