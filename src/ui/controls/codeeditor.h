@@ -88,8 +88,8 @@ namespace Wisteria::UI
         /** @brief Adds a library and its functions/classes.
                 This information is used for autocompletion.
             @param library The name of the library.
-            @param functions The classes and functions inside of the library.
-                The syntax for this strings is
+            @param[in,out] functions The classes and functions inside of the library.
+                The syntax for these strings is
                 the name of the function and (optionally) a return type following a tab character.
                 For example, `"GetUser()\tUser"` will load a function named `GetUser`
                 with a return type of `User`.
@@ -97,7 +97,7 @@ namespace Wisteria::UI
         void AddLibrary(const wxString& library, NameList& functions);
         /** @brief Adds a class and its functions. This information is used for autocompletion.
             @param theClass The name of the class.
-            @param functions The functions inside of the class. The syntax for this strings is
+            @param[in,out] functions The functions inside of the class. The syntax for these strings is
                 the name of the function and (optionally) a return type following a tab character.
                 For example, `"GetUser()\tUser"` will load a function named `GetUser`
                 with a return type of `User`.
@@ -207,7 +207,7 @@ namespace Wisteria::UI
             {
             [[nodiscard]]
             bool operator()(const wxString& s1, const wxString& s2) const
-                { return s1.CmpNoCase(s2.Mid(0,s1.length())) < 0; }
+                { return s1.CmpNoCase(s2.substr(0, s1.length())) < 0; }
             };
 
         static bool SplitFunctionAndParams(wxString& function, wxString& params);

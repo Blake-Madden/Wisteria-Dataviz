@@ -338,9 +338,9 @@ void CodeEditor::Finalize()
 //-------------------------------------------------------------
 wxString CodeEditor::StripExtraInfo(const wxString& function)
     {
-    const int extraInfoStart = function.find_first_of(L"\t (");
-    if (extraInfoStart != wxNOT_FOUND)
-        { return function.Mid(0, extraInfoStart); }
+    const auto extraInfoStart = function.find_first_of(L"\t (");
+    if (extraInfoStart != wxString::npos)
+        { return function.substr(0, extraInfoStart); }
     else
         { return function; }
     }
@@ -348,10 +348,10 @@ wxString CodeEditor::StripExtraInfo(const wxString& function)
 //-------------------------------------------------------------
 wxString CodeEditor::GetReturnType(const wxString& function)
     {
-    const int parenthesisStart = function.find(L"\t");
-    if (parenthesisStart != wxNOT_FOUND)
+    const auto parenthesisStart = function.find(L"\t");
+    if (parenthesisStart != wxString::npos)
         {
-        wxString returnType = function.Mid(parenthesisStart);
+        wxString returnType = function.substr(parenthesisStart);
         returnType.Trim(true); returnType.Trim(false);
         return returnType;
         }
@@ -362,14 +362,14 @@ wxString CodeEditor::GetReturnType(const wxString& function)
 //-------------------------------------------------------------
 bool CodeEditor::SplitFunctionAndParams(wxString& function, wxString& params)
     {
-    const int parenthesisStart = function.Find(L'(');
-    if (parenthesisStart != wxNOT_FOUND)
+    const auto parenthesisStart = function.find(L'(');
+    if (parenthesisStart != wxString::npos)
         {
-        const int parenthesisEnd = function.Find(L')', true);
+        const auto parenthesisEnd = function.rfind(L')');
         // if empty parameter list then don't bother splitting this up
         if (parenthesisEnd == parenthesisStart+1)
             { return false; }
-        params = function.Mid(parenthesisStart+1,(parenthesisEnd-1)-parenthesisStart);
+        params = function.substr(parenthesisStart+1, (parenthesisEnd-1)-parenthesisStart);
         function.Truncate(parenthesisStart);
         return true;
         }
