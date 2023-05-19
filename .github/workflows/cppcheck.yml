@@ -16,7 +16,7 @@ jobs:
           inline_suppression: enable
           exclude_check: ./tests
           output_file: cppcheck_report.txt
-          other_options: --library=wxwidgets
+          other_options: --library=wxwidgets,windows
 
       - name: print output
         run: |
