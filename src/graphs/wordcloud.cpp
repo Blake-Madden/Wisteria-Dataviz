@@ -36,7 +36,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     void WordCloud::SetData(std::shared_ptr<const Data::Dataset> data,
         const wxString& wordColumnName,
-        const std::optional<const wxString> valueColumnName /*= std::nullopt*/)
+        const std::optional<const wxString> weightColumnName /*= std::nullopt*/,
+        const size_t minFreq /*= 1*/,
+        const std::optional<size_t> maxFreq /*= std::nullopt*/)
         {
         SetDataset(data);
         GetSelectedIds().clear();
@@ -53,14 +55,14 @@ namespace Wisteria::Graphs
                 wordColumnName).ToUTF8());
             }
 
-        const auto freqColumn = (valueColumnName ?
-            GetDataset()->GetContinuousColumn(valueColumnName.value()) :
+        const auto freqColumn = (weightColumnName ?
+            GetDataset()->GetContinuousColumn(weightColumnName.value()) :
             GetDataset()->GetContinuousColumns().cend());
-        if (valueColumnName && freqColumn == GetDataset()->GetContinuousColumns().cend())
+        if (weightColumnName && freqColumn == GetDataset()->GetContinuousColumns().cend())
             {
             throw std::runtime_error(wxString::Format(
-                _(L"'%s': continuous column not found for word cloud."),
-                valueColumnName.value()).ToUTF8());
+                _(L"'%s': continuous weight column not found for word cloud."),
+                weightColumnName.value()).ToUTF8());
             }
 
         const auto useValueColumn = (freqColumn != GetDataset()->GetContinuousColumns().cend());
@@ -87,8 +89,8 @@ namespace Wisteria::Graphs
 
         // remove words that don't meet the minimum frequency
         auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
-            [this](const auto& item) noexcept
-            { return item.m_frequency < m_minFrequency; });
+            [this, minFreq](const auto& item) noexcept
+            { return item.m_frequency < minFreq; });
         if (wordsToRemoveStart != m_words.cend())
             { m_words.erase(wordsToRemoveStart, m_words.end()); }
 
@@ -97,6 +99,17 @@ namespace Wisteria::Graphs
             // moving these into drawable labels
             [](const auto& lhv, const auto& rhv) noexcept
             { return lhv.m_frequency < rhv.m_frequency; });
+
+        if (maxFreq)
+            {
+            // remove words that exceed the maximum frequency
+            auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
+                [this, maxFreq](const auto& item) noexcept
+                { return item.m_frequency > maxFreq.value(); });
+            if (wordsToRemoveStart != m_words.cend())
+                { m_words.erase(wordsToRemoveStart, m_words.end()); }
+            }
+
         // convert raw frequencies to percentages
         const auto grandTotal = std::accumulate(m_words.cbegin(), m_words.cend(), 0.0,
             [](const auto& val, const auto word) noexcept
@@ -125,7 +138,8 @@ namespace Wisteria::Graphs
             {
             wxRect suggestedRect(
                 wxPoint(0, origin.y),
-                wxSize(GetPlotAreaBoundingBox().GetWidth(), GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
+                wxSize(GetPlotAreaBoundingBox().GetWidth(),
+                       GetPlotAreaBoundingBox().GetHeight() * word.m_frequency));
             auto currentLabel =
                 std::make_shared<GraphItems::Label>(GraphItemInfo(word.m_word).
                     Pen(wxNullPen).DPIScaling(GetDPIScaleFactor()).
@@ -188,11 +202,6 @@ namespace Wisteria::Graphs
             label->SetScaling(label->GetScaling() * rescaleValue);
             label->SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
             }
-
-        // the less words, the more aggressively we should try to fit them together
-        m_placementAttempts = (labels.size() < 100) ? 25 :
-            (labels.size() < 1'000) ? 10 :
-            5;
 
         // sort remaining labels by width, largest-to-smallest
         std::sort(labels.begin(), labels.end(),
@@ -291,7 +300,15 @@ namespace Wisteria::Graphs
         for (auto labelPos = labels.begin(); labelPos < labels.end(); /*in loop*/)
             {
             bool sucessfullyPlaced{ false };
-            for (size_t i = 0; i < m_placementAttempts; ++i)
+            // the less words that have been drawn so far, the more aggressively we should try to
+            // fit the current word as it will be a wider then the remaining words
+            const size_t placementAttempts =
+                (drawnRects.size() <= 5) ? 100 :
+                (drawnRects.size() <= 10) ? 50 :
+                (drawnRects.size() <= 100) ? 25 :
+                (drawnRects.size() <= 1'000) ? 10 :
+                5;
+            for (size_t i = 0; i < placementAttempts; ++i)
                 {
                 if (tryPlaceLabel(*labelPos, polyBoundingBox, wxPoint{ xPosDistro(m_mt), yPosDistro(m_mt) }))
                     {
@@ -325,6 +342,53 @@ namespace Wisteria::Graphs
                     }
                 else
                     { ++labelPos; }
+                }
+            // not the first, but one of the top five widest labels couldn't be placed,
+            // so force it into one of the bouding box's corners
+            else if (!sucessfullyPlaced && drawnRects.size() <= 5)
+                {
+                auto bBox = (*labelPos)->GetBoundingBox(dc);
+                if (drawnRects.size() == 1)
+                    {
+                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopLeft());
+                    (*labelPos)->SetAnchoring(Anchoring::TopLeftCorner);
+                    drawnRects.push_back(bBox);
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
+                else if (drawnRects.size() == 2)
+                    {
+                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopRight());
+                    (*labelPos)->SetAnchoring(Anchoring::TopRightCorner);
+                    drawnRects.push_back(bBox);
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
+                else if (drawnRects.size() == 3)
+                    {
+                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetBottomRight());
+                    (*labelPos)->SetAnchoring(Anchoring::BottomRightCorner);
+                    drawnRects.push_back(bBox);
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
+                else if (drawnRects.size() == 4)
+                    {
+                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetBottomLeft());
+                    (*labelPos)->SetAnchoring(Anchoring::BottomLeftCorner);
+                    drawnRects.push_back(bBox);
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
+                // force into the top left corner
+                else
+                    {
+                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopLeft());
+                    (*labelPos)->SetAnchoring(Anchoring::TopLeftCorner);
+                    drawnRects.push_back(bBox);
+                    AddObject((*labelPos));
+                    labelPos = labels.erase(labelPos);
+                    }
                 }
             // wasn't erased, so skip over it
             else if (!sucessfullyPlaced)

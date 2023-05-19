@@ -17,16 +17,22 @@
 namespace Wisteria::Graphs
     {
     /** @brief A visual display of word frequencies.
+        @image html wordcloud.png width=90%
 
         @par %Data:
-         This plot accepts a Data::Dataset, where a categorical column of words are
-         aggregated. The aggregation can either be the frequency of observations or
-         summed values from a corresponding continuous column.
+         This plot accepts a Data::Dataset, where a categorical column contains the words.
+         An optional weight variable can also be used, which contains the frequency
+         counts for the adjacent words in the word column.
+
+         | Word   | Frequency |
+         | :--    | --:       |
+         | Rachel | 192       |
+         | Ross   | 186       |
+         | Monica | 181       |
 
         @par Missing Data:
          - Missing data in the word column will be ignored.
-         - If summing a continuous column, then missing data will be ignored (listwise deletion).
-    */
+         - If summing a continuous column, then missing data will be ignored (listwise deletion).*/
     class WordCloud final : public Graph2D
         {
     public:
@@ -38,19 +44,21 @@ namespace Wisteria::Graphs
         /** @brief Sets the data for the word cloud.
             @param data The data.
             @param wordColumnName The column containing the words.
-            @param valueColumnName The column containing the words' frequency counts.\n
+            @param weightColumnName The column containing the words' frequency counts.\n
                 If not provided, then the words will be tabulated by the word cloud.
+            @param minFreq The minimum frequency that a word must appear to be included in the cloud.\n
+                The default is `1`.
+            @param maxFreq The maximum frequency that a word can appear and still be included in the cloud.\n
+                This is useful for filtering high-frequency words.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetData(std::shared_ptr<const Data::Dataset> data,
             const wxString& wordColumnName,
-            const std::optional<const wxString> valueColumnName = std::nullopt);
-        /** @brief Sets the minimum frequency that a word must appear to be included in the cloud.
-            @param minFreq The minimum frequency.*/
-        void SetMinimumFrequency(const size_t minFreq) noexcept
-            { m_minFrequency = minFreq; }
+            const std::optional<const wxString> weightColumnName = std::nullopt,
+            const size_t minFreq = 1,
+            const std::optional<size_t> maxFreq = std::nullopt);
     private:
         [[deprecated("Word clouds do not support legends.")]]
         [[nodiscard]]
@@ -80,9 +88,6 @@ namespace Wisteria::Graphs
             };
         void RecalcSizes(wxDC& dc) final;
         std::vector<WordInfo> m_words;
-        size_t m_minFrequency{ 1 };
-        // the number of times that we will try to place a label within a given ploygon
-        size_t m_placementAttempts{ 10 };
         };
     }
 
