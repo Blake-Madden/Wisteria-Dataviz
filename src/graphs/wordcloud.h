@@ -49,7 +49,8 @@ namespace Wisteria::Graphs
             @param minFreq The minimum frequency that a word must appear to be included in the cloud.\n
                 The default is `1`.
             @param maxFreq The maximum frequency that a word can appear and still be included in the cloud.\n
-                This is useful for filtering high-frequency words.
+                This is useful for filtering high-frequency words.\n
+                By default, all words above @c minFreq are included.
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
