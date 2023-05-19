@@ -101,7 +101,7 @@ public:
         @param scaledSize The (smaller) size to convert the image to.\n
             Note that this size is a request, as aspect ratio will be preserved.
         @param removeOriginalFile @c true to delete the original image.
-        @returns @true if the image was successfully converted and saved.*/
+        @returns @c true if the image was successfully converted and saved.*/
     static bool ConvertImageToPng(const wxString& filePath, const wxSize scaledSize,
         const bool removeOriginalFile = false);
 private:
