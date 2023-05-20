@@ -131,6 +131,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LR_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PROCON_ROADMAP_GRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_SANKEY_DIAGRAM);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_GROUPED_SANKEY_DIAGRAM);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WORD_CLOUD);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_3POINT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_LIKERT_7POINT);
@@ -190,6 +191,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"));
+    fileMenu->Append(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"));
     fileMenu->Append(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"));
     fileMenu->AppendSeparator();
 
@@ -1269,7 +1271,44 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, sankey);
         }
-    // Sankey Diagram
+    // Grouped Sankey Diagram
+    else if (event.GetId() == MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM)
+        {
+        subframe->SetTitle(_(L"Grouped Sankey Diagram"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto sankeyData = std::make_shared<Data::Dataset>();
+        try
+            {
+            sankeyData->ImportCSV(appDir + L"/datasets/Institutional Research/HS Graduate Matriculation.csv",
+                ImportInfo().ContinuousColumns( { L"Graduated", L"Enrolled" }).
+                CategoricalColumns({
+                    { L"County" },
+                    { L"High School" },
+                    { L"University" }
+                    }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(wxString::FromUTF8(err.what())),
+                         _(L"Import Error"), wxOK|wxICON_ERROR|wxCENTRE);
+            return;
+            }
+
+        auto sankey = std::make_shared<SankeyDiagram>(subframe->m_canvas);
+        sankey->SetData(sankeyData, L"High School", L"University", L"Graduated", L"Enrolled", L"County");
+        sankey->SetGroupLabelDisplay(BinLabelDisplay::BinNameAndValue);
+        sankey->SetColumnHeaderDisplay(GraphColumnHeader::AsHeader);
+        sankey->SetColumnHeaders(
+            {
+            _(L"Of @COUNT@ High School Gradudates"),
+            _(L"@COUNT@ Enrolled at Miskatonic University")
+            });
+        sankey->SetCanvasMargins(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, sankey);
+        }
+    // Word Cloud
     else if (event.GetId() == MyApp::ID_NEW_WORD_CLOUD)
         {
         subframe->SetTitle(_(L"Word Cloud"));
@@ -2064,6 +2103,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
         _(L"Sankey Diagram"));
+    toolBar->AddTool(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+        _(L"Grouped Sankey Diagram"));
     toolBar->AddTool(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
         _(L"Word Cloud"));

@@ -71,6 +71,10 @@ Basic
 | :-------------- |
 | ![](docs/doxygen/images/TableMajors.svg) |
 
+| Sankey Diagram (Wisteria::Graphs::SankeyDiagram) |
+| :-------------- |
+| ![](docs/doxygen/images/grouped-sankey.png) |
+
 | Word Cloud (Wisteria::Graphs::WordCloud) |
 | :-------------- |
 | ![](docs/doxygen/images/wordcloud.png) |
