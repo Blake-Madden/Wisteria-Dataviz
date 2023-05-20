@@ -89,11 +89,11 @@ namespace Wisteria
     enum Influence
         {
         /// @brief Positive influence (e.g., IVs with coefficients > 0).
-        InfluencePositive = 1,
+        InfluencePositive = (1 << 0),
         /// @brief Negative infuence (e.g., IVs with coefficients < 0).
-        InfluenceNegative = 2,
+        InfluenceNegative = (1 << 1),
         /// @brief No influence (e.g., IVs with coefficients = 0).
-        InfluenceNeutral = 4,
+        InfluenceNeutral = (1 << 2),
         /// @brief All levels of influence.
         InfluenceAll = (InfluencePositive | InfluenceNegative | InfluenceNeutral)
         };
