@@ -160,7 +160,7 @@ Linux
 Install the following from your repository manager (or build from source):
 
 - wxWidgets 3.2
-- wxGTK3 development files (version 3.2 or higher)
+- GTK3 development files (version 3.2 or higher)
 - Threading Building Blocks (libtbb) and its development files
 
 Go into the project folder and run the following to
