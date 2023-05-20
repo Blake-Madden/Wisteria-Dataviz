@@ -411,7 +411,10 @@ namespace Wisteria::GraphItems
                 GraphicsContextFallback gcf{ &dc, boundingBox };
                 auto gc = gcf.GetGraphicsContext();
                 wxASSERT_MSG(gc, L"Failed to get graphics context for curvy rectangle!");
-                if (gc)
+                // If drawing commands can't be used, then switch to drawing as
+                // a regular polypon. These shapes often overlap each other (e.g., Sankey diagram),
+                // so using bitmaps won't work.
+                if (gc && !gcf.IsFallingBackToBitmap())
                     {
                     // save current transform matrix state
                     gc->PushState();
@@ -434,6 +437,8 @@ namespace Wisteria::GraphItems
                     // restore transform matrix
                     gc->PopState();
                     }
+                else
+                    { dc.DrawPolygon(m_scaledPoints.size(), &m_scaledPoints[0]); }
                 }
             else if (GetShape() == PolygonShape::WaterColorRectangle)
                 {
