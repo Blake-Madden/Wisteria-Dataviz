@@ -103,11 +103,11 @@ namespace Wisteria::Graphs
         if (maxFreq)
             {
             // remove words that exceed the maximum frequency
-            auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
+            auto maxWordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
                 [this, maxFreq](const auto& item) noexcept
                 { return item.m_frequency > maxFreq.value(); });
-            if (wordsToRemoveStart != m_words.cend())
-                { m_words.erase(wordsToRemoveStart, m_words.end()); }
+            if (maxWordsToRemoveStart != m_words.cend())
+                { m_words.erase(maxWordsToRemoveStart, m_words.end()); }
             }
 
         // convert raw frequencies to percentages
