@@ -39,28 +39,28 @@ namespace Wisteria
     enum DebugSettings
         {
         /** @brief No %Wisteria-specific debugging should be enabled.*/
-        DebugNone = 0x00,
+        DebugNone = 0,
         /** @brief Draw a bounding box around objects when they are selected.*/
-        DrawBoundingBoxesOnSelection = 0x01,
+        DrawBoundingBoxesOnSelection = (1 << 0),
         /** @brief Write additional information on the screen when an object is selected
                 (e.g., the scaling value).*/
-        DrawInformationOnSelection = 0x02,
+        DrawInformationOnSelection = (1 << 1),
         /** @brief Draw more verbose information, even when objects aren't selected.\n
                 This is only recommended when designing a new graph type.*/
-        DrawExtraInformation = 0x04,
+        DrawExtraInformation = (1 << 2),
         /** @brief Run experimental code.\n
                 Code being used to test a new graph type during the design stage should
                 be wrapped in @c IncludeExperimentalCode blocks.\n
                 This is a preferred replacement for `#ifdef 0` code blocks as this
                 can easily be enabled/disabled globally
                 (based on how @c DEBUG_DRAW_EXP_CODE is defined).*/
-        IncludeExperimentalCode = 0x08,
+        IncludeExperimentalCode = (1 << 3),
         /** @brief Allows various file output options that should not be available in
                 production releases. For example, allowing configuration files to
                 export dataset silently for debugging purposes.*/
-        AllowFileIO = 0x10,
+        AllowFileIO = (1 << 4),
         /** @brief Logs various information for additional messages.*/
-        LogExtraInfo = 0x20
+        LogExtraInfo = (1 << 5)
         };
 
 #if wxDEBUG_LEVEL >= 2
