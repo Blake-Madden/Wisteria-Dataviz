@@ -57,7 +57,7 @@ namespace Wisteria::GraphItems
             { return m_gc; }
         /// @private
         ~GraphicsContextFallback();
-        /// @returns @c true if an advanced graphics context could not be aquired
+        /// @returns @c true if an advanced graphics context could not be acquired
         ///     and rendering will fall back to drawing to a bitmap.
         [[nodiscard]]
         bool IsFallingBackToBitmap() const noexcept
