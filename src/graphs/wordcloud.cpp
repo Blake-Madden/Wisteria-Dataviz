@@ -89,7 +89,7 @@ namespace Wisteria::Graphs
 
         // remove words that don't meet the minimum frequency
         auto wordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
-            [this, minFreq](const auto& item) noexcept
+            [minFreq](const auto& item) noexcept
             { return item.m_frequency < minFreq; });
         if (wordsToRemoveStart != m_words.cend())
             { m_words.erase(wordsToRemoveStart, m_words.end()); }
@@ -104,7 +104,7 @@ namespace Wisteria::Graphs
             {
             // remove words that exceed the maximum frequency
             auto maxWordsToRemoveStart = std::find_if(m_words.cbegin(), m_words.cend(),
-                [this, maxFreq](const auto& item) noexcept
+                [maxFreq](const auto& item) noexcept
                 { return item.m_frequency > maxFreq.value(); });
             if (maxWordsToRemoveStart != m_words.cend())
                 { m_words.erase(maxWordsToRemoveStart, m_words.end()); }
