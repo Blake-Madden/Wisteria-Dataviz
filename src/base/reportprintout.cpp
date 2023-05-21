@@ -281,8 +281,10 @@ FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas,
         m_sizeChanged = currentSize != newSize;
         if (m_canvas != nullptr && m_sizeChanged)
             {
-            m_canvas->SetCanvasMinWidthDIPs(newSize.GetWidth());
-            m_canvas->SetCanvasMinHeightDIPs(newSize.GetHeight());
+            m_canvas->SetCanvasMinWidthDIPs(
+                std::min(Canvas::GetDefaultCanvasWidthDIPs(), newSize.GetWidth()));
+            m_canvas->SetCanvasMinHeightDIPs(
+                std::min(Canvas::GetDefaultCanvasHeightDIPs(), newSize.GetHeight()));
             // recalculate the row and column proportions for the new drawing area
             m_canvas->CalcRowDimensions();
             // set the physical size of the window; this will force a call to
