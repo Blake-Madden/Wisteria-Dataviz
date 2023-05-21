@@ -1289,7 +1289,7 @@ namespace Wisteria::GraphItems
         /// @private
         [[deprecated("Use FindDatePosition() instead.")]]
         [[nodiscard]]
-        td::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
+        std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
             { return FindDatePosition(date); }
     private:
         /// @brief Loads the default labels based on the axis values.

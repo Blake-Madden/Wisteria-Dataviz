@@ -100,7 +100,7 @@ namespace Wisteria
         ///     The default number of items is 20.
         /// @param maxItems The maximum number of items that can be displayed in a legend.
         static void SetMaxLegendItemCount(const uint8_t maxItems) noexcept
-            { m_maxLeendItems = maxItems; }
+            { m_maxLegendItems = maxItems; }
         /// @brief Gets the maximum text length for legend labels.
         /// @returns The maximum text length.
         [[nodiscard]]
