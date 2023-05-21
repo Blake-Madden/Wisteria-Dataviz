@@ -92,21 +92,26 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns The middle line of the box (usually the median of the data).
-            [[nodiscard]] double GetMiddlePoint() const noexcept
+            [[nodiscard]]
+            double GetMiddlePoint() const noexcept
                 { return m_middlePoint; }
             /// @returns The lower side of the box.
-            [[nodiscard]] double GetLowerControlLimit() const noexcept
+            [[nodiscard]]
+            double GetLowerControlLimit() const noexcept
                 { return m_lowerControlLimit; }
             /// @returns The upper side of the box.
-            [[nodiscard]] double GetUpperControlLimit() const noexcept
+            [[nodiscard]]
+            double GetUpperControlLimit() const noexcept
                 { return m_upperControlLimit; }
             /// @returns The value of the lower whisker (non-outlier range).
             ///     Any value lower than this is an outlier.
-            [[nodiscard]] double GetLowerWhisker() const noexcept
+            [[nodiscard]]
+            double GetLowerWhisker() const noexcept
                 { return m_lowerWhisker; }
             /// @returns The value of the upper whisker (non-outlier range).
             ///     Any value larger than this is an outlier.
-            [[nodiscard]] double GetUpperWhisker() const noexcept
+            [[nodiscard]]
+            double GetUpperWhisker() const noexcept
                 { return m_upperWhisker; }
             /// @}
 
@@ -115,7 +120,8 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns The opacity (how opaque or translucent) the box is.
-            [[nodiscard]] uint8_t GetOpacity() const noexcept
+            [[nodiscard]]
+            uint8_t GetOpacity() const noexcept
                 { return m_opacity; }
             /** @brief Sets he opacity (how opaque or translucent) the box is.
                 @param opacity The opacity level.*/
@@ -123,7 +129,8 @@ namespace Wisteria::Graphs
                 { m_opacity = opacity; }
 
             /// @returns The effect (e.g., color gradient) displayed across the box(es).
-            [[nodiscard]] BoxEffect GetBoxEffect() const noexcept
+            [[nodiscard]]
+            BoxEffect GetBoxEffect() const noexcept
                 { return m_boxEffect; }
             /** @brief Sets the effect displayed on the boxes.
                 @param boxEffect The effect to use.
@@ -131,7 +138,8 @@ namespace Wisteria::Graphs
             void SetBoxEffect(const BoxEffect boxEffect) noexcept
                 { m_boxEffect = boxEffect; }
             /// @returns How the corners of the boxes are drawn.
-            [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
+            [[nodiscard]]
+            BoxCorners GetBoxCorners() const noexcept
                 { return m_boxCorners; }
             /** @brief Sets how the corners of the boxes are drawn.
                 @param boxCorners The corner display to use.*/
@@ -144,7 +152,8 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
-            [[nodiscard]] bool IsShowingLabels() const noexcept
+            [[nodiscard]]
+            bool IsShowingLabels() const noexcept
                 { return m_displayLabels; }
             /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
             /// @param display Whether to display the labels.
@@ -152,7 +161,8 @@ namespace Wisteria::Graphs
                 { m_displayLabels = display; }
 
             /// @returns @c true if all data points are being displayed.
-            [[nodiscard]] bool IsShowingAllPoints() const noexcept
+            [[nodiscard]]
+            bool IsShowingAllPoints() const noexcept
                 { return m_showAllPoints; }
             /// @brief Specifies whether to display all data points on the boxes and whiskers.
             /// @param display Whether to display the points.
@@ -162,7 +172,8 @@ namespace Wisteria::Graphs
             /// @}
 
             /// @private
-            [[nodiscard]] bool operator<(const BoxAndWhisker& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const BoxAndWhisker& that) const noexcept
                 {
                 return wxUILocale::GetCurrent().CompareStrings(
                     m_groupColumn->GetLabelFromID(m_groupId),
@@ -192,7 +203,8 @@ namespace Wisteria::Graphs
                          const size_t schemeIndex);
 
             /** @returns The data connected to the box.*/
-            [[nodiscard]] const std::shared_ptr<const Data::Dataset>& GetDataset() const noexcept
+            [[nodiscard]]
+            const std::shared_ptr<const Data::Dataset>& GetDataset() const noexcept
                 { return m_data; }
             /// @}
 
@@ -201,8 +213,9 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns The position on the X axis (on the parent plot) that the box
-            //      is aligned with.
-            [[nodiscard]] double GetXAxisPosition() const noexcept
+            ///      is aligned with.
+            [[nodiscard]]
+            double GetXAxisPosition() const noexcept
                 { return m_xAxisPosition; }
             /** @brief Sets where the box should be aligned on the X axis.
                 @param position The position on the X axis to place the box.
@@ -213,7 +226,8 @@ namespace Wisteria::Graphs
             /// @}
 
             /// @returns The box's index into the icon/color/brush schemes.
-            [[nodiscard]] size_t GetSchemeIndex() const noexcept
+            [[nodiscard]]
+            size_t GetSchemeIndex() const noexcept
                 { return m_schemeIndex; }
 
             /// @brief Calculates the outlier and box ranges.
@@ -286,13 +300,15 @@ namespace Wisteria::Graphs
 
         /// @returns The box at given index.
         /// @param index The index of the box to access.
-        [[nodiscard]] BoxAndWhisker& GetBox(const size_t index)
+        [[nodiscard]]
+        BoxAndWhisker& GetBox(const size_t index)
             {
             wxASSERT_LEVEL_2_MSG(index < m_boxes.size(), L"Invalid index in GetBox()!");
             return m_boxes.at(index);
             }
         /// @returns The number of boxes (i.e., data distributions) being plotted.
-        [[nodiscard]] size_t GetBoxCount() const noexcept
+        [[nodiscard]]
+        size_t GetBoxCount() const noexcept
             { return m_boxes.size(); }
         /// @}
 
@@ -301,7 +317,8 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns The numeric precision displayed on the labels.
-        [[nodiscard]] uint8_t GetLabelPrecision() const noexcept
+        [[nodiscard]]
+        uint8_t GetLabelPrecision() const noexcept
             { return m_labelPrecision; }
         /// @brief Sets the numeric precision for labels in the plot. (Default is 1.)
         /// @param precision The precision to use for the labels.
@@ -314,7 +331,8 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns Whether a legend is included directly on the plot (when showing just one box).
-        [[nodiscard]] bool IsOverlayingLegend() const noexcept
+        [[nodiscard]]
+        bool IsOverlayingLegend() const noexcept
             { return m_overlayLegend; }
         /** @brief Overlays a legend on top of the plot.
             @param overlay @c true to include the legend on the plot.
@@ -331,7 +349,8 @@ namespace Wisteria::Graphs
             @note By default, this legend will be created and laid on top of the plot
                 if a single box plot.\n
                 For multi-group plots, null will be returned.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final;
         /// @}
 
@@ -342,7 +361,8 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns The opacity (how opaque or translucent) the box is.
-        [[nodiscard]] uint8_t GetOpacity() const noexcept
+        [[nodiscard]]
+        uint8_t GetOpacity() const noexcept
             { return m_opacity; }
         /** @brief Sets he opacity (how opaque or translucent) the box is.
             @param opacity The opacity level.*/
@@ -354,7 +374,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The effect (e.g., color gradient) displayed across the box(es).
-        [[nodiscard]] BoxEffect GetBoxEffect() const noexcept
+        [[nodiscard]]
+        BoxEffect GetBoxEffect() const noexcept
             { return m_boxEffect; }
         /** @brief Sets the effect displayed on the boxes.
             @param boxEffect The effect to use.*/
@@ -366,7 +387,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns How the corners of the boxes are drawn.
-        [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
+        [[nodiscard]]
+        BoxCorners GetBoxCorners() const noexcept
             { return m_boxCorners; }
         /** @brief Sets how the corners of the boxes are drawn.
             @param boxCorners The corner display to use.
@@ -380,7 +402,8 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns @c true if displaying labels on the hinges, midpoint, and outliers.
-        [[nodiscard]] bool IsShowingLabels() const noexcept
+        [[nodiscard]]
+        bool IsShowingLabels() const noexcept
             { return m_displayLabels; }
         /// @brief Sets whether to display labels on the hinges, midpoint, and outliers.
         /// @param display Whether to display the labels.
@@ -392,7 +415,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns @c true if all data points are being displayed.
-        [[nodiscard]] bool IsShowingAllPoints() const noexcept
+        [[nodiscard]]
+        bool IsShowingAllPoints() const noexcept
             { return m_showAllPoints; }
         /// @brief Specifies whether to display all data points on the boxes and whiskers.
         /// @param display Whether to display the points.
@@ -405,7 +429,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The default color of the points.
-        [[nodiscard]] wxColour GetPointColor() const noexcept
+        [[nodiscard]]
+        wxColour GetPointColor() const noexcept
             { return m_pointColour; }
         /** @brief Sets the default color of the points.
             @param color The color to use.*/
@@ -414,11 +439,13 @@ namespace Wisteria::Graphs
         /// @}
 
         /// @private
-        [[nodiscard]] const BoxAndWhisker& GetBox(const size_t index) const
+        [[nodiscard]]
+        const BoxAndWhisker& GetBox(const size_t index) const
             { return m_boxes[index]; }
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint)
             { return CreateLegend(LegendOptions().PlacementHint(hint)); }
     private:

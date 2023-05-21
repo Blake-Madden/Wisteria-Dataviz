@@ -467,7 +467,8 @@ public:
             m_rowStarts(rowStarts), m_rowsPerPage(rowsPerPage)
             {}
         /// @returns The rows of data per page (does not include the header).
-        [[nodiscard]] long GetRowsPerPage() const noexcept
+        [[nodiscard]]
+        long GetRowsPerPage() const noexcept
             { return m_rowsPerPage; }
         std::vector<long> m_rowStarts;
         long m_rowsPerPage{ 0 };

@@ -137,10 +137,12 @@ public:
     ~MemoryMappedFile()
         { UnmapFile(); }
     /// @returns Whether a file is currently (and successfully) mapped.
-    [[nodiscard]] bool IsOk() const noexcept
+    [[nodiscard]]
+    bool IsOk() const noexcept
         { return m_open; }
     /// @returns Whether the current file mapping is read only.
-    [[nodiscard]] bool IsReadOnly() const noexcept
+    [[nodiscard]]
+    bool IsReadOnly() const noexcept
         { return m_isReadOnly; }
     /** @brief Manually maps a new file.
         @warning If this object is currently mapping another file then
@@ -167,23 +169,29 @@ public:
     /** @returns The raw byte stream of the file.
         @warning Do not attempt to write to the returned pointer if you mapped the file as read only.
         The read only status of the current mapping can be checked by calling IsReadOnly().*/
-    [[nodiscard]] void* GetStream()
+    [[nodiscard]]
+    void* GetStream()
         { return IsBuffered() ? reinterpret_cast<void*>(m_bufferedData) : m_data; }
     /** @returns The raw byte stream of the file.*/
-    [[nodiscard]] const void* GetStream() const
+    [[nodiscard]]
+    const void* GetStream() const
         { return IsBuffered() ? reinterpret_cast<const void*>(m_bufferedData) : m_data; }
     /// @returns The length of the mapped file.
-    [[nodiscard]] size_t GetMapSize() const noexcept
+    [[nodiscard]]
+    size_t GetMapSize() const noexcept
         { return m_mapSize; }
     /// @returns The path of the file currently mapped.
-    [[nodiscard]] const wxString& GetFilePath() const noexcept
+    [[nodiscard]]
+    const wxString& GetFilePath() const noexcept
         { return m_filePath; }
     /// @returns Whether the mapping had failed and the file had to be buffered instead.
-    [[nodiscard]] bool IsBuffered() const noexcept
+    [[nodiscard]]
+    bool IsBuffered() const noexcept
         { return m_isBuffered; }
     /// @returns The size of a large file (as an unsigned long long).
     /// @param hFile The file's handle.
-    [[nodiscard]] static wxULongLong GetFileSize64(const MemoryMappedFileHandleType hFile);
+    [[nodiscard]]
+    static wxULongLong GetFileSize64(const MemoryMappedFileHandleType hFile);
 private:
     void Reset(const bool preserveFileName = false);
     bool Buffer();

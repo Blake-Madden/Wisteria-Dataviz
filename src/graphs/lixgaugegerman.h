@@ -73,7 +73,8 @@ namespace Wisteria::Graphs
 
         /// @returns @c true if English labels are being used for the brackets.\n
         ///     Otherwise, the German labels from the original article are shown.
-        [[nodiscard]] bool IsUsingEnglishLabels() const noexcept
+        [[nodiscard]]
+        bool IsUsingEnglishLabels() const noexcept
             { return m_useEnglishLabels; }
         /** @brief Sets whether to use English labels for the brackets.
             @param useEnglish @c true to use the translated (English) labels.

@@ -51,7 +51,8 @@ namespace Wisteria::UI
 
         /// @returns Access to the canvas, where you can add the graph
         ///     (it has already been initialized to hold one graph).
-        [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
+        [[nodiscard]]
+        Wisteria::Canvas* GetCanvas() noexcept
             { return m_canvas; }
     private:
         /// Creation step.

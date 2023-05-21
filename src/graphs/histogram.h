@@ -186,7 +186,8 @@ namespace Wisteria::Graphs
             // the name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;
             /// @private
-            [[nodiscard]] bool operator<(const BinBlock& that) const
+            [[nodiscard]]
+            bool operator<(const BinBlock& that) const
                 {
                 if (m_bin != that.m_bin)
                     { return m_bin < that.m_bin; }
@@ -279,7 +280,8 @@ namespace Wisteria::Graphs
                 then any of these empty categories are not counted here.
                 Also note that SetData() needs to be called first so that this can be calculated.
             @returns The number of bins in the histogram with values in them.*/
-        [[nodiscard]] size_t GetBinsWithValuesCount() const noexcept
+        [[nodiscard]]
+        size_t GetBinsWithValuesCount() const noexcept
             { return m_binCount; }
 
         /// @brief Determines whether the columns (bins) can be sorted (in terms of bar length).
@@ -288,7 +290,8 @@ namespace Wisteria::Graphs
         ///     (so that the bars are next to each other).
         /// @returns Whether the columns (bins) can be sorted.
         /// @sa GetSortDirection(), SetSortDirection(), SetSortable(), SortBars().
-        [[nodiscard]] bool IsSortable() const noexcept final
+        [[nodiscard]]
+        bool IsSortable() const noexcept final
             {
             return BarChart::IsSortable() &&
                    GetBinningMethod() == BinningMethod::BinUniqueValues &&
@@ -296,7 +299,8 @@ namespace Wisteria::Graphs
             }
     private:
         /// @returns The maximum number of bins that the histogram will create when binning the data.
-        [[nodiscard]] size_t GetMaxNumberOfBins() const noexcept
+        [[nodiscard]]
+        size_t GetMaxNumberOfBins() const noexcept
             { return m_maxBinCount; }
         /** Specifies whether the axis should display each step
                 (even if no bin is associated with a step) or if it should display steps that
@@ -323,25 +327,31 @@ namespace Wisteria::Graphs
         /// @returns @c true if a place for each bin is included on the axis,
         ///     even if they have no items.
         /// @sa ShowFullRangeOfValues().
-        [[nodiscard]] bool IsShowingFullRangeOfValues() const noexcept
+        [[nodiscard]]
+        bool IsShowingFullRangeOfValues() const noexcept
             { return m_displayFullRangeOfValues; }
         /// @returns The method being used to sort the data into bins.
-        [[nodiscard]] BinningMethod GetBinningMethod() const noexcept
+        [[nodiscard]]
+        BinningMethod GetBinningMethod() const noexcept
             { return m_binningMethod; }
         /// @returns The rounding method used for binning.
-        [[nodiscard]] RoundingMethod GetRoundingMethod() const noexcept
+        [[nodiscard]]
+        RoundingMethod GetRoundingMethod() const noexcept
             { return m_roundingMethod; }
         /// @returns How the bars are being positioned on the axis.
         /// @sa SetIntervalDisplay().
-        [[nodiscard]] IntervalDisplay GetIntervalDisplay() const noexcept
+        [[nodiscard]]
+        IntervalDisplay GetIntervalDisplay() const noexcept
             { return m_intervalDisplay; }
         /// @returns Where the first bin starts.
         /// @note This is NaN by default, which will instruct the bins to
         ///     start at where the data begins.
-        [[nodiscard]] std::optional<double> GetBinsStart() const noexcept
+        [[nodiscard]]
+        std::optional<double> GetBinsStart() const noexcept
             { return m_startBinsValue; }
         /// @returns The number of unique values.
-        [[nodiscard]] size_t CalcUniqueValuesCount() const;
+        [[nodiscard]]
+        size_t CalcUniqueValuesCount() const;
         /** @brief Creates a bin for each unique value in the data.
             @param binCount If there are too many categories and sorting needs to be switched
                 to ranges, then this is an optional number of bins to use.
@@ -355,13 +365,16 @@ namespace Wisteria::Graphs
         void SortIntoRanges(const std::optional<size_t> binCount);
         /// @brief Call this when sorting data (in case it needs to be rounded).
         ///     If rounding is turned off then this simply returns the same value.
-        [[nodiscard]] double ConvertToSortableValue(const double& value) const;
+        [[nodiscard]]
+        double ConvertToSortableValue(const double& value) const;
 
-        [[nodiscard]] wxString GetCustomBarLabelOrValue(
+        [[nodiscard]]
+        wxString GetCustomBarLabelOrValue(
                                const double& value, const size_t precision = 0);
 
         /// @brief Calculates the number of bins to use based on the data.
-        [[nodiscard]] size_t CalcNumberOfBins() const;
+        [[nodiscard]]
+        size_t CalcNumberOfBins() const;
 
         std::vector<Wisteria::Data::Column<double>>::const_iterator m_continuousColumn;
         size_t m_validN{ 0 };

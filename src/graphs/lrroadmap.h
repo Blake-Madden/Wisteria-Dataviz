@@ -136,10 +136,12 @@ namespace Wisteria::Graphs
         void AddDefaultCaption() final;
     private:
         /// @returns The positive label used for the legend.
-        [[nodiscard]] wxString GetPositiveLegendLabel() const final
+        [[nodiscard]]
+        wxString GetPositiveLegendLabel() const final
             { return wxString::Format(_(L"Positively associated with %s"), GetGoalLabel()); }
         /// @returns The negative label used for the legend.
-        [[nodiscard]] wxString GetNegativeLegendLabel() const final
+        [[nodiscard]]
+        wxString GetNegativeLegendLabel() const final
             { return wxString::Format(_(L"Negatively associated with %s"), GetGoalLabel()); }
         };
     }

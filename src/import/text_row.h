@@ -59,7 +59,8 @@ namespace lily_of_the_valley
         void allow_column_resizing(const bool allow = true) noexcept
             { m_allow_column_values_resizing = allow; }
         /// @returns Whether the row may have an unknown number of columns before parsing.
-        [[nodiscard]] inline bool is_column_resizing_enabled() const noexcept
+        [[nodiscard]]
+        inline bool is_column_resizing_enabled() const noexcept
             { return m_allow_column_values_resizing; }
         /// @brief Adds a column that looks for a standard character delimiter (space, semicolon, or comma).
         /// @param column The column definition to add.
@@ -118,7 +119,8 @@ namespace lily_of_the_valley
         /// @returns @c true if any of the row's columns definitions are set to read in data.
         ///     This can be @c false if all column parsers are meant to simply skip, essentially
         ///     reading in nothing for this row.
-        [[nodiscard]] inline bool is_reading_text() const noexcept
+        [[nodiscard]]
+        inline bool is_reading_text() const noexcept
             { return m_read_text; }
         /** @brief The main function which reads a block of text and divides it up into columns.
             @param text The text to parse.
@@ -656,10 +658,12 @@ namespace lily_of_the_valley
         /// @returns The number of times this row definition should be repeated by the parent parser.
         /// @note This is optional and if not specified then this row definition should be repeated
         ///     by the parser until the end of file is reached.
-        [[nodiscard]] inline std::optional<size_t> get_repeat_count() const noexcept
+        [[nodiscard]]
+        inline std::optional<size_t> get_repeat_count() const noexcept
             { return m_repeat_count; }
         /// @returns The number of columns last read during the previous parsing.
-        [[nodiscard]] inline size_t get_number_of_columns_last_read() const noexcept
+        [[nodiscard]]
+        inline size_t get_number_of_columns_last_read() const noexcept
             { return m_number_of_columns_last_read; }
     private:
         enum class column_type
@@ -671,7 +675,8 @@ namespace lily_of_the_valley
             to_eol
             };
 
-        [[nodiscard]] inline bool is_reading_single_column() const noexcept
+        [[nodiscard]]
+        inline bool is_reading_single_column() const noexcept
             { return (m_single_value != nullptr); }
 
         std::vector<string_typeT>* m_values{ nullptr };

@@ -1446,7 +1446,8 @@ namespace Wisteria::Data
         struct StringTableBuilder
             {
         public:
-            [[nodiscard]] GroupIdType LoadCode(const wxString& code)
+            [[nodiscard]]
+            GroupIdType LoadCode(const wxString& code)
                 {
                 auto foundGroup = m_strings.find(code);
                 if (foundGroup == m_strings.end())
@@ -1456,7 +1457,8 @@ namespace Wisteria::Data
                     }
                 return foundGroup->second;
                 }
-            [[nodiscard]] const auto& GetStrings() const noexcept
+            [[nodiscard]]
+            const auto& GetStrings() const noexcept
                 { return m_strings; }
         private:
             GroupIdType currentId{ 0 };

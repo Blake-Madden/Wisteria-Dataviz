@@ -74,14 +74,16 @@ namespace Wisteria
         {
     public:
         /// @returns The default point radius.
-        [[nodiscard]] static size_t GetPointRadius() noexcept
+        [[nodiscard]]
+        static size_t GetPointRadius() noexcept
             { return m_pointRadius; }
         /// @brief Sets the default point radius.
         /// @param radius The default point radius.
         void SetPointRadius(const size_t radius) noexcept
             { m_pointRadius = radius; }
         /// @returns The opacity value to use when making a color translucent.
-        [[nodiscard]] static uint8_t GetTranslucencyValue() noexcept
+        [[nodiscard]]
+        static uint8_t GetTranslucencyValue() noexcept
             { return m_translucencyValue; }
         /// @brief Sets the opacity value to use when making a color translucent.
         ///     Default is 100;
@@ -90,22 +92,25 @@ namespace Wisteria
             { m_translucencyValue = std::clamp<uint8_t>(value, 0, 255); }
         /// @brief Gets the maximum number of items that can be displayed in a legend.
         /// @returns The maximum number of items that can be displayed in a legend.
-        [[nodiscard]] static uint8_t GetMaxLegendItemCount() noexcept
+        [[nodiscard]]
+        static uint8_t GetMaxLegendItemCount() noexcept
             { return m_maxLegendItems; }
         /// @brief Sets the maximum number of items that can be displayed in a legend.
         /// @details If there are more items in the legend, then an ellipsis will be shown.
         ///     The default number of items is 20.
         /// @param maxItems The maximum number of items that can be displayed in a legend.
         static void SetMaxLegendItemCount(const uint8_t maxItems) noexcept
-            { m_maxLegendItems = maxItems; }
+            { m_maxLeendItems = maxItems; }
         /// @brief Gets the maximum text length for legend labels.
         /// @returns The maximum text length.
-        [[nodiscard]] static size_t GetMaxLegendTextLength() noexcept
+        [[nodiscard]]
+        static size_t GetMaxLegendTextLength() noexcept
             { return m_maxLegendTextLength; }
 
         /// @brief Gets the maximum number of observations to show as a label in a bin.
         /// @returns The maximum number of observations to show in a bin label.
-        [[nodiscard]] static size_t GetMaxObservationInBin() noexcept
+        [[nodiscard]]
+        static size_t GetMaxObservationInBin() noexcept
             { return m_maxObservationsInBin; }
 
         /// @brief Sets the radius of the rounded corner, which is used when using rounded
@@ -115,7 +120,8 @@ namespace Wisteria
             { m_roundedCornerRadius = roundedCornerRadius; }
         /// @returns The radius of the rounded corner, which is used when using rounded
         ///     corners for labels, box plots, etc.
-        [[nodiscard]] static double GetBoxRoundedCornerRadius() noexcept
+        [[nodiscard]]
+        static double GetBoxRoundedCornerRadius() noexcept
             { return m_roundedCornerRadius; }
         /// @brief Sets the maximum text length for legend labels.
         /// @details The default length is 40.
@@ -133,17 +139,20 @@ namespace Wisteria
         /// @returns @c true if the given flag is enabled.
         /// @note Calls to this can be `if constexpr`ed so that the @c if block's code
         ///     will be compiled out when the flag is not enabled.
-        [[nodiscard]] static constexpr bool IsDebugFlagEnabled(const int flag) noexcept
+        [[nodiscard]]
+        static constexpr bool IsDebugFlagEnabled(const int flag) noexcept
             { return (m_debugSettings & flag) == flag; }
         /// @returns No trailing zeroes and thousands separator format
         ///     for calls to @c wxNumberFormatter::ToString().
-        [[nodiscard]] static auto GetDefaultNumberFormat() noexcept
+        [[nodiscard]]
+        static auto GetDefaultNumberFormat() noexcept
             {
             return wxNumberFormatter::Style::Style_WithThousandsSep|
                    wxNumberFormatter::Style::Style_NoTrailingZeroes;
             }
         /// @returns The default color scheme to use for groups with the graphs.
-        [[nodiscard]] static std::shared_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
+        [[nodiscard]]
+        static std::shared_ptr<Colors::Schemes::ColorScheme> GetDefaultColorScheme()
             { return std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::Dusk()); }
     private:
         inline static uint8_t m_translucencyValue{ 100 };

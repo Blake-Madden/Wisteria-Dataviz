@@ -62,16 +62,19 @@ namespace Wisteria::UI
                         bool bSelect = false, int imageId = wxNOT_FOUND);
         /// @returns The panel which represents the given page.
         /// @param n The index of the page to return.
-        [[nodiscard]] wxWindow* GetPage(size_t n) const
+        [[nodiscard]]
+        wxWindow* GetPage(size_t n) const
             { return m_pages.at(n); }
         /// @returns The current page or null if none.
-        [[nodiscard]] wxWindow* GetCurrentPage() const
+        [[nodiscard]]
+        wxWindow* GetCurrentPage() const
             {
             const int n = GetSelection();
             return n == wxNOT_FOUND ? nullptr : GetPage(n);
             }
         /// @returns The number of pages in the dialog.
-        [[nodiscard]] size_t GetPageCount() const noexcept
+        [[nodiscard]]
+        size_t GetPageCount() const noexcept
             { return m_pages.size(); }
 
         /// @brief Selects a page.
@@ -80,7 +83,8 @@ namespace Wisteria::UI
         int SetSelection(size_t n)
             { return DoSetSelection(n, SetSelection_SendEvent); }
         /// @returns The currently selected page or @c wxNOT_FOUND if none.
-        [[nodiscard]] int GetSelection() const noexcept
+        [[nodiscard]]
+        int GetSelection() const noexcept
             { return m_selection; }
 
         /// @private
@@ -91,20 +95,24 @@ namespace Wisteria::UI
         bool DeleteAllPages();
 
         /// @returns The sidebar.
-        [[nodiscard]] SideBar* GetSideBar() noexcept
+        [[nodiscard]]
+        SideBar* GetSideBar() noexcept
             { return m_sidebar; }
         /// @private
-        [[nodiscard]] const SideBar* GetSideBar() const noexcept
+        [[nodiscard]]
+        const SideBar* GetSideBar() const noexcept
             { return m_sidebar; }
 
         /// @returns The image list used for the sidebar.
-        [[nodiscard]] std::vector<wxBitmapBundle>& GetImageList()
+        [[nodiscard]]
+        std::vector<wxBitmapBundle>& GetImageList()
             {
             wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
             }
         /// @returns The image list used for the sidebar (constantly).
-        [[nodiscard]] const std::vector<wxBitmapBundle>& GetImageList() const
+        [[nodiscard]]
+        const std::vector<wxBitmapBundle>& GetImageList() const
             {
             wxASSERT(m_sidebar);
             return m_sidebar->GetImageList();
@@ -140,18 +148,22 @@ namespace Wisteria::UI
         void DoSize();
         // get the page area
         /// @private
-        [[nodiscard]] wxRect GetPageRect() const;
+        [[nodiscard]]
+        wxRect GetPageRect() const;
         // return the size of the area needed to accommodate the controller
         /// @private
-        [[nodiscard]] wxSize GetControllerSize() const;
+        [[nodiscard]]
+        wxSize GetControllerSize() const;
         // our best size is the size which fits all our pages
         /// @private
-        [[nodiscard]] wxSize DoGetBestSize() const final;
+        [[nodiscard]]
+        wxSize DoGetBestSize() const final;
         // calculate the size of the control from the size of its page
         // by default this simply returns size enough to fit both the page and the
         // controller
         /// @private
-        [[nodiscard]] wxSize CalcSizeFromPage(const wxSize& sizePage) const;
+        [[nodiscard]]
+        wxSize CalcSizeFromPage(const wxSize& sizePage) const;
         // this should be called when we need to be relaid out
         /// @private
         void UpdateSize();
@@ -164,19 +176,23 @@ namespace Wisteria::UI
                           [[maybe_unused]] int imageId = wxNOT_FOUND);
 
         /// @returns @c true if we have @c wxBK_TOP or @c wxBK_BOTTOM style.
-        [[nodiscard]] bool IsVertical() const noexcept
+        [[nodiscard]]
+        bool IsVertical() const noexcept
             { return HasFlag(wxBK_BOTTOM|wxBK_TOP); }
         // get/set size of area between book control area and page area
         /// @private
-        [[nodiscard]] unsigned int GetInternalBorder() const noexcept
+        [[nodiscard]]
+        unsigned int GetInternalBorder() const noexcept
             { return wxSizerFlags::GetDefaultBorder(); }
         // choose the default border for this window
         /// @private
-        [[nodiscard]] wxBorder GetDefaultBorder() const noexcept final
+        [[nodiscard]]
+        wxBorder GetDefaultBorder() const noexcept final
             { return wxBORDER_NONE; }
 
         /// @private
-        [[nodiscard]] wxBookCtrlEvent* CreatePageChangingEvent() const;
+        [[nodiscard]]
+        wxBookCtrlEvent* CreatePageChangingEvent() const;
         /// @private
         void MakeChangedEvent(wxBookCtrlEvent &event);
 

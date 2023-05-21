@@ -33,22 +33,20 @@ namespace Wisteria::Graphs
         /// @private
         GroupGraph2D(const GroupGraph2D&) = delete;
         /// @private
-        GroupGraph2D(GroupGraph2D&&) = delete;
-        /// @private
         GroupGraph2D& operator=(const GroupGraph2D&) = delete;
-        /// @private
-        GroupGraph2D& operator=(GroupGraph2D&&) = delete;
 
         /** @brief Builds and returns a legend.
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) override;
 
         /// @returns The number of subgroups found during the last call to SetData().\n
         ///     This is only relevant if using the secondary grouping variable.
-        [[nodiscard]] size_t GetGroupCount() const noexcept
+        [[nodiscard]]
+        size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
     protected:
         /** @private
@@ -70,7 +68,8 @@ namespace Wisteria::Graphs
                 @c wxString::FromUTF8() when formatting it for an error message.
             @note Call BuildGroupIdMap() prior to this to load the ordered codes and their
                 respective positions.*/
-        [[nodiscard]] size_t GetSchemeIndexFromGroupId(const Wisteria::Data::GroupIdType Id)
+        [[nodiscard]]
+        size_t GetSchemeIndexFromGroupId(const Wisteria::Data::GroupIdType Id)
             {
             if (IsUsingGrouping())
                 {
@@ -99,7 +98,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns @c true if the grouping column is set.
-        [[nodiscard]] bool IsUsingGrouping() const noexcept
+        [[nodiscard]]
+        bool IsUsingGrouping() const noexcept
             { return (m_groupColumn != nullptr); }
 
         /// @brief Sets the shape to use in the legend (if a shape scheme isn't in use).
@@ -108,7 +108,8 @@ namespace Wisteria::Graphs
             { m_defaultLegendShape = shape; }
 
         /// @private
-        [[nodiscard]] const Wisteria::Data::ColumnWithStringTable* GetGroupColumn() const
+        [[nodiscard]]
+        const Wisteria::Data::ColumnWithStringTable* GetGroupColumn() const
             { return m_groupColumn;  }
         /// @private
         void SetGroupColumn(const Wisteria::Data::ColumnWithStringTable* groupColumn)
@@ -119,7 +120,8 @@ namespace Wisteria::Graphs
         /// @warning Call SetDataset() first before calling this.
         void SetGroupColumn(const std::optional<const wxString> groupColumnName = std::nullopt);
     private:
-        [[nodiscard]] const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
+        [[nodiscard]]
+        const std::map<Data::GroupIdType, size_t>& GetGroupIds() const noexcept
             { return m_groupIds; }
 
         Wisteria::Icons::IconShape m_defaultLegendShape{ Wisteria::Icons::IconShape::Square };

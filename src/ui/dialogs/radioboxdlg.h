@@ -78,7 +78,8 @@ namespace Wisteria::UI
         /// @private
         RadioBoxDlg& operator=(RadioBoxDlg&&) = delete;
         /// @returns The selected item.
-        [[nodiscard]] int GetSelection() const noexcept
+        [[nodiscard]]
+        int GetSelection() const noexcept
             { return m_selected; }
         /** @brief Sets the selected item (i.e., radio button index).
             @param selected The radio button to select.*/

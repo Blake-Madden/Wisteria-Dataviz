@@ -292,10 +292,12 @@ namespace Wisteria::Graphs
                 {}
 
             /// @returns The block's brush.
-            [[nodiscard]] const wxBrush& GetBrush() const noexcept
+            [[nodiscard]]
+            const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
             /// @returns The block's outline pen.
-            [[nodiscard]] const wxPen& GetOutlinePen() const noexcept
+            [[nodiscard]]
+            const wxPen& GetOutlinePen() const noexcept
                 { return m_outlinePen; }
             /// @returns The block's background color.
             /// @details This is invalid and not used by default, as the brush is what
@@ -305,32 +307,39 @@ namespace Wisteria::Graphs
             ///    rather than a solid color.
             /// @note This is only used if the bar block's painting effect is solid.
             ///    In other works, this color is ignored for fades, glossy effects, stipples, etc.
-            [[nodiscard]] const wxColour& GetColor() const noexcept
+            [[nodiscard]]
+            const wxColour& GetColor() const noexcept
                 { return m_color; }
             /// @returns A lightened variation of the block color.
-            [[nodiscard]] wxColour GetLightenedColor() const
+            [[nodiscard]]
+            wxColour GetLightenedColor() const
                 { return m_brush.GetColour().ChangeLightness(160); }
             /** @brief Sets the decal to draw across the bar.
                 @param decal The decal to draw.*/
             void SetDecal(const Wisteria::GraphItems::Label& decal)
                 { m_decal = decal; }
             /// @private
-            [[nodiscard]] const Wisteria::GraphItems::Label& GetDecal() const noexcept
+            [[nodiscard]]
+            const Wisteria::GraphItems::Label& GetDecal() const noexcept
                 { return m_decal; }
             /// @returns The decal being drawn across the block.
-            [[nodiscard]] Wisteria::GraphItems::Label& GetDecal() noexcept
+            [[nodiscard]]
+            Wisteria::GraphItems::Label& GetDecal() noexcept
                 { return m_decal; }
             /// @private
-            [[nodiscard]] const Wisteria::GraphItems::Label& GetSelectionLabel() const noexcept
+            [[nodiscard]]
+            const Wisteria::GraphItems::Label& GetSelectionLabel() const noexcept
                 { return m_selectionLabel; }
             /// @returns The text displayed on the bar when it is selected.
-            [[nodiscard]] Wisteria::GraphItems::Label& GetSelectionLabel() noexcept
+            [[nodiscard]]
+            Wisteria::GraphItems::Label& GetSelectionLabel() noexcept
                 { return m_selectionLabel; }
             /// @brief Whether the block is being drawn.
             /// @details Set to @c false to treat the block like a placeholder
             ///    in the parent bar.
             /// @returns @c true if being displayed.
-            [[nodiscard]] bool IsShown() const noexcept
+            [[nodiscard]]
+            bool IsShown() const noexcept
                 { return m_show; }
             /// @brief Sets whether the block is being drawn.
             /// @param show Set to @c false to treat the block like a placeholder
@@ -338,10 +347,12 @@ namespace Wisteria::Graphs
             void Show(const bool show) noexcept
                 { m_show = show; }
             /// @returns The user-defined tag.
-            [[nodiscard]] wxString GetTag() const noexcept
+            [[nodiscard]]
+            wxString GetTag() const noexcept
                 { return m_tag; }
             /// @returns The length of the block along the scaling axis.
-            [[nodiscard]] double GetLength() const noexcept
+            [[nodiscard]]
+            double GetLength() const noexcept
                 { return m_length; }
             /// @brief Sets the custom width of the block.
             /// @details This will be used first when drawing the block.
@@ -366,7 +377,8 @@ namespace Wisteria::Graphs
             /** @brief The custom width used for the block along the bar axis.
                 @details Not normally used, usually the custom width is handled on the bar level.
                 @returns The custom width (will be @c std::nullopt if invalid).*/
-            [[nodiscard]] std::optional<double> GetCustomWidth() const noexcept
+            [[nodiscard]]
+            std::optional<double> GetCustomWidth() const noexcept
                 { return m_customWidth; }
         private:
             /// @brief The brush (color and pattern) of the block.
@@ -431,7 +443,8 @@ namespace Wisteria::Graphs
                       { return initVal+block.GetLength(); });
                 }
             /// @private
-            [[nodiscard]] bool operator<(const Bar& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const Bar& that) const noexcept
                 { return GetLength() < that.GetLength(); }
 
             /** @name Visual Effect Functions
@@ -439,14 +452,16 @@ namespace Wisteria::Graphs
             /// @{
 
             /// @returns The opacity of the bar.
-            [[nodiscard]] uint8_t GetOpacity() const noexcept
+            [[nodiscard]]
+            uint8_t GetOpacity() const noexcept
                 { return m_opacity; }
             /// @brief Sets the box's opacity.
             /// @param opacity The opacity to apply.
             void SetOpacity(const uint8_t opacity) noexcept
                 { m_opacity = opacity; }
             /// @returns The effect drawn across the bar.
-            [[nodiscard]] BoxEffect GetEffect() const noexcept
+            [[nodiscard]]
+            BoxEffect GetEffect() const noexcept
                 { return m_barEffect; }
             /// @brief Sets the effect drawn across the bar.
             /// @param effect The box effect to use.
@@ -458,7 +473,8 @@ namespace Wisteria::Graphs
                 @note Image-based bar effects and drop shadows will only work with
                     rectangular shapes.
                 @todo Add support for drop shadows for arrows.*/
-            [[nodiscard]] BarShape GetShape() const noexcept
+            [[nodiscard]]
+            BarShape GetShape() const noexcept
                 { return m_barShape; }
             /** @brief Sets the shape to draw the bar as.
                 @param shape The shape to draw for the bar.
@@ -476,13 +492,15 @@ namespace Wisteria::Graphs
             /// @brief Gets/sets the text displayed on the axis beneath the bar.
             /// @details Usually, this would be the observation or category label.
             /// @returns The axis label.
-            [[nodiscard]] Wisteria::GraphItems::Label& GetAxisLabel() noexcept
+            [[nodiscard]]
+            Wisteria::GraphItems::Label& GetAxisLabel() noexcept
                 { return m_axisLabel; }
 
             /// @brief Gets/sets the label shown on top (or to the right) of the bar
             ///    (useful for showing the item count in the bar, for example).
             /// @returns The bar label.
-            [[nodiscard]] Wisteria::GraphItems::Label& GetLabel() noexcept
+            [[nodiscard]]
+            Wisteria::GraphItems::Label& GetLabel() noexcept
                 { return m_barLabel; }
             /// @}
 
@@ -496,7 +514,8 @@ namespace Wisteria::Graphs
             /// @note This is the summation of the lengths of all blocks (i.e., groups) in the bar.
             ///    Control of the bar's length is done through the constituent blocks in the bar.
             /// @returns The bar's length along the scaling axis.
-            [[nodiscard]] double GetLength() const noexcept
+            [[nodiscard]]
+            double GetLength() const noexcept
                 { return m_length; }
 
             /// @brief Sets the custom width of the bar.
@@ -517,7 +536,8 @@ namespace Wisteria::Graphs
                 @details Not normally used, this is usually meant for situations where the
                     bars must fit together a very specific way (e.g., ranges on a histogram).
                 @returns The custom width (will be @c std::nullopt if invalid).*/
-            [[nodiscard]] std::optional<double> GetCustomWidth() const noexcept
+            [[nodiscard]]
+            std::optional<double> GetCustomWidth() const noexcept
                 { return m_customWidth; }
             /// @}
 
@@ -598,7 +618,8 @@ namespace Wisteria::Graphs
 
             /// @brief The position on the bar axis that the bar should be placed on.
             /// @return The axis position.
-            [[nodiscard]] double GetAxisPosition() const noexcept
+            [[nodiscard]]
+            double GetAxisPosition() const noexcept
                 { return m_axisPosition; }
             /** @brief Sets The position on the bar axis that the bar should be placed on.
                 @param position The place on the axis to position the bar.*/
@@ -607,7 +628,8 @@ namespace Wisteria::Graphs
 
             /// @brief The custom position on the **scaling** axis to start drawing the bar.
             /// @returns The custom position on the scaling axis.
-            [[nodiscard]] std::optional<double> GetCustomScalingAxisStartPosition() const noexcept
+            [[nodiscard]]
+            std::optional<double> GetCustomScalingAxisStartPosition() const noexcept
                 { return m_customScalingStartPosition; }
             /** @brief Sets a custom position on the **scaling** axis to start drawing the bar.
                 @details Normally a bar begins at the start of the scaling axis, so this can be
@@ -628,10 +650,12 @@ namespace Wisteria::Graphs
             /// @}
 
             /// @private
-            [[nodiscard]] const Wisteria::GraphItems::Label& GetLabel() const noexcept
+            [[nodiscard]]
+            const Wisteria::GraphItems::Label& GetLabel() const noexcept
                 { return m_barLabel; }
             /// @private
-            [[nodiscard]] const Wisteria::GraphItems::Label& GetAxisLabel() const noexcept
+            [[nodiscard]]
+            const Wisteria::GraphItems::Label& GetAxisLabel() const noexcept
                 { return m_axisLabel; }
             /// @private
             const std::vector<BarBlock>& GetBlocks() const noexcept
@@ -715,7 +739,8 @@ namespace Wisteria::Graphs
                 }
             }
         /// @returns The opacity of the bar.
-        [[nodiscard]] uint8_t GetBarOpacity() const noexcept
+        [[nodiscard]]
+        uint8_t GetBarOpacity() const noexcept
             { return m_barOopacity; }
         /// @brief Sets the bar opacity.
         /// @param opacity The level of opacity to use.
@@ -726,7 +751,8 @@ namespace Wisteria::Graphs
                 { bar.SetOpacity(opacity); }
             }
         /// @returns The effect drawn across the bar.
-        [[nodiscard]] BoxEffect GetBarEffect() const noexcept
+        [[nodiscard]]
+        BoxEffect GetBarEffect() const noexcept
             { return m_barEffect; }
         /// @brief Sets the bar effect.
         /// @param effect The bar effect to apply.
@@ -745,7 +771,8 @@ namespace Wisteria::Graphs
             @sa SetGhostOpacity().*/
         void ShowcaseBars(const std::vector<wxString>& labels);
         /// @returns The opacity level applied to "ghosted" slices.
-        [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
             { return m_ghostOpacity; }
         /** @brief Sets the opacity level for "ghosted" bars.\n
                 This is only used if ShowcaseBars() is called; this is the
@@ -763,25 +790,29 @@ namespace Wisteria::Graphs
         ///    to adjust the scaling axis as well.\n
         ///    If changing the axis position of the bar, then the bar axis may also
         ///    need to be changed manually.
-        [[nodiscard]] std::vector<Bar>& GetBars() noexcept
+        [[nodiscard]]
+        std::vector<Bar>& GetBars() noexcept
             { return m_bars; }
         /// @brief Searches for a bar by axis label.
         /// @param axisLabel The label of the bar to search for.
         /// @returns The index the bar if found, @c std::nullopt otherwise.
-        [[nodiscard]] std::optional<size_t> FindBar(const wxString& axisLabel);
+        [[nodiscard]]
+        std::optional<size_t> FindBar(const wxString& axisLabel);
         /** @brief Finds the start of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
             @returns The position along the scaling axis where the block begins, or @c std::nullopt
                 if not found.*/
-        [[nodiscard]] std::optional<double> FindBarBlockStart(const size_t barIndex,
+        [[nodiscard]]
+        std::optional<double> FindBarBlockStart(const size_t barIndex,
                                                               const wxString& blockTag) const;
         /** @brief Finds the end of a bar block.
             @param barIndex Which bar to use.
             @param blockTag The tag to identify the bar block to find.
             @returns The position along the scaling axis where the block ends, or @c std::nullopt
                 if not found.*/
-        [[nodiscard]] std::optional<double> FindBarBlockEnd(const size_t barIndex,
+        [[nodiscard]]
+        std::optional<double> FindBarBlockEnd(const size_t barIndex,
                                                             const wxString& blockTag) const;
 
         /** @brief Adds a bracket (inside the plotting area) around a range of bars
@@ -815,27 +846,31 @@ namespace Wisteria::Graphs
 
         /// @returns The axis with the scaling, which is the axis perpendicular
         ///    to the axis with the bars on it.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetScalingAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetScalingAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
         /// @returns The opposite side scaling axis,
         ///    which is the axis perpendicular to the axis with the bars on it.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetOppositeScalingAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetOppositeScalingAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetRightYAxis() : GetTopXAxis();
             }
         /// @returns The axis that the bars are being spread across.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetBarAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetBarAxis() noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetBottomXAxis() : GetLeftYAxis();
             }
         /// @returns Whether the bars are laid out vertically or
         ///    horizontally across the chart.
-        [[nodiscard]] Orientation GetBarOrientation() const noexcept
+        [[nodiscard]]
+        Orientation GetBarOrientation() const noexcept
             { return m_barOrientation; }
         /// @brief Sets whether the bars are laid out vertically or horizontally across the chart.
         /// @param orient Which orientation to use for the bars.
@@ -937,7 +972,8 @@ namespace Wisteria::Graphs
         virtual bool IsSortable() const noexcept
             { return m_isSortable; }
         /// @returns The direction that the bars are being sorted.
-        [[nodiscard]] SortDirection GetSortDirection() const noexcept
+        [[nodiscard]]
+        SortDirection GetSortDirection() const noexcept
             { return m_sortDirection; }
         /// @brief Sets the direction that the bars should be sorted.
         /// @param direction The direction that the bars should be sorted.
@@ -971,7 +1007,8 @@ namespace Wisteria::Graphs
         void IncludeSpacesBetweenBars(bool includeSpaces = true) noexcept
             { m_includeSpacesBetweenBars = includeSpaces; }
         /// @returns The type of labels being shown on the bars.
-        [[nodiscard]] BinLabelDisplay GetBinLabelDisplay() const noexcept
+        [[nodiscard]]
+        BinLabelDisplay GetBinLabelDisplay() const noexcept
             { return m_binLabelDisplay; }
         /// @brief Sets which type of labels to display for the bars.
         /// @param display The bin label display to use.
@@ -985,25 +1022,29 @@ namespace Wisteria::Graphs
         /// @}
 
         /// @private
-        [[nodiscard]] const std::vector<Bar>& GetBars() const noexcept
+        [[nodiscard]]
+        const std::vector<Bar>& GetBars() const noexcept
             { return m_bars; }
         /// @private
         void AddBarGroup(BarGroup&& barGroup)
             { m_barGroups.emplace_back(barGroup); }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetBarAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetBarAxis() const noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetBottomXAxis() : GetLeftYAxis();
             }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetScalingAxis() const noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetLeftYAxis() : GetBottomXAxis();
             }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetOppositeScalingAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetOppositeScalingAxis() const noexcept
             {
             return (GetBarOrientation() == Orientation::Vertical) ?
                 GetRightYAxis() : GetTopXAxis();
@@ -1024,7 +1065,8 @@ namespace Wisteria::Graphs
         ///    on bar axis labels won't work.\n
         ///    This should be overridden if bar axis labelling is being done in a different way,
         ///    or if bars are being stacked on top of each other or other interesting situations.
-        [[nodiscard]] virtual size_t GetBarSlotCount() const noexcept
+        [[nodiscard]]
+        virtual size_t GetBarSlotCount() const noexcept
             { return GetBarAxis().GetAxisPoints().size() - 2; }
         /// @brief Recalculates the layout of the elements on the chart.
         /// @details Call this after adding all of your bars.

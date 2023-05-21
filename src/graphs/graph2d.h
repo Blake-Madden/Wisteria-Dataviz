@@ -43,7 +43,8 @@ namespace Wisteria::Graphs
             return *this;
             }
         /// @returns @c true if including a header on the legend.
-        [[nodiscard]] bool IsIncludingHeader() const noexcept
+        [[nodiscard]]
+        bool IsIncludingHeader() const noexcept
             { return m_includeHeader; }
         /// @brief Provides a hint about where the legend will be placed
         ///     relative to its parent graph.
@@ -125,21 +126,24 @@ namespace Wisteria::Graphs
                 As a special note, changing its background color will stretch the title across
                 the graph area, making it appear as a banner.
             @returns The title.*/
-        [[nodiscard]] GraphItems::Label& GetTitle() noexcept
+        [[nodiscard]]
+        GraphItems::Label& GetTitle() noexcept
             { return m_title; }
 
         /** @brief Sets/gets the graph's subtitle.
             @note The subtitle's relative alignment controls where the subtitle is aligned against the plot.\n
                 Its display info controls its font, color, and other formatting settings.
             @returns The subtitle.*/
-        [[nodiscard]] GraphItems::Label& GetSubtitle() noexcept
+        [[nodiscard]]
+        GraphItems::Label& GetSubtitle() noexcept
             { return m_subtitle; }
 
         /** @brief Sets/gets the graph's caption.
             @note The caption's relative alignment controls where the caption is aligned against the plot.\n
                 Its display info controls its font, color, and other formatting settings.
             @returns The caption.*/
-        [[nodiscard]] GraphItems::Label& GetCaption() noexcept
+        [[nodiscard]]
+        GraphItems::Label& GetCaption() noexcept
             { return m_caption; }
         /// @}
 
@@ -148,29 +152,37 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @returns The bottom X axis.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetBottomXAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetBottomXAxis() noexcept
             { return m_bottomXAxis; }
         /// @returns The top X axis.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetTopXAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetTopXAxis() noexcept
             { return m_topXAxis; }
         /// @returns The left Y axis.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetLeftYAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetLeftYAxis() noexcept
             { return m_leftYAxis; }
         /// @returns The right Y axis.
-        [[nodiscard]] Wisteria::GraphItems::Axis& GetRightYAxis() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Axis& GetRightYAxis() noexcept
             { return m_rightYAxis; }
         /// @returns The custom axes.
-        [[nodiscard]] std::vector<Wisteria::GraphItems::Axis>& GetCustomAxes() noexcept
+        [[nodiscard]]
+        std::vector<Wisteria::GraphItems::Axis>& GetCustomAxes() noexcept
             { return m_customAxes; }
         /// @returns The reference lines.
-        [[nodiscard]] std::vector<Wisteria::GraphItems::ReferenceLine>& GetReferenceLines() noexcept
+        [[nodiscard]]
+        std::vector<Wisteria::GraphItems::ReferenceLine>& GetReferenceLines() noexcept
             { return m_referenceLines; }
         /// @returns The reference areas.
-        [[nodiscard]] std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() noexcept
+        [[nodiscard]]
+        std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() noexcept
             { return m_referenceAreas; }
 
         /// @returns @c true if a copy of the bottom X axis is being displayed on the top of the graph.
-        [[nodiscard]] bool IsXAxisMirrored() const noexcept
+        [[nodiscard]]
+        bool IsXAxisMirrored() const noexcept
             { return m_mirrorXAxis; }
         /** @brief Sets whether to display a copy of the bottom X axis on the top of the graph.
             @param mirror Whether to display the mirrored axis.*/
@@ -178,7 +190,8 @@ namespace Wisteria::Graphs
             { m_mirrorXAxis = mirror; }
 
         /// @returns @c true if a copy of the left Y axis is being displayed on the right side of the graph.
-        [[nodiscard]] bool IsYAxisMirrored() const noexcept
+        [[nodiscard]]
+        bool IsYAxisMirrored() const noexcept
             { return m_mirrorYAxis; }
         /** @brief Sets whether to display a copy of the left Y axis on the right side of the graph.
             @param mirror Whether to display the mirrored axis.*/
@@ -225,7 +238,8 @@ namespace Wisteria::Graphs
             { m_stipple = image; }
         /// @brief Gets the stipple brush.
         /// @returns The image that is being used to paint with, or null if one hasn't been specified.
-        [[nodiscard]] const wxBitmapBundle& GetStippleBrush() const noexcept
+        [[nodiscard]]
+        const wxBitmapBundle& GetStippleBrush() const noexcept
             { return m_stipple; }
 
         /// @returns The background color of the plotting area
@@ -235,7 +249,8 @@ namespace Wisteria::Graphs
         ///     Prefer using GetPlotOrCanvasColor() instead to see which color is actually being
         ///     shown in the plotting area.
         /// @sa GetPlotOrCanvasColor().
-        [[nodiscard]] const wxColour& GetBackgroundColor() const noexcept
+        [[nodiscard]]
+        const wxColour& GetBackgroundColor() const noexcept
             { return m_bgColor; }
         /** @brief Sets the background color of the plot.
                 This is the color of the plotting area (inside the main axes).
@@ -246,7 +261,8 @@ namespace Wisteria::Graphs
 
         /// @returns The plot background color, if it is valid and not transparent;
         ///     otherwise, returns the canvas's background.
-        [[nodiscard]] wxColour GetPlotOrCanvasColor() const noexcept
+        [[nodiscard]]
+        wxColour GetPlotOrCanvasColor() const noexcept
             {
             return (GetBackgroundColor().IsOk() &&
                     GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT) ?
@@ -287,12 +303,14 @@ namespace Wisteria::Graphs
             { m_properties[key] = val; }
         /// @returns Whether a property is in the canvas.
         /// @param key The property key to search for.
-        [[nodiscard]] bool HasProperty(const wxString& key) const
+        [[nodiscard]]
+        bool HasProperty(const wxString& key) const
             { return m_properties.find(key) != m_properties.end(); }
         /// @returns The value of the specified property, or an empty variant if not found.
         /// @param key The property key to search for.
         /// @returns The property if found, or an empty wxVariant otherwise.
-        [[nodiscard]] wxVariant GetPropertyValue(const wxString& key) const
+        [[nodiscard]]
+        wxVariant GetPropertyValue(const wxString& key) const
             { return HasProperty(key) ? m_properties.find(key)->second : wxVariant(); }
         /// @}
 
@@ -304,7 +322,8 @@ namespace Wisteria::Graphs
             const LegendOptions& options) = 0;
 
         /// @returns The image scheme used for various plots (e.g., bar charts and box plots).
-        [[nodiscard]] const std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>&
+        [[nodiscard]]
+        const std::shared_ptr<Wisteria::Images::Schemes::ImageScheme>&
             GetImageScheme() const noexcept
             { return m_imageScheme; }
         /** @brief Sets the list of images to connect to the plot.
@@ -324,7 +343,8 @@ namespace Wisteria::Graphs
 
         /// @brief Get the brush scheme used for the bars.
         /// @returns The brush scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
+        [[nodiscard]]
+        const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetBrushScheme() const noexcept
             { return m_brushScheme; }
         /** @brief Sets the color scheme.
             @param colors The color scheme to use.
@@ -334,7 +354,8 @@ namespace Wisteria::Graphs
 
         /// @brief Get the shape scheme used for the points.
         /// @returns The shape scheme used for the points.
-        [[nodiscard]] const std::shared_ptr<Icons::Schemes::IconScheme>&
+        [[nodiscard]]
+        const std::shared_ptr<Icons::Schemes::IconScheme>&
             GetShapeScheme() const noexcept
             { return m_shapeScheme; }
         /** @brief Sets the shape/icon scheme.
@@ -345,7 +366,8 @@ namespace Wisteria::Graphs
 
         /// @brief Get the color scheme used for the bars.
         /// @returns The color scheme used for the bars.
-        [[nodiscard]] const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
+        [[nodiscard]]
+        const std::shared_ptr<Colors::Schemes::ColorScheme>& GetColorScheme() const noexcept
             { return m_colorScheme; }
         /** @brief Sets the color scheme.
             @param colors The color scheme to use.
@@ -363,43 +385,54 @@ namespace Wisteria::Graphs
         void SetStippleBrush(wxBitmapBundle&& image) noexcept
             { m_stipple = std::move(image); }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetBottomXAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetBottomXAxis() const noexcept
             { return m_bottomXAxis; }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetTopXAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetTopXAxis() const noexcept
             { return m_topXAxis; }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetLeftYAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetLeftYAxis() const noexcept
             { return m_leftYAxis; }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Axis& GetRightYAxis() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Axis& GetRightYAxis() const noexcept
             { return m_rightYAxis; }
         /// @private
-        [[nodiscard]] const std::vector<Wisteria::GraphItems::Axis>& GetCustomAxes() const noexcept
+        [[nodiscard]]
+        const std::vector<Wisteria::GraphItems::Axis>& GetCustomAxes() const noexcept
             { return m_customAxes; }
         /// @private
-        [[nodiscard]] const std::vector<Wisteria::GraphItems::ReferenceLine>& GetReferenceLines() const noexcept
+        [[nodiscard]]
+        const std::vector<Wisteria::GraphItems::ReferenceLine>& GetReferenceLines() const noexcept
             { return m_referenceLines; }
         /// @private
         void AddReferenceLine(Wisteria::GraphItems::ReferenceLine&& refLine)
             { m_referenceLines.emplace_back(refLine); }
         /// @private
-        [[nodiscard]] const std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() const noexcept
+        [[nodiscard]]
+        const std::vector<Wisteria::GraphItems::ReferenceArea>& GetReferenceAreas() const noexcept
             { return m_referenceAreas; }
         /// @private
         void AddReferenceArea(Wisteria::GraphItems::ReferenceArea&& refArea)
             { m_referenceAreas.emplace_back(refArea); }
         /// @private
-        [[nodiscard]] const GraphItems::Label& GetTitle() const noexcept
+        [[nodiscard]]
+        const GraphItems::Label& GetTitle() const noexcept
             { return m_title; }
         /// @private
-        [[nodiscard]] const GraphItems::Label& GetSubtitle() const noexcept
+        [[nodiscard]]
+        const GraphItems::Label& GetSubtitle() const noexcept
             { return m_subtitle; }
         /// @private
-        [[nodiscard]] const GraphItems::Label& GetCaption() const noexcept
+        [[nodiscard]]
+        const GraphItems::Label& GetCaption() const noexcept
             { return m_caption; }
         /// @private
-        [[nodiscard]] const Wisteria::Canvas* GetCanvas() const noexcept
+        [[nodiscard]]
+        const Wisteria::Canvas* GetCanvas() const noexcept
             { return m_parentCanvas; }
         /// @private
         [[deprecated("Use AddAnnotation() instead.")]]
@@ -427,7 +460,8 @@ namespace Wisteria::Graphs
             }
         /// @returns The image drawn across all bars/boxes.\n
         ///     This will be the first image in the image scheme.
-        [[nodiscard]] const wxBitmapBundle& GetCommonBoxImage() const noexcept
+        [[nodiscard]]
+        const wxBitmapBundle& GetCommonBoxImage() const noexcept
             {
             if (GetImageScheme() != nullptr)
                 { return GetImageScheme()->GetImage(0); }
@@ -435,7 +469,8 @@ namespace Wisteria::Graphs
                 { return m_emptyImage; }
             }
         /// @returns The color used to outline images used for bars/boxes.
-        [[nodiscard]] wxColour GetImageOutlineColor() const noexcept
+        [[nodiscard]]
+        wxColour GetImageOutlineColor() const noexcept
             { return m_imageOutlineColor; }
         /** @brief Updates the settings for a legend based on the provided hints.
                 This should be called on a legend after it is constructed by
@@ -456,7 +491,8 @@ namespace Wisteria::Graphs
         /// @returns A non-const version of the parent canvas.
         /// @details This should be used in derived classes when needing to call
         ///     `Canvas::CalcAllSizes()` or `Canvas::SetCanvasMinHeightDIPs()`.
-        [[nodiscard]] Wisteria::Canvas* GetCanvas() noexcept
+        [[nodiscard]]
+        Wisteria::Canvas* GetCanvas() noexcept
             { return m_parentCanvas; }
         /** @brief Adds an object (e.g., a polygon) to the plot to be rendered.
             @param object The object to add to the plot.
@@ -482,13 +518,16 @@ namespace Wisteria::Graphs
         wxRect Draw(wxDC& dc) const override;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             { return m_rect; }
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetPlotAreaBoundingBox() const noexcept
+        [[nodiscard]]
+        wxRect GetPlotAreaBoundingBox() const noexcept
             { return m_plotRect; }
         /// @returns The rectangular area of the plot area. This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetContentRect() const noexcept override
+        [[nodiscard]]
+        wxRect GetContentRect() const noexcept override
             { return GetPlotAreaBoundingBox(); }
 
         /** @brief Sets the rectangular area of the entire graph area.
@@ -566,17 +605,22 @@ namespace Wisteria::Graphs
                 m_originalScaling(object->GetScaling())
                 {}
 
-            [[nodiscard]] std::shared_ptr<GraphItems::GraphItemBase>&
+            [[nodiscard]]
+            std::shared_ptr<GraphItems::GraphItemBase>&
                 GetObject() noexcept
                 { return m_object; }
-            [[nodiscard]] const std::shared_ptr<GraphItems::GraphItemBase>&
+            [[nodiscard]]
+            const std::shared_ptr<GraphItems::GraphItemBase>&
                 GetObject() const noexcept
                 { return m_object; }
-            [[nodiscard]] wxPoint GetAnchorPoint() const noexcept
+            [[nodiscard]]
+            wxPoint GetAnchorPoint() const noexcept
                 { return m_anchorPt; }
-            [[nodiscard]] double GetOriginalScaling() const noexcept
+            [[nodiscard]]
+            double GetOriginalScaling() const noexcept
                 { return m_originalScaling; }
-            [[nodiscard]] const std::vector<wxPoint>&
+            [[nodiscard]]
+            const std::vector<wxPoint>&
                 GetInterestPoints() const noexcept
                 { return m_interestPts; }
         private:
@@ -638,7 +682,8 @@ namespace Wisteria::Graphs
             }
         /** @returns @c true if @c pt is inside of plot area.
             @param pt The point to see that is in the plot.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Selects the object at the given point (relative to the parent canvas),
                 if there is an object at that point.
@@ -646,7 +691,8 @@ namespace Wisteria::Graphs
             @returns @c true if something was selected at the given point.
             @note This will toggle the selection of an object, if it was selected before
                 then it will become unselected.*/
-        [[nodiscard]] bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
+        [[nodiscard]]
+        bool SelectObjectAtPoint(const wxPoint& pt, wxDC& dc) final;
         /// @brief Calculates how much outer axis labels and headers go outside of the
         ///     axes' widths and heights (used to adjust the margins of the plot area).
         void GetAxesOverhang(long& leftMargin, long& rightMargin, long& topMargin,

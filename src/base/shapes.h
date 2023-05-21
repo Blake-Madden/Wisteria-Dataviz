@@ -41,11 +41,7 @@ namespace Wisteria::GraphItems
         /// @private
         GraphicsContextFallback(const GraphicsContextFallback&) = delete;
         /// @private
-        GraphicsContextFallback(GraphicsContextFallback&&) = delete;
-        /// @private
         GraphicsContextFallback& operator=(const GraphicsContextFallback&) = delete;
-        /// @private
-        GraphicsContextFallback& operator=(GraphicsContextFallback&&) = delete;
         /** @returns The @c wxGraphicsContext to render to.\n
                 (May be null if a failure occurred).
             @note The returned @c wxGraphicsContext may point to the original @c wxDC, or it may
@@ -104,10 +100,12 @@ namespace Wisteria::GraphItems
         /// @details This is useful for changing the shape's settings when preparing to
         ///     draw different shapes.
         /// @returns The shape's information.
-        [[nodiscard]] GraphItemInfo& GetGraphItemInfo() noexcept
+        [[nodiscard]]
+        GraphItemInfo& GetGraphItemInfo() noexcept
             { return m_graphInfo; }
         /// @private
-        [[nodiscard]] const GraphItemInfo& GetGraphItemInfo() const noexcept
+        [[nodiscard]]
+        const GraphItemInfo& GetGraphItemInfo() const noexcept
             { return m_graphInfo; }
 
         /// @name Shape Rendering Functions
@@ -280,40 +278,49 @@ namespace Wisteria::GraphItems
         /// @brief Helper to get X coordinate based on percent of width of rect from its left side.
         /// @note @c percentFromLeft can be negative if using it for Bezier control points
         ///     that need to go a little outside of the rect.
-        [[nodiscard]] double GetXPosFromLeft(const wxRect rect,
+        [[nodiscard]]
+        double GetXPosFromLeft(const wxRect rect,
                                              const double percentFromLeft) const
             { return rect.GetLeft() + (rect.GetWidth() * percentFromLeft); };
         /// @brief Helper to get Y coordinate based on percent of height of rect from its top.
-        [[nodiscard]] double GetYPosFromTop(const wxRect rect,
+        [[nodiscard]]
+        double GetYPosFromTop(const wxRect rect,
                                             const double percentFromTop) const
             { return rect.GetTop() + (rect.GetHeight() * percentFromTop); };
 
         /// @brief Mirrors percentages passed to GetXPosFromLeft() or GetYPosFromTop().
-        [[nodiscard]] constexpr double Mirror(const double percent) const noexcept
+        [[nodiscard]]
+        constexpr double Mirror(const double percent) const noexcept
             { return 1.0 - percent; }
 
         /// @returns The midpoint of a rect.
-        [[nodiscard]] wxPoint GetMidPoint(const wxRect rect) const
+        [[nodiscard]]
+        wxPoint GetMidPoint(const wxRect rect) const
             { return rect.GetLeftTop() + wxPoint(rect.GetWidth()/2, rect.GetHeight()/2); }
 
         /// @returns The radius of the largest circle that can fit in a rect.
         /// @note This is floored to be conservative.
-        [[nodiscard]] double GetRadius(const wxRect rect) const
+        [[nodiscard]]
+        double GetRadius(const wxRect rect) const
             {
             return std::floor(
                 safe_divide<double>(std::min(rect.GetWidth(), rect.GetHeight()), 2));
             }
 
-        [[nodiscard]] double ScaleToScreenAndCanvas(const double value) const noexcept
+        [[nodiscard]]
+        double ScaleToScreenAndCanvas(const double value) const noexcept
             { return value * GetScaling() * GetDPIScaleFactor(); }
 
-        [[nodiscard]] double DownscaleFromScreenAndCanvas(const double value) const noexcept
+        [[nodiscard]]
+        double DownscaleFromScreenAndCanvas(const double value) const noexcept
             { return safe_divide(value, (GetScaling() * GetDPIScaleFactor())); }
 
-        [[nodiscard]] double GetScaling() const noexcept
+        [[nodiscard]]
+        double GetScaling() const noexcept
             { return m_graphInfo.GetScaling(); }
 
-        [[nodiscard]] double GetDPIScaleFactor() const noexcept
+        [[nodiscard]]
+        double GetDPIScaleFactor() const noexcept
             {
             wxASSERT_LEVEL_2_MSG(m_graphInfo.GetDPIScaleFactor().has_value(),
                                  L"Shape should have a proper DPI scaling.");
@@ -341,11 +348,7 @@ namespace Wisteria::GraphItems
         /// @private
         Shape(const Shape&) = delete;
         /// @private
-        Shape(Shape&&) = delete;
-        /// @private
         Shape& operator==(const Shape&) = delete;
-        /// @private
-        Shape& operator==(Shape&&) = delete;
         /** @brief Bounds the shape to the given rectangle.
             @param rect The rectangle to bound the shape to.
             @param dc This parameter is ignored.
@@ -370,7 +373,8 @@ namespace Wisteria::GraphItems
     protected:
         /// @returns The rectangle on the canvas where the shape would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @brief Moves the shape by the specified x and y values.
             @param xToMove the amount to move horizontally.
             @param yToMove the amount to move vertically.*/
@@ -380,7 +384,8 @@ namespace Wisteria::GraphItems
         ShapeRenderer& GetRenderer() noexcept
             { return m_renderer; }
     private:
-        [[nodiscard]] GraphItemInfo& GetGraphItemInfo() final
+        [[nodiscard]]
+        GraphItemInfo& GetGraphItemInfo() final
             {
             m_rendererNeedsUpdating = true;
             return GraphItemBase::GetGraphItemInfo();
@@ -397,7 +402,8 @@ namespace Wisteria::GraphItems
             }
         /** @returns @c true if the given point is inside of the shape.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const noexcept final
             { return GetBoundingBox(dc).Contains(pt); }
 
         wxSize m_shapeSizeDIPs{ 0, 0 };

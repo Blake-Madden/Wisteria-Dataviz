@@ -38,10 +38,12 @@ namespace Wisteria::GraphItems
 
         /// @returns The pen used for the outer arc of the slice, if different
         ///     from the pen used for the sides.
-        [[nodiscard]] std::optional<wxPen>& GetArcPen() noexcept
+        [[nodiscard]]
+        std::optional<wxPen>& GetArcPen() noexcept
             { return m_arcPen; }
         /// @private
-        [[nodiscard]] const std::optional<wxPen>& GetArcPen() const noexcept
+        [[nodiscard]]
+        const std::optional<wxPen>& GetArcPen() const noexcept
             { return m_arcPen; }
         /** @brief Creates a label to display in the middle of the slice.\n
                 This is usually a raw count of observations in the slice, or its percentage of the
@@ -53,7 +55,8 @@ namespace Wisteria::GraphItems
                 to make it fit. Note that this will only be used if @c labelDisplay is
                 set to BinLabelDisplay::BinName.
             @returns The label, which will already be anchored to the middle of the slice.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::Label> CreateMiddleLabel(
                           wxDC& dc, const double pieProportion, const BinLabelDisplay labelDisplay,
                           const std::shared_ptr<const TextReplace> abbreviate = nullptr);
         /** @brief Creates a label to display at the outer ring of the pie.
@@ -61,7 +64,8 @@ namespace Wisteria::GraphItems
             @param labelDisplay What to display on the label.
             @returns The label, which will already be anchored to the middle of the slices'
                 outer ring.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
             const BinLabelDisplay labelDisplay);
         /** @brief Creates a label to display at the outer ring of the pie.
                 This is usually the group label of the slice.
@@ -71,10 +75,12 @@ namespace Wisteria::GraphItems
             @param labelDisplay What to display on the label.
             @returns The label, which will already be anchored to the middle of the slices'
                 outer ring.*/
-        [[nodiscard]] std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::Label> CreateOuterLabel(
                           const wxRect& pieArea, const BinLabelDisplay labelDisplay);
         /// @returns The custom midpoint display, specific to this slice.
-        [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
+        [[nodiscard]]
+        std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
             { return m_midPointLabelDisplay; }
         /// @brief Sets the custom midpoint display, specific to this slice.
         /// @param blDisplay The display to use.
@@ -85,25 +91,29 @@ namespace Wisteria::GraphItems
         /// @param pieProportion The proportion of the pie that this arc should consume.
         ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1.0 would be the outer
         ///     arc of the pie.
-        [[nodiscard]] std::pair<double, double> GetMiddleOfArc(const double pieProportion) const noexcept;
+        [[nodiscard]]
+        std::pair<double, double> GetMiddleOfArc(const double pieProportion) const noexcept;
         /// @returns The middle point of the outer rim of the slice's arc.
         /// @param pieProportion The proportion of the pie that this arc should consume.
         ///     For example, @c 0.5 would be an arc in the middle of the pie, and @c 1 would be the outer
         ///     arc of the pie.
         /// @param pieArea A custom area to align the point with. This is useful for moving an outer label
         ///     further out from the slice.
-        [[nodiscard]] std::pair<double, double> GetMiddleOfArc(const double pieProportion,
+        [[nodiscard]]
+        std::pair<double, double> GetMiddleOfArc(const double pieProportion,
                                                                const wxRect pieArea) const noexcept;
         /// @returns The (approximate) polygon of the slice.
         std::vector<wxPoint> GetPolygon() const noexcept;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             { return Polygon::GetPolygonBoundingBox(GetPolygon()); }
     private:
         wxRect Draw(wxDC& dc) const final;
 
-        [[nodiscard]] bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final
             {
             auto points = GetPolygon();
             return Polygon::IsInsidePolygon(pt, &points[0], points.size());
@@ -306,7 +316,8 @@ namespace Wisteria::Graphs
                 {}
 
             /// @returns The text shown on the outer ring of the slice.
-            [[nodiscard]] const wxString& GetGroupLabel() const noexcept
+            [[nodiscard]]
+            const wxString& GetGroupLabel() const noexcept
                 { return m_groupLabel; }
             /// @brief The main label for a slice (usually the group label from a dataset).
             /// @param label The label.
@@ -316,14 +327,16 @@ namespace Wisteria::Graphs
             ///     (beneath the label).
             /// @note This value is not gathered from the dataset, but rather added by
             ///     the client code.
-            [[nodiscard]] const wxString& GetDescription() const noexcept
+            [[nodiscard]]
+            const wxString& GetDescription() const noexcept
                 { return m_description; }
             /// @brief An optional description to show below the main label.
             /// @param desc The description.
             void SetDescription(const wxString& desc)
                 { m_description = desc; }
             /// @returns @c true if the slice being made translucent.
-            [[nodiscard]] bool IsGhosted() const noexcept
+            [[nodiscard]]
+            bool IsGhosted() const noexcept
                 { return m_ghost; }
             /// @brief Sets the slice to be translucent.
             /// @param ghost @c true to make the slice translucent.
@@ -336,7 +349,8 @@ namespace Wisteria::Graphs
             void ShowGroupLabel(const bool show) noexcept
                 { m_showText = show; }
             /// @returns The custom midpoint display, specific to this slice.
-            [[nodiscard]] std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
+            [[nodiscard]]
+            std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept
                 { return m_midPointLabelDisplay; }
             /// @brief Sets the custom midpoint display, specific to this slice.
             /// @param blDisplay The display to use.
@@ -345,10 +359,12 @@ namespace Wisteria::Graphs
                 { m_midPointLabelDisplay = blDisplay; }
 
             /// @private
-            [[nodiscard]] bool operator==(const SliceInfo& that) const
+            [[nodiscard]]
+            bool operator==(const SliceInfo& that) const
                 { return m_groupLabel.CmpNoCase(that.m_groupLabel) == 0; }
             /// @private
-            [[nodiscard]] bool operator<(const SliceInfo& that) const
+            [[nodiscard]]
+            bool operator<(const SliceInfo& that) const
                 { return m_groupLabel.CmpNoCase(that.m_groupLabel) < 0; }
         private:
             wxString m_groupLabel;
@@ -401,7 +417,8 @@ namespace Wisteria::Graphs
 
         /// @returns @c true if outer slice labels have their font colors match
         ///     their respective pie slice.
-        [[nodiscard]] bool IsUsingColorLabels() const noexcept
+        [[nodiscard]]
+        bool IsUsingColorLabels() const noexcept
             { return m_useColorLabels; }
         /// @brief Whether outer slice labels have their font colors match
         ///     their respective pie slice.
@@ -410,7 +427,8 @@ namespace Wisteria::Graphs
             { m_useColorLabels = useColors; }
 
         /// @returns The effect used for drawing the slices.
-        [[nodiscard]] PieSliceEffect GetPieSliceEffect() const noexcept
+        [[nodiscard]]
+        PieSliceEffect GetPieSliceEffect() const noexcept
             { return m_sliceEffect; }
         /** @brief Sets the effect for how slices are rendered.
             @param effect The effect to use.
@@ -433,7 +451,8 @@ namespace Wisteria::Graphs
             { m_sliceEffect = effect; }
 
         /// @returns The opacity level applied to "ghosted" slices.
-        [[nodiscard]] uint8_t GetGhostOpacity() const noexcept
+        [[nodiscard]]
+        uint8_t GetGhostOpacity() const noexcept
             { return m_ghostOpacity; }
         /** @brief Sets the opacity level for "ghosted" slices.
             @param opacity The opacity level (should be between @c 0 to @c 255).
@@ -463,7 +482,8 @@ namespace Wisteria::Graphs
 
         /// @returns @c true if the pie chart is shifted to one side if either gutter
         ///     has no outer labels.
-        [[nodiscard]] bool HasDynamicMargins() const noexcept
+        [[nodiscard]]
+        bool HasDynamicMargins() const noexcept
             { return m_dynamicMargins; }
         /// @brief Set to @c true to shift the pie chart to one side if either gutter
         ///     has no outer labels and there aren't any margin notes.
@@ -484,7 +504,8 @@ namespace Wisteria::Graphs
         ///     labels will be on the left side of the pie.
         /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetRightMarginNote().
-        [[nodiscard]] GraphItems::Label& GetLeftMarginNote() noexcept
+        [[nodiscard]]
+        GraphItems::Label& GetLeftMarginNote() noexcept
             { return m_leftMarginNote; }
         /// @brief Gets/sets the label shown in the right margin/gutter.
         /// @details This will override dynamically hiding the margins, forcing the right margin
@@ -494,11 +515,13 @@ namespace Wisteria::Graphs
         ///     labels will be on the right side of the pie.
         /// @returns A reference to the label.
         /// @sa SetDynamicMargins(), GetLeftMarginNote().
-        [[nodiscard]] GraphItems::Label& GetRightMarginNote() noexcept
+        [[nodiscard]]
+        GraphItems::Label& GetRightMarginNote() noexcept
             { return m_rightMarginNote; }
 
         /// @returns What the labels along the margins (i.e., gutters) are displaying.
-        [[nodiscard]] BinLabelDisplay GetOuterLabelDisplay() const noexcept
+        [[nodiscard]]
+        BinLabelDisplay GetOuterLabelDisplay() const noexcept
             { return m_outerLabelDisplay; }
         /// @brief Sets what the labels along the margins (i.e., gutters) are displaying.
         /// @param display What to display.
@@ -517,12 +540,14 @@ namespace Wisteria::Graphs
         /// @brief Accesses the outer pie (or the only pie if a single series chart).\n
         ///     Use this to edit the labels and descriptions for slices.
         /// @returns The outer (i.e., main) pie.
-        [[nodiscard]] PieInfo& GetOuterPie() noexcept
+        [[nodiscard]]
+        PieInfo& GetOuterPie() noexcept
             { return m_outerPie; }
 
         /// @returns What the labels on the middle points along the outer ring are displaying.
         /// @note If only using a single grouping column, then this refers to the main pie.
-        [[nodiscard]] BinLabelDisplay GetOuterPieMidPointLabelDisplay() const noexcept
+        [[nodiscard]]
+        BinLabelDisplay GetOuterPieMidPointLabelDisplay() const noexcept
             { return m_outerPieMidPointLabelDisplay; }
         /// @brief Sets what the labels on the middle points along the outer ring are displaying.
         /// @param display What to display.
@@ -538,7 +563,8 @@ namespace Wisteria::Graphs
         void SetLabelPlacement(const LabelPlacement placement) noexcept
             { m_labelPlacement = placement; }
         /// @returns Where the outer labels are placed.
-        [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
+        [[nodiscard]]
+        LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
         /// @brief Brings to focus the specified slice(s) along the outer pie and their
@@ -563,11 +589,13 @@ namespace Wisteria::Graphs
         /** @brief Gets the labels of the largest slice(s) along the outer (or only) pie.
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the largest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetLargestOuterPieSlices() const;
+        [[nodiscard]]
+        std::vector<wxString> GetLargestOuterPieSlices() const;
         /** @brief Gets the labels of the smallest slice(s) along the outer (or only) pie.
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the smallest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetSmallestOuterPieSlices() const;
+        [[nodiscard]]
+        std::vector<wxString> GetSmallestOuterPieSlices() const;
 
         /** @brief Ghosts or unghosts the slices of the outer (or only) pie.
             @param ghost @c true to make the slices translucent, @c false to make them opaque.
@@ -627,18 +655,21 @@ namespace Wisteria::Graphs
         ///               [](auto& slice) noexcept
         ///               { slice.SetGroupLabel(slice.GetGroupLabel().Upper()); });
         /// @endcode
-        [[nodiscard]] PieInfo& GetInnerPie() noexcept
+        [[nodiscard]]
+        PieInfo& GetInnerPie() noexcept
             { return m_innerPie; }
         /// @brief Gets/sets the pen used for the lines connecting inner slices to their
         ///     labels outside of the pie.
         /// @returns The inner pie connection line.
-        [[nodiscard]] wxPen& GetInnerPieConnectionLinePen() noexcept
+        [[nodiscard]]
+        wxPen& GetInnerPieConnectionLinePen() noexcept
             { return m_connectionLinePen; }
 
         /// @brief Gets the line style used for the lines connecting inner slices to
         ///     their labels outside of the pie.
         /// @returns The inner pie connection line style.
-        [[nodiscard]] LineStyle GetInnerPieConnectionLineStyle() const noexcept
+        [[nodiscard]]
+        LineStyle GetInnerPieConnectionLineStyle() const noexcept
             { return m_connectionLineStyle; }
         /** @brief Sets the line style used for the lines connecting inner slices to
                 their labels outside of the pie.
@@ -656,7 +687,8 @@ namespace Wisteria::Graphs
 
         /// @returns What the labels on the middle points along the inner ring are displaying.
         /// @note This is only relevant if using multiple group columns.
-        [[nodiscard]] BinLabelDisplay GetInnerPieMidPointLabelDisplay() const noexcept
+        [[nodiscard]]
+        BinLabelDisplay GetInnerPieMidPointLabelDisplay() const noexcept
             { return m_innerPieMidPointLabelDisplay; }
         /// @brief Sets what the labels on the middle points along the inner ring are displaying.
         /// @param display What to display.
@@ -715,24 +747,28 @@ namespace Wisteria::Graphs
                 (if using a secondary grouping variable).
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the largest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetLargestInnerPieSlices() const;
+        [[nodiscard]]
+        std::vector<wxString> GetLargestInnerPieSlices() const;
         /** @brief Gets the labels of the largest slice(s) along the inner pie for each group
                 (i.e., parent pie slice).
             @details This only applies if using a secondary grouping variable.
             @note In the case of ties within a group, multiple labels will be returned.
             @returns The labels of the largest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetLargestInnerPieSlicesByGroup() const;
+        [[nodiscard]]
+        std::vector<wxString> GetLargestInnerPieSlicesByGroup() const;
         /** @brief Gets the labels of the smallest slice(s) along the inner pie
                 (if using a secondary grouping variable).
             @note In the case of ties, multiple labels will be returned.
             @returns The labels of the smallest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetSmallestInnerPieSlices() const;
+        [[nodiscard]]
+        std::vector<wxString> GetSmallestInnerPieSlices() const;
         /** @brief Gets the labels of the smallest slice(s) along the inner pie for each group
                 (i.e., parent pie slice).
             @details This only applies if using a secondary grouping variable.
             @note In the case of ties within a group, multiple labels will be returned.
             @returns The labels of the smallest pie slice(s).*/
-        [[nodiscard]] std::vector<wxString> GetSmallestInnerPieSlicesByGroup() const;
+        [[nodiscard]]
+        std::vector<wxString> GetSmallestInnerPieSlicesByGroup() const;
 
         /** @brief Ghosts or unghosts the slices of the inner pie
                 (if using a secondary grouping variable).
@@ -794,7 +830,8 @@ namespace Wisteria::Graphs
 
         /// @brief Whether a donut hole is being shown.
         /// @returns @c true if a donut hole is being shown.
-        [[nodiscard]] bool IsIncludingDonutHole() const noexcept
+        [[nodiscard]]
+        bool IsIncludingDonutHole() const noexcept
             { return m_includeDonutHole; }
         /// @brief Whether to include a donut hole at the center of the pie.
         /// @param include @c true to include a donut hole.
@@ -803,11 +840,13 @@ namespace Wisteria::Graphs
 
         /// @brief Sets/gets the donut hole label.
         /// @returns The label drawn in the middle of the donut hole (if a donut hole is included).
-        [[nodiscard]] Wisteria::GraphItems::Label& GetDonutHoleLabel() noexcept
+        [[nodiscard]]
+        Wisteria::GraphItems::Label& GetDonutHoleLabel() noexcept
             { return m_donutHoleLabel; }
 
         /// @returns The proportion of the pie that the donut hole consumes (0.0 - 1.0).
-        [[nodiscard]] double GetDonutHoleProportion() const noexcept
+        [[nodiscard]]
+        double GetDonutHoleProportion() const noexcept
             { return m_donutHoleProportion; }
         /// @brief Sets the proportion of the pie that the donut hole consumes.
         /// @param prop The proportion of the pie used for the hole.\n
@@ -817,7 +856,8 @@ namespace Wisteria::Graphs
             { m_donutHoleProportion = std::clamp(prop, 0.0, .95); }
 
         /// @returns The color of the donut hole.
-        [[nodiscard]] wxColour& GetDonutHoleColor() noexcept
+        [[nodiscard]]
+        wxColour& GetDonutHoleColor() noexcept
             { return m_donutHoleColor; }
         /// @brief Sets the donut hole color.
         /// @param color The background color of the donut hole.
@@ -833,7 +873,8 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final
             {
             if (options.GetRingPerimeter() == Perimeter::Inner)
@@ -853,7 +894,8 @@ namespace Wisteria::Graphs
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateOuterPieLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateOuterPieLegend(
             const LegendCanvasPlacementHint hint);
 
         /** @brief Builds and returns a legend for the inner pie (if a dual data series).
@@ -862,18 +904,22 @@ namespace Wisteria::Graphs
                 This is used for defining the legend's padding, outlining, canvas proportions, etc.
             @returns The legend for the chart.
             @note Prefer using CreateLegend().*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateInnerPieLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateInnerPieLegend(
             const LegendCanvasPlacementHint hint);
         /// @}
 
         /// @private
-        [[nodiscard]] const PieInfo& GetInnerPie() const noexcept
+        [[nodiscard]]
+        const PieInfo& GetInnerPie() const noexcept
             { return m_innerPie; }
         /// @private
-        [[nodiscard]] const PieInfo& GetOuterPie() const noexcept
+        [[nodiscard]]
+        const PieInfo& GetOuterPie() const noexcept
             { return m_outerPie; }
         /// @private
-        [[nodiscard]] const Wisteria::GraphItems::Label& GetDonutHoleLabel() const noexcept
+        [[nodiscard]]
+        const Wisteria::GraphItems::Label& GetDonutHoleLabel() const noexcept
             { return m_donutHoleLabel; }
     private:
         /// @returns The indices along the outer pie of the provided slices.

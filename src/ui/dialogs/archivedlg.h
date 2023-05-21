@@ -51,7 +51,8 @@ namespace Wisteria::UI
         ArchiveDlg& operator=(ArchiveDlg&&) = delete;
 
         /// @returns The path of the selected archive file.
-        [[nodiscard]] const wxString& GetPath() const noexcept
+        [[nodiscard]]
+        const wxString& GetPath() const noexcept
             { return m_filePath; }
         /** @brief Sets the path of the default selected file.
             @param path The default file path to select.*/
@@ -69,7 +70,8 @@ namespace Wisteria::UI
                 }
             }
         /// @returns The selected document filter.
-        [[nodiscard]] wxString GetSelectedFileFilter()
+        [[nodiscard]]
+        wxString GetSelectedFileFilter()
             {
             TransferDataFromWindow();
             return m_fileFilterCombo->GetString(m_selectedFileFilter);

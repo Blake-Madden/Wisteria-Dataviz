@@ -242,7 +242,8 @@ namespace statistics
         @param mean The sample mean.
         @param stdDev The sample standard deviation.
         @todo Need unit tests.*/
-    [[nodiscard]] inline double z_score(const double value, const double mean, const double stdDev) noexcept
+    [[nodiscard]]
+    inline double z_score(const double value, const double mean, const double stdDev) noexcept
         {
         return safe_divide<double>(value - mean, stdDev);
         }
@@ -410,7 +411,8 @@ namespace statistics
             }
         /// @returns A pointer/iterator to the next outlier,
         ///     or end of the container if no more outliers.
-        [[nodiscard]] std::vector<double>::const_iterator operator()() noexcept
+        [[nodiscard]]
+        std::vector<double>::const_iterator operator()() noexcept
             {
             m_current_position = std::find_if(
                 m_current_position, m_end,
@@ -420,16 +422,20 @@ namespace statistics
             return (m_end == m_current_position) ? m_end : m_current_position++;
             }
         /// @returns The lower outlier boundary.
-        [[nodiscard]] double get_lower_outlier_boundary() const noexcept
+        [[nodiscard]]
+        double get_lower_outlier_boundary() const noexcept
             { return lo; }
         /// @returns The upper outlier boundary.
-        [[nodiscard]] double get_upper_outlier_boundary() const noexcept
+        [[nodiscard]]
+        double get_upper_outlier_boundary() const noexcept
             { return uo; }
         /// @returns The lower extreme boundary.
-        [[nodiscard]] double get_lower_extreme_boundary() const noexcept
+        [[nodiscard]]
+        double get_lower_extreme_boundary() const noexcept
             { return le; }
         /// @returns The upper extreme boundary.
-        [[nodiscard]] double get_upper_extreme_boundary() const noexcept
+        [[nodiscard]]
+        double get_upper_extreme_boundary() const noexcept
             { return ue; }
     private:
         std::vector<double>::const_iterator m_current_position;
@@ -450,7 +456,8 @@ namespace statistics
             zero will be returned (the high and low are the same here, so zero is used).
         @throws std::invalid_argument If max is higher than min, throws an exception.*/
     template<typename T>
-    [[nodiscard]] inline double normalize(const T range_min, const T range_max, T value)
+    [[nodiscard]]
+    inline double normalize(const T range_min, const T range_max, T value)
         {
         if (std::is_floating_point_v<T> &&
             (std::isnan(range_min) || std::isnan(range_max) || std::isnan(value)))
@@ -470,7 +477,8 @@ namespace statistics
         @returns The phi coefficient.
         @todo needs to be validated and unit tested*/
     template <typename T>
-    [[nodiscard]] inline double phi_coefficient(const T begin1, const T end1,
+    [[nodiscard]]
+    inline double phi_coefficient(const T begin1, const T end1,
                                   const T begin2, const T end2)
         {
         NON_UNIT_TEST_ASSERT((end1-begin1) == (end2-begin2) && "Arrays passed to phi_coefficient must be the same size!");

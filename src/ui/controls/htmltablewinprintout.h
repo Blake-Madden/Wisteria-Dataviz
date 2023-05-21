@@ -272,7 +272,8 @@ public:
                                std::max(static_cast<int>(tablesIter-m_htmlTables.begin()),1)-1) );
             }
         }
-    [[nodiscard]] size_t GetPageCount() const noexcept
+    [[nodiscard]]
+    size_t GetPageCount() const noexcept
         { return m_pageStarts.size(); }
     // printer header functions
     void SetLeftPrinterHeader(const wxString& header)

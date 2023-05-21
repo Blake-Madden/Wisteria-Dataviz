@@ -127,11 +127,13 @@ namespace Wisteria::Icons
         /// @returns The minimum width that should be used for legend icons.
         /// @note This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),
         ///     which use DIPs.
-        [[nodiscard]] static constexpr double GetIconWidthDIPs() noexcept
+        [[nodiscard]]
+        static constexpr double GetIconWidthDIPs() noexcept
             { return 16; }
         /// @returns The size of arrowheads (if shape is set to @c HorizontalArrowSeparator)
         ///     in DIPs.
-        [[nodiscard]] static wxSize GetArrowheadSizeDIPs()
+        [[nodiscard]]
+        static wxSize GetArrowheadSizeDIPs()
             { return wxSize(2, 2); }
         };
 
@@ -167,7 +169,8 @@ namespace Wisteria::Icons
                 m_shapes(std::move(shapes)), m_iconImages(std::move(images))
                 {}
             /// @returns The list of shapes from the scheme.
-            [[nodiscard]] const std::vector<IconShape>& GetShapes() const noexcept
+            [[nodiscard]]
+            const std::vector<IconShape>& GetShapes() const noexcept
                 { return m_shapes; }
             /** @returns The shape from a given index.\n
                     If no shapes are available, returns a blank icon.
@@ -176,7 +179,8 @@ namespace Wisteria::Icons
                     For example, if there are 2 shapes, index 1 will return 1;
                     however, index 2 will wrap around and return shape 0 and
                     index 3 will return shape 1.*/
-            [[nodiscard]] IconShape GetShape(const size_t index) const
+            [[nodiscard]]
+            IconShape GetShape(const size_t index) const
                 {
                 return (m_shapes.size() == 0) ?
                     IconShape::Blank : m_shapes.at(index % m_shapes.size());
@@ -192,7 +196,8 @@ namespace Wisteria::Icons
                     For example, if there are 2 images, index 1 will return 1;
                     however, index 2 will wrap around and return image 0 and
                     index 3 will return image 1.*/
-            [[nodiscard]] const wxBitmapBundle& GetImage(const size_t index) const noexcept
+            [[nodiscard]]
+            const wxBitmapBundle& GetImage(const size_t index) const noexcept
                 {
                 return (m_iconImages.size() == 0) ?
                     m_emptyImage :

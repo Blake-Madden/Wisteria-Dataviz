@@ -55,8 +55,9 @@ namespace lily_of_the_valley
             @param length The length of @c value.\n
                 Call get_trimmed_string_length() to see how much to read from there to
                 see where the last non-space is at the end.*/
-        [[nodiscard]] const wchar_t* operator()(const wchar_t* value,
-                                     size_t length = std::wstring::npos) noexcept
+        [[nodiscard]]
+        const wchar_t* operator()(const wchar_t* value,
+                                  size_t length = std::wstring::npos) noexcept
             {
             m_trimmed_string_length = 0;
             if (value == nullptr)
@@ -93,7 +94,8 @@ namespace lily_of_the_valley
             }
         /// @returns The length of the string buffer,
         ///     ignoring spaces and quotes on the left and right.
-        [[nodiscard]] size_t get_trimmed_string_length() const noexcept
+        [[nodiscard]]
+        size_t get_trimmed_string_length() const noexcept
             { return m_trimmed_string_length; }
     private:
         size_t m_trimmed_string_length{ 0 };
@@ -109,7 +111,8 @@ namespace lily_of_the_valley
         /// @brief Determines if character is either CR or LF.
         /// @param character The character to review.
         /// @returns @c true if character is either CR or LF.
-        [[nodiscard]] inline constexpr bool operator()(const wchar_t character) const noexcept
+        [[nodiscard]]
+        inline constexpr bool operator()(const wchar_t character) const noexcept
             { return (character == 10 || character == 13); }
         };
 
@@ -121,7 +124,8 @@ namespace lily_of_the_valley
         /// @brief Determines if character is either whitespace, a semicolon, or comma.
         /// @param character The character to review.
         /// @returns @c true if character is either whitespace, a semicolon, or comma.
-        [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
+        [[nodiscard]]
+        inline bool operator()(const wchar_t character) const noexcept
             {
             return (std::iswspace(character) ||
                     character == L';' || character == L',');
@@ -141,7 +145,8 @@ namespace lily_of_the_valley
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.
         /// @returns @c true if character is a delimiter.
-        [[nodiscard]] inline constexpr bool operator()(const wchar_t character) const noexcept
+        [[nodiscard]]
+        inline constexpr bool operator()(const wchar_t character) const noexcept
             { return (character == m_delim); }
     private:
         wchar_t m_delim{ L';' };
@@ -160,7 +165,8 @@ namespace lily_of_the_valley
         /// @brief Determines if character is a delimiter.
         /// @param character The character to review.
         /// @returns @c true if character is a delimiter.
-        [[nodiscard]] inline bool operator()(const wchar_t character) const noexcept
+        [[nodiscard]]
+        inline bool operator()(const wchar_t character) const noexcept
             { return (m_delims.find(character) != std::wstring::npos); }
     private:
         std::wstring m_delims;

@@ -45,14 +45,17 @@ public:
         m_startingId = i; // where the next menu id range lock will begin
         }
     /// @returns The first available ID.
-    [[nodiscard]] wxWindowID GetFirstId() const noexcept
+    [[nodiscard]]
+    wxWindowID GetFirstId() const noexcept
         { return m_firstId; }
     /// @returns The last available ID.
-    [[nodiscard]] wxWindowID GetLastId() const noexcept
+    [[nodiscard]]
+    wxWindowID GetLastId() const noexcept
         { return m_rangeEnd; }
     /// @returns The next available ID.\n
     ///     Will return @c wxNOT_FOUND if no more IDs are available.
-    [[nodiscard]] wxWindowID GetNextId() noexcept
+    [[nodiscard]]
+    wxWindowID GetNextId() noexcept
         {
         return (m_rangeBegin > m_rangeEnd) ?
             wxNOT_FOUND : m_rangeBegin++;
@@ -75,14 +78,17 @@ public:
         m_firstId(startId), m_rangeBegin(startId), m_rangeEnd(startId+idCount)
         {}
     /// @returns The first available ID.
-    [[nodiscard]] wxWindowID GetFirstId() const noexcept
+    [[nodiscard]]
+    wxWindowID GetFirstId() const noexcept
         { return m_firstId; }
     /// @returns The last available ID.
-    [[nodiscard]] wxWindowID GetLastId() const noexcept
+    [[nodiscard]]
+    wxWindowID GetLastId() const noexcept
         { return m_rangeEnd; }
     /// @returns The next available ID.\n
     ///     Will return @c wxNOT_FOUND if no more IDs are available.
-    [[nodiscard]] wxWindowID GetNextId() noexcept
+    [[nodiscard]]
+    wxWindowID GetNextId() noexcept
         {
         return (m_rangeBegin > m_rangeEnd) ?
             wxNOT_FOUND : m_rangeBegin++;

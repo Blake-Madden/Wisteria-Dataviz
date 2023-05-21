@@ -39,8 +39,9 @@ namespace Wisteria::UI
         {
     public:
         /// @private
-        [[nodiscard]] wxDocTemplate* SelectDocumentType(wxDocTemplate **templates, int noTemplates,
-                                                        bool sort = false);
+        [[nodiscard]]
+        wxDocTemplate* SelectDocumentType(wxDocTemplate **templates, int noTemplates,
+                                          bool sort = false);
         };
 
     /// @brief Single-document application parent frame with built-in ribbon, multi-document template,
@@ -100,7 +101,8 @@ namespace Wisteria::UI
             { m_printData = printData; }
 
         /// @returns The list of file types (extensions) that the app supports.
-        [[nodiscard]] const wxArrayString& GetDefaultFileExtentions() const noexcept
+        [[nodiscard]]
+        const wxArrayString& GetDefaultFileExtentions() const noexcept
             { return m_defaultFileExtentions; }
         /// @brief Sets the list of file types (extensions) that the app supports.
         /// @details These are what are shown when the client fires a new document event
@@ -110,7 +112,8 @@ namespace Wisteria::UI
             { m_defaultFileExtentions = extensions; }
 
         /// @returns The program's logo.
-        [[nodiscard]] const wxBitmap& GetLogo() const noexcept
+        [[nodiscard]]
+        const wxBitmap& GetLogo() const noexcept
             { return m_logo; }
         /// @brief Sets the program's logo.
         /// @param logo The logo for the program.
@@ -124,12 +127,14 @@ namespace Wisteria::UI
         void SetHelpDirectory(const wxString& helpFolder)
             { m_helpFolder = helpFolder; }
         /// @returns The directory where the documentation is stored.
-        [[nodiscard]] const wxString& GetHelpDirectory() const noexcept
+        [[nodiscard]]
+        const wxString& GetHelpDirectory() const noexcept
             { return m_helpFolder; }
 
         /// @returns The ribbon control.
         /// @note Will be null if not in use.
-        [[nodiscard]] wxRibbonBar* GetRibbon() noexcept
+        [[nodiscard]]
+        wxRibbonBar* GetRibbon() noexcept
             { return m_ribbon; }
     private:
         // Ribbon features

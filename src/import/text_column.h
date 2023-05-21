@@ -28,7 +28,8 @@ namespace lily_of_the_valley
         /** @brief Reads the next column(s) from the current row of text.
             @param text The current row of text to parse.
             @returns The text after the column(s) that were just read.*/
-        [[nodiscard]] virtual const wchar_t* operator()(const wchar_t* text) const noexcept
+        [[nodiscard]]
+        virtual const wchar_t* operator()(const wchar_t* text) const noexcept
             {
             if (text == nullptr || text[0] == 0)
                 { return nullptr; }
@@ -56,12 +57,14 @@ namespace lily_of_the_valley
         /** @brief Indicates whether this parser is actually reading anything back into the parent parser.
             @details If this is @c false, then the parser is simply skipping this column.
             @returns @c true if text that is parsed for this column is fed back into the parent parser.*/
-        [[nodiscard]] inline bool is_reading_text() const noexcept
+        [[nodiscard]]
+        inline bool is_reading_text() const noexcept
             { return m_read_text; }
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
             @returns @c true if @c character is a delimiter.*/
-        [[nodiscard]] virtual bool is_delimiter(const wchar_t character) const noexcept = 0;
+        [[nodiscard]]
+        virtual bool is_delimiter(const wchar_t character) const noexcept = 0;
     protected:
         /// @brief Functor for determining and end-of-line.
         is_end_of_line is_eol;
@@ -83,7 +86,8 @@ namespace lily_of_the_valley
         /// @brief Feeds text in from the current row to scan to the next column.
         /// @param text The text from the current row to splice.
         /// @returns The position in the current row of text after the next column.
-        [[nodiscard]] inline const wchar_t* operator()(const wchar_t* text) const noexcept final
+        [[nodiscard]]
+        inline const wchar_t* operator()(const wchar_t* text) const noexcept final
             {
             if (text == nullptr || text[0] == 0)
                 { return nullptr; }
@@ -97,7 +101,8 @@ namespace lily_of_the_valley
             }
         /** @private
             @details This is just here to fulfill the pure virtual contract, not actually used.*/
-        [[nodiscard]] inline bool is_delimiter([[maybe_unused]] const wchar_t character) const noexcept final
+        [[nodiscard]]
+        inline bool is_delimiter([[maybe_unused]] const wchar_t character) const noexcept final
             { return false; }
     private:
         size_t m_width{ 0 };
@@ -116,7 +121,8 @@ namespace lily_of_the_valley
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
             @returns @c true if @c character is a delimiter.*/
-        [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
+        [[nodiscard]]
+        inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
         is_standard_delimiters is_delim;
@@ -136,7 +142,8 @@ namespace lily_of_the_valley
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
             @returns @c true if @c character is a delimiter.*/
-        [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
+        [[nodiscard]]
+        inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
         is_single_delimiter is_delim;
@@ -156,7 +163,8 @@ namespace lily_of_the_valley
         /** @brief Determines if a character is a delimiter.
             @param character The character to review.
             @returns @c true if @c character is a delimiter.*/
-        [[nodiscard]] inline bool is_delimiter(const wchar_t character) const noexcept final
+        [[nodiscard]]
+        inline bool is_delimiter(const wchar_t character) const noexcept final
             { return is_delim(character); }
     private:
         is_one_of_multiple_delimiters is_delim;
@@ -175,7 +183,8 @@ namespace lily_of_the_valley
         /** @brief Reads the current row of text to the end of line.
             @param text The current row of text to read.
             @returns The start of the next row.*/
-        [[nodiscard]] inline const wchar_t* operator()(const wchar_t* text) const noexcept final
+        [[nodiscard]]
+        inline const wchar_t* operator()(const wchar_t* text) const noexcept final
             {
             if (text == nullptr || text[0] == 0)
                 { return nullptr; }
@@ -185,7 +194,8 @@ namespace lily_of_the_valley
             }
         /** @private
             @details This is just here to fulfill the pure virtual contract, not actually used.*/
-        [[nodiscard]] inline bool is_delimiter([[maybe_unused]] const wchar_t character) const noexcept final
+        [[nodiscard]]
+        inline bool is_delimiter([[maybe_unused]] const wchar_t character) const noexcept final
             { return false; }
         };
 
@@ -206,7 +216,8 @@ namespace lily_of_the_valley
         /** @brief Reads the next column(s) from the current row of text.
             @param text The current row of text to parse.
             @returns The text after the column(s) that were just read.*/
-        [[nodiscard]] inline const wchar_t* read(const wchar_t* text)
+        [[nodiscard]]
+        inline const wchar_t* read(const wchar_t* text)
             {
             const wchar_t* end = m_parser(text);
             /* if this is null then we are at the end of the file,

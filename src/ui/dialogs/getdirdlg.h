@@ -55,7 +55,8 @@ namespace Wisteria::UI
         GetDirFilterDialog& operator=(GetDirFilterDialog&&) = delete;
 
         /// @returns The path of the selected folder.
-        [[nodiscard]] const wxString& GetPath() const noexcept
+        [[nodiscard]]
+        const wxString& GetPath() const noexcept
             { return m_filePath; }
         /** @brief Sets the path of the default selected folder.
             @param path The default folder path to select.*/
@@ -74,13 +75,15 @@ namespace Wisteria::UI
                 }
             }
         /// @returns The selected file filter.
-        [[nodiscard]] wxString GetSelectedFileFilter()
+        [[nodiscard]]
+        wxString GetSelectedFileFilter()
             {
             TransferDataFromWindow();
             return m_fileFilterCombo->GetString(m_selectedFileFilter);
             }
         /// @returns @c true if "recursive" checkbox is checked.
-        [[nodiscard]] bool IsRecursive() const noexcept
+        [[nodiscard]]
+        bool IsRecursive() const noexcept
             { return m_isRecursive; }
     private:
         void CreateControls();

@@ -54,10 +54,12 @@ namespace Wisteria::GraphItems
         void AddLine(const wxPoint pt1, const wxPoint pt2)
             { m_lines.emplace_back(pt1, pt2); }
         /// @returns Direct access to the lines. This is useful for directly filling them in.
-        [[nodiscard]] std::vector<std::pair<wxPoint, wxPoint>>& GetLines() noexcept
+        [[nodiscard]]
+        std::vector<std::pair<wxPoint, wxPoint>>& GetLines() noexcept
             { return m_lines; }
         /// @returns How the segments between the points on a line are connected.
-        [[nodiscard]] LineStyle GetLineStyle() const noexcept
+        [[nodiscard]]
+        LineStyle GetLineStyle() const noexcept
             { return m_lineStyle; }
         /// @brief How the segments between the points on a line are connected.
         /// @param lineStyle The line style.
@@ -74,10 +76,12 @@ namespace Wisteria::GraphItems
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
         /** @returns @c true if the given point is inside any of the points in this collection.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final;
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, [[maybe_unused]] wxDC& dc) const final;
         /** @warning Do not call this function. It is only included because it's contractually
              required by base class and is not relevant to this object.*/
         [[deprecated("Not implemented")]]

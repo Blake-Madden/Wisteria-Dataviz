@@ -49,7 +49,8 @@ namespace Wisteria::GraphItems
         /// @returns The radius of the point. The radius is the distance from the center point
         ///     to outside of the circle.
         /// @warning This needs to be scaled when called for measuring and rendering.
-        [[nodiscard]] size_t GetRadius() const noexcept
+        [[nodiscard]]
+        size_t GetRadius() const noexcept
             { return m_radius; }
         /** @brief Sets the radius of the point.
             @param radius The radius of the point. This is a pixel value that the framework will
@@ -58,20 +59,23 @@ namespace Wisteria::GraphItems
             { m_radius = radius; }
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final;
     private:
         /** @returns @c true if the given point is inside of this point.
             @note This does a hit test within a bounding box of the point, not the point itself.
                 So it may return @c true if slightly at the corner outside of the point.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Draws the point.
             @param dc The canvas to draw the point on.
             @returns The box that the point is being drawn in.*/
         wxRect Draw(wxDC& dc) const final;
         /// @returns @c true if center point is valid.
-        [[nodiscard]] bool IsOk() const noexcept
+        [[nodiscard]]
+        bool IsOk() const noexcept
             { return GetAnchorPoint().IsFullySpecified(); }
         /** @brief Moves the point by the specified x and y values.
             @param xToMove The amount to move horizontally.
@@ -111,7 +115,8 @@ namespace Wisteria::GraphItems
         explicit Points2D(const wxPen& pen)
             { GetPen() = pen; }
         /// @returns The points in this collection.
-        [[nodiscard]] std::vector<Point2D>& GetPoints() noexcept
+        [[nodiscard]]
+        std::vector<Point2D>& GetPoints() noexcept
             { return m_points; }
         /// @brief Reserves memory for a specified number of points.
         /// @param size The number of points to reserve space for.
@@ -144,7 +149,8 @@ namespace Wisteria::GraphItems
                 { point.SetFreeFloating(freeFloat); }
             }
         /// @returns How the segments between the points on a line are connected.
-        [[nodiscard]] LineStyle GetLineStyle() const noexcept
+        [[nodiscard]]
+        LineStyle GetLineStyle() const noexcept
             { return m_lineStyle; }
         /// @brief How the segments between the points on a line are connected.
         /// @param lineStyle The line style.
@@ -168,7 +174,8 @@ namespace Wisteria::GraphItems
                 { point.SetDPIScaleFactor(scaling); }
             }
         /// @private
-        [[nodiscard]] const std::vector<Point2D>& GetPoints() const noexcept
+        [[nodiscard]]
+        const std::vector<Point2D>& GetPoints() const noexcept
             { return m_points; }
     private:
         /** @brief Sets whether the points are selected.
@@ -201,7 +208,8 @@ namespace Wisteria::GraphItems
         wxRect Draw(wxDC& dc) const final;
         /// @returns The rectangle on the canvas where the point would fit in.
         /// @param dc Measurement DC, which is not used in this implementation.
-        [[nodiscard]] wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
+        [[nodiscard]]
+        wxRect GetBoundingBox([[maybe_unused]] wxDC& dc) const final
             {
             wxRect boundingBox(m_boundingBox.GetTopLeft(),
                                 wxSize(m_boundingBox.GetWidth()*GetScaling(),
@@ -224,7 +232,8 @@ namespace Wisteria::GraphItems
             }
         /** @returns @c true if the given point is inside any of the points in this collection.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final;
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final;
         std::vector<Point2D> m_points;
         mutable std::vector<Point2D>::size_type m_lastHitPointIndex
             { static_cast<std::vector<Point2D>::size_type>(-1) };

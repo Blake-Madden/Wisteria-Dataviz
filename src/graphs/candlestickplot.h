@@ -128,17 +128,20 @@ namespace Wisteria::Graphs
             { m_chartType = type; }
         /// @brief Gets/sets the brush used to paint days that saw a loss.
         /// @returns The brush used to paint days that saw a loss.
-        [[nodiscard]] wxBrush& GetLossBrush() noexcept
+        [[nodiscard]]
+        wxBrush& GetLossBrush() noexcept
             { return m_lossBrush; }
         /// @brief Gets/sets the brush used to paint days that saw a gain.
         /// @returns The brush used to paint days that saw a gain.
-        [[nodiscard]] wxBrush& GetGainBrush() noexcept
+        [[nodiscard]]
+        wxBrush& GetGainBrush() noexcept
             { return m_gainBrush; }
         /// @}
 
         /// @private
         [[deprecated("Candlestick plot does not support legends.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             [[maybe_unused]] const LegendOptions& options) final
             {
             wxFAIL_MSG(L"Candlestick plot does not support legends.");

@@ -38,7 +38,8 @@ namespace lily_of_the_valley
                 This is useful if the caller needs to further review a preview line-by-line.
             @param skipRows The number of rows to skip before reading the text.
             @warning Setting @c storeRowInfo to @c true will impact the preview's performance.*/
-        [[nodiscard]] size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
+        [[nodiscard]]
+        size_t operator()(const wchar_t* text, const wchar_t headerRowDelimiter,
                           const bool ignoreBlankLines,
                           const bool storeRowInfo,
                           size_t skipRows = 0)
@@ -115,15 +116,18 @@ namespace lily_of_the_valley
             return m_row_count;
             }
         /// @returns The number of rows from the last preview.
-        [[nodiscard]] size_t get_row_count() const noexcept
+        [[nodiscard]]
+        size_t get_row_count() const noexcept
             { return m_row_count; }
         /// @returns The names of the column header (from the first row) from the last preview.
-        [[nodiscard]] const std::vector<std::wstring>& get_header_names() const noexcept
+        [[nodiscard]]
+        const std::vector<std::wstring>& get_header_names() const noexcept
             { return m_header_names; }
         /// @returns The definition information of the lines.
         /// @warning If the parameter @c storeRowInfo in the preview call was @c false, then this
         ///     will be empty.
-        [[nodiscard]] const std::map<const wchar_t*, const wchar_t*>& get_line_info() const noexcept
+        [[nodiscard]]
+        const std::map<const wchar_t*, const wchar_t*>& get_line_info() const noexcept
             { return m_lines; }
     private:
         std::map<const wchar_t*, const wchar_t*> m_lines;

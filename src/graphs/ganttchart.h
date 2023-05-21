@@ -165,13 +165,16 @@ namespace Wisteria::Graphs
                      std::optional<const wxString> groupColumnName = std::nullopt);
 
         /// @returns The date intervals as they are shown along the scaling axis.
-        [[nodiscard]] DateInterval GetDateDisplayInterval() const noexcept
+        [[nodiscard]]
+        DateInterval GetDateDisplayInterval() const noexcept
             { return m_dateDisplayInterval; }
         /// @returns The fiscal year type.
-        [[nodiscard]] FiscalYear GetFiscalYearType() const noexcept
+        [[nodiscard]]
+        FiscalYear GetFiscalYearType() const noexcept
             { return m_fyType; }
         /// @returns Which information is being displayed across the tasks.
-        [[nodiscard]] TaskLabelDisplay GetLabelDisplay() const noexcept
+        [[nodiscard]]
+        TaskLabelDisplay GetLabelDisplay() const noexcept
             { return m_labelDisplay; }
         /// @brief Sets which information to display across the tasks.
         /// @param labelDisplay The label display type.

@@ -81,7 +81,8 @@ namespace Wisteria::Graphs
         void ShowConnectionLine(const bool show) noexcept
             { m_showConnectionLine = show; }
         /// @returns @c true if points on the rulers are being connected by a line.
-        [[nodiscard]] bool IsShowingConnectionLine() const noexcept
+        [[nodiscard]]
+        bool IsShowingConnectionLine() const noexcept
             { return m_showConnectionLine; }
     private:
         void RecalcSizes(wxDC& dc) final;

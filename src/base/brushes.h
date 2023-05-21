@@ -71,7 +71,8 @@ namespace Wisteria::Brushes
             explicit BrushScheme(const std::initializer_list<wxBrush>& brushes) : m_brushes(brushes)
                 {}
             /// @returns The list of brushes from the scheme.
-            [[nodiscard]] const std::vector<wxBrush>& GetBrushes() const noexcept
+            [[nodiscard]]
+            const std::vector<wxBrush>& GetBrushes() const noexcept
                 { return m_brushes; }
             /** @returns The brush from a given index.\n
                     If no brushes are available, returns a blank icon.
@@ -80,7 +81,8 @@ namespace Wisteria::Brushes
                     For example, if there are 2 brushes, index 1 will return 1;
                     however, index 2 will wrap around and return brush 0 and
                     index 3 will return brush 1.*/
-            [[nodiscard]] wxBrush GetBrush(const size_t index) const
+            [[nodiscard]]
+            wxBrush GetBrush(const size_t index) const
                 {
                 return (m_brushes.size() == 0) ?
                     *wxBLACK_BRUSH : m_brushes.at(index % m_brushes.size());

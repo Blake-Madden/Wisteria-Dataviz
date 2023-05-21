@@ -102,7 +102,8 @@ namespace Wisteria::GraphItems
                       {}
         /// @private
         /// @brief Compare on axis position.
-        [[nodiscard]] bool operator<(const ReferenceLine& that) const noexcept
+        [[nodiscard]]
+        bool operator<(const ReferenceLine& that) const noexcept
             { return (m_axisPosition < that.m_axisPosition); }
     private:
         AxisType m_axisType{ AxisType::RightYAxis };
@@ -177,7 +178,8 @@ namespace Wisteria::GraphItems
             TickMark() = default;
             /// @brief Returns how the tickmark is displayed.
             /// @returns The tickmark display method.
-            [[nodiscard]] const DisplayType& GetTickMarkDisplay() const noexcept
+            [[nodiscard]]
+            const DisplayType& GetTickMarkDisplay() const noexcept
                 { return m_displayType; }
             /// @brief The display of the tickmark.
             DisplayType m_displayType{ DisplayType::NoDisplay };
@@ -224,10 +226,12 @@ namespace Wisteria::GraphItems
             /// @{
 
             /// @returns The starting position (relative to the parent axis).
-            [[nodiscard]] double GetStartPosition() const noexcept
+            [[nodiscard]]
+            double GetStartPosition() const noexcept
                 { return m_startPosition; }
             /// @returns The ending position (relative to the parent axis).
-            [[nodiscard]] double GetEndPosition() const noexcept
+            [[nodiscard]]
+            double GetEndPosition() const noexcept
                 { return m_endPosition; }
             /// @}
 
@@ -236,11 +240,13 @@ namespace Wisteria::GraphItems
                     bracket label to the axis.
                 @note This is true if the start and end points of the bracket are the same.
                 @sa GetStartPosition(), GetEndPosition().*/
-            [[nodiscard]] bool IsSingleLine() const noexcept
+            [[nodiscard]]
+            bool IsSingleLine() const noexcept
                 { return compare_doubles(GetStartPosition(), GetEndPosition()); }
             /// @returns @c true if the lines being drawn are straight lines
             ///     (as opposed to curly braces).
-            [[nodiscard]] bool IsStraightLines() const noexcept
+            [[nodiscard]]
+            bool IsStraightLines() const noexcept
                 {
                 return (m_bracketLineStyle == BracketLineStyle::Arrow ||
                         m_bracketLineStyle == BracketLineStyle::Lines ||
@@ -251,7 +257,8 @@ namespace Wisteria::GraphItems
             ///     (not including the connection line).
             /// @warning This will need to be scaled when being drawn or measured.
             ///     (This is normally managed by the parent axis.)
-            [[nodiscard]] wxCoord GetPadding() const noexcept
+            [[nodiscard]]
+            wxCoord GetPadding() const noexcept
                 { return m_padding; }
             /// @brief Sets the width of the padding between the bracket label and the parent axis
             ///     (not including the connection line).
@@ -267,16 +274,19 @@ namespace Wisteria::GraphItems
 
             /// @returns The bracket's label.
             ///     Call this to edit the label's font, color, etc.
-            [[nodiscard]] Label& GetLabel() noexcept
+            [[nodiscard]]
+            Label& GetLabel() noexcept
                 { return m_label; }
 
             /// @returns The label position (relative to the parent axis).
-            [[nodiscard]] double GetLabelPosition() const noexcept
+            [[nodiscard]]
+            double GetLabelPosition() const noexcept
                 { return m_labelPosition; }
 
             /// @returns How the labels are aligned, either against the connection
             ///     lines or the outer boundary of the brackets.
-            [[nodiscard]] const AxisLabelAlignment&
+            [[nodiscard]]
+            const AxisLabelAlignment&
                 GetPerpendicularLabelConnectionLinesAlignment() const noexcept
                 { return m_axisLabelAlignment; }
             /// @brief Sets how the labels are aligned, either against the lines
@@ -295,14 +305,16 @@ namespace Wisteria::GraphItems
                 @returns The pen used to draw the bracket's line.
                     Call this to edit the line's color, style, width, etc.
                     (e.g., `GetLinePen().SetStyle(wxPenStyle::wxPENSTYLE_DOT)`)*/
-            [[nodiscard]] wxPen& GetLinePen() noexcept
+            [[nodiscard]]
+            wxPen& GetLinePen() noexcept
                 { return m_linePen; }
 
             /// @returns The length of the tickmarks between the main line of the
             ///     bracket and the parent axis.
             /// @warning This will need to be scaled when being drawn or measured.
             ///     (This is normally managed by the parent axis.)
-            [[nodiscard]] wxCoord GetTickmarkLength() const noexcept
+            [[nodiscard]]
+            wxCoord GetTickmarkLength() const noexcept
                 { return m_tickMarkLength; }
             /// @brief Sets the length of the connection line between the bracket label
             ///     and the parent axis.
@@ -312,7 +324,8 @@ namespace Wisteria::GraphItems
             void SetTickmarkLength(const wxCoord length) noexcept
                 { m_tickMarkLength = length; }
             /// @returns The type of line being draw for the bracket.
-            [[nodiscard]] BracketLineStyle GetBracketLineStyle() const noexcept
+            [[nodiscard]]
+            BracketLineStyle GetBracketLineStyle() const noexcept
                 { return m_bracketLineStyle; }
             /** @brief Sets the type of line to draw on the bracket.
                 @param lineType The line type.*/
@@ -321,16 +334,19 @@ namespace Wisteria::GraphItems
             /// @}
 
             /// @private
-            [[nodiscard]] const Label& GetLabel() const noexcept
+            [[nodiscard]]
+            const Label& GetLabel() const noexcept
                 { return m_label; }
             /// @private
-            [[nodiscard]] const wxPen& GetLinePen() const noexcept
+            [[nodiscard]]
+            const wxPen& GetLinePen() const noexcept
                 { return m_linePen; }
         private:
             /** @returns The width of the bracket (including longest label and bracket lines).
                 @param dc A graphics context to use for measuring the bracket.
                 @param canvas The bracket's parent canvas to use for DPI scaling.*/
-            [[nodiscard]] wxCoord CalcWidth(wxDC& dc, const double dpiScaling) const;
+            [[nodiscard]]
+            wxCoord CalcWidth(wxDC& dc, const double dpiScaling) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
@@ -347,7 +363,8 @@ namespace Wisteria::GraphItems
             ///     This is how much space is needed to draw the bracket lines.
             /// @note If lines aren't being drawn, then will return a recommended amount of padding
             ///     between bracket label and axis labels.
-            [[nodiscard]] wxCoord GetLineSpacing() const noexcept
+            [[nodiscard]]
+            wxCoord GetLineSpacing() const noexcept
                 {
                 return (GetBracketLineStyle() != BracketLineStyle::NoConnectionLines) ?
                         (GetTickmarkLength()+GetPadding()) : GetPadding();
@@ -357,7 +374,8 @@ namespace Wisteria::GraphItems
             void SetOrientation(const Orientation orientation) noexcept
                 { m_orientation = orientation; }
             /// @returns The orientation of the brackets.
-            [[nodiscard]] const Orientation& GetOrientation() const noexcept
+            [[nodiscard]]
+            const Orientation& GetOrientation() const noexcept
                 { return m_orientation; }
             double m_startPosition{ -1 };
             double m_endPosition{ -1 };
@@ -388,7 +406,8 @@ namespace Wisteria::GraphItems
                 m_displayValue(displayValue), m_show(display), m_value(value)
                 {}
             /// @returns The string on the axis that this point is displayed as.
-            [[nodiscard]] const wxString& GetDisplayValue() const noexcept
+            [[nodiscard]]
+            const wxString& GetDisplayValue() const noexcept
                 { return m_displayValue; }
             /// @brief Sets the axis display label to label.
             /// @param label The label of the axis point.
@@ -396,7 +415,8 @@ namespace Wisteria::GraphItems
                 { m_displayValue = label; }
 
             /// @returns Whether the point is being drawn on the axis.
-            [[nodiscard]] bool IsShown() const noexcept
+            [[nodiscard]]
+            bool IsShown() const noexcept
                 { return m_show; }
             /// @param display Sets whether to display the axis label.
             void Show(const bool display) noexcept
@@ -406,26 +426,33 @@ namespace Wisteria::GraphItems
             void SetValue(const double value) noexcept
                 { m_value = value; }
             /// @returns The point's value along the parent axis.
-            [[nodiscard]] double GetValue() const noexcept
+            [[nodiscard]]
+            double GetValue() const noexcept
                 { return m_value; }
 
             /// @private
-            [[nodiscard]] bool operator==(const AxisPoint& that) const noexcept
+            [[nodiscard]]
+            bool operator==(const AxisPoint& that) const noexcept
                 { return compare_doubles(m_value, that.m_value); }
             /// @private
-            [[nodiscard]] bool operator==(const double value) const noexcept
+            [[nodiscard]]
+            bool operator==(const double value) const noexcept
                 { return compare_doubles(m_value, value); }
             /// @private
-            [[nodiscard]] bool operator!=(const AxisPoint& that) const noexcept
+            [[nodiscard]]
+            bool operator!=(const AxisPoint& that) const noexcept
                 { return !compare_doubles(m_value, that.m_value); }
             /// @private
-            [[nodiscard]] bool operator!=(const double value) const noexcept
+            [[nodiscard]]
+            bool operator!=(const double value) const noexcept
                 { return !compare_doubles(m_value, value); }
             /// @private
-            [[nodiscard]] bool operator<(const AxisPoint& that) const noexcept
+            [[nodiscard]]
+            bool operator<(const AxisPoint& that) const noexcept
                 { return compare_doubles_less(m_value, that.m_value); }
             /// @private
-            [[nodiscard]] bool operator<(const double value) const noexcept
+            [[nodiscard]]
+            bool operator<(const double value) const noexcept
                 { return compare_doubles_less(m_value, value); }
         private:
             /** @brief Sets the point on the parent axis at the specified coordinate.
@@ -435,7 +462,8 @@ namespace Wisteria::GraphItems
             void SetPhysicalCoordinate(const double coordinate) noexcept
                 { m_physicalCoordinate = coordinate; }
             /// @returns The point's physical coordinates along the parent axis.
-            [[nodiscard]] double GetPhysicalCoordinate() const noexcept
+            [[nodiscard]]
+            double GetPhysicalCoordinate() const noexcept
                 { return m_physicalCoordinate; }
             wxString m_displayValue;
             bool m_show{ false };
@@ -504,18 +532,22 @@ namespace Wisteria::GraphItems
         /// @{
 
         /// @returns The type of axis that this is.
-        [[nodiscard]] const AxisType& GetAxisType() const noexcept
+        [[nodiscard]]
+        const AxisType& GetAxisType() const noexcept
             { return m_type; }
         /// @returns @c true if a left or right Y axis.
-        [[nodiscard]] bool IsVertical() const noexcept
+        [[nodiscard]]
+        bool IsVertical() const noexcept
             { return (GetAxisType() == AxisType::LeftYAxis || GetAxisType() == AxisType::RightYAxis); }
         /// @returns @c true if a bottom or top X axis.
-        [[nodiscard]] bool IsHorizontal() const noexcept
+        [[nodiscard]]
+        bool IsHorizontal() const noexcept
             { return (GetAxisType() == AxisType::BottomXAxis || GetAxisType() == AxisType::TopXAxis); }
 
         /// @returns Whether the scaling of the axis is reversed.
         ///     If it is reversed, then the values on the axis go from largest to smaller from the origin.
-        [[nodiscard]] bool IsReversed() const noexcept
+        [[nodiscard]]
+        bool IsReversed() const noexcept
             { return m_scaledReserved; }
         /** @brief Flips the axis. Call this after setting up the range and intervals.
             @param reverse @c true to reverse the scale, @c false to reset it.*/
@@ -575,13 +607,15 @@ namespace Wisteria::GraphItems
         /** @returns A pair representing the first and last value on the axis.
             @warning The direction that this range is drawn will be reversed if the
                 axis is reversed.*/
-        [[nodiscard]] auto GetRange() const noexcept
+        [[nodiscard]]
+        auto GetRange() const noexcept
             { return std::make_pair(m_rangeStart, m_rangeEnd); }
         /** @brief Returns the start and end dates of the range.
             @returns The start and end date of the range.
             @note This will return invalid dates unless the version of SetRange()
                 using dates is called.*/
-        [[nodiscard]] std::pair<wxDateTime, wxDateTime> GetRangeDates() const noexcept
+        [[nodiscard]]
+        std::pair<wxDateTime, wxDateTime> GetRangeDates() const noexcept
             { return std::make_pair(m_firstDay, m_lastDay); }
         /** @brief Adds a point at value/label to the axis.
             @details This function should only be called if you need to fill the axis with
@@ -608,7 +642,8 @@ namespace Wisteria::GraphItems
         /// @returns @c true if set to begin at zero.
         /// @note If the range is set to start at a value less than zero, then that value will be used.
         ///     This is only a request for when the starting value of the data is over zero.
-        [[nodiscard]] bool IsStartingAtZero() const noexcept
+        [[nodiscard]]
+        bool IsStartingAtZero() const noexcept
             { return m_startAtZero; }
         /// @brief Sets whether the axis should start at a minimum of zero when SetRange() is called.
         /// @param startAtZero @c true to force the axis to start at a minimum of zero.
@@ -620,10 +655,12 @@ namespace Wisteria::GraphItems
             SetRange(axisMin, axisMax, GetPrecision());
             }
         /// @returns The interval size between ticks on the axis.
-        [[nodiscard]] double GetInterval() const noexcept
+        [[nodiscard]]
+        double GetInterval() const noexcept
             { return m_interval; }
         /// @returns How often a label should be displayed on the ticks.
-        [[nodiscard]] size_t GetDisplayInterval() const noexcept
+        [[nodiscard]]
+        size_t GetDisplayInterval() const noexcept
             { return m_displayInterval; }
         /** @brief Sets how often a label should be displayed on the ticks.
                 Specifying @c 2 means that every other axis tick will have a label on it.
@@ -664,10 +701,12 @@ namespace Wisteria::GraphItems
         /// @note This, combined with GetDisplayInterval(), can be useful for filling
         ///     the axis with custom labels. It can also be useful when measuring how wide
         ///     objects can be if there are ones being drawn at every axis point.
-        [[nodiscard]] size_t GetAxisPointsCount() const noexcept
+        [[nodiscard]]
+        size_t GetAxisPointsCount() const noexcept
             { return m_axisLabels.size(); }
         /// @returns The major axis points (generated by SetRange()).
-        [[nodiscard]] std::vector<AxisPoint>& GetAxisPoints() noexcept
+        [[nodiscard]]
+        std::vector<AxisPoint>& GetAxisPoints() noexcept
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return m_axisLabels;
@@ -685,21 +724,25 @@ namespace Wisteria::GraphItems
         /** @returns The custom label for a specific tick, or empty string if one hasn't been assigned.\n
                 Will return an invalid label object if not found, so check it with @c IsOk().
             @param value The tick value to retrieve the custom label for.*/
-        [[nodiscard]] const Label& GetCustomLabel(const double value) const;
+        [[nodiscard]]
+        const Label& GetCustomLabel(const double value) const;
         /** @brief Finds a custom label along the axis, returning its numeric position.
             @param label The string to look for.
             @returns The numeric position on the axis of where the label is,
                 or @c std::nullopt if not found.*/
-        [[nodiscard]] std::optional<double> FindCustomLabelPosition(const wxString& label) const;
+        [[nodiscard]]
+        std::optional<double> FindCustomLabelPosition(const wxString& label) const;
         /// @brief Finds a date along the axis, returning its numeric position.
         /// @returns The point on the axis corresponding to the provided date,
         ///     or @c std::nullopt if not found.
         /// @param date The date to search for along the axis.
         /// @note The axis must be initialized with a series of dates from SetRange();
         ///     otherwise, this will return @c std::nullopt.
-        [[nodiscard]] std::optional<double> FindDatePosition(const wxDateTime& date) const noexcept;
+        [[nodiscard]]
+        std::optional<double> FindDatePosition(const wxDateTime& date) const noexcept;
         /// @returns The suggested maximum length for the axis labels.
-        [[nodiscard]] size_t GetLabelLineLength() const noexcept
+        [[nodiscard]]
+        size_t GetLabelLineLength() const noexcept
             { return m_suggestedMaxLengthPerLine; }
         /// @brief Sets the length of each line of each axis label.
         /// @param suggestedMaxLengthPerLine The length that each line should be
@@ -717,16 +760,19 @@ namespace Wisteria::GraphItems
         void SetLabelLengthAuto(const size_t suggestedMaxLength = 20);
         /// @returns Whether the axis labels need to be stacked so that they don't overlap.
         /// @param dc The DC to measure the text with.
-        [[nodiscard]] bool ShouldLabelsBeStackedToFit(wxDC& dc) const;
+        [[nodiscard]]
+        bool ShouldLabelsBeStackedToFit(wxDC& dc) const;
         /// @returns @c true if the specified value as a label associated to it.
         ///     This checks for both generated labels and custom labels.
         /// @param value The axis value to check.
-        [[nodiscard]] bool PointHasLabel(const double value) const;
+        [[nodiscard]]
+        bool PointHasLabel(const double value) const;
         /// @brief Sets how the numbers and custom labels should be shown.
         /// @param display How the tick labels should be displayed.
         void SetLabelDisplay(const AxisLabelDisplay display);
         /// @returns How the tick labels are displayed.
-        [[nodiscard]] const AxisLabelDisplay& GetLabelDisplay() const noexcept
+        [[nodiscard]]
+        const AxisLabelDisplay& GetLabelDisplay() const noexcept
             { return m_labelDisplay; }
         /// @brief Sets how the labels are aligned, either flush right against the axis line,
         ///     flush left against the edge of the axis area, or centered on the axis line itself.
@@ -737,11 +783,13 @@ namespace Wisteria::GraphItems
         void SetPerpendicularLabelAxisAlignment(const AxisLabelAlignment alignment) noexcept
             { m_axisLabelAlignment = alignment; }
         /// @returns How the labels are aligned, either against the line or the outer boundary.
-        [[nodiscard]] const AxisLabelAlignment& GetPerpendicularLabelAxisAlignment() const noexcept
+        [[nodiscard]]
+        const AxisLabelAlignment& GetPerpendicularLabelAxisAlignment() const noexcept
             { return m_axisLabelAlignment; }
         /// @brief How the labels are aligned with its respective axis point.
         /// @returns The axis labels' alignment to their respective points.
-        [[nodiscard]] RelativeAlignment GetParallelLabelAlignment() const noexcept
+        [[nodiscard]]
+        RelativeAlignment GetParallelLabelAlignment() const noexcept
             { return m_labelAlignmet; }
         /** @brief How the labels are aligned with its respective axis point.
             @param alignment The alignment.
@@ -764,12 +812,14 @@ namespace Wisteria::GraphItems
             }
         /** @returns Whether the first and last axis labels are being shown
                 (the outer lines of the plot).*/
-        [[nodiscard]] bool IsShowingOuterLabels() const noexcept
+        [[nodiscard]]
+        bool IsShowingOuterLabels() const noexcept
             { return m_axisLabels.size() ? m_axisLabels.front().IsShown() : true; }
 
         /// @returns @c true if the labels are being stacked.
         /// @sa EnableAutoStacking().
-        [[nodiscard]] bool IsStackingLabels() const noexcept
+        [[nodiscard]]
+        bool IsStackingLabels() const noexcept
             { return m_stackLabelsToFit; }
         /** @brief Stacks the labels, where every other label is below the previous one.
             @details This is useful for when the labels are long and will overlap each other.
@@ -787,11 +837,13 @@ namespace Wisteria::GraphItems
             { m_enableAutoStacking = enable; }
         /// @returns @c true if axis can override label stacking if it determines that is the
         ///     best way to get them to fit.
-        [[nodiscard]] bool IsAutoStackingEnabled() const noexcept
+        [[nodiscard]]
+        bool IsAutoStackingEnabled() const noexcept
             { return m_enableAutoStacking; }
 
         /// @returns Whether axis labels are being drawn on both sides of the main axis line.
-        [[nodiscard]] bool HasDoubleSidedAxisLabels() const noexcept
+        [[nodiscard]]
+        bool HasDoubleSidedAxisLabels() const noexcept
             { return m_doubleSidedAxisLabels; }
         /** @brief Specifies whether axis labels should be drawn on both sides of the axis.
             @param doubleSided Whether axis labels should be drawn on both sides of the
@@ -800,7 +852,8 @@ namespace Wisteria::GraphItems
             { m_doubleSidedAxisLabels = doubleSided; }
 
         /** @returns The precision of the axis labels (if numeric).*/
-        [[nodiscard]] uint8_t GetPrecision() const noexcept
+        [[nodiscard]]
+        uint8_t GetPrecision() const noexcept
             { return m_displayPrecision; }
         /** @brief Sets the precision of the axis labels (if numeric).
             @param precision The precision to display.*/
@@ -811,7 +864,8 @@ namespace Wisteria::GraphItems
             @param orient The orientation.*/
         void SetAxisLabelOrientation(const AxisLabelOrientation& orient) noexcept;
         /// @returns The orientation of the axis's labels.
-        [[nodiscard]] const AxisLabelOrientation& GetAxisLabelOrientation() const noexcept
+        [[nodiscard]]
+        const AxisLabelOrientation& GetAxisLabelOrientation() const noexcept
             { return m_labelOrientation; }
         /// @}
 
@@ -886,18 +940,21 @@ namespace Wisteria::GraphItems
         /** @brief Gets/sets the pen used for the main axis line and tickmarks.
             @returns The axis line pen.
             @note Set to @c wxNullPen or transparent to turn off the main axis line and tickmarks.*/
-        [[nodiscard]] wxPen& GetAxisLinePen() noexcept
+        [[nodiscard]]
+        wxPen& GetAxisLinePen() noexcept
             { return m_axisLinePen; }
 
         /** @brief Gets/sets the gridline pen.
             @returns The gridline pen.
             @note Set to @c wxNullPen or transparent to turn off gridlines.*/
-        [[nodiscard]] wxPen& GetGridlinePen() noexcept
+        [[nodiscard]]
+        wxPen& GetGridlinePen() noexcept
             { return m_gridlinePen; }
 
         /** @brief Returns how the end of the axis line is being drawn.
             @returns The line's cap style.*/
-        [[nodiscard]] AxisCapStyle GetCapStyle() const noexcept
+        [[nodiscard]]
+        AxisCapStyle GetCapStyle() const noexcept
             { return m_capStyle; }
         /** @brief Sets how the end of the axis line is being drawn.
             @param capStyle The cap style to use.*/
@@ -918,7 +975,8 @@ namespace Wisteria::GraphItems
             { m_customTickMarks.push_back(TickMark(displayType, position, length)); }
 
         /// @returns The interval of the tick marks being shown.
-        [[nodiscard]] double GetTickMarkInterval() const noexcept
+        [[nodiscard]]
+        double GetTickMarkInterval() const noexcept
             { return m_tickMarkDisplayInterval; }
         /// @brief Sets the interval to display tick marks.
         /// @param interval The interval for the tickmarks.
@@ -929,7 +987,8 @@ namespace Wisteria::GraphItems
         /// @note This value is not scaled to the screen DPI because it is copied to the tickmarks,
         ///     so the axis will then scale the tickmarks to the DPI and canvas scaling
         ///     at a later stage.
-        [[nodiscard]] int GetMinorTickMarkLength() const noexcept
+        [[nodiscard]]
+        int GetMinorTickMarkLength() const noexcept
             { return m_minorTickMarkLength; }
         /// @brief Sets the length of the minor tick marks (i.e., tick marks between axis labels).
         /// @param length The length of the minor tickmarks.
@@ -939,7 +998,8 @@ namespace Wisteria::GraphItems
             { m_minorTickMarkLength = length; }
 
         /// @returns The length of the major tick marks (i.e., tick marks between axis labels).
-        [[nodiscard]] int GetMajorTickMarkLength() const noexcept
+        [[nodiscard]]
+        int GetMajorTickMarkLength() const noexcept
             { return m_majorTickMarkLength; }
         /// @brief Sets the length of the major tick marks
         ///     (i.e., tick marks that correspond to axis labels).
@@ -950,7 +1010,8 @@ namespace Wisteria::GraphItems
             { m_majorTickMarkLength = length; }
 
         /// @returns How the tick marks are being drawn.
-        [[nodiscard]] const TickMark::DisplayType& GetTickMarkDisplay() const noexcept
+        [[nodiscard]]
+        const TickMark::DisplayType& GetTickMarkDisplay() const noexcept
             { return m_tickMarkDisplayType; }
         /// @param displayType Sets how to draw the tick marks.
         void SetTickMarkDisplay(const TickMark::DisplayType displayType) noexcept
@@ -976,7 +1037,8 @@ namespace Wisteria::GraphItems
                 To customize this font, call `GetTitle().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
-        [[nodiscard]] Label& GetTitle() noexcept
+        [[nodiscard]]
+        Label& GetTitle() noexcept
             { return m_title; }
         /// @}
 
@@ -998,7 +1060,8 @@ namespace Wisteria::GraphItems
                 `GetHeader().GetLabelDisplayInfo()`.
             @returns The header of the axis.
             @sa SetRelativeAlignment().*/
-        [[nodiscard]] Label& GetHeader() noexcept
+        [[nodiscard]]
+        Label& GetHeader() noexcept
             { return m_header; }
 
         /** @brief Gets/sets the footer of the axis. This is a label that appears at the bottom or left of the axis
@@ -1011,7 +1074,8 @@ namespace Wisteria::GraphItems
             @note The footer manages its own font. The customize this font, call `GetFooter().GetLabelDisplayInfo()`.
             @sa SetRelativeAlignment().
             @returns The footer of the axis.*/
-        [[nodiscard]] Label& GetFooter() noexcept
+        [[nodiscard]]
+        Label& GetFooter() noexcept
             { return m_footer; }
         /// @}
 
@@ -1044,7 +1108,8 @@ namespace Wisteria::GraphItems
         void ClearBrackets() noexcept
             { m_brackets.clear(); }
         /// @returns The axis's brackets.
-        [[nodiscard]] std::vector<AxisBracket>& GetBrackets() noexcept
+        [[nodiscard]]
+        std::vector<AxisBracket>& GetBrackets() noexcept
             { return m_brackets; }
         /** @brief Simplifies the labels along the brackets.
             @note This should be called after all brackets have been added.
@@ -1064,7 +1129,8 @@ namespace Wisteria::GraphItems
         /// @returns The custom position (in respect to the main x axes);
         ///     these only relate to custom axes.
         /// @sa SetCustomXPosition().
-        [[nodiscard]] double GetCustomXPosition() const noexcept
+        [[nodiscard]]
+        double GetCustomXPosition() const noexcept
             { return m_customXPosition; }
         /** @brief Sets the custom position (in respect to the main axes);
                 these only relate to custom axes.
@@ -1078,7 +1144,8 @@ namespace Wisteria::GraphItems
         /// @returns The custom position (in respect to the main y axes);
         ///     these only relate to custom axes.
         /// @sa SetCustomYPosition().
-        [[nodiscard]] double GetCustomYPosition() const noexcept
+        [[nodiscard]]
+        double GetCustomYPosition() const noexcept
             { return m_customYPosition; }
         /** @brief Sets the custom position (in respect to the main axes);
                 these only relate to custom axes.
@@ -1091,7 +1158,8 @@ namespace Wisteria::GraphItems
             { m_customYPosition = yPos; }
 
         /// @returns The offset from the parent axis (applies only to custom axes).
-        [[nodiscard]] double GetOffsetFromParentAxis() const noexcept
+        [[nodiscard]]
+        double GetOffsetFromParentAxis() const noexcept
             { return m_offsetFromParentAxis; }
         /// @brief Sets the offset from the parent axis (applies only to custom axes).
         /// @param offset The offset from the parent axis.
@@ -1108,7 +1176,8 @@ namespace Wisteria::GraphItems
             { m_physicalCustomYPosition = y; }
         /// @returns The physical y position on the canvas of the axis.
         ///     (Should only be used if using custom positioning along a parent axis.)
-        [[nodiscard]] double GetPhysicalCustomYPosition() const noexcept
+        [[nodiscard]]
+        double GetPhysicalCustomYPosition() const noexcept
             { return m_physicalCustomYPosition; }
         /** @brief Sets the physical x position on the canvas.
             @param x The physical x position to place the axis.
@@ -1120,7 +1189,8 @@ namespace Wisteria::GraphItems
             { m_physicalCustomXPosition = x; }
         /// @returns The physical x position on the canvas of the axis.
         ///     (Should only be used if using custom positioning along a parent axis.)
-        [[nodiscard]] double GetPhysicalCustomXPosition() const noexcept
+        [[nodiscard]]
+        double GetPhysicalCustomXPosition() const noexcept
             { return m_physicalCustomXPosition; }
         /// @}
 
@@ -1139,21 +1209,25 @@ namespace Wisteria::GraphItems
         /// @returns The inflated size around the axis that an outline is being drawn.
         /// @note By default, this outline is not being drawn and SetOutlineSize()
         ///     must be called to enable this behavior.
-        [[nodiscard]] wxSize GetOutlineSize() const noexcept
+        [[nodiscard]]
+        wxSize GetOutlineSize() const noexcept
             { return m_outlineSize; }
 
         /// @returns The amount of pixels (scaled to the system's DPI and canvas's scale)
         ///     that the largest tick mark is pushing out from the axis.
         ///     This is useful for see how wide the axis line and its tickmarks are.
-        [[nodiscard]] wxCoord CalcTickMarkOuterWidth() const;
+        [[nodiscard]]
+        wxCoord CalcTickMarkOuterWidth() const;
         /// @returns The amount of pixels (scaled to the system's DPI and canvas's scale)
         ///     that the largest tick mark is pushing in from the axis.
-        [[nodiscard]] wxCoord CalcTickMarkInnerWidth() const;
+        [[nodiscard]]
+        wxCoord CalcTickMarkInnerWidth() const;
         /// @}
 
         // These are overridden so that the widest and tallest labels are invalidated.
         /// @private
-        [[nodiscard]] GraphItemInfo& GetGraphItemInfo() noexcept final
+        [[nodiscard]]
+        GraphItemInfo& GetGraphItemInfo() noexcept final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetGraphItemInfo();
@@ -1165,13 +1239,15 @@ namespace Wisteria::GraphItems
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             }
         /// @private
-        [[nodiscard]] wxFont& GetFont() noexcept final
+        [[nodiscard]]
+        wxFont& GetFont() noexcept final
             {
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             return GraphItemBase::GetFont();
             }
         /// @private
-        [[nodiscard]] const wxFont& GetFont() const noexcept final
+        [[nodiscard]]
+        const wxFont& GetFont() const noexcept final
             { return GraphItemBase::GetFont(); }
         /// @private
         void SetFont(const wxFont& font) final
@@ -1183,29 +1259,37 @@ namespace Wisteria::GraphItems
         // Just hiding these from Doxygen. If these are included inside of groupings,
         // then the "private" tag will break the group in the generated help.
         /// @private
-        [[nodiscard]] const wxPen& GetAxisLinePen() const noexcept
+        [[nodiscard]]
+        const wxPen& GetAxisLinePen() const noexcept
             { return m_axisLinePen; }
         /// @private
-        [[nodiscard]] const wxPen& GetGridlinePen() const noexcept
+        [[nodiscard]]
+        const wxPen& GetGridlinePen() const noexcept
             { return m_gridlinePen; }
         /// @private
-        [[nodiscard]] const Label& GetFooter() const noexcept
+        [[nodiscard]]
+        const Label& GetFooter() const noexcept
             { return m_footer; }
         /// @private
-        [[nodiscard]] const Label& GetHeader() const noexcept
+        [[nodiscard]]
+        const Label& GetHeader() const noexcept
             { return m_header; }
         /// @private
-        [[nodiscard]] const Label& GetTitle() const noexcept
+        [[nodiscard]]
+        const Label& GetTitle() const noexcept
             { return m_title; }
         /// @private
-        [[nodiscard]] const std::vector<AxisBracket>& GetBrackets() const noexcept
+        [[nodiscard]]
+        const std::vector<AxisBracket>& GetBrackets() const noexcept
             { return m_brackets; }
         /// @private
-        [[nodiscard]] const std::vector<AxisPoint>& GetAxisPoints() const noexcept
+        [[nodiscard]]
+        const std::vector<AxisPoint>& GetAxisPoints() const noexcept
             { return m_axisLabels; }
         /// @private
         [[deprecated("Use FindDatePosition() instead.")]]
-        [[nodiscard]] std::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
+        [[nodiscard]]
+        td::optional<double> GetPointFromDate(const wxDateTime& date) const noexcept
             { return FindDatePosition(date); }
     private:
         /// @brief Loads the default labels based on the axis values.
@@ -1220,7 +1304,8 @@ namespace Wisteria::GraphItems
         // though, as a reference for when you are designing a new graph type.
 
         /// @returns Whether labels are set to display AND the axis is actually being drawn.
-        [[nodiscard]] bool IsShowingLabels() const noexcept
+        [[nodiscard]]
+        bool IsShowingLabels() const noexcept
             {
             return IsShown() && (GetLabelDisplay() != AxisLabelDisplay::NoDisplay);
             }
@@ -1263,7 +1348,8 @@ namespace Wisteria::GraphItems
                 }
             }
         /// @returns The date intervals shown along the axis.
-        [[nodiscard]] DateInterval GetDateDisplayInterval() const noexcept
+        [[nodiscard]]
+        DateInterval GetDateDisplayInterval() const noexcept
             { return m_dateDisplayInterval; }
         /// @brief If embedded into canvas (i.e., not part of a plot) then this is
         ///     used by canvas to set the axis to a common size with plots next to it.
@@ -1295,7 +1381,8 @@ namespace Wisteria::GraphItems
 
         /// @returns The rectangular area of the axis line area.
         ///     This is relative to its parent canvas.
-        [[nodiscard]] wxRect GetContentRect() const noexcept final
+        [[nodiscard]]
+        wxRect GetContentRect() const noexcept final
             {
             if (IsVertical())
                 {
@@ -1338,7 +1425,8 @@ namespace Wisteria::GraphItems
             m_widestLabel = m_tallestLabel = Label(GraphItemInfo().Ok(false));
             }
         /// @returns The font scaling used just for the axis labels.
-        [[nodiscard]] double GetAxisLabelScaling() const noexcept
+        [[nodiscard]]
+        double GetAxisLabelScaling() const noexcept
             { return m_axisLabelScaling; }
         /// @brief If labels have a background color, then make their boxes wide enough
         ///     to fill the entire place available to them.
@@ -1351,14 +1439,16 @@ namespace Wisteria::GraphItems
             @param[out] value The axis value connected to the coordinate.
             @returns @c true if coordinate is on the axis and a value can be found;
                 @c false otherwise.*/
-        [[nodiscard]] bool GetValueFromPhysicalCoordinate(const wxCoord coordinate,
-                                                          double& value) const noexcept;
+        [[nodiscard]]
+        bool GetValueFromPhysicalCoordinate(const wxCoord coordinate,
+                                            double& value) const noexcept;
         /// @brief Sets the width of spacing between labels.
         /// @param width The width of spacing between labels.
         void SetLabelPhysicalOffset(const double width) noexcept
             { m_labelSpacingPhysicalOffset = width; }
         /// @returns The spacing between axis labels.
-        [[nodiscard]] double GetLabelPhysicalOffset() const noexcept
+        [[nodiscard]]
+        double GetLabelPhysicalOffset() const noexcept
             { return m_labelSpacingPhysicalOffset; }
 
         /// @brief For horizontal axes, gets the first and last displayed labels and adjusts
@@ -1373,18 +1463,22 @@ namespace Wisteria::GraphItems
         /// @brief Draws the axis onto the graphics context dc.
         /// @param dc The DC to draw on.
         /// @returns The bounding box that the axis was drawn in.
-        [[nodiscard]] wxRect Draw(wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect Draw(wxDC& dc) const final;
         /** @returns The rectangle that the axis would fit in.
             @param dc The DC to measure with.
             @note This version is more optimal if multiple axes need to be measured with
                 the same DC.*/
-        [[nodiscard]] wxRect GetBoundingBox(wxDC& dc) const final;
+        [[nodiscard]]
+        wxRect GetBoundingBox(wxDC& dc) const final;
         /** @returns The rectangle of the part of the axis that protrudes outside of the plot area.
             @param dc The DC to measure with.*/
-        [[nodiscard]] wxRect GetProtrudingBoundingBox(wxDC& dc) const;
+        [[nodiscard]]
+        wxRect GetProtrudingBoundingBox(wxDC& dc) const;
         /** @returns @c true if the given point is inside of this point.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
@@ -1403,72 +1497,88 @@ namespace Wisteria::GraphItems
         /// @returns The top physical (relative to the parent canvas) point of the axis line
         ///     (for vertical axes).
         /// @note This is always the top-most point vertically, regardless of whether the axis is reversed.
-        [[nodiscard]] wxPoint GetTopPoint() const
+        [[nodiscard]]
+        wxPoint GetTopPoint() const
             { return wxPoint(GetPoints().first.x, GetPoints().first.y); }
         /// @returns The bottom physical (relative to the parent canvas) point of the axis line
         ///     (for vertical axes).
         /// @note This is always the bottom-most point vertically, regardless of whether the axis is reversed.
-        [[nodiscard]] wxPoint GetBottomPoint() const
+        [[nodiscard]]
+        wxPoint GetBottomPoint() const
             { return wxPoint(GetPoints().second.x, GetPoints().second.y); }
         /// @returns The left physical (relative to the parent canvas) point of the axis line
         ///     (for horizontal axes).
         /// @note This is always the left-most point vertically, regardless of whether the axis is reversed.
-        [[nodiscard]] wxPoint GetLeftPoint() const
+        [[nodiscard]]
+        wxPoint GetLeftPoint() const
             { return wxPoint(GetPoints().first.x, GetPoints().first.y); }
         /// @returns The right physical (relative to the parent canvas) point of the axis line
         ///     (for horizontal axes).
         /// @note This is always the right-most point vertically, regardless of whether the axis is reversed.
-        [[nodiscard]] wxPoint GetRightPoint() const
+        [[nodiscard]]
+        wxPoint GetRightPoint() const
             { return wxPoint(GetPoints().second.x, GetPoints().second.y); }
         /// @brief Get the first label (and its axis position) that is being displayed.
         /// @returns The first displayed (left or bottom) label along the axis. Also,
         ///     returns the axis position of where the label is.
         ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most left (or bottom) label, regardless of orientation.
-        [[nodiscard]] std::pair<Label, double> GetFirstDisplayedLabel(wxDC& dc) const;
+        [[nodiscard]]
+        std::pair<Label, double> GetFirstDisplayedLabel(wxDC& dc) const;
         /// @brief Get the last label (and its axis position) that is being displayed.
         /// @returns The last displayed (right or top) label along the axis. Also,
         ///     returns the axis position of where the label is.
         ///     If no label is found, then returns an empty label and NaN.
         /// @note This returns the far most right (or top) label, regardless of orientation.
-        [[nodiscard]] std::pair<Label, double> GetLastDisplayedLabel(wxDC& dc) const;
+        [[nodiscard]]
+        std::pair<Label, double> GetLastDisplayedLabel(wxDC& dc) const;
         /// @returns The (const) custom tick marks.
-        [[nodiscard]] const std::vector<TickMark>& GetCustomTickMarks() const noexcept
+        [[nodiscard]]
+        const std::vector<TickMark>& GetCustomTickMarks() const noexcept
             { return m_customTickMarks; }
         /// @returns The custom tick marks.
-        [[nodiscard]] std::vector<TickMark>& GetCustomTickMarks() noexcept
+        [[nodiscard]]
+        std::vector<TickMark>& GetCustomTickMarks() noexcept
             { return m_customTickMarks; }
 
         /// @returns The calculated tick marks.
         /// @sa GetCustomTickMarks().
-        [[nodiscard]] std::vector<TickMark>& GetTickMarks() noexcept
+        [[nodiscard]]
+        std::vector<TickMark>& GetTickMarks() noexcept
             { return m_tickMarks; }
         /// @returns The (const) calculated tick marks.
         /// @sa GetCustomTickMarks().
-        [[nodiscard]] const std::vector<TickMark>& GetTickMarks() const noexcept
+        [[nodiscard]]
+        const std::vector<TickMark>& GetTickMarks() const noexcept
             { return m_tickMarks; }
         /// @returns The space between axis labels and the main axis line.
-        [[nodiscard]] wxCoord GetSpacingBetweenLabelsAndLine() const noexcept
+        [[nodiscard]]
+        wxCoord GetSpacingBetweenLabelsAndLine() const noexcept
             { return 5; }
         /// @returns The widest label;
-        [[nodiscard]] Label GetWidestTextLabel(wxDC& dc) const;
+        [[nodiscard]]
+        Label GetWidestTextLabel(wxDC& dc) const;
         /** @returns The tallest label.
             @note This takes multi-line labels into account.*/
-        [[nodiscard]] Label GetTallestTextLabel(wxDC& dc) const;
+        [[nodiscard]]
+        Label GetTallestTextLabel(wxDC& dc) const;
 
         /** @returns The displayed string connected to the specified point on the axis.
                 Which label is returned depends on whether custom labels are being used and what's
                 available that the given point.
             @param pt The point on the axis to return the associated label.*/
-        [[nodiscard]] Label GetDisplayableValue(const AxisPoint& pt) const;
+        [[nodiscard]]
+        Label GetDisplayableValue(const AxisPoint& pt) const;
 
         /// @returns How much space is needed to fit the brackets.
-        [[nodiscard]] wxCoord CalcBracketsWidth(wxDC& dc) const;
+        [[nodiscard]]
+        wxCoord CalcBracketsWidth(wxDC& dc) const;
         /// @returns Whether the given axis position will display something.
         /// @note Relying on AxisPoint::IsShown() is not adequate because we
         ///     need to take into account if the point doesn't have a custom label
         ///     but only custom labels are being displayed.
-        [[nodiscard]] bool IsPointDisplayingLabel(const AxisPoint& point) const;
+        [[nodiscard]]
+        bool IsPointDisplayingLabel(const AxisPoint& point) const;
         /// @returns The best (smallest) scaling so that the labels don't overlap.
         /// @warning This should be called after SetPoints() is called so that the
         ///     physical width of the axis is valid.
@@ -1479,7 +1589,8 @@ namespace Wisteria::GraphItems
                             [[maybe_unused]] const double parentScaling) final;
         /// @returns The physical (relative to the parent canvas) starting and ending points
         ///     for the axis.
-        [[nodiscard]] const std::pair<wxPoint,wxPoint>& GetPoints() const noexcept
+        [[nodiscard]]
+        const std::pair<wxPoint,wxPoint>& GetPoints() const noexcept
             { return m_points; }
         /// @brief Calculates where to place the labels.
         void CalcLabelPositions() noexcept;

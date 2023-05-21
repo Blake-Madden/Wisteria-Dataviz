@@ -52,11 +52,13 @@ namespace lily_of_the_valley
             @throws postscript_header_not_found If an invalid document.
             @throws postscript_version_not_supported if document is a newer version of 
                 Postscript that is not supported.*/
-        [[nodiscard]] const wchar_t* operator()(const char* ps_buffer, const size_t text_length);
+        [[nodiscard]]
+        const wchar_t* operator()(const char* ps_buffer, const size_t text_length);
         /** @returns The title from the metadata file or stream.
             @note Must be called after calling operator() or read_meta_data()
                 (depending on which parser you are using).*/
-        [[nodiscard]] const std::string& get_title() const noexcept
+        [[nodiscard]]
+        const std::string& get_title() const noexcept
             { return m_title; }
         /// @brief Exception thrown when a Postscript is missing its header
         ///     (more than likely an invalid Postscript file).

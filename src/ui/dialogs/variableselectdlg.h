@@ -138,7 +138,8 @@ namespace Wisteria::UI
         /// @returns the list of variables selected a list.
         /// @param list The list to get the selected items from.
         /// @returns A vector of the selected strings.
-        [[nodiscard]] static std::vector<wxString> GetSelectedVariablesInList(wxListView* list);
+        [[nodiscard]]
+        static std::vector<wxString> GetSelectedVariablesInList(wxListView* list);
         /// @brief Removes the selected items from a list.
         /// @param list The list box to remove items from.
         static void RemoveSelectedVariablesFromList(wxListView* list);

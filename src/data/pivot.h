@@ -28,7 +28,8 @@ namespace Wisteria::Data
             m_Id(id), m_idColumns(idColumns), m_pivotedColumns(pivotedColumns)
             {}
         /// @private
-        [[nodiscard]] bool operator<(const PivotedWiderRow& that) const
+        [[nodiscard]]
+        bool operator<(const PivotedWiderRow& that) const
             { return m_Id.CmpNoCase(that.m_Id) < 0; }
         /// @brief Combines rows with the same ID(s), adding new pivoted
         ///     columns, or combining values with common pivots.

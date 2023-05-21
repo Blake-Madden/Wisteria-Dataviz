@@ -90,7 +90,8 @@ namespace Wisteria::GraphItems
 
         /// @returns The minimum width needed for the left padding if including a legend.
         /// @sa SetLeftPadding().
-        [[nodiscard]] static constexpr wxCoord GetMinLegendWidthDIPs() noexcept
+        [[nodiscard]]
+        static constexpr wxCoord GetMinLegendWidthDIPs() noexcept
             {
             return Wisteria::Icons::LegendIcon::GetIconWidthDIPs() +
                    2/* 1 DIP on each side of icon*/;
@@ -99,10 +100,12 @@ namespace Wisteria::GraphItems
         /// @brief Gets/sets the lines that are drawn ignoring the left margin.
         ///     This is useful for legend formatting.
         /// @returns The lines ignoring (left) margins.
-        [[nodiscard]] std::set<size_t>& GetLinesIgnoringLeftMargin() noexcept
+        [[nodiscard]]
+        std::set<size_t>& GetLinesIgnoringLeftMargin() noexcept
             { return m_linesIgnoringLeftMargin; }
         /// @private
-        [[nodiscard]] const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
+        [[nodiscard]]
+        const std::set<size_t>& GetLinesIgnoringLeftMargin() const noexcept
             { return m_linesIgnoringLeftMargin; }
 
         /// @name Text Functions
@@ -178,13 +181,16 @@ namespace Wisteria::GraphItems
         void SplitTextByCharacter();
 
         /// @returns Number of lines of text in the label.
-        [[nodiscard]] size_t GetLineCount() const noexcept
+        [[nodiscard]]
+        size_t GetLineCount() const noexcept
             { return m_lineCount; }
         /// @returns Number of lines of text in the label, ignoring the header (if enabled).
-        [[nodiscard]] size_t GetLineCountWithoutHeader() const noexcept
+        [[nodiscard]]
+        size_t GetLineCountWithoutHeader() const noexcept
             { return m_lineCount - (GetHeaderInfo().IsEnabled() ? 1 : 0); }
         /// @returns The number of characters from the longest line of text in the label.
-        [[nodiscard]] size_t GetLongestLineLength() const noexcept
+        [[nodiscard]]
+        size_t GetLongestLineLength() const noexcept
             {
             // make sure this was cached properly
             wxASSERT_LEVEL_2_MSG(
@@ -200,7 +206,8 @@ namespace Wisteria::GraphItems
         /// @{
 
         /// @returns How the corners are drawn.
-        [[nodiscard]] BoxCorners GetBoxCorners() const noexcept
+        [[nodiscard]]
+        BoxCorners GetBoxCorners() const noexcept
             { return m_boxCorners; }
         /** @brief Sets how the corners are drawn.
             @details Only relevant if drawing an outline.
@@ -218,7 +225,8 @@ namespace Wisteria::GraphItems
 
         /** @returns The number of pixels between lines.
             @warning This will need to be scaled when being drawn or measured.*/
-        [[nodiscard]] double GetLineSpacing() const noexcept
+        [[nodiscard]]
+        double GetLineSpacing() const noexcept
             { return m_spacingBetweenLines; }
         /** @brief Sets the number of DIPs between lines (if label is multiline).
             @param spacing The number of DIPs to space between lines.
@@ -369,15 +377,18 @@ namespace Wisteria::GraphItems
         /// @note This will maintain the image's aspect ratio and the calculated height
         ///     may be smaller than @c textHeight.
         /// @param textHeight The current height of the label.
-        [[nodiscard]] wxSize CalcLeftImageSize(const wxCoord textHeight) const;
+        [[nodiscard]]
+        wxSize CalcLeftImageSize(const wxCoord textHeight) const;
         /// @returns The size that the top image will be if the provided width is given.
         /// @note This will maintain the image's aspect ratio and the calculated width
         ///     may be smaller than @c textWidth.
         /// @param textWidth The current width of the label.
-        [[nodiscard]] wxSize CalcTopImageSize(const wxCoord textWidth) const;
+        [[nodiscard]]
+        wxSize CalcTopImageSize(const wxCoord textWidth) const;
         /** @returns @c true if the given point is inside of the label.
             @param pt The point to check.*/
-        [[nodiscard]] bool HitTest(const wxPoint pt, wxDC& dc) const final
+        [[nodiscard]]
+        bool HitTest(const wxPoint pt, wxDC& dc) const final
             { return GetBoundingBox(dc).Contains(pt); }
         /** @brief Draws a vertical multi-line text string at the specified point,
              using the current text font, and the current text foreground and background colors.
@@ -403,10 +414,12 @@ namespace Wisteria::GraphItems
         void GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const;
         /// @returns The offset from the top if user-defined minimum size is being used it is
         ///  taller than the measured size.
-        [[nodiscard]] wxCoord CalcPageVerticalOffset(const wxDC& dc) const;
+        [[nodiscard]]
+        wxCoord CalcPageVerticalOffset(const wxDC& dc) const;
         /// @returns The offset from the left if user-defined minimum size is being used it is
         ///     wider than the measured size.
-        [[nodiscard]] wxCoord CalcPageHorizontalOffset(const wxDC& dc) const;
+        [[nodiscard]]
+        wxCoord CalcPageHorizontalOffset(const wxDC& dc) const;
 
         double m_tiltAngle{ 0 };
         double m_spacingBetweenLines{ 1 };

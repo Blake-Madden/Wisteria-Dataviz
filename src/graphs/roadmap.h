@@ -62,14 +62,16 @@ namespace Wisteria::Graphs
         void SetLabelPlacement(const LabelPlacement lPlacement) noexcept
             { m_labelPlacement = lPlacement; }
         /// @returns How the labels are arranged in the plotting area.
-        [[nodiscard]] LabelPlacement GetLabelPlacement() const noexcept
+        [[nodiscard]]
+        LabelPlacement GetLabelPlacement() const noexcept
             { return m_labelPlacement; }
 
         /// @brief Gets/sets the pen used for the road.
         /// @details The default is a black pavement, 10 DIPs wide.
         /// @details This is useful for changing the width or color of the road.
         /// @returns The pen used to draw the road.
-        [[nodiscard]] wxPen& GetRoadPen() noexcept
+        [[nodiscard]]
+        wxPen& GetRoadPen() noexcept
             { return m_roadPen; }
 
         /// @brief Gets/sets the pen used to draw the lane separator on the road.
@@ -79,7 +81,8 @@ namespace Wisteria::Graphs
         ///     will always be a tenth the width of the road.
         /// @note Set this to @c wxNullPen to not draw a line down the middle of the road.
         /// @returns The pen used to draw the lane separator.
-        [[nodiscard]] wxPen& GetLaneSeparatorPen() noexcept
+        [[nodiscard]]
+        wxPen& GetLaneSeparatorPen() noexcept
             { return m_laneSeparatorPen; }
 
         /** @brief Sets the icon theme for the road stops.
@@ -91,7 +94,8 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final;
 
         /** @brief Sets how to display the labels next to the road stops.
@@ -100,7 +104,8 @@ namespace Wisteria::Graphs
             { m_markerLabelDisplay = mlDisplay; }
 
         /// @returns The lane separator style.
-        [[nodiscard]] LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
+        [[nodiscard]]
+        LaneSeparatorStyle GetLaneSeparatorStyle() const noexcept
             { return m_laneSeparatorStyle; }
         /// @brief Sets the lane separator style.
         /// @param lStyle The style to use.
@@ -115,7 +120,8 @@ namespace Wisteria::Graphs
         ///     (either positive or negative).\n
         ///     For example, the values `{ -7, 1, 3 }` would have a magnitude @c 7.
         /// @returns The magnitude of the values.
-        [[nodiscard]] double GetMagnitude() const noexcept
+        [[nodiscard]]
+        double GetMagnitude() const noexcept
             { return m_magnitude; }
         /// @brief Sets the maximum absolute value of the values (e.g., coefficients, counts, etc.).
         /// @details This should be calculated in derived classes' @c SetData() function.\n
@@ -128,7 +134,8 @@ namespace Wisteria::Graphs
 
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
             const bool includeHeader)
             {
@@ -170,10 +177,12 @@ namespace Wisteria::Graphs
                 return *this;
                 }
             /// @returns The value of the road stop.
-            [[nodiscard]] double GetValue() const noexcept
+            [[nodiscard]]
+            double GetValue() const noexcept
                 { return m_value; }
             /// @returns The name displayed on the road stop.
-            [[nodiscard]] const wxString& GetName() const noexcept
+            [[nodiscard]]
+            const wxString& GetName() const noexcept
                 { return m_name; }
         private:
             double m_value{ 0 };
@@ -181,18 +190,22 @@ namespace Wisteria::Graphs
             };
 
         /// @returns The positive label used for the legend.
-        [[nodiscard]] virtual wxString GetPositiveLegendLabel() const = 0;
+        [[nodiscard]]
+        virtual wxString GetPositiveLegendLabel() const = 0;
         /// @returns The negative label used for the legend.
-        [[nodiscard]] virtual wxString GetNegativeLegendLabel() const = 0;
+        [[nodiscard]]
+        virtual wxString GetNegativeLegendLabel() const = 0;
         /// @returns The name of the goal.
-        [[nodiscard]] const wxString& GetGoalLabel() const noexcept
+        [[nodiscard]]
+        const wxString& GetGoalLabel() const noexcept
             { return m_goalLabel; }
         /// @brief Sets the name of the goal.
         /// @param label The goal name.
         void SetGoalLabel(const wxString& label)
             { m_goalLabel = label; }
         /// @returns The road stops.
-        [[nodiscard]] std::vector<RoadStopInfo>& GetRoadStops() noexcept
+        [[nodiscard]]
+        std::vector<RoadStopInfo>& GetRoadStops() noexcept
             { return m_roadStops; }
     private:
         void RecalcSizes(wxDC& dc) final;
@@ -210,7 +223,8 @@ namespace Wisteria::Graphs
         RoadStopTheme m_iconTheme{ RoadStopTheme::LocationMarkers };
 
         /// @returns The icon used for negative sentiments, based on current theme.
-        [[nodiscard]] RoadStopIcon GetNegativeIcon() const noexcept
+        [[nodiscard]]
+        RoadStopIcon GetNegativeIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?
                 std::make_pair(Wisteria::Icons::IconShape::LocationMarker,
@@ -220,7 +234,8 @@ namespace Wisteria::Graphs
             }
 
         /// @returns The icon used for positive sentiments, based on current theme.
-        [[nodiscard]] RoadStopIcon GetPositiveIcon() const noexcept
+        [[nodiscard]]
+        RoadStopIcon GetPositiveIcon() const noexcept
             {
             return m_iconTheme == RoadStopTheme::LocationMarkers ?
                 std::make_pair(Wisteria::Icons::IconShape::LocationMarker,

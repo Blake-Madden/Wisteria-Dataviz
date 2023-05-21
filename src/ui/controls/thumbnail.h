@@ -45,7 +45,8 @@ namespace Wisteria::UI
 
         void SetBitmap(const wxBitmap& bitmap) noexcept
             { m_bitmap = bitmap; }
-        [[nodiscard]] wxBitmap& GetBitmap() noexcept
+        [[nodiscard]]
+        wxBitmap& GetBitmap() noexcept
             { return m_bitmap; }
     protected:
         wxBitmap m_bitmap;

@@ -700,8 +700,9 @@ namespace lily_of_the_valley
         /** @returns The charset from the meta section of an HTML buffer.
             @param pageContent The meta section to analyze.
             @param length The length of @c pageContent.*/
-        [[nodiscard]] static std::string parse_charset(const char* pageContent,
-                                                       const size_t length);
+        [[nodiscard]]
+        static std::string parse_charset(const char* pageContent,
+                                         const size_t length);
     protected:
         /** @brief Converts a section of HTML text that is using Symbol font into the actual
                 symbols that it is meant to display.

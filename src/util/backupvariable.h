@@ -27,19 +27,24 @@ public:
     void operator=(const T& value) noexcept
         { m_value = value; }
     /// @private
-    [[nodiscard]] bool operator==(const T& value) const noexcept
+    [[nodiscard]]
+    bool operator==(const T& value) const noexcept
         { return m_value == value; }
     /// @private
-    [[nodiscard]] bool operator<(const T& value) const noexcept
+    [[nodiscard]]
+    bool operator<(const T& value) const noexcept
         { return m_value < value; }
     /// @private
-    [[nodiscard]] bool operator<=(const T& value) const noexcept
+    [[nodiscard]]
+    bool operator<=(const T& value) const noexcept
         { return m_value <= value; }
     /// @private
-    [[nodiscard]] bool operator>(const T& value) const noexcept
+    [[nodiscard]]
+    bool operator>(const T& value) const noexcept
         { return m_value > value; }
     /// @private
-    [[nodiscard]] bool operator>=(const T& value) const noexcept
+    [[nodiscard]]
+    bool operator>=(const T& value) const noexcept
         { return m_value >= value; }
     /// @private
     void operator+(const T& value)
@@ -54,19 +59,24 @@ public:
     void operator-=(const T& value)
         { m_value -= value; }
     /// @private
-    [[nodiscard]] operator const T() const noexcept
+    [[nodiscard]]
+    operator const T() const noexcept
         { return m_value; }
     /// @private
-    [[nodiscard]] T* operator&() noexcept
+    [[nodiscard]]
+    T* operator&() noexcept
         { return &m_value; }
     /// @returns The current value.
-    [[nodiscard]] const T& get_value() const noexcept
+    [[nodiscard]]
+    const T& get_value() const noexcept
         { return m_value; }
     /// @private
-    [[nodiscard]] T& get_value() noexcept
+    [[nodiscard]]
+    T& get_value() noexcept
         { return m_value; }
     /// @returns @c true if the value has changed.
-    [[nodiscard]] bool has_changed() const noexcept
+    [[nodiscard]]
+    bool has_changed() const noexcept
         { return m_value != m_originalValue; }
 private:
     T m_originalValue;

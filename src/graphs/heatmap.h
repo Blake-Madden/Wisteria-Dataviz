@@ -163,7 +163,8 @@ namespace Wisteria::Graphs
 
         /// @returns The group headers' prefix shown above each column.
         /// @note This is only relevant if grouping is being used.
-        [[nodiscard]] const wxString& GetGroupHeaderPrefix() const noexcept
+        [[nodiscard]]
+        const wxString& GetGroupHeaderPrefix() const noexcept
             { return m_groupHeaderPrefix; }
         /** @brief Sets the prefix of the label shown above each column.
             @param prefix The group label.
@@ -178,7 +179,8 @@ namespace Wisteria::Graphs
         /// @brief Whether group headers are shown over each column.
         /// @note This is only relevant if grouping is being used.
         /// @returns @c true if group column headers are being shown.
-        [[nodiscard]] bool IsShowingGroupHeaders() const noexcept
+        [[nodiscard]]
+        bool IsShowingGroupHeaders() const noexcept
             { return m_showGroupHeaders; }
         /// @}
 
@@ -186,12 +188,14 @@ namespace Wisteria::Graphs
             @details This can be then be managed by the parent canvas and placed next to the plot.
             @param options The options for how to build the legend.
             @returns The legend for the chart.*/
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendOptions& options) final;
 
         /// @private
         [[deprecated("Use version that takes a LegendOptions parameter.")]]
-        [[nodiscard]] std::shared_ptr<GraphItems::Label> CreateLegend(
+        [[nodiscard]]
+        std::shared_ptr<GraphItems::Label> CreateLegend(
             const LegendCanvasPlacementHint hint,
             const bool includeHeader)
             {

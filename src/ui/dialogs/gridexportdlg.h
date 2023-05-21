@@ -88,11 +88,13 @@ namespace Wisteria::UI
         GridExportDlg& operator=(GridExportDlg&&) = delete;
 
         /// @returns @c true if user requested pagination in the output.
-        [[nodiscard]] bool IsPaginating() const noexcept
+        [[nodiscard]]
+        bool IsPaginating() const noexcept
             { return m_options.m_pageUsingPrinterSettings; }
 
         /// @returns @c true if user requested column headers in the output.
-        [[nodiscard]] bool IsIncludingColumnHeaders() const noexcept
+        [[nodiscard]]
+        bool IsIncludingColumnHeaders() const noexcept
             { return m_options.m_includeColumnHeaders; }
         /** @brief Sets whether to include column headers in the output.
             @param includeColumnHeaders @c true to include column headers,
@@ -104,7 +106,8 @@ namespace Wisteria::UI
             }
 
         /// @returns @c true if user requested to export only the rows that are selected.
-        [[nodiscard]] bool IsExportingSelectedRows() const noexcept
+        [[nodiscard]]
+        bool IsExportingSelectedRows() const noexcept
             { return m_options.m_exportSelected; }
         /** @brief Specifies whether to export all rows, or just the ones that are selected.
             @param exportSelectedRows @c true to export just the rows that are selected;
@@ -118,24 +121,29 @@ namespace Wisteria::UI
 
         /// @returns The requested start row (1-indexed).
         /// @note Will be @c -1 if not specified.
-        [[nodiscard]] int GetFromRow() const noexcept
+        [[nodiscard]]
+        int GetFromRow() const noexcept
             { return m_options.m_fromRow; }
         /// @returns The requested ending row (1-indexed).
         /// @note Will be @c -1 if not specified.
-        [[nodiscard]] int GetToRow() const noexcept
+        [[nodiscard]]
+        int GetToRow() const noexcept
             { return m_options.m_toRow; }
 
         /// @returns The requested start column (1-indexed).
         /// @note Will be @c -1 if not specified.
-        [[nodiscard]] int GetFromColumn() const noexcept
+        [[nodiscard]]
+        int GetFromColumn() const noexcept
             { return m_options.m_fromColumn; }
         /// @returns The requested ending column (1-indexed).
         /// @note Will be @c -1 if not specified.
-        [[nodiscard]] int GetToColumn() const noexcept
+        [[nodiscard]]
+        int GetToColumn() const noexcept
             { return m_options.m_toColumn; }
 
         /// @returns The user's specified options.
-        [[nodiscard]] const GridExportOptions& GetExportOptions() const noexcept
+        [[nodiscard]]
+        const GridExportOptions& GetExportOptions() const noexcept
             { return m_options; }
     private:
         void CreateControls();

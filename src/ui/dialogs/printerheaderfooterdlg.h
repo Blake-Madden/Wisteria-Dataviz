@@ -99,7 +99,8 @@ namespace Wisteria::UI
     private:
         void CreateControls();
         void OnOK([[maybe_unused]] wxCommandEvent& event);
-        [[nodiscard]] bool Validate() final;
+        [[nodiscard]]
+        bool Validate() final;
         static void UCaseEmbeddedTags(wxString& str);
 
         // headers
