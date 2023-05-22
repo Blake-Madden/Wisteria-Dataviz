@@ -107,6 +107,9 @@ namespace Wisteria::Data
         explicit Column(const wxString& title) : m_name(title)
             {}
         /// @private
+        explicit Column(wxString&& title) : m_name(std::move(title))
+            {}
+        /// @private
         Column() = default;
         /// @private
         virtual ~Column() = default;
@@ -209,6 +212,9 @@ namespace Wisteria::Data
         /// @param name The name.
         void SetName(const wxString& name)
             { m_name = name; }
+        /// @private
+        void SetName(wxString&& name)
+            { m_name = std::move(name); }
     protected:
         /// @brief Removes all data.
         virtual void Clear() noexcept
@@ -250,6 +256,9 @@ namespace Wisteria::Data
             @param title The title of the column.
                 This is useful for identifying the column in a dataset.*/
         explicit ColumnWithStringTable(const wxString& title) : Column(title)
+            {}
+        /// @private
+        explicit ColumnWithStringTable(wxString&& title) : Column(std::move(title))
             {}
         /// @private
         ColumnWithStringTable() = default;
@@ -787,6 +796,12 @@ namespace Wisteria::Data
             m_textImportReplacements = replaceStrings;
             return *this;
             }
+        /// @private
+        ImportInfo& ReplacementStrings(RegExMap&& replaceStrings)
+            {
+            m_textImportReplacements = std::move(replaceStrings);
+            return *this;
+            }
         /** @brief Builds a regex map from a dataset.
             @details This can be useful for loading a file containing a list of regexes
                 and their replacement values from a file and passing that to ReplacementStrings().
@@ -802,12 +817,6 @@ namespace Wisteria::Data
         static RegExMap DatasetToRegExMap(const std::shared_ptr<Dataset>& dataset,
             const wxString& regexColumnName,
             const wxString& replacementColumnName);
-        /// @private
-        ImportInfo& ReplacementStrings(RegExMap&& replaceStrings)
-            {
-            m_textImportReplacements = std::move(replaceStrings);
-            return *this;
-            }
     private:
         std::vector<DateImportInfo> m_dateColumns;
         std::vector<CategoricalImportInfo> m_categoricalColumns;

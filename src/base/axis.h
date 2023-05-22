@@ -405,6 +405,11 @@ namespace Wisteria::GraphItems
                 bool display = true) :
                 m_displayValue(displayValue), m_show(display), m_value(value)
                 {}
+            /// @private
+            AxisPoint(const double value, wxString&& displayValue,
+                bool display = true) :
+                m_displayValue(std::move(displayValue)), m_show(display), m_value(value)
+                {}
             /// @returns The string on the axis that this point is displayed as.
             [[nodiscard]]
             const wxString& GetDisplayValue() const noexcept
@@ -413,6 +418,9 @@ namespace Wisteria::GraphItems
             /// @param label The label of the axis point.
             void SetDisplayValue(const wxString& label)
                 { m_displayValue = label; }
+            /// @private
+            void SetDisplayValue(wxString&& label)
+                { m_displayValue = std::move(label); }
 
             /// @returns Whether the point is being drawn on the axis.
             [[nodiscard]]

@@ -287,6 +287,9 @@ namespace Wisteria
             explicit GraphItemInfo(const wxString& text) : m_text(text)
                 {}
             /// @private
+            explicit GraphItemInfo(wxString&& text) : m_text(std::move(text))
+                {}
+            /// @private
             GraphItemInfo() = default;
             /// @brief Sets the ID.
             /// @param id The ID to assign to this object.
@@ -413,6 +416,12 @@ namespace Wisteria
             GraphItemInfo& Text(const wxString& text)
                 {
                 m_text = text;
+                return *this;
+                }
+            /// @private
+            GraphItemInfo& Text(wxString&& text)
+                {
+                m_text = std::move(text);
                 return *this;
                 }
             /// @brief Sets the anchoring.
@@ -768,6 +777,14 @@ namespace Wisteria
                 wxASSERT_LEVEL_2_MSG(m_itemInfo.m_scaling > 0,
                                      L"Scaling in canvas object is <= 0?!");
                 }
+            /// @private
+            GraphItemBase(const double scaling, wxString&& label)
+                {
+                m_itemInfo.m_text = std::move(label);
+                m_itemInfo.m_scaling = scaling;
+                wxASSERT_LEVEL_2_MSG(m_itemInfo.m_scaling > 0,
+                                     L"Scaling in canvas object is <= 0?!");
+                }
             /** @brief Constructor.
                 @param itemInfo Extended information to construct this item with.*/
             explicit GraphItemBase(const GraphItemInfo& itemInfo) : m_itemInfo(itemInfo)
@@ -998,7 +1015,7 @@ namespace Wisteria
                 m_itemInfo.m_text = label;
                 InvalidateCachedBoundingBox();
                 }
-            /// @returns The label associated with this element.
+             /// @returns The label associated with this element.
             [[nodiscard]]
             const wxString& GetText() const noexcept
                 { return m_itemInfo.m_text; }
@@ -1524,6 +1541,12 @@ namespace Wisteria
             [[nodiscard]]
             const std::optional<wxRect>& GetClippingRect() const noexcept
                 { return m_itemInfo.m_clippingRect; }
+            /// @private
+            virtual void SetText(wxString&& label)
+                {
+                m_itemInfo.m_text = std::move(label);
+                InvalidateCachedBoundingBox();
+                }
         protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
