@@ -188,6 +188,7 @@ public:
         const Wisteria::NumberFormatInfo format =
             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
         const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+    /// @private
     virtual void SetItemText(const size_t row, const size_t column, wxString&& text,
         const Wisteria::NumberFormatInfo format =
         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
