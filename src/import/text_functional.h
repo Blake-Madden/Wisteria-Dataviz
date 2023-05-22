@@ -158,7 +158,7 @@ namespace lily_of_the_valley
     public:
         /// @brief Constructor.
         /// @param delims The delimiters to use.
-        explicit is_one_of_multiple_delimiters(const wchar_t* delims) : m_delims(delims)
+        explicit is_one_of_multiple_delimiters(const std::wstring_view delims) : m_delims(delims)
             {}
         /// @private
         is_one_of_multiple_delimiters() = delete;
