@@ -109,7 +109,7 @@ public:
 
     /// @brief Data representation for a listctrl string cell.
     /// @details Includes the string value and attributes.
-    struct ListCellString : public std::wstring, ListCell
+    struct ListCellString : public ListCell
         {
         /// @private
         ListCellString() = default;
@@ -117,7 +117,7 @@ public:
         /// @param str The string to put in the cell.
         /// @param len The length of the string.
         ListCellString(const wchar_t* str, const size_t len) :
-            std::wstring(str, len)
+            m_strVal(str, len)
             {}
         /// @private
         [[nodiscard]]
@@ -142,7 +142,8 @@ public:
         /// @private
         [[nodiscard]]
         int Compare(const ListCellString& that) const
-            { return string_util::strnatordncasecmp(c_str(), that.c_str()); }
+            { return string_util::strnatordncasecmp(m_strVal.wc_str(), that.m_strVal.wc_str()); }
+        wxString m_strVal;
         };
 
     /// @private
@@ -186,6 +187,10 @@ public:
     virtual void SetItemText(const size_t row, const size_t column, const wxString& text,
         const Wisteria::NumberFormatInfo format =
             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+        const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
+    virtual void SetItemText(const size_t row, const size_t column, wxString&& text,
+        const Wisteria::NumberFormatInfo format =
+        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
         const double sortableValue = std::numeric_limits<double>::quiet_NaN()) = 0;
     /// @returns The row's attributes (visual look).
     /// @param row The row to return.
@@ -610,7 +615,7 @@ public:
     /// @param column The column to access.
     [[nodiscard]]
     wxString GetItemText(const size_t row, const size_t column) const final
-        { return m_virtualData.operator[](row).operator[](column).c_str(); }
+        { return m_virtualData.operator[](row).operator[](column).m_strVal.c_str(); }
     /// @returns The (possibly) formatted value of a cell.
     /// @param row The row to access.
     /// @param column The column to access.
@@ -622,13 +627,13 @@ public:
         const ListCellString& cell = m_virtualData.operator[](row).operator[](column);
         if (cell.GetNumberFormatType().m_type ==
             Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting)
-            { return cell.c_str(); }
+            { return cell.m_strVal.c_str(); }
         else
             {
             wxASSERT_LEVEL_2(m_formatNumber);
             return m_formatNumber ?
-                m_formatNumber->GetFormattedValue(cell.c_str(), cell.GetNumberFormatType()) :
-                wxString(cell.c_str());
+                m_formatNumber->GetFormattedValue(cell.m_strVal.c_str(), cell.GetNumberFormatType()) :
+                wxString(cell.m_strVal.c_str());
             }
         }
     /** @brief Sets the cell's text.
@@ -649,7 +654,22 @@ public:
              "use ListCtrlExNumericDataProvider instead.");
         wxUnusedVar(sortableValue);
         ListCellString& cell = m_virtualData.operator[](row).operator[](column);
-        cell.assign(static_cast<const wchar_t*>(text));
+        cell.m_strVal = text;
+        cell.SetNumberFormatType(format);
+        }
+    /// @private
+    void SetItemText(const size_t row, const size_t column, wxString&& text,
+                     const Wisteria::NumberFormatInfo format =
+                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                     const double sortableValue =
+                        std::numeric_limits<double>::quiet_NaN()/*Not used here*/) final
+        {
+        wxASSERT_LEVEL_2_MSG(std::isnan(sortableValue),
+            L"Numeric sortable value not supported by ListCtrlExDataProvider, "
+             "use ListCtrlExNumericDataProvider instead.");
+        wxUnusedVar(sortableValue);
+        ListCellString& cell = m_virtualData.operator[](row).operator[](column);
+        cell.m_strVal = std::move(text);
         cell.SetNumberFormatType(format);
         }
     /// @returns The item's index into the image list if it has an icon.
@@ -979,6 +999,17 @@ public:
         @param sortableValue An underlying value that can be assigned to the cell for when
             it is compared to other cells during a sort operation.*/
     void SetItemText(const size_t row, const size_t column, const wxString& text,
+                     const Wisteria::NumberFormatInfo format =
+                        Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
+                     const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
+        {
+        DoubleWithLabel& cell = m_virtualData.operator[](row).operator[](column);
+        cell.m_numericValue = sortableValue;
+        cell.m_labelCode = m_labelManager.CreateLabelId(text);
+        cell.SetNumberFormatType(format);
+        }
+    /// @private
+    void SetItemText(const size_t row, const size_t column, wxString&& text,
                      const Wisteria::NumberFormatInfo format =
                         Wisteria::NumberFormatInfo::NumberFormatType::StandardFormatting,
                      const double sortableValue = std::numeric_limits<double>::quiet_NaN()) final
