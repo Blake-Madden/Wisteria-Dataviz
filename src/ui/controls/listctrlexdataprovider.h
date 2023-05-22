@@ -143,6 +143,7 @@ public:
         [[nodiscard]]
         int Compare(const ListCellString& that) const
             { return string_util::strnatordncasecmp(m_strVal.wc_str(), that.m_strVal.wc_str()); }
+        /// @private
         wxString m_strVal;
         };
 
