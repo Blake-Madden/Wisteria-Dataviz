@@ -112,6 +112,8 @@ public:
     struct ListCellString : public ListCell
         {
         /// @private
+        static constexpr auto npos = std::wstring::npos;
+        /// @private
         ListCellString() = default;
         /// @brief Constructor.
         /// @param str The string to put in the cell.
@@ -141,9 +143,27 @@ public:
             { return Compare(that) == 0; }
         /// @private
         [[nodiscard]]
+        bool empty() const
+            { return m_strVal.empty(); }
+        /// @private
+        void clear()
+            { m_strVal.clear(); }
+        /// @private
+        void assign(const wchar_t* text, const size_t length)
+            { m_strVal.assign(text, length); }
+        /// @private
+        void assign(const wchar_t* text)
+            { m_strVal.assign(text); }
+        /// @private
+        size_t find(const wchar_t* text, const size_t position)
+            { return m_strVal.find(text, position); }
+        /// @private
+        decltype(auto) replace(const size_t position, const size_t length, const wchar_t* text)
+            { return m_strVal.replace(position, length, text); }
+        /// @private
+        [[nodiscard]]
         int Compare(const ListCellString& that) const
             { return string_util::strnatordncasecmp(m_strVal.wc_str(), that.m_strVal.wc_str()); }
-        /// @private
         wxString m_strVal;
         };
 
