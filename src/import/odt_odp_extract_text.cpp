@@ -146,7 +146,7 @@ namespace lily_of_the_valley
                 if (spacesCount > 10)
                     { spacesCount = 10; }
                 // if no space count specified, then default to one space
-                add_character(L' ', static_cast<size_t>(std::max(spacesCount,1l)));
+                add_character(L' ', static_cast<size_t>(std::max(spacesCount, 1l)));
                 end = find_close_tag(start+1);
                 if (!end)
                     { break; }
@@ -164,13 +164,13 @@ namespace lily_of_the_valley
                                                  TEXT_STYLE_NAME.length(), false);
                     // page breaks
                     if (m_page_break_paragraph_styles.find(styleName) !=
-                        m_page_break_paragraph_styles.end())
+                        m_page_break_paragraph_styles.cend())
                         { add_character(L'\f'); }
                     // if this paragraph's style is indented, then include a tab in front of it
                     if (!m_preserve_text_table_layout || !insideOfListItemOrTableCell)
                         {
                         if (m_indented_paragraph_styles.find(styleName) !=
-                            m_indented_paragraph_styles.end())
+                            m_indented_paragraph_styles.cend())
                             {
                             add_character(L'\n');
                             add_character(L'\n');
