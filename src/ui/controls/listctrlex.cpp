@@ -1950,6 +1950,7 @@ bool ListCtrlEx::SortTextItems(const long nCol, const bool ascending,
     return true;
     }
 
+//------------------------------------------------------
 wxItemAttr* ListCtrlEx::OnGetItemAttr(long item) const
     {
     if (!IsVirtual())
@@ -1960,6 +1961,7 @@ wxItemAttr* ListCtrlEx::OnGetItemAttr(long item) const
         { return const_cast<wxItemAttr*>(m_virtualData->GetRowAttributes(item)); }
     }
 
+//------------------------------------------------------
 wxString ListCtrlEx::OnGetItemText(long item, long column) const
     {
     /// List control (at least on Windows) truncates returned strings to 255 and forgets
@@ -1971,6 +1973,7 @@ wxString ListCtrlEx::OnGetItemText(long item, long column) const
     return retval;
     }
 
+//------------------------------------------------------
 void ListCtrlEx::SetItemColumnImageEx(const long row, const long column, const int image)
     {
     if (!IsVirtual())
