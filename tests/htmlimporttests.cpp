@@ -129,7 +129,7 @@ TEST_CASE("Str Chr Not Quoted", "[html import]")
         buffer = L"hello, \"world\"";
         CHECK(html_extract_text::strchr_not_quoted(buffer, L'w') == nullptr);
         }
-    SECTION("MiddleItemInSequenceString")
+    SECTION("Middle Item In Sequence String")
         {
         // should find middle item in sequence
         const wchar_t* buffer = L"hello, world!!! Goodbye, cruel world!";
@@ -193,7 +193,7 @@ TEST_CASE("Str Chr Not Quoted", "[html import]")
 
 TEST_CASE("HTML Parser", "[html import]")
     {
-    SECTION("FindBookmark")
+    SECTION("Find Bookmark")
         {
         const wchar_t* text = L"<a name=\"copyright\" />blah blah<a name=\"books\" /><h2>Also <a nam=\"bogustag\">by Mark ZZZZZ</h2><a />";
         std::pair<const wchar_t*, std::wstring> retVal = html_extract_text::find_bookmark(text, text + wcslen(text));
@@ -219,14 +219,14 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(retVal.first == textWithPound);
         CHECK(retVal.second == L"copyright");
         }
-    SECTION("MultipleBreaks")
+    SECTION("Multiple Breaks")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<p><tt>Chapter 1<br>\n<br>\nIt was the best days of our lives.</tt></p>";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"\n\nChapter 1\n \n It was the best days of our lives.\n\n") == 0);
         }
-    SECTION("ExtendedAscii")
+    SECTION("Extended Ascii")
         {
         html_extract_text filter_html;
         const wchar_t* p = filter_html(nullptr, 5, true, false);
@@ -234,7 +234,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(L"cl&#255;ich&#201;", 17, true, false);
         CHECK(std::wcscmp(p, L"clÿichÉ") == 0);
         }
-    SECTION("ExtendedAsciiBroken")
+    SECTION("Extended Ascii Broken")
         {
         html_extract_text filter_html;
         const wchar_t* p = filter_html(nullptr, 5, true, false);
@@ -242,7 +242,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(L"cl&#;ich&#g;", 12, true, false);
         CHECK(std::wcscmp(p, L"cl&#;ich&#g;") == 0);
         }
-    SECTION("ExtendedAsciiHex")
+    SECTION("Extended Ascii Hex")
         {
         html_extract_text filter_html;
         const wchar_t* p = filter_html(nullptr, 5, true, false);
@@ -250,7 +250,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(L"cl&#xFF;ich&#Xc9;", 17, true, false);
         CHECK(std::wcscmp(p, L"clÿichÉ") == 0);
         }
-    SECTION("ExtendedAsciiHexBroken")
+    SECTION("Extended Ascii Hex Broken")
         {
         html_extract_text filter_html;
         const wchar_t* p = filter_html(nullptr, 5, true, false);
@@ -321,7 +321,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(std::wcscmp(p, L"hellothere\n!") == 0);
         CHECK(filter_html.get_title().empty());
         }
-    SECTION("PreformattedText")
+    SECTION("Preformatted Text")
         {
         const wchar_t* text = L"hello\n<PRE>Some \nPreformatted text</pre>!";
         html_extract_text filter_html;
@@ -434,19 +434,19 @@ TEST_CASE("HTML Parser", "[html import]")
         }
     SECTION("Comments")
         {
-        const wchar_t* text = L"hello<!--there<br>-->&nbsp;world!";
+        const wchar_t* text = L"hello<!--there<br>-->&nBsp;world!";
         html_extract_text filter_html;
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"hello world!") == 0);
         }
-    SECTION("NamedEntities")
+    SECTION("Named Entities")
         {
-        const wchar_t* text = L"hello&lt;there&copy;";
+        const wchar_t* text = L"hello&LT;there&COPY;";
         html_extract_text filter_html;
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"hello<there©") == 0);
         }
-    SECTION("HeavyFormatting")
+    SECTION("Heavy Formatting")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"h<span style=\'italics\'>ello</span><em> th</em><u>e</u>re world! \"Nice\" <span style=\"italics\">t</span>o meet <img src=\"file.png\" alt=\"\">you &amp; you!";
@@ -462,7 +462,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"A comprehensive (4 pages long) review of") == 0);
         }
-    SECTION("FindTag")
+    SECTION("Find Tag")
         {
         const wchar_t* text = L"body bgcolor=\'#FF0000\' color=\'#FF0000\'>there<br />world<br >!";
         CHECK(html_extract_text::find_tag(text, L"bgcolor", 7, false) == text+5);
@@ -473,7 +473,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
         CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
         }
-    SECTION("FindTag2")
+    SECTION("Find Tag 2")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
         CHECK(html_extract_text::find_tag(text, L"STYLE", 5, false) == text+5);
@@ -483,7 +483,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::find_tag(text, nullptr, 0, false) == nullptr);
         CHECK(html_extract_text::find_tag(text, L"body", 4, false) == text);
         }
-    SECTION("FindTagQuotable")
+    SECTION("Find Tag Quotable")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
         CHECK(html_extract_text::find_tag(text, L"STYLE", 5, true) == text+5);
@@ -493,7 +493,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::find_tag(text, nullptr, 0, true) == nullptr);
         CHECK(html_extract_text::find_tag(text, L"body", 4, true) == text);
         }
-    SECTION("ReadElementAsString")
+    SECTION("Read Element As String")
         {
         const wchar_t* text = L"<h1>My header</H1>";
         CHECK(std::wstring(L"My header") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
@@ -509,7 +509,7 @@ TEST_CASE("HTML Parser", "[html import]")
         text = L"<h1>My header</l1>";
         CHECK(std::wstring(L"") == html_extract_text::read_element_as_string(text, text+std::wcslen(text), L"h1", 2));
         }
-    SECTION("ReadTagAsLong")
+    SECTION("Read Tag As Long")
         {
         const wchar_t* text = L"body height= 275 style=\"width=250\">there<br />world<br >!";
         CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", 6, false));
@@ -518,7 +518,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(0 == html_extract_text::read_attribute_as_long(nullptr, L"width", 5, true));
         CHECK(0 == html_extract_text::read_attribute_as_long(text, nullptr, 0, true));
         }
-    SECTION("ReadEmptyAttribute")
+    SECTION("Read Empty Attribute")
         {
         const wchar_t* text = L"body style =\"\" info =' ' height=275>there<br />world<br >!";
         CHECK(275 == html_extract_text::read_attribute_as_long(text, L"height", 6, false));
@@ -526,7 +526,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(std::wstring(L"") == html_extract_text::read_attribute_as_string(text, L"info", 4, false, false));
         CHECK(std::wstring(L" ") == html_extract_text::read_attribute_as_string(text, L"info", 4, false, true));
         }
-    SECTION("ReadTagQuotable")
+    SECTION("Read Tag Quotable")
         {
         const wchar_t* text = L"body style=\"color=#FF0000 width=250\">there<br />world<br >!";
         CHECK(html_extract_text::read_attribute_as_string(text, L"color", 5, true) == L"#FF0000");
@@ -535,7 +535,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
         CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
         }
-    SECTION("ReadTags")
+    SECTION("Read Tags")
         {
         const wchar_t* text = L"body bgcolor=#FF0000>there<style width=250>world<br >!";
         CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", 7, true) == L"#FF0000");
@@ -544,7 +544,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
         CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
         }
-    SECTION("ReadTagsQuoted")
+    SECTION("Read Tags Quoted")
         {
         const wchar_t* text = L"body bgcolor=\"#FF0000\">there<style width=250>world<br >!";
         CHECK(html_extract_text::read_attribute_as_string(text, L"bgcolor", 7, true) == L"#FF0000");
@@ -553,7 +553,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
         CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
         }
-    SECTION("ReadTagsCss")
+    SECTION("Read Tags Css")
         {
         const wchar_t* text = L"body style=\"color: #FF0000;\">there<style width=250>world<br >!";
         CHECK(html_extract_text::read_attribute_as_string(text, L"color", 5, true) == L"#FF0000");
@@ -562,7 +562,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(nullptr, L"width", 5, true) == L"");
         CHECK(html_extract_text::read_attribute_as_string(text, nullptr, 0, true) == L"");
         }
-    SECTION("ReadTagsSpacesAndQuotesCombinations")
+    SECTION("Read Tags Spaces And Quotes Combinations")
         {
         const wchar_t* text = L"body style=\'font-weight: really bold;\'>";
         CHECK(html_extract_text::read_attribute_as_string(text, L"font-weight", 11, false, false) == L"");//inside of quotes, won't be found
@@ -576,13 +576,13 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, true, true) == L"250 px");//will be read properly
         CHECK(html_extract_text::read_attribute_as_string(text, L"width", 5, false, true) == L"250 px");//will be read properly
         }
-    SECTION("ReadTagsWithSpaces")
+    SECTION("Read Tags With Spaces")
         {
         const wchar_t* text = L"body style=\"Color Value\">there<style width=250>world<br >!";
         CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, true) == L"Color Value");
         CHECK(html_extract_text::read_attribute_as_string(text, L"style", 5, false, false) == L"Color");
         }
-    SECTION("GetElementName")
+    SECTION("Get Element Name")
         {
         CHECK(html_extract_text::get_element_name(L"body style=\"color=#FF0000\">there<style width=250>world<br >!") == L"body");
         CHECK(html_extract_text::get_element_name(L"br>there<style width=250>world<br >!") == L"br");
@@ -593,7 +593,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::get_element_name(nullptr).empty());
         CHECK(html_extract_text::get_element_name(L"") == L"");
         }
-    SECTION("GetBody")
+    SECTION("Get Body")
         {
         CHECK(html_extract_text::get_body(L"<html bgcolor=\"red\"><body style=\"color=#FF0000\">there<style width=250>world<br >!</body>") ==
             L"there<style width=250>world<br >!");
@@ -609,70 +609,70 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(L"hello", 0, true, false);
         CHECK(p == nullptr);
         }
-    SECTION("HtmlParserTest::TestMissingSemicolon")
+    SECTION("Test Missing Semicolon")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"AR&D experts";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"AR&D experts") == 0);
         }
-    SECTION("MissingSemicolonNoSpacesEither")
+    SECTION("Missing Semicolon No Spaces Either")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"AR&Dexperts";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"AR&Dexperts") == 0);
         }
-    SECTION("MissingSemicolonWithSpace")
+    SECTION("Missing Semicolon With Space")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"AR& D experts";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"AR& D experts") == 0);
         }
-    SECTION("MissingSemicolonsWithoutSpace")
+    SECTION("Missing Semicolons Without Space")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"Con & Industrial (C&I) relies on thousands";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Con & Industrial (C&I) relies on thousands") == 0);
         }
-    SECTION("MissingSemicolonValidEntity")
+    SECTION("Missing Semicolon Valid Entity")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&amp Service";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"& Service") == 0);
         }
-    SECTION("PageBreaks")
+    SECTION("Page Breaks")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<p>Page 1</p><p style=\"margin-bottom: 0in; line-height: 100%; page-break-before: Always\">Here is page 2</p><h1 style=\"margin-bottom: 0in; line-height: 100%; page-break-before: AUTo\"><p>Page 3</p></body></html>";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"\n\nPage 1\n\n\n\n\fHere is page 2\n\n\n\n\f\n\nPage 3\n\n") == 0);
         }
-    SECTION("ValidEntity")
+    SECTION("Valid Entity")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&amp; Service";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"& Service") == 0);
         }
-    SECTION("ValidEntityUppercased")
+    SECTION("Valid Entity Uppercased")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&AMP; Service";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"& Service") == 0);
         }
-    SECTION("InvalidEntity")
+    SECTION("Invalid Entity")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&amv; Service";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"? Service") == 0);
         }
-    SECTION("EntityWithBadAmp")
+    SECTION("Entity With Bad Amp")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&amp;le;";
@@ -702,7 +702,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"& ") == 0);
         }
-    SECTION("StrayLessThan")
+    SECTION("Stray Less Than")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"1 is < 5, right?";
@@ -724,7 +724,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"1 is < 5 and 6 is > 5, right? and 4 < 7") == p);
         }
-    SECTION("MissingTags")
+    SECTION("Missing Tags")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<style=\'italics' <i>hello</i> there!</body>";
@@ -733,7 +733,7 @@ TEST_CASE("HTML Parser", "[html import]")
         //feed in some extra junk into the output, but at least "hello" won't be lost
         CHECK(std::wstring(L"<style=\'italics' hello there!") == p);
         }
-    SECTION("ExtraTags")
+    SECTION("Extra Tags")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<img alt=\">\">Well, <i>hello</i> there!</body>";
@@ -747,14 +747,14 @@ TEST_CASE("HTML Parser", "[html import]")
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Here is some more & text here.") == 0);
         }
-    SECTION("CDATAEmbeddedHTML")
+    SECTION("CDATA Embedded HTML")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"Here is some <![cDaTa[more &amp; text]]> here.";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Here is some more &amp; text here.") == 0);
         }
-    SECTION("BadCDATA")
+    SECTION("Bad CDATA")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"Here is some <![cDaTa[more & text here.";
@@ -774,7 +774,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"hello\n\nthere\n\nworld\n\n!") == 0);
         }
-    SECTION("MailToTelephoneSpaces")
+    SECTION("Mail To Telephone Spaces")
         {
         // should add missing space between word and mail/phone links
         html_extract_text filter_html;
@@ -786,7 +786,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Contact 555-5555 for details.") == 0);
         }
-    SECTION("TemplatePlaceHolders")
+    SECTION("Template PlaceHolders")
         {
         html_extract_text filter_html;
         const wchar_t* text = LR"(<a class = "breadcrumbs__link" href = "index.php">Mr. ${_EscapeTool.xml($level.title)}</a>)";
@@ -813,7 +813,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Mr. ${") == std::wstring(p));
         }
-    SECTION("EntityNames")
+    SECTION("Entity Names")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"&clubs;&dagger;&trade;&euro;&le;&minus;&uarr;";
@@ -843,14 +843,14 @@ TEST_CASE("HTML Parser", "[html import]")
         text = "<meta http-equiv=\"Content-type\" content=\"text/html; utf-8\" />";
         CHECK(html_extract_text::parse_charset(text, strlen(text)) == "utf-8");
         }
-    SECTION("CharsetXML")
+    SECTION("Charset XML")
         {
         const char* text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
         CHECK(html_extract_text::parse_charset(text, strlen(text)) == "UTF-8");
         const char* text2 = "<?xml version=\"1.0\" standalone=\"yes\"?>";
         CHECK(html_extract_text::parse_charset(text2, strlen(text2)) == "");
         }
-    SECTION("OptionList")
+    SECTION("Option List")
         {
         const wchar_t* text = L"<select><option>Volvo</option><option>Saab</option><option>Mercedes</option></select>";
         html_extract_text filter_html;
@@ -860,7 +860,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"\n\n\n\nVolvo\n\nSaab\n\nMercedes\n\n") == p);
         }
-    SECTION("UnorderedList")
+    SECTION("Unordered List")
         {
         const wchar_t* text = L"<ul><li>Volvo</li></ul>";
         html_extract_text filter_html;
@@ -870,7 +870,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"\n\n\n\tVolvo\n\n") == 0);
         }
-    SECTION("OrderedList")
+    SECTION("Ordered List")
         {
         const wchar_t* text = L"<ol><li>Volvo</li></ol>";
         html_extract_text filter_html;
@@ -880,7 +880,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"\n\n\n\tVolvo\n\n") == 0);
         }
-    SECTION("FindElement")
+    SECTION("Find Element")
         {
         const wchar_t* const text = L"<br />world<br ><br-eak><br><br>";
         const wchar_t* next = html_extract_text::find_element(text, text+wcslen(text), L"br", 2);
@@ -904,7 +904,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::find_element(text, nullptr, L"br", 2) == nullptr);
         CHECK(html_extract_text::find_element(text, text+wcslen(text), nullptr, 0) == nullptr);
         }
-    SECTION("FindClosingElement")
+    SECTION("Find Closing Element")
         {
         const wchar_t* const text = L" </br ></br eak></br></br>";
         const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"br", 2);
@@ -928,7 +928,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(html_extract_text::find_closing_element(text, nullptr, L"br", 2) == nullptr);
         CHECK(html_extract_text::find_closing_element(text, text+wcslen(text), nullptr, 0) == nullptr);
         }
-    SECTION("FindClosingElementOverlap")
+    SECTION("Find Closing Element Overlap")
         {
         const wchar_t* const text = L"<table>text<table>more text</table><br /> </table>";
         const wchar_t* next = html_extract_text::find_closing_element(text, text+wcslen(text), L"table", 5);
@@ -998,7 +998,7 @@ TEST_CASE("HTML Parser", "[html import]")
         [[maybe_unused]] const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wstring(L"Anthro. & Geo Studies") == filter_html.get_subject());
         }
-    SECTION("FilledWithNulls")
+    SECTION("Filled With Nulls")
         {
         html_extract_text filter_html;
         wchar_t* text = new wchar_t[101];
@@ -1008,7 +1008,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK(std::wcscmp(p, L"List.    (pane)") == 0);
         delete[] text;
         }
-    SECTION("CompareEntities")
+    SECTION("Compare Entities")
         {
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
         CHECK(html_extract_text::compare_element(text+1, L"sPaN", 4));
@@ -1016,7 +1016,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"sPaN", 4));
         CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4));
         }
-    SECTION("CompareEntitiesIgnoreTerminated")
+    SECTION("Compare Entities Ignore Terminated")
         {
         const wchar_t* text = L"<span/>List.<span><span /> \r\n <span  ";
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4, false));
@@ -1030,7 +1030,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element(text+19, L"span", 4, false));
         CHECK_FALSE(html_extract_text::compare_element(text+31, L"span", 4, false));
         }
-    SECTION("CompareEntitiesIgnoreTerminatedHasAtritubes")
+    SECTION("Compare Entities Ignore Terminated Has Atritubes")
         {
         const wchar_t* text = L"<span/>List.<span bg=\"red\"><span bg=\"red\"/> \r\n <span";
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"span", 4, false));
@@ -1044,7 +1044,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element(text+28, L"span", 4, false));
         CHECK_FALSE(html_extract_text::compare_element(text+48, L"span", 4, false));
         }
-    SECTION("CompareEntitiesNullAndEmpty")
+    SECTION("Compare Entities Null And Empty")
         {
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
         CHECK_FALSE(html_extract_text::compare_element(L"", L"sPaN", 4));
@@ -1056,7 +1056,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", 0));
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, nullptr, 0));
         }
-    SECTION("CompareEntitiesOneCharacter")
+    SECTION("Compare Entities One Character")
         {
         const wchar_t* text = L"<v>List.</v> \r\n (pane)";
         CHECK(html_extract_text::compare_element(text+1, L"V", 1));
@@ -1065,7 +1065,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text+1, L"V", 1));
         CHECK(html_extract_text::compare_element_case_sensitive(text+1, L"v", 1));
         }
-    SECTION("CompareEntitiesOneCharacterNullAndEmpty")
+    SECTION("Compare Entities One Character Null And Empty")
         {
         const wchar_t* text = L"<v>List.</v> \r\n (pane)";
         CHECK_FALSE(html_extract_text::compare_element(L"", L"v", 1));
@@ -1077,7 +1077,7 @@ TEST_CASE("HTML Parser", "[html import]")
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, L"", 0));
         CHECK_FALSE(html_extract_text::compare_element_case_sensitive(text, nullptr, 0));
         }
-    SECTION("NewLineRemoval")
+    SECTION("NewLine Removal")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<span>List.</span> \r\n (pane)";
@@ -1091,7 +1091,7 @@ TEST_CASE("HTML Parser", "[html import]")
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"Line\n\nLine2\n\nLine3") == 0);
         }
-    SECTION("IgnoreSoftHyphen")
+    SECTION("Ignore Soft Hyphen")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"inter&shy;ntional";
@@ -1106,7 +1106,7 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"interntional") == 0);
         }
-    SECTION("SymbolFont")
+    SECTION("Symbol Font")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<font face=\"symbol\">&amp;ABGDEZHQIKLMNXOPRSTUFCYWVJABGDEZHQIKLMNXOPRSTUFCYW</font><font face=\"Arial\">Some regular text.</font>";
@@ -1116,14 +1116,14 @@ TEST_CASE("HTML Parser", "[html import]")
         p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"&ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩςϑΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩSome regular text.") == 0);
         }
-    SECTION("SymbolSerifFont")
+    SECTION("Symbol Serif Font")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<font face=\"Symbol,Serif\">&amp;ABGDEZHQIKLMNXOPRSTUFCYWVJABGDEZHQIKLMNXOPRSTUFCYW</font><font face=\"Arial\">Some regular text.</font>";
         const wchar_t* p = filter_html(text, std::wcslen(text), true, false);
         CHECK(std::wcscmp(p, L"&ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩςϑΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩSome regular text.") == 0);
         }
-    SECTION("SymbolMath")
+    SECTION("Symbol Math")
         {
         html_extract_text filter_html;
         const wchar_t* text = L"<font face=\"Symbol,Serif\">£-­</font><font face=\"Arial\">Some regular text.</font>";
@@ -1144,18 +1144,18 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse2.get_base_url_length() == 0);
         }
 
-    SECTION("UrlEndNull")
+    SECTION("Url End Null")
         {
         CHECK(html_hyperlink_parse::find_url_end(nullptr) == nullptr);
         }
 
-    SECTION("UrlEnd")
+    SECTION("Url End")
         {
         const wchar_t* text = L"http://A&Pcompany.com?=a\'some text";
         CHECK(html_hyperlink_parse::find_url_end(text) == text+24);
         }
 
-    SECTION("HyperlinkImageMap")
+    SECTION("Hyperlink Image Map")
         {
         const wchar_t* text = L"<area shape=\"circle\" coords=\"171,156,6\" alt=\"\" href=\"www.mysite\">";
         html_hyperlink_parse parse(text, std::wcslen(text) );
@@ -1183,13 +1183,13 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse.get_current_hyperlink_length() == 0);
         }
 
-    SECTION("UrlEndNotFound")
+    SECTION("Url End Not Found")
         {
         const wchar_t* text = L"http://company.com?=a";
         CHECK(html_hyperlink_parse::find_url_end(text) == text+21);
         }
 
-    SECTION("BadLink")
+    SECTION("Bad Link")
         {
         const wchar_t* text = L"<A HREF=\"../company/success_stories/pdf/casestudy_gp_<i>STATISTICS Enterprise/QC</i>2.pdf\" target=_blank><IMG SRC=\"images/gp.gif\" WIDTH=130 HEIGHT=60 ALT=\"\" border=\"0\"></center></a>";
         html_hyperlink_parse parse(text, std::wcslen(text) );
@@ -1213,7 +1213,7 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("RedirectWithQuotes")
+    SECTION("Redirect With Quotes")
         {
         const wchar_t* text = L"<meta name=layout-width content=717><meta name=date content=\"06 12, 2001 2:34:12 PM\"><meta HTTP-EQUIV=REFRESH CONTENT=\"0;URL='Results.htm'\">";
         html_hyperlink_parse parse(text, std::wcslen(text) );
@@ -1222,7 +1222,7 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("RedirectMalformed")
+    SECTION("Redirect Malformed")
         {
         const wchar_t* text = L"<meta name=layout-width content=717><meta name=date content=\"06 12, 2001 2:34:12 PM\"><meta HTTP-EQUIV=REFRESH CONTENT=\"0;URL=Results.htm <a href=\"page.htm\">";
         html_hyperlink_parse parse(text, std::wcslen(text) );
@@ -1269,7 +1269,7 @@ TEST_CASE("Hyperlink Parser", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("HyperlinkAndScript")
+    SECTION("Hyperlink And Script")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\">image1.src = \"images/lblinkon.gif\";</Script><scripT type=\"text/javascript\">image1.src = \"images/lblinkon2.gif\";</Script><A hRef=\"www.page2.com\">page</a>";
         html_hyperlink_parse parse(text, std::wcslen(text) );
@@ -1330,64 +1330,64 @@ TEST_CASE("Html Url Format", "[html import]")
         CHECK(formatHtml.get_domain() == L"mycompany.com");
         CHECK(formatHtml.get_subdomain() == L"sales.mycompany.com");
         }
-    SECTION("AbsoluteLink")
+    SECTION("Absolute Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
         const wchar_t* p = formatHtml(L"http://blah.com/page.html", 25);
         CHECK(std::wcscmp(p, L"http://blah.com/page.html") == 0);
         }
-    SECTION("BaseDomainLink")
+    SECTION("Base Domain Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
         const wchar_t* p = formatHtml(L"/page.html", 10);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
-     SECTION("RelativeLink")
+     SECTION("Relative Link")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
         const wchar_t* p = formatHtml(L"page.html", 9);
         CHECK(std::wcscmp(p, L"http://mypage.com/blahblahblah/page.html") == 0);
         }
-    SECTION("RelativeLink2")
+    SECTION("Relative Link2")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/");
         const wchar_t* p = formatHtml(L"./page.html", 11);
         CHECK(std::wcscmp(p, L"http://mypage.com/blahblahblah/page.html") == 0);
         }
-    SECTION("RelativeLink3")
+    SECTION("Relative Link3")
         {
         html_url_format formatHtml(L"http://mypage.com/blahblahblah/index.html");
         const wchar_t* p = formatHtml(L"../page.html", 12);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
-    SECTION("RelativeLink4")
+    SECTION("Relative Link4")
         {
         html_url_format formatHtml(L"http://mypage.com/first/second/third/index.html");
         const wchar_t* p = formatHtml(L"../../../page.html#start", 18);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
-    SECTION("RelativeLinkBad")
+    SECTION("Relative Link Bad")
         {
         html_url_format formatHtml(L"http://mypage.com/");
         const wchar_t* p = formatHtml(L"../../../page.html#start", 18);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
-    SECTION("RelativeLinkBad2")
+    SECTION("Relative Link Bad2")
         {
         html_url_format formatHtml(L"http://mypage.com/");
         const wchar_t* p = formatHtml(L"../page.html#start", 12);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
-    SECTION("RelativeLinkBad3")
+    SECTION("Relative Link Bad3")
         {
         html_url_format formatHtml(L"http://mypage.com");
         const wchar_t* p = formatHtml(L"../page.html#start", 12);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
-    SECTION("QueryLink")
+    SECTION("Query Link")
         {
         html_url_format formatHtml(L"http://mypage.com/query.php?blah");
         const wchar_t* p = formatHtml(L"page.html", 9);
@@ -1395,24 +1395,24 @@ TEST_CASE("Html Url Format", "[html import]")
         p = formatHtml(L"?page.html", 10);
         CHECK(std::wcscmp(p, L"http://mypage.com/query.php?page.html") == 0);
         }
-    SECTION("BookmarkLink")
+    SECTION("Bookmark Link")
         {
         html_url_format formatHtml(L"http://mypage.com/");
         const wchar_t* p = formatHtml(L"page.html#blah", 14);
         CHECK(std::wcscmp(p, L"http://mypage.com/page.html") == 0);
         }
-    SECTION("GetDomain")
+    SECTION("Get Domain")
         {
         html_url_format formatHtml(L"http://pages.mypage.com/blah/blah");
         CHECK(formatHtml.get_full_domain() == L"http://pages.mypage.com");
         CHECK(formatHtml.get_domain() == L"mypage.com");
         }
-    SECTION("GetDirectoryPath")
+    SECTION("Get Directory Path")
         {
         html_url_format formatHtml(L"http://mypage.com/blah/blah.html");
         CHECK(formatHtml.get_directory_path() == L"mypage.com/blah");
         }
-    SECTION("GetDirectoryPathWithSubDomain")
+    SECTION("Get Directory Path With Subdomain")
         {
         html_url_format formatHtml(L"http://business.mypage.com/blah/blah.html");
         CHECK(formatHtml.get_directory_path() == L"business.mypage.com/blah");
@@ -1423,7 +1423,7 @@ TEST_CASE("Html Url Format", "[html import]")
         const wchar_t* p = formatHtml(L"page.html", 9);
         CHECK(std::wcscmp(p, L"www.mypage.com/page.html") == 0);
         }
-    SECTION("UrlImageParse")
+    SECTION("Url Image Parse")
         {
         html_url_format formatHtml(L"");
         CHECK(formatHtml.parse_image_name_from_url(L"www.mypage.com?Image=hi.jpg&loc=location") == L"hi.jpg");
@@ -1433,7 +1433,7 @@ TEST_CASE("Html Url Format", "[html import]")
         CHECK(formatHtml.parse_image_name_from_url(L"") == L"");
         CHECK(formatHtml.parse_image_name_from_url(nullptr) == L"");
         }
-    SECTION("UrlTLDParse")
+    SECTION("Url TLD Parse")
         {
         html_url_format formatHtml(L"");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"") == L"");
@@ -1446,7 +1446,7 @@ TEST_CASE("Html Url Format", "[html import]")
         CHECK(formatHtml.parse_top_level_domain_from_url(L"www.mypage") == L"");
         CHECK(formatHtml.parse_top_level_domain_from_url(L"www.mypage.") == L"");
         }
-    SECTION("IsUrlTLDParse")
+    SECTION("Is Url TLD Parse")
         {
         html_url_format formatHtml(L"");
         CHECK(formatHtml.is_url_top_level_domain(L"") == false);
@@ -1483,7 +1483,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImageMalformedSRC")
+    SECTION("Image Malformed SRC")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg SRc =\"image.png\">picture</img><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1496,7 +1496,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImageWithSpaces")
+    SECTION("Image With Spaces")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg SRc=\"my image.png\">picture</img><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1509,7 +1509,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImageWithExtraSpaces")
+    SECTION("Image With Extra Spaces")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg SRc=image.png  >picture</img><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1522,7 +1522,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImageWithSlash")
+    SECTION("Image With Slash")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg SRc=\"images/image.png\">picture</img><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1535,7 +1535,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImageWithTerminatingSlash")
+    SECTION("Image With Terminating Slash")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg SRc=\"images/image.png\"/><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1564,7 +1564,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("ImagesAltTags")
+    SECTION("Images Alt Tags")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg alt=\"sometext\" SrC=image.png>picture</img><a href=\'404\'>404</A> <img src=mypic.jpg></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1580,7 +1580,7 @@ TEST_CASE("Html Image Parse", "[html import]")
         CHECK(parse() == nullptr);
         }
 
-    SECTION("NoImages")
+    SECTION("No Images")
         {
         const wchar_t* text = L"<heAD><baSE hrEf=\"www.mysite\"></base></HEAD> Hello <A hRef=\"www.page.com\">page</a> some text <iMg>picture</img><a href=\'404\'>404</A> <img></img><a href=\"\"></a> <a href=></a><scripT type=\"text/javascript\" sRC=\"/scripts/statmenu4.js\"></Script>";
         html_image_parse parse(text, std::wcslen(text) );
@@ -1648,7 +1648,7 @@ TEST_CASE("HTML Link Strip", "[html import]")
         CHECK(std::wcscmp(strip(text,std::wcslen(text)), expected) == 0);
         CHECK(strip.get_filtered_text_length() == std::wcslen(expected));
         }
-    SECTION("NoLinks")
+    SECTION("No Links")
         {
         const wchar_t* text = L"Hello <b>there</b>! some text!";
         html_strip_hyperlinks strip;
@@ -1657,7 +1657,7 @@ TEST_CASE("HTML Link Strip", "[html import]")
         CHECK(std::wcscmp(strip(text,std::wcslen(text)), expected) == 0);
         CHECK(strip.get_filtered_text_length() == std::wcslen(expected));
         }
-    SECTION("AllLinks")
+    SECTION("All Links")
         {
         const wchar_t* text = L"<A hRef=\"www.page.com\"></a><a></a>";
         html_strip_hyperlinks strip;

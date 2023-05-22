@@ -9,6 +9,7 @@
 #include "html_extract_text.h"
 
 using namespace string_util;
+using namespace lily_of_the_valley;
 
 namespace lily_of_the_valley
     {
@@ -215,7 +216,8 @@ namespace lily_of_the_valley
                                     // (incorrect encoding in the HTML maybe)
                                     else
                                         {
-                                        log_message(L"Invalid numeric HTML entity: "+std::wstring(text+index, (semicolon+1)-(text+index)));
+                                        log_message(L"Invalid numeric HTML entity: " +
+                                                    std::wstring(text+index, (semicolon+1)-(text+index)));
                                         add_characters(text+index, (semicolon+1)-(text+index));
                                         }
                                     }
@@ -223,14 +225,18 @@ namespace lily_of_the_valley
                             // look up named entities, such as "amp" or "nbsp"
                             else
                                 {
-                                const wchar_t value = HTML_TABLE_LOOKUP.find(text+index+1, semicolon-(text+index+1));
+                                const wchar_t value = 
+                                    HTML_TABLE_LOOKUP.find(
+                                        { text + index + 1, static_cast<size_t>(semicolon - (text + index + 1)) });
                                 if (value != 173) // soft hyphens should just be stripped out
                                     {
                                     // Missing semicolon and not a valid entity?
-                                    // Must be an unencoded ampersand with a letter right next to it, so just copy that over.
+                                    // Must be an unencoded ampersand with a letter right next to it,
+                                    // so just copy that over.
                                     if (value == L'?' && semicolon[0] != L';')
                                         {
-                                        log_message(L"Unencoded ampersand or unknown HTML entity: "+std::wstring(text+index, semicolon-(text+index)));
+                                        log_message(L"Unencoded ampersand or unknown HTML entity: " +
+                                                    std::wstring(text+index, semicolon-(text+index)));
                                         add_characters(text+index, (semicolon-(text+index)+1) );
                                         }
                                     else
@@ -242,15 +248,20 @@ namespace lily_of_the_valley
                                             value == L'&')
                                             {
                                             const wchar_t* nextTerminator = semicolon+1;
-                                            while (!iswspace(*nextTerminator) && *nextTerminator != L';' &&
+                                            while (!std::iswspace(*nextTerminator) && *nextTerminator != L';' &&
                                                     nextTerminator < (text+textSize))
                                                 { ++nextTerminator; }
                                             if (nextTerminator < (text+textSize) && *nextTerminator == L';')
                                                 {
-                                                const wchar_t badlyEncodedEntity = HTML_TABLE_LOOKUP.find(semicolon+1, nextTerminator-(semicolon+1));
+                                                const wchar_t badlyEncodedEntity =
+                                                    HTML_TABLE_LOOKUP.find(
+                                                        { semicolon + 1,
+                                                          static_cast<size_t>(nextTerminator - (semicolon + 1)) });
                                                 if (badlyEncodedEntity != L'?')
                                                     {
-                                                    log_message(L"Ampersand incorrectly encoded in HTML entity: "+std::wstring(text+index, (nextTerminator-(text+index))+1));
+                                                    log_message(L"Ampersand incorrectly encoded in HTML entity: " +
+                                                                std::wstring(text+index,
+                                                                             (nextTerminator - (text+index))+1));
                                                     leadingAmpersandEncodedCorrectly = false;
                                                     semicolon = nextTerminator;
                                                     add_character(badlyEncodedEntity);
@@ -262,13 +273,15 @@ namespace lily_of_the_valley
                                             {
                                             add_character(value);
                                             if (value == L'?')
-                                                { log_message(L"Unknown HTML entity: "+std::wstring(text+index, semicolon-(text+index))); }
+                                                { log_message(L"Unknown HTML entity: " +
+                                                              std::wstring(text+index, semicolon - (text+index))); }
                                             // Entity not correctly terminated by a semicolon.
                                             // Here we will copy over the converted entity and trailing character
                                             // (a space or newline).
                                             if (semicolon[0] != L';')
                                                 {
-                                                log_message(L"Missing semicolon on HTML entity: "+std::wstring(text+index, semicolon-(text+index)));
+                                                log_message(L"Missing semicolon on HTML entity: " +
+                                                            std::wstring(text+index, semicolon - (text+index)));
                                                 add_character(semicolon[0]);
                                                 }
                                             }
@@ -801,14 +814,14 @@ namespace lily_of_the_valley
             // if it's a meta element
             else if (currentElement == L"meta")
                 {
-                const std::wstring metaName = lily_of_the_valley::html_extract_text::read_attribute_as_string(start,
+                const std::wstring metaName = html_extract_text::read_attribute_as_string(start,
                         L"name", 4, false);
                 auto closeTag = find_close_tag(start);
                 if (!closeTag)
                     { break; }
                 if (string_util::stricmp(metaName.c_str(), L"author") == 0)
                     {
-                    m_author = lily_of_the_valley::html_extract_text::read_attribute_as_string(start,
+                    m_author = html_extract_text::read_attribute_as_string(start,
                         L"content", 7, false, true);
                     html_extract_text valueParser;
                     auto author = valueParser(m_author.c_str(), m_author.length(), true, false);
@@ -821,7 +834,7 @@ namespace lily_of_the_valley
                     }
                 else if (string_util::stricmp(metaName.c_str(), L"description") == 0)
                     {
-                    m_description = lily_of_the_valley::html_extract_text::read_attribute_as_string(start,
+                    m_description = html_extract_text::read_attribute_as_string(start,
                         L"content", 7, false, true);
                     html_extract_text valueParser;
                     auto description = valueParser(m_description.c_str(), m_description.length(), true, false);
@@ -834,7 +847,7 @@ namespace lily_of_the_valley
                     }
                 else if (string_util::stricmp(metaName.c_str(), L"keywords") == 0)
                     {
-                    m_keywords = lily_of_the_valley::html_extract_text::read_attribute_as_string(start,
+                    m_keywords = html_extract_text::read_attribute_as_string(start,
                         L"content", 7, false, true);
                     html_extract_text valueParser;
                     auto keywords = valueParser(m_keywords.c_str(), m_keywords.length(), true, false);
@@ -1447,7 +1460,7 @@ namespace html_utilities
         const wchar_t* currentPos = html_text, *lastEnd = html_text;
         while (currentPos && (currentPos < endSentinel))
             {
-            currentPos = lily_of_the_valley::html_extract_text::find_element(currentPos, endSentinel, L"a", 1, true);
+            currentPos = html_extract_text::find_element(currentPos, endSentinel, L"a", 1, true);
             // no more anchors, so just copy over the rest of the text and quit.
             if (!currentPos || currentPos >= endSentinel)
                 {
@@ -1455,7 +1468,7 @@ namespace html_utilities
                 break;
                 }
             // if this is actually a bookmark, then we need to start over (looking for the next <a>).
-            if (lily_of_the_valley::html_extract_text::find_tag(currentPos, L"name", 4, false))
+            if (html_extract_text::find_tag(currentPos, L"name", 4, false))
                 {
                 currentPos += 2;
                 continue;
@@ -1463,18 +1476,18 @@ namespace html_utilities
             // next <a> found, so copy over all of the text before it,
             // then move over to the end of this element.
             add_characters(lastEnd, currentPos-lastEnd);
-            currentPos = lily_of_the_valley::html_extract_text::find_close_tag(currentPos);
+            currentPos = html_extract_text::find_close_tag(currentPos);
             if (!currentPos || currentPos >= endSentinel)
                 { break; }
             lastEnd = currentPos+1;
             // ...Now, find the matching </a> and copy over the text between that and the previous <a>.
             // Note that nested <a> would be very incorrect HTML, so we will safely assume that there aren't any.
-            currentPos = lily_of_the_valley::html_extract_text::find_closing_element(currentPos, endSentinel, L"a", 1);
+            currentPos = html_extract_text::find_closing_element(currentPos, endSentinel, L"a", 1);
             if (!currentPos || currentPos >= endSentinel)
                 { break; }
             add_characters(lastEnd, currentPos-lastEnd);
             // ...finally, find the close of this </a>, move to that, and start over again looking for the next <a>
-            currentPos = lily_of_the_valley::html_extract_text::find_close_tag(currentPos);
+            currentPos = html_extract_text::find_close_tag(currentPos);
             if (!currentPos || currentPos >= endSentinel)
                 { break; }
             lastEnd = currentPos+1;
@@ -1641,270 +1654,270 @@ namespace html_utilities
         // cppcheck-suppress useInitializationList
         m_table =
             {
-            std::make_pair(std::wstring(L"apos"), static_cast<wchar_t>(L'\'')), // not standard, but common
-            std::make_pair(std::wstring(L"gt"), static_cast<wchar_t>(L'>')),
-            std::make_pair(std::wstring(L"lt"), static_cast<wchar_t>(L'<')),
-            std::make_pair(std::wstring(L"amp"), static_cast<wchar_t>(L'&')),
-            std::make_pair(std::wstring(L"quot"), static_cast<wchar_t>(L'"')),
-            std::make_pair(std::wstring(L"nbsp"), static_cast<wchar_t>(L' ')),
-            std::make_pair(std::wstring(L"iexcl"), static_cast<wchar_t>(161)),
-            std::make_pair(std::wstring(L"cent"), static_cast<wchar_t>(162)),
-            std::make_pair(std::wstring(L"pound"), static_cast<wchar_t>(163)),
-            std::make_pair(std::wstring(L"curren"), static_cast<wchar_t>(164)),
-            std::make_pair(std::wstring(L"yen"), static_cast<wchar_t>(165)),
-            std::make_pair(std::wstring(L"brvbar"), static_cast<wchar_t>(166)),
-            std::make_pair(std::wstring(L"sect"), static_cast<wchar_t>(167)),
-            std::make_pair(std::wstring(L"uml"), static_cast<wchar_t>(168)),
-            std::make_pair(std::wstring(L"copy"), static_cast<wchar_t>(169)),
-            std::make_pair(std::wstring(L"ordf"), static_cast<wchar_t>(170)),
-            std::make_pair(std::wstring(L"laquo"), static_cast<wchar_t>(171)),
-            std::make_pair(std::wstring(L"not"), static_cast<wchar_t>(172)),
-            std::make_pair(std::wstring(L"shy"), static_cast<wchar_t>(173)),
-            std::make_pair(std::wstring(L"reg"), static_cast<wchar_t>(174)),
-            std::make_pair(std::wstring(L"macr"), static_cast<wchar_t>(175)),
-            std::make_pair(std::wstring(L"deg"), static_cast<wchar_t>(176)),
-            std::make_pair(std::wstring(L"plusmn"), static_cast<wchar_t>(177)),
-            std::make_pair(std::wstring(L"sup2"), static_cast<wchar_t>(178)),
-            std::make_pair(std::wstring(L"sup3"), static_cast<wchar_t>(179)),
-            std::make_pair(std::wstring(L"acute"), static_cast<wchar_t>(180)),
-            std::make_pair(std::wstring(L"micro"), static_cast<wchar_t>(181)),
-            std::make_pair(std::wstring(L"para"), static_cast<wchar_t>(182)),
-            std::make_pair(std::wstring(L"middot"), static_cast<wchar_t>(183)),
-            std::make_pair(std::wstring(L"mcedilicro"), static_cast<wchar_t>(184)),
-            std::make_pair(std::wstring(L"sup1"), static_cast<wchar_t>(185)),
-            std::make_pair(std::wstring(L"ordm"), static_cast<wchar_t>(186)),
-            std::make_pair(std::wstring(L"raquo"), static_cast<wchar_t>(187)),
-            std::make_pair(std::wstring(L"frac14"), static_cast<wchar_t>(188)),
-            std::make_pair(std::wstring(L"texfrac12t"), static_cast<wchar_t>(189)),
-            std::make_pair(std::wstring(L"frac34"), static_cast<wchar_t>(190)),
-            std::make_pair(std::wstring(L"iquest"), static_cast<wchar_t>(191)),
-            std::make_pair(std::wstring(L"Agrave"), static_cast<wchar_t>(192)),
-            std::make_pair(std::wstring(L"Aacute"), static_cast<wchar_t>(193)),
-            std::make_pair(std::wstring(L"Acirc"), static_cast<wchar_t>(194)),
-            std::make_pair(std::wstring(L"Atilde"), static_cast<wchar_t>(195)),
-            std::make_pair(std::wstring(L"Auml"), static_cast<wchar_t>(196)),
-            std::make_pair(std::wstring(L"Aring"), static_cast<wchar_t>(197)),
-            std::make_pair(std::wstring(L"AElig"), static_cast<wchar_t>(198)),
-            std::make_pair(std::wstring(L"Ccedil"), static_cast<wchar_t>(199)),
-            std::make_pair(std::wstring(L"Egrave"), static_cast<wchar_t>(200)),
-            std::make_pair(std::wstring(L"Eacute"), static_cast<wchar_t>(201)),
-            std::make_pair(std::wstring(L"Ecirc"), static_cast<wchar_t>(202)),
-            std::make_pair(std::wstring(L"Euml"), static_cast<wchar_t>(203)),
-            std::make_pair(std::wstring(L"Igrave"), static_cast<wchar_t>(204)),
-            std::make_pair(std::wstring(L"Iacute"), static_cast<wchar_t>(205)),
-            std::make_pair(std::wstring(L"Icirc"), static_cast<wchar_t>(206)),
-            std::make_pair(std::wstring(L"Iuml"), static_cast<wchar_t>(207)),
-            std::make_pair(std::wstring(L"ETH"), static_cast<wchar_t>(208)),
-            std::make_pair(std::wstring(L"Ntilde"), static_cast<wchar_t>(209)),
-            std::make_pair(std::wstring(L"Ograve"), static_cast<wchar_t>(210)),
-            std::make_pair(std::wstring(L"Oacute"), static_cast<wchar_t>(211)),
-            std::make_pair(std::wstring(L"Ocirc"), static_cast<wchar_t>(212)),
-            std::make_pair(std::wstring(L"Otilde"), static_cast<wchar_t>(213)),
-            std::make_pair(std::wstring(L"Ouml"), static_cast<wchar_t>(214)),
-            std::make_pair(std::wstring(L"Oslash"), static_cast<wchar_t>(216)),
-            std::make_pair(std::wstring(L"times"), static_cast<wchar_t>(215)),
-            std::make_pair(std::wstring(L"Ugrave"), static_cast<wchar_t>(217)),
-            std::make_pair(std::wstring(L"Uacute"), static_cast<wchar_t>(218)),
-            std::make_pair(std::wstring(L"Ucirc"), static_cast<wchar_t>(219)),
-            std::make_pair(std::wstring(L"Uuml"), static_cast<wchar_t>(220)),
-            std::make_pair(std::wstring(L"Yacute"), static_cast<wchar_t>(221)),
-            std::make_pair(std::wstring(L"THORN"), static_cast<wchar_t>(222)),
-            std::make_pair(std::wstring(L"szlig"), static_cast<wchar_t>(223)),
-            std::make_pair(std::wstring(L"agrave"), static_cast<wchar_t>(224)),
-            std::make_pair(std::wstring(L"aacute"), static_cast<wchar_t>(225)),
-            std::make_pair(std::wstring(L"acirc"), static_cast<wchar_t>(226)),
-            std::make_pair(std::wstring(L"atilde"), static_cast<wchar_t>(227)),
-            std::make_pair(std::wstring(L"auml"), static_cast<wchar_t>(228)),
-            std::make_pair(std::wstring(L"aring"), static_cast<wchar_t>(229)),
-            std::make_pair(std::wstring(L"aelig"), static_cast<wchar_t>(230)),
-            std::make_pair(std::wstring(L"ccedil"), static_cast<wchar_t>(231)),
-            std::make_pair(std::wstring(L"egrave"), static_cast<wchar_t>(232)),
-            std::make_pair(std::wstring(L"eacute"), static_cast<wchar_t>(233)),
-            std::make_pair(std::wstring(L"ecirc"), static_cast<wchar_t>(234)),
-            std::make_pair(std::wstring(L"euml"), static_cast<wchar_t>(235)),
-            std::make_pair(std::wstring(L"igrave"), static_cast<wchar_t>(236)),
-            std::make_pair(std::wstring(L"iacute"), static_cast<wchar_t>(237)),
-            std::make_pair(std::wstring(L"icirc"), static_cast<wchar_t>(238)),
-            std::make_pair(std::wstring(L"iuml"), static_cast<wchar_t>(239)),
-            std::make_pair(std::wstring(L"eth"), static_cast<wchar_t>(240)),
-            std::make_pair(std::wstring(L"ntilde"), static_cast<wchar_t>(241)),
-            std::make_pair(std::wstring(L"ograve"), static_cast<wchar_t>(242)),
-            std::make_pair(std::wstring(L"oacute"), static_cast<wchar_t>(243)),
-            std::make_pair(std::wstring(L"ocirc"), static_cast<wchar_t>(244)),
-            std::make_pair(std::wstring(L"otilde"), static_cast<wchar_t>(245)),
-            std::make_pair(std::wstring(L"ouml"), static_cast<wchar_t>(246)),
-            std::make_pair(std::wstring(L"divide"), static_cast<wchar_t>(247)),
-            std::make_pair(std::wstring(L"oslash"), static_cast<wchar_t>(248)),
-            std::make_pair(std::wstring(L"ugrave"), static_cast<wchar_t>(249)),
-            std::make_pair(std::wstring(L"uacute"), static_cast<wchar_t>(250)),
-            std::make_pair(std::wstring(L"ucirc"), static_cast<wchar_t>(251)),
-            std::make_pair(std::wstring(L"uuml"), static_cast<wchar_t>(252)),
-            std::make_pair(std::wstring(L"yacute"), static_cast<wchar_t>(253)),
-            std::make_pair(std::wstring(L"thorn"), static_cast<wchar_t>(254)),
-            std::make_pair(std::wstring(L"yuml"), static_cast<wchar_t>(255)),
-            std::make_pair(std::wstring(L"fnof"), static_cast<wchar_t>(402)),
-            std::make_pair(std::wstring(L"Alpha"), static_cast<wchar_t>(913)),
-            std::make_pair(std::wstring(L"Beta"), static_cast<wchar_t>(914)),
-            std::make_pair(std::wstring(L"Gamma"), static_cast<wchar_t>(915)),
-            std::make_pair(std::wstring(L"Delta"), static_cast<wchar_t>(916)),
-            std::make_pair(std::wstring(L"Epsilon"), static_cast<wchar_t>(917)),
-            std::make_pair(std::wstring(L"Zeta"), static_cast<wchar_t>(918)),
-            std::make_pair(std::wstring(L"Eta"), static_cast<wchar_t>(919)),
-            std::make_pair(std::wstring(L"Theta"), static_cast<wchar_t>(920)),
-            std::make_pair(std::wstring(L"Iota"), static_cast<wchar_t>(921)),
-            std::make_pair(std::wstring(L"Kappa"), static_cast<wchar_t>(922)),
-            std::make_pair(std::wstring(L"Lambda"), static_cast<wchar_t>(923)),
-            std::make_pair(std::wstring(L"Mu"), static_cast<wchar_t>(924)),
-            std::make_pair(std::wstring(L"Nu"), static_cast<wchar_t>(925)),
-            std::make_pair(std::wstring(L"Xi"), static_cast<wchar_t>(926)),
-            std::make_pair(std::wstring(L"Omicron"), static_cast<wchar_t>(927)),
-            std::make_pair(std::wstring(L"Pi"), static_cast<wchar_t>(928)),
-            std::make_pair(std::wstring(L"Rho"), static_cast<wchar_t>(929)),
-            std::make_pair(std::wstring(L"Sigma"), static_cast<wchar_t>(931)),
-            std::make_pair(std::wstring(L"Tau"), static_cast<wchar_t>(932)),
-            std::make_pair(std::wstring(L"Upsilon"), static_cast<wchar_t>(933)),
-            std::make_pair(std::wstring(L"Phi"), static_cast<wchar_t>(934)),
-            std::make_pair(std::wstring(L"Chi"), static_cast<wchar_t>(935)),
-            std::make_pair(std::wstring(L"Psi"), static_cast<wchar_t>(936)),
-            std::make_pair(std::wstring(L"Omega"), static_cast<wchar_t>(937)),
-            std::make_pair(std::wstring(L"alpha"), static_cast<wchar_t>(945)),
-            std::make_pair(std::wstring(L"beta"), static_cast<wchar_t>(946)),
-            std::make_pair(std::wstring(L"gamma"), static_cast<wchar_t>(947)),
-            std::make_pair(std::wstring(L"delta"), static_cast<wchar_t>(948)),
-            std::make_pair(std::wstring(L"epsilon"), static_cast<wchar_t>(949)),
-            std::make_pair(std::wstring(L"zeta"), static_cast<wchar_t>(950)),
-            std::make_pair(std::wstring(L"eta"), static_cast<wchar_t>(951)),
-            std::make_pair(std::wstring(L"theta"), static_cast<wchar_t>(952)),
-            std::make_pair(std::wstring(L"iota"), static_cast<wchar_t>(953)),
-            std::make_pair(std::wstring(L"kappa"), static_cast<wchar_t>(954)),
-            std::make_pair(std::wstring(L"lambda"), static_cast<wchar_t>(955)),
-            std::make_pair(std::wstring(L"mu"), static_cast<wchar_t>(956)),
-            std::make_pair(std::wstring(L"nu"), static_cast<wchar_t>(957)),
-            std::make_pair(std::wstring(L"xi"), static_cast<wchar_t>(958)),
-            std::make_pair(std::wstring(L"omicron"), static_cast<wchar_t>(959)),
-            std::make_pair(std::wstring(L"pi"), static_cast<wchar_t>(960)),
-            std::make_pair(std::wstring(L"rho"), static_cast<wchar_t>(961)),
-            std::make_pair(std::wstring(L"sigmaf"), static_cast<wchar_t>(962)),
-            std::make_pair(std::wstring(L"sigma"), static_cast<wchar_t>(963)),
-            std::make_pair(std::wstring(L"tau"), static_cast<wchar_t>(964)),
-            std::make_pair(std::wstring(L"upsilon"), static_cast<wchar_t>(965)),
-            std::make_pair(std::wstring(L"phi"), static_cast<wchar_t>(966)),
-            std::make_pair(std::wstring(L"chi"), static_cast<wchar_t>(967)),
-            std::make_pair(std::wstring(L"psi"), static_cast<wchar_t>(968)),
-            std::make_pair(std::wstring(L"omega"), static_cast<wchar_t>(969)),
-            std::make_pair(std::wstring(L"thetasym"), static_cast<wchar_t>(977)),
-            std::make_pair(std::wstring(L"upsih"), static_cast<wchar_t>(978)),
-            std::make_pair(std::wstring(L"piv"), static_cast<wchar_t>(982)),
-            std::make_pair(std::wstring(L"bull"), static_cast<wchar_t>(8226)),
-            std::make_pair(std::wstring(L"hellip"), static_cast<wchar_t>(8230)),
-            std::make_pair(std::wstring(L"prime"), static_cast<wchar_t>(8242)),
-            std::make_pair(std::wstring(L"Prime"), static_cast<wchar_t>(8243)),
-            std::make_pair(std::wstring(L"oline"), static_cast<wchar_t>(8254)),
-            std::make_pair(std::wstring(L"frasl"), static_cast<wchar_t>(8260)),
-            std::make_pair(std::wstring(L"weierp"), static_cast<wchar_t>(8472)),
-            std::make_pair(std::wstring(L"image"), static_cast<wchar_t>(8465)),
-            std::make_pair(std::wstring(L"real"), static_cast<wchar_t>(8476)),
-            std::make_pair(std::wstring(L"trade"), static_cast<wchar_t>(8482)),
-            std::make_pair(std::wstring(L"alefsym"), static_cast<wchar_t>(8501)),
-            std::make_pair(std::wstring(L"larr"), static_cast<wchar_t>(8592)),
-            std::make_pair(std::wstring(L"uarr"), static_cast<wchar_t>(8593)),
-            std::make_pair(std::wstring(L"rarr"), static_cast<wchar_t>(8594)),
-            std::make_pair(std::wstring(L"darr"), static_cast<wchar_t>(8595)),
-            std::make_pair(std::wstring(L"harr"), static_cast<wchar_t>(8596)),
-            std::make_pair(std::wstring(L"crarr"), static_cast<wchar_t>(8629)),
-            std::make_pair(std::wstring(L"lArr"), static_cast<wchar_t>(8656)),
-            std::make_pair(std::wstring(L"uArr"), static_cast<wchar_t>(8657)),
-            std::make_pair(std::wstring(L"rArr"), static_cast<wchar_t>(8658)),
-            std::make_pair(std::wstring(L"dArr"), static_cast<wchar_t>(8659)),
-            std::make_pair(std::wstring(L"hArr"), static_cast<wchar_t>(8660)),
-            std::make_pair(std::wstring(L"forall"), static_cast<wchar_t>(8704)),
-            std::make_pair(std::wstring(L"part"), static_cast<wchar_t>(8706)),
-            std::make_pair(std::wstring(L"exist"), static_cast<wchar_t>(8707)),
-            std::make_pair(std::wstring(L"empty"), static_cast<wchar_t>(8709)),
-            std::make_pair(std::wstring(L"nabla"), static_cast<wchar_t>(8711)),
-            std::make_pair(std::wstring(L"isin"), static_cast<wchar_t>(8712)),
-            std::make_pair(std::wstring(L"notin"), static_cast<wchar_t>(8713)),
-            std::make_pair(std::wstring(L"ni"), static_cast<wchar_t>(8715)),
-            std::make_pair(std::wstring(L"prod"), static_cast<wchar_t>(8719)),
-            std::make_pair(std::wstring(L"sum"), static_cast<wchar_t>(8721)),
-            std::make_pair(std::wstring(L"minus"), static_cast<wchar_t>(8722)),
-            std::make_pair(std::wstring(L"lowast"), static_cast<wchar_t>(8727)),
-            std::make_pair(std::wstring(L"radic"), static_cast<wchar_t>(8730)),
-            std::make_pair(std::wstring(L"prop"), static_cast<wchar_t>(8733)),
-            std::make_pair(std::wstring(L"infin"), static_cast<wchar_t>(8734)),
-            std::make_pair(std::wstring(L"ang"), static_cast<wchar_t>(8736)),
-            std::make_pair(std::wstring(L"and"), static_cast<wchar_t>(8743)),
-            std::make_pair(std::wstring(L"or"), static_cast<wchar_t>(8744)),
-            std::make_pair(std::wstring(L"cap"), static_cast<wchar_t>(8745)),
-            std::make_pair(std::wstring(L"cup"), static_cast<wchar_t>(8746)),
-            std::make_pair(std::wstring(L"int"), static_cast<wchar_t>(8747)),
-            std::make_pair(std::wstring(L"there4"), static_cast<wchar_t>(8756)),
-            std::make_pair(std::wstring(L"sim"), static_cast<wchar_t>(8764)),
-            std::make_pair(std::wstring(L"cong"), static_cast<wchar_t>(8773)),
-            std::make_pair(std::wstring(L"asymp"), static_cast<wchar_t>(8776)),
-            std::make_pair(std::wstring(L"ne"), static_cast<wchar_t>(8800)),
-            std::make_pair(std::wstring(L"equiv"), static_cast<wchar_t>(8801)),
-            std::make_pair(std::wstring(L"le"), static_cast<wchar_t>(8804)),
-            std::make_pair(std::wstring(L"ge"), static_cast<wchar_t>(8805)),
-            std::make_pair(std::wstring(L"sub"), static_cast<wchar_t>(8834)),
-            std::make_pair(std::wstring(L"sup"), static_cast<wchar_t>(8835)),
-            std::make_pair(std::wstring(L"nsub"), static_cast<wchar_t>(8836)),
-            std::make_pair(std::wstring(L"sube"), static_cast<wchar_t>(8838)),
-            std::make_pair(std::wstring(L"supe"), static_cast<wchar_t>(8839)),
-            std::make_pair(std::wstring(L"oplus"), static_cast<wchar_t>(8853)),
-            std::make_pair(std::wstring(L"otimes"), static_cast<wchar_t>(8855)),
-            std::make_pair(std::wstring(L"perp"), static_cast<wchar_t>(8869)),
-            std::make_pair(std::wstring(L"sdot"), static_cast<wchar_t>(8901)),
-            std::make_pair(std::wstring(L"lceil"), static_cast<wchar_t>(8968)),
-            std::make_pair(std::wstring(L"rceil"), static_cast<wchar_t>(8969)),
-            std::make_pair(std::wstring(L"lfloor"), static_cast<wchar_t>(8970)),
-            std::make_pair(std::wstring(L"rfloor"), static_cast<wchar_t>(8971)),
-            std::make_pair(std::wstring(L"lang"), static_cast<wchar_t>(9001)),
-            std::make_pair(std::wstring(L"rang"), static_cast<wchar_t>(9002)),
-            std::make_pair(std::wstring(L"loz"), static_cast<wchar_t>(9674)),
-            std::make_pair(std::wstring(L"spades"), static_cast<wchar_t>(9824)),
-            std::make_pair(std::wstring(L"clubs"), static_cast<wchar_t>(9827)),
-            std::make_pair(std::wstring(L"hearts"), static_cast<wchar_t>(9829)),
-            std::make_pair(std::wstring(L"diams"), static_cast<wchar_t>(9830)),
-            std::make_pair(std::wstring(L"OElig"), static_cast<wchar_t>(338)),
-            std::make_pair(std::wstring(L"oelig"), static_cast<wchar_t>(339)),
-            std::make_pair(std::wstring(L"Scaron"), static_cast<wchar_t>(352)),
-            std::make_pair(std::wstring(L"scaron"), static_cast<wchar_t>(353)),
-            std::make_pair(std::wstring(L"Yuml"), static_cast<wchar_t>(376)),
-            std::make_pair(std::wstring(L"circ"), static_cast<wchar_t>(710)),
-            std::make_pair(std::wstring(L"tilde"), static_cast<wchar_t>(732)),
-            std::make_pair(std::wstring(L"ensp"), static_cast<wchar_t>(8194)),
-            std::make_pair(std::wstring(L"emsp"), static_cast<wchar_t>(8195)),
-            std::make_pair(std::wstring(L"thinsp"), static_cast<wchar_t>(8201)),
-            std::make_pair(std::wstring(L"zwnj"), static_cast<wchar_t>(8204)),
-            std::make_pair(std::wstring(L"zwj"), static_cast<wchar_t>(8205)),
-            std::make_pair(std::wstring(L"lrm"), static_cast<wchar_t>(8206)),
-            std::make_pair(std::wstring(L"rlm"), static_cast<wchar_t>(8207)),
-            std::make_pair(std::wstring(L"ndash"), static_cast<wchar_t>(8211)),
-            std::make_pair(std::wstring(L"mdash"), static_cast<wchar_t>(8212)),
-            std::make_pair(std::wstring(L"lsquo"), static_cast<wchar_t>(8216)),
-            std::make_pair(std::wstring(L"rsquo"), static_cast<wchar_t>(8217)),
-            std::make_pair(std::wstring(L"sbquo"), static_cast<wchar_t>(8218)),
-            std::make_pair(std::wstring(L"ldquo"), static_cast<wchar_t>(8220)),
-            std::make_pair(std::wstring(L"rdquo"), static_cast<wchar_t>(8221)),
-            std::make_pair(std::wstring(L"bdquo"), static_cast<wchar_t>(8222)),
-            std::make_pair(std::wstring(L"dagger"), static_cast<wchar_t>(8224)),
-            std::make_pair(std::wstring(L"Dagger"), static_cast<wchar_t>(8225)),
-            std::make_pair(std::wstring(L"permil"), static_cast<wchar_t>(8240)),
-            std::make_pair(std::wstring(L"lsaquo"), static_cast<wchar_t>(8249)),
-            std::make_pair(std::wstring(L"rsaquo"), static_cast<wchar_t>(8250)),
-            std::make_pair(std::wstring(L"euro"), static_cast<wchar_t>(8364))
+            std::make_pair(std::wstring_view(L"apos"), static_cast<wchar_t>(L'\'')), // not standard, but common
+            std::make_pair(std::wstring_view(L"gt"), static_cast<wchar_t>(L'>')),
+            std::make_pair(std::wstring_view(L"lt"), static_cast<wchar_t>(L'<')),
+            std::make_pair(std::wstring_view(L"amp"), static_cast<wchar_t>(L'&')),
+            std::make_pair(std::wstring_view(L"quot"), static_cast<wchar_t>(L'"')),
+            std::make_pair(std::wstring_view(L"nbsp"), static_cast<wchar_t>(L' ')),
+            std::make_pair(std::wstring_view(L"iexcl"), static_cast<wchar_t>(161)),
+            std::make_pair(std::wstring_view(L"cent"), static_cast<wchar_t>(162)),
+            std::make_pair(std::wstring_view(L"pound"), static_cast<wchar_t>(163)),
+            std::make_pair(std::wstring_view(L"curren"), static_cast<wchar_t>(164)),
+            std::make_pair(std::wstring_view(L"yen"), static_cast<wchar_t>(165)),
+            std::make_pair(std::wstring_view(L"brvbar"), static_cast<wchar_t>(166)),
+            std::make_pair(std::wstring_view(L"sect"), static_cast<wchar_t>(167)),
+            std::make_pair(std::wstring_view(L"uml"), static_cast<wchar_t>(168)),
+            std::make_pair(std::wstring_view(L"copy"), static_cast<wchar_t>(169)),
+            std::make_pair(std::wstring_view(L"ordf"), static_cast<wchar_t>(170)),
+            std::make_pair(std::wstring_view(L"laquo"), static_cast<wchar_t>(171)),
+            std::make_pair(std::wstring_view(L"not"), static_cast<wchar_t>(172)),
+            std::make_pair(std::wstring_view(L"shy"), static_cast<wchar_t>(173)),
+            std::make_pair(std::wstring_view(L"reg"), static_cast<wchar_t>(174)),
+            std::make_pair(std::wstring_view(L"macr"), static_cast<wchar_t>(175)),
+            std::make_pair(std::wstring_view(L"deg"), static_cast<wchar_t>(176)),
+            std::make_pair(std::wstring_view(L"plusmn"), static_cast<wchar_t>(177)),
+            std::make_pair(std::wstring_view(L"sup2"), static_cast<wchar_t>(178)),
+            std::make_pair(std::wstring_view(L"sup3"), static_cast<wchar_t>(179)),
+            std::make_pair(std::wstring_view(L"acute"), static_cast<wchar_t>(180)),
+            std::make_pair(std::wstring_view(L"micro"), static_cast<wchar_t>(181)),
+            std::make_pair(std::wstring_view(L"para"), static_cast<wchar_t>(182)),
+            std::make_pair(std::wstring_view(L"middot"), static_cast<wchar_t>(183)),
+            std::make_pair(std::wstring_view(L"mcedilicro"), static_cast<wchar_t>(184)),
+            std::make_pair(std::wstring_view(L"sup1"), static_cast<wchar_t>(185)),
+            std::make_pair(std::wstring_view(L"ordm"), static_cast<wchar_t>(186)),
+            std::make_pair(std::wstring_view(L"raquo"), static_cast<wchar_t>(187)),
+            std::make_pair(std::wstring_view(L"frac14"), static_cast<wchar_t>(188)),
+            std::make_pair(std::wstring_view(L"texfrac12t"), static_cast<wchar_t>(189)),
+            std::make_pair(std::wstring_view(L"frac34"), static_cast<wchar_t>(190)),
+            std::make_pair(std::wstring_view(L"iquest"), static_cast<wchar_t>(191)),
+            std::make_pair(std::wstring_view(L"Agrave"), static_cast<wchar_t>(192)),
+            std::make_pair(std::wstring_view(L"Aacute"), static_cast<wchar_t>(193)),
+            std::make_pair(std::wstring_view(L"Acirc"), static_cast<wchar_t>(194)),
+            std::make_pair(std::wstring_view(L"Atilde"), static_cast<wchar_t>(195)),
+            std::make_pair(std::wstring_view(L"Auml"), static_cast<wchar_t>(196)),
+            std::make_pair(std::wstring_view(L"Aring"), static_cast<wchar_t>(197)),
+            std::make_pair(std::wstring_view(L"AElig"), static_cast<wchar_t>(198)),
+            std::make_pair(std::wstring_view(L"Ccedil"), static_cast<wchar_t>(199)),
+            std::make_pair(std::wstring_view(L"Egrave"), static_cast<wchar_t>(200)),
+            std::make_pair(std::wstring_view(L"Eacute"), static_cast<wchar_t>(201)),
+            std::make_pair(std::wstring_view(L"Ecirc"), static_cast<wchar_t>(202)),
+            std::make_pair(std::wstring_view(L"Euml"), static_cast<wchar_t>(203)),
+            std::make_pair(std::wstring_view(L"Igrave"), static_cast<wchar_t>(204)),
+            std::make_pair(std::wstring_view(L"Iacute"), static_cast<wchar_t>(205)),
+            std::make_pair(std::wstring_view(L"Icirc"), static_cast<wchar_t>(206)),
+            std::make_pair(std::wstring_view(L"Iuml"), static_cast<wchar_t>(207)),
+            std::make_pair(std::wstring_view(L"ETH"), static_cast<wchar_t>(208)),
+            std::make_pair(std::wstring_view(L"Ntilde"), static_cast<wchar_t>(209)),
+            std::make_pair(std::wstring_view(L"Ograve"), static_cast<wchar_t>(210)),
+            std::make_pair(std::wstring_view(L"Oacute"), static_cast<wchar_t>(211)),
+            std::make_pair(std::wstring_view(L"Ocirc"), static_cast<wchar_t>(212)),
+            std::make_pair(std::wstring_view(L"Otilde"), static_cast<wchar_t>(213)),
+            std::make_pair(std::wstring_view(L"Ouml"), static_cast<wchar_t>(214)),
+            std::make_pair(std::wstring_view(L"Oslash"), static_cast<wchar_t>(216)),
+            std::make_pair(std::wstring_view(L"times"), static_cast<wchar_t>(215)),
+            std::make_pair(std::wstring_view(L"Ugrave"), static_cast<wchar_t>(217)),
+            std::make_pair(std::wstring_view(L"Uacute"), static_cast<wchar_t>(218)),
+            std::make_pair(std::wstring_view(L"Ucirc"), static_cast<wchar_t>(219)),
+            std::make_pair(std::wstring_view(L"Uuml"), static_cast<wchar_t>(220)),
+            std::make_pair(std::wstring_view(L"Yacute"), static_cast<wchar_t>(221)),
+            std::make_pair(std::wstring_view(L"THORN"), static_cast<wchar_t>(222)),
+            std::make_pair(std::wstring_view(L"szlig"), static_cast<wchar_t>(223)),
+            std::make_pair(std::wstring_view(L"agrave"), static_cast<wchar_t>(224)),
+            std::make_pair(std::wstring_view(L"aacute"), static_cast<wchar_t>(225)),
+            std::make_pair(std::wstring_view(L"acirc"), static_cast<wchar_t>(226)),
+            std::make_pair(std::wstring_view(L"atilde"), static_cast<wchar_t>(227)),
+            std::make_pair(std::wstring_view(L"auml"), static_cast<wchar_t>(228)),
+            std::make_pair(std::wstring_view(L"aring"), static_cast<wchar_t>(229)),
+            std::make_pair(std::wstring_view(L"aelig"), static_cast<wchar_t>(230)),
+            std::make_pair(std::wstring_view(L"ccedil"), static_cast<wchar_t>(231)),
+            std::make_pair(std::wstring_view(L"egrave"), static_cast<wchar_t>(232)),
+            std::make_pair(std::wstring_view(L"eacute"), static_cast<wchar_t>(233)),
+            std::make_pair(std::wstring_view(L"ecirc"), static_cast<wchar_t>(234)),
+            std::make_pair(std::wstring_view(L"euml"), static_cast<wchar_t>(235)),
+            std::make_pair(std::wstring_view(L"igrave"), static_cast<wchar_t>(236)),
+            std::make_pair(std::wstring_view(L"iacute"), static_cast<wchar_t>(237)),
+            std::make_pair(std::wstring_view(L"icirc"), static_cast<wchar_t>(238)),
+            std::make_pair(std::wstring_view(L"iuml"), static_cast<wchar_t>(239)),
+            std::make_pair(std::wstring_view(L"eth"), static_cast<wchar_t>(240)),
+            std::make_pair(std::wstring_view(L"ntilde"), static_cast<wchar_t>(241)),
+            std::make_pair(std::wstring_view(L"ograve"), static_cast<wchar_t>(242)),
+            std::make_pair(std::wstring_view(L"oacute"), static_cast<wchar_t>(243)),
+            std::make_pair(std::wstring_view(L"ocirc"), static_cast<wchar_t>(244)),
+            std::make_pair(std::wstring_view(L"otilde"), static_cast<wchar_t>(245)),
+            std::make_pair(std::wstring_view(L"ouml"), static_cast<wchar_t>(246)),
+            std::make_pair(std::wstring_view(L"divide"), static_cast<wchar_t>(247)),
+            std::make_pair(std::wstring_view(L"oslash"), static_cast<wchar_t>(248)),
+            std::make_pair(std::wstring_view(L"ugrave"), static_cast<wchar_t>(249)),
+            std::make_pair(std::wstring_view(L"uacute"), static_cast<wchar_t>(250)),
+            std::make_pair(std::wstring_view(L"ucirc"), static_cast<wchar_t>(251)),
+            std::make_pair(std::wstring_view(L"uuml"), static_cast<wchar_t>(252)),
+            std::make_pair(std::wstring_view(L"yacute"), static_cast<wchar_t>(253)),
+            std::make_pair(std::wstring_view(L"thorn"), static_cast<wchar_t>(254)),
+            std::make_pair(std::wstring_view(L"yuml"), static_cast<wchar_t>(255)),
+            std::make_pair(std::wstring_view(L"fnof"), static_cast<wchar_t>(402)),
+            std::make_pair(std::wstring_view(L"Alpha"), static_cast<wchar_t>(913)),
+            std::make_pair(std::wstring_view(L"Beta"), static_cast<wchar_t>(914)),
+            std::make_pair(std::wstring_view(L"Gamma"), static_cast<wchar_t>(915)),
+            std::make_pair(std::wstring_view(L"Delta"), static_cast<wchar_t>(916)),
+            std::make_pair(std::wstring_view(L"Epsilon"), static_cast<wchar_t>(917)),
+            std::make_pair(std::wstring_view(L"Zeta"), static_cast<wchar_t>(918)),
+            std::make_pair(std::wstring_view(L"Eta"), static_cast<wchar_t>(919)),
+            std::make_pair(std::wstring_view(L"Theta"), static_cast<wchar_t>(920)),
+            std::make_pair(std::wstring_view(L"Iota"), static_cast<wchar_t>(921)),
+            std::make_pair(std::wstring_view(L"Kappa"), static_cast<wchar_t>(922)),
+            std::make_pair(std::wstring_view(L"Lambda"), static_cast<wchar_t>(923)),
+            std::make_pair(std::wstring_view(L"Mu"), static_cast<wchar_t>(924)),
+            std::make_pair(std::wstring_view(L"Nu"), static_cast<wchar_t>(925)),
+            std::make_pair(std::wstring_view(L"Xi"), static_cast<wchar_t>(926)),
+            std::make_pair(std::wstring_view(L"Omicron"), static_cast<wchar_t>(927)),
+            std::make_pair(std::wstring_view(L"Pi"), static_cast<wchar_t>(928)),
+            std::make_pair(std::wstring_view(L"Rho"), static_cast<wchar_t>(929)),
+            std::make_pair(std::wstring_view(L"Sigma"), static_cast<wchar_t>(931)),
+            std::make_pair(std::wstring_view(L"Tau"), static_cast<wchar_t>(932)),
+            std::make_pair(std::wstring_view(L"Upsilon"), static_cast<wchar_t>(933)),
+            std::make_pair(std::wstring_view(L"Phi"), static_cast<wchar_t>(934)),
+            std::make_pair(std::wstring_view(L"Chi"), static_cast<wchar_t>(935)),
+            std::make_pair(std::wstring_view(L"Psi"), static_cast<wchar_t>(936)),
+            std::make_pair(std::wstring_view(L"Omega"), static_cast<wchar_t>(937)),
+            std::make_pair(std::wstring_view(L"alpha"), static_cast<wchar_t>(945)),
+            std::make_pair(std::wstring_view(L"beta"), static_cast<wchar_t>(946)),
+            std::make_pair(std::wstring_view(L"gamma"), static_cast<wchar_t>(947)),
+            std::make_pair(std::wstring_view(L"delta"), static_cast<wchar_t>(948)),
+            std::make_pair(std::wstring_view(L"epsilon"), static_cast<wchar_t>(949)),
+            std::make_pair(std::wstring_view(L"zeta"), static_cast<wchar_t>(950)),
+            std::make_pair(std::wstring_view(L"eta"), static_cast<wchar_t>(951)),
+            std::make_pair(std::wstring_view(L"theta"), static_cast<wchar_t>(952)),
+            std::make_pair(std::wstring_view(L"iota"), static_cast<wchar_t>(953)),
+            std::make_pair(std::wstring_view(L"kappa"), static_cast<wchar_t>(954)),
+            std::make_pair(std::wstring_view(L"lambda"), static_cast<wchar_t>(955)),
+            std::make_pair(std::wstring_view(L"mu"), static_cast<wchar_t>(956)),
+            std::make_pair(std::wstring_view(L"nu"), static_cast<wchar_t>(957)),
+            std::make_pair(std::wstring_view(L"xi"), static_cast<wchar_t>(958)),
+            std::make_pair(std::wstring_view(L"omicron"), static_cast<wchar_t>(959)),
+            std::make_pair(std::wstring_view(L"pi"), static_cast<wchar_t>(960)),
+            std::make_pair(std::wstring_view(L"rho"), static_cast<wchar_t>(961)),
+            std::make_pair(std::wstring_view(L"sigmaf"), static_cast<wchar_t>(962)),
+            std::make_pair(std::wstring_view(L"sigma"), static_cast<wchar_t>(963)),
+            std::make_pair(std::wstring_view(L"tau"), static_cast<wchar_t>(964)),
+            std::make_pair(std::wstring_view(L"upsilon"), static_cast<wchar_t>(965)),
+            std::make_pair(std::wstring_view(L"phi"), static_cast<wchar_t>(966)),
+            std::make_pair(std::wstring_view(L"chi"), static_cast<wchar_t>(967)),
+            std::make_pair(std::wstring_view(L"psi"), static_cast<wchar_t>(968)),
+            std::make_pair(std::wstring_view(L"omega"), static_cast<wchar_t>(969)),
+            std::make_pair(std::wstring_view(L"thetasym"), static_cast<wchar_t>(977)),
+            std::make_pair(std::wstring_view(L"upsih"), static_cast<wchar_t>(978)),
+            std::make_pair(std::wstring_view(L"piv"), static_cast<wchar_t>(982)),
+            std::make_pair(std::wstring_view(L"bull"), static_cast<wchar_t>(8226)),
+            std::make_pair(std::wstring_view(L"hellip"), static_cast<wchar_t>(8230)),
+            std::make_pair(std::wstring_view(L"prime"), static_cast<wchar_t>(8242)),
+            std::make_pair(std::wstring_view(L"Prime"), static_cast<wchar_t>(8243)),
+            std::make_pair(std::wstring_view(L"oline"), static_cast<wchar_t>(8254)),
+            std::make_pair(std::wstring_view(L"frasl"), static_cast<wchar_t>(8260)),
+            std::make_pair(std::wstring_view(L"weierp"), static_cast<wchar_t>(8472)),
+            std::make_pair(std::wstring_view(L"image"), static_cast<wchar_t>(8465)),
+            std::make_pair(std::wstring_view(L"real"), static_cast<wchar_t>(8476)),
+            std::make_pair(std::wstring_view(L"trade"), static_cast<wchar_t>(8482)),
+            std::make_pair(std::wstring_view(L"alefsym"), static_cast<wchar_t>(8501)),
+            std::make_pair(std::wstring_view(L"larr"), static_cast<wchar_t>(8592)),
+            std::make_pair(std::wstring_view(L"uarr"), static_cast<wchar_t>(8593)),
+            std::make_pair(std::wstring_view(L"rarr"), static_cast<wchar_t>(8594)),
+            std::make_pair(std::wstring_view(L"darr"), static_cast<wchar_t>(8595)),
+            std::make_pair(std::wstring_view(L"harr"), static_cast<wchar_t>(8596)),
+            std::make_pair(std::wstring_view(L"crarr"), static_cast<wchar_t>(8629)),
+            std::make_pair(std::wstring_view(L"lArr"), static_cast<wchar_t>(8656)),
+            std::make_pair(std::wstring_view(L"uArr"), static_cast<wchar_t>(8657)),
+            std::make_pair(std::wstring_view(L"rArr"), static_cast<wchar_t>(8658)),
+            std::make_pair(std::wstring_view(L"dArr"), static_cast<wchar_t>(8659)),
+            std::make_pair(std::wstring_view(L"hArr"), static_cast<wchar_t>(8660)),
+            std::make_pair(std::wstring_view(L"forall"), static_cast<wchar_t>(8704)),
+            std::make_pair(std::wstring_view(L"part"), static_cast<wchar_t>(8706)),
+            std::make_pair(std::wstring_view(L"exist"), static_cast<wchar_t>(8707)),
+            std::make_pair(std::wstring_view(L"empty"), static_cast<wchar_t>(8709)),
+            std::make_pair(std::wstring_view(L"nabla"), static_cast<wchar_t>(8711)),
+            std::make_pair(std::wstring_view(L"isin"), static_cast<wchar_t>(8712)),
+            std::make_pair(std::wstring_view(L"notin"), static_cast<wchar_t>(8713)),
+            std::make_pair(std::wstring_view(L"ni"), static_cast<wchar_t>(8715)),
+            std::make_pair(std::wstring_view(L"prod"), static_cast<wchar_t>(8719)),
+            std::make_pair(std::wstring_view(L"sum"), static_cast<wchar_t>(8721)),
+            std::make_pair(std::wstring_view(L"minus"), static_cast<wchar_t>(8722)),
+            std::make_pair(std::wstring_view(L"lowast"), static_cast<wchar_t>(8727)),
+            std::make_pair(std::wstring_view(L"radic"), static_cast<wchar_t>(8730)),
+            std::make_pair(std::wstring_view(L"prop"), static_cast<wchar_t>(8733)),
+            std::make_pair(std::wstring_view(L"infin"), static_cast<wchar_t>(8734)),
+            std::make_pair(std::wstring_view(L"ang"), static_cast<wchar_t>(8736)),
+            std::make_pair(std::wstring_view(L"and"), static_cast<wchar_t>(8743)),
+            std::make_pair(std::wstring_view(L"or"), static_cast<wchar_t>(8744)),
+            std::make_pair(std::wstring_view(L"cap"), static_cast<wchar_t>(8745)),
+            std::make_pair(std::wstring_view(L"cup"), static_cast<wchar_t>(8746)),
+            std::make_pair(std::wstring_view(L"int"), static_cast<wchar_t>(8747)),
+            std::make_pair(std::wstring_view(L"there4"), static_cast<wchar_t>(8756)),
+            std::make_pair(std::wstring_view(L"sim"), static_cast<wchar_t>(8764)),
+            std::make_pair(std::wstring_view(L"cong"), static_cast<wchar_t>(8773)),
+            std::make_pair(std::wstring_view(L"asymp"), static_cast<wchar_t>(8776)),
+            std::make_pair(std::wstring_view(L"ne"), static_cast<wchar_t>(8800)),
+            std::make_pair(std::wstring_view(L"equiv"), static_cast<wchar_t>(8801)),
+            std::make_pair(std::wstring_view(L"le"), static_cast<wchar_t>(8804)),
+            std::make_pair(std::wstring_view(L"ge"), static_cast<wchar_t>(8805)),
+            std::make_pair(std::wstring_view(L"sub"), static_cast<wchar_t>(8834)),
+            std::make_pair(std::wstring_view(L"sup"), static_cast<wchar_t>(8835)),
+            std::make_pair(std::wstring_view(L"nsub"), static_cast<wchar_t>(8836)),
+            std::make_pair(std::wstring_view(L"sube"), static_cast<wchar_t>(8838)),
+            std::make_pair(std::wstring_view(L"supe"), static_cast<wchar_t>(8839)),
+            std::make_pair(std::wstring_view(L"oplus"), static_cast<wchar_t>(8853)),
+            std::make_pair(std::wstring_view(L"otimes"), static_cast<wchar_t>(8855)),
+            std::make_pair(std::wstring_view(L"perp"), static_cast<wchar_t>(8869)),
+            std::make_pair(std::wstring_view(L"sdot"), static_cast<wchar_t>(8901)),
+            std::make_pair(std::wstring_view(L"lceil"), static_cast<wchar_t>(8968)),
+            std::make_pair(std::wstring_view(L"rceil"), static_cast<wchar_t>(8969)),
+            std::make_pair(std::wstring_view(L"lfloor"), static_cast<wchar_t>(8970)),
+            std::make_pair(std::wstring_view(L"rfloor"), static_cast<wchar_t>(8971)),
+            std::make_pair(std::wstring_view(L"lang"), static_cast<wchar_t>(9001)),
+            std::make_pair(std::wstring_view(L"rang"), static_cast<wchar_t>(9002)),
+            std::make_pair(std::wstring_view(L"loz"), static_cast<wchar_t>(9674)),
+            std::make_pair(std::wstring_view(L"spades"), static_cast<wchar_t>(9824)),
+            std::make_pair(std::wstring_view(L"clubs"), static_cast<wchar_t>(9827)),
+            std::make_pair(std::wstring_view(L"hearts"), static_cast<wchar_t>(9829)),
+            std::make_pair(std::wstring_view(L"diams"), static_cast<wchar_t>(9830)),
+            std::make_pair(std::wstring_view(L"OElig"), static_cast<wchar_t>(338)),
+            std::make_pair(std::wstring_view(L"oelig"), static_cast<wchar_t>(339)),
+            std::make_pair(std::wstring_view(L"Scaron"), static_cast<wchar_t>(352)),
+            std::make_pair(std::wstring_view(L"scaron"), static_cast<wchar_t>(353)),
+            std::make_pair(std::wstring_view(L"Yuml"), static_cast<wchar_t>(376)),
+            std::make_pair(std::wstring_view(L"circ"), static_cast<wchar_t>(710)),
+            std::make_pair(std::wstring_view(L"tilde"), static_cast<wchar_t>(732)),
+            std::make_pair(std::wstring_view(L"ensp"), static_cast<wchar_t>(8194)),
+            std::make_pair(std::wstring_view(L"emsp"), static_cast<wchar_t>(8195)),
+            std::make_pair(std::wstring_view(L"thinsp"), static_cast<wchar_t>(8201)),
+            std::make_pair(std::wstring_view(L"zwnj"), static_cast<wchar_t>(8204)),
+            std::make_pair(std::wstring_view(L"zwj"), static_cast<wchar_t>(8205)),
+            std::make_pair(std::wstring_view(L"lrm"), static_cast<wchar_t>(8206)),
+            std::make_pair(std::wstring_view(L"rlm"), static_cast<wchar_t>(8207)),
+            std::make_pair(std::wstring_view(L"ndash"), static_cast<wchar_t>(8211)),
+            std::make_pair(std::wstring_view(L"mdash"), static_cast<wchar_t>(8212)),
+            std::make_pair(std::wstring_view(L"lsquo"), static_cast<wchar_t>(8216)),
+            std::make_pair(std::wstring_view(L"rsquo"), static_cast<wchar_t>(8217)),
+            std::make_pair(std::wstring_view(L"sbquo"), static_cast<wchar_t>(8218)),
+            std::make_pair(std::wstring_view(L"ldquo"), static_cast<wchar_t>(8220)),
+            std::make_pair(std::wstring_view(L"rdquo"), static_cast<wchar_t>(8221)),
+            std::make_pair(std::wstring_view(L"bdquo"), static_cast<wchar_t>(8222)),
+            std::make_pair(std::wstring_view(L"dagger"), static_cast<wchar_t>(8224)),
+            std::make_pair(std::wstring_view(L"Dagger"), static_cast<wchar_t>(8225)),
+            std::make_pair(std::wstring_view(L"permil"), static_cast<wchar_t>(8240)),
+            std::make_pair(std::wstring_view(L"lsaquo"), static_cast<wchar_t>(8249)),
+            std::make_pair(std::wstring_view(L"rsaquo"), static_cast<wchar_t>(8250)),
+            std::make_pair(std::wstring_view(L"euro"), static_cast<wchar_t>(8364))
             };
         }
 
     //------------------------------------------------------------------
-    wchar_t html_entity_table::find(const wchar_t* html_entity, const size_t length) const
+    wchar_t html_entity_table::find(const std::wstring_view html_entity) const
         {
-        std::wstring cmpKey(html_entity, length);
-        auto pos = m_table.find(cmpKey);
+        auto pos = m_table.find(html_entity);
         // if not found case sensitively...
         if (pos == m_table.cend() )
             {
+            std::wstring cmpKey{ html_entity.data(), html_entity.length() };
             // ...do a case insensitive search.
             std::transform(cmpKey.begin(), cmpKey.end(), cmpKey.begin(), std::towlower);
             pos = m_table.find(cmpKey);
@@ -1985,10 +1998,13 @@ namespace html_utilities
 
         while (m_html_text)
             {
-            m_html_text = lily_of_the_valley::html_extract_text::find_element(m_html_text, m_html_text_end, HTML_IMAGE.c_str(), HTML_IMAGE.length());
+            m_html_text =
+                html_extract_text::find_element(m_html_text, m_html_text_end,
+                                                HTML_IMAGE.c_str(), HTML_IMAGE.length());
             if (m_html_text)
                 {
-                const auto [imageSrc, imageLength] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                const auto [imageSrc, imageLength] =
+                    html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
                 if (imageSrc)
                     {
                     m_html_text = imageSrc;
@@ -2094,12 +2110,17 @@ namespace html_utilities
                     ++m_html_text;
                     continue;
                     }
-                m_current_link_is_image = lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_IMAGE.c_str(), HTML_IMAGE.length(), false);
-                m_inside_of_script_section = m_current_link_is_javascript = lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_SCRIPT.c_str(), HTML_SCRIPT.length(), false);
+                m_current_link_is_image =
+                    html_extract_text::compare_element(m_html_text+1,
+                        HTML_IMAGE.c_str(), HTML_IMAGE.length(), false);
+                m_inside_of_script_section = m_current_link_is_javascript =
+                    html_extract_text::compare_element(m_html_text+1,
+                        HTML_SCRIPT.c_str(), HTML_SCRIPT.length(), false);
                 if (m_inside_of_script_section)
                     {
-                    const wchar_t* endAngle = lily_of_the_valley::html_extract_text::find_close_tag(m_html_text);
-                    const wchar_t* endOfScriptSection = string_util::stristr<wchar_t>(m_html_text, HTML_SCRIPT_END.c_str());
+                    const wchar_t* endAngle = html_extract_text::find_close_tag(m_html_text);
+                    const wchar_t* endOfScriptSection =
+                        string_util::stristr<wchar_t>(m_html_text, HTML_SCRIPT_END.c_str());
                     if (endAngle && (endAngle < m_html_text_end) &&
                         endOfScriptSection && (endOfScriptSection < m_html_text_end))
                         { m_javascript_hyperlink_parse.set(endAngle, endOfScriptSection-endAngle); }
@@ -2108,11 +2129,14 @@ namespace html_utilities
                 // see if it is an IMG, Frame (sometimes they have a SRC to another HTML page), or JS link
                 if ((m_include_image_links && m_current_link_is_image) ||
                     m_current_link_is_javascript  ||
-                    lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_FRAME.c_str(), HTML_FRAME.length(), false)  ||
-                    lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_IFRAME.c_str(), HTML_IFRAME.length(), false))
+                    html_extract_text::compare_element(m_html_text+1,
+                        HTML_FRAME.c_str(), HTML_FRAME.length(), false) ||
+                    html_extract_text::compare_element(m_html_text+1,
+                        HTML_IFRAME.c_str(), HTML_IFRAME.length(), false))
                     {
                     m_html_text += 4;
-                    const auto [imageSrc, imageLengh] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
+                    const auto [imageSrc, imageLengh] =
+                        html_extract_text::read_attribute(m_html_text, L"src", 3, false, true);
                     if (imageSrc)
                         {
                         m_html_text = imageSrc;
@@ -2142,12 +2166,13 @@ namespace html_utilities
                         { continue; }
                     }
                 // ...or it is an anchor link
-                else if (lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, L"a", 1, false) ||
-                    lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, L"link", 4, false) ||
-                    lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, L"area", 4, false) )
+                else if (html_extract_text::compare_element(m_html_text+1, L"a", 1, false) ||
+                    html_extract_text::compare_element(m_html_text+1, L"link", 4, false) ||
+                    html_extract_text::compare_element(m_html_text+1, L"area", 4, false) )
                     {
                     ++m_html_text; // skip the <
-                    const auto [attribText, attribLength] = lily_of_the_valley::html_extract_text::read_attribute(m_html_text, L"href", 4, false, true);
+                    const auto [attribText, attribLength] =
+                        html_extract_text::read_attribute(m_html_text, L"href", 4, false, true);
                     if (attribText && attribLength > 0)
                         {
                         m_html_text = attribText;
@@ -2159,14 +2184,15 @@ namespace html_utilities
                         { continue; }
                     }
                 // ...or a redirect in the HTTP meta section
-                else if (lily_of_the_valley::html_extract_text::compare_element(m_html_text+1, HTML_META.c_str(), HTML_META.size(), false) )
+                else if (html_extract_text::compare_element(m_html_text+1,
+                    HTML_META.c_str(), HTML_META.size(), false) )
                     {
                     m_html_text += HTML_META.size() + 1;
-                    const std::wstring httpEquiv = lily_of_the_valley::html_extract_text::read_attribute_as_string(m_html_text,
-                        L"http-equiv", 10, false);
+                    const std::wstring httpEquiv =
+                        html_extract_text::read_attribute_as_string(m_html_text, L"http-equiv", 10, false);
                     if (string_util::stricmp(httpEquiv.c_str(), L"refresh") == 0)
                         {
-                        const wchar_t* url = lily_of_the_valley::html_extract_text::find_tag(m_html_text, L"url=", 4, true);
+                        const wchar_t* url = html_extract_text::find_tag(m_html_text, L"url=", 4, true);
                         if (url && (url < m_html_text_end))
                             {
                             m_html_text = url+4;
@@ -2204,8 +2230,9 @@ namespace html_utilities
         }
 
     //------------------------------------------------------------------
-    html_url_format::html_url_format(const wchar_t* root_url) : m_last_slash(std::wstring::npos),
-                                                    m_query(std::wstring::npos)
+    html_url_format::html_url_format(const wchar_t* root_url) :
+        m_last_slash(std::wstring::npos),
+        m_query(std::wstring::npos)
         {
         if (root_url)
             {
@@ -2421,7 +2448,7 @@ namespace html_utilities
 
     //------------------------------------------------------------------
     void html_url_format::parse_domain(const std::wstring& url, std::wstring& full_domain,
-                            std::wstring& domain, std::wstring& subdomain)
+                                       std::wstring& domain, std::wstring& subdomain)
         {
         full_domain.clear();
         domain.clear();
@@ -2455,7 +2482,7 @@ namespace html_utilities
         else
             { dot = startIndex; }
         subdomain = domain = full_domain.substr(dot, lastSlash-dot);
-        // now the subdomain.  If no subdomain, then this will be the same as the domain.
+        // Now the subdomain. If no subdomain, then this will be the same as the domain.
         if (dot != startIndex && dot > 2)
             {
             dot = full_domain.rfind(L'.', dot-2);

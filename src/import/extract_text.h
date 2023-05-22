@@ -14,6 +14,7 @@
 
 #include <exception>
 #include <string_view>
+#include <unordered_map>
 #include "../i18n-check/src/string_util.h"
 #include "../i18n-check/src/char_traits.h"
 #include "../i18n-check/src/donttranslate.h"

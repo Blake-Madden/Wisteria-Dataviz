@@ -37,7 +37,7 @@ namespace html_utilities
         [[nodiscard]]
         wchar_t find(const wchar_t letter) const;
     private:
-        std::map<wchar_t, wchar_t> m_symbol_table;
+        std::unordered_map<wchar_t, wchar_t> m_symbol_table;
         };
 
     /** @brief Class to convert an HTML entity (e.g., "&amp;") to its literal value.*/
@@ -49,22 +49,21 @@ namespace html_utilities
         /** @returns The unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.*/
         [[nodiscard]]
-        wchar_t operator[](const wchar_t* html_entity) const
-            { return find(html_entity, std::wcslen(html_entity)); }
+        wchar_t operator[](const std::wstring_view html_entity) const
+            { return find(html_entity); }
         /** @brief Searches for an entity.
             @returns The unicode value of an entity, or '?' if not valid.
             @param html_entity The entity to look up.
-            @param length The length of the entity string.
             @note This function first must do a case sensitive search because some HTML entities
-             are case sensitive (e.g., "Dagger" and "dagger" result in different values). Of course,
-             before XHTML, most HTML was very liberal with casing, so if a case sensitive search fails,
-             then a case insensitive search is performed. In this case, whatever the HTML author's
-             intention for something like "&SIGMA;" may be misinterpreted (should it be a lowercase or
-             uppercase sigma symbol?)--the price you pay for sloppy HTML.*/
+                are case sensitive (e.g., "Dagger" and "dagger" result in different values). Of course,
+                before XHTML, most HTML was very liberal with casing, so if a case sensitive search fails,
+                then a case insensitive search is performed. In this case, whatever the HTML author's
+                intention for something like "&SIGMA;" may be misinterpreted (should it be a lowercase or
+                uppercase sigma symbol?)--the price you pay for sloppy HTML.*/
         [[nodiscard]]
-        wchar_t find(const wchar_t* html_entity, const size_t length) const;
+        wchar_t find(const std::wstring_view html_entity) const;
     private:
-        std::map<std::wstring, wchar_t> m_table;
+        std::unordered_map<std::wstring_view, wchar_t> m_table;
         };
 
     /** @brief Functor that accepts a block of script text and
