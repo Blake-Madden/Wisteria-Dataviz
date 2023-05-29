@@ -38,7 +38,8 @@ namespace Wisteria::Graphs
         const wxString& wordColumnName,
         const std::optional<const wxString> weightColumnName /*= std::nullopt*/,
         const size_t minFreq /*= 1*/,
-        const std::optional<size_t> maxFreq /*= std::nullopt*/)
+        const std::optional<size_t> maxFreq /*= std::nullopt*/,
+        const std::optional<size_t> maxWords /*= std::nullopt*/)
         {
         SetDataset(data);
         GetSelectedIds().clear();
@@ -109,6 +110,10 @@ namespace Wisteria::Graphs
             if (maxWordsToRemoveStart != m_words.cend())
                 { m_words.erase(maxWordsToRemoveStart, m_words.end()); }
             }
+
+        if (maxWords &&
+            maxWords.value() < m_words.size())
+            { m_words.erase(m_words.begin(), m_words.end() - maxWords.value()); }
 
         // convert raw frequencies to percentages
         const auto grandTotal = std::accumulate(m_words.cbegin(), m_words.cend(), 0.0,
@@ -297,6 +302,7 @@ namespace Wisteria::Graphs
         std::uniform_int_distribution<> yPosDistro(polyBoundingBox.GetTop(),
                                                    polyBoundingBox.GetTop() + polyBoundingBox.GetHeight());
 
+        wxPoint lastForcedPt{ polyBoundingBox.GetTopLeft() };
         for (auto labelPos = labels.begin(); labelPos < labels.end(); /*in loop*/)
             {
             bool sucessfullyPlaced{ false };
@@ -343,52 +349,36 @@ namespace Wisteria::Graphs
                 else
                     { ++labelPos; }
                 }
-            // not the first, but one of the top five widest labels couldn't be placed,
-            // so force it into one of the bounding box's corners
-            else if (!sucessfullyPlaced && drawnRects.size() <= 5)
+            // not the first, but one of the top ten widest labels couldn't be placed,
+            // so try to force it in the first empty spot, going left-to-right (going downward)
+            else if (!sucessfullyPlaced && drawnRects.size() <= 10)
                 {
                 auto bBox = (*labelPos)->GetBoundingBox(dc);
-                if (drawnRects.size() == 1)
+                while (true)
                     {
-                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopLeft());
-                    (*labelPos)->SetAnchoring(Anchoring::TopLeftCorner);
-                    drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
-                    labelPos = labels.erase(labelPos);
+                    if (lastForcedPt.x + bBox.GetWidth() > polyBoundingBox.GetWidth())
+                        {
+                        lastForcedPt.x = polyBoundingBox.GetX();
+                        ++lastForcedPt.y;
+                        if (lastForcedPt.y + bBox.GetHeight() > polyBoundingBox.GetBottom())
+                            { break; }
+                        }
+                    if (tryPlaceLabel(*labelPos, polyBoundingBox, lastForcedPt))
+                        {
+                        labelPos = labels.erase(labelPos);
+                        sucessfullyPlaced = true;
+                        lastForcedPt = bBox.GetTopLeft();
+                        break;
+                        }
+                    else
+                        { ++lastForcedPt.x; }
+                    // we are out of space vertically, just give up finally
+                    if (lastForcedPt.y + bBox.GetHeight() > polyBoundingBox.GetBottom())
+                        { break; }
                     }
-                else if (drawnRects.size() == 2)
-                    {
-                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopRight());
-                    (*labelPos)->SetAnchoring(Anchoring::TopRightCorner);
-                    drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
-                    labelPos = labels.erase(labelPos);
-                    }
-                else if (drawnRects.size() == 3)
-                    {
-                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetBottomRight());
-                    (*labelPos)->SetAnchoring(Anchoring::BottomRightCorner);
-                    drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
-                    labelPos = labels.erase(labelPos);
-                    }
-                else if (drawnRects.size() == 4)
-                    {
-                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetBottomLeft());
-                    (*labelPos)->SetAnchoring(Anchoring::BottomLeftCorner);
-                    drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
-                    labelPos = labels.erase(labelPos);
-                    }
-                // force into the top left corner
-                else
-                    {
-                    (*labelPos)->SetAnchorPoint(polyBoundingBox.GetTopLeft());
-                    (*labelPos)->SetAnchoring(Anchoring::TopLeftCorner);
-                    drawnRects.push_back(bBox);
-                    AddObject((*labelPos));
-                    labelPos = labels.erase(labelPos);
-                    }
+                // wasn't erased, so skip over it
+                if (!sucessfullyPlaced)
+                    { ++labelPos; }
                 }
             // wasn't erased, so skip over it
             else if (!sucessfullyPlaced)

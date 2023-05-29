@@ -51,6 +51,10 @@ namespace Wisteria::Graphs
             @param maxFreq The maximum frequency that a word can appear and still be included in the cloud.\n
                 This is useful for filtering high-frequency words.\n
                 By default, all words above @c minFreq are included.
+            @param maxWords The maximum number of words to show
+                (going from the highest-to-lowest frequently occurring words).\n
+                This is performed after the words not meeting the min and min frequency criteria
+                has been removed (if applicable).\n
             @throws std::runtime_error If any columns can't be found by name,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
@@ -59,7 +63,8 @@ namespace Wisteria::Graphs
             const wxString& wordColumnName,
             const std::optional<const wxString> weightColumnName = std::nullopt,
             const size_t minFreq = 1,
-            const std::optional<size_t> maxFreq = std::nullopt);
+            const std::optional<size_t> maxFreq = std::nullopt,
+            const std::optional<size_t> maxWords = std::nullopt);
     private:
         [[deprecated("Word clouds do not support legends.")]]
         [[nodiscard]]

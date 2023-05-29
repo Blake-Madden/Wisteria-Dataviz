@@ -1334,9 +1334,9 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wordCloud = std::make_shared<WordCloud>(subframe->m_canvas);
         // remove the low-frequency words, and also the extreme high frequency
         // ones to remove the main characters
-        wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100);
+        wordCloud->SetData(friendsData, L"Word", L"Frequency", 2, 100, 25);
         wordCloud->GetTitle().GetGraphItemInfo().Padding(5, 5, 25, 5).
-            Text(_(L"Episode Descriptions of the Sitcom 'Friends'"));
+            Text(_(L"Top Words from Episode Descriptions of the Sitcom 'Friends'"));
         wordCloud->GetTitle().GetFont().MakeBold();
 
         wordCloud->GetCaption().GetGraphItemInfo().Padding(25, 5, 5, 5).
