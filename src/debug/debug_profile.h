@@ -127,12 +127,12 @@
     #define __DEBUG_FUNCTION_NAME__ __PRETTY_FUNCTION__
 #elif defined(__FUNCTION__)
     #define __DEBUG_FUNCTION_NAME__ __FUNCTION__
-#elif defined(__func__)
-    #define __DEBUG_FUNCTION_NAME__ __func__
 #elif defined(__FUNCSIG__)
     #define __DEBUG_FUNCTION_NAME__ __FUNCSIG__
 #elif defined(__FUNCDNAME__)
     #define __DEBUG_FUNCTION_NAME__ __FUNCDNAME__
+#else
+    #define __DEBUG_FUNCTION_NAME__ __func__
 #endif
 
 #ifdef ENABLE_PROFILING
