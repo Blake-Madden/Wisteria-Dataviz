@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "Data visualization library based on wxWidgets"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = ../../wisteria.svg
+PROJECT_LOGO           = ../../wisteria-dv.svg
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
