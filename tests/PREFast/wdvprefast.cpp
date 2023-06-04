@@ -15,7 +15,7 @@
 #include "src/import/rtf_encode.h"
 #include "src/import/rtf_extract_text.h"
 #include "src/import/tag_filter.h"
-#include "src/import/text_colum"
+#include "src/import/text_colum.h"
 #include "src/import/text_functional.h"
 #include "src/import/text_matrix.h"
 #include "src/import/text_preview.h"
