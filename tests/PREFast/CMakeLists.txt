@@ -15,11 +15,6 @@ SET(CMAKE_CXX_STANDARD_REQUIRED True)
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-IF(MSVC)
-    TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS)
-    TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PUBLIC /Zc:__cplusplus /MP /W3 /WX>)
-ENDIF()
-
 ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} wdvprefast.cpp
     src/import/cpp_extract_text.cpp
     src/import/doc_extract_text.cpp
@@ -29,3 +24,8 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} wdvprefast.cpp
     src/import/postscript_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/import/rtf_extract_text.cpp)
+
+IF(MSVC)
+    TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
+    TARGET_COMPILE_OPTIONS(${CMAKE_PROJECT_NAME} PUBLIC /Zc:__cplusplus /MP /W3 /WX>)
+ENDIF()
