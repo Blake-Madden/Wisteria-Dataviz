@@ -68,14 +68,14 @@ namespace Wisteria
         /// @param value The string to reformat.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
-        virtual stringT GetFormattedValue(const wxString& value,
-                                           const NumberFormatInfo& format) const = 0;
+        virtual stringT GetFormattedValue(const stringT& value,
+                                          const NumberFormatInfo& format) const = 0;
         /// @brief Formats a number into a string.
         /// @param value The number to format.
         /// @param format The format specification.
         /// @returns The value, formatted as a string.
         virtual stringT GetFormattedValue(const double value,
-                                           const NumberFormatInfo& format) const = 0;
+                                          const NumberFormatInfo& format) const = 0;
         };
     }
 
