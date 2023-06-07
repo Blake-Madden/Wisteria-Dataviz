@@ -514,7 +514,7 @@ namespace lily_of_the_valley
                     const int idx = std::atoi(textColor+3);
                     // color table is one-base indexed
                     if (idx > 0 && idx <= static_cast<int>(m_color_table.size()))
-                        { m_text_color = m_color_table[idx-1]; }
+                        { m_text_color = m_color_table[static_cast<size_t>(idx)-1]; }
                     }
                 }
             }

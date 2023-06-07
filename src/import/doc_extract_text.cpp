@@ -623,7 +623,7 @@ namespace lily_of_the_valley
                 {
                 // should be able to at least read the data type (4 bytes)
                 // and value (always multiple of 4)
-                if (static_cast<size_t>(property.first+8) > sectionSize)
+                if (static_cast<size_t>(property.first) + 8 > sectionSize)
                     {
                     log_message(L"DOC parser: error in property offset. File may be corrupt.");
                     break;
@@ -634,8 +634,8 @@ namespace lily_of_the_valley
                 if (dataType == static_cast<decltype(dataType)>(property_data_type::vt_bstr) ||
                     dataType == static_cast<decltype(dataType)>(property_data_type::vt_lpstr))
                     {
-                    const auto strBtyeCount = read_int(propBuffer.data(), property.first + 4);
-                    if (static_cast<size_t>(property.first + 8 + strBtyeCount) > sectionSize)
+                    const auto strBtyeCount = read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
+                    if ((static_cast<size_t>(property.first) + 8 + strBtyeCount) > sectionSize)
                         {
                         log_message(L"DOC parser: error in property MBCS value. File may be corrupt.");
                         break;
@@ -652,7 +652,7 @@ namespace lily_of_the_valley
                     // or current code page
                     else
                         {
-                        auto wideBuff = std::make_unique<wchar_t[]>(strBtyeCount + 1);
+                        auto wideBuff = std::make_unique<wchar_t[]>(static_cast<size_t>(strBtyeCount) + 1);
                         std::mbstowcs(wideBuff.get(), propBuffer.data()+property.first + 8, strBtyeCount);
                         propertyValue = wideBuff.get();
                         }
@@ -660,8 +660,8 @@ namespace lily_of_the_valley
                 // UTF-16 string
                 if (dataType == static_cast<decltype(dataType)>(property_data_type::vt_lpwstr))
                     {
-                    const auto strBtyeCount = read_int(propBuffer.data(), property.first+4);
-                    if (static_cast<size_t>(property.first+8+strBtyeCount) > sectionSize)
+                    const auto strBtyeCount = read_int(propBuffer.data(), static_cast<size_t>(property.first) + 4);
+                    if ((static_cast<size_t>(property.first) + 8 + strBtyeCount) > sectionSize)
                         {
                         log_message(L"DOC parser: error in property WCS value. File may be corrupt.");
                         break;
@@ -806,7 +806,7 @@ namespace lily_of_the_valley
         // 64 is the number of 512 sectors that are needed to hold the
         // SBAT, but we need the number of small (64) sectors,
         // so multiply by 8 (64*8 = 512).
-        m_sbat_sector_count = read_uint(cfbBuf.data(), 64) * 8;
+        m_sbat_sector_count = static_cast<size_t>(read_uint(cfbBuf.data(), 64)) * 8;
 
         if (m_bat_sector_count == 0)
             {
@@ -972,15 +972,15 @@ namespace lily_of_the_valley
                     }
                 str->seek(static_cast<long>(BAT_SECTOR_SIZE/*skip first BAT*/+sbatCurrent*m_sector_size),
                                             cfb_iostream::cfb_strem_seek_type::seek_beg);
-                str->read(m_SBAT.data()+sbatBigSectorsRead*m_sector_size, m_sector_size);
+                str->read(m_SBAT.data() + sbatBigSectorsRead * m_sector_size, m_sector_size);
                 ++sbatBigSectorsRead;
-                if (static_cast<size_t>(sbatCurrent*4) > (m_bat_sector_count*m_sector_size))
+                if ((static_cast<size_t>(sbatCurrent) * 4) > (m_bat_sector_count*m_sector_size))
                     {
                     log_message(L"DOC parser: Small Block Allocation Table corrupted.");
                     return false;
                     }
                 // walk the BAT to the next sector 
-                sbatCurrent = read_int(m_BAT.data(), sbatCurrent*4);
+                sbatCurrent = read_int(m_BAT.data(), static_cast<size_t>(sbatCurrent) * 4);
                 if (sbatCurrent < 0 || static_cast<size_t>(sbatCurrent) >= m_sector_count)
                     { break; }
                 }
@@ -1003,7 +1003,7 @@ namespace lily_of_the_valley
         const size_t remainingBlocks = m_sector_count - entriesStart;
         m_file_system_entry_count = remainingBlocks * 4;
         // set the entries pointer to the specified block index
-        m_file_system_entries = str->get_start() + ((entriesStart + 1) * m_sector_size);
+        m_file_system_entries = str->get_start() + ((static_cast<size_t>(entriesStart) + 1) * m_sector_size);
         m_current_file_system_entry = m_file_system_entries;
 
         // move to the root storage
@@ -1092,10 +1092,10 @@ namespace lily_of_the_valley
 
             // read next sector value from associated buffer
             const auto nextSector =
-                (!cfbObj->is_in_small_blocks() && m_BAT.size() > (currentSector * 4) + 4) ?
-                read_int(m_BAT.data(), currentSector * 4) :
-                (m_SBAT.size() > (currentSector * 4) + 4) ?
-                read_int(m_SBAT.data(), currentSector * 4) :
+                (!cfbObj->is_in_small_blocks() && m_BAT.size() > (static_cast<size_t>(currentSector) * 4) + 4) ?
+                read_int(m_BAT.data(), static_cast<size_t>(currentSector) * 4) :
+                (m_SBAT.size() > (static_cast<size_t>(currentSector) * 4) + 4) ?
+                read_int(m_SBAT.data(), static_cast<size_t>(currentSector) * 4) :
                 -1;
             if (nextSector < 0)
                 { break; }

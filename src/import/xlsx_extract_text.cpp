@@ -464,8 +464,9 @@ namespace lily_of_the_valley
                                                 constexpr auto secondsInDay = 24 * 60 * 60;
                                                 auto secondsFromTime = secondsInDay * timeOfDayPercent;
                                                 const int hourOfDay =
-                                                    static_cast<int>(std::floor(secondsFromTime / (60 * 60)));
-                                                secondsFromTime -= (hourOfDay * 60 * 60);
+                                                    static_cast<int>(std::floor(secondsFromTime /
+                                                        static_cast<double>(60 * 60)));
+                                                secondsFromTime -= (static_cast<double>(hourOfDay) * 60 * 60);
                                                 const int minutesOfHour =
                                                     static_cast<int>(std::floor(secondsFromTime / 60));
                                                 secondsFromTime -= static_cast<int>(std::floor(minutesOfHour * 60));
