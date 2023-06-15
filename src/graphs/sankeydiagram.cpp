@@ -502,7 +502,7 @@ namespace Wisteria::Graphs
                         }
                     }
                 // homogenize the labels' font scales (or hide the ones that are too small)
-                // if there was an overlaps that were adjusted
+                // if there were overlaps that were adjusted
                 if (smallestFontScale)
                     {
                     for (auto labelIter = labels.begin(); labelIter != labels.end(); /* in loop */)
