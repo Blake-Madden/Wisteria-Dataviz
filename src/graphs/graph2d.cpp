@@ -580,6 +580,43 @@ namespace Wisteria::Graphs
         // label scaling was changed
         AdjustPlotArea(dc);
 
+        // fix overlapping custom axis bracket labels
+        constexpr double minBracketFontScale{ .75 };
+        std::optional<double> smallestBracketFontScale{ std::nullopt };
+        for (auto& customAxis : GetCustomAxes())
+            {
+            if (customAxis.GetBrackets().size() > 1)
+                {
+                for (size_t i = 0; i < (customAxis.GetBrackets().size() - 1); ++i)
+                    {
+                    auto& theLabel{ customAxis.GetBrackets()[i].GetLabel() };
+                    const auto bBox = theLabel.GetBoundingBox(dc);
+                    const auto nextBBox = customAxis.GetBrackets()[i + 1].GetLabel().GetBoundingBox(dc);
+                    if (bBox.Intersects(nextBBox))
+                        {
+                        const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
+                        const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
+                        theLabel.SetScaling(theLabel.GetScaling() *
+                                            (1.0 - percentEclipsed));
+                        smallestBracketFontScale =
+                            std::max(minBracketFontScale,
+                                std::min(smallestBracketFontScale.value_or(theLabel.GetScaling()),
+                                         theLabel.GetScaling()));
+                        }
+                    }
+                }
+            }
+        // homogenize the custom axes' bracket font scales
+        // if there were overlaps that were adjusted
+        if (smallestBracketFontScale)
+            {
+            for (auto& customAxis : GetCustomAxes())
+                {
+                for (auto& bracket : customAxis.GetBrackets())
+                    { bracket.GetLabel().SetScaling(smallestBracketFontScale.value()); }
+                }
+            }
+
         // fill in the plot area's color (if being used, by default it is transparent)
         if (GetBackgroundColor().IsOk() &&
             GetBackgroundColor().GetAlpha() != wxALPHA_TRANSPARENT)
