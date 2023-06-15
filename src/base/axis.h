@@ -367,7 +367,7 @@ namespace Wisteria::GraphItems
             wxCoord GetLineSpacing() const noexcept
                 {
                 return (GetBracketLineStyle() != BracketLineStyle::NoConnectionLines) ?
-                        (GetTickmarkLength()+GetPadding()) : GetPadding();
+                        (GetTickmarkLength() + GetPadding()) : GetPadding();
                 }
             /** @brief Sets the orientation of the bracket.
                 @param orientation The orientation to use.*/
@@ -858,6 +858,18 @@ namespace Wisteria::GraphItems
                 main axis line.*/
         void SetDoubleSidedAxisLabels(const bool doubleSided) noexcept
             { m_doubleSidedAxisLabels = doubleSided; }
+        
+        /// @returns Whether to draw brackets on both sides when axis labels are
+        ///     being drawn on both sides of the main axis line.
+        [[nodiscard]]
+        bool IsMirroringBracketsWhenDoubleSided() const noexcept
+            { return m_mirrorBracketsWhenDoubleSided; }
+        /** @brief Specifies whether to draw brackets on both sides when
+                axis labels are drawn on both sides of the axis.
+            @param doubleSided Whether axis labels should be drawn on both sides of the
+                main axis line.*/
+        void MirrorBracketsWhenDoubleSided(const bool mirror) noexcept
+            { m_mirrorBracketsWhenDoubleSided = mirror; }
 
         /** @returns The precision of the axis labels (if numeric).*/
         [[nodiscard]]
@@ -1623,6 +1635,7 @@ namespace Wisteria::GraphItems
         std::pair<wxPoint, wxPoint> m_points{ wxPoint(0, 0), wxPoint(0, 0) };
 
         bool m_doubleSidedAxisLabels{ false };
+        bool m_mirrorBracketsWhenDoubleSided{ true };
 
         Label m_title;
         Label m_header;

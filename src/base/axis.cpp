@@ -477,7 +477,7 @@ namespace Wisteria::GraphItems
                 {
                 topLeftCorner.x -= CalcBracketsWidth(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                if (HasDoubleSidedAxisLabels())
+                if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     bottomRightCorner.x += CalcBracketsWidth(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -522,7 +522,7 @@ namespace Wisteria::GraphItems
                 {
                 bottomRightCorner.x += CalcBracketsWidth(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                if (HasDoubleSidedAxisLabels())
+                if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     topLeftCorner.x -= CalcBracketsWidth(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -558,7 +558,7 @@ namespace Wisteria::GraphItems
                 {
                 bottomRightCorner.y += CalcBracketsWidth(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                if (HasDoubleSidedAxisLabels())
+                if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     topLeftCorner.y -= CalcBracketsWidth(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -593,7 +593,7 @@ namespace Wisteria::GraphItems
                 {
                 topLeftCorner.y -= CalcBracketsWidth(dc) +
                     ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
-                if (HasDoubleSidedAxisLabels())
+                if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                     {
                     bottomRightCorner.y += CalcBracketsWidth(dc) +
                         ScaleToScreenAndCanvas(GetSpacingBetweenLabelsAndLine());
@@ -1407,7 +1407,7 @@ namespace Wisteria::GraphItems
                             (ScaleToScreenAndCanvas(bracket.GetLineSpacing()) + labelWidth/2), position2));
                         }
                     bracketLabel.Draw(dc);
-                    if (HasDoubleSidedAxisLabels())
+                    if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                         {
                         if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
@@ -1546,7 +1546,7 @@ namespace Wisteria::GraphItems
                                 ScaleToScreenAndCanvas(bracket.GetLineSpacing()), position2));
                         }
                     bracketLabel.Draw(dc);
-                    if (HasDoubleSidedAxisLabels())
+                    if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                         {
                         if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
@@ -1686,7 +1686,7 @@ namespace Wisteria::GraphItems
                         }
                     bracketLabel.Draw(dc);
 
-                    if (HasDoubleSidedAxisLabels())
+                    if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                         {
                         if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
@@ -1820,7 +1820,7 @@ namespace Wisteria::GraphItems
                         }
                     bracketLabel.Draw(dc);
 
-                    if (HasDoubleSidedAxisLabels())
+                    if (HasDoubleSidedAxisLabels() && IsMirroringBracketsWhenDoubleSided())
                         {
                         if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                             {
@@ -2961,7 +2961,7 @@ namespace Wisteria::GraphItems
                 else
                     { --currentDisplayInterval; }
                 // add it to the axis label collection
-                m_axisLabels.emplace_back(AxisPoint(i, wxEmptyString, display));
+                m_axisLabels.push_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeEnd;
@@ -2982,7 +2982,7 @@ namespace Wisteria::GraphItems
                 else
                     { --currentDisplayInterval; }
                 // add it to the axis label collection
-                m_axisLabels.emplace_back(AxisPoint(i, wxEmptyString, display));
+                m_axisLabels.push_back(AxisPoint(i, wxEmptyString, display));
                 lastValidPoint = i;
                 }
             m_rangeStart = rangeStart;
@@ -3495,7 +3495,7 @@ namespace Wisteria::GraphItems
         bracket.GetLabel().SetScaling(GetScaling());
         bracket.SetOrientation(IsHorizontal() ?
             Orientation::Horizontal : Orientation::Vertical);
-        GetBrackets().emplace_back(bracket);
+        GetBrackets().push_back(std::move(bracket));
         }
 
     //-------------------------------------------
