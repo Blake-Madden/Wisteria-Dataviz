@@ -98,7 +98,7 @@ namespace Wisteria::Graphs
 
         // syllables per 100 words ruler
             {
-            Axis syllableRuler(Wisteria::AxisType::LeftYAxis);
+            Axis syllableRuler(Wisteria::AxisType::RightYAxis);
             syllableRuler.SetCustomXPosition(3.5f);
             syllableRuler.SetCustomYPosition(100);
             syllableRuler.SetRange(120, 200, 0, 5, 1);
@@ -180,6 +180,72 @@ namespace Wisteria::Graphs
                 jitterPoints.insert(std::clamp<double>(syllablesPerWord*100, 120, 200));
                 }
             m_jitterSyllables.CalcSpread(jitterPoints);
+
+            if (IsIncludingSyllableRulerDocumentGroups() &&
+                data->HasValidIdData() && // needed for labels
+                data->GetRowCount() > 1 &&
+                data->GetRowCount() <= 50)
+                {
+                struct rulerBucket
+                    {
+                    double m_start{ 0 };
+                    double m_end{ 0 };
+                    wxString m_label;
+                    };
+                rulerBucket bucket1{ 120.0, 139.0, wxString{} };
+                rulerBucket bucket2{ 140.0, 159.0, wxString{} };
+                rulerBucket bucket3{ 160.0, 179.0, wxString{} };
+                rulerBucket bucket4{ 180.0, 200.0, wxString{} };
+
+                for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)
+                    {
+                    if (std::isnan(m_syllablesPerWordColumn->GetValue(i)))
+                        { continue; }
+                    const auto currentValue{
+                        std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i) * 100, 120, 200)
+                        };
+
+                    if (currentValue >= bucket1.m_start && currentValue <= bucket1.m_end)
+                        {
+                        bucket1.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
+                            append(L'\n');
+                        }
+                    else if (currentValue >= bucket2.m_start && currentValue <= bucket2.m_end)
+                        {
+                        bucket2.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
+                            append(L'\n');
+                        }
+                    else if (currentValue >= bucket3.m_start && currentValue <= bucket3.m_end)
+                        {
+                        bucket3.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
+                            append(L'\n');
+                        }
+                    else if (currentValue >= bucket4.m_start && currentValue <= bucket4.m_end)
+                        {
+                        bucket4.m_label.append(GetDataset()->GetIdColumn().GetValue(i)).
+                            append(L'\n');
+                        }
+                    }
+                bucket1.m_label.Trim();
+                bucket2.m_label.Trim();
+                bucket3.m_label.Trim();
+                bucket4.m_label.Trim();
+
+                auto& syllableRuler{ GetCustomAxes()[2] };
+                syllableRuler.MirrorBracketsWhenDoubleSided(false);
+                syllableRuler.AddBracket(Axis::AxisBracket(bucket1.m_start, bucket1.m_end,
+                    bucket1.m_start + ((bucket1.m_end - bucket1.m_start) * math_constants::half),
+                    bucket1.m_label));
+                syllableRuler.AddBracket(Axis::AxisBracket(bucket2.m_start, bucket2.m_end,
+                    bucket2.m_start + ((bucket2.m_end - bucket2.m_start) * math_constants::half),
+                    bucket2.m_label));
+                syllableRuler.AddBracket(Axis::AxisBracket(bucket3.m_start, bucket3.m_end,
+                    bucket3.m_start + ((bucket3.m_end - bucket3.m_start) * math_constants::half),
+                    bucket3.m_label));
+                syllableRuler.AddBracket(Axis::AxisBracket(bucket4.m_start, bucket4.m_end,
+                    bucket4.m_start + ((bucket4.m_end - bucket4.m_start) * math_constants::half),
+                    bucket4.m_label));
+                }
             }
         }
 
@@ -220,13 +286,13 @@ namespace Wisteria::Graphs
             { return; }
 
         // plot the points
-        const auto wordsRuler{ GetCustomAxes()[0] };
+        const auto& wordsRuler{ GetCustomAxes()[0] };
         m_jitterWords.SetJitterWidth(wordsRuler.CalcTickMarkOuterWidth()*2);
 
-        const auto middleRuler{ GetCustomAxes()[1] };
+        const auto& middleRuler{ GetCustomAxes()[1] };
         m_jitterScores.SetJitterWidth(middleRuler.CalcTickMarkOuterWidth()*2);
 
-        const auto syllablesRuler{ GetCustomAxes()[2] };
+        const auto& syllablesRuler{ GetCustomAxes()[2] };
         m_jitterSyllables.SetJitterWidth(syllablesRuler.CalcTickMarkOuterWidth()*2);
 
         auto points = std::make_shared<GraphItems::Points2D>(wxNullPen);
@@ -241,11 +307,11 @@ namespace Wisteria::Graphs
                 { continue; }
 
             const auto wordsPerSentence =
-                std::clamp<double>(m_wordsPerSentenceColumn->GetValue(i), 5, 40);
+                std::clamp<size_t>(m_wordsPerSentenceColumn->GetValue(i), 5, 40);
             const auto score =
                 std::clamp<size_t>(m_scoresColumn->GetValue(i), 0, 100);
             const auto syllablesPerWord =
-                std::clamp<double>(m_syllablesPerWordColumn->GetValue(i)*100, 120, 200);
+                std::clamp<size_t>(m_syllablesPerWordColumn->GetValue(i)*100, 120, 200);
 
             wxCoord coord1{ 0 }, coord2{ 0 }, coord3{ 0 };
             wxASSERT_LEVEL_2(wordsRuler.GetPhysicalCoordinate(wordsPerSentence, coord1));
