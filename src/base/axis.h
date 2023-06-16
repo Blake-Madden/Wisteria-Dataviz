@@ -858,7 +858,7 @@ namespace Wisteria::GraphItems
                 main axis line.*/
         void SetDoubleSidedAxisLabels(const bool doubleSided) noexcept
             { m_doubleSidedAxisLabels = doubleSided; }
-        
+
         /// @returns Whether to draw brackets on both sides when axis labels are
         ///     being drawn on both sides of the main axis line.
         [[nodiscard]]
@@ -866,7 +866,7 @@ namespace Wisteria::GraphItems
             { return m_mirrorBracketsWhenDoubleSided; }
         /** @brief Specifies whether to draw brackets on both sides when
                 axis labels are drawn on both sides of the axis.
-            @param doubleSided Whether axis labels should be drawn on both sides of the
+            @param mirror Whether axis labels should be drawn on both sides of the
                 main axis line.*/
         void MirrorBracketsWhenDoubleSided(const bool mirror) noexcept
             { m_mirrorBracketsWhenDoubleSided = mirror; }

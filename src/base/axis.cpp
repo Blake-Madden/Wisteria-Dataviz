@@ -1355,7 +1355,7 @@ namespace Wisteria::GraphItems
                                 ScaleToScreenAndCanvas(1),
                                 wxPoint(connectionX, position1),
                                 wxPoint(connectionX -
-                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()),position1));
+                                    ScaleToScreenAndCanvas(bracket.GetTickmarkLength()), position1));
                             }
                         else if (bracket.IsStraightLines())
                             {
@@ -1397,7 +1397,7 @@ namespace Wisteria::GraphItems
                         {
                         bracketLabel.SetAnchorPoint(
                             wxPoint(axisRect.GetLeft(),
-                            position2-safe_divide(bracketLabelSize.GetHeight(),2)) );
+                            position2-safe_divide(bracketLabelSize.GetHeight(), 2)) );
                         bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         }
                     else // AnchorWithLine
@@ -1456,7 +1456,7 @@ namespace Wisteria::GraphItems
                             {
                             bracketLabel.SetAnchorPoint(
                                 wxPoint(axisRect.GetRight(),
-                                position2-safe_divide(bracketLabelSize.GetHeight(),2)) );
+                                position2-safe_divide(bracketLabelSize.GetHeight(), 2)) );
                             bracketLabel.SetAnchoring(Wisteria::Anchoring::TopRightCorner);
                             }
                         else // AnchorWithLine
