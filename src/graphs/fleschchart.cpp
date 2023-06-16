@@ -119,7 +119,8 @@ namespace Wisteria::Graphs
         const wxString& wordsPerSentenceColumnName,
         const wxString& scoreColumnName,
         const wxString& syllablesPerWordColumnName,
-        std::optional<const wxString> groupColumnName /*= std::nullopt*/)
+        std::optional<const wxString> groupColumnName /*= std::nullopt*/,
+        bool includeSyllaleRulerDocumentGroups /*= false*/)
         {
         SetDataset(data);
         ResetGrouping();
@@ -181,7 +182,9 @@ namespace Wisteria::Graphs
                 }
             m_jitterSyllables.CalcSpread(jitterPoints);
 
-            if (IsIncludingSyllableRulerDocumentGroups() &&
+            auto& syllableRuler{ GetCustomAxes()[2] };
+            syllableRuler.ClearBrackets();
+            if (includeSyllaleRulerDocumentGroups &&
                 data->HasValidIdData() && // needed for labels
                 data->GetRowCount() > 1 &&
                 data->GetRowCount() <= 50)
@@ -231,20 +234,23 @@ namespace Wisteria::Graphs
                 bucket3.m_label.Trim();
                 bucket4.m_label.Trim();
 
-                auto& syllableRuler{ GetCustomAxes()[2] };
                 syllableRuler.MirrorBracketsWhenDoubleSided(false);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket1.m_start, bucket1.m_end,
                     bucket1.m_start + ((bucket1.m_end - bucket1.m_start) * math_constants::half),
                     bucket1.m_label));
+                syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket2.m_start, bucket2.m_end,
                     bucket2.m_start + ((bucket2.m_end - bucket2.m_start) * math_constants::half),
                     bucket2.m_label));
+                syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket3.m_start, bucket3.m_end,
                     bucket3.m_start + ((bucket3.m_end - bucket3.m_start) * math_constants::half),
                     bucket3.m_label));
+                syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket4.m_start, bucket4.m_end,
                     bucket4.m_start + ((bucket4.m_end - bucket4.m_start) * math_constants::half),
                     bucket4.m_label));
+                syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
                 }
             }
         }

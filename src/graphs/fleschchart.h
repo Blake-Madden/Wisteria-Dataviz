@@ -65,6 +65,10 @@ namespace Wisteria::Graphs
             @param syllablesPerWordColumnName The column containing the
                 number of syllables per word (shown on right "ruler" on chart).
             @param groupColumnName The (optional) categorical column to use for grouping.
+            @param includeSyllaleRulerDocumentGroups Sets whether to include brackets along
+                the syllables-per-word ruler, showing the document names under each bracket.\n
+                This will only be applied if there are 1-50 documents on the
+                graph, and the document names must be in the dataset's ID column.
             @throws std::runtime_error If any columns can't be found, throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
@@ -72,7 +76,8 @@ namespace Wisteria::Graphs
                      const wxString& wordsPerSentenceColumnName,
                      const wxString& scoreColumnName,
                      const wxString& syllablesPerWordColumnName,
-                     std::optional<const wxString> groupColumnName = std::nullopt);
+                     std::optional<const wxString> groupColumnName = std::nullopt,
+                     bool includeSyllaleRulerDocumentGroups = false);
 
         /** @brief Sets whether to draw a line connecting the points between the rulers.
             @param show Whether to draw the line.
@@ -84,18 +89,6 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool IsShowingConnectionLine() const noexcept
             { return m_showConnectionLine; }
-
-        /** @brief Sets whether to include brackets along the syllables-per-word ruler,
-                showing the document names under each bracket.
-            @details This will only be applied if there are 1-50 documents on the
-                graph, and the document names must be in the dataset's ID column.
-            @param include Whether to enable this feature.*/
-        void IncludeSyllableRulerDocumentGroups(const bool include) noexcept
-            { m_includeSyllaleRulerDocumentGroups = include; }
-        /// @returns @c true if document brackets will be shown along the right-side ruler.
-        [[nodiscard]]
-        bool IsIncludingSyllableRulerDocumentGroups() const noexcept
-            { return m_includeSyllaleRulerDocumentGroups; }
     private:
         void RecalcSizes(wxDC& dc) final;
 
@@ -107,7 +100,6 @@ namespace Wisteria::Graphs
         Wisteria::Data::Jitter m_jitterScores{ Wisteria::AxisType::LeftYAxis };
         Wisteria::Data::Jitter m_jitterSyllables{ Wisteria::AxisType::LeftYAxis };
         bool m_showConnectionLine{ true };
-        bool m_includeSyllaleRulerDocumentGroups{ false };
         };
     }
 
