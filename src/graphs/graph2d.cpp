@@ -508,6 +508,8 @@ namespace Wisteria::Graphs
             {
             customAxis.SetScaling(GetScaling());
             customAxis.SetAxisLabelScaling(GetScaling());
+            for (auto& bracket : customAxis.GetBrackets())
+                { bracket.GetLabel().SetScaling(GetScaling()); }
             }
         GetTitle().SetScaling(GetScaling());
         GetSubtitle().SetScaling(GetScaling());
@@ -581,27 +583,82 @@ namespace Wisteria::Graphs
         AdjustPlotArea(dc);
 
         // fix overlapping custom axis bracket labels
-        constexpr double minBracketFontScale{ .75 };
+        constexpr double minBracketFontScale{ math_constants::half };
         std::optional<double> smallestBracketFontScale{ std::nullopt };
         for (auto& customAxis : GetCustomAxes())
             {
-            if (customAxis.GetBrackets().size() > 1)
+            wxCoord labelPosition{ 0 }, nextLabelPosition{ 0 };
+            if (customAxis.GetBrackets().size() > 1 && customAxis.IsVertical())
                 {
                 for (size_t i = 0; i < (customAxis.GetBrackets().size() - 1); ++i)
                     {
-                    auto& theLabel{ customAxis.GetBrackets()[i].GetLabel() };
-                    const auto bBox = theLabel.GetBoundingBox(dc);
-                    const auto nextBBox = customAxis.GetBrackets()[i + 1].GetLabel().GetBoundingBox(dc);
-                    if (bBox.Intersects(nextBBox))
+                    if (customAxis.GetPhysicalCoordinate(
+                            customAxis.GetBrackets()[i].GetStartPosition(), labelPosition) &&
+                        customAxis.GetPhysicalCoordinate(
+                            customAxis.GetBrackets()[i + 1].GetLabelPosition(), nextLabelPosition))
                         {
-                        const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
-                        const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
-                        theLabel.SetScaling(theLabel.GetScaling() *
-                                            (1.0 - percentEclipsed));
-                        smallestBracketFontScale =
-                            std::max(minBracketFontScale,
-                                std::min(smallestBracketFontScale.value_or(theLabel.GetScaling()),
-                                         theLabel.GetScaling()));
+                        auto bracketLabel{ customAxis.GetBrackets()[i].GetLabel() };
+                        bracketLabel.SetAnchorPoint(wxPoint(0, labelPosition));
+                        bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        auto bBox = bracketLabel.GetBoundingBox(dc);
+                        bBox.y -= bBox.GetHeight() * math_constants::half;
+
+                        auto nextBracketLabel{ customAxis.GetBrackets()[i + 1].GetLabel() };
+                        nextBracketLabel.SetAnchorPoint(wxPoint(0, nextLabelPosition));
+                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        auto nextBBox = nextBracketLabel.GetBoundingBox(dc);
+                        nextBBox.y -= nextBBox.GetHeight() * math_constants::half;
+                        if (bBox.Intersects(nextBBox))
+                            {
+                            const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
+                            const auto percentEclipsed = safe_divide<double>(heightEclipsed, bBox.GetHeight());
+                            customAxis.GetBrackets()[i].GetLabel().SetScaling(
+                                std::max(minBracketFontScale,
+                                    customAxis.GetBrackets()[i].GetLabel().GetScaling() *
+                                        (1.0 - percentEclipsed)) );
+                            smallestBracketFontScale =
+                                std::max(minBracketFontScale,
+                                    std::min(smallestBracketFontScale.value_or(
+                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()),
+                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()));
+                            }
+                        }
+                    }
+                }
+            else if (customAxis.GetBrackets().size() > 1 && customAxis.IsHorizontal())
+                {
+                for (size_t i = 0; i < (customAxis.GetBrackets().size() - 1); ++i)
+                    {
+                    if (customAxis.GetPhysicalCoordinate(
+                            customAxis.GetBrackets()[i].GetStartPosition(), labelPosition) &&
+                        customAxis.GetPhysicalCoordinate(
+                            customAxis.GetBrackets()[i + 1].GetLabelPosition(), nextLabelPosition))
+                        {
+                        auto bracketLabel{ customAxis.GetBrackets()[i].GetLabel() };
+                        bracketLabel.SetAnchorPoint(wxPoint(labelPosition, 0));
+                        bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        auto bBox = bracketLabel.GetBoundingBox(dc);
+                        bBox.x -= bBox.GetWidth() * math_constants::half;
+
+                        auto nextBracketLabel{ customAxis.GetBrackets()[i + 1].GetLabel() };
+                        nextBracketLabel.SetAnchorPoint(wxPoint(nextLabelPosition, 0));
+                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        auto nextBBox = nextBracketLabel.GetBoundingBox(dc);
+                        nextBBox.x -= nextBBox.GetWidth() * math_constants::half;
+                        if (bBox.Intersects(nextBBox))
+                            {
+                            const auto widthEclipsed = bBox.GetRight() - nextBBox.GetLeft();
+                            const auto percentEclipsed = safe_divide<double>(widthEclipsed, bBox.GetWidth());
+                            customAxis.GetBrackets()[i].GetLabel().SetScaling(
+                                std::max(minBracketFontScale,
+                                    customAxis.GetBrackets()[i].GetLabel().GetScaling() *
+                                        (1.0 - percentEclipsed)) );
+                            smallestBracketFontScale =
+                                std::max(minBracketFontScale,
+                                    std::min(smallestBracketFontScale.value_or(
+                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()),
+                                             customAxis.GetBrackets()[i].GetLabel().GetScaling()));
+                            }
                         }
                     }
                 }
@@ -616,6 +673,9 @@ namespace Wisteria::Graphs
                     { bracket.GetLabel().SetScaling(smallestBracketFontScale.value()); }
                 }
             }
+
+        // adjust again
+        AdjustPlotArea(dc);
 
         // fill in the plot area's color (if being used, by default it is transparent)
         if (GetBackgroundColor().IsOk() &&
