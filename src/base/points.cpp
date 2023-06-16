@@ -202,7 +202,7 @@ namespace Wisteria::GraphItems
                 { return wxRect(); }
             // just one point, so no line to draw
             // (just draw point if shapes aren't being drawn; if points have a shape,
-            //  then it will be drawn later below)
+            // then it will be drawn later below)
             else if (okPointsCount == 1)
                 {
                 // find the valid point, draw it, then we're done

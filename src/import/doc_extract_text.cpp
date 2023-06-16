@@ -348,7 +348,7 @@ namespace lily_of_the_valley
                                 }
                             else
                                 {
-                                //  it's bogus trash; ignore it
+                                // it's bogus trash; ignore it
                                 currentState.m_non_printable_char_detected = true;
                                 }
                             currentState.m_hyperlink_begin_char_detected = false;

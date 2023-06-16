@@ -136,7 +136,7 @@ void RibbonMetroArtProvider::SetColourScheme(
     m_tab_separator_colour = wxColour (245,246,247); // LikePrimary(0.9, 0.24, 0.05);
     m_tab_ctrl_background_brush = m_secondary_scheme_colour;
     m_tab_hover_background_colour = m_tertiary_scheme_colour;
-    m_tab_hover_background_top_colour = *wxBLUE; //  wxColour(254,254,254); // LikePrimary(1.4, 0.36, 0.08);
+    m_tab_hover_background_top_colour = *wxBLUE; // wxColour(254,254,254); // LikePrimary(1.4, 0.36, 0.08);
     m_tab_border_pen = wxColour(218,219,220); // LikePrimary(1.4, 0.03, -0.05);
     m_tab_separator_gradient_colour = LikePrimary(1.7, -0.15, -0.18);
     m_tab_hover_background_top_gradient_colour =  *wxBLUE; // wxColour(254,254,254); // LikePrimary(1.8, 0.34, 0.13);

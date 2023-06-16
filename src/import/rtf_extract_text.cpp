@@ -12,7 +12,7 @@ namespace lily_of_the_valley
     {
     rtf_to_text_symbol_table::rtf_to_text_symbol_table()
         {
-        //  keyword     dflt    fPassDflt   kwd         idx         printString
+        // keyword     dflt    fPassDflt   kwd         idx         printString
         m_symbols = {
             rtf_symbol("b", 1, false, KWD::kwdBold, static_cast<int>(IPROP::ipropBold), L""),
             rtf_symbol("ul", 1, false, KWD::kwdUnderline, static_cast<int>(IPROP::ipropUnderline), L""),
@@ -120,7 +120,7 @@ namespace lily_of_the_valley
     //------------------------------------------------
     rtf_to_html_symbol_table::rtf_to_html_symbol_table()
         {
-        //  keyword     dflt    fPassDflt   kwd         idx         printString
+        // keyword     dflt    fPassDflt   kwd         idx         printString
         m_symbols = {
             rtf_symbol("b", 1, false, KWD::kwdBold, static_cast<int>(IPROP::ipropBold), L""),
             rtf_symbol("ul", 1, false, KWD::kwdUnderline, static_cast<int>(IPROP::ipropUnderline), L""),

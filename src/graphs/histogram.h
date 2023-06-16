@@ -181,7 +181,7 @@ namespace Wisteria::Graphs
             Data::GroupIdType m_block{ 0 };
             // 0-based index into the color scheme
             // (based on the alphabetically order of the group label from
-            //  the secondary group column)
+            // the secondary group column)
             size_t m_schemeIndex{ 0 };
             // the name of the group for a subblock in a bar (from the secondary group column)
             wxString m_groupName;

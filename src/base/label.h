@@ -421,7 +421,7 @@ namespace Wisteria::GraphItems
                 account the (optional) minimum size of the label in conjunction with this.*/
         void GetSize(wxDC& dc, wxCoord& width, wxCoord& height) const;
         /// @returns The offset from the top if user-defined minimum size is being used it is
-        ///  taller than the measured size.
+        ///     taller than the measured size.
         [[nodiscard]]
         wxCoord CalcPageVerticalOffset(const wxDC& dc) const;
         /// @returns The offset from the left if user-defined minimum size is being used it is

@@ -1012,8 +1012,8 @@ namespace Wisteria::GraphItems
             { return m_minorTickMarkLength; }
         /// @brief Sets the length of the minor tick marks (i.e., tick marks between axis labels).
         /// @param length The length of the minor tickmarks.
-        ///  This is a pixel value that the framework will scale to the screen for you.
-        ///  (The parent axis will also scale this as the graph's scaling changes.)
+        ///     This is a pixel value that the framework will scale to the screen for you.
+        ///     (The parent axis will also scale this as the graph's scaling changes.)
         void SetMinorTickMarkLength(const int length) noexcept
             { m_minorTickMarkLength = length; }
 
@@ -1024,8 +1024,8 @@ namespace Wisteria::GraphItems
         /// @brief Sets the length of the major tick marks
         ///     (i.e., tick marks that correspond to axis labels).
         /// @param length The length of the major tickmarks.
-        ///  This is a pixel value that the framework will scale to the screen for you.
-        ///  (The parent axis will also scale this as the graph's scaling changes.)
+        ///     This is a pixel value that the framework will scale to the screen for you.
+        ///     (The parent axis will also scale this as the graph's scaling changes.)
         void SetMajorTickMarkLength(const int length) noexcept
             { m_majorTickMarkLength = length; }
 

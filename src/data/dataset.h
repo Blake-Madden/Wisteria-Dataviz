@@ -605,17 +605,17 @@ namespace Wisteria::Data
             wxString m_columnName;
             /// @brief The method to import the column with.
             /// @details The numeric code assigned to missing data (i.e., empty string)
-            ///  is non-deterministic. It will be whatever the next ID in the sequence is when
-            ///  the first empty value is encountered in the column.
-            ///  `ColumnWithStringTable::FindMissingDataCode()` can be used to
-            ///  find this code after loading the data.
+            ///     is non-deterministic. It will be whatever the next ID in the sequence is when
+            ///     the first empty value is encountered in the column.
+            ///     `ColumnWithStringTable::FindMissingDataCode()` can be used to
+            ///     find this code after loading the data.
             CategoricalImportMethod m_importMethod{ CategoricalImportMethod::ReadAsStrings };
             /// @brief The default missing data code.
             /// @details This is only used if using the @c ReadAsIntegers method.
-            ///  When an empty value is encountered in the column, this value will be assigned
-            ///  to it.\n
-            ///  Caller is responsible for assigning an empty string to this code when
-            ///  connecting a string table to this column after import.
+            ///     When an empty value is encountered in the column, this value will be assigned
+            ///     to it.\n
+            ///     Caller is responsible for assigning an empty string to this code when
+            ///     connecting a string table to this column after import.
             GroupIdType m_mdCode{ 0 };
             };
 

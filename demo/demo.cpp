@@ -1756,7 +1756,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // In the first column (the donut chart and the note beneath it),
         // this sets the proportions of the rows based on how tall the note is.
         // (This will happen because we enabled the FitCanvasHeightToContent() property
-        //  for the note above.)
+        // for the note above.)
         subframe->m_canvas->CalcRowDimensions();
 
         // set the canvas's print orientation to landscape

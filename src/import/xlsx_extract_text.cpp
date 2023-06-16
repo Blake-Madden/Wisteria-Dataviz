@@ -628,7 +628,7 @@ namespace lily_of_the_valley
                     // year, day, week, or quarter markers OR
                     // "mmm" which means month usually when day isn't included.
                     // (You can't simply look for 'm' as that can be minute when
-                    //  the format is just a time.)
+                    // the format is just a time.)
                     if (formatStr.find_first_of(L"ydwq") != std::wstring::npos ||
                         formatStr.find(L"mmm") != std::wstring::npos)
                         { dateFormatIds.insert(fmtId); }

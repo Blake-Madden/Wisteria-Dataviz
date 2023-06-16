@@ -1318,7 +1318,7 @@ namespace Wisteria
             long GetId() const noexcept
                 { return m_itemInfo.m_id; }
             /// @returns The list of selected subitem IDs.
-            ///  This is only relevant for objects with subitems.
+            ///     This is only relevant for objects with subitems.
             [[nodiscard]]
             std::set<long>& GetSelectedIds() noexcept
                 { return m_itemInfo.m_selectedIds; }
