@@ -92,20 +92,20 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxSizerFlags::GetDefaultBorder()));
     imageSizeSizer->Add(imageSizeInfoSizer,1,wxEXPAND);
 
-    wxStaticText* widthLabel = new wxStaticText(this, wxID_STATIC, _(L"Width:"),
+    wxStaticText* widthLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC, _(L"Width:"),
         wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(widthLabel, 0, wxALIGN_CENTER_VERTICAL);
-    wxSpinCtrl* widthCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_WIDTH_ID,
+    wxSpinCtrl* widthCtrl = new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_WIDTH_ID,
         std::to_wstring(m_options.m_imageSize.GetWidth()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         128, 10'000);
     widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
     imageSizeInfoSizer->Add(widthCtrl, 0);
 
-    wxStaticText* heightLabel = new wxStaticText(this, wxID_STATIC, _(L"Height:"),
+    wxStaticText* heightLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC, _(L"Height:"),
         wxDefaultPosition, wxDefaultSize);
     imageSizeInfoSizer->Add(heightLabel, 0, wxALIGN_CENTER_VERTICAL);
-    wxSpinCtrl* heightCtrl = new wxSpinCtrl(this, ControlIDs::IMAGE_HEIGHT_ID,
+    wxSpinCtrl* heightCtrl = new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_HEIGHT_ID,
         std::to_wstring(m_options.m_imageSize.GetHeight()),
         wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
         128, 10'000);
@@ -135,8 +135,9 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         wxBoxSizer* compressionSizer = new wxBoxSizer(wxHORIZONTAL);
         tiffOptionsBoxSizer->Add(compressionSizer, 0, wxALIGN_LEFT|wxALL,
                                  wxSizerFlags::GetDefaultBorder());
-        wxStaticText* compressionLabel = new wxStaticText(this, wxID_STATIC, _(L"Compression:"),
-                                                          wxDefaultPosition, wxDefaultSize, 0);
+        wxStaticText* compressionLabel =
+            new wxStaticText(tiffOptionsBoxSizer->GetStaticBox(), wxID_STATIC, _(L"Compression:"),
+                             wxDefaultPosition, wxDefaultSize, 0);
         compressionSizer->Add(compressionLabel, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT,
                               wxSizerFlags::GetDefaultBorder());
 
@@ -145,9 +146,10 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
         compressionChoices.Add(_DT(L"Lempel-Ziv & Welch", DTExplanation::ProperNoun));
         compressionChoices.Add(_DT(L"JPEG"));
         compressionChoices.Add(_(L"Deflate"));
-        m_tiffCompressionCombo = new wxComboBox(this, wxID_ANY, wxEmptyString,
-                                            wxDefaultPosition, wxDefaultSize, compressionChoices,
-                                            wxCB_DROPDOWN|wxCB_READONLY);
+        m_tiffCompressionCombo =
+            new wxComboBox(tiffOptionsBoxSizer->GetStaticBox(), wxID_ANY, wxEmptyString,
+                           wxDefaultPosition, wxDefaultSize, compressionChoices,
+                           wxCB_DROPDOWN|wxCB_READONLY);
         m_tiffCompressionCombo->SetSelection((m_options.m_tiffCompression == TiffCompression::CompressionNone) ?
                                                 0 : (m_options.m_tiffCompression == TiffCompression::CompressionLZW) ?
                                 1 : (m_options.m_tiffCompression == TiffCompression::CompressionJPEG) ?
@@ -159,7 +161,8 @@ void ImageExportDlg::CreateControls(const wxBitmapType bitmapType)
     if (m_originalBitmap.IsOk())
         {
         wxStaticBoxSizer* previewSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Preview"));
-        m_previewThumbnail = new Thumbnail(this, m_originalBitmap, Thumbnail::ClickMode::DoNothing,
+        m_previewThumbnail =
+            new Thumbnail(previewSizer->GetStaticBox(), m_originalBitmap, Thumbnail::ClickMode::DoNothing,
             false, wxID_ANY, wxDefaultPosition, wxSize(128,128));
         previewSizer->Add(m_previewThumbnail);
         column2Sizer->Add(previewSizer);
