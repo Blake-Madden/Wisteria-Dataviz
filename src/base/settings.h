@@ -24,7 +24,7 @@ namespace Wisteria
         - @c DEBUG_LOG_INFO: enables @ LogExtraInfo.
         - @c DEBUG_BOXES: enables @ DrawBoundingBoxesOnSelection.
         - @c DEBUG_DRAW_INFO: enables @ DrawInformationOnSelection.
-        - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawExtraInformation.
+        - @c DEBUG_DRAW_EXTRA_INFO enables @ DrawInformationOnSelection and @ DrawExtraInformation.
         - @c DEBUG_DRAW_EXP_CODE enables @ IncludeExperimentalCode.
         - @c DEBUG_FILE_IO enables @ AllowFileIO.
 
@@ -169,7 +169,7 @@ namespace Wisteria
 #ifdef DEBUG_BOXES
         DebugSettings::DrawBoundingBoxesOnSelection|
 #endif
-#ifdef DEBUG_DRAW_INFO
+#if defined (DEBUG_DRAW_INFO) || defined (DEBUG_DRAW_EXTRA_INFO)
         DebugSettings::DrawInformationOnSelection|
 #endif
 #ifdef DEBUG_DRAW_EXTRA_INFO
