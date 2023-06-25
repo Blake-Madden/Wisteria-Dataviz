@@ -239,18 +239,22 @@ namespace Wisteria::Graphs
                     bucket1.m_start + ((bucket1.m_end - bucket1.m_start) * math_constants::half),
                     bucket1.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
+                syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket2.m_start, bucket2.m_end,
                     bucket2.m_start + ((bucket2.m_end - bucket2.m_start) * math_constants::half),
                     bucket2.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
+                syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket3.m_start, bucket3.m_end,
                     bucket3.m_start + ((bucket3.m_end - bucket3.m_start) * math_constants::half),
                     bucket3.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
+                syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
                 syllableRuler.AddBracket(Axis::AxisBracket(bucket4.m_start, bucket4.m_end,
                     bucket4.m_start + ((bucket4.m_end - bucket4.m_start) * math_constants::half),
                     bucket4.m_label));
                 syllableRuler.GetBrackets().back().GetLabel().SetLineSpacing(0);
+                syllableRuler.GetBrackets().back().GetLabel().SetRightPadding(5);
                 }
             }
         }
