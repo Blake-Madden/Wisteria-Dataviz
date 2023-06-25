@@ -2416,13 +2416,17 @@ namespace Wisteria::GraphItems
                     wxString::Format(_DT(L"Bounding Box (x,y,width,height): %d, %d, %d, %d\n"
                                           "Axis Line Points: (%d, %d), (%d, %d)\n"
                                           "Scaling: %s\n"
-                                          "Axis Label Scaling: %s"),
+                                          "Axis Label Scaling: %s\n"
+                                          "Bracket Label Scaling: %s"),
                         bBox.x, bBox.y, bBox.width, bBox.height,
                         GetBottomPoint().x, GetBottomPoint().y,
                         GetTopPoint().x, GetTopPoint().y,
                         wxNumberFormatter::ToString(GetScaling(), 1,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes),
                         wxNumberFormatter::ToString(GetAxisLabelScaling(), 1,
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                        wxNumberFormatter::ToString(
+                            GetBrackets().size() ? GetBrackets().front().GetLabel().GetScaling() : 0.0, 1,
                             wxNumberFormatter::Style::Style_NoTrailingZeroes))).
                     AnchorPoint(wxPoint(bBox.GetBottomLeft().x + bBox.GetWidth()/2,
                                 bBox.GetBottomRight().y)).
@@ -3484,7 +3488,7 @@ namespace Wisteria::GraphItems
         wxCoord spacing{ 0 };
         for (const auto& bracket : GetBrackets())
             {
-            spacing = std::max(bracket.CalcWidth(dc, GetDPIScaleFactor()), spacing);
+            spacing = std::max(bracket.CalcWidth(dc, GetScaling(), GetDPIScaleFactor()), spacing);
             }
         return spacing;
         }
@@ -3771,12 +3775,12 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    wxCoord Axis::AxisBracket::CalcWidth(wxDC& dc, const double dpiScaling) const
+    wxCoord Axis::AxisBracket::CalcWidth(wxDC& dc, const double scaling, const double dpiScaling) const
         {
         auto theLabel{ GetLabel() };
         theLabel.SetDPIScaleFactor(dpiScaling);
         const wxSize labelSize = theLabel.GetBoundingBox(dc).GetSize();
-        wxCoord size = GetLineSpacing() * theLabel.GetScaling() * dpiScaling;
+        wxCoord size = GetLineSpacing() * scaling * dpiScaling;
         size += (GetOrientation() == Orientation::Vertical) ? labelSize.GetWidth() : labelSize.GetHeight();
         return size;
         }

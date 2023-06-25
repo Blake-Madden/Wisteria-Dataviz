@@ -344,23 +344,25 @@ namespace Wisteria::GraphItems
         private:
             /** @returns The width of the bracket (including longest label and bracket lines).
                 @param dc A graphics context to use for measuring the bracket.
-                @param canvas The bracket's parent canvas to use for DPI scaling.*/
+                @param scaling The scaling of the parent axis.
+                @param dpiScaling The DPI scaling of the parent canvas.*/
             [[nodiscard]]
-            wxCoord CalcWidth(wxDC& dc, const double dpiScaling) const;
+            wxCoord CalcWidth(wxDC& dc, const double scaling, const double dpiScaling) const;
             /** @brief Draws the line between the bracket label area and the parent axis.
                 @param dc The device context to draw on.
                 @param scaling The scaling to apply to shapes (e.g., arrowheads) if applicable.\n
-                    Note that scaling does not relate to the line length since two explicit points
-                    are used here. If the line length needs to be scaled, then caller much apply
-                    that transformation to the points.
+                    This scaling should include the screen and DPI scaling, since the brackets
+                    will not have access to that information from the parent axis.
+                    Also, note that scaling does not relate to the line length along the parent axis
+                    since two explicit points are used here. If the line length needs to be scaled,
+                    then caller must apply that transformation to the points.
                 @param axisPoint The starting point from the axis.
                 @param bracketPoint The ending point, connecting to the bracket label area.
                 @note This function is only meant to be called from the parent axis when rendering
                     the brackets.*/
             void DrawConnectionLine(wxDC& dc, const double scaling, const wxPoint axisPoint,
                 const wxPoint bracketPoint) const;
-            /// @returns The space between the bracket label and outer area of parent axis.
-            ///     This is how much space is needed to draw the bracket lines.
+            /// @returns The connecting line length and space between that and the bracket label.
             /// @note If lines aren't being drawn, then will return a recommended amount of padding
             ///     between bracket label and axis labels.
             [[nodiscard]]
