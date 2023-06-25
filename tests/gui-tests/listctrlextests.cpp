@@ -582,6 +582,219 @@ TEST_CASE("ListCtrlExDataProvider", "[listctrlexdataprovider]")
         }
     }
 
+TEST_CASE("ListCtrlEx to LaTeX", "[listctrlex]")
+    {
+    auto m_dataProvider = new ListCtrlExNumericDataProvider;
+    auto m_list = new ListCtrlEx(wxTheApp->GetTopWindow(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxBORDER_SUNKEN);
+    m_list->Hide();
+
+    const auto Reset2Columns = [&m_dataProvider, &m_list]()
+        {
+        m_dataProvider->SetSize(7,2);
+        m_dataProvider->SetItemText(0,0,L"Text");
+        m_dataProvider->SetItemText(1,0,L"tExt2");
+        m_dataProvider->SetItemText(2,0,L"text");
+        m_dataProvider->SetItemText(3,0,L"teXt2");
+        m_dataProvider->SetItemText(4,0,L"text");
+        m_dataProvider->SetItemValue(5,0,72);
+        m_dataProvider->SetItemValue(6,0,7);
+        // other column
+        m_dataProvider->SetItemText(0,1,L"Sext");
+        m_dataProvider->SetItemText(1,1,L"sExt2");
+        m_dataProvider->SetItemText(2,1,L"sext");
+        m_dataProvider->SetItemText(3,1,L"seXt2");
+        m_dataProvider->SetItemText(4,1,L"sext");
+        m_dataProvider->SetItemValue(5,1,82);
+        m_dataProvider->SetItemValue(6,1,8);
+        m_list->SetVirtualDataProvider(m_dataProvider);
+        m_list->SetVirtualDataSize(7, 2);
+        m_list->InsertColumn(0, L"NAME");
+        m_list->InsertColumn(1, L"OTHER");
+        };
+
+    Reset2Columns();
+
+    SECTION("Format to LaTEx all rows")
+        {
+        m_list->Select(0);
+        m_list->Select(3);
+        m_list->Select(6);
+        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportAll, 0, -1, 0, -1, true, L"My Table Caption");
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\caption{My Table Caption} \label{tab:long} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Text & Sext \\
+tExt2 & sExt2 \\
+text & sext \\
+teXt2 & seXt2 \\
+text & sext \\
+72 & 82 \\
+7 & 8 \\
+
+\end{longtable})");
+    }
+
+    SECTION("Format to LaTEx only selected rows")
+        {
+        m_list->Select(0);
+        m_list->Select(3);
+        m_list->Select(6);
+        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportSelected, 0 ,-1, 0, -1, true, L"My Table Caption");
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\caption{My Table Caption} \label{tab:long} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{OTHER}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Text & Sext \\
+teXt2 & seXt2 \\
+7 & 8 \\
+
+\end{longtable})");
+        }
+
+    SECTION("Format to LaTeX custom row range")
+        {
+        wxString ouputText= m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, 0);
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+teXt2 \\
+text \\
+72 \\
+
+\end{longtable})");
+        }
+
+    SECTION("Format to LaTeX custom column range")
+        {
+        m_dataProvider->SetSize(7,2);
+        m_dataProvider->SetItemText(0,1,L"2Text");
+        m_dataProvider->SetItemText(1,1,L"2tExt2");
+        m_dataProvider->SetItemText(2,1,L"2text");
+        m_dataProvider->SetItemText(3,1,L"2teXt2");
+        m_dataProvider->SetItemText(4,1,L"2text");
+        m_dataProvider->SetItemValue(5,1,272);
+        m_dataProvider->SetItemValue(6,1,27);
+        m_list->SetVirtualDataSize(7, 2);
+        m_list->DeleteAllColumns();
+        m_list->InsertColumn(0, L"NAME");
+        m_list->InsertColumn(1, wxString("NAME2"));
+        wxString ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1);
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} & \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Text & 2Text \\
+tExt2 & 2tExt2 \\
+text & 2text \\
+teXt2 & 2teXt2 \\
+text & 2text \\
+72 & 272 \\
+7 & 27 \\
+
+\end{longtable})");
+        // just get the first column
+        ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Text \\
+tExt2 \\
+text \\
+teXt2 \\
+text \\
+72 \\
+7 \\
+
+\end{longtable})");
+        // get last column
+        ouputText = m_list->FormatToLaTeX(ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
+        CHECK(ouputText == LR"(\begin{longtable}{|l|l|}
+\hline \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{NAME2}} \\ \hline
+\endhead
+
+\hline \multicolumn{2}{|r|}{{Continued on next page}} \\ \hline
+\endfoot
+
+\hline
+\endlastfoot
+
+2Text \\
+2tExt2 \\
+2text \\
+2teXt2 \\
+2text \\
+272 \\
+27 \\
+
+\end{longtable})");
+        }
+    }
+
 TEST_CASE("ListCtrlEx", "[listctrlex]")
     {
     auto m_dataProvider = new ListCtrlExNumericDataProvider;
@@ -829,32 +1042,32 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->Select(0);
         m_list->Select(3);
         m_list->Select(6);
-        m_list->FormatToText(ouputText, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportSelected);
         CHECK(wxString("NAME\nText\nteXt2\n7") == ouputText);
         }
     SECTION("Format to text no header")
         {
         wxString ouputText;
-        m_list->FormatToText(ouputText, false, 0, -1, 0, -1, false);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, false);
         CHECK(wxString("Text\ntExt2\ntext\nteXt2\ntext\n72\n7") == ouputText);
         }
     SECTION("Format to text custom row range")
         {
         wxString ouputText;
-        m_list->FormatToText(ouputText, false, 3, 5, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 3, 5, 0, -1, true);
         CHECK(wxString("NAME\nteXt2\ntext\n72") == ouputText);
         }
     SECTION("Format to text custom row range bad")
         {
         wxString ouputText;
-        m_list->FormatToText(ouputText, false, 99, 5, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 99, 5, 0, -1, true);
         CHECK(ouputText.empty());
         // starting point after ending point is nonsense
-        m_list->FormatToText(ouputText, false, 5, 4, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 5, 4, 0, -1, true);
         CHECK(ouputText.empty());
-        m_list->FormatToText(ouputText, false, 0, 99, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, 99, 0, -1, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
-        m_list->FormatToText(ouputText, false, -10, -1, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, -10, -1, 0, -1, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         }
     SECTION("Format to text custom column range")
@@ -871,13 +1084,13 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->InsertColumn(1, wxString("NAME2"));
         wxString ouputText;
         // get both columns
-        m_list->FormatToText(ouputText, false, 0, -1, 0, -1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, -1, true);
         CHECK(ouputText == wxString("NAME\tNAME2\nText\t2Text\ntExt2\t2tExt2\ntext\t2text\nteXt2\t2teXt2\ntext\t2text\n72\t272\n7\t27"));
         // just get the first column
-        m_list->FormatToText(ouputText, false, 0, -1, 0, 0, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 0, 0, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         // get last column
-        m_list->FormatToText(ouputText, false, 0, -1, 1, 1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 1, true);
         CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         }
     SECTION("Format to text custom column range bad")
@@ -894,19 +1107,19 @@ TEST_CASE("ListCtrlEx", "[listctrlex]")
         m_list->InsertColumn(1, L"NAME2");
         wxString ouputText;
         // start bigger then end is nonsense
-        m_list->FormatToText(ouputText, false, 0, -1, 1, 0, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 0, true);
         CHECK(ouputText.empty());
         // bogus negative start should be reset to first column
-        m_list->FormatToText(ouputText, false, 0, -1, -10, 0, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, -10, 0, true);
         CHECK(ouputText == wxString("NAME\nText\ntExt2\ntext\nteXt2\ntext\n72\n7"));
         // bogus (too large) is nonsense
-        m_list->FormatToText(ouputText, false, 0, -1, 99, 1, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 99, 1, true);
         CHECK(ouputText.empty());
         // bogus negative end should be reset to last column
-        m_list->FormatToText(ouputText, false, 0, -1, 1, -10, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, -10, true);
         CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         // bogus (too big) end should be reset to last column
-        m_list->FormatToText(ouputText, false, 0, -1, 1, 10, true);
+        m_list->FormatToText(ouputText, ListCtrlEx::ExportRowSelection::ExportRange, 0, -1, 1, 10, true);
         CHECK(ouputText == wxString("NAME2\n2Text\n2tExt2\n2text\n2teXt2\n2text\n272\n27"));
         }
     SECTION("Set sortable range")

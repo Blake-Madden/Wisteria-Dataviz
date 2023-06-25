@@ -889,20 +889,40 @@ public:
                       const bool includeColumnHeader = true,
                       const bool formatAsStandAloneFile = false,
                       const wxString& tableCaption = wxString{}) const;
+    /// @brief Formats the list control's contents to LaTeX.
+    /// @param rowSelection Specifies how rows and columns should be exported.
+    /// @param firstRow The starting row of the range to format. Defaults to @c 0.
+    /// @param lastRow The ending row of the range to format.\n
+    ///     Defaults to @c -1, which specifies the last row.
+    /// @param firstColumn The starting column of the range to format. Defaults to @c 0.
+    /// @param lastColumn The ending column of the range to format.
+    ///     Defaults to @c -1, which specifies the last column.
+    /// @param includeColumnHeader Specifies whether to include the column headers,
+    ///     which will be the first row.
+    /// @param tableCaption A caption to be drawn above the data.\n
+    ///     Will be inside of a div with class "caption" that can be customized via CSS.
+    /// @returns The list control's content, formatted as LaTeX.
+    [[nodiscard]]
+    wxString FormatToLaTeX(const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
+                           long firstRow = 0,
+                           long lastRow = -1,
+                           long firstColumn = 0,
+                           long lastColumn = -1,
+                           const bool includeColumnHeader = true,
+                           const wxString& tableCaption = wxString{}) const;
     /// @brief Formats the list control's contents to tab delimited text.
     /// @param[out] outputText The text buffer to write to.
-    /// @param onlyIncludeSelectedRows Specifies whether or not to just include
-    ///     the rows that are selected. Defaults to false.
+    /// @param rowSelection Specifies how rows and columns should be exported.
     /// @param firstRow The starting row of the range to format. Defaults to @c 0.
     /// @param lastRow The ending row of the range to format.
     ///     Defaults to @c -1, which specifies the last row.
     /// @param firstColumn The starting column of the range to format. Defaults to @c 0.
     /// @param lastColumn The ending column of the range to format.
     ///     Defaults to @c -1, which specifies the last column.
-    /// @param includeColumnHeader   Specifies whether to include the column headers,
+    /// @param includeColumnHeader Specifies whether to include the column headers,
     ///     which will be the first row.
     void FormatToText(wxString& outputText,
-                      const bool onlyIncludeSelectedRows = false,
+                      const ExportRowSelection rowSelection = ExportRowSelection::ExportAll,
                       long firstRow = 0,
                       long lastRow = -1,
                       long firstColumn = 0,

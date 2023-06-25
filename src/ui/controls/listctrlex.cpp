@@ -1283,7 +1283,7 @@ void ListCtrlEx::OnCopyFirstColumn([[maybe_unused]] wxCommandEvent& event)
                  0, -1, 0, 0, false, true);
 
     wxString selectedText;
-    FormatToText(selectedText, true, 0, -1, 0, 0, false);
+    FormatToText(selectedText, ExportRowSelection::ExportSelected, 0, -1, 0, 0, false);
     if (wxTheClipboard->Open())
         {
         if (selectedText.length() )
@@ -1320,7 +1320,8 @@ void ListCtrlEx::Copy(const bool onlyIncludeSelectedRows, const bool includeColu
                  wxGetMouseState().ShiftDown() ? 0 : -1, includeColumnHeaders, true);
 
     wxString selectedText;
-    FormatToText(selectedText, onlyIncludeSelectedRows, 0, -1, 0,
+    FormatToText(selectedText, onlyIncludeSelectedRows ?
+                 ExportRowSelection::ExportSelected : ExportRowSelection::ExportAll, 0, -1, 0,
                  wxGetMouseState().ShiftDown() ? 0 : -1, includeColumnHeaders);
     if (wxTheClipboard->Open())
         {
@@ -2021,7 +2022,11 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
            "or most word-processing programs."));
     choices.Add(_DT(L"TXT")); descriptions.Add(
         wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _(L"Text"),
-            _(L"This format will write the lists as a tab-delimited file with no formatting.")));
+            _(L"This format will write the list as a tab-delimited file with no formatting.")));
+    choices.Add(_DT(L"LaTeX")); descriptions.Add(
+        wxString::Format(L"<span style='font-weight:bold;'>%s</span><br />%s", _(L"LaTeX"),
+            _(L"This format will write the list in a longtable{} environment that can be "
+               "included in a larger LaTeX document.")));
     RadioBoxDlg exportTypesDlg(this,
         _(L"Select List Format"), wxString{}, _(L"List formats:"), _(L"Export List"),
         choices, descriptions);
@@ -2035,6 +2040,9 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
         break;
     case 1:
         fileFilter = _(L"Text") + _DT(L" (*.txt)|*.txt");
+        break;
+    case 2:
+        fileFilter = _DT(L"TeX (*.tex)|*.tex");
         break;
     default:
         fileFilter = _DT(L"HTML (*.htm;*.html)|*.htm;*.html");
@@ -2058,6 +2066,9 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
         case 1:
             filePath.SetExt(L"txt");
             break;
+        case 2:
+            filePath.SetExt(L"tex");
+            break;
         default:
             filePath.SetExt(L"htm");
             };
@@ -2065,7 +2076,9 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
 
     const GridExportFormat exportFormat =
         (filePath.GetExt().CmpNoCase(L"HTM") == 0 || filePath.GetExt().CmpNoCase(L"HTML") == 0) ?
-        GridExportFormat::ExportHtml : GridExportFormat::ExportText;
+        GridExportFormat::ExportHtml :
+        (filePath.GetExt().CmpNoCase(L"TEX") == 0) ?
+        GridExportFormat::ExportLaTeX : GridExportFormat::ExportText;
     GridExportDlg exportOptionsDlg(GetParent(), GetItemCount(), GetColumnCount(), exportFormat);
     exportOptionsDlg.SetHelpTopic(m_helpProjectPath, m_exportHelpTopic);
     if (exportOptionsDlg.ShowModal() != wxID_OK)
@@ -2077,7 +2090,7 @@ void ListCtrlEx::OnSave([[maybe_unused]] wxCommandEvent& event)
 
 //------------------------------------------------------
 void ListCtrlEx::FormatToText(wxString& outputText,
-                              const bool onlyIncludeSelectedRows /*= false*/,
+                              const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
                               long firstRow /*= 0*/,
                               long lastRow /*= -1*/,
                               long firstColumn /*= 0*/,
@@ -2086,13 +2099,25 @@ void ListCtrlEx::FormatToText(wxString& outputText,
     {
     outputText.clear();
 
-    if (onlyIncludeSelectedRows && GetSelectedItemCount() == 0)
+    if (rowSelection == ExportRowSelection::ExportSelected && GetSelectedItemCount() == 0)
         { return; }
-    if (onlyIncludeSelectedRows)
+    // if saving only selected items, then go through the full range
+    // (selected items will be distinguished as we go through everything)
+    if (rowSelection == ExportRowSelection::ExportSelected)
         {
         firstRow = 0;
-        lastRow = -1;
+        lastRow = GetItemCount()-1;
         }
+    // or if exporting all, then set the range to everything
+    else if (rowSelection == ExportRowSelection::ExportAll)
+        {
+        firstRow = 0;
+        lastRow = GetItemCount()-1;
+        firstColumn = 0;
+        lastColumn = GetColumnCount()-1;
+        }
+    // otherwise, use the provided range
+
     // range check columns
     if (lastColumn < 0 || lastColumn >= GetColumnCount())
         { lastColumn = GetColumnCount()-1; }
@@ -2135,7 +2160,7 @@ void ListCtrlEx::FormatToText(wxString& outputText,
     // format the data
     for (long i = firstRow; i <= lastRow; ++i)
         {
-        if (onlyIncludeSelectedRows && !IsSelected(i))
+        if (rowSelection == ExportRowSelection::ExportSelected && !IsSelected(i))
             { continue; }
         for (long j = firstColumn; j <= lastColumn; ++j)
             {
@@ -2151,15 +2176,15 @@ void ListCtrlEx::FormatToText(wxString& outputText,
 
 //------------------------------------------------------
 void ListCtrlEx::FormatToHtml(wxString& outputText,
-                                bool usePrinterSettings,
-                                const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
-                                long firstRow /*= 0*/,
-                                long lastRow /*= -1*/,
-                                long firstColumn /*= 0*/,
-                                long lastColumn /*= -1*/,
-                                const bool includeColumnHeader /*= true*/,
-                                const bool formatAsStandAloneFile /*= false*/,
-                                const wxString& tableCaption /*= wxString{}*/) const
+                              bool usePrinterSettings,
+                              const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
+                              long firstRow /*= 0*/,
+                              long lastRow /*= -1*/,
+                              long firstColumn /*= 0*/,
+                              long lastColumn /*= -1*/,
+                              const bool includeColumnHeader /*= true*/,
+                              const bool formatAsStandAloneFile /*= false*/,
+                              const wxString& tableCaption /*= wxString{}*/) const
     {
     outputText.clear();
 
@@ -2183,6 +2208,8 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
         firstColumn = 0;
         lastColumn = GetColumnCount()-1;
         }
+    // otherwise, use the provided range
+
     // range check columns
     if (lastColumn < 0 || lastColumn >= GetColumnCount())
         { lastColumn = GetColumnCount()-1; }
@@ -2435,6 +2462,146 @@ void ListCtrlEx::FormatToHtml(wxString& outputText,
     outputText.Trim(true); outputText.Trim(false);
     }
 
+//------------------------------------------------------
+wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= ExportRowSelection::ExportAll*/,
+                                   long firstRow /*= 0*/,
+                                   long lastRow /*= -1*/,
+                                   long firstColumn /*= 0*/,
+                                   long lastColumn /*= -1*/,
+                                   const bool includeColumnHeader /*= true*/,
+                                   const wxString& tableCaption /*= wxString{}*/) const
+    {
+    wxString outputText;
+
+    // validate the input
+    if (rowSelection == ExportRowSelection::ExportSelected && GetSelectedItemCount() == 0)
+        { return wxString{}; }
+    // if saving only selected items, then go through the full range
+    // (selected items will be distinguished as we go through everything)
+    if (rowSelection == ExportRowSelection::ExportSelected)
+        {
+        firstRow = 0;
+        lastRow = GetItemCount()-1;
+        }
+    // or if exporting all, then set the range to everything
+    else if (rowSelection == ExportRowSelection::ExportAll)
+        {
+        firstRow = 0;
+        lastRow = GetItemCount()-1;
+        firstColumn = 0;
+        lastColumn = GetColumnCount()-1;
+        }
+    // otherwise, use the provided range
+
+    // range check columns
+    if (lastColumn < 0 || lastColumn >= GetColumnCount())
+        { lastColumn = GetColumnCount()-1; }
+    if (firstColumn < 0)
+        { firstColumn = 0; }
+    if (firstColumn > lastColumn)
+        { return wxString{}; }
+    // range check rows
+    if (lastRow < 0 || lastRow >= GetItemCount())
+        { lastRow = GetItemCount()-1; }
+    if (firstRow < 0)
+        { firstRow = 0; }
+    if (firstRow >= GetItemCount() || firstRow > lastRow)
+        { return wxString{}; }
+   
+    // allocate buffer to fit the cells that we are writing into it
+    const long numberOfRows = (lastRow-firstRow)+1;
+    const long numberOfColumns = (lastColumn-firstColumn)+1;
+    if (numberOfRows > 0 && numberOfColumns > 0) // would always be the case, but check anyway
+        {
+        // assume that the average length for a cell is 5, and then throw in another 10
+        // for all the HTML tags surrounding everything
+        outputText.reserve(numberOfRows*numberOfColumns*15);
+        }
+
+    const wxString tableStart = [this]()
+        {
+        wxString header = L"\\begin{longtable}{";
+        for (size_t i = 0; i < this->GetColumnCount(); ++i)
+            {
+            header += L"|l";
+            }
+        return header + L"|}";
+        }();
+    const wxString tableEnd = L"\n\\end{longtable}\n";
+
+    // format column headers (this will just be left blank if headers aren't being included)
+    wxString columnHeader;
+    if (includeColumnHeader)
+        {
+        wxListItem Item;
+        Item.SetMask(wxLIST_MASK_TEXT);
+        // format column headers
+        columnHeader += L"\\hline ";
+        for (long i = firstColumn; i <= lastColumn; ++i)
+            {
+            GetColumn(i, Item);
+            wxString itemText = Item.GetText();
+            /// @todo Needs LaTeX encoder
+            // if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
+            //     { itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str(); }
+            columnHeader += wxString::Format(L"\\multicolumn{1}{|c|}{\\textbf{%s}} & ", itemText);
+            }
+        if (columnHeader.length() > 3)
+            { columnHeader.erase(columnHeader.length() - 3); }
+        columnHeader += L" \\\\ \\hline\n";
+        }
+
+    wxString itemText;
+    const auto formatRow =
+        [this, &outputText, &itemText, firstColumn, lastColumn]
+        (const long i, const int rowHeight = -1)
+        {
+        for (long j = firstColumn; j <= lastColumn; ++j)
+            {
+            itemText = GetItemTextFormatted(i, j);
+            /// @todo Needs LaTeX encoder
+            // if (encode.needs_to_be_encoded({ itemText.wc_str(), itemText.length() }))
+            //    { itemText = encode({ itemText.wc_str(), itemText.length() }, true).c_str(); }
+
+            outputText += itemText + L" & ";
+            }
+        if (outputText.length() > 3)
+            { outputText.erase(outputText.length() - 3); }
+        outputText += L" \\\\\n";
+        };
+
+    // format the data
+    outputText += tableStart;
+    if (tableCaption.length())
+        {
+        outputText += wxString::Format(L"\n\\caption{%s} \\label{tab:long} \\\\", tableCaption);
+        }
+    outputText += L"\n" + columnHeader + L"\\endfirsthead\n\n";
+    outputText += wxString::Format(L"\\multicolumn{%d}{c}%%\n"
+        "{{\\bfseries \\tablename\\ \\thetable{} %s}} \\\\\n"
+        "%s"
+        "\\endhead\n\n"
+        "\\hline \\multicolumn{%d}{|r|}{{%s}} \\\\ \\hline\n"
+        "\\endfoot\n\n"
+        "\\hline\n"
+        "\\endlastfoot\n\n",
+        GetColumnCount(),
+        _(L"-- continued from previous page"),
+        columnHeader,
+        GetColumnCount(),
+        _(L"Continued on next page"));
+    for (long i = firstRow; i <= lastRow; ++i)
+        {
+        if (rowSelection == ExportRowSelection::ExportSelected && !IsSelected(i))
+            { continue; }
+        formatRow(i, -1);
+        }
+    outputText += tableEnd;
+    outputText.Trim();
+
+    return outputText;
+    }
+
 // Saves the list view's content as a table in an external format
 //------------------------------------------------------
 bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
@@ -2450,8 +2617,10 @@ bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
     wxFileName::Mkdir(path.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
     const GridExportFormat exportFormat =
-     (path.GetExt().CmpNoCase(L"HTM") == 0 || path.GetExt().CmpNoCase(L"HTML") == 0) ?
-        GridExportFormat::ExportHtml : GridExportFormat::ExportText;
+        (path.GetExt().CmpNoCase(L"HTM") == 0 || path.GetExt().CmpNoCase(L"HTML") == 0) ?
+        GridExportFormat::ExportHtml :
+        (path.GetExt().CmpNoCase(L"TEX") == 0) ?
+        GridExportFormat::ExportLaTeX : GridExportFormat::ExportText;
 
     if (exportOptions.m_toRow == -1)
         { exportOptions.m_toRow = GetItemCount(); }
@@ -2469,9 +2638,21 @@ bool ListCtrlEx::Save(const wxFileName& path, GridExportOptions exportOptions)
             exportOptions.m_fromColumn-1, exportOptions.m_toColumn-1,
             exportOptions.m_includeColumnHeaders, true);
         }
+    else if (exportFormat == GridExportFormat::ExportLaTeX)
+        {
+        outputText = FormatToLaTeX(
+            exportOptions.m_exportAll ? ExportRowSelection::ExportAll :
+            exportOptions.m_exportSelected ? ExportRowSelection::ExportSelected :
+            ExportRowSelection::ExportRange,
+            exportOptions.m_fromRow-1, exportOptions.m_toRow-1,
+            exportOptions.m_fromColumn-1, exportOptions.m_toColumn-1,
+            exportOptions.m_includeColumnHeaders);
+        }
     else
         {
-        FormatToText(outputText, exportOptions.m_exportSelected,
+        FormatToText(outputText, exportOptions.m_exportAll ? ExportRowSelection::ExportAll :
+            exportOptions.m_exportSelected ? ExportRowSelection::ExportSelected :
+            ExportRowSelection::ExportRange,
             exportOptions.m_fromRow-1, exportOptions.m_toRow-1, exportOptions.m_fromColumn-1,
             exportOptions.m_toColumn-1, exportOptions.m_includeColumnHeaders);
         }

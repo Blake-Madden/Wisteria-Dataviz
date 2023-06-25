@@ -53,7 +53,8 @@ namespace Wisteria::UI
         {
         ExportText,  /*!< Plain (tab-delimited) text.*/
         ExportHtml,  /*!< HTML table.*/
-        ExportRtf    /*!< Rich Text Format.*/
+        ExportRtf,   /*!< Rich Text Format.*/
+        ExportLaTeX  /*!< LaTeX.*/
         };
 
     /// @brief Dialog for requesting export options for
