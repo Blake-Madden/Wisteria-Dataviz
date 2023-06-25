@@ -428,7 +428,7 @@ namespace Wisteria::Graphs
             m_plotRect.SetWidth(m_plotRect.GetWidth() - (rightAxisOverhang - m_calculatedRightPadding));
             m_calculatedRightPadding = rightAxisOverhang;
             }
-        
+
         // if axes from this graph are being adjusted to align with something else
         // (e.g., another graph), then adjust them now
         const auto originalPlotArea = GetPlotAreaBoundingBox();
