@@ -213,7 +213,7 @@ namespace Wisteria::Graphs
         addGutterDifferences(GetTopXAxis().GetBoundingBox(dc));
 
         // Adjust for any custom axes also.
-        // Note that we are only interested in how much the custom axes overhang the main.
+        // Note that we are only interested in how much the custom axes overhang the main axes.
         for (const auto& customAxis : GetCustomAxes())
             { addGutterDifferences(customAxis.GetBoundingBox(dc)); }
 
@@ -417,6 +417,18 @@ namespace Wisteria::Graphs
                                    (ScaleToScreenAndCanvas(GetCaption().GetLineSpacing()*2))));
             }
 
+        // adjust axes and do one more pass to ensure nothing like
+        // custom axis brackets are going outside of the area
+        adjustAxesPoints();
+        GetAxesOverhang(leftAxisOverhang, rightAxisOverhang,
+            topAxisOverhang, bottomAxisOverhang, dc);
+
+        if (m_calculatedRightPadding < rightAxisOverhang)
+            {
+            m_plotRect.SetWidth(m_plotRect.GetWidth() - (rightAxisOverhang - m_calculatedRightPadding));
+            m_calculatedRightPadding = rightAxisOverhang;
+            }
+        
         // if axes from this graph are being adjusted to align with something else
         // (e.g., another graph), then adjust them now
         const auto originalPlotArea = GetPlotAreaBoundingBox();
@@ -599,15 +611,13 @@ namespace Wisteria::Graphs
                         {
                         auto bracketLabel{ customAxis.GetBrackets()[i].GetLabel() };
                         bracketLabel.SetAnchorPoint(wxPoint(0, labelPosition));
-                        bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        bracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         auto bBox = bracketLabel.GetBoundingBox(dc);
-                        bBox.y -= bBox.GetHeight() * math_constants::half;
 
                         auto nextBracketLabel{ customAxis.GetBrackets()[i + 1].GetLabel() };
                         nextBracketLabel.SetAnchorPoint(wxPoint(0, nextLabelPosition));
-                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::TopLeftCorner);
                         auto nextBBox = nextBracketLabel.GetBoundingBox(dc);
-                        nextBBox.y -= nextBBox.GetHeight() * math_constants::half;
                         if (bBox.Intersects(nextBBox))
                             {
                             const auto heightEclipsed = bBox.GetBottom() - nextBBox.GetTop();
@@ -636,15 +646,13 @@ namespace Wisteria::Graphs
                         {
                         auto bracketLabel{ customAxis.GetBrackets()[i].GetLabel() };
                         bracketLabel.SetAnchorPoint(wxPoint(labelPosition, 0));
-                        bracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        bracketLabel.SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
                         auto bBox = bracketLabel.GetBoundingBox(dc);
-                        bBox.x -= bBox.GetWidth() * math_constants::half;
 
                         auto nextBracketLabel{ customAxis.GetBrackets()[i + 1].GetLabel() };
                         nextBracketLabel.SetAnchorPoint(wxPoint(nextLabelPosition, 0));
-                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::Center);
+                        nextBracketLabel.SetAnchoring(Wisteria::Anchoring::BottomLeftCorner);
                         auto nextBBox = nextBracketLabel.GetBoundingBox(dc);
-                        nextBBox.x -= nextBBox.GetWidth() * math_constants::half;
                         if (bBox.Intersects(nextBBox))
                             {
                             const auto widthEclipsed = bBox.GetRight() - nextBBox.GetLeft();
