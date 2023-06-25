@@ -2507,7 +2507,7 @@ wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= Exp
         { firstRow = 0; }
     if (firstRow >= GetItemCount() || firstRow > lastRow)
         { return wxString{}; }
-   
+
     // allocate buffer to fit the cells that we are writing into it
     const long numberOfRows = (lastRow-firstRow)+1;
     const long numberOfColumns = (lastColumn-firstColumn)+1;
