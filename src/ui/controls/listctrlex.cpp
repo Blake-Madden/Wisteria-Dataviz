@@ -2521,7 +2521,7 @@ wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= Exp
     const wxString tableStart = [this]()
         {
         wxString header = L"\\begin{longtable}{";
-        for (size_t i = 0; i < this->GetColumnCount(); ++i)
+        for (int i = 0; i < GetColumnCount(); ++i)
             {
             header += L"|l";
             }
@@ -2554,7 +2554,7 @@ wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= Exp
     wxString itemText;
     const auto formatRow =
         [this, &outputText, &itemText, firstColumn, lastColumn]
-        (const long i, const int rowHeight = -1)
+        (const long i)
         {
         for (long j = firstColumn; j <= lastColumn; ++j)
             {
@@ -2594,7 +2594,7 @@ wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= Exp
         {
         if (rowSelection == ExportRowSelection::ExportSelected && !IsSelected(i))
             { continue; }
-        formatRow(i, -1);
+        formatRow(i);
         }
     outputText += tableEnd;
     outputText.Trim();
