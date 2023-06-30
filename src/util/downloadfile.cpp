@@ -23,6 +23,7 @@ void QueueDownload::Add(const wxString& url, const wxString& localDownloadPath)
         m_handler, url, m_currentId++);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
+    request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     m_downloads.insert(std::make_pair(request.GetId(), localDownloadPath));
     m_requests.push_back(request);
     }
@@ -151,7 +152,8 @@ bool FileDownload::Download(const wxString& url, const wxString& localDownloadPa
         m_handler, url);
     request.SetStorage(wxWebRequest::Storage_File);
     request.SetHeader(L"User-Agent", GetUserAgent());
-    m_lastStatus = 404;;
+    request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
     m_downloadSuccessful = false;
@@ -200,6 +202,7 @@ void FileDownload::RequestResponse(const wxString& url)
         m_handler, url);
     request.SetStorage(wxWebRequest::Storage_None);
     request.SetHeader(L"User-Agent", GetUserAgent());
+    request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
     m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
@@ -222,17 +225,20 @@ bool FileDownload::Read(const wxString& url)
         }
     m_downloadPath.clear();
     m_buffer.clear();
+
     wxWebRequest request = wxWebSession::GetDefault().CreateRequest(
         m_handler, url);
     request.SetStorage(wxWebRequest::Storage_Memory);
     request.SetHeader(L"User-Agent", GetUserAgent());
-    m_lastStatus = 404;;
+    request.SetHeader(L"Sec-Fetch-Mode", L"navigate");
+    m_lastStatus = 404;
     m_lastState = wxWebRequest::State_Failed;
     m_stillActive = true;
     request.Start();
 
     while (m_stillActive)
         { wxYield(); }
+
     return (m_lastState == wxWebRequest::State_Completed);
     }
 
@@ -245,11 +251,27 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
         {
         m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
                          evt.GetRequest().GetResponse().GetStatus() : 404);
+        m_lastStatusText = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+                        evt.GetRequest().GetResponse().GetStatusText() : wxString{});
         m_lastState = (evt.GetRequest().IsOk() ? evt.GetRequest().GetState() : wxWebRequest::State_Failed);
         m_lastUrl = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
                       evt.GetRequest().GetResponse().GetURL() : wxString{});
         m_lastContentType = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
                               evt.GetRequest().GetResponse().GetHeader("Content-Type") : wxString{});
+        m_lastStatusInfo = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+                      evt.GetRequest().GetResponse().AsString() : wxString{});
+        // if a redirected error page, parse it down to its readable content
+        if (m_lastStatus != 200)
+            {
+            lily_of_the_valley::html_extract_text hExtract;
+            hExtract.include_no_script_sections(true);
+            auto filteredMsg = hExtract(m_lastStatusInfo.wc_str(), m_lastStatusInfo.length(), true, false);
+            if (filteredMsg && hExtract.get_filtered_text_length())
+                {
+                m_lastStatusInfo.assign(filteredMsg);
+                m_lastStatusInfo.Trim(true).Trim(false);
+                }
+            }
         };
 
     switch (evt.GetState())
@@ -273,7 +295,10 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             else if (evt.GetRequest().GetStorage() == wxWebRequest::Storage_Memory)
                 {
                 m_buffer.resize(evt.GetResponse().GetStream()->GetSize() + 1, 0);
-                evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
+                if (m_buffer.size() > 1)
+                    {
+                    evt.GetResponse().GetStream()->ReadAll(&m_buffer[0], m_buffer.size() - 1);
+                    }
                 }
             m_stillActive = false;
             fillResponseInfo();

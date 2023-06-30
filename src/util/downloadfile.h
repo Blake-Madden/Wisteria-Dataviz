@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 #include <mutex>
+#include "../import/html_extract_text.h"
 
 /** @brief Queues a list of URLs and their respective (local) download paths
         and then downloads them asynchronously.
@@ -252,13 +253,22 @@ public:
     [[nodiscard]]
     int GetLastStatus() const noexcept
         { return m_lastStatus; };
+    /// @returns The last status message from a read, download, or response request.
+    [[nodiscard]]
+    const wxString& GetLastStatusText() const noexcept
+        { return m_lastStatusText; };
+    /// @returns The last status info from a read, download, or response request.
+    /// @note This is debug info, usually the contents of a redirected error page.
+    [[nodiscard]]
+    const wxString& GetLastStatusInfo() const noexcept
+        { return m_lastStatusInfo; };
     /// @returns The last url (or possible redirect) from a read, download, or response request.
     [[nodiscard]]
-    wxString GetLastUrl() const
+    const wxString& GetLastUrl() const noexcept
         { return m_lastUrl; };
     /// @returns The last @c Content-Type from a read, download, or response request.
     [[nodiscard]]
-    wxString GetLastContentType() const
+    const wxString& GetLastContentType() const noexcept
         { return m_lastContentType; };
     /// @brief Bind this to a @c wxEVT_WEBREQUEST_STATE in the
     ///     parent @c wxEvtHandler.
@@ -283,8 +293,11 @@ private:
     wxString m_readContent;
     wxString m_userAgent;
     int m_lastStatus{ 404 };
+    wxString m_lastStatusText;
     wxString m_lastUrl;
     wxString m_lastContentType;
+    wxString m_lastStatusInfo;
+    wxString m_cookie;
     wxWebRequest::State m_lastState{ wxWebRequest::State_Failed };
     };
 
