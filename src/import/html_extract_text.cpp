@@ -744,8 +744,9 @@ namespace lily_of_the_valley
                 else
                     { end += HTML_SCRIPT_END.length(); }
                 }
-            // if it's a noscript (i.e., alternative text for when scripting is not available), then skip it
-            else if (currentElement == L"noscript")
+            // if it's a noscript (i.e., alternative text for when scripting is not available),
+            // then skip it if that behavior was requested
+            else if (!m_includeNoScriptSections && currentElement == L"noscript")
                 {
                 end = string_util::stristr<wchar_t>(start, HTML_NOSCRIPT_END.c_str());
                 // no closing </noscript>, so step over this <noscript> and jump to next '<'

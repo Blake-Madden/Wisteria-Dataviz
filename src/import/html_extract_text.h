@@ -464,7 +464,7 @@ namespace lily_of_the_valley
                 should be included. Recommended @c true.
             @param preserve_newlines Whether embedded newlines should be included
                 in the output. If @c false, then they will be replaced with spaces,
-                which is the default for HTML renderers. Recommended false.
+                which is the default for HTML renderers. Recommended @c false.
             @returns The plain text from the HTML stream.*/
         [[nodiscard]]
         const wchar_t* operator()(const wchar_t* html_text,
@@ -702,6 +702,12 @@ namespace lily_of_the_valley
         [[nodiscard]]
         static std::string parse_charset(const char* pageContent,
                                          const size_t length);
+        /// @brief Whether text from `<noscript>` blocks should be included in the results.
+        /// @details These are using warning messages that scripting should be enabled
+        ///     and are recommended to not be included.
+        /// @param include @c true to include this sort of text.
+        void include_no_script_sections(const bool include) noexcept
+            { m_includeNoScriptSections = include; }
     protected:
         /** @brief Converts a section of HTML text that is using Symbol font into the actual
                 symbols that it is meant to display.
@@ -723,6 +729,8 @@ namespace lily_of_the_valley
             m_author.clear();
             m_keywords.clear();
             }
+
+        bool m_includeNoScriptSections{ false };
 
         /// @private
         size_t m_is_in_preformatted_text_block_stack{ 0 };
