@@ -276,9 +276,9 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
             // Cloudflare forces the use of javascript to block robots
             if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
                 {
-                m_lastStatusInfo.insert(0, L"Webpage is using Cloudflare protection and "
+                m_lastStatusInfo.insert(0, _(L"Webpage is using Cloudflare protection and "
                     "can only be accessed via an interactive browser. Please use a browser to download "
-                    "this page.\n\nResponse from website:\n");
+                    "this page.\n\nResponse from website:\n"));
                 }
             }
         };
