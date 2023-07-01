@@ -297,7 +297,7 @@ private:
     wxString m_lastUrl;
     wxString m_lastContentType;
     wxString m_lastStatusInfo;
-    wxString m_cookie;
+    wxString m_server;
     wxWebRequest::State m_lastState{ wxWebRequest::State_Failed };
     };
 

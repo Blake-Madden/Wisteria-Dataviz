@@ -249,6 +249,8 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
     // want for later here.
     const auto fillResponseInfo = [this, &evt]()
         {
+        m_server = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
+            evt.GetRequest().GetResponse().GetHeader("Server") : wxString{});
         m_lastStatus = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
                          evt.GetRequest().GetResponse().GetStatus() : 404);
         m_lastStatusText = ((evt.GetRequest().IsOk() && evt.GetRequest().GetResponse().IsOk()) ?
@@ -270,6 +272,13 @@ void FileDownload::ProcessRequest(wxWebRequestEvent& evt)
                 {
                 m_lastStatusInfo.assign(filteredMsg);
                 m_lastStatusInfo.Trim(true).Trim(false);
+                }
+            // Cloudflare forces the use of javascript to block robots
+            if (m_lastStatus == 403 && m_server.CmpNoCase(L"cloudflare") == 0)
+                {
+                m_lastStatusInfo.insert(0, L"Webpage is using Cloudflare protection and "
+                    "can only be accessed via an interactive browser. Please use a browser to download "
+                    "this page.\n\nResponse from website:\n");
                 }
             }
         };
