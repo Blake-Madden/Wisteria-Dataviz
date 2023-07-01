@@ -730,6 +730,7 @@ namespace lily_of_the_valley
             m_keywords.clear();
             }
 
+        /// @private
         bool m_includeNoScriptSections{ false };
 
         /// @private

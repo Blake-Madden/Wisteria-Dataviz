@@ -2577,14 +2577,14 @@ wxString ListCtrlEx::FormatToLaTeX(const ExportRowSelection rowSelection /*= Exp
         outputText += wxString::Format(L"\n\\caption{%s} \\label{tab:long} \\\\", tableCaption);
         }
     outputText += L"\n" + columnHeader + L"\\endfirsthead\n\n";
-    outputText += wxString::Format(L"\\multicolumn{%d}{c}%%\n"
+    outputText += wxString::Format(_DT(L"\\multicolumn{%d}{c}%%\n"
         "{{\\bfseries \\tablename\\ \\thetable{} %s}} \\\\\n"
         "%s"
         "\\endhead\n\n"
         "\\hline \\multicolumn{%d}{|r|}{{%s}} \\\\ \\hline\n"
         "\\endfoot\n\n"
         "\\hline\n"
-        "\\endlastfoot\n\n",
+        "\\endlastfoot\n\n"),
         GetColumnCount(),
         _(L"-- continued from previous page"),
         columnHeader,
