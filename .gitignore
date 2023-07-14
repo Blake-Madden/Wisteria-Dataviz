@@ -58,8 +58,8 @@ cpp.hint
 *.manifest
 *.Rhistory
 .Rproj.user
-/docs/Syntax Manual/_book
+/docs/syntax_manual/_book
 /tests/.vs
 /tests/out
 /tests/bin
-/docs/Syntax Manual/_main.log
+/docs/syntax_anual/_main.log

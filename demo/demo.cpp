@@ -673,7 +673,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto companyAcquisitionData = std::make_shared<Data::Dataset>();
         try
             {
-            const auto datasetPath{ appDir + L"/datasets/Economics/Company Acquisition.csv" };
+            const auto datasetPath{ appDir + L"/datasets/economics/company_acquisition.csv" };
             companyAcquisitionData->ImportCSV(datasetPath,
                 // preview the data and deduce how to import it
                 Dataset::ImportInfoFromPreview(
@@ -747,7 +747,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto silverFuturesData = std::make_shared<Data::Dataset>();
         try
             {
-            const auto datasetPath{ appDir + L"/datasets/Economics/Silver Futures.csv" };
+            const auto datasetPath{ appDir + L"/datasets/economics/silver_futures.csv" };
             silverFuturesData->ImportCSV(datasetPath,
                 // preview the data and deduce how to import it
                 Dataset::ImportInfoFromPreview(
@@ -1068,7 +1068,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/Institutional Research/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1104,7 +1104,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/Institutional Research/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1144,7 +1144,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/Institutional Research/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1190,7 +1190,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto pieData = std::make_shared<Data::Dataset>();
         try
             {
-            pieData->ImportCSV(appDir + L"/datasets/Institutional Research/Fall Enrollment.csv",
+            pieData->ImportCSV(appDir + L"/datasets/institutional_research/fall_enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1249,7 +1249,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto sankeyData = std::make_shared<Data::Dataset>();
         try
             {
-            sankeyData->ImportCSV(appDir + L"/datasets/historical/Titanic.csv",
+            sankeyData->ImportCSV(appDir + L"/datasets/historical/titanic.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"Sex", CategoricalImportMethod::ReadAsStrings },
@@ -1280,7 +1280,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto sankeyData = std::make_shared<Data::Dataset>();
         try
             {
-            sankeyData->ImportCSV(appDir + L"/datasets/Institutional Research/HS Graduate Matriculation.csv",
+            sankeyData->ImportCSV(appDir + L"/datasets/institutional_research/hs_graduate_matriculation.csv",
                 ImportInfo().ContinuousColumns( { L"Graduated", L"Enrolled" }).
                 CategoricalColumns({
                     { L"County" },
@@ -1356,7 +1356,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto roadmapData = std::make_shared<Data::Dataset>();
         try
             {
-            roadmapData->ImportCSV(appDir + L"/datasets/Institutional Research/First-Year Osprey.csv",
+            roadmapData->ImportCSV(appDir + L"/datasets/institutional_research/first-year_osprey.csv",
                 ImportInfo().
                 ContinuousColumns({ L"coefficient" }).
                 CategoricalColumns({ { L"factor", CategoricalImportMethod::ReadAsStrings } }));
@@ -1402,7 +1402,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto swData = std::make_shared<Data::Dataset>();
         try
             {
-            swData->ImportCSV(appDir + L"/datasets/Economics/ERP Migration Survey.csv",
+            swData->ImportCSV(appDir + L"/datasets/economics/erp_migration_survey.csv",
                 ImportInfo().
                 CategoricalColumns({
                     { L"Strength", CategoricalImportMethod::ReadAsStrings },
@@ -1496,7 +1496,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto wcurveData = std::make_shared<Data::Dataset>();
         try
             {
-            wcurveData->ImportCSV(appDir + L"/datasets/Institutional Research/Sense of Belonging.csv",
+            wcurveData->ImportCSV(appDir + L"/datasets/institutional_research/sense_of_belonging.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Year", L"Belong" }).
                 CategoricalColumns({ { L"Name", CategoricalImportMethod::ReadAsStrings } }));
@@ -1691,7 +1691,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             pieData->ImportCSV(
-                appDir + L"/datasets/Institutional Research/Fall Enrollment.csv",
+                appDir + L"/datasets/institutional_research/fall_enrollment.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Enrollment" }).
                 CategoricalColumns({
@@ -1852,7 +1852,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         try
             {
             juniorSeniorMajors->ImportCSV(
-                appDir + L"/datasets/Institutional Research/Junior & Senior Majors (Top 20).csv",
+                appDir + L"/datasets/institutional_research/junior_&_senior_majors(pop_20).csv",
                 ImportInfo().
                 ContinuousColumns({ L"Female", L"Male" }).
                 CategoricalColumns({
