@@ -777,7 +777,8 @@ namespace Wisteria::Data
                 continuous and categorical data. If an integer is larger then this value
                 in a column, then it will classify the column as continuous.
             @param maxDiscreteValue The maximum value to allow in a column to still consider
-                it discrete (i.e., categorical).*/
+                it discrete (i.e., categorical).
+            @returns A self reference.*/
         ImportInfo& MaxDiscreteValue(const uint16_t maxDiscreteValue)
             {
             m_maxDiscreteValue = maxDiscreteValue;
