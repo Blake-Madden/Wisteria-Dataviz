@@ -2,9 +2,20 @@
 title: "Wisteria Syntax Reference Manual"
 author: "Blake Madden"
 site: bookdown::bookdown_site
+output:
+  bookdown::pdf_book:
+    template: "latex/default.tex"
+    includes:
+      in_header: "latex/preamble.tex"
 documentclass: book
+date: 2023
+links-as-notes: true
 link-citations: yes
 ---
+
+```{r, include=FALSE}
+source('R/appdown.r')
+```
 
 # Overview
 

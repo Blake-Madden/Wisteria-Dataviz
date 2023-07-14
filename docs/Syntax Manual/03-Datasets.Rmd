@@ -3,46 +3,46 @@
 Properties for the `"datasets"` node:
 
 - `"datasets"`: contains an array of datasets, which are referenced by other items in the report.
-  - `"name"`: the name of the dataset. \
+  - `"name"`: The name of the dataset. \
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique. \
     Note that if this is not provided, then the file name from `"path"` will be used.
-  - `"path"`: the full file path of the dataset.
+  - `"path"`: The full file path of the dataset.
   - `"importer"`: how to import the dataset. \
     This is optional and the default is to import the file based on its file extension. \
     Available options are:
-    - `"tsv"`: a tab-delimited text file.
-    - `"csv"`: a comma-delimited text file.
-    - `"xlsx"`: an Excel worksheet.
+    - `"tsv"`: A tab-delimited text file.
+    - `"csv"`: A comma-delimited text file.
+    - `"xlsx"`: An Excel worksheet.
   - `"skip-rows"`: number of rows to skip in the file before parsing the text.
   - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns. \
     This property is optional.
   - `"worksheet"`: if importing an Excel worksheet, the name or 1-based index of the worksheet.
-  - `"md-codes"`: an array of string values to import as missing data during the import. \
+  - `"md-codes"`: An array of string values to import as missing data during the import. \
     This property is optional.
   - `"treat-leading-zeros-as-text"`: whether to import numeric columns with leading zeros as text. \
     This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
   - `"treat-years-as-text"`: whether to import numeric columns that are four-digits as text
     (going under the assumption that they are years). \
     This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
-  - `"max-discrete-value"`: the max value that can be seen as discrete when deducing between
+  - `"max-discrete-value"`: The max value that can be seen as discrete when deducing between
     continuous and categorical data. If an integer is larger then this value
     in a column, then it will classify the column as continuous.
-  - `"id-column"`: the ID column. \
+  - `"id-column"`: The ID column. \
     This property is optional.
-  - `"continuous-columns"`: an array of continuous column names to import. \
+  - `"continuous-columns"`: An array of continuous column names to import. \
     This property is optional.
-  - `"categorical-columns"`: an array of categorical column specifications. \
+  - `"categorical-columns"`: An array of categorical column specifications. \
     This property is optional. \
     Each specification consists of the following:
-    - `"name"`: the name of the column.
+    - `"name"`: The name of the column.
     - `"parser"`: how to read the column. \
       Available options are:
       - `"as-integers"`: imports the column as discrete integers.
       - `"as-strings"`: imports the column as text. (If not specified, this will be the default).
-  - `"date-columns"`: an array of date column specifications. \
+  - `"date-columns"`: An array of date column specifications. \
     This property is optional. \
     Each specification consists of the following:
-    - `"name"`: the name of the column.
+    - `"name"`: The name of the column.
     - `"parser"`: how to parse the column's date strings. \
       Available options are:
       - `"iso-date"`
@@ -60,85 +60,85 @@ Properties for the `"datasets"` node:
 
   Next, any transformation commands for a dataset node are executed. These are performed in the following order:
 
-  - `"columns-rename"`: an array of column rename commands, which contain either of the following:
-    - `"name"`: the column to rename.
-    - `"new-name"`: the new name for the column.
+  - `"columns-rename"`: An array of column rename commands, which contain either of the following:
+    - `"name"`: The column to rename.
+    - `"new-name"`: The new name for the column.
 
     or
 
-    - `"name-re"`: the column to rename (using a regular expression pattern).
-    - `"new-name-re"`: the new name for the column (an include regular expression pattern relative to `"name-re"`).
-  - `"mutate-categorical-columns"`: an array of categorical column mutation commands. This will either create or update
+    - `"name-re"`: The column to rename (using a regular expression pattern).
+    - `"new-name-re"`: The new name for the column (an include regular expression pattern relative to `"name-re"`).
+  - `"mutate-categorical-columns"`: An array of categorical column mutation commands. This will either create or update
     a categorical column and fill it with values based on another categorical column. This will use a map of
     regular expression patterns and corresponding replacements, where each value in the source column is compared
     against the regex patterns. When the first match is encountered, then the corresponding replacement will then
     be applied to the target column. \
     Each set of commands contains the following properties:
-    - `"source-column"`: the source categorical column to review.
-    - `"target-column"`: the categorical column being mutated. (If it doesn't exist, then it will be added.)
-    - `"replacements"`: an array of pattern and replacement pairs. Each of these contain the following:
-      - `"pattern"`: the regular expression pattern to match against the source column.
-      - `"replacement"`: the replacement text.
-  - `"columns-select"`: the columns to select (using a regular expression pattern). \
+    - `"source-column"`: The source categorical column to review.
+    - `"target-column"`: The categorical column being mutated. (If it doesn't exist, then it will be added.)
+    - `"replacements"`: An array of pattern and replacement pairs. Each of these contain the following:
+      - `"pattern"`: The regular expression pattern to match against the source column.
+      - `"replacement"`: The replacement text.
+  - `"columns-select"`: The columns to select (using a regular expression pattern). \
     Columns that do not match this pattern will be removed.
-  - `"recode-re"`: an array of categorical column recode commands. This will apply a regular expression
+  - `"recode-re"`: An array of categorical column recode commands. This will apply a regular expression
     text replace for each label in the provided column(s). Each set of commands contains the following properties:
-    - `"column"`: the categorical column to recode.
-    - `"pattern"`: the regular expression pattern to search for.
-    - `"replacement"`: the replacement text. Note that capture groups are supported.
+    - `"column"`: The categorical column to recode.
+    - `"pattern"`: The regular expression pattern to search for.
+    - `"replacement"`: The replacement text. Note that capture groups are supported.
   - `"collapse-min"`: collapses strings which appear fewer than a minimum number of times. This is an array of
     specifications which contain the following:
-    - `"column"`: the categorical column to collapse.
-    - `"min"`: the minimum number of times a string must appear in the column to remain in the string table.
-    - `"other-label"`: the label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
+    - `"column"`: The categorical column to collapse.
+    - `"min"`: The minimum number of times a string must appear in the column to remain in the string table.
+    - `"other-label"`: The label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
   - `"collapse-except"`: collapses strings into an "Other" category, except for a list of provided labels. \
     This is an array of specifications which contain the following:
-    - `"column"`: the categorical column to collapse.
-    - `"labels-to-keep"`: an array of strings to preserve; all others will be lumped into a new `"Other"` category.
-    - `"other-label"`: the label to use for the new category where other labels are lumped into. Default is `"Other"`.
+    - `"column"`: The categorical column to collapse.
+    - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
+    - `"other-label"`: The label to use for the new category where other labels are lumped into. Default is `"Other"`.
 
   Next, a `"formulas"`: section can also be loaded from within the dataset's node.
   In this context, this is a formula string which references the dataset. \
   This is an array of specifications which include the following properties:
 
-  - `"name"`: the key used for the item. Other items in the project reference this using the syntax `{{name}}`, where `name` is the look-up key.
-  - `"value"`: a string containing one of the following formulas:
+  - `"name"`: The key used for the item. Other items in the project reference this using the syntax `{{name}}`, where *name* is the look-up key.
+  - `"value"`: A string containing one of the following formulas:
     - ``Min(`column`)``:
       Returns the minimum value of the given column from the dataset.
-      - `column`: the column name from the dataset.
+      - *column*: The column name from the dataset.
     - ``Max(`column`)``:
       Returns the maximum value of the given column from the dataset.
-      - `column`: the column name from the dataset.
+      - *column*: The column name from the dataset.
     - ``Total(`column`)``:
       Returns the total of the given continuous column from the dataset.
-      - `column`: the column name from the dataset.
+      - *column*: The column name from the dataset.
     - ``GrandTotal()``:
       Returns the total of all continuous columns from the dataset.
     - ``N(`column`)``:
       Returns the valid number of observations in the given column from the dataset.
-      - `column`: the column name from the dataset.
-    - ``N(`column`, `groupColum`, `groupId`)``:
-      Returns the valid number of observations in the given column from the dataset, using group filtering. \
-      - *column*: the column name from the dataset.
-      - *groupColum*: a group column to filter on.
-      - *groupId*: the group ID to filter on.
-    - ``GroupCount(`groupColum`, `groupId`)``:
-      Returns the number of occurrences of *groupId* in the categorical column *groupColum*. \
-      - *groupColum*: the group column.
-      - *groupId*: the group ID to count.
-    - ``GroupPercentDecimal(`groupColum`, `groupId`)``:
-      Returns the decimal percent (i.e., `0.0` to `1.0`) of the categorical column *groupColum*
-      that has the group ID *groupId*. \
-      - *groupColum*: the group column.
-      - *groupId*: the group ID to count.
-    - ``GroupPercent(`groupColum`, `groupId`)``:
-      Returns the percent (as a string, such as `"75%"`) of the categorical column *groupColum*
-      that has the group ID *groupId*. \
-      - *groupColum*: the group column.
-      - *groupId*: the group ID to count.
+      - *column*: The column name from the dataset.
+    - ``N(`column`, `groupColumn`, `groupId`)``:
+      Returns the valid number of observations in the given column from the dataset, using group filtering.
+      - *column*: The column name from the dataset.
+      - *groupColumn*: a group column to filter on.
+      - *groupId*: The group ID to filter on.
+    - ``GroupCount(`groupColumn`, `groupId`)``:
+      Returns the number of occurrences of *groupId* in the categorical column *groupColumn*.
+      - *groupColumn*: The group column.
+      - *groupId*: The group ID to count.
+    - ``GroupPercentDecimal(`groupColumn`, `groupId`)``:
+      Returns the decimal percent (i.e., `0.0` to `1.0`) of the categorical column *groupColumn*
+      that has the group ID *groupId*.
+      - *groupColumn*: The group column.
+      - *groupId*: The group ID to count.
+    - ``GroupPercent(`groupColumn`, `groupId`)``:
+      Returns the percent (as a string, such as `"75%"`) of the categorical column *groupColumn*
+      that has the group ID *groupId*.
+      - *groupColumn*: The group column.
+      - *groupId*: The group ID to count.
   
   Note that formula arguments can either be a string (wrapped in a pair of `'`) or an embedded formula
-  (which must be wrapped in a set of `{{`: and `}}`). \
+  (which must be wrapped in a set of `{{`: And `}}`). \
   For example, the group ID can be a formula getting the highest label from the grouping column: \
 
   ```
@@ -165,11 +165,11 @@ Properties for the `"datasets"` node:
 
   Next, the `"subsets"` section of the dataset's node is parsed. This is an array of subset specifications which
   contain the following properties:
-  - `"name"`: the name of the subset. (This should be different from the dataset that it is subsetting;
+  - `"name"`: The name of the subset. (This should be different from the dataset that it is subsetting;
     otherwise, it will overwrite it.) \
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - `"filter"`: the subset filtering definition, which will contain the following:
-    - `"column"`: the column from the dataset to filter on. The following values can also be used:
+  - `"filter"`: The subset filtering definition, which will contain the following:
+    - `"column"`: The column from the dataset to filter on. The following values can also be used:
       - `"last-continuous-column"`
     - `"operator"`: how to compare the values from the column with the filter's value. \
       Available options are:
@@ -179,62 +179,62 @@ Properties for the `"datasets"` node:
       - `"<="` less than or equal to
       - `">"` greater than
       - `">="` great than or equal to
-    - `"values"`: an array of values to filter the column on. These can be numbers, strings, or dates
+    - `"values"`: An array of values to filter the column on. These can be numbers, strings, or dates
          (depending on the column's data type). \
          Multiple values will be an `OR` operation, where if a value in the data matches *any* of these
          values, then it's a match.
          Note that string values can reference constants loaded from the [constants](#constants-properties) section
          or `"formulas"` section of the parent dataset.
-  - `"filter-or"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
+  - `"filter-or"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
     are ORed together, meaning that if any condition for a row is true, then it will be included in the subset.
-  - `"filter-and"` same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
+  - `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
     are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
 
   Next, the `"merges"` section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:
-  - `"name"`: the name of the merged dataset. (This should be different from the datasets being merged;
+  - `"name"`: The name of the merged dataset. (This should be different from the datasets being merged;
     otherwise, it will overwrite them.) \
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - `"type"`: a string specifying which type of merge to use. \
+  - `"type"`: A string specifying which type of merge to use. \
     Available options are:
     - `"left-join-unique"`: (unique) left join the dataset with another dataset (the default).
-  - `"other-dataset"`: the other dataset to merge the current dataset with. This should be a name referencing
+  - `"other-dataset"`: The other dataset to merge the current dataset with. This should be a name referencing
     a previously loaded dataset.
-  - `"by"`: an array of properties specifying which columns to join by. Each item should contain the following:
-    - `"left-column"`: the column from the current dataset.
-    - `"right-column"`: the column from the other dataset.
+  - `"by"`: An array of properties specifying which columns to join by. Each item should contain the following:
+    - `"left-column"`: The column from the current dataset.
+    - `"right-column"`: The column from the other dataset.
   - `"suffix"`: if columns in the right dataset already appear in the left dataset, then append this suffix to
     to column to make it unique.
 
   Next, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
   contain the following properties:
-  - `"name"`: the name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
+  - `"name"`: The name of the pivoted dataset. (This should be different from the dataset that it is pivoting;
     otherwise, it will overwrite it.) \
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
-  - `"type"`: a string specifying which type of pivot to use. \
+  - `"type"`: A string specifying which type of pivot to use. \
     Available options are:
     - `"wider"`: pivot wider (the default).
     - `"longer"`: pivot longer.
 
   If pivoting wider, the following options are available:
-  - `"id-columns"`: an array of strings representing the ID columns. \
+  - `"id-columns"`: An array of strings representing the ID columns. \
     Note that the output will be sorted based on the ordering of these columns. 
-  - `"names-from-column"`: a string representing the 'names from'.
-  - `"values-from-columns"`: an array of strings representing the 'values from' columns.
+  - `"names-from-column"`: A string representing the 'names from'.
+  - `"values-from-columns"`: An array of strings representing the 'values from' columns.
   - `"names-separator"`: if multiple value columns are provided, then this separator will
     join the label from `names-from-column` and the value column name.
   - `"names-prefix"`: string to prepend to newly created pivot columns.
   - `"fill-value"`: numeric value to assign to missing data. The default it so leave it as missing data.
 
   If pivoting longer, the following options are available:
-  - `"columns-to-keep"`: an array of strings specifying the columns to not pivot. These will be copied to the new dataset
+  - `"columns-to-keep"`: An array of strings specifying the columns to not pivot. These will be copied to the new dataset
     and will have their values filled in all new rows created from their observation.
     These would usually the ID columns. \
     These columns can be of any type, including the ID column.
-  - `"from-columns"`: an array of strings specifying the continuous column(s) to pivot into longer format.
-  - `"names-to"`: an array of strings specifying the target column(s) to move the names from the `"from-columns"` into.
-  - `"values-to"`: a string specifying the column to move the values from the `"from-columns"` into.
-  - `"names-pattern"`: an optional string specifying a regular expression to split the `"from-columns"` names into.
+  - `"from-columns"`: An array of strings specifying the continuous column(s) to pivot into longer format.
+  - `"names-to"`: An array of strings specifying the target column(s) to move the names from the `"from-columns"` into.
+  - `"values-to"`: A string specifying the column to move the values from the `"from-columns"` into.
+  - `"names-pattern"`: An optional string specifying a regular expression to split the `"from-columns"` names into.
 
   Finally, the `"column-names-sort"` command (a boolean value) can request to sort the columns by name.
 

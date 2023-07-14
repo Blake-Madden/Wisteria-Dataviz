@@ -5,9 +5,9 @@
 Properties for the `"constants"` node:
 
 - `"constants"`: contains an array of key and value pairs, which are referenced by other items in the project. \
-  Items reference key/value pairs via text labels using a special syntax. For example, `label` objects or graph
+  Items reference key/value pairs via text labels using a special syntax. For example, `Label` objects or graph
   titles can embed a reference to a run-time value, which will be expanded when the report is rendered.
-  - `"name"`: the key used for the item. Other items reference this using the syntax `{{name}}`, where `name` is the look-up key.
+  - `"name"`: the key used for the item. Other items reference this using the syntax `{{name}}`, where *name* is the look-up key.
   - `"value"` either a string or numeric value to associate with the key. \
     If a number, then it will be formatted to the current locale when displayed in the report. \
 
@@ -16,13 +16,13 @@ Note that datasets have a similar `"formulas"` section which can create constant
 ## Additional Functions {#additional-functions .unnumbered}
 
 Along with constants and the dataset-related functions, other functions are also available.
-These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a label's text value).
+These functions can be used in a dataset's formulas section, the `"constants"` section, and even in-place (e.g., in a `Label`'s text value).
 
 - ``ReportName()``: the report's name.
 - ``PageNumber()``: the current page number.
 - ``Now(`value`)``:
-    Returns the a string representing the current date and time (or date component).
-    - `value`: the part of today's date to return (if not provided, then the full date is returned).
+    Returns a string representing the current date and time (or date component).
+    - *value*: the part of today's date to return (if not provided, then the full date is returned). \
       The following options are available:
       - `` `Year` ``: the year.
       - `` `Day` ``: the day of the month.
