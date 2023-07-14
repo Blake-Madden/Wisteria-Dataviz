@@ -405,6 +405,11 @@ namespace Wisteria::Data
         [[nodiscard]]
         GroupIdType GetNextKey()
             { return GetNextKey(GetStringTable()); }
+
+        /// @returns @c true if string table has any entries other than empty string (i.e., missing data code).
+        [[nodiscard]]
+        bool HasValidStringTableEntries() const
+            { return GetStringTable().size() > 0 && GetStringTable().cbegin()->second.length(); }
     private:
         /// @brief Combines duplicate values in the string table and recodes
         ///     the numeric values down the column.
@@ -768,6 +773,16 @@ namespace Wisteria::Data
             m_treatYearsAsText = yearsAsText;
             return *this;
             }
+        /** @brief Set the max value that can be seen as discrete when deducing between
+                continuous and categorical data. If an integer is larger then this value
+                in a column, then it will classify the column as continuous.
+            @param maxDiscreteValue The maximum value to allow in a column to still consider
+                it discrete (i.e., categorical).*/
+        ImportInfo& MaxDiscreteValue(const uint16_t maxDiscreteValue)
+            {
+            m_maxDiscreteValue = maxDiscreteValue;
+            return *this;
+            }
         /** @brief Sets a map of regular expressions to look for in imported text
                 (i.e., categorical) columns and what to replace them with.
             @details This is useful for recoding values to missing data,
@@ -828,6 +843,7 @@ namespace Wisteria::Data
         size_t m_skipRows{ 0 };
         bool m_treatLeadingZerosAsText{ false };
         bool m_treatYearsAsText{ false };
+        uint16_t m_maxDiscreteValue{ 7 };
         };
 
     /** @brief %Dataset interface for graphs.
