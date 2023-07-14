@@ -838,6 +838,18 @@ namespace Wisteria::Graphs
             @param barGroup The bar group information.*/
         void AddBarGroup(const BarGroup& barGroup)
             { m_barGroups.push_back(barGroup); }
+
+        /// @returns How the bar groups (brackets and cummulative bars) are aligned with their respective bars. 
+        [[nodiscard]]
+        LabelPlacement GetBarGroupPlacement() const noexcept
+            { return m_barGroupPlacement; }
+        /** @brief Sets how the bar groups (brackets and cummulative bars) are aligned with their respective bars.
+            @details `NextToParent` will position the bar groups brackets next to their respective bars.\n
+                `Flush` will align all bar groups together, rather than next to their bars. `Flush` is recommended
+                if you want to easily compare the groups' cummulative bars with each other.
+            @param barGroupPlacement How to position the bar groups.*/
+        void SetBarGroupPlacement(LabelPlacement barGroupPlacement) noexcept
+            { m_barGroupPlacement = barGroupPlacement; }
         /// @}
 
         /// @name Axis Functions
@@ -1098,6 +1110,7 @@ namespace Wisteria::Graphs
         double m_highestBarAxisPosition{ std::numeric_limits<double>::lowest() };
         bool m_includeSpacesBetweenBars{ false };
         bool m_isSortable{ false };
+        LabelPlacement m_barGroupPlacement{ LabelPlacement::NextToParent };
         std::vector<BarGroup> m_barGroups;
         Wisteria::SortDirection m_sortDirection{ SortDirection::NoSort };
         Orientation m_barOrientation{ Orientation::Vertical };

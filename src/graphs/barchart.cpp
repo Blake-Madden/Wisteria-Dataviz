@@ -30,7 +30,7 @@ namespace Wisteria::Graphs
         const wxString labelStr =
             (bar.GetLength() == 0 ||
                 GetBinLabelDisplay() == BinLabelDisplay::NoDisplay) ?
-                wxString(wxEmptyString) :
+                wxString{} :
             (GetBinLabelDisplay() == BinLabelDisplay::BinName) ?
                 bar.GetAxisLabel().GetText() :
             (GetBinLabelDisplay() == BinLabelDisplay::BinNameAndValue) ?
@@ -73,7 +73,7 @@ namespace Wisteria::Graphs
             m_barGroups.push_back(
                 {
                 std::make_pair(firstBar.value(), lastBar.value()),
-                decal.has_value() ? decal.value() : wxString(wxEmptyString),
+                decal.has_value() ? decal.value() : wxString{},
                 brush.has_value() ? brush.value() : GetBrushScheme()->GetBrush(0),
                 color.has_value() ? color.value() :
                     (GetColorScheme() ? GetColorScheme()->GetColor(0) : wxTransparentColour)
@@ -1608,10 +1608,29 @@ namespace Wisteria::Graphs
             { AddObject(decal); }
         decals.clear();
 
+        // add the brackets and bars for any bar groups
+        std::optional<wxCoord> maxBracketStartPos{ 0.0 };
         for (const auto& barGroup : m_barGroups)
             {
             const wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
             const wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
+
+            if (GetBarOrientation() == Orientation::Horizontal)
+                {
+                maxBracketStartPos = std::max(
+                    { brackPos1.x, brackPos2.x, maxBracketStartPos.value_or(brackPos1.x) });
+                }
+            else
+                {
+                maxBracketStartPos = std::min(
+                    { brackPos1.y, brackPos2.y, maxBracketStartPos.value_or(brackPos1.y) });
+                }
+            }
+
+        for (const auto& barGroup : m_barGroups)
+            {
+            wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
+            wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
             double grandTotal{ 0 };
             // the bars specified in the group may be in different order, so use
             // min and max to make sure you are using the true start and end bars
@@ -1624,8 +1643,12 @@ namespace Wisteria::Graphs
             double scalingAxisPos{ 0 }, barAxisPos{ 0 };
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
+                const wxCoord brackStartXPos =
+                    std::max({ brackPos1.x, brackPos2.x,
+                        (m_barGroupPlacement == LabelPlacement::Flush ?
+                         maxBracketStartPos.value_or(brackPos1.x) : brackPos1.x)});
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
-                    std::max(brackPos1.x, brackPos2.x) + ScaleToScreenAndCanvas(bracesWidth),
+                    brackStartXPos + ScaleToScreenAndCanvas(bracesWidth),
                              scalingAxisPos))
                     {
                     // make the curly braces stretch from the top of the first bar
@@ -1648,7 +1671,7 @@ namespace Wisteria::Graphs
                         GraphItemInfo().Pen(wxPen(*wxBLACK, 2)).
                         Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                         AnchorPoint(wxPoint(
-                            std::max(brackPos1.x, brackPos2.x),
+                            brackStartXPos,
                             std::min(brackPos1.y, brackPos2.y) - yOffset)).
                         Anchoring(Anchoring::TopLeftCorner),
                         Icons::IconShape::RightCurlyBrace,
@@ -1671,7 +1694,7 @@ namespace Wisteria::Graphs
                                     barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
                                 )))
                             },
-                            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+                            wxString{}, Label{}, GetBarEffect(), GetBarOpacity());
                         UpdateBarLabel(theBar);
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
@@ -1686,8 +1709,12 @@ namespace Wisteria::Graphs
                 }
             else
                 {
+                const wxCoord brackStartYPos =
+                    std::min({ brackPos1.y, brackPos2.y,
+                        (m_barGroupPlacement == LabelPlacement::Flush ?
+                         maxBracketStartPos.value_or(brackPos1.y) : brackPos1.y) });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
-                    std::min(brackPos1.y, brackPos2.y) -
+                        brackStartYPos -
                         // space for the braces and a couple DIPs between that and the group bar
                         ScaleToScreenAndCanvas(bracesWidth + 2),
                     scalingAxisPos))
@@ -1714,7 +1741,7 @@ namespace Wisteria::Graphs
                         Scaling(GetScaling()).DPIScaling(GetDPIScaleFactor()).
                         AnchorPoint(wxPoint(
                             std::min(brackPos1.x, brackPos2.x) - xOffset,
-                            std::min(brackPos1.y, brackPos2.y) - ScaleToScreenAndCanvas(bracesWidth))).
+                            brackStartYPos - ScaleToScreenAndCanvas(bracesWidth))).
                         Anchoring(Anchoring::TopLeftCorner),
                         Icons::IconShape::TopCurlyBrace,
                         wxSize(DownscaleFromScreenAndCanvas(barsWidth), bracesWidth),
@@ -1736,7 +1763,7 @@ namespace Wisteria::Graphs
                                     barGroup.m_barBrush.GetColour() : barGroup.m_barColor))
                                 )))
                             },
-                            wxEmptyString, Label(), GetBarEffect(), GetBarOpacity());
+                            wxString{}, Label{}, GetBarEffect(), GetBarOpacity());
                         UpdateBarLabel(theBar);
                         theBar.SetCustomScalingAxisStartPosition(scalingAxisPos);
                         theBar.SetAxisPosition(barAxisPos);
