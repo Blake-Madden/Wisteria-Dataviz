@@ -6,7 +6,7 @@
 
 Properties common to all items:
 
-- `"id"`: a (unique) numeric identifier for the item. This can be referenced by other items in the report.<br />
+- `"id"`: a (unique) numeric identifier for the item. This can be referenced by other items in the report. \
      An example can be adding an ID to a graph and then inserting a [common-axis](#common-axis-properties) to the
      report that accepts this ID.
 - `"canvas-margins"`: a numeric array (one to four numbers), representing the item's canvas margin going clockwise,
@@ -19,27 +19,27 @@ Properties common to all items:
 - `"scaling"` numeric value of how much to scale the object's size. For example, `2.0` will be double the
      default size.
 - `"show"`: boolean value specifying whether to show the item.
-- `"anchoring"`: controls the starting point of where the object is drawn.<br />
-  This is usually only relative for objects being embedded on a plot (e.g., annotations).<br />
+- `"anchoring"`: controls the starting point of where the object is drawn. \
+  This is usually only relative for objects being embedded on a plot (e.g., annotations). \
   Available options are:
   - `"bottom-left-corner"`
   - `"bottom-right-corner"`
   - `"center"` (the default)
   - `"top-left-corner"`
   - `"top-right-corner"`
-- `"relative-alignment"`: how an object is aligned with its parent (e.g., an axis title relative to its axis).<br />
+- `"relative-alignment"`: how an object is aligned with its parent (e.g., an axis title relative to its axis). \
   Available options are:
   - `"flush-left"`
   - `"flush-right"`
   - `"flush-top"`
   - `"flush-bottom"`
   - `"centered"`
-- `"horizontal-page-alignment"`: how to horizontally align the item within its area.<br />
+- `"horizontal-page-alignment"`: how to horizontally align the item within its area. \
   Available options are:
   - `"left-aligned"`
   - `"right-aligned"`
   - `"centered"`
-- `"vertical-page-alignment"`: how to vertically align the item within its area.<br />
+- `"vertical-page-alignment"`: how to vertically align the item within its area. \
   Available options are:
   - `"top-aligned"`
   - `"bottom-aligned"`
@@ -53,9 +53,9 @@ Properties common to all items:
 
 Properties for `"common-axis"` nodes:
 
-- All properties available to [axis](#axis-properties) nodes are included.<br />
+- All properties available to [axis](#axis-properties) nodes are included. \
   Note that `"axis-type"` will specify where to place the common axis.
-- `"child-ids"`: a numeric array of IDs of the graphs that this common axis will manage.<br />
+- `"child-ids"`: a numeric array of IDs of the graphs that this common axis will manage. \
      IDs are assigned to graphs using the `"id"` property, which should be numeric.
 - `"common-perpendicular-axis"` if `"axis-type"` is `"bottom-x"`: and this is `true`,
      then the min and max of the graphs' left X axes will be used for the ranges of all the graphs.
@@ -71,7 +71,7 @@ Properties for `"fillable-shape"` nodes:
 - `"size"`: the size of the shape, which contains the following properties:
   - `"width"`: the width.
   - `"height"`: the height.
-- `"fill-percent"`: the percent to fill the shape, which is a number between `0.0` and `1.0`.<br />
+- `"fill-percent"`: the percent to fill the shape, which is a number between `0.0` and `1.0`. \
   This can either be a numeric or a formula reference.
 
 ## Image {#image-properties .unnumbered}
@@ -79,7 +79,7 @@ Properties for `"fillable-shape"` nodes:
 Properties for `"image"` nodes:
 
 - `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
-- `"resize-method"`: How the image's size is adjusted when its boudning box is changed.<br />
+- `"resize-method"`: How the image's size is adjusted when its bounding box is changed. \
   Available options are:
   - `"downscale-only"`
   - `"downscale-or-upscale"`
@@ -90,37 +90,37 @@ Properties for `"image"` nodes:
 
 Properties for `"label"` nodes:
 
-- `"text"`: the title's text.<br />
+- `"text"`: the title's text. \
   Note that this property supports embedded formulas that can reference user-defined values loaded from the
   [constants](#constants-properties) section.
-- `"orientation"`: string specifying the orientation of the text.<br />
+- `"orientation"`: string specifying the orientation of the text. \
   Available options are:
   - `"vertical"`
   - `"horizontal"`
 - `"background"`: the background color. This can be either a color name or hex-encoded value.
 - `"color"`: the font color. This can be either a color name or hex-encoded value.
 - `"bold"`: `true` to make the text bold.
-- `"line-spacing"`: a number representing the spaces between lines (if text is multiline).
-- `"text-alignment"`: how to align the label's text.<br />
+- `"line-spacing"`: a number representing the spaces between lines (if text is multi-line).
+- `"text-alignment"`: how to align the label's text. \
   The available options are:
   - `"flush-left"` or `"ragged-right"`
   - `"flush-right"` or `"ragged-left"`
   - `"centered"`
   - `"justified"` or `"justified-at-character"`
   - `"justified-at-word"`
-- `"left-image"`: properties specifying an image to display on the left side of the label.<br />
+- `"left-image"`: properties specifying an image to display on the left side of the label. \
   The available options are:
   - `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
 - `"top-image"`: properties specifying an image to display above the label.
   The available options are:
   - `"image-import"`: an image import specification. (See [image file properties](#image-file-properties).)
   - `"offset"`: number specifying how far from the top of the label's box to draw the image. (Default is `0`.)
-- `"header"`: attributes to apply to the first row of the label.<br />
+- `"header"`: attributes to apply to the first row of the label. \
      The following sub-properties are available:
   - `"bold"`: `true` to make the header bold.
   - `"color"`: the font color for the header. This can be either a color name or hex-encoded value.
   - `"relative-scaling:"`: numeric value of how much to scale the header's font size relative to the label's scaling.
-       For example, `2.0` will double the header's default font size compared to the rest of the label.<br />
+       For example, `2.0` will double the header's default font size compared to the rest of the label. \
        Note that this will only affect the header scaling. To alter the label's scaling, use the label's root-level
        `"scaling"` property.
 
