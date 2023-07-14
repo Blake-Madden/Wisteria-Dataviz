@@ -106,12 +106,12 @@ namespace Wisteria::Data
                                                  m_categoricalColumn->GetName()));
                             }
                         }
-                    else if (const auto strVal{ std::get_if<wxString>(&value) };
+                    else if (const auto strVal2{ std::get_if<wxString>(&value) };
                         !m_categoricalColumn->HasValidStringTableEntries() &&
-                        strVal != nullptr)
+                        strVal2 != nullptr)
                         {
                         double numVal{ 0.0 };
-                        if (strVal->ToDouble(&numVal))
+                        if (strVal2->ToDouble(&numVal))
                             { m_doubleValues.push_back(numVal); }
                         else
                             {
@@ -119,7 +119,7 @@ namespace Wisteria::Data
                                 wxString::Format(_(L"'%s': string value not found for "
                                                     "'%s' column filter. "
                                                     "Column does not have a string table, and string could not "
-                                                    "be converted to a discrete value."), *strVal,
+                                                    "be converted to a discrete value."), *strVal2,
                                                  m_categoricalColumn->GetName()));
                             }
                         }
