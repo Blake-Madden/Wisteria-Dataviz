@@ -69,7 +69,10 @@ namespace Wisteria::Data
                 if (m_comparisonType == Comparison::Equals ||
                     m_comparisonType == Comparison::NotEquals)
                     {
+                    // using a string table and a number was passed in,
+                    // so treat it as a group ID
                     if (const auto IdVal{ std::get_if<GroupIdType>(&value) };
+                        m_categoricalColumn->HasValidStringTableEntries() &&
                         IdVal != nullptr)
                         {
                         m_groupIdValues.push_back(*IdVal);
@@ -81,7 +84,15 @@ namespace Wisteria::Data
                                                  m_categoricalColumn->GetName()) );
                             }
                         }
+                    // no real string table, so column may be filled with discrete values instead,
+                    // treat numbers as such
+                    else if (const auto doubleVal{ std::get_if<double>(&value) };
+                        !m_categoricalColumn->HasValidStringTableEntries() &&
+                        doubleVal != nullptr)
+                        { m_doubleValues.push_back(*doubleVal); }
+                    // using string table and a string was passed in
                     else if (const auto strVal{ std::get_if<wxString>(&value) };
+                        m_categoricalColumn->HasValidStringTableEntries() &&
                         strVal != nullptr)
                         {
                         const auto code = m_categoricalColumn->GetIDFromLabel(*strVal);
@@ -92,6 +103,23 @@ namespace Wisteria::Data
                             throw std::runtime_error(
                                 wxString::Format(_(L"'%s': string value not found for "
                                                     "'%s' column filter."), *strVal,
+                                                 m_categoricalColumn->GetName()));
+                            }
+                        }
+                    else if (const auto strVal{ std::get_if<wxString>(&value) };
+                        !m_categoricalColumn->HasValidStringTableEntries() &&
+                        strVal != nullptr)
+                        {
+                        double numVal{ 0.0 };
+                        if (strVal->ToDouble(&numVal))
+                            { m_doubleValues.push_back(numVal); }
+                        else
+                            {
+                            throw std::runtime_error(
+                                wxString::Format(_(L"'%s': string value not found for "
+                                                    "'%s' column filter. "
+                                                    "Column does not have a string table, and string could not "
+                                                    "be converted to a discrete value."), *strVal,
                                                  m_categoricalColumn->GetName()));
                             }
                         }
@@ -126,6 +154,18 @@ namespace Wisteria::Data
                 if (const auto doubleVal{ std::get_if<double>(&value) };
                     doubleVal != nullptr)
                     { m_doubleValues.push_back(*doubleVal); }
+                else if (const auto strVal{ std::get_if<wxString>(&value) };
+                         strVal != nullptr)
+                    {
+                    double convertedVal{ 0.0 };
+                    if (strVal->ToDouble(&convertedVal))
+                        { m_doubleValues.push_back(convertedVal); }
+                    else
+                        {
+                        throw std::runtime_error(_(L"Continuous column filter requires "
+                            "a double value for filtering."));
+                        }
+                    }
                 else
                     {
                     throw std::runtime_error(_(L"Continuous column filter requires "
@@ -183,47 +223,71 @@ namespace Wisteria::Data
         {
         if (m_columnType == ColumnType::Categorical)
             {
-            if (m_comparisonType == Comparison::Equals ||
-                m_comparisonType == Comparison::NotEquals)
+            // categorical is using discrete values instead of a string table
+            if (m_doubleValues.size())
                 {
-                for (const auto& idVal : m_groupIdValues)
+                const auto& dVal = m_categoricalColumn->GetValue(rowPosition);
+                for (const auto& val : m_doubleValues)
                     {
-                    // more optimal to compare integral types, so do that if
-                    // reviewing == or !=
                     if (m_comparisonType == Comparison::Equals ?
-                            m_categoricalColumn->GetValue(rowPosition) == idVal :
-                            m_categoricalColumn->GetValue(rowPosition) != idVal)
+                        compare_doubles(dVal, val) :
+                        m_comparisonType == Comparison::NotEquals ?
+                        !compare_doubles(dVal, val) :
+                        m_comparisonType == Comparison::LessThan ?
+                        compare_doubles_less(dVal, val) :
+                        m_comparisonType == Comparison::LessThanOrEqualTo ?
+                        compare_doubles_less_or_equal(dVal, val) :
+                        m_comparisonType == Comparison::GreaterThan ?
+                        compare_doubles_greater(dVal, val) :
+                        // GreaterThanOrEqualTo
+                        compare_doubles_greater_or_equal(dVal, val))
                         { return true; }
                     }
                 }
             else
                 {
-                // < or > will require comparing as the strings though since
-                // the underlying (integral) group IDs probably aren't ordered the same way
-                // as the strings would be alphabetically
-                for (const auto& str : m_stringValues)
+                if (m_comparisonType == Comparison::Equals ||
+                    m_comparisonType == Comparison::NotEquals)
                     {
-                    const auto currentString =
-                        m_categoricalColumn->GetLabelFromID(
-                            m_categoricalColumn->GetValue(rowPosition));
-                    const auto cmpResult = currentString.CmpNoCase(str);
-                    if (m_comparisonType == Comparison::LessThan ?
-                            cmpResult < 0 :
-                        m_comparisonType == Comparison::LessThanOrEqualTo ?
-                            cmpResult <= 0 :
-                        m_comparisonType == Comparison::GreaterThan ?
-                            cmpResult > 0 :
-                        // GreaterThanOrEqualTo
-                            cmpResult >= 0)
-                        { return true; }
+                    for (const auto& idVal : m_groupIdValues)
+                        {
+                        // more optimal to compare integral types, so do that if
+                        // reviewing == or !=
+                        if (m_comparisonType == Comparison::Equals ?
+                                m_categoricalColumn->GetValue(rowPosition) == idVal :
+                                m_categoricalColumn->GetValue(rowPosition) != idVal)
+                            { return true; }
+                        }
+                    }
+                else
+                    {
+                    // < or > will require comparing as the strings though since
+                    // the underlying (integral) group IDs probably aren't ordered the same way
+                    // as the strings would be alphabetically
+                    for (const auto& str : m_stringValues)
+                        {
+                        const auto currentString =
+                            m_categoricalColumn->GetLabelFromID(
+                                m_categoricalColumn->GetValue(rowPosition));
+                        const auto cmpResult = currentString.CmpNoCase(str);
+                        if (m_comparisonType == Comparison::LessThan ?
+                                cmpResult < 0 :
+                            m_comparisonType == Comparison::LessThanOrEqualTo ?
+                                cmpResult <= 0 :
+                            m_comparisonType == Comparison::GreaterThan ?
+                                cmpResult > 0 :
+                            // GreaterThanOrEqualTo
+                                cmpResult >= 0)
+                            { return true; }
+                        }
                     }
                 }
             }
         else if (m_columnType == ColumnType::Continuous)
             {
+            const auto& dVal = m_continuousColumn->GetValue(rowPosition);
             for (const auto& val : m_doubleValues)
                 {
-                const auto& dVal = m_continuousColumn->GetValue(rowPosition);
                 if (m_comparisonType == Comparison::Equals ?
                     compare_doubles(dVal, val) :
                     m_comparisonType == Comparison::NotEquals ?
@@ -241,9 +305,9 @@ namespace Wisteria::Data
             }
         else if (m_columnType == ColumnType::Date)
             {
+            const auto& dtVal = m_dateColumn->GetValue(rowPosition);
             for (const auto& dt : m_dateTimeValues)
                 {
-                const auto& dtVal = m_dateColumn->GetValue(rowPosition);
                 if (m_comparisonType == Comparison::Equals ?
                     dtVal == dt :
                     m_comparisonType == Comparison::NotEquals ?
