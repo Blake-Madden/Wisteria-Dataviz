@@ -1863,6 +1863,11 @@ namespace Wisteria
                             importDefines.TreatYearsAsText(
                                 datasetNode->GetProperty(L"treat-years-as-text")->GetValueBool());
                             }
+                        if (datasetNode->HasProperty(L"max-discrete-value"))
+                            {
+                            importDefines.MaxDiscreteValue(
+                                datasetNode->GetProperty(L"max-discrete-value")->GetValueNumber());
+                            }
                         };
                     fillImportDefines();
 
@@ -2505,6 +2510,11 @@ namespace Wisteria
             }
 
         // bar groups
+        const auto barGroupPlacement =
+        ReportEnumConvert::ConvertLabelPlacement(graphNode->GetProperty(L"bar-group-placement")->GetValueString());
+        if (barGroupPlacement.has_value())
+            { barChart->SetBarGroupPlacement(barGroupPlacement.value()); }
+
         const auto barGroupsNode = graphNode->GetProperty(L"bar-groups");
         if (barGroupsNode->IsOk() && barGroupsNode->IsValueArray())
             {
