@@ -1317,7 +1317,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         auto friendsData = std::make_shared<Data::Dataset>();
         try
             {
-            friendsData->ImportCSV(appDir + L"/datasets/social/Friends Descriptions.csv",
+            friendsData->ImportCSV(appDir + L"/datasets/social/friends descriptions.csv",
                 ImportInfo().
                 ContinuousColumns({ L"Frequency"  }).
                 CategoricalColumns({
