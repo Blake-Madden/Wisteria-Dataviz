@@ -4,14 +4,14 @@
 
 At the root level of a project file, overall settings for the project are defined. The following properties are available at this level:
 
-- `"name"` contains a string value, representing the name of the report.
-- `"print"` properties related to printer settings. \
+- `"name"`: A string value, representing the name of the report.
+- `"print"`: Properties related to printer settings. \
   Available options are:
-  - `"orientation"` string specifying the print orientation. \
+  - `"orientation"`: String specifying the print orientation. \
     Available options are:
     - `"landscape"` or `"horizontal"`
     - `"portrait"` or `"vertical"`
-  - `"paper-size"`: the paper size to print to. \
+  - `"paper-size"`: The paper size to print to. \
     Available options are:
     - `"paper-letter"`: Letter, 8 1/2 by 11 inches.
     - `"paper-legal"`: Legal, 8 1/2 by 14 inches.

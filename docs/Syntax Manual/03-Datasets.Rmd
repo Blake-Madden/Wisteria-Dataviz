@@ -2,21 +2,21 @@
 
 Properties for the `"datasets"` node:
 
-- `"datasets"`: contains an array of datasets, which are referenced by other items in the report.
+- `"datasets"`: Contains an array of datasets, which are referenced by other items in the report.
   - `"name"`: The name of the dataset. \
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique. \
     Note that if this is not provided, then the file name from `"path"` will be used.
   - `"path"`: The full file path of the dataset.
-  - `"importer"`: how to import the dataset. \
+  - `"importer"`: How to import the dataset. \
     This is optional and the default is to import the file based on its file extension. \
     Available options are:
     - `"tsv"`: A tab-delimited text file.
     - `"csv"`: A comma-delimited text file.
     - `"xlsx"`: An Excel worksheet.
-  - `"skip-rows"`: number of rows to skip in the file before parsing the text.
-  - `"continuous-md-recode-value"`: numeric value used to substitute missing data in continuous columns. \
+  - `"skip-rows"`: The number of rows to skip in the file before parsing the text.
+  - `"continuous-md-recode-value"`: The numeric value used to substitute missing data in continuous columns. \
     This property is optional.
-  - `"worksheet"`: if importing an Excel worksheet, the name or 1-based index of the worksheet.
+  - `"worksheet"`: If importing an Excel worksheet, the name or 1-based index of the worksheet.
   - `"md-codes"`: An array of string values to import as missing data during the import. \
     This property is optional.
   - `"treat-leading-zeros-as-text"`: whether to import numeric columns with leading zeros as text. \
@@ -26,7 +26,8 @@ Properties for the `"datasets"` node:
     This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
   - `"max-discrete-value"`: The max value that can be seen as discrete when deducing between
     continuous and categorical data. If an integer is larger then this value
-    in a column, then it will classify the column as continuous.
+    in a column, then it will classify the column as continuous. \
+    This property is optional. Also, this is only used if you are auto-detecting the columns and their types.
   - `"id-column"`: The ID column. \
     This property is optional.
   - `"continuous-columns"`: An array of continuous column names to import. \
@@ -35,7 +36,7 @@ Properties for the `"datasets"` node:
     This property is optional. \
     Each specification consists of the following:
     - `"name"`: The name of the column.
-    - `"parser"`: how to read the column. \
+    - `"parser"`: How to read the column. \
       Available options are:
       - `"as-integers"`: imports the column as discrete integers.
       - `"as-strings"`: imports the column as text. (If not specified, this will be the default).
@@ -43,7 +44,7 @@ Properties for the `"datasets"` node:
     This property is optional. \
     Each specification consists of the following:
     - `"name"`: The name of the column.
-    - `"parser"`: how to parse the column's date strings. \
+    - `"parser"`: How to parse the column's date strings. \
       Available options are:
       - `"iso-date"`
       - `"iso-combined"`
@@ -51,7 +52,7 @@ Properties for the `"datasets"` node:
       - `"strptime-format"`
       - `"automatic"` (if not specified, this will be the default).
       - `"time"`
-    - `"format"`: if `"parser"` is set to `"strptime-format"`,
+    - `"format"`: If `"parser"` is set to `"strptime-format"`,
       then this is the user-defined format to parse with.
     Note that the `"parser"` and `"format"` options are ignored if importing an Excel file.
     Excel stores dates and times as serial dates, and these will be converted accordingly.
@@ -68,8 +69,9 @@ Properties for the `"datasets"` node:
 
     - `"name-re"`: The column to rename (using a regular expression pattern).
     - `"new-name-re"`: The new name for the column (an include regular expression pattern relative to `"name-re"`).
-  - `"mutate-categorical-columns"`: An array of categorical column mutation commands. This will either create or update
-    a categorical column and fill it with values based on another categorical column. This will use a map of
+  - `"mutate-categorical-columns"`: An array of categorical column mutation commands. \
+  Each command will either create or update
+    a categorical columns and fill it with values based on the provided categorical column. This will use a map of
     regular expression patterns and corresponding replacements, where each value in the source column is compared
     against the regex patterns. When the first match is encountered, then the corresponding replacement will then
     be applied to the target column. \
@@ -91,13 +93,13 @@ Properties for the `"datasets"` node:
     - `"column"`: The categorical column to collapse.
     - `"min"`: The minimum number of times a string must appear in the column to remain in the string table.
     - `"other-label"`: The label to use for the new category where low-frequency values are lumped into. Default is `"Other"`.
-  - `"collapse-except"`: collapses strings into an "Other" category, except for a list of provided labels. \
+  - `"collapse-except"`: Command to collapse strings into an `"Other"` category, except for a list of provided labels. \
     This is an array of specifications which contain the following:
     - `"column"`: The categorical column to collapse.
     - `"labels-to-keep"`: An array of strings to preserve; all others will be lumped into a new `"Other"` category.
     - `"other-label"`: The label to use for the new category where other labels are lumped into. Default is `"Other"`.
 
-  Next, a `"formulas"`: section can also be loaded from within the dataset's node.
+  Next, a `"formulas"` section can also be loaded from within the dataset's node.
   In this context, this is a formula string which references the dataset. \
   This is an array of specifications which include the following properties:
 
@@ -138,16 +140,16 @@ Properties for the `"datasets"` node:
       - *groupId*: The group ID to count.
   
   Note that formula arguments can either be a string (wrapped in a pair of `'`) or an embedded formula
-  (which must be wrapped in a set of `{{`: And `}}`). \
-  For example, the group ID can be a formula getting the highest label from the grouping column: \
+  (which must be wrapped in a set of `{{` and `}}`). \
+  For example, the group ID can be a formula getting the highest label (alphabetically) from the grouping column:
 
   ```
   N(`Degree`, `Academic Year`, {{max(`Academic Year`)}})
   ```
 
   Also, instead of referencing columns by name, functions are also available for referencing columns by index.
-  - ``ContinuousColumn(index)``: returns the name of the continuous column at the given index. Index can either
-    be a number or `last` (returns the last continuous column).
+  - ``ContinuousColumn(index)``: Returns the name of the continuous column at the given index. Index can either
+    be a number or `` `last` `` (returns the last continuous column).
 
   The following example would return the total of the first continuous column:
 
@@ -171,14 +173,14 @@ Properties for the `"datasets"` node:
   - `"filter"`: The subset filtering definition, which will contain the following:
     - `"column"`: The column from the dataset to filter on. The following values can also be used:
       - `"last-continuous-column"`
-    - `"operator"`: how to compare the values from the column with the filter's value. \
+    - `"operator"`: How to compare the values from the column with the filter's value. \
       Available options are:
-      - `"="` or `"=="` equals (the default)
-      - `"!="` or `"<>"` not equals
-      - `"<"` less than
-      - `"<="` less than or equal to
-      - `">"` greater than
-      - `">="` great than or equal to
+      - `"="` or `"=="`: Equals (the default)
+      - `"!="` or `"<>"`: Not equals
+      - `"<"`: Less than
+      - `"<="`: Less than or equal to
+      - `">"`: Greater than
+      - `">="`: Great than or equal to
     - `"values"`: An array of values to filter the column on. These can be numbers, strings, or dates
          (depending on the column's data type). \
          Multiple values will be an `OR` operation, where if a value in the data matches *any* of these
@@ -186,7 +188,7 @@ Properties for the `"datasets"` node:
          Note that string values can reference constants loaded from the [constants](#constants-properties) section
          or `"formulas"` section of the parent dataset.
   - `"filter-or"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
-    are ORed together, meaning that if any condition for a row is true, then it will be included in the subset.
+    are `OR`ed together, meaning that if any condition for a row is true, then it will be included in the subset.
   - `"filter-and"`: Same as `"filter"`, except that it takes an array of subset filtering definitions. These criteria
     are `AND`ed together, meaning that all conditions for a row must be met for it to be included in the subset.
 
@@ -197,13 +199,13 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"type"`: A string specifying which type of merge to use. \
     Available options are:
-    - `"left-join-unique"`: (unique) left join the dataset with another dataset (the default).
+    - `"left-join-unique"`: A (unique) left join the dataset with another dataset (the default).
   - `"other-dataset"`: The other dataset to merge the current dataset with. This should be a name referencing
     a previously loaded dataset.
   - `"by"`: An array of properties specifying which columns to join by. Each item should contain the following:
     - `"left-column"`: The column from the current dataset.
     - `"right-column"`: The column from the other dataset.
-  - `"suffix"`: if columns in the right dataset already appear in the left dataset, then append this suffix to
+  - `"suffix"`: If columns in the right dataset already appear in the left dataset, then append this suffix to
     to column to make it unique.
 
   Next, the `"pivots"` section of the dataset's node is parsed. This is an array of pivot specifications which
@@ -213,18 +215,18 @@ Properties for the `"datasets"` node:
     This name is referenced by items (e.g., plots) elsewhere in the project file and must be unique.
   - `"type"`: A string specifying which type of pivot to use. \
     Available options are:
-    - `"wider"`: pivot wider (the default).
-    - `"longer"`: pivot longer.
+    - `"wider"`: Pivot wider (the default).
+    - `"longer"`: Pivot longer.
 
   If pivoting wider, the following options are available:
   - `"id-columns"`: An array of strings representing the ID columns. \
     Note that the output will be sorted based on the ordering of these columns. 
   - `"names-from-column"`: A string representing the 'names from'.
   - `"values-from-columns"`: An array of strings representing the 'values from' columns.
-  - `"names-separator"`: if multiple value columns are provided, then this separator will
-    join the label from `names-from-column` and the value column name.
-  - `"names-prefix"`: string to prepend to newly created pivot columns.
-  - `"fill-value"`: numeric value to assign to missing data. The default it so leave it as missing data.
+  - `"names-separator"`: If multiple value columns are provided, then this separator will
+    join the label from `"names-from-column"` and the value column name.
+  - `"names-prefix"`: A string to prepend to newly created pivot columns.
+  - `"fill-value"`: A numeric value to assign to missing data. The default it so leave it as missing data.
 
   If pivoting longer, the following options are available:
   - `"columns-to-keep"`: An array of strings specifying the columns to not pivot. These will be copied to the new dataset

@@ -8,74 +8,74 @@ The following section details properties common to all graphs.
 
 Properties common to all graphs:
 
-- `"dataset"`: if the object requires a dataset (most graphs do), then this is the name of the dataset. \
+- `"dataset"`: If the object requires a dataset (most graphs do), then this is the name of the dataset. \
      Note that this is the unique name of the dataset loaded from the report's
      [datasets](#datasets-properties) section, not a filepath. \
      Also, this is optional if the item type doesn't require a dataset (e.g., a `Wisteria::GraphItems::Label`).
-- `"title"`: the title of the graph, which contains [label](#label-properties) properties.
-- `"sub-title"`: the subtitle of the graph, which contains [label](#label-properties) properties.
-- `"caption"`: the caption of the graph, which contains [label](#label-properties) properties.
-- `"axes"`: an array of [axis](#axis-properties) objects.
-- `"background-color"`: a string specifying the plotting area's background color.
-- `"image-scheme"`: an array of image import specifications. (See [image file properties](#image-file-properties).)
-- `"common-box-image-outline"`: string specifying the color for the outline around the bars/boxes
+- `"title"`: The title of the graph, which contains [label](#label-properties) properties.
+- `"sub-title"`: The subtitle of the graph, which contains [label](#label-properties) properties.
+- `"caption"`: The caption of the graph, which contains [label](#label-properties) properties.
+- `"axes"`: An array of [axis](#axis-properties) objects.
+- `"background-color"`: A string specifying the plotting area's background color.
+- `"image-scheme"`: An array of image import specifications. (See [image file properties](#image-file-properties).)
+- `"common-box-image-outline"`: A string specifying the color for the outline around the bars/boxes
      if using a common box image.
-- `"stipple-image"`: an image import specification. (See [image file properties](#image-file-properties).)
-- `"annotations"`: text messages that can be added on top of the graph, optionally pointing to positions
+- `"stipple-image"`: An image import specification. (See [image file properties](#image-file-properties).)
+- `"annotations"`: Text messages that can be added on top of the graph, optionally pointing to positions
   on the graph. This is an array of annotation definitions, which contain the following properties:
-  - `"label"`: the label for the note, which contains [label](#label-properties) properties.
+  - `"label"`: The label for the note, which contains [label](#label-properties) properties.
   - `"interest-points"`: The points that the note will point at. \
     This is an array of items which contain the following properties:
-    - `"x"`: the X axis position of the point.
-    - `"y"`: the Y axis position of the point.
-  - `"anchor"`: the point to anchor the label. \
+    - `"x"`: The X axis position of the point.
+    - `"y"`: The Y axis position of the point.
+  - `"anchor"`: The point to anchor the label. \
      Note that the `label`'s `"anchoring"` property will control which part of the label that the
      anchoring point refers to. \
      If not specified, the graph will attempt to place it at the best location. \
      This contains the following properties:
-     - `"x"`: the X axis position of the point.
-     - `"y"`: the Y axis position of the point.
-- `"reference-lines"`: an array of reference line definitions, which contain the following properties:
-  - `"axis-type"`: the axis to add the reference line to. \
+     - `"x"`: The X axis position of the point.
+     - `"y"`: The Y axis position of the point.
+- `"reference-lines"`: An array of reference line definitions, which contain the following properties:
+  - `"axis-type"`: The axis to add the reference line to. \
     Available options are:
     - `"bottom-x"`
     - `"right-y"`
     - `"left-y"`
     - `"top-y"`
-  - `"position"`: the axis position for the line. \
+  - `"position"`: The axis position for the line. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"label"`: the text to display on the legend referring to line.
-  - `"pen"`: the definition for the [pen](#pen-properties) properties.
-- `"reference-areas"`: an array of reference area definitions, which contain the following properties:
-  - `"axis-type"`: the axis to add the reference area to. \
+  - `"label"`: The text to display on the legend referring to line.
+  - `"pen"`: The definition for the [pen](#pen-properties) properties.
+- `"reference-areas"`: An array of reference area definitions, which contain the following properties:
+  - `"axis-type"`: The axis to add the reference area to. \
     Available options are:
     - `"bottom-x"`
     - `"right-y"`
     - `"left-y"`
     - `"top-y"`
-  - `"start"`: the starting axis position for the area. \
+  - `"start"`: The starting axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"end"`: the ending axis position for the area. \
+  - `"end"`: The ending axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"label"`: the text to display on the legend referring to area.
-  - `"pen"`: the definition for the [pen](#pen-properties) properties. \
+  - `"label"`: The text to display on the legend referring to area.
+  - `"pen"`: The definition for the [pen](#pen-properties) properties. \
         The color is used for the surrounding reference lines, and a tinted version
         is used the area.
-  - `"style"`: the style to apply to the reference area. \
+  - `"style"`: The style to apply to the reference area. \
     Available options are:
     - `"fade-from-left-to-right"`
     - `"fade-from-right-to-left"`
     - `"solid"`
-- `"brush-scheme"`: for graphs that support brush schemes only. \
+- `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
-     `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
-     `"color-scheme"`: a color scheme that is mapped to the brush styles.
+     `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
+     `"color-scheme"`: A color scheme that is mapped to the brush styles.
      This can also be a string specifying a named color scheme (e.g., `"icecream"`).
-- `"color-scheme"`: for graphs that support color schemes only. \
+- `"color-scheme"`: For graphs that support color schemes only. \
      This can either be an array of color strings or the name of the color scheme. \
      Refer to `Wisteria::Colors::Schemes` for a list of color schemes.
-- `"icon-scheme"`: for graphs that support icon/marker schemes only. \
-  This an either be an icon scheme name or an array of icon strings (which can be recycled) \
+- `"icon-scheme"`: For graphs that support icon/marker schemes only. \
+  This an either be an icon scheme name or an array of icon strings (which can be recycled). \
   Refer to `Wisteria::Icons::Schemes` for a list of icon schemes. \
   The following individual icons are available:
   - `"blank"`
@@ -115,28 +115,28 @@ Properties common to all graphs:
   - `"tack"`
   - `"banner"`
   - `"watercolor-rectangle"`
-- `"line-scheme"`: for graphs that support line schemes only. \
-  This is an array of line specifications (which can be recycled) \
+- `"line-scheme"`: For graphs that support line schemes only. \
+  This is an array of line specifications (which can be recycled). \
   Each specification contains the following:
-  - `"line-style"`: a string specifying the line style. \
+  - `"line-style"`: A string specifying the line style. \
     Available options are:
     - `"lines"`
     - `"arrows"`
     - `"spline"`
-  - `"pen-style"`: a [pen](#pen-properties) specification (although only the pen style is used)
-- `"legend"`: an item containing the following properties:
-  - `"placement"`: where to place the legend. \
+  - `"pen-style"`: A [pen](#pen-properties) specification (although only the pen style is used)
+- `"legend"`: An item containing the following properties:
+  - `"placement"`: Where to place the legend. \
     Available options are:
     - `"left"`
     - `"right"` (the default)
     - `"top"`
     - `"bottom"`
   - `"include-header"`: `true` to include a header (the default), `false` to not.
-  - `"title"`: if `"include-header"` is `true`, a string specifying the title of the legend.
-  - `"ring"`: for pie charts, which ring to use for the legend. \
+  - `"title"`: If `"include-header"` is `true`, a string specifying the title of the legend.
+  - `"ring"`: For pie charts, which ring to use for the legend. \
     Available options are:
-    - `"outer"`: only the outer (or only) ring is included. (This is the default.)
-    - `"inner"`: the inner and outer rings are included in the legend.
+    - `"outer"`: Only the outer (or only) ring is included. (This is the default.)
+    - `"inner"`: The inner and outer rings are included in the legend.
 
 # Common Graph Features
 
@@ -146,9 +146,9 @@ The following section details properties relevant to graphs and tables.
 
 Properties for pens:
 
-- `"color"`: the pen color. This can be either a color name or hex-encoded value.
-- `"width"`: the width of the pen's line.
-- `"style"`: the pen's style, which includes the following:
+- `"color"`: The pen color. This can be either a color name or hex-encoded value.
+- `"width"`: The width of the pen's line.
+- `"style"`: The pen's style, which includes the following:
   - `"dot"`
   - `"dot-dash"`
   - `"long-dot"`
@@ -160,12 +160,13 @@ Properties for pens:
 
 Note that a pen can be set to `null` to turn it off.
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Brush {#brush-properties .unnumbered}
 
 Properties for brushes:
 
-- `"color"`: the brush color. This can be either a color name or hex-encoded value.
-- `"style"`: the brush's pattern, which includes the following:
+- `"color"`: The brush color. This can be either a color name or hex-encoded value.
+- `"style"`: The brush's pattern, which includes the following:
   - `"backwards-diagonal-hatch"`
   - `"forward-diagonal-hatch"`
   - `"cross-diagonal-hatch"`
@@ -177,74 +178,77 @@ Properties for brushes:
 Note that brushes can be set to `null` to turn it off.
 
 Also, instead of properties, a single string can be specified indicating color for the brush.
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Image Files {#image-file-properties .unnumbered}
 
 Properties for image import specifications:
 
-- `"path"`: a single file path to import for the image.
-- `"paths"`: an array of file paths to import for the image.
-- `"color-filter"`: a string specifying a color to translucently apply across the image.
-- `"opacity"`: a number between `0-255` specifying how opaque the image is. \
+- `"path"`: A single file path to import for the image.
+- `"paths"`: An array of file paths to import for the image.
+- `"color-filter"`: A string specifying a color to translucently apply across the image.
+- `"opacity"`: A number between `0-255` specifying how opaque the image is. \
   Note that when loading an image for a page's background, this value will be overridden
   by the page's background opacity setting.
-- `"stitch"`: string specifying how to stitch multiple images together.
+- `"stitch"`: A string specifying how to stitch multiple images together.
   (You must use `"paths"` to import multiple images.) \
   Available options are:
   - `"vertical"`
   - `"horizontal"` (the default)
 
 Note that instead of properties, a single string can be specified indicating a file path to load.
+:::
 
 ## Axis {#axis-properties .unnumbered}
 
 `"axes"` nodes can either be part of a graph node definition or a [common-axis](#common-axis-properties) node. \
   For the former, this can define properties for the various axes in the graph. \
-  `"axes"`: nodes contain an array of axis objects, each with the following properties:
+  `"axes"`: These nodes contain an array of axis objects, each with the following properties:
 
-- `"axis-type"`: the type of axis. \
+- `"axis-type"`: The type of axis. \
   Available options are:
   - `"bottom-x"`
   - `"right-y"`
   - `"left-y"`
   - `"top-y"`
-- `"title"`: the title of the axis, which contains [label](#label-properties) properties.
-- `"axis-pen"`: the pen for the axis line, which includes [pen](#pen-properties) properties.
-- `"gridline-pen"`: the pen for the gridlines, which includes [pen](#pen-properties) properties.
-- `"double-sided-labels"`: boolean value specifying whether axis labels should be shown on both sides of the axis.
-- `"tickmarks"`: tickmarks settings, which contains the following properties:
-  - `"display"`: a string, indicating how to display the tickmarks. \
+- `"title"`: The title of the axis, which contains [label](#label-properties) properties.
+- `"axis-pen"`: The pen for the axis line, which includes [pen](#pen-properties) properties.
+- `"gridline-pen"`: The pen for the gridlines, which includes [pen](#pen-properties) properties.
+- `"double-sided-labels"`: A boolean value specifying whether axis labels should be shown on both sides of the axis.
+- `"tickmarks"`: Tickmark settings, which contains the following properties:
+  - `"display"`: A string, indicating how to display the tickmarks. \
     Available options are:
     - `"inner"`
     - `"outer"`
     - `"crossed"`
     - `"no-display"`
-- `"label-display"`: what to display for the labels along the axis. \
+- `"label-display"`: What to display for the labels along the axis. \
   Available options are:
   - `"custom-labels-or-values"`
   - `"only-custom-labels"`
   - `"custom-labels-and-values"`
   - `"no-display"`
 - `"show-outer-labels"`: `true` to show the outer labels on the axis.
-- `"label-length"`: a number specifying the suggested maximum length for the axis labels. (Default is 100.)
-- `"label-length-auto"`: if `true`, an attempt will be made to split longer axis labels based on
+- `"label-length"`: A number specifying the suggested maximum length for the axis labels. (Default is `100`.)
+- `"label-length-auto"`: If `true`, an attempt will be made to split longer axis labels based on
      various separators in them (e.g., parentheses, commas, conjunctions).
 
-- `"brackets"`: adds brackets to the axis,which can be an array of bracket definitions or single set of properties
+- `"brackets"`: Adds brackets to the axis,which can be an array of bracket definitions or single set of properties
   using a dataset. \
   Available options for either method are:
-  - `"simplify"`: a boolean value indicating whether to simplify the bracket's labels.
+  - `"simplify"`: A boolean value indicating whether to simplify the bracket's labels.
  
   If building brackets from a dataset, use the following properties:
-  - `"dataset"`: the name of the dataset to read the columns from. \
+  - `"dataset"`: The name of the dataset to read the columns from. \
        Note that this dataset can be different from the dataset used for the first
        child graph if you are wanting to use different labels. For this situation, the
        `"value"` variable should have the same scale as the child graph.
-  - `"variables"`: which include the following properties:
-    - `"label"`: the labels column.
-    - `"value"`: the values column. (This can be either a continuous, categorical, or date column.)
-  - `"pen"`: the bracket line, which includes [pen](#pen-properties) properties.
-  - `"style"`: the style of the braces. \
+  - `"variables"`: Which include the following properties:
+    - `"label"`: The labels column.
+    - `"value"`: The values column. (This can be either a continuous, categorical, or date column.)
+  - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
+  - `"style"`: The style of the braces. \
     Available options are:
     - `"arrow"`
     - `"reverse-arrow"`
@@ -253,13 +257,13 @@ Note that instead of properties, a single string can be specified indicating a f
     - `"no-connection-lines"`
   
   If building brackets individually, specify an area of items, each with the following properties:
-  - `"start"`: the starting axis position for the area. \
+  - `"start"`: The starting axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"end"`: the ending axis position for the area. \
+  - `"end"`: The ending axis position for the area. \
        This can either be a numeric position, a date (as a string), or an axis label.
-  - `"label"`: the text to display on next to the brackets.
-  - `"pen"`: the bracket line, which includes [pen](#pen-properties) properties.
-  - `"style"`: the style of the braces. \
+  - `"label"`: The text to display on next to the brackets.
+  - `"pen"`: The bracket line, which includes [pen](#pen-properties) properties.
+  - `"style"`: The style of the braces. \
     Available options are:
     - `"arrow"`
     - `"reverse-arrow"`
@@ -267,20 +271,22 @@ Note that instead of properties, a single string can be specified indicating a f
     - `"curly-braces"` (the default)
     - `"no-connection-lines"`
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Positions {#position-properties .unnumbered}
 
 Properties for row or column table positions:
 
-- `"origin"`: this is either the zero-based index of the row/column, or a string. \
+- `"origin"`: This is either the zero-based index of the row/column, or a string. \
      The string values available are `"last-row"` or `"last-column"`,
      which will be interpreted as the last row or column in the data, respectively. \
      Column names from the dataset can also be used if looking for a column position.
-- `"offset"`: a numeric value combined with the value for `"origin"`. \
+- `"offset"`: A numeric value combined with the value for `"origin"`. \
      This is optional and is useful for when `"origin"` is interpreted at run-time. \
-     For example, if `origin` is `"last-row"`: and `"offset"` is `-1`, then this will
+     For example, if `origin` is `"last-row"`: And `"offset"` is `-1`, then this will
      result in the second-to-last row.
 
 A position can also be a number or string (e.g., `"last-row"`) if not needing to use the `"origin"`/`"offset"` features.
+:::
 
 # Base-level Graphs
 
@@ -290,9 +296,9 @@ The following are properties relevant to specific graphs' base-level graph type.
 
 Properties common to all bar-chart derived graphs:
 
-- `"box-effect"`: string specifying the effects for the bars. \
+- `"box-effect"`: A string specifying the effects for the bars. \
   Available options are:
-  - `"common-image"` (This will require an `"image-scheme"` to be defined.)
+  - `"common-image"`: (This will require an `"image-scheme"` to be defined.)
   - `"fade-from-bottom-to-top"`
   - `"fade-from-left-to-right"`
   - `"fade-from-right-to-left"`
@@ -301,7 +307,7 @@ Properties common to all bar-chart derived graphs:
   - `"solid"` (the default)
   - `"stipple"`
   - `"watercolor"`
-- `"bar-label-display"`: string specifying how to display labels on the bars. \
+- `"bar-label-display"`: A string specifying how to display labels on the bars. \
   Available options are:
   - `"percentage"`
   - `"value"`
@@ -311,50 +317,50 @@ Properties common to all bar-chart derived graphs:
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
 - `"include-spaces-between-bars"`: `true` to include spaces between bars.
-- `"ghost-opacity"`: number specifying the opacity level of non-showcased bars.
-- `"showcase-bars"`: an array of strings specifying which bars to showcase.
-- `"bar-icons"`: an array of bar icon specifications. Each specification contains the following:
-  - `"label"`: the label of the bar to add an icon to.
-  - `"image"`: the path to the image to add to the bar label.
-- `"bar-sort"`: properties specifying how to sort the bars (after loading the data). \
+- `"ghost-opacity"`: A number specifying the opacity level of non-showcased bars.
+- `"showcase-bars"`: An array of strings specifying which bars to showcase.
+- `"bar-icons"`: An array of bar icon specifications. Each specification contains the following:
+  - `"label"`: The label of the bar to add an icon to.
+  - `"image"`: The path to the image to add to the bar label.
+- `"bar-sort"`: Properties specifying how to sort the bars (after loading the data). \
   Available options are:
-  - `"direction"`
+  - `"direction"`: The direction to sort the bars. \
     Available options are:
     - `"ascending"`
     - `"descending"`
-  - `"by"`: how to sort the bars, by label or length. This will override any `"labels"` option. \
+  - `"by"`: How to sort the bars, by label or length. This will override any `"labels"` option. \
     Available options are:
     - `"length"`
     - `"label"`
-  - `"labels"`: the bar labels, specified in the order they should be sorted. \
+  - `"labels"`: The bar labels, specified in the order they should be sorted. \
        If `"direction"` is `"ascending"`, then the bars will be sorted top-to-bottom or
        left-to-right (based on the order of the provided labels). Otherwise, they will be
        sorted bottom-to-top or right-to-left. \
        Note that this option is ignored if `"by"` is specified.
-- `"bar-group-placement"`: a string specifying how the bar groups (brackets and cumulative bars)
+- `"bar-group-placement"`: A string specifying how the bar groups (brackets and cumulative bars)
     are aligned with their respective bars. \
     Available options are:
     - `"flush"`
     - `"next-to-parent"` (the default)
-- `"bar-groups"`: an array of bar groups, each containing the following properties:
-  - `"start"`: the axis label or numeric position to start the group.
-  - `"end"`: the axis label or numeric position to end the group.
-  - `"decal"`: a label to display on the group bar.
-  - `"brush"`: the brush to paint with, which includes [brush](#brush-properties) properties.
-  - `"color"`: the base color to paint under the brush. This is useful if the brush is using a hatch pattern.
-- `"decals"`: an array of decals to add to the bars. This will be an array of nodes containing the following properties:
-  - `"bar"`: the axis label of the bar.
-  - `"block"`: number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
-  - `"decal"`: the decal to add to the bar, which will contain [label](#label-properties) properties.
-- `"first-bar-brackets"`: properties adding axis brackets that reference the first bar. \
+- `"bar-groups"`: An array of bar groups, each containing the following properties:
+  - `"start"`: The axis label or numeric position to start the group.
+  - `"end"`: The axis label or numeric position to end the group.
+  - `"decal"`: A label to display on the group bar.
+  - `"brush"`: The brush to paint with, which includes [brush](#brush-properties) properties.
+  - `"color"`: The base color to paint under the brush. This is useful if the brush is using a hatch pattern.
+- `"decals"`: An array of decals to add to the bars. This will be an array of nodes containing the following properties:
+  - `"bar"`: The axis label of the bar.
+  - `"block"`: The number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
+  - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties.
+- `"first-bar-brackets"`: Properties adding axis brackets that reference the first bar. \
   Available options are:
-  - `"label"`: string for the bracket's label.
-  - `"start-block-re"`: a regular expression used to find the starting block for the bracket.
-  - `"end-block-re"`: a regular expression used to find the ending block for the bracket.
+  - `"label"`: A string for the bracket's label.
+  - `"start-block-re"`: A regular expression used to find the starting block for the bracket.
+  - `"end-block-re"`: A regular expression used to find the ending block for the bracket.
 
   If the `"re"` variations of the starting and ending labels are available, then these properties are used:
-  - `"start-block"`: string specifying the tag of the starting block of the bar.
-  - `"end-block"`: string specifying the tag of the ending block of the bar.
+  - `"start-block"`: A string specifying the tag of the starting block of the bar.
+  - `"end-block"`: A string specifying the tag of the ending block of the bar.
 - `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
 
 Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
@@ -363,17 +369,18 @@ if specifying start and end points for your brackets, be aware that the bars wil
 
 # Graphs
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Box Plot {#box-plot-properties .unnumbered}
 
 Properties for `"box-plot"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"aggregate"`: the column containing the data.
-  - `"group-1"`: a (optional) grouping column to divide the boxes into (along the X axis).
-- `"box-effect"`: string specifying the effects for the boxes. \
+- `"variables"`: An item containing the following properties:
+  - `"aggregate"`: The column containing the data.
+  - `"group-1"`: A (optional) grouping column to divide the boxes into (along the X axis).
+- `"box-effect"`: A string specifying the effects for the boxes. \
   Available options are:
   - `"common-image"` (This will require an `"image-scheme"` to be defined.)
-  - `"image" `(This will require an `"image-scheme"` to be defined.)
+  - `"image" ` (This will require an `"image-scheme"` to be defined.)
   - `"fade-from-bottom-to-top"`
   - `"fade-from-left-to-right"`
   - `"fade-from-right-to-left"`
@@ -383,54 +390,60 @@ Properties for `"box-plot"` nodes:
   - `"stipple"`
 - `"show-all-points"`: `true` to show all points. By default, only outliers are shown.
 - `"show-labels"`: `true` to show labels on the hinges, midpoint, and outliers.
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Candlestick/OHLC plot {#candlestick-plot-properties .unnumbered}
 
 Properties for `"candlestick-plot"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"date"`: the date column (usually would be daily intervals).
-  - `"open"`: the opening-value column.
-  - `"high"`: the high-value column.
-  - `"low"`: the low-value column.
-  - `"close"`: the closing-value column.
-- `"plot-type"`: string specifying which type of plot it should be. \
+- `"variables"`: An item containing the following properties:
+  - `"date"`: The date column (usually would be daily intervals).
+  - `"open"`: The opening-value column.
+  - `"high"`: The high-value column.
+  - `"low"`: The low-value column.
+  - `"close"`: The closing-value column.
+- `"plot-type"`: A string specifying which type of plot it should be. \
   Available options are:
   - `"candlestick"`
   - `"ohlc"`
-- `"gain-brush"`: a [brush](#brush-properties) specification for candles that had a resulting gain for the day.
-- `"loss-brush"`: a [brush](#brush-properties) specification for candles that had a resulting loss for the day.
+- `"gain-brush"`: A [brush](#brush-properties) specification for candles that had a resulting gain for the day.
+- `"loss-brush"`: A [brush](#brush-properties) specification for candles that had a resulting loss for the day.
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Categorical Bar Chart {#categorical-bar-chart-properties .unnumbered}
 
 Properties for `"categorical-bar-chart"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"aggregate"`: the (optional) aggregate count column. \
+- `"variables"`: An item containing the following properties:
+  - `"aggregate"`: The (optional) aggregate count column. \
        These are the values accumulated into the respective labels from the group column(s). \
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
-  - `"category"`: the categorical (or ID) column containing the items to group and count.
-  - `"group"`: a (optional) grouping column to further divide the main categorical data into.
+  - `"category"`: The categorical (or ID) column containing the items to group and count.
+  - `"group"`: A (optional) grouping column to further divide the main categorical data into.
 - `"bar-orientation"`: string specifying the orientation of the bars. \
   Available options are:
   - `"vertical"`
   - `"horizontal"`
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Gantt Chart {#gantt-chart-properties .unnumbered}
 
 Properties for `"gantt-chart"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"task"`: the task column.
-  - `"start-date"`: the starting date column.
-  - `"end-date"`: the end date column.
-  - `"resource"`: the resource column (this is optional).
-  - `"description"`: the description column (this is optional).
-  - `"completion"`: the completion column (this is optional).
-  - `"group"`: the grouping column (this is optional).
-- `"task-label-display"`: string specifying what to display on the tasks. \
+- `"variables"`: An item containing the following properties:
+  - `"task"`: The task column.
+  - `"start-date"`: The starting date column.
+  - `"end-date"`: The end date column.
+  - `"resource"`: The resource column (this is optional).
+  - `"description"`: The description column (this is optional).
+  - `"completion"`: The completion column (this is optional).
+  - `"group"`: The grouping column (this is optional).
+- `"task-label-display"`: A string specifying what to display on the tasks. \
   Available options are:
   - `"days"`
   - `"description"`
@@ -440,62 +453,68 @@ Properties for `"gantt-chart"` nodes:
   - `"resource-and-days"`
   - `"resource-and-description"`
   - `"resource-description-and-days"`
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Heat Map {#heatmap-properties .unnumbered}
 
 Properties for `"heatmap"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"continuous"`: the value column (each value will have its own cell).
-  - `"group"`: the grouping column (this is optional).
-- `"group-column-count"`: if a grouping column is provided, then this number will specify the number of columns
+- `"variables"`: An item containing the following properties:
+  - `"continuous"`: The value column (each value will have its own cell).
+  - `"group"`: The grouping column (this is optional).
+- `"group-column-count"`: If a grouping column is provided, then this number will specify the number of columns
   to split the groups (rows) into. (This should be between 1-5.)
-- `"show-group-header"`: if a grouping column is provided, then `true` will show a header above each column.
-- `"group-header-prefix"`: if group columns are being shown, this will be the string used as a prefix for each column.
+- `"show-group-header"`: If a grouping column is provided, then `true` will show a header above each column.
+- `"group-header-prefix"`: If group columns are being shown, this will be the string used as a prefix for each column.
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Histogram {#histogram-properties .unnumbered}
 
 Properties for `"histogram"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"aggregate"`: the continuous data column to aggregate.
-  - `"group"`: the grouping column (this is optional).
-- `"binning-method"`: string specifying how to sort the data. \
+- `"variables"`: An item containing the following properties:
+  - `"aggregate"`: The continuous data column to aggregate.
+  - `"group"`: The grouping column (this is optional).
+- `"binning-method"`: A string specifying how to sort the data. \
   Available options are:
   - `"bin-by-integer-range"`
   - `"bin-by-range"`
   - `"bin-unique-values"`
-- `"interval-display"`: string specifying how to sort the data. \
+- `"interval-display"`: A string specifying how to sort the data. \
   Available options are:
   - `"cutpoints"`
   - `"midpoints"`
-- `"rounding"`: string specifying how to round the data. \
+- `"rounding"`: A string specifying how to round the data. \
   Available options are:
   - `"no-rounding"`
   - `"round"`
   - `"round-down"`
   - `"round-up"`
-- `"bins-start"`: number specifying where on the X axis to start the bins.
-- `"suggested-bin-count"`: number specifying the suggested number of bins.
-- `"max-bin-count"`: number specifying the maximum number of bins.
+- `"bins-start"`: A number specifying where on the X axis to start the bins.
+- `"suggested-bin-count"`: A number specifying the suggested number of bins.
+- `"max-bin-count"`: A number specifying the maximum number of bins.
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Likert Chart {#likert-chart-properties .unnumbered}
 
 Properties for `"likert-chart"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"questions"`: an array of column names to use from the dataset. \
+- `"variables"`: An item containing the following properties:
+  - `"questions"`: An array of column names to use from the dataset. \
   These values can also be variable selection formulas, including the following:
-  - ``{{Matches(`value`)}}``: where *value* will be the regular expression search pattern, and any column
+  - ``{{Matches(`value`)}}``: Where *value* will be the regular expression search pattern, and any column
       in the dataset that contains this text will be included.
-  - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
+  - ``{{Everything()}}``: Returns all columns from the dataset. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
-  - ``{{EverythingExcept(`value`)}}``: will return all columns from the dataset that do not match the
+  - ``{{EverythingExcept(`value`)}}``: Returns all columns from the dataset that do not match the
       regular expression pattern *value*. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
-  - `"group"`: the grouping column (this is optional).
+  - `"group"`: The grouping column (this is optional).
 - `"survey-format"`: string specifying the scale used for all questions. \
   Available options are:
   - `"two-point"`
@@ -510,55 +529,58 @@ Properties for `"likert-chart"` nodes:
   - `"six-point-categorized"`
   - `"seven-point"`
   - `"seven-point-categorized"`
-  Note that if this is not supplied, then the program will deduce the scale for you.
-- `"simplify"`: if `true`, the responses in the dataset will be collapsed.
-- `"apply-default-labels"`: if `true`, the string tables in the dataset's question columns
+  (Note that if this is not supplied, then the program will deduce the scale for you.)
+- `"simplify"`: If `true`, the responses in the dataset will be collapsed.
+- `"apply-default-labels"`: If `true`, the string tables in the dataset's question columns
   will be reset to stock Likert scale labels.
-- `"show-response-counts"`: if `true`, shows the number of respondents for the questions
+- `"show-response-counts"`: If `true`, shows the number of respondents for the questions
   (default is to not show these).
-- `"show-percentages"`:if `true`, shows the percentages on the bars (the default).
-- `"show-section-headers"`:if `true`, shows the headers above the chart (the default).
-- `"adjust-bar-widths-to-respondent-size"`:if `true`, 
-- `"positive-label"`: the label to show as the positive header label.
-- `"negative-label"`: the label to show as the negative header label.
-- `"no-response-label"`: the label to show as the no response header label.
-- `"question-brackets"`: an array of question brackets, each of which contain the following properties:
-  - `"start"`: the first question of the bracket range.
-  - `"end"`: the last question of the bracket range.
-  - `"title"`: the title of the bracket. 
+- `"show-percentages"`: If `true`, shows the percentages on the bars (the default).
+- `"show-section-headers"`: If `true`, shows the headers above the chart (the default).
+- `"adjust-bar-widths-to-respondent-size"`: If `true`, will set the bars' widths to be relative to their number of responses.
+- `"positive-label"`: The label to show as the positive header label.
+- `"negative-label"`: The label to show as the negative header label.
+- `"no-response-label"`: The label to show as the no response header label.
+- `"question-brackets"`: An array of question brackets, each of which contain the following properties:
+  - `"start"`: The first question of the bracket range.
+  - `"end"`: The last question of the bracket range.
+  - `"title"`: The title of the bracket. 
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Line Plot {#line-plot-properties .unnumbered}
 
 Properties for `"line-plot"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"x"`: the X column.
-  - `"y"`: the Y column.
-  - `"group"`: the grouping column (this is optional).
+- `"variables"`: An item containing the following properties:
+  - `"x"`: The X column.
+  - `"y"`: The Y column.
+  - `"group"`: The grouping column (this is optional).
 - Some base properties available to [graphs](#graph-properties).
+:::
 
 ## Pie Chart {#pie-chart-properties .unnumbered}
 
 Properties for `"pie-chart"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"aggregate"`: the (optional) aggregate count column. \
+- `"variables"`: An item containing the following properties:
+  - `"aggregate"`: The (optional) aggregate count column. \
        These are the values accumulated into the respective labels from the group column(s). \
        If this column is not provided, then frequency counts of the labels from the group column(s) are used.
-  - `"group-1"`: the inner-ring grouping column (or only ring, if `"group-2"` isn't used).
-  - `"group-2"`: the outer-ring grouping column (this is optional).
+  - `"group-1"`: The inner-ring grouping column (or only ring, if `"group-2"` isn't used).
+  - `"group-2"`: The outer-ring grouping column (this is optional).
 - `"dynamic-margins"`: `true` to shift the pie chart to one side if either gutter has no outer labels.
-- `"left-margin-note"`: a label specification for a label within the left margin of the chart.
-- `"right-margin-note"`: a label specification for a label within the right margin of the chart.
-- `"pie-label-effect"`: string specifying the effects for the pie slices. \
+- `"left-margin-note"`: A label specification for a label within the left margin of the chart.
+- `"right-margin-note"`: A label specification for a label within the right margin of the chart.
+- `"pie-label-effect"`: A string specifying the effects for the pie slices. \
   Available options are:
   - `"image"` (This will require an `"image-scheme"` to be defined.)
   - `"solid"` (the default)
-- `"label-placement"`: a string specifying where to align the outer labels. \
+- `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"` (the default)
   - `"next-to-parent"`
-- `"inner-pie-midpoint-label-display"`: a string specifying what to display on the labels in the middle
+- `"inner-pie-midpoint-label-display"`: A string specifying what to display on the labels in the middle
   of the slices (within the inner pie). \
   Available options are:
   - `"value"`
@@ -568,7 +590,7 @@ Properties for `"pie-chart"` nodes:
   - `"no-display"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
-- `"outer-pie-midpoint-label-display"`: a string specifying what to display on the labels in the middle
+- `"outer-pie-midpoint-label-display"`: A string specifying what to display on the labels in the middle
   of the slices (within the outer pie, or pie if only one grouping variable is in use). \
   Available options are:
   - `"value"`
@@ -578,7 +600,7 @@ Properties for `"pie-chart"` nodes:
   - `"no-display"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
-- `"outer-label-display"`: a string specifying what to display on the outer (i.e., gutter) labels. \
+- `"outer-label-display"`: A string specifying what to display on the outer (i.e., gutter) labels. \
   Available options are:
   - `"value"`
   - `"percentage"` (the default)
@@ -587,127 +609,132 @@ Properties for `"pie-chart"` nodes:
   - `"no-display"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
-- `"inner-pie-line-pen"`: a pen specification for the pen used to draw a line connecting inner slices with their outer labels.
-- `"showcase-slices"`: draws attention to a slice (or series of slices). \
+- `"inner-pie-line-pen"`: A pen specification for the pen used to draw a line connecting inner slices with their outer labels.
+- `"showcase-slices"`: Draws attention to a slice (or series of slices). \
   This can either be an array of strings specifying which outer slices to showcase, or the following properties:
-  - `"pie"`: which pie to showcase. \
+  - `"pie"`: Which pie to showcase. \
     Available options are:
     - `"inner"`
     - `"outer"`
-  - `"category"`: which type of slices to showcase. \
+  - `"category"`: Which type of slices to showcase. \
     Available options are:
     - `"smallest"`
     - `"largest"`
-  - `"by-group"`: if showcasing the inner pie, `true` will show the smallest/largest slice within each group.
-  - `"show-outer-pie-midpoint-labels"`: if showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
-  - `"outer-label-ring"`: if showcasing the outer pie, a string specifying which ring should have its group labels
+  - `"by-group"`: If showcasing the inner pie, `true` will show the smallest/largest slice within each group.
+  - `"show-outer-pie-midpoint-labels"`: If showcasing the inner pie, `true` to keep the outer pie midpoint labels shown.
+  - `"outer-label-ring"`: If showcasing the outer pie, a string specifying which ring should have its group labels
     show outside of the pie. \
     Available options are:
     - `"inner"`
     - `"outer"`
 - `"color-labels"`: `true` to apply the slice colors to their respective outer labels.
-- `"ghost-opacity"`: number specifying the opacity for ghosted labels.
+- `"ghost-opacity"`: A number specifying the opacity for ghosted labels.
 - `"include-outer-pie-labels"`: `true` to show the outer labels for the outer pie
      (or main pie, if only using one grouping variable).
 - `"include-inner-pie-labels"`: `true` to show the outer labels for the inner pie
      (if a second grouping variable is in use).
-- `"donut-hole"`: donut hole properties, which include:
-  - `"proportion"`: a value between `0.0` and `0.95`, specifying how much of the pie the hole should consume.
-  - `"label"`: the [label](#label-properties) shown in the middle of the hole. \
+- `"donut-hole"`: Donut hole properties, which include:
+  - `"proportion"`: A value between `0.0` and `0.95`, specifying how much of the pie the hole should consume.
+  - `"label"`: The [label](#label-properties) shown in the middle of the hole. \
         Note that this label will be implicitly justified and centered within the hole.
-  - `"color"`: the color of the donut hole.
+  - `"color"`: The color of the donut hole.
 - Some base properties available to [graphs](#graph-properties).
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Linear Regression Roadmap {#linear-regression-roadmap-properties .unnumbered}
 
 Properties for `"linear-regression-roadmap"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"predictor"`: the column containing the independent variables' (i.e., predictors) names.
-  - `"coefficient"`: the column containing the predictors' correlation coefficients.
-  - `"p-value"`: the (optional) column containing the predictors' p-values.
-- `"p-value-threshold"`: if a p-value column is supplied, only predictors with p-values lower than
+- `"variables"`: An item containing the following properties:
+  - `"predictor"`: The column containing the independent variables' (i.e., predictors) names.
+  - `"coefficient"`: The column containing the predictors' correlation coefficients.
+  - `"p-value"`: The (optional) column containing the predictors' p-values.
+- `"p-value-threshold"`: If a p-value column is supplied, only predictors with p-values lower than
   this will be included. (Predictors with missing p-values will be excluded.) \
   The recommendations are usually `0.05` or `0.01` (most strict).
-- `"predictors-to-include"`: array of strings specifying which types of IVs (e.g., negative influencers) to include. \
+- `"predictors-to-include"`: Array of strings specifying which types of IVs (e.g., negative influencers) to include. \
   Available options are:
   - `"positive"`
   - `"negative"`
   - `"neutral"`
   - `"all"` (the default)
-- `"dependent-variable-name"`: the name of the dependent variable from the original analysis. \
+- `"dependent-variable-name"`: The name of the dependent variable from the original analysis. \
   This will be used on the legend and default caption.
 - `"default-caption"`: `true` to add a caption explaining how to interpret the graph.
-- `"road-pen"`: a pen specification for the road.
-- `"lane-separator-pen"`: a pen specification for the road's lane separator.
-- `"lane-separator-style"`: a string specifying the lane separator style. \
+- `"road-pen"`: A pen specification for the road.
+- `"lane-separator-pen"`: A pen specification for the road's lane separator.
+- `"lane-separator-style"`: A string specifying the lane separator style. \
   Available options are:
   - `"single-line"` (the default)
   - `"double-line"`
   - `"no-display"`
-- `"road-stop-theme"`: a string specifying the road stops theme. \
+- `"road-stop-theme"`: A string specifying the road stops theme. \
   Available options are:
   - `"location-markers"` (the default)
   - `"road-signs"`
-- `"marker-label-display"`: a string specifying what to show for the markers' labels. \
+- `"marker-label-display"`: A string specifying what to show for the markers' labels. \
   Available options are:
   - `"name"`
   - `"name-and-value"`
   - `"name-and-absolute-value"`
-- `"label-placement"`: a string specifying where to align the outer labels. \
+- `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"` (the default)
   - `"next-to-parent"`
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Pro & Con Roadmap {#pro-con-roadmap-properties .unnumbered}
 
 Properties for `"pro-con-roadmap"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"positive"`: the column containing the positive sentiment labels.
-  - `"positive-aggregate"`: the (optional) column containing the positive sentiment labels' counts.
-  - `"negative"`: the column containing the negative sentiment labels.
-  - `"negative-aggregate"`: the (optional) column containing the negative sentiment labels' counts.
-- `"positive-legend-label"`: a string specifying the name for the positive sentiment on the legend.
-- `"negative-legend-label"`: a string specifying the name for the negative sentiment on the legend.
+- `"variables"`: An item containing the following properties:
+  - `"positive"`: The column containing the positive sentiment labels.
+  - `"positive-aggregate"`: The (optional) column containing the positive sentiment labels' counts.
+  - `"negative"`: The column containing the negative sentiment labels.
+  - `"negative-aggregate"`: The (optional) column containing the negative sentiment labels' counts.
+- `"positive-legend-label"`: A string specifying the name for the positive sentiment on the legend.
+- `"negative-legend-label"`: A string specifying the name for the negative sentiment on the legend.
 - `"default-caption"`: `true` to add a caption explaining how to interpret the graph.
-- `"road-pen"`: a pen specification for the road.
-- `"lane-separator-pen"`: a pen specification for the road's lane separator.
-- `"lane-separator-style"`: a string specifying the lane separator style. \
+- `"road-pen"`: A pen specification for the road.
+- `"lane-separator-pen"`: A pen specification for the road's lane separator.
+- `"lane-separator-style"`: A string specifying the lane separator style. \
   Available options are:
   - `"single-line"` (the default)
   - `"double-line"`
   - `"no-display"`
-- `"road-stop-theme"`: a string specifying the road stops theme. \
+- `"road-stop-theme"`: A string specifying the road stops theme. \
   Available options are:
   - `"location-markers"` (the default)
   - `"road-signs"`
-- `"marker-label-display"`: a string specifying what to show for the markers' labels. \
+- `"marker-label-display"`: A string specifying what to show for the markers' labels. \
   Available options are:
   - `"name"`
   - `"name-and-value"`
   - `"name-and-absolute-value"`
-- `"label-placement"`: a string specifying where to align the outer labels. \
+- `"label-placement"`: A string specifying where to align the outer labels. \
   Available options are:
   - `"flush"` (the default)
   - `"next-to-parent"`
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Sankey Diagram {#sankey-diagram-properties .unnumbered}
 
 Properties for `"sankey-diagram"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"from"`: the column containing the left-side groups.
-  - `"to"`: the column containing the right-side groups that the left-side groups flow into.
-  - `"from-weight"`: the (optional) column containing the multiplier value for the "from" column.
-  - `"to-weight"`: the (optional) column containing the multiplier value for the "to" column.
-  - `"from-group"`: the (optional) column used to categorize the groups in the from column.
-- `"brush-scheme"`: for graphs that support brush schemes only. \
+- `"variables"`: An item containing the following properties:
+  - `"from"`: The column containing the left-side groups.
+  - `"to"`: The column containing the right-side groups that the left-side groups flow into.
+  - `"from-weight"`: The (optional) column containing the multiplier value for the "from" column.
+  - `"to-weight"`: The (optional) column containing the multiplier value for the "to" column.
+  - `"from-group"`: The (optional) column used to categorize the groups in the from column.
+- `"brush-scheme"`: For graphs that support brush schemes only. \
      Contains the following properties:
-     `"brush-styles"`: an array of strings specifying the [brush styles](#brush-properties).
-     `"color-scheme"`: a color scheme that is mapped to the brush styles.
+     `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
+     `"color-scheme"`: A color scheme that is mapped to the brush styles.
      This can also be a string specifying a named color scheme (e.g., `"icecream"`).
-- `"group-label-display"`: string specifying how to display labels on the bars. \
+- `"group-label-display"`: A string specifying how to display labels on the bars. \
   Available options are:
   - `"percentage"`
   - `"value"`
@@ -716,44 +743,45 @@ Properties for `"sankey-diagram"` nodes:
   - `"bin-name"`
   - `"bin-name-and-value"`
   - `"bin-name-and-percentage"`
-- `"group-header-display"`: a string specifying how the columns
+- `"group-header-display"`: A string specifying how the columns
   (i.e., groups from each variable) display their variable's name. \
   Available options are:
-  - `"as-header"`: display the column's name as an axis header.
-  - `"as-footer"`: display the column's name as an axis footer.
-  - `"no-display"`: do not display the column's name.
-- "column-headers": if showing column headers, this is an array of strings to use as the column headers. \
+  - `"as-header"`: Display the column's name as an axis header.
+  - `"as-footer"`: Display the column's name as an axis footer.
+  - `"no-display"`: Do not display the column's name.
+- "column-headers": If showing column headers, this is an array of strings to use as the column headers. \
   User-defined constants (e.g., `"{{MaxFiscalYear}}"`) can be used in these strings, and they can also
   contain `@COLUMNNAME@` and `@COUNT@` to show the columns' names and observation counts.
-- `"flow-shape"`: a string specifying the shape of the streams going between the groups. \
+- `"flow-shape"`: A string specifying the shape of the streams going between the groups. \
   Available options are:
-  - `"curvy"`: a flow with a spline-like shape (the default).
-  - `"jagged"`: straight lines between the points in the flow's shape.
+  - `"curvy"`: A flow with a spline-like shape (the default).
+  - `"jagged"`: Straight lines between the points in the flow's shape.
+:::
 
 ## Table {#table-properties .unnumbered}
 
 Properties for `"table"` nodes:
 
-- `"variables"`: an array of column names to use from the dataset. \
+- `"variables"`: An array of column names to use from the dataset. \
   These values can also be variable selection formulas, including the following:
-  - ``{{Matches(`value`)}}``: where *value* is a regular expression search pattern; any column name
+  - ``{{Matches(`value`)}}``: Where *value* is a regular expression search pattern; any column name
       in the dataset that matches this text will be included.
-  - ``{{Everything()}}``: will return all columns from the dataset. The column order will be the ID column (if in use),
+  - ``{{Everything()}}``: Returns all columns from the dataset. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
-  - ``{{EverythingExcept(`value`)}}``: will return all columns from the dataset that do not match the
+  - ``{{EverythingExcept(`value`)}}``: Returns all columns from the dataset that do not match the
       regular expression pattern *value*. The column order will be the ID column (if in use),
       the categoricals, the continuous columns, and finally the date columns.
 - `"transpose"`: `true` to transpose the data at the time of import. This means that the columns will become
-      the rows and vice versa. \
-- `"min-width-proportion"`: the minimum percent of the drawing area's width that the table should consume
+      the rows and vice versa.
+- `"min-width-proportion"`: The minimum percent of the drawing area's width that the table should consume
       (between `0.0` to `1.0`, representing 0% to 100%).
-- `"min-height-proportion"`: the minimum percent of the drawing area's height that the table should consume
+- `"min-height-proportion"`: The minimum percent of the drawing area's height that the table should consume
       (between `0.0` to `1.0`, representing 0% to 100%).
-- `"highlight-pen"`: the pen used for highlighting cells, which includes [pen](#pen-properties) properties.
-- `"default-borders"`: an array of boolean values, representing whether the default borders of the
+- `"highlight-pen"`: The pen used for highlighting cells, which includes [pen](#pen-properties) properties.
+- `"default-borders"`: An array of boolean values, representing whether the default borders of the
       cell should be drawn. These values go clockwise, starting at 12 o'clock.
-- `"clear-trailing-row-formatting"`: a boolean specifying whether to clear the formatting for any trailing, empty rows.
-- `"link-id"`: a numeric ID to link with other tables. All tables with the same ID will have their dimensions
+- `"clear-trailing-row-formatting"`: A boolean specifying whether to clear the formatting for any trailing, empty rows.
+- `"link-id"`: A numeric ID to link with other tables. All tables with the same ID will have their dimensions
       set to a common number of rows and columns. This is useful for aligning tables next to each other and
       ensuring that they have a common scaling. Note that string constants can also be used (e.g., `"{{PageNumber()}}"`
       can link tables on the current page).
@@ -764,221 +792,243 @@ Likewise, set `"fit-row-to-content"` to `false` for taller tables that are meant
 
 The remaining properties are executed in the following order:
 
-- `"insert-group-header"`: a string array representing the groups to build a group header with, based on the first row. \
+- `"insert-group-header"`: A string array representing the groups to build a group header with, based on the first row. \
   For example, if the first row contains labels such as "Graduated 1997"
   and "Graduated 1998," then the newly inserted top row will say "Graduated"
   above them (as a combined group). Also, the original labels will now
   be trimmed to "1997" and "1998" as their group header now indicated "Graduated."
-- `"row-group"`: a numeric array representing which rows to apply label grouping to. \
+- `"row-group"`: A numeric array representing which rows to apply label grouping to. \
      Across each provided row, this will combine consecutive cells with the same label into one cell.
-- `"column-group"`: a numeric array representing which columns to apply label grouping to. \
+- `"column-group"`: A numeric array representing which columns to apply label grouping to. \
      Down each provided column, this will combine consecutive cells with the same label into one cell.
-- `"alternate-row-color"`: applies "zebra stripes" down the rows. \
+- `"alternate-row-color"`: Applies "zebra stripes" down the rows. \
   Available options are:
-  - `"color"`: the base row color for the starting row; a shaded/tinted version of this color will be applied
+  - `"color"`: The base row color for the starting row; a shaded/tinted version of this color will be applied
        to every other row. (Default is white, creating a shaded white as the alternate color.)
-  - `"start"`: the row to start the alternating from. (Default is `0`.)
-  - `"stops"`: an array of which columns to skip over when applying the row alternating color. \
+  - `"start"`: The row to start the alternating from. (Default is `0`.) \
+       Refer to [position](#position-properties) for available properties.
+  - `"stops"`: An array of which columns to skip over when applying the row alternating color. \
        This is an array of `"position"` items.
-- `"row-add"`: commands a series of rows to be added, which is an array of row properties containing the following:
-  - `"position"`: where to insert the row. \
+- `"row-add"`: Commands for a series of rows to be added, which is an array of row properties containing the following:
+  - `"position"`: Where to insert the row. \
        Refer to [position](#position-properties) for available properties.
-  - `"constants"`: an array of strings to fill the row with (left-to-right).
-  - `"background"`: the background color of the row.
-- `"row-formatting"`: an array of row and formatting pairs, which contain the following properties:
-  - `"position"`: which row to reformat. \
-       Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column.
-  - `"end"`: if specifying a range of rows, this is the end column.
-  - `"format"`: the formatting for the column. \
+  - `"constants"`: An array of strings to fill the row with (left-to-right).
+  - `"background"`: The background color of the row.
+- `"row-formatting"`: An array of row and formatting pairs, which contain the following properties:
+  - `"position"`: Which row to reformat. \
+     Refer to [position](#position-properties) for available properties.
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"format"`: The formatting for the column. \
     Available options are:
     - `"accounting"`
     - `"general"`
     - `"percent"`
     - `"percent-changed"`
-  - `"stops"`: an array of which rows columns to skip over when changing the row's formatting \
+  - `"stops"`: An array of which rows columns to skip over when changing the row's formatting \
        This is an array of `"position"` items.
-- `"row-color"`: an array of row and color pairs, which contain the following properties:
-  - `"position"`: which row to apply a background color. \
+- `"row-color"`: An array of row and color pairs, which contain the following properties:
+  - `"position"`: Which row to apply a background color. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"background"`: the background color of the row.
-  - `"stops"`: an array of which columns to skip over when changing the row's color. \
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"background"`: The background color of the row.
+  - `"stops"`: An array of which columns to skip over when changing the row's color. \
        This is an array of `"position"` items.
-- `"row-bold"`: an array of rows, which contain the following properties:
-  - `"position"`: which row to make bold. \
+- `"row-bold"`: An array of rows, which contain the following properties:
+  - `"position"`: Which row to make bold. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"stops"`: an array of which columns to skip over when bolding the row. \
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"stops"`: An array of which columns to skip over when bolding the row. \
        This is an array of `"position"` items.
-- `"row-borders"`: an array of row border specifications, which contain the following:
-  - `"position"`: which row to edit. \
+- `"row-borders"`: An array of row border specifications, which contain the following:
+  - `"position"`: Which row to edit. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"borders"`: an array of boolean values, representing whether the borders of the
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"borders"`: An array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
-  - `"right-border"`: boolean specifying whether to show the cell's right border.
-  - `"top-border"`: boolean specifying whether to show the cell's top border.
-  - `"bottom-border"`: boolean specifying whether to show the cell's bottom border.
-  - `"left-border"`: boolean specifying whether to show the cell's left border.
-  - `"stops"`: an array of which rows to skip over when changing the row's borders. \
+  - `"right-border"`: A boolean specifying whether to show the cell's right border.
+  - `"top-border"`: A boolean specifying whether to show the cell's top border.
+  - `"bottom-border"`: A boolean specifying whether to show the cell's bottom border.
+  - `"left-border"`: A boolean specifying whether to show the cell's left border.
+  - `"stops"`: An array of which rows to skip over when changing the row's borders. \
        This is an array of `"position"` items.
-- `"row-content-align"`: an array of commands to align the content inside of the cells across a row.
-  - `"position"`: which row to change the content alignment in. \
+- `"row-content-align"`: An array of commands to align the content inside of the cells across a row.
+  - `"position"`: Which row to change the content alignment in. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"horizontal-page-alignment"`: how to horizontally align the cells' content. \
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+       Refer to [position](#position-properties) for available properties.
+  - `"horizontal-page-alignment"`: How to horizontally align the cells' content. \
     Available options are:
     - `"left-aligned"`
     - `"right-aligned"`
     - `"centered"`
-  - `"stops"`: an array of which columns to skip over when changing the column's content alignment. \
+  - `"stops"`: An array of which columns to skip over when changing the column's content alignment. \
        This is an array of `"position"` items.
-- `"column-formatting"`: an array of column and formatting pairs, which contain the following properties:
-  - `"position"`: which column to reformat. \
+- `"column-formatting"`: An array of column and formatting pairs, which contain the following properties:
+  - `"position"`: Which column to reformat. \
        Refer to [position](#position-properties) for available properties.
-  - `"start"`: if reformatting a range of columns, this is the starting column. \
+  - `"start"`: If reformatting a range of columns, this is the starting column. \
        Refer to [position](#position-properties) for available properties.
-  - `"end"`: if reformatting a range of columns, this is the end column. \
+  - `"end"`: If reformatting a range of columns, this is the end column. \
        Refer to [position](#position-properties) for available properties.
-  - `"format"`: the formatting for the column. \
+  - `"format"`: The formatting for the column. \
     Available options are:
     - `"accounting"`
     - `"general"`
     - `"percent"`
     - `"percent-changed"`
-  - `"stops"`: an array of which rows to skip over when changing the column's formatting \
+  - `"stops"`: An array of which rows to skip over when changing the column's formatting \
        This is an array of `"position"` items.
-- `"column-color"`: an array of column and color pairs, which contain the following properties:
-  - `"position"`: which column to apply a background color. \
-       Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"background"`: the background color of the column.
-  - `"stops"`: an array of which rows to skip over when changing the column's color. \
+- `"column-color"`: An array of column and color pairs, which contain the following properties:
+  - `"position"`: Which column to apply a background color. \
+     Refer to [position](#position-properties) for available properties.
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"background"`: The background color of the column.
+  - `"stops"`: An array of which rows to skip over when changing the column's color. \
+     This is an array of `"position"` items.
+- `"column-bold"`: An array of columns, which contain the following properties:
+  - `"position"`: Which column to make bold. \
+     Refer to [position](#position-properties) for available properties.
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"stops"`: An array of which rows to skip over when making the column bold. \
        This is an array of `"position"` items.
-- `"column-bold"`: an array of columns, which contain the following properties:
-  - `"position"`: which column to make bold. \
-       Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"stops"`: an array of which rows to skip over when making the column bold. \
-       This is an array of `"position"` items.
-- `"column-borders"`: an array of column border specifications, which contain the following:
-  - `"position"`: which column to edit. \
-       Refer to [position](#position-properties) for available properties.
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"borders"`: an array of boolean values, representing whether the borders of the
+- `"column-borders"`: An array of column border specifications, which contain the following:
+  - `"position"`: Which column to edit. \
+     Refer to [position](#position-properties) for available properties.
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+     Refer to [position](#position-properties) for available properties.
+  - `"borders"`: An array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
-  - `"right-border"`: boolean specifying whether to show the cell's right border.
-  - `"top-border"`: boolean specifying whether to show the cell's top border.
-  - `"bottom-border"`: boolean specifying whether to show the cell's bottom border.
-  - `"left-border"`: boolean specifying whether to show the cell's left border.
-  - `"stops"`: an array of which rows to skip over when changing the column's borders. \
+  - `"right-border"`: A boolean specifying whether to show the cell's right border.
+  - `"top-border"`: A boolean specifying whether to show the cell's top border.
+  - `"bottom-border"`: A boolean specifying whether to show the cell's bottom border.
+  - `"left-border"`: A boolean specifying whether to show the cell's left border.
+  - `"stops"`: An array of which rows to skip over when changing the column's borders. \
        This is an array of `"position"` items.
-- `"column-highlight"`: an array of column highlight specifications, which contain the following:
-  - `"start"`: if specifying a range of rows, this is the starting column. \
-  - `"end"`: if specifying a range of rows, this is the end column. \
-  - `"stops"`: an array of which rows to skip over when changing the column's cell highlighting. \
+- `"column-highlight"`: An array of column highlight specifications, which contain the following:
+  - `"start"`: If specifying a range of rows, this is the starting column. \
+    Refer to [position](#position-properties) for available properties.
+  - `"end"`: If specifying a range of rows, this is the end column. \
+    Refer to [position](#position-properties) for available properties.
+  - `"stops"`: An array of which rows to skip over when changing the column's cell highlighting. \
        This is an array of `"position"` items.
-- `"aggregates"`: an array of aggregate definitions that will be added to the table. \
+- `"aggregates"`: An array of aggregate definitions that will be added to the table. \
   Each aggregate node contains the following properties:
-  - `"type"`: where to add the aggregate. \
+  - `"type"`: Where to add the aggregate. \
     Available options are:
     - `"row"`
     - `"column"`
-  - `"aggregate-type"`: the type of aggregate to add. \
+  - `"aggregate-type"`: The type of aggregate to add. \
     Available options are:
     - `"percent-change"`
     - `"change"`
     - `"total"`
-  - `"background"`: the background color for the column/row. This can be either a color name or hex-encoded value.
+  - `"background"`: The background color for the column/row. This can be either a color name or hex-encoded value.
   - `"use-adjacent-color"`: `true` to use the color of the cell adjacent to this column.
-       `false` will apply a light gray to the column.
-  - `"name"`: the name for the newly added aggregate column/row.
-  - `"position"`: which column/row to insert the aggregate. \
-       This property is optional, and if not included will be inserted as the last column/row. \
-       Refer to [position](#position-properties) for available properties.
-  - `"start"`: the first column/row that the aggregate column/row should use. \
-       This property is optional, and if not included the first numeric column/row encountered will be used. \
-       Refer to [position](#position-properties) for available properties.
-  - `"end"`: the last column/row that the aggregate column/row should use. \
-       This property is optional, and if not included the last numeric column/row encountered will be used.
-       Like `"start"`, this is optional and has the same properties.
-  - `"borders"`: an array of boolean values, representing whether the borders of the
+     `false` will apply a light gray to the column.
+  - `"name"`: The name for the newly added aggregate column/row.
+  - `"position"`: Which column/row to insert the aggregate. \
+      This property is optional, and if not included will be inserted as the last column/row. \
+      Refer to [position](#position-properties) for available properties.
+  - `"start"`: The first column/row that the aggregate column/row should use. \
+      This property is optional, and if not included the first numeric column/row encountered will be used. \
+      Refer to [position](#position-properties) for available properties.
+  - `"end"`: The last column/row that the aggregate column/row should use. \
+      This property is optional, and if not included the last numeric column/row encountered will be used.
+      Like `"start"`, this is optional and has the same properties.
+  - `"borders"`: An array of boolean values, representing whether the borders of the
       cell should be drawn. These values go clockwise, starting at 12 o'clock. \
       This is optional and overrides the default cell borders.
-- `"row-totals"`: adds a grand total row to the bottom of the table. \
+- `"row-totals"`: Adds a grand total row to the bottom of the table. \
   If the first column is grouped and the second locum is text, then this will also insert subtotal rows. \
   Available options are:
-  - `"background"`: the background color for the row(s).
-- `"cell-update"`: an array of cell updating commands, which contain the following properties:
-  - `"column"`: the column position of the cell to update. \
-       Refer to [position](#position-properties) for available properties.
-  - `"row"`: the row position of the cell to update. \
-       Refer to [position](#position-properties) for available properties.
-  - `"value-to-find"`: if `"row"/"column"`: are not provided, this is a cell value to search for.
-       The first cell that matches this text will be returned and that is the cell that will be updated.
-  - `"column-count"`: the number of columns that this cell should consume. \
-       This can either be a number, or the string `"all"` (meaning all columns).
-  - `"row-count"`: the number of rows that this cell should consume. \
-       This can either be a number, or the string `"all"` (meaning all rows).
-  - `"value"`: a numeric, string, or date value to assign to the cell.
-  - `"background"`: the background color. This can be either a color name or hex-encoded value.
+  - `"background"`: The background color for the row(s).
+- `"cell-update"`: An array of cell updating commands, which contain the following properties:
+  - `"column"`: The column position of the cell to update. \
+      Refer to [position](#position-properties) for available properties.
+  - `"row"`: The row position of the cell to update. \
+      Refer to [position](#position-properties) for available properties.
+  - `"value-to-find"`: If `"row"/"column"` are not provided, this is a cell value to search for. \
+      The first cell that matches this text will be returned and that is the cell that will be updated.
+  - `"column-count"`: The number of columns that this cell should consume. \
+      This can either be a number, or the string `"all"` (meaning all columns).
+  - `"row-count"`: The number of rows that this cell should consume. \
+      This can either be a number, or the string `"all"` (meaning all rows).
+  - `"value"`: A numeric, string, or date value to assign to the cell.
+  - `"background"`: The background color. This can be either a color name or hex-encoded value.
   - `"bold"`: `true` to make the cell bold.
   - `"highlight"`: `true` to highlight the cell.
-  - `"prefix"`: a character to display on the left side of the cell.
-  - `"left-image"`: properties specifying an image to display on the left side of the label. \
+  - `"prefix"`: A character to display on the left side of the cell.
+  - `"left-image"`: Properties specifying an image to display on the left side of the label. \
     Available options are:
-    - `"path"`: string specifying the image path to load.
-  - `"show-borders"`: an array of boolean values, representing whether the borders of the
+    - `"path"`: A string specifying the image path to load.
+  - `"show-borders"`: An array of boolean values, representing whether the borders of the
        cell should be drawn. These values go clockwise, starting at 12 o'clock.
-  - `"horizontal-page-alignment"`: how to horizontally align the item within its area. \
+  - `"horizontal-page-alignment"`: How to horizontally align the item within its area. \
     Available options are:
     - `"left-aligned"`
     - `"right-aligned"`
     - `"centered"`
-  - `"text-alignment"`: how to align the cell's text (if multi-line). \
+  - `"text-alignment"`: How to align the cell's text (if multi-line). \
     Available options are:
     - `"flush-left"`or `"ragged-right"`
     - `"flush-right"`or `"ragged-left"`
     - `"centered"`
     - `"justified"`
-- `"cell-annotations"`: an array of cell annotation specifications, which each contain the following properties:
+- `"cell-annotations"`: An array of cell annotation specifications, which each contain the following properties:
   - `"value"`
   - `"side"`
   - `"pen"`
   - `"background"`
-  - `"cells"`
+  - `"cells"`: Properties for which cells to annotate. \
     Available options are:
-    - `"column-outliers"`
-    - `"column-top-n"`
-      The available options are:
-      - `"n"`: number specifying how many top items should be returned.
-- `"footnotes"`: an array of footnote specifications, which each contain the following properties:
-  - `"value"`: the cell value (as a string) to add a footnote number to. Can include [constants](#constants-properties).
-  - `"footnote"`: the footnote to add to the caption. Can include [constants](#constants-properties).
+    - `"column-outliers"`: A provided column, with its outliers being annotated.
+    - `"column-top-n"`: A provided column, with *n* number of highest-value items annotated.
+    - `"n"`: If `"column-top-n"` is in use, a number specifying how many top items should be returned.
+- `"footnotes"`: An array of footnote specifications, which each contain the following properties:
+  - `"value"`: The cell value (as a string) to add a footnote number to. Can include [constants](#constants-properties).
+  - `"footnote"`: The footnote to add to the caption. Can include [constants](#constants-properties).
 
+::: {.minipage data-latex="{\textwidth}"}
 ## Word Cloud {#word-cloud-properties .unnumbered}
 
 Properties for `"word-cloud"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"words"`: the categorical column containing the words.
-  - `"aggregate"`: (optional) the continuous column containing the words' frequency counts.
+- `"variables"`: An item containing the following properties:
+  - `"words"`: The categorical column containing the words.
+  - `"aggregate"`: The continuous column containing the words' frequency counts (optional).
+:::
 
+::: {.minipage data-latex="{\textwidth}"}
 ## W-Curve Plot {#w-curve-plot-properties .unnumbered}
 
 Properties for `"w-curve-plot"` nodes:
 
-- `"variables"`: an item containing the following properties:
-  - `"x"`: the X column.
-  - `"y"`: the Y column.
-  - `"group"`: the grouping column (this is optional).
-- `"time-interval-label"`: string the label for the major time intervals used in the data collection (e.g., `"semester"` or `"year"`).
+- `"variables"`: An item containing the following properties:
+  - `"x"`: The X column.
+  - `"y"`: The Y column.
+  - `"group"`: The grouping column (this is optional).
+- `"time-interval-label"`: The label for the major time intervals used in the data collection (e.g., `"semester"` or `"year"`).
 - Some base properties available to [graphs](#graph-properties).
+:::
