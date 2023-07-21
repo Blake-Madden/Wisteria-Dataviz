@@ -25,8 +25,8 @@ namespace Wisteria
     public:
         /** @brief Builds a common axis for graphs along a row.
             @details This function will perform the following:
-            - A new axis will be copied from the first graph's left axis
-            - The first graph's left axis settings and scale will be applied to the
+            - A new axis will be copied from the tallest (i.e., highest Y value) graph's left axis
+            - The tallest graph's left axis settings and scale will be applied to the
                 other graphs in the list
             - The graphs will then have their left axes' labels turned off
                 (since the common axis will be serving this purpose)
@@ -61,8 +61,8 @@ namespace Wisteria
             AxisType axisType);
         /** @brief Builds a common axis for graphs along a column.
             @details This function will perform the following:
-            - A new axis will be copied from the first graph's bottom axis
-            - The first graph's bottom axis settings and scale will be applied to the
+            - A new axis will be copied from the widest (i.e., highest X value) graph's bottom axis
+            - The widest graph's bottom axis settings and scale will be applied to the
                 other graphs in the list
             - The graphs will then have their bottom axes' labels turned off
                 (since the common axis will be serving this purpose)

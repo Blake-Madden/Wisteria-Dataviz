@@ -26,22 +26,30 @@ namespace Wisteria
 
         if (graphs.size() < 2)
             { return nullptr; }
-        for (auto graphIter = graphs.begin() + 1; graphIter < graphs.end(); ++graphIter)
+
+        // see which plot has the largest range end and use that
+        // (note that we will be assuming all plots are using the same range start [usually zero])
+        Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetLeftYAxis() };
+        for (const auto& graph : graphs)
             {
-            // copy the left axis range from the first plot to this one,
-            // then turn off the labels
-            graphIter->get()->GetLeftYAxis().CopySettings(graphs.begin()->get()->GetLeftYAxis());
-            graphIter->get()->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graphIter->get()->GetLeftYAxis().GetTitle().Show(false);
-            // turn off right too
-            graphIter->get()->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graphIter->get()->GetRightYAxis().GetTitle().Show(false);
+            if (graph.get()->GetLeftYAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
+                { axisWithMaxRangeEnd.CopySettings(graph.get()->GetLeftYAxis()); }
             }
-        // create a common axis, also copied from the first plot's left axis
+        for (const auto& graph : graphs)
+            {
+            // copy the left axis range from the tallest plot to this one,
+            // then turn off the labels
+            graph.get()->GetLeftYAxis().CopySettings(axisWithMaxRangeEnd);
+            graph.get()->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph.get()->GetLeftYAxis().GetTitle().Show(false);
+            // turn off right too
+            graph.get()->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph.get()->GetRightYAxis().GetTitle().Show(false);
+            }
+        // create a common axis, also copied from the tallest plot's left axis
         auto commonAxis = std::make_shared<Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
-        commonAxis->CopySettings(graphs.begin()->get()->GetLeftYAxis());
-        commonAxis->GetTitle() = graphs.begin()->get()->GetLeftYAxis().GetTitle();
+        commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the left side of its
         // bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
@@ -49,13 +57,6 @@ namespace Wisteria
         // Get the canvas size of the axis and add it to the canvas.
         commonAxis->SetCanvasWidthProportion(canvas->CalcMinWidthProportion(commonAxis));
         commonAxis->SetFixedWidthOnCanvas(true);
-
-        // now that we are done copying the left axis from the first plot,
-        // hide the first plot's axis labels
-        graphs.begin()->get()->GetLeftYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-        graphs.begin()->get()->GetLeftYAxis().GetTitle().Show(false);
-        graphs.begin()->get()->GetRightYAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-        graphs.begin()->get()->GetRightYAxis().GetTitle().Show(false);
 
         // tell the canvas to align the plots and stand-alone axes across each row
         canvas->AlignRowContent(true);
@@ -78,35 +79,36 @@ namespace Wisteria
 
         if (graphs.size() < 2)
             { return nullptr; }
-        for (auto graphIter = graphs.begin() + 1; graphIter < graphs.end(); ++graphIter)
+
+        // see which plot has the largest range end and use that
+        // (note that we will be assuming all plots are using the same range start [usually zero])
+        Axis axisWithMaxRangeEnd{ graphs.cbegin()->get()->GetBottomXAxis() };
+        for (const auto& graph : graphs)
             {
-            // copy the bottom axis range from the first plot to this one,
-            // then turn off the labels
-            graphIter->get()->GetBottomXAxis().CopySettings(graphs.begin()->get()->GetBottomXAxis());
-            graphIter->get()->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graphIter->get()->GetBottomXAxis().GetTitle().Show(false);
-            // turn off top too
-            graphIter->get()->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-            graphIter->get()->GetTopXAxis().GetTitle().Show(false);
+            if (graph.get()->GetBottomXAxis().GetRange().second > axisWithMaxRangeEnd.GetRange().second)
+                { axisWithMaxRangeEnd.CopySettings(graph.get()->GetBottomXAxis()); }
             }
-        // create a common axis, also copied from the first plot's bottom axis
+        for (const auto& graph : graphs)
+            {
+            // copy the bottom axis range from the widest plot to this one,
+            // then turn off the labels
+            graph.get()->GetBottomXAxis().CopySettings(axisWithMaxRangeEnd);
+            graph.get()->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph.get()->GetBottomXAxis().GetTitle().Show(false);
+            // turn off top too
+            graph.get()->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
+            graph.get()->GetTopXAxis().GetTitle().Show(false);
+            }
+        // create a common axis, also copied from the widest plot's bottom axis
         auto commonAxis = std::make_shared<Axis>(axisType);
         commonAxis->SetDPIScaleFactor(canvas->GetDPIScaleFactor());
-        commonAxis->CopySettings(graphs.begin()->get()->GetBottomXAxis());
-        commonAxis->GetTitle() = graphs.begin()->get()->GetBottomXAxis().GetTitle();
+        commonAxis->CopySettings(axisWithMaxRangeEnd);
         // tell the canvas to align the axis line to the bottom side of its bounding box
         commonAxis->SetAnchoring(Anchoring::TopLeftCorner);
         commonAxis->SetCanvasMargins(10, 0, 5, 0);
         // get the canvas size of the axis and add it to the canvas
         commonAxis->SetCanvasHeightProportion(canvas->CalcMinHeightProportion(commonAxis));
         commonAxis->FitCanvasRowHeightToContent(true);
-
-        // now that we are done copying the bottom axis from the first plot,
-        // hide the first plot's axis labels
-        graphs.begin()->get()->GetBottomXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-        graphs.begin()->get()->GetBottomXAxis().GetTitle().Show(false);
-        graphs.begin()->get()->GetTopXAxis().SetLabelDisplay(AxisLabelDisplay::NoDisplay);
-        graphs.begin()->get()->GetTopXAxis().GetTitle().Show(false);
 
         // tell the canvas to align the plots and stand-alone axes down each column
         canvas->AlignColumnContent(true);
