@@ -330,6 +330,17 @@ namespace Wisteria::Graphs
             [[nodiscard]]
             Wisteria::GraphItems::Label& GetDecal() noexcept
                 { return m_decal; }
+            /// @returns The decal label of the block, with constants expanded in it.\n
+            ///     The constants supported are:\n
+            ///     `@COUNT@`: The length of the block.
+            [[nodiscard]]
+            wxString ExpandDecalLabel() const
+                {
+                wxString expandedStr = GetDecal().GetText();
+                expandedStr.Replace(L"@COUNT@",
+                    wxNumberFormatter::ToString(GetLength(), 0, wxNumberFormatter::Style::Style_WithThousandsSep));
+                return expandedStr;
+                }
             /// @private
             [[nodiscard]]
             const Wisteria::GraphItems::Label& GetSelectionLabel() const noexcept

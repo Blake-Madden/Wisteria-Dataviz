@@ -999,6 +999,7 @@ namespace Wisteria::Graphs
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
                         decalLabel->GetGraphItemInfo().Pen(wxNullPen).
+                            Text(barBlock.ExpandDecalLabel()).
                             Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()).
                             Padding(2, 2, 2, 2);
@@ -1409,6 +1410,7 @@ namespace Wisteria::Graphs
 
                         auto decalLabel = std::make_shared<GraphItems::Label>(barBlock.GetDecal());
                         decalLabel->GetGraphItemInfo().Pen(wxNullPen).
+                            Text(barBlock.ExpandDecalLabel()).
                             Scaling(GetScaling()).
                             DPIScaling(GetDPIScaleFactor()).
                             Padding(2, 2, 2, 2);
