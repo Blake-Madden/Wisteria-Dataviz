@@ -14,7 +14,6 @@ namespace Wisteria
                                                               wxWindow* parent)
         {
         // reset from previous calls
-        m_commonAxesPlaceholders.clear();
         m_tableLinks.clear();
         m_name.clear();
         m_datasets.clear();
@@ -87,6 +86,8 @@ namespace Wisteria
             const auto pages = pagesProperty->GetValueArrayObject();
             for (const auto& page : pages)
                 {
+                // common axes are per page, where they must reference child graphs on the same page
+                m_commonAxesPlaceholders.clear();
                 if (page->IsOk())
                     {
                     // create the canvas used for the page
