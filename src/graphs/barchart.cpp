@@ -472,10 +472,17 @@ namespace Wisteria::Graphs
                         {
                         return bar.GetAxisLabel().GetText().CmpNoCase(label) == 0;
                         });
+                // if bar with label not found, then add an empty one
                 if (foundPos == GetBars().cend())
                     {
-                    throw std::runtime_error(wxString::Format(
-                        _(L"'%s': bar label not found when sorting."), label).ToUTF8());
+                    const auto maxAxisPos = GetBars().size() ?
+                        std::max_element(GetBars().cbegin(), GetBars().cend(),
+                            [](const auto& lhv, const auto& rhv) noexcept
+                            { return lhv.GetAxisPosition() < rhv.GetAxisPosition(); })->GetAxisPosition() :
+                        0.0;
+                    AddBar(
+                        Bar{ maxAxisPos + 1.0, { BarBlock{} }, label, Label{ label },
+                             GetBarEffect(), GetBarOpacity() });
                     }
                 }
             // get the bar labels that the caller did not specify
