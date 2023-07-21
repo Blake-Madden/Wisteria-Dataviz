@@ -48,6 +48,11 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         size_t GetGroupCount() const noexcept
             { return m_groupIds.size(); }
+
+        /// @returns @c true if a grouping column is in use.
+        [[nodiscard]]
+        bool IsUsingGrouping() const noexcept
+            { return (m_groupColumn != nullptr); }
     protected:
         /** @private
             @brief Builds a list of group IDs, sorted their respective strings' alphabetical order.
@@ -96,11 +101,6 @@ namespace Wisteria::Graphs
             m_groupIds.clear();
             m_groupColumn = nullptr;
             }
-
-        /// @returns @c true if the grouping column is set.
-        [[nodiscard]]
-        bool IsUsingGrouping() const noexcept
-            { return (m_groupColumn != nullptr); }
 
         /// @brief Sets the shape to use in the legend (if a shape scheme isn't in use).
         /// @param shape The shape to use.

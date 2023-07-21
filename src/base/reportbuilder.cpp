@@ -2660,6 +2660,39 @@ namespace Wisteria
         if (graphNode->HasProperty(L"constrain-scaling-axis-to-bars") &&
             graphNode->GetProperty(L"constrain-scaling-axis-to-bars")->GetValueBool())
             { barChart->ConstrainScalingAxisToBars(); }
+
+        if (graphNode->GetProperty(L"apply-brushes-to-ungrouped-bars")->GetValueBool() &&
+            !barChart->IsUsingGrouping() && barChart->GetBrushScheme() &&
+            barChart->GetBrushScheme()->GetBrushes().size())
+            {
+            if (barChart->GetBarOrientation() == Orientation::Vertical)
+                {
+                for (size_t i = 0; i < barChart->GetBars().size(); ++i)
+                    {
+                    auto& blocks = barChart->GetBars()[i].GetBlocks();
+                    if (blocks.size())
+                        { blocks.front().GetBrush() = barChart->GetBrushScheme()->GetBrush(i); }
+                    }
+                }
+            else
+                {
+                // apply brush in reverse because the origin in going upward, but the client
+                // sees the bars as going downward
+                for (size_t i = 0; i < barChart->GetBars().size(); ++i)
+                    {
+                    auto& blocks = barChart->GetBars()[i].GetBlocks();
+                    if (blocks.size())
+                        {
+                        wxASSERT_MSG(
+                            static_cast<long>(barChart->GetBrushScheme()->GetBrushes().size()) - (1 + i) >= 0,
+                            L"Bad brush mapping for bar chart!");
+                        blocks.front().GetBrush() =
+                            barChart->GetBrushScheme()->GetBrush(
+                                barChart->GetBrushScheme()->GetBrushes().size() - 1 - i);
+                        }
+                    }
+                }
+            }
         }
 
     //---------------------------------------------------

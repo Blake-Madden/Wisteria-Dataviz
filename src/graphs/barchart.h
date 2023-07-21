@@ -295,6 +295,10 @@ namespace Wisteria::Graphs
             [[nodiscard]]
             const wxBrush& GetBrush() const noexcept
                 { return m_brush; }
+            /// @private
+            [[nodiscard]]
+            wxBrush& GetBrush() noexcept
+                { return m_brush; }
             /// @returns The block's outline pen.
             [[nodiscard]]
             const wxPen& GetOutlinePen() const noexcept
