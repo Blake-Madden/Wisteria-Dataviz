@@ -1628,15 +1628,15 @@ namespace Wisteria::Graphs
             for (size_t i = startPos; i <= endPos; ++i)
                 {
                 const wxPoint brackPos = barMiddleEndPositions[i];
-            if (GetBarOrientation() == Orientation::Horizontal)
-                {
-                maxBracketStartPos = std::max(
+                if (GetBarOrientation() == Orientation::Horizontal)
+                    {
+                    maxBracketStartPos = std::max(
                         { brackPos.x, maxBracketStartPos.value_or(brackPos.x) });
                     barGroup.m_maxBarPos = std::max(brackPos.x, barGroup.m_maxBarPos.value_or(brackPos.x));
-                }
-            else
-                {
-                maxBracketStartPos = std::min(
+                    }
+                else
+                    {
+                    maxBracketStartPos = std::min(
                         { brackPos.y, maxBracketStartPos.value_or(brackPos.y) });
                     barGroup.m_maxBarPos = std::min(brackPos.y, barGroup.m_maxBarPos.value_or(brackPos.y));
                     }
@@ -1655,6 +1655,10 @@ namespace Wisteria::Graphs
                  ++i)
                 { grandTotal += GetBars()[i].GetLength(); }
 
+            // if all bars in group are empty, then don't add the bar block for the groups
+            if (grandTotal == 0)
+                { continue; }
+
             constexpr double bracesWidth{ 30 };
             double scalingAxisPos{ 0 }, barAxisPos{ 0 };
             if (GetBarOrientation() == Orientation::Horizontal)
@@ -1669,7 +1673,7 @@ namespace Wisteria::Graphs
                         });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
                     brackStartXPos + ScaleToScreenAndCanvas(bracesWidth),
-                             scalingAxisPos))
+                    scalingAxisPos))
                     {
                     // make the curly braces stretch from the top of the first bar
                     // to the bottom of the last one
@@ -1738,9 +1742,9 @@ namespace Wisteria::Graphs
                          barGroup.m_maxBarPos.value_or(brackPos1.y))
                         });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
-                        brackStartYPos -
-                        // space for the braces and a couple DIPs between that and the group bar
-                        ScaleToScreenAndCanvas(bracesWidth + 2),
+                    brackStartYPos -
+                    // space for the braces and a couple DIPs between that and the group bar
+                    ScaleToScreenAndCanvas(bracesWidth + 2),
                     scalingAxisPos))
                     {
                     // make the curly braces stretch from the top of the first bar
