@@ -351,7 +351,9 @@ Properties common to all bar-chart derived graphs:
 - `"decals"`: An array of decals to add to the bars. This will be an array of nodes containing the following properties:
   - `"bar"`: The axis label of the bar.
   - `"block"`: The number specifying which block in the bar to add the decal to. If not specified, defaults to `0`.
-  - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties.
+  - `"decal"`: The decal to add to the bar, which will contain [label](#label-properties) properties. \
+    Embedded constants can be included in this string, including: \
+    `@COUNT@`: The length value of the block.
 - `"first-bar-brackets"`: Properties adding axis brackets that reference the first bar. \
   Available options are:
   - `"label"`: A string for the bracket's label.
@@ -361,11 +363,17 @@ Properties common to all bar-chart derived graphs:
   If the `"re"` variations of the starting and ending labels are available, then these properties are used:
   - `"start-block"`: A string specifying the tag of the starting block of the bar.
   - `"end-block"`: A string specifying the tag of the ending block of the bar.
+- `"apply-brushes-to-ungrouped-bars"`: `true` to apply the brushes (from the brush scheme) to the series of bars. \
+  This will only take effect if grouping is not in use for the bar chart.
+  Generally, this is not recommended as having different colored bars is bad dataviz practice, but can be useful if
+  only including two bars that need to be contrasted.
 - `"constrain-scaling-axis-to-bars"`: `true` to force the scaling axis to the longest bar.
 
-Note that bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
+::: {.notesection}
+Bar sorting is performed prior to adding bar groups. When specifying the start and end of your bar groups,
 any bar sorting that you specified will be in effect. Likewise, axis brackets are also added after the bars are sorted;
 if specifying start and end points for your brackets, be aware that the bars will already be sorted.
+:::
 
 # Graphs
 

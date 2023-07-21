@@ -3,6 +3,8 @@ title: "Wisteria Syntax Reference Manual"
 author: "Blake Madden"
 site: bookdown::bookdown_site
 output:
+  bookdown::gitbook:
+    css: css/style.css
   bookdown::pdf_book:
     template: "latex/default.tex"
     includes:
