@@ -931,10 +931,8 @@ namespace Wisteria
                                 const auto oldBoundingBox = objectPos->GetBoundingBox(dc);
                                 objectPos->RecalcSizes(dc);
                                 const auto newBoundingBox = objectPos->GetBoundingBox(dc);
-                                const auto rightDiff = oldBoundingBox.GetRight() -
-                                                       newBoundingBox.GetRight();
-                                wxASSERT_MSG(rightDiff >= 0,
-                                    L"Object shouldn't be wider after adjusting its content area!");
+                                const auto rightDiff =
+                                    std::max(oldBoundingBox.GetRight() - newBoundingBox.GetRight(), 0);
                                 for (size_t remainingRowsItem = colIndex + 1;
                                     remainingRowsItem < fixedObjectsRowPos->size();
                                     ++remainingRowsItem)
