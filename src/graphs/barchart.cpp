@@ -1612,20 +1612,27 @@ namespace Wisteria::Graphs
 
         // add the brackets and bars for any bar groups
         std::optional<wxCoord> maxBracketStartPos{ 0.0 };
-        for (const auto& barGroup : m_barGroups)
+        for (auto& barGroup : m_barGroups)
             {
-            const wxPoint brackPos1 = barMiddleEndPositions[barGroup.m_barPositions.first];
-            const wxPoint brackPos2 = barMiddleEndPositions[barGroup.m_barPositions.second];
+            barGroup.m_maxBarPos.reset();
+            const auto startPos = std::min(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
+            const auto endPos = std::max(barGroup.m_barPositions.first, barGroup.m_barPositions.second);
 
+            for (size_t i = startPos; i <= endPos; ++i)
+                {
+                const wxPoint brackPos = barMiddleEndPositions[i];
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
                 maxBracketStartPos = std::max(
-                    { brackPos1.x, brackPos2.x, maxBracketStartPos.value_or(brackPos1.x) });
+                        { brackPos.x, maxBracketStartPos.value_or(brackPos.x) });
+                    barGroup.m_maxBarPos = std::max(brackPos.x, barGroup.m_maxBarPos.value_or(brackPos.x));
                 }
             else
                 {
                 maxBracketStartPos = std::min(
-                    { brackPos1.y, brackPos2.y, maxBracketStartPos.value_or(brackPos1.y) });
+                        { brackPos.y, maxBracketStartPos.value_or(brackPos.y) });
+                    barGroup.m_maxBarPos = std::min(brackPos.y, barGroup.m_maxBarPos.value_or(brackPos.y));
+                    }
                 }
             }
 
@@ -1646,9 +1653,13 @@ namespace Wisteria::Graphs
             if (GetBarOrientation() == Orientation::Horizontal)
                 {
                 const wxCoord brackStartXPos =
-                    std::max({ brackPos1.x, brackPos2.x,
+                    std::max(
+                        {
+                        brackPos1.x, brackPos2.x,
                         (m_barGroupPlacement == LabelPlacement::Flush ?
-                         maxBracketStartPos.value_or(brackPos1.x) : brackPos1.x)});
+                         maxBracketStartPos.value_or(brackPos1.x) :
+                         barGroup.m_maxBarPos.value_or(brackPos1.x))
+                        });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
                     brackStartXPos + ScaleToScreenAndCanvas(bracesWidth),
                              scalingAxisPos))
@@ -1712,9 +1723,13 @@ namespace Wisteria::Graphs
             else
                 {
                 const wxCoord brackStartYPos =
-                    std::min({ brackPos1.y, brackPos2.y,
+                    std::min(
+                        {
+                        brackPos1.y, brackPos2.y,
                         (m_barGroupPlacement == LabelPlacement::Flush ?
-                         maxBracketStartPos.value_or(brackPos1.y) : brackPos1.y) });
+                         maxBracketStartPos.value_or(brackPos1.y) :
+                         barGroup.m_maxBarPos.value_or(brackPos1.y))
+                        });
                 if (GetScalingAxis().GetValueFromPhysicalCoordinate(
                         brackStartYPos -
                         // space for the braces and a couple DIPs between that and the group bar

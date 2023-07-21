@@ -712,6 +712,9 @@ namespace Wisteria::Graphs
             /// @brief The base color to paint under the group bar's brush.
             /// @details This is useful if the brush is using a hatched pattern.
             wxColour m_barColor{ wxNullColour };
+            /// @brief Position on the axis next to the furthest out bar in the group.
+            /// @details This is relevant only when the group label place is `NextToParent`.
+            std::optional<wxCoord> m_maxBarPos{ std::nullopt };
             };
 
         /** @brief Constructor.
