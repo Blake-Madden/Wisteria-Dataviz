@@ -485,13 +485,28 @@ namespace Wisteria::Data
             const wchar_t* const start = input.c_str();
             wchar_t* end{ nullptr };
             double val = wxStrtod_l(start, &end, wxCLocale);
+            // failed to even begin with a number
             if (end == start)
                 { return MDRecodeValue; }
             // if we read all the way to the null terminator, then conversion worked
-            if (*end == 0)
+            else if (*end == 0)
                 { return val; }
+            // at least started with a number
             else
-                { return MDRecodeValue; }
+                {
+                // remove thousand separator and try that
+                wchar_t thousandsSep{ 32 };
+                if (wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousandsSep) &&
+                    *end == thousandsSep)
+                    {
+                    std::wstring strippedNumber{ input };
+                    string_util::remove_all(strippedNumber, thousandsSep);
+                    return ConvertToDouble(strippedNumber, MDRecodeValue);
+                    }
+                // a mix of numbers and text, give up
+                else
+                    { return MDRecodeValue; }
+                }
             }
         }
 
